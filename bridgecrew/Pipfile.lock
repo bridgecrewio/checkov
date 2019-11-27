@@ -1,0 +1,60 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "ab1ec1b9d102d717bf3dacd4f02bcab70738d1d3b459cad796a6eb4fd53c6284"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.7"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "docopt": {
+            "hashes": [
+                "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"
+            ],
+            "version": "==0.6.2"
+        },
+        "lark-parser": {
+            "hashes": [
+                "sha256:26215ebb157e6fb2ee74319aa4445b9f3b7e456e26be215ce19fdaaa901c20a4"
+            ],
+            "version": "==0.7.8"
+        },
+        "python-hcl2": {
+            "hashes": [
+                "sha256:845a30af9b151625e2449cb9835e5ebc9181b2cb086de38f8d57d4e1e1b516a7"
+            ],
+            "index": "pypi",
+            "version": "==0.2.0"
+        }
+    },
+    "develop": {
+        "docopt": {
+            "hashes": [
+                "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"
+            ],
+            "version": "==0.6.2"
+        },
+        "lark-parser": {
+            "hashes": [
+                "sha256:26215ebb157e6fb2ee74319aa4445b9f3b7e456e26be215ce19fdaaa901c20a4"
+            ],
+            "version": "==0.7.8"
+        },
+        "python-hcl2": {
+            "hashes": [
+                "sha256:845a30af9b151625e2449cb9835e5ebc9181b2cb086de38f8d57d4e1e1b516a7"
+            ],
+            "index": "pypi",
+            "version": "==0.2.0"
+        }
+    }
+}
