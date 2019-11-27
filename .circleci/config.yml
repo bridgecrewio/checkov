@@ -15,3 +15,8 @@ jobs:
       - run:
           name: Pytest Now!
           command: pipenv run python -m pytest tests/
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - py-tests
