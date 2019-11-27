@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 python-hcl2 = "*"
+pytest = "*"
 
 [packages]
 python-hcl2 = "*"

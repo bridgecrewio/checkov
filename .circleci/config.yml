@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  py-tests:
+    working_directory: ~/bridgecrew
+    docker:
+      - image: circleci/python:3.7.2
+    steps:
+      - checkout
+      - run:
+          name: Install pipenv & dependencies
+          command: |  # use pipenv to install dependencies
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo pip install pipenv
+            pipenv install --dev
+      - run:
+          name: Pytest Now!
+          command: pipenv run python -m pytest tests/
