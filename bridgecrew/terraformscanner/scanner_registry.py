@@ -5,7 +5,7 @@ class ScannerRegistry():
     scanners = {}
 
     def __init__(self):
-        self.logger = logging.getLogger("bridgecrew.scanner_registry")
+        self.logger = logging.getLogger(__name__)
 
     def register(self, scanner):
         resource = scanner.supported_resource
@@ -30,3 +30,5 @@ class ScannerRegistry():
             result = scanner.scan_resource_conf(resource_conf_def)
             results.append(result)
         return results
+
+scanner_registry = ScannerRegistry()
