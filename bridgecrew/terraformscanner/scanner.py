@@ -16,9 +16,9 @@ class Scanner(ABC):
         self.logger = logging.getLogger("{}.{}".format(__name__, scan_id))
         scanner_registry.register(self)
 
-    def scan(self, resource_configuration, resource_name):
+    def scan(self, scanned_file, resource_configuration, resource_name):
         result = self.scan_resource_conf(resource_configuration)
-        self.logger.info("Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(self.supported_resource, resource_name,
+        self.logger.info("File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file,self.supported_resource, resource_name,
                                                                              self.name,
                                                                              result))
 
