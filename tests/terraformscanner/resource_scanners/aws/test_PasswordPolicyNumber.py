@@ -1,10 +1,10 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.PasswordPolicyUppercaseLetter import scanner
+from bridgecrew.terraformscanner.resource_scanners.aws.PasswordPolicyNumber import scanner
 
 
-class TestPasswordPolicyUpperCaseLetter(unittest.TestCase):
+class TestPasswordPolicyNumber(unittest.TestCase):
 
     def test_success(self):
         resource_conf = {
@@ -21,9 +21,9 @@ class TestPasswordPolicyUpperCaseLetter(unittest.TestCase):
     def test_failure(self):
         resource_conf = {
             "minimum_password_length": 8,
-            "require_lowercase_characters": True,
-            "require_numbers": True,
-            "require_uppercase_characters": False,
+            "require_lowercase_characters": False,
+            "require_numbers": False,
+            "require_uppercase_characters": True,
             "require_symbols": True,
             "allow_users_to_change_password": True,
         }
@@ -34,7 +34,6 @@ class TestPasswordPolicyUpperCaseLetter(unittest.TestCase):
         resource_conf = {
             "minimum_password_length": 8,
             "require_lowercase_characters": True,
-            "require_numbers": True,
             "require_symbols": True,
             "allow_users_to_change_password": True,
         }

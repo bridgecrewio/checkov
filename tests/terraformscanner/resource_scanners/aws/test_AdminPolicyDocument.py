@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.AdminPolicyDocument import scanner
+from bridgecrew.terraformscanner.resource_scanners.aws.AdminPolicyDocument import scanner
 
 
 class TestAdminPolicyDocument(unittest.TestCase):

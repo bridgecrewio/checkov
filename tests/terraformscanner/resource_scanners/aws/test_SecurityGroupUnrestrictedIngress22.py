@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.SecurityGroupUnrestrictedIngress22 import scanner
+from bridgecrew.terraformscanner.resource_scanners.aws.SecurityGroupUnrestrictedIngress22 import scanner
 
 
 class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):

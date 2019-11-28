@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.PasswordPolicyLength import scanner
+from bridgecrew.terraformscanner.resource_scanners.aws.PasswordPolicyLength import scanner
 
 
 class TestPasswordPolicyLength(unittest.TestCase):
