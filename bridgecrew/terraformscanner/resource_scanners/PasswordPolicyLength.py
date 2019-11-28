@@ -1,8 +1,8 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class PasswordPolicyLength(Scanner):
+class PasswordPolicyLength(ResourceScanner):
     def __init__(self):
         name = "Ensure IAM password policy requires minimum length of 14 or greater"
         scan_id = "BC_AWS_IAM_9"

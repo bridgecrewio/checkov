@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicyExpiration import scanner
+from bridgecrew.terraformscanner.resource_scanners.PasswordPolicyExpiration import scanner
 
 
 class TestPasswordPolicyExpiration(unittest.TestCase):

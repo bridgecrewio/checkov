@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.S3AccessLogs import scanner
+from bridgecrew.terraformscanner.resource_scanners.S3AccessLogs import scanner
 
 
 class TestS3AccessLogs(unittest.TestCase):

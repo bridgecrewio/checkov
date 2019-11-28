@@ -1,8 +1,8 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class KMSRotation(Scanner):
+class KMSRotation(ResourceScanner):
     def __init__(self):
         name = "Ensure rotation for customer created CMKs is enabled"
         scan_id = "BC_AWS_LOGGING_8"

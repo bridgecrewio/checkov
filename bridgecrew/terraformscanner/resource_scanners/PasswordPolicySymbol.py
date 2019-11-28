@@ -1,8 +1,8 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class PasswordPolicySymbol(Scanner):
+class PasswordPolicySymbol(ResourceScanner):
     def __init__(self):
         name = "Ensure IAM password policy requires at least one symbol"
         scan_id = "BC_AWS_IAM_7"

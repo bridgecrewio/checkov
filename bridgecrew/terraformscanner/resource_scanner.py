@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from bridgecrew.terraformscanner.scanner_registry import scanner_registry
 
-class Scanner(ABC):
+class ResourceScanner(ABC):
     scan_id = ""
     name = ""
     categories = []

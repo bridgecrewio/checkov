@@ -1,8 +1,8 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class S3PublicACLScanner(Scanner):
+class S3PublicACLScanner(ResourceScanner):
     def __init__(self):
         name = "S3 Bucket has an ACL defined which allows public access."
         scan_id = "BC_AWS_S3_1"

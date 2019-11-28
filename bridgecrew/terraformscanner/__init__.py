@@ -1,1 +1,1 @@
-from bridgecrew.terraformscanner.scanners import *
+from bridgecrew.terraformscanner.resource_scanners import *

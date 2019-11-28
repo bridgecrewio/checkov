@@ -8,9 +8,11 @@ python-hcl2 = "*"
 pytest = "*"
 coverage ="*"
 coverage-badge = "*"
+detect-secrets = "*"
 
 [packages]
 python-hcl2 = "*"
+detect-secrets = "*"
 
 [requires]
 python_version = "3.7"

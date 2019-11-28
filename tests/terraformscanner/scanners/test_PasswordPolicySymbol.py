@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicySymbol import scanner
+from bridgecrew.terraformscanner.resource_scanners.PasswordPolicySymbol import scanner
 
 
 class TestPasswordPolicySymbol(unittest.TestCase):

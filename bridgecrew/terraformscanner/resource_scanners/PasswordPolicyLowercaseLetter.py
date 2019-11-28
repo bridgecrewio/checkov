@@ -1,11 +1,11 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class PasswordPolicyExpiration(Scanner):
+class PasswordPolicyLowercaseLetter(ResourceScanner):
     def __init__(self):
-        name = "Ensure IAM password policy expires passwords within 90 days or less"
-        scan_id = "BC_AWS_IAM_11"
+        name = "Ensure IAM password policy requires at least one lowercase letter"
+        scan_id = "BC_AWS_IAM_8"
         supported_resource = 'aws_iam_account_password_policy'
         categories = [ScanCategories.IAM]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
@@ -17,9 +17,11 @@ class PasswordPolicyExpiration(Scanner):
         :param conf: aws_iam_account_password_policy configuration
         :return: <ScanResult>
         """
-        key = 'max_password_age'
+        key = 'require_lowercase_characters'
         if key in conf.keys():
-            if conf[key] >= 90:
+            if conf[key]:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
-scanner = PasswordPolicyExpiration()
+
+
+scanner = PasswordPolicyLowercaseLetter()

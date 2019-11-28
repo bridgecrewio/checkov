@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicyLowercaseLetter import scanner
+from bridgecrew.terraformscanner.resource_scanners.PasswordPolicyLowercaseLetter import scanner
 
 
 class TestPasswordPolicLowerCaseLetter(unittest.TestCase):

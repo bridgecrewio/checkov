@@ -1,8 +1,8 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class AdminPolicyDocument(Scanner):
+class AdminPolicyDocument(ResourceScanner):
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         scan_id = "BC_AWS_IAM_23"

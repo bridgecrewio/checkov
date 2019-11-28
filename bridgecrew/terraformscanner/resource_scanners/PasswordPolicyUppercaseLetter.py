@@ -1,11 +1,11 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class PasswordPolicyNumber(Scanner):
+class PasswordPolicyUppcaseLetter(ResourceScanner):
     def __init__(self):
-        name = "Ensure IAM password policy requires at least one number"
-        scan_id = "BC_AWS_IAM_6"
+        name = "Ensure IAM password policy requires at least one uppercase letter"
+        scan_id = "BC_AWS_IAM_5"
         supported_resource = 'aws_iam_account_password_policy'
         categories = [ScanCategories.IAM]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
@@ -17,11 +17,11 @@ class PasswordPolicyNumber(Scanner):
         :param conf: aws_iam_account_password_policy configuration
         :return: <ScanResult>
         """
-        key = 'require_numbers'
+        key = 'require_uppercase_characters'
         if key in conf.keys():
             if conf[key]:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
 
 
-scanner = PasswordPolicyNumber()
+scanner = PasswordPolicyUppcaseLetter()

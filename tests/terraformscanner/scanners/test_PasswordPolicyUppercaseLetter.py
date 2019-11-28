@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicyUppercaseLetter import scanner
+from bridgecrew.terraformscanner.resource_scanners.PasswordPolicyUppercaseLetter import scanner
 
 
 class TestPasswordPolicyUpperCaseLetter(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.KMSRotation import scanner
+from bridgecrew.terraformscanner.resource_scanners.KMSRotation import scanner
 
 
 class TestKMSRotation(unittest.TestCase):

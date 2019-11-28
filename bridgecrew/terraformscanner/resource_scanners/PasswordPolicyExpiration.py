@@ -1,11 +1,10 @@
 from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
-from bridgecrew.terraformscanner.scanner import Scanner
+from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
-
-class PasswordPolicyReuse(Scanner):
+class PasswordPolicyExpiration(ResourceScanner):
     def __init__(self):
-        name = "Ensure IAM password policy prevents password reuse"
-        scan_id = "AWS_CIS_1_10"
+        name = "Ensure IAM password policy expires passwords within 90 days or less"
+        scan_id = "BC_AWS_IAM_11"
         supported_resource = 'aws_iam_account_password_policy'
         categories = [ScanCategories.IAM]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
@@ -17,11 +16,9 @@ class PasswordPolicyReuse(Scanner):
         :param conf: aws_iam_account_password_policy configuration
         :return: <ScanResult>
         """
-        key = 'password_reuse_prevention'
+        key = 'max_password_age'
         if key in conf.keys():
-            if conf[key] >= 24:
+            if conf[key] >= 90:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
-
-
-scanner = PasswordPolicyReuse()
+scanner = PasswordPolicyExpiration()
