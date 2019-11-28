@@ -18,7 +18,11 @@ class GoogleStorageBucketEncryption(ResourceScanner):
         :return: <ScanResult>
         """
         if 'encryption' in conf.keys():
-            return ScanResult.SUCCESS
+            if len(conf['encryption'])>0:
+                encryption_conf = conf['encryption'][0]
+                if 'default_kms_key_name'  in encryption_conf.keys():
+                    if encryption_conf['default_kms_key_name']:
+                        return ScanResult.SUCCESS
         return ScanResult.FAILURE
 
 
