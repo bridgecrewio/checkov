@@ -13,7 +13,7 @@ class ResourceScanner(ABC):
         self.scan_id = scan_id
         self.categories = categories
         self.supported_resources = supported_resources
-        self.logger = logging.getLogger("{}.{}".format(__name__, scan_id))
+        self.logger = logging.getLogger("{}".format(self.__module__))
         scanner_registry.register(self)
 
     def scan(self, scanned_file, resource_configuration, resource_name):
