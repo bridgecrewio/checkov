@@ -7,12 +7,12 @@ class S3EncryptionScanner(Scanner):
         name = "Ensure all data stored in the S3 bucket is securely encrypted at rest"
         scan_id = "BC_AWS_S3_14"
         supported_resource = 'aws_s3_bucket'
-        categories = [ScanCategories.LOGGING]
+        categories = [ScanCategories.ENCRYPTION]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
 
     def scan_resource_conf(self, conf):
         """
-            Looks for logging configuration at aws_s3_bucket:
+            Looks for encryption configuration at aws_s3_bucket:
             https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
         :param conf: aws_s3_bucket configuration
         :return: <ScanResult>

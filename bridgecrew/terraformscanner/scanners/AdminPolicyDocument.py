@@ -7,7 +7,7 @@ class AdminPolicyDocument(Scanner):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         scan_id = "BC_AWS_IAM_23"
         supported_resource = 'aws_iam_policy_document'
-        categories = [ScanCategories.ENCRYPTION]
+        categories = [ScanCategories.GENERAL_SECURITY]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
 
     def scan_resource_conf(self, conf):

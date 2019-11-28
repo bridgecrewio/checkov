@@ -13,3 +13,4 @@ class ScanCategories(Enum):
     GENERAL_SECURITY = 3
     NETWORKING = 4
     IAM = 5
+    BACKUP_AND_RECOVERY = 6

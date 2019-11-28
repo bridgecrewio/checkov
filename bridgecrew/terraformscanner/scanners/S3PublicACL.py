@@ -2,26 +2,26 @@ from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
 from bridgecrew.terraformscanner.scanner import Scanner
 
 
-class S3VersioningScanner(Scanner):
+class S3PublicACLScanner(Scanner):
     def __init__(self):
-        name = "Ensure all data stored in the S3 bucket is securely encrypted at rest"
-        scan_id = "BC_AWS_S3_16"
+        name = "S3 Bucket has an ACL defined which allows public access."
+        scan_id = "BC_AWS_S3_1"
         supported_resource = 'aws_s3_bucket'
-        categories = [ScanCategories.BACKUP_AND_RECOVERY]
+        categories = [ScanCategories.GENERAL_SECURITY]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
 
     def scan_resource_conf(self, conf):
         """
-            Looks for logging configuration at aws_s3_bucket:
+            Looks for ACL configuration at aws_s3_bucket:
             https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
         :param conf: aws_s3_bucket configuration
         :return: <ScanResult>
         """
-        if 'versioning' in conf.keys():
-            versioning_block = conf['versioning'][0]
-            if versioning_block['enabled'][0]:
-                return ScanResult.SUCCESS
-        return ScanResult.FAILURE
+        if 'acl' in conf.keys():
+            acl_block = conf['acl']
+            if acl_block in [["public-read"],["public-read-write"],["website"]]:
+                return ScanResult.FAILURE
+        return ScanResult.SUCCESS
 
 
-scanner = S3VersioningScanner()
+scanner = S3PublicACLScanner()

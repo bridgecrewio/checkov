@@ -9,7 +9,7 @@ class SecurityGroupUnrestrictedIngress22(Scanner):
         name = "Ensure no security groups allow ingress from 0.0.0.0:0 to port %d" % PORT
         scan_id = "BC_AWS_NETWORKING_1"
         supported_resource = 'aws_security_group'
-        categories = [ScanCategories.LOGGING]
+        categories = [ScanCategories.NETWORKING]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
 
     def scan_resource_conf(self, conf):
