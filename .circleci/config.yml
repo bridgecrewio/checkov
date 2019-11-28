@@ -6,15 +6,27 @@ jobs:
       - image: circleci/python:3.7.2
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - $CIRCLE_CI_SSH_KEY
       - run:
           name: Install pipenv & dependencies
           command: |  # use pipenv to install dependencies
             sudo chown -R circleci:circleci /usr/local/bin
             sudo pip install pipenv
             pipenv install --dev
+
       - run:
-          name: Pytest Now!
-          command: pipenv run python -m pytest tests/
+          name: Code coverage
+          command: |
+            pipenv run python -m coverage run -m pytest
+            pipenv run python -m coverage report
+            pipenv run python -m coverage html
+            pipenv run python -m coverage_badge -o coverage.svg -f
+            git commit -m "update coverage"
+            git push
+
+
 workflows:
   version: 2
   workflow:

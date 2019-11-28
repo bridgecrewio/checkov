@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 python-hcl2 = "*"
 pytest = "*"
+coverage ="*"
+coverage-badge = "*"
 
 [packages]
 python-hcl2 = "*"
