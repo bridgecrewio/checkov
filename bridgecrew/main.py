@@ -16,7 +16,7 @@ console.setFormatter(formatter)
 if __name__ == '__main__':
     # todo remove this
     tf_defenitions = {}
-    root_folder = "/Users/tronxd/WebstormProjects/platform/src/stacks/baseStack"
+    root_folder = "/Users/barak/Documents/dev/platform2/src/stacks/baseStack"
     Parser().hcl2(directory=root_folder, tf_defenitions=tf_defenitions)
     for definition in tf_defenitions.items():
         scanned_file = definition[0].split(root_folder)[1]

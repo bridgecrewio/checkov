@@ -23,7 +23,7 @@ class S3EncryptionScanner(Scanner):
                 rule_block = sse_block['rule']
                 if 'apply_server_side_encryption_by_default' in rule_block.keys() and 'sse_algorithm' in rule_block.keys():
                     return ScanResult.SUCCESS
-            return ScanResult.FAILURE
+        return ScanResult.FAILURE
 
 
 scanner = S3EncryptionScanner()
