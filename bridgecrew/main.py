@@ -3,7 +3,6 @@ import logging
 # set up logging to file - see previous section for more details
 from bridgecrew.terraformscanner.parser import Parser
 from bridgecrew.terraformscanner.scanner_registry import scanner_registry
-from bridgecrew.terraformscanner.scanners.S3AccessLogs import S3AccessLogsScanner
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -16,7 +15,6 @@ console.setFormatter(formatter)
 
 if __name__ == '__main__':
     # todo remove this
-    s3 = S3AccessLogsScanner()
     tf_defenitions = {}
     root_folder = "/Users/tronxd/WebstormProjects/platform/src/stacks/baseStack"
     Parser().hcl2(directory=root_folder, tf_defenitions=tf_defenitions)
