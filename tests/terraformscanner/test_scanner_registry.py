@@ -1,8 +1,7 @@
 import unittest
 
-from bridgecrew.terraformscanner.models.enums import ScanResult
 from bridgecrew.terraformscanner.scanner_registry import ScannerRegistry
-from bridgecrew.terraformscanner.scanners import *
+
 
 class TestScannerRegistry(unittest.TestCase):
 
@@ -12,7 +11,7 @@ class TestScannerRegistry(unittest.TestCase):
         for key in list(registry.scanners.keys()):
             scanners_counter+=len(registry.scanners[key])
 
-        self.assertEqual(scanners_counter,11)
+        self.assertEqual(scanners_counter,12)
 
 
 
