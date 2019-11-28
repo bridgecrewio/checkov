@@ -2,11 +2,11 @@ from bridgecrew.terraformscanner.models.enums import ScanResult, ScanCategories
 from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 
-class AzureManagedDiscEncryption(ResourceScanner):
+class GoogleStorageBucketEncryption(ResourceScanner):
     def __init__(self):
-        name = "Ensure Azure managed disk have encryption enabled"
-        scan_id = "BC_AZURE_DISC_1"
-        supported_resource = 'azurerm_managed_disk'
+        name = "Ensure Google storage bucket have encryption enabled"
+        scan_id = "BC_GCP_BUCKET_1"
+        supported_resource = 'google_storage_bucket'
         categories = [ScanCategories.ENCRYPTION]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
 
@@ -17,11 +17,9 @@ class AzureManagedDiscEncryption(ResourceScanner):
         :param conf: azure_instance configuration
         :return: <ScanResult>
         """
-        if 'encryption_settings' in conf.keys():
-            config = conf['encryption_settings'][0]
-            if config['enabled'] ==[False]:
-                return ScanResult.FAILURE
-        return ScanResult.SUCCESS
+        if 'encryption' in conf.keys():
+            return ScanResult.SUCCESS
+        return ScanResult.FAILURE
 
 
-scanner = AzureManagedDiscEncryption()
+scanner = GoogleStorageBucketEncryption()
