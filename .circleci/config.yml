@@ -25,7 +25,8 @@ jobs:
             pipenv run python -m coverage_badge -o coverage.svg -f
             git config --global user.email "barak@bridgecrew.io"
             git config --global user.name "schosterbarak"
-            git diff-index --quiet HEAD || git commit coverage.svg -m "update coverage" && git push
+            git diff-index --quiet HEAD || git add coverage.svg &&  git commit coverage.svg -m "update coverage"
+            git push
 
 
 workflows:
