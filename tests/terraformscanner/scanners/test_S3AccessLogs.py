@@ -1,15 +1,12 @@
-import json
 import unittest
-from unittest.mock import patch
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.S3AccessLogs import S3AccessLogsScanner
+from bridgecrew.terraformscanner.scanners.S3AccessLogs import scanner
 
 
 class TestS3AccessLogs(unittest.TestCase):
 
     def test_failure_s3_accesslogs(self):
-        scanner = S3AccessLogsScanner()
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],
                          "acl": ["public-read"],
@@ -19,7 +16,6 @@ class TestS3AccessLogs(unittest.TestCase):
         self.assertEqual(ScanResult.FAILURE, scan_result)
 
     def test_success_s3_accesslogs(self):
-        scanner = S3AccessLogsScanner()
 
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],

@@ -1,13 +1,12 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicySymbol import PasswordPolicySymbol
+from bridgecrew.terraformscanner.scanners.PasswordPolicySymbol import scanner
 
 
 class TestPasswordPolicySymbol(unittest.TestCase):
 
     def test_success(self):
-        scanner = PasswordPolicySymbol()
         resource_conf = {
             "minimum_password_length": 8,
             "require_lowercase_characters": True,
@@ -20,7 +19,6 @@ class TestPasswordPolicySymbol(unittest.TestCase):
         self.assertEqual(ScanResult.SUCCESS, scan_result)
 
     def test_failure(self):
-        scanner = PasswordPolicySymbol()
         resource_conf = {
             "minimum_password_length": 8,
             "require_lowercase_characters": False,
@@ -33,7 +31,6 @@ class TestPasswordPolicySymbol(unittest.TestCase):
         self.assertEqual(ScanResult.FAILURE, scan_result)
 
     def test_failure_on_missing_property(self):
-        scanner = PasswordPolicySymbol()
         resource_conf = {
             "minimum_password_length": 8,
             "require_lowercase_characters": True,

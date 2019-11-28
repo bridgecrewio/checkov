@@ -1,13 +1,12 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.AdminPolicyDocument import AdminPolicyDocument
+from bridgecrew.terraformscanner.scanners.AdminPolicyDocument import scanner
 
 
 class TestAdminPolicyDocument(unittest.TestCase):
 
     def test_success(self):
-        scanner = AdminPolicyDocument()
         resource_conf = {
             "statement": {
                 "actions": ["Describe*"],
@@ -18,7 +17,6 @@ class TestAdminPolicyDocument(unittest.TestCase):
         self.assertEqual(ScanResult.SUCCESS, scan_result)
 
     def test_failure(self):
-        scanner = AdminPolicyDocument()
         resource_conf = {
             "statement": {
                 "actions": ["*"],

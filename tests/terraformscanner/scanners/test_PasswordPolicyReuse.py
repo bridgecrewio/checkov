@@ -1,13 +1,12 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.PasswordPolicyReuse import PasswordPolicyReuse
+from bridgecrew.terraformscanner.scanners.PasswordPolicyReuse import scanner
 
 
 class TestPasswordPolicyReuse(unittest.TestCase):
 
     def test_success(self):
-        scanner = PasswordPolicyReuse()
         resource_conf = {
             "minimum_password_length": 14,
             "require_lowercase_characters": True,
@@ -21,7 +20,6 @@ class TestPasswordPolicyReuse(unittest.TestCase):
         self.assertEqual(ScanResult.SUCCESS, scan_result)
 
     def test_failure(self):
-        scanner = PasswordPolicyReuse()
         resource_conf = {
             "minimum_password_length": 8,
             "require_lowercase_characters": False,
@@ -35,7 +33,6 @@ class TestPasswordPolicyReuse(unittest.TestCase):
         self.assertEqual(ScanResult.FAILURE, scan_result)
 
     def test_failure_on_missing_property(self):
-        scanner = PasswordPolicyReuse()
         resource_conf = {
             "require_numbers": True,
             "require_symbols": True,

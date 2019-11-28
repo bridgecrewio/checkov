@@ -22,3 +22,4 @@ class PasswordPolicyExpiration(Scanner):
             if conf[key] >= 90:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
+scanner = PasswordPolicyExpiration()

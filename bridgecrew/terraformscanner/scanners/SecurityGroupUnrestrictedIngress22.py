@@ -24,3 +24,5 @@ class SecurityGroupUnrestrictedIngress22(Scanner):
                 return ScanResult.FAILURE
 
         return ScanResult.SUCCESS
+
+scanner = SecurityGroupUnrestrictedIngress22()

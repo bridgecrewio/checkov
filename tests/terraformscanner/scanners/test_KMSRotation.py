@@ -1,13 +1,12 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.KMSRotation import KMSRotation
+from bridgecrew.terraformscanner.scanners.KMSRotation import scanner
 
 
 class TestKMSRotation(unittest.TestCase):
 
     def test_success(self):
-        scanner = KMSRotation()
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
@@ -17,7 +16,6 @@ class TestKMSRotation(unittest.TestCase):
         self.assertEqual(ScanResult.SUCCESS, scan_result)
 
     def test_failure(self):
-        scanner = KMSRotation()
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
@@ -27,7 +25,6 @@ class TestKMSRotation(unittest.TestCase):
         self.assertEqual(ScanResult.FAILURE, scan_result)
 
     def test_failure_on_missing_property(self):
-        scanner = KMSRotation()
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,

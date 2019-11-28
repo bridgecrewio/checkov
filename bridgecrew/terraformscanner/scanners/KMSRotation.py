@@ -22,3 +22,6 @@ class KMSRotation(Scanner):
             if conf[key]:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
+
+
+scanner = KMSRotation()

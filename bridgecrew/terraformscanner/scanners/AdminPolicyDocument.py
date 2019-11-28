@@ -22,3 +22,6 @@ class AdminPolicyDocument(Scanner):
             if conf[key]['actions'] == ["*"] and conf[key]['resources'] == ["*"]:
                 return ScanResult.FAILURE
         return ScanResult.SUCCESS
+
+
+scanner = AdminPolicyDocument()

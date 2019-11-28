@@ -22,3 +22,6 @@ class PasswordPolicyLowercaseLetter(Scanner):
             if conf[key]:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
+
+
+scanner = PasswordPolicyLowercaseLetter()

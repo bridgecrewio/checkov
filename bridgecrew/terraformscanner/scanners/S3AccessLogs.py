@@ -21,3 +21,6 @@ class S3AccessLogsScanner(Scanner):
             return ScanResult.SUCCESS
         else:
             return ScanResult.FAILURE
+
+
+scanner = S3AccessLogsScanner()

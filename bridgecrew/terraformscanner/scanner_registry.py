@@ -1,6 +1,5 @@
 import logging
 
-
 class ScannerRegistry():
     scanners = {}
 

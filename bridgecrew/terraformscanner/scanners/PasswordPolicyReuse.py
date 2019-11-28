@@ -22,3 +22,6 @@ class PasswordPolicyReuse(Scanner):
             if conf[key] >= 24:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
+
+
+scanner = PasswordPolicyReuse()

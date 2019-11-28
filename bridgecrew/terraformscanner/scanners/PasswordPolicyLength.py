@@ -22,3 +22,6 @@ class PasswordPolicyLength(Scanner):
             if conf[key] >= 14:
                 return ScanResult.SUCCESS
         return ScanResult.FAILURE
+
+
+scanner = PasswordPolicyLength()

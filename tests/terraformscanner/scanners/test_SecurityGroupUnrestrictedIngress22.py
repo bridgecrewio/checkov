@@ -1,26 +1,12 @@
 import unittest
 
 from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.scanners.SecurityGroupUnrestrictedIngress22 import SecurityGroupUnrestrictedIngress22
+from bridgecrew.terraformscanner.scanners.SecurityGroupUnrestrictedIngress22 import scanner
 
 
 class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
 
-    # def test_success(self):
-    #     scanner = SecurityGroupUnrestrictedIngress22()
-    #     resource_conf = {
-    #         "minimum_password_length": 8,
-    #         "require_lowercase_characters": True,
-    #         "require_numbers": True,
-    #         "require_uppercase_characters": True,
-    #         "require_symbols": True,
-    #         "allow_users_to_change_password": True,
-    #     }
-    #     scan_result = scanner.scan_resource_conf(conf=resource_conf)
-    #     self.assertEqual(ScanResult.SUCCESS, scan_result)
-
     def test_failure(self):
-        scanner = SecurityGroupUnrestrictedIngress22()
         resource_conf = {
             "name": "allow_ssh",
             "description": "Allow SSH inbound traffic",
@@ -45,7 +31,6 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
         self.assertEqual(ScanResult.FAILURE, scan_result)
 
     def test_success(self):
-        scanner = SecurityGroupUnrestrictedIngress22()
         resource_conf = {
             "name": "allow_ssh",
             "description": "Allow SSH inbound traffic",
@@ -68,6 +53,7 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
         }
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(ScanResult.SUCCESS, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
