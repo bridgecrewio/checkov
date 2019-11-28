@@ -23,6 +23,8 @@ jobs:
             pipenv run python -m coverage report
             pipenv run python -m coverage html
             pipenv run python -m coverage_badge -o coverage.svg -f
+            git config --global user.email "barak@bridgecrew.io"
+            git config --global user.name "schosterbarak"
             git commit -m "update coverage"
             git push
 
