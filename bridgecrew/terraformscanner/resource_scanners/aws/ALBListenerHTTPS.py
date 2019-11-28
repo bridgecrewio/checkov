@@ -4,13 +4,12 @@ from bridgecrew.terraformscanner.resource_scanner import ResourceScanner
 
 class ALBListenerHTTPS(ResourceScanner):
 
-    def __init__(self,name="", scan_id="", categories="", supported_resource=""):
+    def __init__(self):
         name = "Ensure ALB protocol is HTTPS"
         scan_id = "BC_AWS_ENCRYPTION_8"
-        if not supported_resource:
-            supported_resource = 'aws_alb_listener'
+        supported_resources = ['aws_alb_listener','aws_lb_listener']
         categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

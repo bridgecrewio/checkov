@@ -5,9 +5,9 @@ class PasswordPolicyExpiration(ResourceScanner):
     def __init__(self):
         name = "Ensure IAM password policy expires passwords within 90 days or less"
         scan_id = "BC_AWS_IAM_11"
-        supported_resource = 'aws_iam_account_password_policy'
+        supported_resources = ['aws_iam_account_password_policy']
         categories = [ScanCategories.IAM]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

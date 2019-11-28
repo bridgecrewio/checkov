@@ -6,9 +6,9 @@ class PasswordPolicyReuse(ResourceScanner):
     def __init__(self):
         name = "Ensure IAM password policy prevents password reuse"
         scan_id = "AWS_CIS_1_10"
-        supported_resource = 'aws_iam_account_password_policy'
+        supported_resources = ['aws_iam_account_password_policy']
         categories = [ScanCategories.IAM]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

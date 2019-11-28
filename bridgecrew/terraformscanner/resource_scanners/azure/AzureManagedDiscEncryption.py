@@ -6,9 +6,9 @@ class AzureManagedDiscEncryption(ResourceScanner):
     def __init__(self):
         name = "Ensure Azure managed disk have encryption enabled"
         scan_id = "BC_AZURE_DISC_1"
-        supported_resource = 'azurerm_managed_disk'
+        supported_resources = ['azurerm_managed_disk']
         categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

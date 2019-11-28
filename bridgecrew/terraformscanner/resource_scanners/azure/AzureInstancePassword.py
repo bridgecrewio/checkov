@@ -6,9 +6,9 @@ class AzureInstancePassword(ResourceScanner):
     def __init__(self):
         name = "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)"
         scan_id = "BC_AZURE_INSTANCE_1"
-        supported_resource = 'azurerm_virtual_machine'
+        supported_resources = ['azurerm_virtual_machine']
         categories = [ScanCategories.GENERAL_SECURITY]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

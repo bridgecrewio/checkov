@@ -7,10 +7,10 @@ class ScannerRegistry():
         self.logger = logging.getLogger(__name__)
 
     def register(self, scanner):
-        resource = scanner.supported_resource
-        if resource not in self.scanners.keys():
-            self.scanners[resource] = []
-        self.scanners[resource].append(scanner)
+        for resource in scanner.supported_resources:
+            if resource not in self.scanners.keys():
+                self.scanners[resource] = []
+            self.scanners[resource].append(scanner)
 
     def get_scanners(self, resource):
         if resource in self.scanners.keys():

@@ -6,9 +6,9 @@ class KMSRotation(ResourceScanner):
     def __init__(self):
         name = "Ensure rotation for customer created CMKs is enabled"
         scan_id = "BC_AWS_LOGGING_8"
-        supported_resource = 'aws_kms_key'
+        supported_resources = ['aws_kms_key']
         categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

@@ -6,9 +6,9 @@ class GoogleStorageBucketEncryption(ResourceScanner):
     def __init__(self):
         name = "Ensure Google storage bucket have encryption enabled"
         scan_id = "BC_GCP_BUCKET_1"
-        supported_resource = 'google_storage_bucket'
+        supported_resources = ['google_storage_bucket']
         categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resource=supported_resource)
+        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """

@@ -8,19 +8,19 @@ class ResourceScanner(ABC):
     name = ""
     categories = []
 
-    def __init__(self, name, scan_id, categories, supported_resource):
+    def __init__(self, name, scan_id, categories, supported_resources):
         self.name = name
         self.scan_id = scan_id
         self.categories = categories
-        self.supported_resource = supported_resource
+        self.supported_resources = supported_resources
         self.logger = logging.getLogger("{}.{}".format(__name__, scan_id))
         scanner_registry.register(self)
 
     def scan(self, scanned_file, resource_configuration, resource_name):
         result = self.scan_resource_conf(resource_configuration)
-        self.logger.info("File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file,self.supported_resource, resource_name,
-                                                                             self.name,
-                                                                             result))
+        self.logger.info("File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file, self.supported_resources, resource_name,
+                                                                                      self.name,
+                                                                                      result))
 
     @abstractmethod
     def scan_resource_conf(self, conf):
