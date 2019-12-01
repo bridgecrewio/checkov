@@ -1,5 +1,6 @@
 import logging
 
+
 class ScannerRegistry():
     scanners = {}
 
@@ -25,9 +26,11 @@ class ScannerRegistry():
             resource_name = list(resource_conf.keys())[0]
             resource_conf_def = resource_conf[resource_name]
             self.logger.debug("Running scan: {} on file {}".format(scanner.name, scanned_file))
-            scanner.scan(scanned_file=scanned_file,resource_configuration=resource_conf_def, resource_name=resource_name)
+            scanner.scan(scanned_file=scanned_file, resource_configuration=resource_conf_def,
+                         resource_name=resource_name, resource_type=resource)
             result = scanner.scan_resource_conf(resource_conf_def)
             results.append(result)
         return results
+
 
 scanner_registry = ScannerRegistry()

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     Parser().hcl2(directory=root_folder, tf_defenitions=tf_defenitions)
     for definition in tf_defenitions.items():
         scanned_file = definition[0].split(root_folder)[1]
-        logging.info("Scanning file: %s", scanned_file)
+        logging.debug("Scanning file: %s", scanned_file)
         if 'resource' in definition[1]:
             for resource in definition[1]['resource']:
                 scanner_registry.scan(resource, scanned_file)

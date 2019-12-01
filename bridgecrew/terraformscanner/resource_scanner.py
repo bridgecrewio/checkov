@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
+from bridgecrew.terraformscanner.models.enums import ScanResult
 from bridgecrew.terraformscanner.scanner_registry import scanner_registry
 
 class ResourceScanner(ABC):
@@ -16,11 +17,15 @@ class ResourceScanner(ABC):
         self.logger = logging.getLogger("{}".format(self.__module__))
         scanner_registry.register(self)
 
-    def scan(self, scanned_file, resource_configuration, resource_name):
+    def scan(self, scanned_file, resource_configuration, resource_name,resource_type):
         result = self.scan_resource_conf(resource_configuration)
-        self.logger.info("File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file, self.supported_resources, resource_name,
-                                                                                      self.name,
-                                                                                      result))
+        message = "File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file, resource_type, resource_name,
+                                                                               self.name,
+                                                                               result)
+        if result == ScanResult.FAILURE:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
     @abstractmethod
     def scan_resource_conf(self, conf):
