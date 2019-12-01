@@ -9,6 +9,7 @@ pytest = "*"
 coverage ="*"
 coverage-badge = "*"
 detect-secrets = "*"
+python-sphinx = "*"
 
 [packages]
 python-hcl2 = "*"
