@@ -11,7 +11,7 @@ class TestScannerRegistry(unittest.TestCase):
         for key in list(registry.scanners.keys()):
             scanners_counter+=len(registry.scanners[key])
 
-        self.assertEqual(31,scanners_counter)
+        self.assertEqual(33,scanners_counter)
 
 
 
