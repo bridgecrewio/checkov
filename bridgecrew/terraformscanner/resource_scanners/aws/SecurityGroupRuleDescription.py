@@ -6,7 +6,7 @@ class SecurityGroupRuleDescription(ResourceScanner):
     def __init__(self):
         name = "Ensure no security groups rule has a description"
         scan_id = "BC_AWS_NETWORKING_28"
-        supported_resource = ['aws_security_group', 'aws_security_group_rule']
+        supported_resource = ['aws_security_group', 'aws_security_group_rule', 'aws_db_security_group']
         categories = [ScanCategories.NETWORKING]
         super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resource)
 
