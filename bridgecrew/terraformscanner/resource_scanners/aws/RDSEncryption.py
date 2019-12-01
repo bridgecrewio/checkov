@@ -14,7 +14,7 @@ class RDSEncryption(ResourceScanner):
         """
             Looks for encryption configuration at aws_db_instance:
             https://www.terraform.io/docs/providers/aws/d/db_instance.html
-        :param conf: aws_s3_bucket configuration
+        :param conf: aws_db_instance configuration
         :return: <ScanResult>
         """
         if 'storage_encrypted' in conf.keys():

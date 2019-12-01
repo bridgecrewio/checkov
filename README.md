@@ -28,21 +28,22 @@ A collection of static analysis policies of terraform templates written in pytho
 | 18 | aws_db_security_group           | Ensure no security groups rule has a description                                    |
 | 19 | aws_elasticache_security_group  | Ensure no security groups rule has a description                                    |
 | 20 | aws_redshift_security_group     | Ensure no security groups rule has a description                                    |
-| 21 | aws_alb_listener                | Ensure ALB protocol is HTTPS                                                        |
-| 22 | aws_lb_listener                 | Ensure ALB protocol is HTTPS                                                        |
-| 23 | aws_db_instance                 | Ensure all data stored in the RDS bucket is securely encrypted at rest              |
-| 24 | aws_sns_topic                   | Ensure all data stored in the SNS topic is encrypted                                |
-| 25 | aws_ebs_volume                  | Ensure all data stored in the EBS is securely encrypted                             |
-| 26 | aws_iam_policy_document         | Ensure IAM policies that allow full "*-*" administrative privileges are not created |
-| 27 | aws_kms_key                     | Ensure rotation for customer created CMKs is enabled                                |
-| 28 | aws_launch_configuration        | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
-| 29 | aws_instance                    | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
-| 30 | aws_ebs_snapshot                | Ensure all data stored in the EBS Snapshot is securely encrypted                    |
-| 31 | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
-| 32 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
-| 33 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
-| 34 | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
-| 35 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
-| 36 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
-| 37 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
- 
+| 21 | aws_db_instance                 | Ensure all data stored in the RDS bucket is not public accessible                   |
+| 22 | aws_db_instance                 | Ensure all data stored in the RDS bucket is securely encrypted at rest              |
+| 23 | aws_rds_cluster_instance        | Ensure all data stored in the RDS bucket is not public accessible                   |
+| 24 | aws_alb_listener                | Ensure ALB protocol is HTTPS                                                        |
+| 25 | aws_lb_listener                 | Ensure ALB protocol is HTTPS                                                        |
+| 26 | aws_sns_topic                   | Ensure all data stored in the SNS topic is encrypted                                |
+| 27 | aws_ebs_volume                  | Ensure all data stored in the EBS is securely encrypted                             |
+| 28 | aws_iam_policy_document         | Ensure IAM policies that allow full "*-*" administrative privileges are not created |
+| 29 | aws_kms_key                     | Ensure rotation for customer created CMKs is enabled                                |
+| 30 | aws_launch_configuration        | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
+| 31 | aws_instance                    | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
+| 32 | aws_ebs_snapshot                | Ensure all data stored in the EBS Snapshot is securely encrypted                    |
+| 33 | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
+| 34 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
+| 35 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
+| 36 | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
+| 37 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
+| 38 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
+| 39 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
