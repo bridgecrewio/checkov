@@ -13,6 +13,7 @@ detect-secrets = "*"
 [packages]
 python-hcl2 = "*"
 detect-secrets = "*"
+tabulate = "*"
 
 [requires]
 python_version = "3.7"

@@ -14,6 +14,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 console.setFormatter(formatter)
 
 if __name__ == '__main__':
+    scanner_registry.print_scanners()
     # todo remove this
     tf_defenitions = {}
     root_folder = "/Users/barak/Documents/dev/platform2/src/stacks/baseStack"
