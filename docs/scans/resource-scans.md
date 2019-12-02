@@ -5,6 +5,7 @@ nav_order: 1
 ---
 # Resource scans
 Reference information about resource
+
 |    | Resource                        | Policy                                                                              |
 |----|---------------------------------|-------------------------------------------------------------------------------------|
 |  0 | aws_s3_bucket                   | Ensure all data stored in the S3 bucket is securely encrypted at rest               |
