@@ -8,12 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Bump version and push tag
+    - name: bump tag
       uses: anothrNick/github-tag-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BUMP: patch
     - name: update version at python package
       run: |
-          export NEW_VERSION = ${{ new_tag }}
+          export NEW_VERSION = ${{ steps.bump_tag.new_tag }}
           echo "version = $NEW_VERSION" > 'checkov/version.py'
+          cat checkov/version.py
