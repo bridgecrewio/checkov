@@ -12,3 +12,8 @@ jobs:
       uses: anothrNick/github-tag-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: patch
+    - name: update version at python package
+      run: |
+          export NEW_VERSION = ${{ new_tag }}
+          echo "version = $NEW_VERSION" > 'checkov/version.py'

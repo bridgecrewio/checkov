@@ -1,7 +1,7 @@
 import unittest
 
-from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.gcp.GoogleComputeFirewallUnrestrictedIngress22 import scanner, PORT
+from checkov.terraformscanner.models.enums import ScanResult
+from checkov.terraformscanner.resource_scanners.gcp.GoogleComputeFirewallUnrestrictedIngress22 import scanner, PORT
 
 
 class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):

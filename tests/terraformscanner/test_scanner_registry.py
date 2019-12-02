@@ -1,6 +1,6 @@
 import unittest
 
-from bridgecrew.terraformscanner.scanner_registry import ResourceScannerRegistry
+from checkov.terraformscanner.resource_scanner_registry import ResourceScannerRegistry
 
 
 class TestScannerRegistry(unittest.TestCase):

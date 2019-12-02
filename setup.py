@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+import logging
+import os
+from setuptools import setup
+from importlib import util
+
+logger = logging.getLogger(__name__)
+spec = util.spec_from_file_location(
+    "checkov.version", os.path.join("checkov", "version.py")
+)
+# noinspection PyUnresolvedReferences
+mod = util.module_from_spec(spec)
+spec.loader.exec_module(mod)  # type: ignore
+version = mod.version  # type: ignore
+
+setup(
+    extras_require={
+        "dev": [
+            "alabaster==0.7.12",
+            "attrs==19.3.0",
+            "babel==2.7.0",
+            "certifi==2019.11.28",
+            "chardet==3.0.4",
+            "coverage==4.5.4",
+            "coverage-badge==1.0.1",
+            "detect-secrets==0.13.0",
+            "docopt==0.6.2",
+            "docutils==0.15.2",
+            "idna==2.8",
+            "imagesize==1.1.0",
+            "importlib-metadata==1.1.0; python_version < '3.8'",
+            "jinja2==2.10.3",
+            "lark-parser==0.7.8",
+            "markupsafe==1.1.1",
+            "more-itertools==8.0.0",
+            "packaging==19.2",
+            "pluggy==0.13.1",
+            "py==1.8.0",
+            "pygments==2.5.2",
+            "pyparsing==2.4.5",
+            "pytest==5.3.1",
+            "python-hcl2==0.2.0",
+            "pytz==2019.3",
+            "pyyaml==5.1.2",
+            "requests==2.22.0",
+            "six==1.13.0",
+            "snowballstemmer==2.0.0",
+            "sphinx==2.2.1",
+            "sphinxcontrib-applehelp==1.0.1",
+            "sphinxcontrib-devhelp==1.0.1",
+            "sphinxcontrib-htmlhelp==1.0.2",
+            "sphinxcontrib-jsmath==1.0.1",
+            "sphinxcontrib-qthelp==1.0.2",
+            "sphinxcontrib-serializinghtml==1.1.3",
+            "urllib3==1.25.7",
+            "wcwidth==0.1.7",
+            "zipp==0.6.0",
+        ]
+    },
+    install_requires=[
+        "certifi==2019.11.28",
+        "chardet==3.0.4",
+        "detect-secrets==0.13.0",
+        "docopt==0.6.2",
+        "idna==2.8",
+        "lark-parser==0.7.8",
+        "python-hcl2==0.2.0",
+        "pyyaml==5.1.2",
+        "requests==2.22.0",
+        "tabulate==0.8.6",
+        "urllib3==1.25.7",
+    ],
+    name="checkov",
+    version=version,
+    description="Infrastructure as code static analysis",
+    author="bridgecrew",
+    author_email="support@bridgecrew.io",
+    url="https://www.python.org/sigs/distutils-sig/",
+    packages=["checkov"],
+)

@@ -1,7 +1,7 @@
 import unittest
 
-from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.aws.ElasticsearchNodeToNodeEncryption import scanner
+from checkov.terraformscanner.models.enums import ScanResult
+from checkov.terraformscanner.resource_scanners.aws.ElasticsearchNodeToNodeEncryption import scanner
 
 
 class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):

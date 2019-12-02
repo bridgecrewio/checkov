@@ -33,8 +33,12 @@ jobs:
         git commit -m "Update coverage" -a 
         pipenv run python -m coverage_badge -o coverage.svg -f
         git add coverage.svg
-        git commit -m "Update coverage" 
+        git commit -m "Update coverage"
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+
+#    - name: Create pypi package
+#      run: |
+#        pipenv-setup sync --dev

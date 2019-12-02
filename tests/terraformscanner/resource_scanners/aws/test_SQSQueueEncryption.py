@@ -1,7 +1,7 @@
 import unittest
 
-from bridgecrew.terraformscanner.models.enums import ScanResult
-from bridgecrew.terraformscanner.resource_scanners.aws.SQSQueueEncryption import scanner
+from checkov.terraformscanner.models.enums import ScanResult
+from checkov.terraformscanner.resource_scanners.aws.SQSQueueEncryption import scanner
 
 
 class TestS3Encryption(unittest.TestCase):
