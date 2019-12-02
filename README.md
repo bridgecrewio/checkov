@@ -1,5 +1,5 @@
 # Checkov
-[![CircleCI](https://circleci.com/gh/bridgecrewio/terraform-static-analysis.svg?style=svg&circle-token=930e0f9f6730947a33d8011edf9a350b1d2b332f)](https://circleci.com/gh/bridgecrewio/terraform-static-analysis) ![code_coverage](coverage.svg)
+[https://github.com/bridgecrewio/terraform-static-analysis/workflows/build/badge.svg](https://github.com/bridgecrewio/terraform-static-analysis/actions?query=workflow%3Abuild) ![code_coverage](coverage.svg)
 
 Bridgecrew is a platform to programmatically author and govern cloud infrastructure policies.
 When policies are defined as code, they become more maintainable, versionable, testable and collaborative.
