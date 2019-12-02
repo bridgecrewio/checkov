@@ -3,18 +3,23 @@ on:
   push:
     branches:
       - master
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: bump tag
-      uses: anothrNick/github-tag-action@master
+    - name: update version at python package
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEFAULT_BUMP: patch
-    - name: update version at python package
       run: |
-          export NEW_VERSION = ${{ steps.bump_tag.new_tag }}
-          echo "version = $NEW_VERSION" > 'checkov/version.py'
+          pip install semver-tool
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          new_tag=$(semver bump patch $latest_tag)
+          echo "version = '$new_tag'" > 'checkov/version.py'
           cat checkov/version.py
+          git commit -m "bump version" checkov/version.py
+          git tag $new_tag
+          git push
+
