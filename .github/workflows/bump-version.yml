@@ -21,5 +21,5 @@ jobs:
           cat checkov/version.py
           git commit -m "bump version" checkov/version.py
           git tag $new_tag
-          git push
+          git push origin HEAD:master
 
