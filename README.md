@@ -1,5 +1,7 @@
 # Checkov
-[![build status](https://github.com/bridgecrewio/terraform-static-analysis/workflows/build/badge.svg)](https://github.com/bridgecrewio/terraform-static-analysis/actions?query=workflow%3Abuild) ![code_coverage](coverage.svg)
+[![build status](https://github.com/bridgecrewio/terraform-static-analysis/workflows/build/badge.svg)](https://github.com/bridgecrewio/terraform-static-analysis/actions?query=workflow%3Abuild) 
+![code_coverage](coverage.svg) <!--- coverage is auto generated in the build workflow -->
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 
 Bridgecrew is a platform to programmatically author and govern cloud infrastructure policies.
 When policies are defined as code, they become more maintainable, versionable, testable and collaborative.
