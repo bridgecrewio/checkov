@@ -30,8 +30,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add coverage.svg
-        git commit -m "Update coverage"
+        git commit -m "Update coverage" -o coverage.svg
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
