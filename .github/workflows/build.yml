@@ -25,12 +25,13 @@ jobs:
             pipenv run python -m coverage run -m pytest
             pipenv run python -m coverage report
             pipenv run python -m coverage html
-            pipenv run python -m coverage_badge -o coverage.svg -f
-    - name: Commit files
+    - name: Update coverage
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git rm --cached coverage.svg
+        rm coverage.svg
+        git commit -m "Update coverage" -a 
+        pipenv run python -m coverage_badge -o coverage.svg -f
         git add coverage.svg
         git commit -m "Update coverage" 
     - name: Push changes
