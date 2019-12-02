@@ -1,6 +1,6 @@
 import os
 import hcl2
-from bridgecrew.terraformscanner.context_scanners.context_registry import context_registry
+from bridgecrew.terraformscanner.context_parsers.parser_registry import parser_registry
 
 
 class Parser():
@@ -15,12 +15,14 @@ class Parser():
                         dict = hcl2.load(file)
                         tf_defenition = dict
                         tf_defenitions[tf_file] = tf_defenition
+                        # TODO move from here
+                        # tf_defenitions = context_registry.enrich_context(tf_file,tf_defenitions)
+
                         for modules in dict.get("module", []):
                             for module in modules.values():
                                 relative_path = module['source'][0]
                                 abs_path = os.path.join(directory, relative_path)
                                 modules_scan.append(abs_path)
 
-                        tf_defenitions = context_registry.enrich_context(tf_file,tf_defenitions)
         for m in modules_scan:
             self.hcl2(directory=m, tf_defenitions=tf_defenitions)

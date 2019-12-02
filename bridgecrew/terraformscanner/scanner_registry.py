@@ -2,7 +2,7 @@ import logging
 from tabulate import tabulate
 
 
-class ScannerRegistry():
+class ResourceScannerRegistry():
     scanners = {}
 
     def __init__(self):
@@ -41,4 +41,4 @@ class ScannerRegistry():
         print(tabulate(printable_scanner_list, headers=["Resource", "Policy"], tablefmt="github",showindex=True))
 
 
-scanner_registry = ScannerRegistry()
+resource_scanner_registry = ResourceScannerRegistry()
