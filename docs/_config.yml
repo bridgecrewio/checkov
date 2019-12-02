@@ -1,0 +1,11 @@
+remote_theme: carlosperate/jekyll-theme-rtd
+
+site_author: Bridgecrew
+repo_url: "https://github.com/bridgecrewio/terraform-static-analysis/"
+
+edit_on_github: true
+github_docs_folder: true
+sticky_navigation: true
+prev_next_buttons_location: bottom
+search_enabled: true
+hljs_style: github-gist

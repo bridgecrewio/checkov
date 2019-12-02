@@ -1,0 +1,40 @@
+name: build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - uses: dschep/install-pipenv-action@v1
+    - name: Install dependencies
+      run: |
+        pipenv install --dev
+    
+    - name: Test with pytest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      run: |
+            pipenv run python -m coverage run -m pytest
+            pipenv run python -m coverage report
+            pipenv run python -m coverage html
+    - name: Update coverage
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        rm coverage.svg
+        git commit -m "Update coverage" -a 
+        pipenv run python -m coverage_badge -o coverage.svg -f
+        git add coverage.svg
+        git commit -m "Update coverage" 
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
