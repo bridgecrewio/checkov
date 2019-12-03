@@ -16,6 +16,8 @@ GitPython = "*"
 python-hcl2 = "*"
 detect-secrets = "*"
 tabulate = "*"
+colorama="*"
+termcolor="*"
 
 [requires]
 python_version = "3.7"

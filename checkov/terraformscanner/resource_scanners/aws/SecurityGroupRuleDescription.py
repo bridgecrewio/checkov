@@ -4,7 +4,7 @@ from checkov.terraformscanner.resource_scanner import ResourceScanner
 
 class SecurityGroupRuleDescription(ResourceScanner):
     def __init__(self):
-        name = "Ensure no security groups rule has a description"
+        name = "Ensure every security groups rule has a description"
         scan_id = "BC_AWS_NETWORKING_28"
         supported_resource = ['aws_security_group', 'aws_security_group_rule', 'aws_db_security_group',
                               'aws_elasticache_security_group', 'aws_redshift_security_group']

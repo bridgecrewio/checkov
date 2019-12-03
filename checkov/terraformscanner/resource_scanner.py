@@ -3,6 +3,11 @@ from abc import ABC, abstractmethod
 
 from checkov.terraformscanner.models.enums import ScanResult
 from checkov.terraformscanner.resource_scanner_registry import resource_scanner_registry
+from colorama import init, Fore
+from termcolor import colored
+
+init(autoreset=True)
+
 
 class ResourceScanner(ABC):
     scan_id = ""
@@ -17,15 +22,19 @@ class ResourceScanner(ABC):
         self.logger = logging.getLogger("{}".format(self.__module__))
         resource_scanner_registry.register(self)
 
-    def scan(self, scanned_file, resource_configuration, resource_name,resource_type):
+    def scan(self, scanned_file, resource_configuration, resource_name, resource_type):
         result = self.scan_resource_conf(resource_configuration)
-        message = "File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file, resource_type, resource_name,
+        message = "File {}, Resource \"{}.{}\" Scan \"{}\" Result: {} ".format(scanned_file, resource_type,
+                                                                               resource_name,
                                                                                self.name,
                                                                                result)
         if result == ScanResult.FAILURE:
+            print(colored(message,'red'))
             self.logger.warning(message)
         else:
+            print(colored(message,'green'))
             self.logger.info(message)
+        return result
 
     @abstractmethod
     def scan_resource_conf(self, conf):

@@ -21,10 +21,12 @@ class SecurityGroupUnrestrictedIngress22(ResourceScanner):
         """
         if 'ingress' in conf.keys():
             ingress_conf = conf['ingress']
-            if ingress_conf['from_port'] == PORT and ingress_conf['to_port'] == PORT and ingress_conf['cidr_blocks'] == [
-                "0.0.0.0/0"] and 'self' not in ingress_conf.keys() and 'security_groups' not in ingress_conf.keys():
-                return ScanResult.FAILURE
+            for rule in ingress_conf:
+                if rule['from_port'] == [PORT] and rule['to_port'] == [PORT] and rule['cidr_blocks'] == [[
+                    "0.0.0.0/0"]] and 'self' not in rule.keys() and 'security_groups' not in rule.keys():
+                    return ScanResult.FAILURE
 
         return ScanResult.SUCCESS
+
 
 scanner = SecurityGroupUnrestrictedIngress22()

@@ -2,6 +2,7 @@ import logging
 from tabulate import tabulate
 
 
+
 class ResourceScannerRegistry():
     scanners = {}
 
@@ -27,9 +28,8 @@ class ResourceScannerRegistry():
             resource_name = list(resource_conf.keys())[0]
             resource_conf_def = resource_conf[resource_name]
             self.logger.debug("Running scan: {} on file {}".format(scanner.name, scanned_file))
-            scanner.scan(scanned_file=scanned_file, resource_configuration=resource_conf_def,
-                         resource_name=resource_name, resource_type=resource)
-            result = scanner.scan_resource_conf(resource_conf_def)
+            result = scanner.scan(scanned_file=scanned_file, resource_configuration=resource_conf_def,
+                                  resource_name=resource_name, resource_type=resource)
             results.append(result)
         return results
 
@@ -37,8 +37,8 @@ class ResourceScannerRegistry():
         printable_scanner_list = []
         for key in self.scanners.keys():
             for scanner in self.scanners[key]:
-                printable_scanner_list.append([key,  scanner.name])
-        print(tabulate(printable_scanner_list, headers=["Resource", "Policy"], tablefmt="github",showindex=True))
+                printable_scanner_list.append([key, scanner.name])
+        print(tabulate(printable_scanner_list, headers=["Resource", "Policy"], tablefmt="github", showindex=True))
 
 
 resource_scanner_registry = ResourceScannerRegistry()
