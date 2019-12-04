@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import logging
 import os
+
+import setuptools
 from setuptools import setup
 from importlib import util
 
@@ -78,5 +80,5 @@ setup(
     author="bridgecrew",
     author_email="support@bridgecrew.io",
     url="https://www.python.org/sigs/distutils-sig/",
-    packages=["checkov"],
+    packages=setuptools.find_packages(),
 )

@@ -14,7 +14,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 console.setFormatter(formatter)
 
 if __name__ == '__main__':
-    resource_scanner_registry.print_scanners()
     tf_defenitions = {}
     root_folder = "/Users/barak/Documents/dev/platform2/src/stacks/baseStack"
     Parser().hcl2(directory=root_folder, tf_defenitions=tf_defenitions)

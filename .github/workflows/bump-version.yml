@@ -53,3 +53,6 @@ jobs:
           git push origin
           git tag $new_tag
           git push origin $new_tag
+    - name: create python package
+      run: |
+        pipenv run python setup.py sdist bdist_wheel
