@@ -12,8 +12,8 @@ jobs:
     - name: Bump version and push tag
       uses: mathieudutour/github-tag-action@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEFAULT_BUMP: patch
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        default_bump: patch
     - name: update version at python package
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
