@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: |
         pipenv install --dev
-    - name: update version at python package
+    - name: update docs and bump version
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
