@@ -10,10 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Bump version and push tag
-      uses: mathieudutour/github-tag-action@v1
+      uses: anothrNick/github-tag-action@v1
       env:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        default_bump: patch
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: minor
     - name: update version at python package
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
