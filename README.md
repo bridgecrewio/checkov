@@ -1,7 +1,7 @@
 # Checkov
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![build status](https://github.com/bridgecrewio/terraform-static-analysis/workflows/build/badge.svg)](https://github.com/bridgecrewio/terraform-static-analysis/actions?query=workflow%3Abuild) 
-![code_coverage](coverage.svg) <!--- coverage is auto generated in the build workflow -->
+[![code_coverage](coverage.svg)](https://github.com/bridgecrewio/terraform-static-analysis/actions?query=workflow%3Acoverage)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 

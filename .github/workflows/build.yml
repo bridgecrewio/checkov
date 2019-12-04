@@ -22,19 +22,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pipenv run python -m coverage run -m pytest
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
-      - name: Update coverage badge
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          pipenv run python -m coverage_badge -o coverage.svg -f
-          git add coverage.svg
-          git commit -m "Update coverage" coverage.svg || echo "No changes to commit"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
   bump-version:
     needs: build
     runs-on: ubuntu-latest
@@ -75,12 +62,8 @@ jobs:
           git commit -m "update resource scans doc" $scansdoc || echo "No changes to commit"
 
           ## update python version
-          rm checkov/version.py
-          git commit -m "bump version" checkov/version.py
           echo "version = '$new_tag'" > 'checkov/version.py'
-          git add checkov/version.py
-          cat checkov/version.py
-          git commit -m "bump version" checkov/version.py
+          git commit -m "bump version" checkov/version.py || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
