@@ -23,7 +23,7 @@ jobs:
         run: |
           pipenv run python -m coverage run -m pytest
   bump-version:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
