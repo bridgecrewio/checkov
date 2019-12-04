@@ -1,7 +1,8 @@
 name: Master Test
 
-on: push
-  branches:
+on: 
+  push:
+    branches:
     - master
 jobs:
   build:
