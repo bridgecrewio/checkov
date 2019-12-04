@@ -5,6 +5,7 @@ nav_order: 1
 ---
 
 # Resource scans (auto generated)
+
 |    | Resource                        | Policy                                                                              |
 |----|---------------------------------|-------------------------------------------------------------------------------------|
 |  0 | aws_security_group              | Ensure every security groups rule has a description                                 |
