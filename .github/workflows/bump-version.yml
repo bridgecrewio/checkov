@@ -20,6 +20,21 @@ jobs:
           echo "latest tag: $latest_tag"
           new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
           echo "new tag: $new_tag"
+
+          ## update docs
+          export PYTHONPATH='.'
+          export scansdoc=docs/scans/resource-scans.md
+          echo "---" > $scansdoc
+          echo "layout: default" >> $scansdoc
+          echo "title: Resource scans" >> $scansdoc
+          echo "nav_order: 1" >> $scansdoc
+          echo "---" >> $scansdoc
+          echo "" >> $scansdoc
+          echo "# Resource scans (auto generated)" >> $scansdoc
+          pipenv run python ./checkov/terraformscanner/util/docs_generator.py >> $scansdoc
+          git commit -m "update resource scans doc" $scansdoc || echo "No changes to commit"
+
+          ## update python version
           rm checkov/version.py
           git commit -m "bump version" checkov/version.py
           echo "version = '$new_tag'" > 'checkov/version.py'
