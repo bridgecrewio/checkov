@@ -1,6 +1,6 @@
 import os
 import hcl2
-from checkov.terraform.context_parsers.parser_registry import parser_registry
+from checkov.terraform.context_parsers.registry import parser_registry
 import logging
 
 class Parser():

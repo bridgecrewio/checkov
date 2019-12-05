@@ -1,10 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
-from checkov.terraform.context_parsers.parser_registry import parser_registry
+from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.models.enums import ContextCategories
 
 
-class ContextParser(ABC):
+class BaseContextParser(ABC):
     type = ""
 
     def __init__(self, type):
