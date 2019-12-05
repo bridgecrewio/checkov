@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.PasswordPolicyUppercaseLetter import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.PasswordPolicyUppercaseLetter import scanner
 
 
 class TestPasswordPolicyUpperCaseLetter(unittest.TestCase):

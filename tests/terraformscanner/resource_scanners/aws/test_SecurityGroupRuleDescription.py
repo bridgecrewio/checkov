@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.SecurityGroupRuleDescription import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.SecurityGroupRuleDescription import scanner
 
 
 class TestSecurityGroupRuleDescription(unittest.TestCase):

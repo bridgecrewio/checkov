@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.PasswordPolicyExpiration import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.PasswordPolicyExpiration import scanner
 
 
 class TestPasswordPolicyExpiration(unittest.TestCase):

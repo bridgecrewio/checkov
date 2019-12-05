@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.gcp.GoogleStorageBucketEncryption import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.gcp.GoogleStorageBucketEncryption import scanner
 
 
 class TestGoogleStorageBucketEncryption(unittest.TestCase):

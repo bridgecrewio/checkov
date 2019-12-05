@@ -2,8 +2,8 @@
 
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.RDSPubliclyAccessible import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.RDSPubliclyAccessible import scanner
 
 
 class TestRDSPubliclyAccessible(unittest.TestCase):

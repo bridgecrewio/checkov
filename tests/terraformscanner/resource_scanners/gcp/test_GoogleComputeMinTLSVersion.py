@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.gcp.GoogleComputeMinTLSVersion import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.gcp.GoogleComputeMinTLSVersion import scanner
 
 
 class TestGoogleComputeMinTLSVersion(unittest.TestCase):

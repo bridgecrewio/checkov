@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.SecurityGroupUnrestrictedIngress3389 import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress3389 import scanner
 
 
 class TestSecurityGroupUnrestrictedIngress3389(unittest.TestCase):

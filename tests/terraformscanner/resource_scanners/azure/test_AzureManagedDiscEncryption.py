@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.azure.AzureManagedDiscEncryption import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.azure.AzureManagedDiscEncryption import scanner
 
 
 class TestAzureManagedDiscEncryption(unittest.TestCase):

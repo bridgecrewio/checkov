@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.ElasticsearchEncryption import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.ElasticsearchEncryption import scanner
 
 
 class TestElasticsearchEncryption(unittest.TestCase):

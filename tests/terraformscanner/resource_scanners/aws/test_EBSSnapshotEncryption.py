@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.EBSSnapshotEncryption import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.EBSSnapshotEncryption import scanner
 
 
 class TestEBSSnapshotEncryption(unittest.TestCase):

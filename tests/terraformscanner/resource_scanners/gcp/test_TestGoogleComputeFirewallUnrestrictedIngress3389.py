@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.gcp.GoogleComputeFirewallUnrestrictedIngress3389 import scanner, PORT
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngress3389 import scanner, PORT
 
 
 class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):

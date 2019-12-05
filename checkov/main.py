@@ -1,8 +1,8 @@
 import logging
 
 # set up logging to file - see previous section for more details
-from checkov.terraformscanner.parser import Parser
-from checkov.terraformscanner.resource_scanner_registry import resource_scanner_registry
+from checkov.terraform.parser import Parser
+from checkov.terraform.checks.resource.registry import resource_registry
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -15,11 +15,11 @@ console.setFormatter(formatter)
 
 if __name__ == '__main__':
     tf_defenitions = {}
-    root_folder = "/Users/barak/Documents/dev/platform2/src/stacks/baseStack"
+    root_folder = "/Users/tronxd/WebstormProjects/platform/src/stacks/baseStack"
     Parser().hcl2(directory=root_folder, tf_defenitions=tf_defenitions)
     for definition in tf_defenitions.items():
         scanned_file = definition[0].split(root_folder)[1]
         logging.debug("Scanning file: %s", scanned_file)
         if 'resource' in definition[1]:
             for resource in definition[1]['resource']:
-                resource_scanner_registry.scan(resource, scanned_file)
+                resource_registry.scan(resource, scanned_file)

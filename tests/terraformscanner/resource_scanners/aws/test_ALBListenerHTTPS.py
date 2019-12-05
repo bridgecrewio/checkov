@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraformscanner.models.enums import ScanResult
-from checkov.terraformscanner.resource_scanners.aws.ALBListenerHTTPS import scanner
+from checkov.terraform.models.enums import ScanResult
+from checkov.terraform.checks.resource.aws.ALBListenerHTTPS import scanner
 
 
 class TestALBListenerHTTPS(unittest.TestCase):
