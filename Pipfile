@@ -3,8 +3,6 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-
-
 [dev-packages]
 python-hcl2 = "*"
 pytest = "*"
@@ -20,6 +18,7 @@ detect-secrets = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
+junit_xml ="*"
 
 [requires]
 python_version = "3.7"
