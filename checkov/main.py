@@ -22,4 +22,4 @@ if __name__ == '__main__':
         logging.debug("Scanning file: %s", scanned_file)
         if 'resource' in definition[1]:
             for resource in definition[1]['resource']:
-                resource_registry.scan(resource, scanned_file)
+                resource_registry.run(resource, scanned_file)

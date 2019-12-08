@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.aws.SecurityGroupRuleDescription import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.SecurityGroupRuleDescription import check
 
 
 class TestSecurityGroupRuleDescription(unittest.TestCase):
@@ -26,8 +26,8 @@ class TestSecurityGroupRuleDescription(unittest.TestCase):
                 "prefix_list_ids": ["pl-12c4e678"],
             }
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_success(self):
         resource_conf = {
@@ -50,8 +50,8 @@ class TestSecurityGroupRuleDescription(unittest.TestCase):
                 "prefix_list_ids": ["pl-12c4e678"],
             }
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
 
 if __name__ == '__main__':

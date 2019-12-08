@@ -1,13 +1,13 @@
 from enum import Enum
 
 
-class ScanResult(Enum):
+class CheckResult(Enum):
     SUCCESS = 1
     FAILURE = 2
     UNKNOWN = 3
 
 
-class ScanCategories(Enum):
+class CheckCategories(Enum):
     LOGGING = 1
     ENCRYPTION = 2
     GENERAL_SECURITY = 3

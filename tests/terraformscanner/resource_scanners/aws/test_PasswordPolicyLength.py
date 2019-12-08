@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.aws.PasswordPolicyLength import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.PasswordPolicyLength import check
 
 
 class TestPasswordPolicyLength(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestPasswordPolicyLength(unittest.TestCase):
             "require_symbols": True,
             "allow_users_to_change_password": True,
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
     def test_failure(self):
         resource_conf = {
@@ -27,8 +27,8 @@ class TestPasswordPolicyLength(unittest.TestCase):
             "require_symbols": True,
             "allow_users_to_change_password": True,
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_failure_on_missing_property(self):
         resource_conf = {
@@ -36,8 +36,8 @@ class TestPasswordPolicyLength(unittest.TestCase):
             "require_symbols": True,
             "allow_users_to_change_password": True,
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
 
 if __name__ == '__main__':

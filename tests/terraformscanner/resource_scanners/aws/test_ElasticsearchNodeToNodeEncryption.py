@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.aws.ElasticsearchNodeToNodeEncryption import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.ElasticsearchNodeToNodeEncryption import check
 
 
 class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
@@ -34,8 +34,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                               'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.UNKNOWN, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.UNKNOWN, scan_result)
 
     def test_failure(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -65,8 +65,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                               'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_failure_node_to_node_encryption_missing(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -96,8 +96,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                               'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_success(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -127,8 +127,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                               'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
     def test_success_single_node(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -158,8 +158,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                               'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
 
 if __name__ == '__main__':

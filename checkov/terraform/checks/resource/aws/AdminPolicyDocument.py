@@ -1,27 +1,27 @@
-from checkov.terraform.models.enums import ScanResult, ScanCategories
+from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 
 class AdminPolicyDocument(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
-        scan_id = "BC_AWS_IAM_23"
+        id = "BC_AWS_IAM_23"
         supported_resource = ['aws_iam_policy_document']
-        categories = [ScanCategories.GENERAL_SECURITY]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resource)
+        categories = [CheckCategories.GENERAL_SECURITY]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
 
     def scan_resource_conf(self, conf):
         """
             validates iam policy document
             https://learn.hashicorp.com/terraform/aws/iam-policy
         :param conf: aws_kms_key configuration
-        :return: <ScanResult>
+        :return: <CheckResult>
         """
         key = 'statement'
         if key in conf.keys():
             if conf[key]['actions'] == ["*"] and conf[key]['resources'] == ["*"]:
-                return ScanResult.FAILURE
-        return ScanResult.SUCCESS
+                return CheckResult.FAILURE
+        return CheckResult.SUCCESS
 
 
-scanner = AdminPolicyDocument()
+check = AdminPolicyDocument()

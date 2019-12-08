@@ -1,21 +1,21 @@
-from checkov.terraform.models.enums import ScanResult, ScanCategories
+from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 
 class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all Elasticsearch has node-to-node encryption enabled"
-        scan_id = "BC_AWS_ES_2"
+        id = "BC_AWS_ES_2"
         supported_resources = ['aws_elasticsearch_domain']
-        categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
+        categories = [CheckCategories.ENCRYPTION]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """
             Looks for node to node encryption configuration at aws_elasticsearch_domain:
             https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain.html
         :param conf: aws_elasticsearch_domain configuration
-        :return: <ScanResult>
+        :return: <CheckResult>
         """
         if "cluster_config" in conf.keys():
 
@@ -24,16 +24,16 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                 if instance_count > 1:
                     if "node_to_node_encryption" in conf.keys():
                         if conf["node_to_node_encryption"][0]["enabled"][0]:
-                            return ScanResult.SUCCESS
+                            return CheckResult.SUCCESS
                         else:
-                            return ScanResult.FAILURE
+                            return CheckResult.FAILURE
                     else:
-                        return ScanResult.FAILURE
+                        return CheckResult.FAILURE
                 else:
-                    return ScanResult.SUCCESS
+                    return CheckResult.SUCCESS
             else:
-                return ScanResult.UNKNOWN
-        return ScanResult.SUCCESS
+                return CheckResult.UNKNOWN
+        return CheckResult.SUCCESS
 
 
-scanner = ElasticsearchNodeToNodeEncryption()
+check = ElasticsearchNodeToNodeEncryption()

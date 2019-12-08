@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.aws.AdminPolicyDocument import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.AdminPolicyDocument import check
 
 
 class TestAdminPolicyDocument(unittest.TestCase):
@@ -13,8 +13,8 @@ class TestAdminPolicyDocument(unittest.TestCase):
                 "resources": ["arn:aws:s3:::my_corporate_bucket/*"]
             }
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
     def test_failure(self):
         resource_conf = {
@@ -23,8 +23,8 @@ class TestAdminPolicyDocument(unittest.TestCase):
                 "resources": ["*"]
             }
         }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
 
 

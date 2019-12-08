@@ -1,27 +1,27 @@
-from checkov.terraform.models.enums import ScanResult, ScanCategories
+from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 
 class RDSEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS bucket is securely encrypted at rest"
-        scan_id = "BC_AWS_RDS_1"
+        id = "BC_AWS_RDS_1"
         supported_resources = ['aws_db_instance']
-        categories = [ScanCategories.ENCRYPTION]
-        super().__init__(name=name, scan_id=scan_id, categories=categories, supported_resources=supported_resources)
+        categories = [CheckCategories.ENCRYPTION]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         """
             Looks for encryption configuration at aws_db_instance:
             https://www.terraform.io/docs/providers/aws/d/db_instance.html
         :param conf: aws_db_instance configuration
-        :return: <ScanResult>
+        :return: <CheckResult>
         """
         if 'storage_encrypted' in conf.keys():
             key = conf['storage_encrypted'][0]
             if key:
-                return ScanResult.SUCCESS
-        return ScanResult.FAILURE
+                return CheckResult.SUCCESS
+        return CheckResult.FAILURE
 
 
-scanner = RDSEncryption()
+check = RDSEncryption()

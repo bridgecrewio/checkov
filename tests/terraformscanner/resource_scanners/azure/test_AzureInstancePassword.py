@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.azure.AzureInstancePassword import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.AzureInstancePassword import check
 
 
 class TestAzureInstancePassword(unittest.TestCase):
@@ -19,8 +19,8 @@ class TestAzureInstancePassword(unittest.TestCase):
                          'os_profile_linux_config': [{'disable_password_authentication': [False]}]
                          }
 
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_success(self):
         resource_conf = {'name': ['${var.prefix}-vm'], 'location': ['${azurerm_resource_group.main.location}'],
@@ -34,8 +34,8 @@ class TestAzureInstancePassword(unittest.TestCase):
                 {'computer_name': ['hostname'], 'admin_username': ['testadmin'], 'admin_password': ['Password1234!']}],
                          'os_profile_linux_config': [{'disable_password_authentication': [True]}]
                          }
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
 
 if __name__ == '__main__':

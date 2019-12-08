@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.azure.StorageAccountsTransportEncryption import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.StorageAccountsTransportEncryption import check
 
 
 class TestAzureManagedDiscEncryption(unittest.TestCase):
@@ -11,8 +11,8 @@ class TestAzureManagedDiscEncryption(unittest.TestCase):
                          'location': ['${var.location}'], 'account_kind': ['StorageV2'], 'account_tier': ['Premium'],
                          'account_replication_type': ['LRS']}
 
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_success(self):
         def test_failure(self):
@@ -20,8 +20,8 @@ class TestAzureManagedDiscEncryption(unittest.TestCase):
                              'location': ['${var.location}'], 'account_kind': ['StorageV2'],
                              'account_tier': ['Premium'], 'account_replication_type': ['LRS'],
                              'enable_https_traffic_only': [True]}
-            scan_result = scanner.scan_resource_conf(conf=resource_conf)
-            self.assertEqual(ScanResult.SUCCESS, scan_result)
+            scan_result = check.scan_resource_conf(conf=resource_conf)
+            self.assertEqual(CheckResult.SUCCESS, scan_result)
 
 
 if __name__ == '__main__':

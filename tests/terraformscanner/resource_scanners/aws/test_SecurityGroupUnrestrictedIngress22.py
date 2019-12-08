@@ -1,7 +1,7 @@
 import unittest
 
-from checkov.terraform.models.enums import ScanResult
-from checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress22 import scanner
+from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress22 import check
 
 
 class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
                              {'from_port': [0], 'to_port': [0], 'protocol': ['-1'], 'cidr_blocks': [['0.0.0.0/0']]}]
                         }
 
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.FAILURE, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILURE, scan_result)
 
     def test_success(self):
         resource_conf =  {'name': ['foo'],
@@ -27,8 +27,8 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
                               {'from_port': [0], 'to_port': [0], 'protocol': ['-1'], 'cidr_blocks': [['0.0.0.0/0']]}],
                           'tags': [{'kubernetes.io/cluster/${var.cluster_name}': 'owned',
                                     'kubernetes:application': '${local.name}'}]}
-        scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(ScanResult.SUCCESS, scan_result)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.SUCCESS, scan_result)
 
 
 if __name__ == '__main__':
