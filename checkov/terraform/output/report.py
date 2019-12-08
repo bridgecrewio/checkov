@@ -1,5 +1,4 @@
 import json
-import pprint
 
 from colorama import init
 from termcolor import colored
@@ -40,7 +39,7 @@ class Report:
         }
 
     def get_json(self):
-        return json.dumps(self.get_dict())
+        return json.dumps(self.get_dict(), indent=4)
 
     def get_dict(self):
         return {
@@ -85,7 +84,7 @@ class Report:
         print(message)
 
     def print_json(self):
-        pprint.pprint(self.get_json(), indent=4)
+        print(self.get_json())
 
     # def get_junit_xml(self)
     # def print_junit_xml(self):

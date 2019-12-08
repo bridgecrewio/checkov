@@ -74,6 +74,7 @@ setup(
         "termcolor==1.1.0",
         "urllib3==1.25.7",
     ],
+    license='Apache License 2.0',
     name="checkov",
     version=version,
     description="Infrastructure as code static analysis",
