@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import logging
 import os
+from importlib import util
 
 import setuptools
 from setuptools import setup
-from importlib import util
 
 logger = logging.getLogger(__name__)
 spec = util.spec_from_file_location(
@@ -74,6 +74,7 @@ setup(
         "termcolor==1.1.0",
         "urllib3==1.25.7",
     ],
+    license='Apache License 2.0',
     name="checkov",
     version=version,
     description="Infrastructure as code static analysis",
@@ -81,4 +82,5 @@ setup(
     author_email="support@bridgecrew.io",
     url="https://www.python.org/sigs/distutils-sig/",
     packages=setuptools.find_packages(),
+    scripts=['bin/checkov']
 )

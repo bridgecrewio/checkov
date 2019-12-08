@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 class S3Versioning(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure all data stored in the S3 bucket is securely encrypted at rest"
+        name = "Ensure all data stored in the S3 bucket have versioning enabled"
         id = "BC_AWS_S3_16"
         supported_resources = ['aws_s3_bucket']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]

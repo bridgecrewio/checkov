@@ -1,10 +1,11 @@
 from enum import Enum
 
 
-class CheckResult(Enum):
-    SUCCESS = 1
-    FAILURE = 2
-    UNKNOWN = 3
+class CheckResult(str, Enum):
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+    UNKNOWN = "UNKNOWN"
+    SUPPRESSED = "SUPPRESSED"
 
 
 class CheckCategories(Enum):
@@ -14,6 +15,12 @@ class CheckCategories(Enum):
     NETWORKING = 4
     IAM = 5
     BACKUP_AND_RECOVERY = 6
+
+
+class OutputFormat(Enum):
+    CONSOLE = 1
+    JSON = 2
+    JUNIT_XML = 3
 
 
 class ContextCategories(Enum):
