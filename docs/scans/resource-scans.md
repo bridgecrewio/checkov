@@ -13,7 +13,7 @@ nav_order: 1
 |  2 | aws_sns_topic                   | Ensure all data stored in the SNS topic is encrypted                                |
 |  3 | aws_s3_bucket                   | Ensure the S3 bucket has access logging enabled                                     |
 |  4 | aws_s3_bucket                   | S3 Bucket has an ACL defined which allows public access.                            |
-|  5 | aws_s3_bucket                   | Ensure all data stored in the S3 bucket is versioned                                |
+|  5 | aws_s3_bucket                   | Ensure all data stored in the S3 bucket have versioning enabled                     |
 |  6 | aws_s3_bucket                   | Ensure all data stored in the S3 bucket is securely encrypted at rest               |
 |  7 | aws_ebs_volume                  | Ensure all data stored in the EBS is securely encrypted                             |
 |  8 | aws_launch_configuration        | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
