@@ -59,6 +59,7 @@ jobs:
           echo "# Resource scans (auto generated)" >> $scansdoc
           echo "" >> $scansdoc
           pipenv run python ./checkov/terraform/util/docs_generator.py >> $scansdoc
+          git pull
           git commit -m "update resource scans doc" $scansdoc || echo "No changes to commit"
 
           ## update python version
