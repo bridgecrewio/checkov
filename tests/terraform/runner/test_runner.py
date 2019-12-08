@@ -14,6 +14,7 @@ class TestRunner(unittest.TestCase):
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertNotEqual(report_json, "")
+        report.print_json()
         report.print_console()
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)

@@ -32,7 +32,6 @@ jobs:
           git config --local user.name "GitHub Action"
           pipenv run python -m coverage_badge -o coverage.svg -f
           git add coverage.svg
-          git pull
           git commit -m "Update coverage" coverage.svg || echo "No changes to commit"
       - name: Push changes
         uses: ad-m/github-push-action@master

@@ -1,4 +1,5 @@
 import json
+import pprint
 
 from colorama import init
 from termcolor import colored
@@ -84,7 +85,7 @@ class Report:
         print(message)
 
     def print_json(self):
-        print(json.dumps(self.get_json()))
+        pprint.pprint(self.get_json(), indent=4)
 
     # def get_junit_xml(self)
     # def print_junit_xml(self):
