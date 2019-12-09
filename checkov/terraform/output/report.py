@@ -66,12 +66,12 @@ class Report:
         print(colored(message, "cyan"))
 
         for record in report_dict["results"]["passed_checks"]:
-            self.print_record(record)
+            self.print_record_console(record)
         for record in report_dict["results"]["failed_checks"]:
-            self.print_record(record)
+            self.print_record_console(record)
 
     @staticmethod
-    def print_record(record):
+    def print_record_console(record):
         if record['check_result'] == CheckResult.SUCCESS:
             status = "Passed"
             status_color = "green"
