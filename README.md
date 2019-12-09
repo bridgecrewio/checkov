@@ -2,7 +2,7 @@
 
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
-[![code_coverage](coverage.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
+[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
@@ -13,7 +13,6 @@
 - [Screenshot](#screenshot)
 - [Getting Started](#getting-started)
 - [Support](#Support)
-- [Contributing](#contributing)
 
 ## Description
 Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform and detects security and compliance misconfigurations. 
@@ -28,8 +27,8 @@ Checkov is written in Python and provides a simple method to write and manage po
  * Output currently available as CLI, JSON or JUnit XML.
 
 ## Screenshot
-<img src="https://github.com/bridgecrewio/checkov/blob/master/docs/checkov-scan.png" alt="Scan screenshot">
-<tr><td>
+![screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan.png)
+
 
 
 
@@ -37,19 +36,19 @@ Checkov is written in Python and provides a simple method to write and manage po
 
 ### Installation
 
-```
+```sh
 pip install checkov
 ```
 
 ### Configure an input folder
 
-```
+```sh
 checkov -d /user/tf
 ```
 
 ### Scan result sample (CLI)
 
-```
+```sh
 Passed Checks: 1, Failed Checks: 1, Suppressed Checks: 0
 
 Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
@@ -137,6 +136,6 @@ For CloudFormaiton scanning check out [cfripper](https://github.com/Skyscanner/c
 
 ## Support
 
-[Bridgecrew](bridgecrew.io) builds and maintains Checkov to make policy-as-code simple and accessible. 
+[Bridgecrew](https://bridgecrew.io) builds and maintains Checkov to make policy-as-code simple and accessible. 
 
 If you need support contact us at support@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).

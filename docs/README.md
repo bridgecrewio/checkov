@@ -4,10 +4,10 @@
 
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
-[![code_coverage](coverage.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
+[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
-![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
+![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 
 ## **Table of contents**
 
@@ -16,7 +16,6 @@
 - [Demo](#demo)
 - [Getting Started](#getting-started)
 - [Support](#Support)
-- [Contributing](#contributing)
 
 ## Description
 
@@ -39,19 +38,19 @@ Checkov is written in Python and provides a simple method to write and manage po
 
 ### Installation
 
-```python
+```sh
 pip install checkov
 ```
 
 ### Configure an input folder
 
-```python
+```sh
 checkov -d /user/tf
 ```
 
 ### Scan result sample (CLI)
 
-```python
+```sh
 Passed Checks: 1, Failed Checks: 1, Suppressed Checks: 0
 
 Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
@@ -65,13 +64,13 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 
 ### Export scan to JSON
 
-```python
+```sh
 checkov -d /user/tf -o json
 ```
 
 Sample output
 
-```python
+```json
 {
     "results": {
         "passed_checks": [

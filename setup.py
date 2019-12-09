@@ -89,7 +89,7 @@ setup(
     author="bridgecrew",
     author_email="support@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["tests*"]),
     scripts=["bin/checkov"],
     long_description=long_description,
     long_description_content_type="text/markdown",
