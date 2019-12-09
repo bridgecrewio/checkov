@@ -9,7 +9,7 @@
 ## **Table of contents**
 - [Description](#description)
 - [Features](#features)
-- [Demo](#demo)
+- [Screenshot](#screenshot)
 - [Getting Started](#getting-started)
 - [Support](#Support)
 - [Contributing](#contributing)
@@ -26,27 +26,29 @@ Checkov is written in Python and provides a simple method to write and manage po
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
 
-## Demo
+## Screenshot
+<img src="https://github.com/bridgecrewio/terraform-static-analysis/blob/master/docs/checkov-scan.png" alt="Scan screenshot">
+<tr><td>
 
-***TODO(GIF)
+
 
 ## Getting Started
 
 ### Installation
 
-```python
+```
 pip install checkov
 ```
 
 ### Configure an input folder
 
-```python
+```
 checkov -d /user/tf
 ```
 
 ### Scan result sample (CLI)
 
-```python
+```
 Passed Checks: 1, Failed Checks: 1, Suppressed Checks: 0
 
 Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
@@ -60,13 +62,13 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 
 ### Export scan to JSON
 
-```python
+```
 checkov -d /user/tf -o json
 ```
 
 Sample output
 
-```python
+```json
 {
     "results": {
         "passed_checks": [
@@ -103,7 +105,7 @@ Sample output
 
 ### Sample policy
 
-Each policy is defined by resources it scans and expected values for related resource blocks. 
+Each Checkov policy is defined by resources it scans and expected values for related resource blocks. 
 
 For example, a policy that ensures all data is stored in S3 is versioned, scans the ``versioning`` configuration for all ``aws_s3_bucket`` supported resources. The ```scan_resource_conf`` is a method that defines the scan's expectyed behavior, i.e. ``versioning_block['enabled']``
 
@@ -128,12 +130,12 @@ scanner = S3Versioning()
 
 ## Alternatives
 
-For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline)
+For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).
 
-For CloudFormaiton scanning check out Skyscanner's [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag)
+For CloudFormaiton scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
 
 ## Support
 
-Bridgecrew builds and maintains Checkov to make policy-as-code simple and accessible. Policies defined as code ensure that secure infrastructure provisioning becomes maintainable, versioned, testable and transparent.
+[Bridgecrew](bridgecrew.io) builds and maintains Checkov to make policy-as-code simple and accessible. 
 
-If you need support contact us at support@bridgecrew.io or [Open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new)
+If you need support contact us at support@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
