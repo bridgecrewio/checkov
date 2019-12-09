@@ -2,9 +2,15 @@
 import logging
 import os
 from importlib import util
+# read the contents of your README file
+from os import path
 
 import setuptools
 from setuptools import setup
+
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 logger = logging.getLogger(__name__)
 spec = util.spec_from_file_location(
@@ -80,7 +86,9 @@ setup(
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="support@bridgecrew.io",
-    url="https://www.python.org/sigs/distutils-sig/",
+    url="https://github.com/bridgecrewio/checkov",
     packages=setuptools.find_packages(),
-    scripts=['bin/checkov']
+    scripts=['bin/checkov'],
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )
