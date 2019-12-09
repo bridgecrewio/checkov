@@ -20,7 +20,7 @@ nav_order: 1
 |  9 | aws_instance                    | Ensure all data stored in the Launch configuration EBS is securely encrypted        |
 | 10 | aws_elasticsearch_domain        | Ensure all data stored in the Elasticsearch is securely encrypted at rest           |
 | 11 | aws_elasticsearch_domain        | Ensure all Elasticsearch has node-to-node encryption enabled                        |
-| 12 | aws_db_instance                 | Ensure all data stored in the RDS bucket is securely encrypted at rest              |
+| 12 | aws_db_instance                 | Ensure all data stored in the RDS is securely encrypted at rest                     |
 | 13 | aws_db_instance                 | Ensure all data stored in the RDS bucket is not public accessible                   |
 | 14 | aws_alb_listener                | Ensure ALB protocol is HTTPS                                                        |
 | 15 | aws_lb_listener                 | Ensure ALB protocol is HTTPS                                                        |
