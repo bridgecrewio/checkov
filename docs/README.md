@@ -139,4 +139,4 @@ For CloudFormaiton scanning check out Skyscanner's [cfripper](https://github.com
 
 Bridgecrew builds and maintains Checkov to make policy-as-code simple and accessible. Policies defined as code ensure that secure infrastructure provisioning becomes maintainable, versioned, testable and transparent.
 
-If you need support contact us at support@bridgecrew.io or [Open a ticket](
+If you need support contact us at support@bridgecrew.io or [Open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new)
