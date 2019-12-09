@@ -10,9 +10,9 @@
 ## **Table of contents**
 - [Description](#description)
 - [Features](#features)
-- [Screenshot](#screenshot)
+- [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
-- [Support](#Support)
+- [Support](#support)
 
 ## Description
 Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform and detects security and compliance misconfigurations. 
@@ -26,15 +26,18 @@ Checkov is written in Python and provides a simple method to write and manage po
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
 
-## Screenshot
-![screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan.png)
+## Screenshots
 
+Scan results in CLI
+![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan.png)
 
+Scheduled scan result in Jenkins
+![jenikins-screenshot](https://github.com/bridgecrewio/checkov/blob/master/docs/checkov-jenkins.png)
 
 
 ## Getting Started
 
-### Installation
+### Install
 
 ```sh
 pip install checkov
@@ -137,5 +140,7 @@ For CloudFormaiton scanning check out [cfripper](https://github.com/Skyscanner/c
 ## Support
 
 [Bridgecrew](https://bridgecrew.io) builds and maintains Checkov to make policy-as-code simple and accessible. 
+
+Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for a quick tutorial and examples.
 
 If you need support contact us at support@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
