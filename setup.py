@@ -97,9 +97,9 @@ setup(
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-        'Intended Audience :: Security',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Topic :: System :: Security',
+        'Topic :: Security',
+        'Topic :: Software Development :: Build Tools'
     ]
 )
