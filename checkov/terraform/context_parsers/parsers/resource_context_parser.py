@@ -16,8 +16,10 @@ class ResourceContextParser(BaseContextParser):
         for i, resource_block in enumerate(block):
             resource_type = next(iter(resource_block.keys()))
             resource_name = next(iter(resource_block[resource_type]))
-            self.context[resource_type] = {}
-            self.context[resource_type][resource_name] = {}
+            if not self.context.get(resource_type):
+                self.context[resource_type] = {}
+            if not self.context.get(resource_type).get(resource_name):
+                self.context[resource_type][resource_name] = {}
             for line_num, line in parsed_file_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
                 if all(x in line_tokens for x in ['resource', resource_type, resource_name]):
