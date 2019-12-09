@@ -12,14 +12,13 @@ class ResourceContextParser(BaseContextParser):
         :param block: Terraform resource block, key-value dictionary
         :return: Enriched resource block context
         """
-        resource_context = {}
-        file_lines = self.file_lines
+        parsed_file_lines = self._filter_file_lines()
         for i, resource_block in enumerate(block):
             resource_type = next(iter(resource_block.keys()))
             resource_name = next(iter(resource_block[resource_type]))
             self.context[resource_type] = {}
             self.context[resource_type][resource_name] = {}
-            for line_num, line in file_lines:
+            for line_num, line in parsed_file_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
                 if all(x in line_tokens for x in ['resource', resource_type, resource_name]):
                     self.context[resource_type][resource_name]["start_line"] = line_num

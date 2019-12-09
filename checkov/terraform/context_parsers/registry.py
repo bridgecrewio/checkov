@@ -1,5 +1,4 @@
 import logging
-import re
 from checkov.terraform.models.enums import ContextCategories
 
 supported_definitions = [ContextCategories.RESOURCE.name]
@@ -21,7 +20,7 @@ class ParserRegistry():
         for definition_type in definition_blocks_types.keys():
             if definition_type in supported_definitions:
                 context_parser = self.context_parsers[definition_type]
-                context_parser.parse_file_lines(tf_file)
+                context_parser.read_file_lines(tf_file)
                 definition_blocks = definition_blocks_types[definition_type]
                 self.definitions_context[tf_file] = context_parser.enrich_definition_block(definition_blocks)
 
