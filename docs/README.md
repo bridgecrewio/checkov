@@ -1,10 +1,17 @@
-# Checkov | 
-## Prevent cloud misconfigurations during build time [checkov.io](checkov.io)
+# Checkov Documentation
 
-Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform and detects security and compliance misconfigurations. 
+Checkov is a static code analysis tool for infrastructure-as-code. 
 
-Checkov is written in Python and provides a simple method to write and manage policies. It follows the CIS Foundations benchmarks where applicable.
 
-See how to install and get Checkov up and running
 
-Next, check out and learn how to customize and add policies
+Checkov is written in Python and aims to simplify and increase the adoption of security and compliance best practices that prevent common cloud misconfigurations. Its scans adhere and implement common industry standards such as the Center for Internet Security (CIS) Amazon Web Services (AWS) Foundations Benchmark.
+
+
+Checkov supports JUnit XML format that enables simple integration to CICD pipelines. Read more about it in the [Results](Results) 
+
+
+See how to [install and get Checkov up and running](Introduction/GettingStarted.md).
+
+Next [learn how to customize and add policies](Introduction/Policies.md).
+
+![](checkov-4-4ec2e1dd74ed.gif)
