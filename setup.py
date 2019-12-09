@@ -93,4 +93,14 @@ setup(
     scripts=["bin/checkov"],
     long_description=long_description,
     long_description_content_type="text/markdown",
+    classifiers=[
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Intended Audience :: DevOps',
+        'Intended Audience :: Security',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: System :: Security',
+    ]
 )
