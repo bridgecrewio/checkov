@@ -53,6 +53,11 @@ class Report:
             "summary": self.get_summary()
         }
 
+    def get_exit_code(self):
+        if len(self.failed_checks) > 0:
+            return 1
+        return 0
+
     def print_console(self):
         report_dict = self.get_dict()
         summary = report_dict["summary"]
