@@ -13,13 +13,15 @@ class TestRunner(unittest.TestCase):
         report = runner.run(root_folder=dir_path)
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
-        self.assertNotEqual(report_json, "")
-        report.print_json()
-        report.print_console()
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertGreaterEqual(summary['failed'], 1)
         self.assertEqual(summary["parsing_errors"], 0)
+        report.print_json()
+        report.print_console()
+        report.print_junit_xml()
 
 
 if __name__ == '__main__':

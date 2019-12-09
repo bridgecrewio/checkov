@@ -19,11 +19,13 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory',
                         help='terraform root directory')
     parser.add_argument('-o', '--output',
-                        help='output format cli/json/junit')
+                        help='output format cli/json/junitxml')
     args = parser.parse_args()
     root_folder = args.directory
     report = Runner().run(root_folder)
     if args.output == "json":
         report.print_json()
+    elif args.output == "junitxml":
+        report.print_junit_xml()
     else:
         report.print_console()

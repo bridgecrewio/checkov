@@ -27,6 +27,6 @@ class Runner:
                         # TODO get data from context here
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                         code_block="", file_path=scanned_file, file_line_range="",
-                                        resource=resource_name)
+                                        resource=resource_name, check_class=check.__class__.__module__)
                         report.add_record(record=record)
         return report
