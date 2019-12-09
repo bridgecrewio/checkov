@@ -4,8 +4,8 @@
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
 [![code_coverage](coverage.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
-![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
+![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 
 ## **Table of contents**
 - [Description](#description)

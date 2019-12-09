@@ -2,14 +2,14 @@
 import logging
 import os
 from importlib import util
-# read the contents of your README file
 from os import path
 
 import setuptools
 from setuptools import setup
 
+# read the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 logger = logging.getLogger(__name__)
@@ -68,19 +68,21 @@ setup(
     install_requires=[
         "certifi==2019.11.28",
         "chardet==3.0.4",
-        "colorama==0.4.1",
+        "colorama==0.4.3",
         "detect-secrets==0.13.0",
         "docopt==0.6.2",
         "idna==2.8",
+        "junit-xml==1.8",
         "lark-parser==0.7.8",
         "python-hcl2==0.2.0",
         "pyyaml==5.2",
         "requests==2.22.0",
+        "six==1.13.0",
         "tabulate==0.8.6",
         "termcolor==1.1.0",
         "urllib3==1.25.7",
     ],
-    license='Apache License 2.0',
+    license="Apache License 2.0",
     name="checkov",
     version=version,
     description="Infrastructure as code static analysis",
@@ -88,7 +90,7 @@ setup(
     author_email="support@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
     packages=setuptools.find_packages(),
-    scripts=['bin/checkov'],
+    scripts=["bin/checkov"],
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type="text/markdown",
 )
