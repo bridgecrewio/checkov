@@ -75,10 +75,10 @@ The print includes detailed structured data-blocks that contain exact references
 
 ### JUnit XML
 
-Running a Checkov scan with the JSON output parmeter (```-o junit```) will result in JUnit XML print output.
+Running a Checkov scan with the JSON output parmeter (```-o junitxml```) will result in JUnit XML print output.
 
 ```
-checkov -d /user/tf -o junit
+checkov -d /user/tf -o junitxml
 ```
 
 This print also includes detailed structured data-blocks that contain exact references to code blocks, line ranges and resources scanned.
