@@ -83,15 +83,15 @@ class Report:
         test_suites = []
         records = self.passed_checks + self.failed_checks
         for record in records:
-            check_name = record['check_name']
+            check_name = record.check_name
             if check_name not in test_cases:
                 test_cases[check_name] = []
 
-            test_name = "{} {}".format(check_name, record['resource'])
-            test_case = TestCase(name=test_name, file=record['file_path'], classname=record["check_class"])
-            if record['check_result'] == CheckResult.FAILURE:
+            test_name = "{} {}".format(check_name, record.resource)
+            test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
+            if record.check_result == CheckResult.FAILURE:
                 test_case.add_failure_info(
-                    "Resource \"{}\" failed in check \"{}\"".format(record['resource'], check_name))
+                    "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(
