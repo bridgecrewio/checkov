@@ -18,7 +18,7 @@ detect-secrets = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
-junit_xml ="*"
+junit-xml ="*"
 
 [requires]
 python_version = "3.7"
