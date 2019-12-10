@@ -56,6 +56,10 @@ class BaseContextParser(ABC):
                     break
         return end_line_num
 
+    def run_context_parsing(self,tf_file,block):
+        self.read_file_lines(tf_file)
+        return self.enrich_definition_block(block,self.file_lines)
+
     @abstractmethod
     def enrich_definition_block(self, block, file_lines):
         raise NotImplementedError()
