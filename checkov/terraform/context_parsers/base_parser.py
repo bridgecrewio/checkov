@@ -28,10 +28,9 @@ class BaseContextParser(ABC):
     def _trim_whitespaces_linebreaks(text):
         return re.sub('\s+', ' ', text).strip()
 
-    def _filter_file_lines(self):
-        parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in self.file_lines]
+    def _filter_file_lines(self,lines):
+        parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in lines]
         return [(ind, line) for (ind, line) in parsed_file_lines if line]
-
 
     def read_file_lines(self, tf_file):
         self.tf_file = tf_file
@@ -40,9 +39,10 @@ class BaseContextParser(ABC):
             file_lines = [(ind + 1, line) for (ind, line) in
                           list(enumerate(file.readlines()))]
             self.file_lines = file_lines
+            return file_lines
 
     def compute_definition_end_line(self, start_line_num):
-        parsed_file_lines = self._filter_file_lines()
+        parsed_file_lines = self._filter_file_lines(self.file_lines)
         start_line_idx = [line_num for (line_num, _) in parsed_file_lines].index(start_line_num)
         i = 1
         end_line_num = 0
@@ -57,5 +57,5 @@ class BaseContextParser(ABC):
         return end_line_num
 
     @abstractmethod
-    def enrich_definition_block(self, definition):
+    def enrich_definition_block(self, block, file_lines):
         raise NotImplementedError()
