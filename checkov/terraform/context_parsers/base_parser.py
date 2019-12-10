@@ -26,7 +26,7 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def _trim_whitespaces_linebreaks(text):
-        return re.sub('\s+', ' ', text).strip()
+        return re.sub(r'\s+', ' ', text).strip()
 
     def _filter_file_lines(self,lines):
         parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in lines]
