@@ -29,3 +29,5 @@ if __name__ == '__main__':
         report.print_junit_xml()
     else:
         report.print_console()
+
+    exit(report.get_exit_code())
