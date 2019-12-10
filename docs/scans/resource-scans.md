@@ -49,3 +49,5 @@ nav_order: 1
 | 38 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
 | 39 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
 | 40 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
+
+
