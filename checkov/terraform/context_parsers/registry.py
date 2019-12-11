@@ -20,9 +20,8 @@ class ParserRegistry():
         for definition_type in definition_blocks_types.keys():
             if definition_type in supported_definitions:
                 context_parser = self.context_parsers[definition_type]
-                context_parser.read_file_lines(tf_file)
                 definition_blocks = definition_blocks_types[definition_type]
-                self.definitions_context[tf_file] = context_parser.enrich_definition_block(definition_blocks)
+                self.definitions_context[tf_file] = context_parser.run_context_parsing(tf_file,definition_blocks)
 
         return self.definitions_context
 
