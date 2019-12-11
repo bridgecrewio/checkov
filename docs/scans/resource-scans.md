@@ -42,12 +42,13 @@ nav_order: 1
 | 31 | aws_elasticache_security_group  | Ensure every security groups rule has a description                                 |
 | 32 | aws_redshift_security_group     | Ensure every security groups rule has a description                                 |
 | 33 | aws_sqs_queue                   | Ensure all data stored in the SQS queue  is encrypted                               |
-| 34 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
-| 35 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
-| 36 | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
-| 37 | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
-| 38 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
-| 39 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
-| 40 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
+| 34 | google_container_cluster        | Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters          |
+| 35 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
+| 36 | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
+| 37 | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
+| 38 | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
+| 39 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
+| 40 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
+| 41 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
 
 
