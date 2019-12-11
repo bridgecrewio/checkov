@@ -10,7 +10,6 @@ class ResourceContextParser(BaseContextParser):
         """
         Enrich the context of a Terraform resource block
         :param block: Terraform resource block, key-value dictionary
-        :param file_lines: List of the parsed file lines
         :return: Enriched resource block context
         """
         parsed_file_lines = self._filter_file_lines()
