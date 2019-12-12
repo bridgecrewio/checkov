@@ -52,3 +52,6 @@ nav_order: 1
 | 41 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
 
 
+---
+
+
