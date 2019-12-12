@@ -37,7 +37,7 @@ class Report:
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
-            "suppressed": len(self.skipped_checks),
+            "skipped": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "checkov_version": version
         }
@@ -50,7 +50,7 @@ class Report:
             "results": {
                 "passed_checks": [check.__dict__ for check in self.passed_checks],
                 "failed_checks": [check.__dict__ for check in self.failed_checks],
-                "suppressed_checks": [check.__dict__ for check in self.skipped_checks],
+                "skipped_checks": [check.__dict__ for check in self.skipped_checks],
                 "parsing_errors": [check for check in self.parsing_errors]
             },
             "summary": self.get_summary()
@@ -66,11 +66,11 @@ class Report:
         summary = self.get_summary()
 
         if self.parsing_errors:
-            message = "\nPassed Checks: {}, Failed Checks: {}, Suppressed Checks: {}, Parsing Errors: {}\n".format(
-                summary["passed"], summary["failed"], summary["suppressed"], summary["parsing_errors"])
+            message = "\nPassed Checks: {}, Failed Checks: {}, Skipped Checks: {}, Parsing Errors: {}\n".format(
+                summary["passed"], summary["failed"], summary["skipped"], summary["parsing_errors"])
         else:
-            message = "\nPassed Checks: {}, Failed Checks: {}, Suppressed Checks: {}\n".format(
-                summary["passed"], summary["failed"], summary["suppressed"])
+            message = "\nPassed Checks: {}, Failed Checks: {}, Skipped Checks: {}\n".format(
+                summary["passed"], summary["failed"], summary["skipped"])
         print(colored(message, "cyan"))
 
         for record in self.passed_checks:
