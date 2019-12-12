@@ -20,8 +20,8 @@ class S3PublicACL(BaseResourceCheck):
         if 'acl' in conf.keys():
             acl_block = conf['acl']
             if acl_block in [["public-read"],["public-read-write"],["website"]]:
-                return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = S3PublicACL()

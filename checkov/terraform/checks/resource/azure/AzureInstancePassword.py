@@ -22,8 +22,8 @@ class AzureInstancePassword(BaseResourceCheck):
             if 'disable_password_authentication' in linux_config.keys():
                 disable_password_authentication = linux_config['disable_password_authentication']
                 if disable_password_authentication == [False]:
-                    return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                    return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = AzureInstancePassword()

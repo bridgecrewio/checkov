@@ -66,7 +66,7 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_node_to_node_encryption_missing(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -97,7 +97,7 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -128,7 +128,7 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_single_node(self):
         resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
@@ -159,7 +159,7 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
                                  '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
                          'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':

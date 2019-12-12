@@ -26,9 +26,9 @@ class Report:
             self.parsing_errors.append(file)
 
     def add_record(self, record):
-        if record.check_result == CheckResult.SUCCESS:
+        if record.check_result == CheckResult.PASSED:
             self.passed_checks.append(record)
-        if record.check_result == CheckResult.FAILURE:
+        if record.check_result == CheckResult.FAILED:
             self.failed_checks.append(record)
         if record.check_result == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
@@ -66,16 +66,18 @@ class Report:
         summary = self.get_summary()
 
         if self.parsing_errors:
-            message = "\nPassed Checks: {}, Failed Checks: {}, Skipped Checks: {}, Parsing Errors: {}\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"], summary["parsing_errors"])
         else:
-            message = "\nPassed Checks: {}, Failed Checks: {}, Skipped Checks: {}\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"])
         print(colored(message, "cyan"))
 
         for record in self.passed_checks:
             print(record)
         for record in self.failed_checks:
+            print(record)
+        for record in self.skipped_checks:
             print(record)
 
     def print_junit_xml(self):
@@ -93,7 +95,7 @@ class Report:
 
             test_name = "{} {}".format(check_name, record.resource)
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
-            if record.check_result == CheckResult.FAILURE:
+            if record.check_result == CheckResult.FAILED:
                 test_case.add_failure_info(
                     "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
             if record.check_result == CheckResult.SKIPPED:

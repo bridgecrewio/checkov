@@ -20,8 +20,8 @@ class RDSEncryption(BaseResourceCheck):
         if 'storage_encrypted' in conf.keys():
             key = conf['storage_encrypted'][0]
             if key:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = RDSEncryption()

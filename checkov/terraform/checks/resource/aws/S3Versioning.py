@@ -20,8 +20,8 @@ class S3Versioning(BaseResourceCheck):
         if 'versioning' in conf.keys():
             versioning_block = conf['versioning'][0]
             if versioning_block['enabled'][0]:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 scanner = S3Versioning()

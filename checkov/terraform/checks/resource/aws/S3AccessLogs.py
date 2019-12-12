@@ -18,9 +18,9 @@ class S3AccessLogs(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'logging' in conf.keys():
-            return CheckResult.SUCCESS
+            return CheckResult.PASSED
         else:
-            return CheckResult.FAILURE
+            return CheckResult.FAILED
 
 
 check = S3AccessLogs()

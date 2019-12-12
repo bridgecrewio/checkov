@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class CheckResult(str, Enum):
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
     UNKNOWN = "UNKNOWN"
     SKIPPED = "SKIPPED"
 

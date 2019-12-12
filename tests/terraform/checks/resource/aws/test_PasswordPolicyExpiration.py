@@ -18,7 +18,7 @@ class TestPasswordPolicyExpiration(unittest.TestCase):
             "max_password_age": 90
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_failure(self):
         resource_conf = {
@@ -32,7 +32,7 @@ class TestPasswordPolicyExpiration(unittest.TestCase):
             "max_password_age": 89
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_on_missing_property(self):
         resource_conf = {
@@ -41,7 +41,7 @@ class TestPasswordPolicyExpiration(unittest.TestCase):
             "allow_users_to_change_password": True,
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':

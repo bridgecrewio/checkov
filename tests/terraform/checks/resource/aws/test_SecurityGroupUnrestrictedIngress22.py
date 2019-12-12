@@ -16,7 +16,7 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
                         }
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf =  {'name': ['foo'],
@@ -28,7 +28,7 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
                           'tags': [{'kubernetes.io/cluster/${var.cluster_name}': 'owned',
                                     'kubernetes:application': '${local.name}'}]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':

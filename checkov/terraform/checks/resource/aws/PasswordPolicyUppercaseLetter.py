@@ -20,8 +20,8 @@ class PasswordPolicyUppcaseLetter(BaseResourceCheck):
         key = 'require_uppercase_characters'
         if key in conf.keys():
             if conf[key]:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = PasswordPolicyUppcaseLetter()

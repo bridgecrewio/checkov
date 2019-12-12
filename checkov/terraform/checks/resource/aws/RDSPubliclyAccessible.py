@@ -20,8 +20,8 @@ class RDSPubliclyAccessible(BaseResourceCheck):
         if 'publicly_accessible' in conf.keys():
             key = conf['publicly_accessible'][0]
             if key:
-                return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = RDSPubliclyAccessible()

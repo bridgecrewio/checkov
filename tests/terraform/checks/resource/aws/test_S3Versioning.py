@@ -13,7 +13,7 @@ class TestS3Versioning(unittest.TestCase):
                          "force_destroy": [True],
                          "tags": [{"Name": "my-bucket"}]}
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf = {"region": ["us-west-2"],
@@ -28,7 +28,7 @@ class TestS3Versioning(unittest.TestCase):
                              {"enabled": [True]}]
                          }
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':

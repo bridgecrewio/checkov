@@ -17,7 +17,7 @@ class TestPasswordPolicyReuse(unittest.TestCase):
             "password_reuse_prevention" : 24
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_failure(self):
         resource_conf = {
@@ -30,7 +30,7 @@ class TestPasswordPolicyReuse(unittest.TestCase):
             "password_reuse_prevention": 4
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_on_missing_property(self):
         resource_conf = {
@@ -39,7 +39,7 @@ class TestPasswordPolicyReuse(unittest.TestCase):
             "allow_users_to_change_password": True,
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':

@@ -24,8 +24,8 @@ class S3Encryption(BaseResourceCheck):
                 if 'apply_server_side_encryption_by_default' in rule_block[0].keys():
                     encryption_block = rule_block[0]['apply_server_side_encryption_by_default']
                     if  'sse_algorithm' in encryption_block[0].keys():
-                        return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                        return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = S3Encryption()

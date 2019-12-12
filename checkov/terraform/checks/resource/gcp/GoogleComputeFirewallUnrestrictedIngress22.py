@@ -23,8 +23,8 @@ class GoogleComputeFirewallUnrestrictedIngress22(BaseResourceCheck):
             if 'source_ranges' in conf.keys():
                 source_ranges = conf['source_ranges'][0]
                 if "0.0.0.0/0" in source_ranges:
-                    return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                    return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = GoogleComputeFirewallUnrestrictedIngress22()

@@ -11,12 +11,12 @@ class TestGoogleComputeMinTLSVersion(unittest.TestCase):
                           }
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf = {'name': ['nonprod-ssl-policy'], 'profile': ['MODERN'], 'min_tls_version': ['TLS_1_2']}
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':

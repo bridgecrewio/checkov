@@ -19,8 +19,8 @@ class ElasticsearchEncryption(BaseResourceCheck):
         """
         if "encrypt_at_rest" in conf.keys():
             if conf["encrypt_at_rest"][0]["enabled"][0]:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = ElasticsearchEncryption()

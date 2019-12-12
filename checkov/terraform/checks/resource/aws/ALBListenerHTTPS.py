@@ -21,15 +21,15 @@ class ALBListenerHTTPS(BaseResourceCheck):
         key = 'protocol'
         if key in conf.keys():
             if conf[key] == ["HTTPS"]:
-                return CheckResult.SUCCESS
+                return CheckResult.PASSED
             elif conf[key] == ["HTTP"]:
                 if 'default_action' in conf.keys():
                     default_action = conf['default_action'][0]
                     action_type = default_action['type']
                     if action_type == ['redirect']:
                         if default_action['redirect'][0]['protocol'] == ['HTTPS']:
-                            return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = ALBListenerHTTPS()

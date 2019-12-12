@@ -20,8 +20,8 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         """
         if 'description' in conf.keys():
             if conf['description']:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = SecurityGroupRuleDescription()

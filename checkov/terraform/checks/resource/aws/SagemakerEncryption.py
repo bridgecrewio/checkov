@@ -18,8 +18,8 @@ class SagemakerEncryption(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'kms_key_id' in conf.keys():
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = SagemakerEncryption()
