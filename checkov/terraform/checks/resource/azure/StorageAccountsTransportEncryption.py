@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class StorageAccountsTransportEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that 'Secure transfer required' is set to 'Enabled'"
-        id = "BC_AZURE_STORAGE_1"
+        id = "CKV_AZURE_3"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

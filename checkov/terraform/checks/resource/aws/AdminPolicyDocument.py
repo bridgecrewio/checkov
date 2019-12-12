@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class AdminPolicyDocument(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
-        id = "BC_AWS_IAM_23"
+        id = "CKV_AWS_1"
         supported_resource = ['aws_iam_policy_document']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)

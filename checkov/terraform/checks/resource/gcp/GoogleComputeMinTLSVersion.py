@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class GoogleComputeMinTLSVersion(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Google SSL policy minimal TLS version is TLS_1_2"
-        id = "BC_GCP_SSL_1"
+        id = "CKV_GCP_4"
         supported_resources = ['google_compute_ssl_policy']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

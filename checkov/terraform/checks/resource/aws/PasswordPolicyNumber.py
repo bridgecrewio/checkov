@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class PasswordPolicyNumber(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM password policy requires at least one number"
-        id = "BC_AWS_IAM_6"
+        id = "CKV_AWS_12"
         supported_resources = ['aws_iam_account_password_policy']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

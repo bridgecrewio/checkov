@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class SNSTopicEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the SNS topic is encrypted"
-        id = "BC_AWS_SNS_1"
+        id = "CKV_AWS_26"
         supported_resources = ['aws_sns_topic']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

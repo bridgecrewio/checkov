@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all Elasticsearch has node-to-node encryption enabled"
-        id = "BC_AWS_ES_2"
+        id = "CKV_AWS_6"
         supported_resources = ['aws_elasticsearch_domain']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

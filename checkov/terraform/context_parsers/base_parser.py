@@ -41,7 +41,7 @@ class BaseContextParser(ABC):
             return file_lines
 
     def _collect_check_suppressions(self):
-        comment_regex = re.compile('(checkov:skip=)+([ (*(\S)+,(\S)+]+)')
+        comment_regex = re.compile('(checkov:skip=)((?: *[A-Z_\d]+,?)+)')
         parsed_file_lines = self._filter_file_lines()
         comments = [(line_num,re.search(comment_regex,x).group(2).split(",")) for (line_num,x) in parsed_file_lines if re.search(comment_regex,x)]
         comments = [(_,[comment.strip() for comment in line]) for (_,line) in comments]

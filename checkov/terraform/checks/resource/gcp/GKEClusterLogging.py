@@ -5,7 +5,7 @@ from checkov.terraform.models.enums import CheckResult, CheckCategories
 class GKEClusterLogging(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters"
-        id = "BC_GCP_GKE_1"
+        id = "CKV_GCP_1"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

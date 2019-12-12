@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class S3AccessLogs(BaseResourceCheck):
     def __init__(self):
         name = "Ensure the S3 bucket has access logging enabled"
-        id = "BC_AWS_S3_13"
+        id = "CKV_AWS_18"
         supported_resources = ['aws_s3_bucket']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

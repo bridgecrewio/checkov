@@ -7,7 +7,7 @@ PORT = '22'
 class GoogleComputeFirewallUnrestrictedIngress22(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Google compute firewall ingress does not allow unrestricted ssh access"
-        id = "BC_GCP_NETWORKING_1"
+        id = "CKV_GCP_2"
         supported_resources = ['google_compute_firewall']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
