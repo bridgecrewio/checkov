@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class EBSSnapshotEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the EBS Snapshot is securely encrypted "
-        id = "BC_AWS_EBS_4"
+        id = "CKV_AWS_4"
         supported_resources = ['aws_ebs_snapshot']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

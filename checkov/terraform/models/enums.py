@@ -5,7 +5,7 @@ class CheckResult(str, Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
     UNKNOWN = "UNKNOWN"
-    SUPPRESSED = "SUPPRESSED"
+    SKIPPED = "SKIPPED"
 
 
 class CheckCategories(Enum):

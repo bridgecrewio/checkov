@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class PasswordPolicyExpiration(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM password policy expires passwords within 90 days or less"
-        id = "BC_AWS_IAM_11"
+        id = "CKV_AWS_9"
         supported_resources = ['aws_iam_account_password_policy']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

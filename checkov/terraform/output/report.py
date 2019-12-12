@@ -14,7 +14,7 @@ init(autoreset=True)
 class Report:
     passed_checks = []
     failed_checks = []
-    suppressed_checks = []
+    skipped_checks = []
     parsing_errors = []
 
     def add_parsing_errors(self, files):
@@ -27,17 +27,17 @@ class Report:
 
     def add_record(self, record):
         if record.check_result == CheckResult.SUCCESS:
-            self.passed_checks.append(record.__dict__)
+            self.passed_checks.append(record)
         if record.check_result == CheckResult.FAILURE:
-            self.failed_checks.append(record.__dict__)
-        if record.check_result == CheckResult.SUPPRESSED:
-            self.suppressed_checks.append(record.__dict__)
+            self.failed_checks.append(record)
+        if record.check_result == CheckResult.SKIPPED:
+            self.skipped_checks.append(record)
 
     def get_summary(self):
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
-            "suppressed": len(self.suppressed_checks),
+            "suppressed": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "checkov_version": version
         }
@@ -48,10 +48,10 @@ class Report:
     def get_dict(self):
         return {
             "results": {
-                "passed_checks": self.passed_checks,
-                "failed_checks": self.failed_checks,
-                "suppressed_checks": self.suppressed_checks,
-                "parsing_errors": self.parsing_errors
+                "passed_checks": [check.__dict__ for check in self.passed_checks],
+                "failed_checks": [check.__dict__ for check in self.failed_checks],
+                "suppressed_checks": [check.__dict__ for check in self.skipped_checks],
+                "parsing_errors": [check for check in self.parsing_errors]
             },
             "summary": self.get_summary()
         }
@@ -63,8 +63,7 @@ class Report:
 
     def print_console(self):
         print(banner)
-        report_dict = self.get_dict()
-        summary = report_dict["summary"]
+        summary = self.get_summary()
 
         if self.parsing_errors:
             message = "\nPassed Checks: {}, Failed Checks: {}, Suppressed Checks: {}, Parsing Errors: {}\n".format(
@@ -74,24 +73,10 @@ class Report:
                 summary["passed"], summary["failed"], summary["suppressed"])
         print(colored(message, "cyan"))
 
-        for record in report_dict["results"]["passed_checks"]:
-            self.print_record_console(record)
-        for record in report_dict["results"]["failed_checks"]:
-            self.print_record_console(record)
-
-    @staticmethod
-    def print_record_console(record):
-        if record['check_result'] == CheckResult.SUCCESS:
-            status = "Passed"
-            status_color = "green"
-        else:
-            status = "Failed"
-            status_color = "red"
-        check_message = colored("Check: \"{}\"\n".format(record["check_name"]), "white")
-        file_details = colored("{}:{}\n".format(record["file_path"], record["file_line_range"]), "magenta")
-        status_message = colored("\t {} for resource: {} ".format(status, record["resource"]), status_color)
-        message = check_message + file_details + status_message
-        print(message)
+        for record in self.passed_checks:
+            print(record)
+        for record in self.failed_checks:
+            print(record)
 
     def print_junit_xml(self):
         ts = self.get_test_suites()
@@ -100,17 +85,20 @@ class Report:
     def get_test_suites(self):
         test_cases = {}
         test_suites = []
-        records = self.passed_checks + self.failed_checks
+        records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = record['check_name']
+            check_name = record.check_name
             if check_name not in test_cases:
                 test_cases[check_name] = []
 
-            test_name = "{} {}".format(check_name, record['resource'])
-            test_case = TestCase(name=test_name, file=record['file_path'], classname=record["check_class"])
-            if record['check_result'] == CheckResult.FAILURE:
+            test_name = "{} {}".format(check_name, record.resource)
+            test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
+            if record.check_result == CheckResult.FAILURE:
                 test_case.add_failure_info(
-                    "Resource \"{}\" failed in check \"{}\"".format(record['resource'], check_name))
+                    "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
+            if record.check_result == CheckResult.SKIPPED:
+                test_case.add_skipped_info(
+                    "Resource \"{}\" skipped in check \"{}\"".format(record.resource, check_name))
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(

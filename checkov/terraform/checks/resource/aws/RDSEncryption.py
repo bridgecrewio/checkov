@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class RDSEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
-        id = "BC_AWS_RDS_1"
+        id = "CKV_AWS_16"
         supported_resources = ['aws_db_instance']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

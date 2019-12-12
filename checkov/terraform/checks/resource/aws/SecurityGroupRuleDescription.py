@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class SecurityGroupRuleDescription(BaseResourceCheck):
     def __init__(self):
         name = "Ensure every security groups rule has a description"
-        id = "BC_AWS_NETWORKING_28"
+        id = "CKV_AWS_23"
         supported_resource = ['aws_security_group', 'aws_security_group_rule', 'aws_db_security_group',
                               'aws_elasticache_security_group', 'aws_redshift_security_group']
         categories = [CheckCategories.NETWORKING]

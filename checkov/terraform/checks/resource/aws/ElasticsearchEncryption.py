@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class ElasticsearchEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the Elasticsearch is securely encrypted at rest"
-        id = "BC_AWS_ES_1"
+        id = "CKV_AWS_5"
         supported_resources = ['aws_elasticsearch_domain']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

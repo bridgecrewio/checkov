@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class PasswordPolicyUppcaseLetter(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM password policy requires at least one uppercase letter"
-        id = "BC_AWS_IAM_5"
+        id = "CKV_AWS_15"
         supported_resources = ['aws_iam_account_password_policy']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

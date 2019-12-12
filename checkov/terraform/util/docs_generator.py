@@ -15,7 +15,7 @@ def get_checks():
     printable_checks_list = []
     for key in resource_registry.checks.keys():
         for check in resource_registry.checks[key]:
-            printable_checks_list.append([key, check.name])
+            printable_checks_list.append([check.id, key, check.name])
     return printable_checks_list
 
 

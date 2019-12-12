@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class GoogleStorageBucketEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Google storage bucket have encryption enabled"
-        id = "BC_GCP_BUCKET_1"
+        id = "CKV_GCP_5"
         supported_resources = ['google_storage_bucket']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

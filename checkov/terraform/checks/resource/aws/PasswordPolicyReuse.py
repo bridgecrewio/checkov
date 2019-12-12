@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class PasswordPolicyReuse(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM password policy prevents password reuse"
-        id = "AWS_CIS_1_10"
+        id = "CKV_AWS_13"
         supported_resources = ['aws_iam_account_password_policy']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

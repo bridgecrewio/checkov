@@ -7,7 +7,7 @@ PORT = 3389
 class SecurityGroupUnrestrictedIngress3389(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no security groups allow ingress from 0.0.0.0:0 to port %d" % PORT
-        id = "BC_AWS_NETWORKING_2"
+        id = "CKV_AWS_25"
         supported_resources = ['aws_security_group']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

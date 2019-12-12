@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class AzureInstancePassword(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)"
-        id = "BC_AZURE_INSTANCE_1"
+        id = "CKV_AZURE_1"
         supported_resources = ['azurerm_virtual_machine']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

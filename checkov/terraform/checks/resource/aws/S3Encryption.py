@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class S3Encryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the S3 bucket is securely encrypted at rest"
-        id = "BC_AWS_S3_14"
+        id = "CKV_AWS_19"
         supported_resources = ['aws_s3_bucket']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

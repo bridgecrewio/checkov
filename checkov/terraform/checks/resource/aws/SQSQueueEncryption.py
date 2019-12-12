@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class SQSQueueEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the SQS queue  is encrypted"
-        id = "BC_AWS_SQS_1"
+        id = "CKV_AWS_27"
         supported_resources = ['aws_sqs_queue']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class KMSRotation(BaseResourceCheck):
     def __init__(self):
         name = "Ensure rotation for customer created CMKs is enabled"
-        id = "BC_AWS_LOGGING_8"
+        id = "CKV_AWS_7"
         supported_resources = ['aws_kms_key']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

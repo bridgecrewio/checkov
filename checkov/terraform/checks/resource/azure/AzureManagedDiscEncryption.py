@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class AzureManagedDiscEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure managed disk have encryption enabled"
-        id = "BC_AZURE_DISC_1"
+        id = "CKV_AZURE_2"
         supported_resources = ['azurerm_managed_disk']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

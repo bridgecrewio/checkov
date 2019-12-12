@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class SagemakerEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the Sagemaker is securely encrypted at rest"
-        id = "BC_AWS_SAGEMAKER_1"
+        id = "CKV_AWS_22"
         supported_resources = ['aws_sagemaker_notebook_instance']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
