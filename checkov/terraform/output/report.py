@@ -5,6 +5,8 @@ from junit_xml import TestCase, TestSuite
 from termcolor import colored
 
 from checkov.terraform.models.enums import CheckResult
+from checkov.terraform.util.banner import banner
+from checkov.version import version
 
 init(autoreset=True)
 
@@ -36,7 +38,8 @@ class Report:
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
             "suppressed": len(self.suppressed_checks),
-            "parsing_errors": len(self.parsing_errors)
+            "parsing_errors": len(self.parsing_errors),
+            "checkov_version": version
         }
 
     def get_json(self):
@@ -59,6 +62,7 @@ class Report:
         return 0
 
     def print_console(self):
+        print(banner)
         report_dict = self.get_dict()
         summary = report_dict["summary"]
 
