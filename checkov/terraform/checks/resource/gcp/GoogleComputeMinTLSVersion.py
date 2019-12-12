@@ -19,8 +19,8 @@ class GoogleComputeMinTLSVersion(BaseResourceCheck):
         """
         if 'min_tls_version' in conf.keys():
             if conf['min_tls_version'][0] == "TLS_1_2":
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = GoogleComputeMinTLSVersion()

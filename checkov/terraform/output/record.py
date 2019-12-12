@@ -27,19 +27,33 @@ class Record():
         self.check_class = check_class
 
     @staticmethod
-    def code_line_string(line_num, line):
-        return "\t\t" + Fore.BLUE + str(line_num) + Fore.WHITE + ' | ' + Fore.YELLOW + line
+    def _code_line_string(line_num, line):
+        if '#' in line:
+            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + line
+        else:
+            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + Fore.YELLOW + line
 
     def __str__(self):
-        if self.check_result == CheckResult.SUCCESS:
-            status = "Passed"
+        status = ''
+        status_color = "white"
+        if self.check_result == CheckResult.PASSED:
+            status = CheckResult.PASSED.name
             status_color = "green"
-        else:
-            status = "Failed"
+        elif self.check_result == CheckResult.FAILED:
+            status = CheckResult.FAILED.name
             status_color = "red"
+        elif self.check_result == CheckResult.SKIPPED:
+            status = CheckResult.SKIPPED.name
+            status_color = 'blue'
         check_message = colored("Check: \"{}\"\n".format(self.check_name), "white")
-        file_details = colored("{}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
-                               "magenta")
-        code_lines = "{}\n".format("".join([self.code_line_string(*code_line) for code_line in self.code_block]))
+        file_details = colored(
+            "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
+            "magenta")
+        code_lines = "{}\n".format("".join(
+            [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
-        return check_message + file_details + code_lines + status_message
+
+        if self.check_result == CheckResult.FAILED:
+            return check_message + status_message + file_details + code_lines
+        else:
+            return check_message + status_message + file_details

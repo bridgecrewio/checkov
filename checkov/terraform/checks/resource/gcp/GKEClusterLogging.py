@@ -19,8 +19,8 @@ class GKEClusterLogging(BaseResourceCheck):
         """
         if 'logging_service' in conf.keys():
             if conf['logging_service'][0] == "none":
-                return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = GKEClusterLogging()

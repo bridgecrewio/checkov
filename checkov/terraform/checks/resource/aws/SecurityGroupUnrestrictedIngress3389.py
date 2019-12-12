@@ -24,9 +24,9 @@ class SecurityGroupUnrestrictedIngress3389(BaseResourceCheck):
             for rule in ingress_conf:
                 if rule['from_port'] == [PORT] and rule['to_port'] == [PORT] and rule['cidr_blocks'] == [
                     ["0.0.0.0/0"]] and 'self' not in rule.keys() and 'security_groups' not in rule.keys():
-                    return CheckResult.FAILURE
+                    return CheckResult.FAILED
 
-        return CheckResult.SUCCESS
+        return CheckResult.PASSED
 
 
 check = SecurityGroupUnrestrictedIngress3389()

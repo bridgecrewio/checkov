@@ -21,12 +21,12 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
             if "block_device" in key and "ephemeral" not in key:
                 if "encrypted" in conf[key][0]:
                     if conf[key][0]["encrypted"] == [False]:
-                        return CheckResult.FAILURE
+                        return CheckResult.FAILED
                     else:
-                        return CheckResult.SUCCESS
+                        return CheckResult.PASSED
                 else:
-                    return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                    return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = LaunchConfigurationEBSEncryption()

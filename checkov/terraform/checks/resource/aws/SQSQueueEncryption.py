@@ -19,8 +19,8 @@ class SQSQueueEncryption(BaseResourceCheck):
         """
         if 'kms_master_key_id' in conf.keys():
             if conf['kms_master_key_id']:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = SQSQueueEncryption()

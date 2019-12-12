@@ -19,8 +19,8 @@ class EBSEncryption(BaseResourceCheck):
         """
         if "encrypted" in conf.keys():
             if conf["encrypted"][0] == True:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = EBSEncryption()

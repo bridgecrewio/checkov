@@ -20,8 +20,8 @@ class AdminPolicyDocument(BaseResourceCheck):
         key = 'statement'
         if key in conf.keys():
             if conf[key]['actions'] == ["*"] and conf[key]['resources'] == ["*"]:
-                return CheckResult.FAILURE
-        return CheckResult.SUCCESS
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = AdminPolicyDocument()

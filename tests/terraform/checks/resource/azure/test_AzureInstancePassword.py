@@ -20,7 +20,7 @@ class TestAzureInstancePassword(unittest.TestCase):
                          }
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILURE, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf = {'name': ['${var.prefix}-vm'], 'location': ['${azurerm_resource_group.main.location}'],
@@ -35,7 +35,7 @@ class TestAzureInstancePassword(unittest.TestCase):
                          'os_profile_linux_config': [{'disable_password_authentication': [True]}]
                          }
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SUCCESS, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':

@@ -24,16 +24,16 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                 if instance_count > 1:
                     if "node_to_node_encryption" in conf.keys():
                         if conf["node_to_node_encryption"][0]["enabled"][0]:
-                            return CheckResult.SUCCESS
+                            return CheckResult.PASSED
                         else:
-                            return CheckResult.FAILURE
+                            return CheckResult.FAILED
                     else:
-                        return CheckResult.FAILURE
+                        return CheckResult.FAILED
                 else:
-                    return CheckResult.SUCCESS
+                    return CheckResult.PASSED
             else:
                 return CheckResult.UNKNOWN
-        return CheckResult.SUCCESS
+        return CheckResult.PASSED
 
 
 check = ElasticsearchNodeToNodeEncryption()

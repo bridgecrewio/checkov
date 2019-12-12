@@ -20,8 +20,8 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         if 'enable_https_traffic_only' in conf.keys():
             config = conf['enable_https_traffic_only'][0]
             if config:
-                return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = StorageAccountsTransportEncryption()

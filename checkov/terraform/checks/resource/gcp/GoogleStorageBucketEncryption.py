@@ -22,8 +22,8 @@ class GoogleStorageBucketEncryption(BaseResourceCheck):
                 encryption_conf = conf['encryption'][0]
                 if 'default_kms_key_name'  in encryption_conf.keys():
                     if encryption_conf['default_kms_key_name']:
-                        return CheckResult.SUCCESS
-        return CheckResult.FAILURE
+                        return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = GoogleStorageBucketEncryption()
