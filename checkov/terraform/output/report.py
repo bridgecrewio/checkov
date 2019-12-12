@@ -14,7 +14,7 @@ init(autoreset=True)
 class Report:
     passed_checks = []
     failed_checks = []
-    suppressed_checks = []
+    skipped_checks = []
     parsing_errors = []
 
     def add_parsing_errors(self, files):
@@ -30,14 +30,14 @@ class Report:
             self.passed_checks.append(record)
         if record.check_result == CheckResult.FAILURE:
             self.failed_checks.append(record)
-        if record.check_result == CheckResult.SUPPRESSED:
-            self.suppressed_checks.append(record)
+        if record.check_result == CheckResult.SKIPPED:
+            self.skipped_checks.append(record)
 
     def get_summary(self):
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
-            "suppressed": len(self.suppressed_checks),
+            "suppressed": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "checkov_version": version
         }
@@ -50,7 +50,7 @@ class Report:
             "results": {
                 "passed_checks": [check.__dict__ for check in self.passed_checks],
                 "failed_checks": [check.__dict__ for check in self.failed_checks],
-                "suppressed_checks": [check.__dict__ for check in self.suppressed_checks],
+                "suppressed_checks": [check.__dict__ for check in self.skipped_checks],
                 "parsing_errors": [check for check in self.parsing_errors]
             },
             "summary": self.get_summary()
@@ -63,7 +63,6 @@ class Report:
 
     def print_console(self):
         print(banner)
-        report_dict = self.get_dict()
         summary = self.get_summary()
 
         if self.parsing_errors:
@@ -86,7 +85,7 @@ class Report:
     def get_test_suites(self):
         test_cases = {}
         test_suites = []
-        records = self.passed_checks + self.failed_checks
+        records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = record.check_name
             if check_name not in test_cases:
@@ -97,6 +96,9 @@ class Report:
             if record.check_result == CheckResult.FAILURE:
                 test_case.add_failure_info(
                     "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
+            if record.check_result == CheckResult.SKIPPED:
+                test_case.add_skipped_info(
+                    "Resource \"{}\" skipped in check \"{}\"".format(record.resource, check_name))
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(

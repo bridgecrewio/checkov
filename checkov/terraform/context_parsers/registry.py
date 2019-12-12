@@ -21,7 +21,7 @@ class ParserRegistry():
             if definition_type in supported_definitions:
                 context_parser = self.context_parsers[definition_type]
                 definition_blocks = definition_blocks_types[definition_type]
-                self.definitions_context[tf_file] = context_parser.run_context_parsing(tf_file,definition_blocks)
+                self.definitions_context[tf_file] = context_parser.run(tf_file, definition_blocks)
 
         return self.definitions_context
 

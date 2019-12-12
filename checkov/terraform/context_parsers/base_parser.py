@@ -40,7 +40,7 @@ class BaseContextParser(ABC):
                           list(enumerate(file.readlines()))]
             return file_lines
 
-    def _collect_check_suppressions(self):
+    def _collect_skip_comments(self):
         comment_regex = re.compile('(checkov:skip=)((?: *[A-Z_\d]+,?)+)')
         parsed_file_lines = self._filter_file_lines()
         comments = [(line_num,re.search(comment_regex,x).group(2).split(",")) for (line_num,x) in parsed_file_lines if re.search(comment_regex,x)]
@@ -67,10 +67,10 @@ class BaseContextParser(ABC):
                     break
         return end_line_num
 
-    def run_context_parsing(self, tf_file, block):
+    def run(self, tf_file, block):
         self.file_lines = self._read_file_lines(tf_file)
         self.context = self.enrich_definition_block(block)
-        self.context = self._collect_check_suppressions()
+        self.context = self._collect_skip_comments()
         return self.context
 
     @abstractmethod

@@ -17,9 +17,9 @@ class BaseResourceCheck(ABC):
         self.logger = logging.getLogger("{}".format(self.__module__))
         resource_registry.register(self)
 
-    def run(self, scanned_file, resource_configuration, resource_name, resource_type, suppress=False):
-        if suppress:
-            result = CheckResult.SUPPRESSED
+    def run(self, scanned_file, resource_configuration, resource_name, resource_type, skip=False):
+        if skip:
+            result = CheckResult.SKIPPED
         else:
             result = self.scan_resource_conf(resource_configuration)
         message = "File {}, Resource \"{}.{}\" check \"{}\" Result: {} ".format(scanned_file, resource_type,
