@@ -18,8 +18,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Add some integers.')
     parser.add_argument('-d', '--directory',
                         help='terraform root directory')
-    parser.add_argument('-o', '--output',
-                        help='output format cli/json/junitxml')
+    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'],default='cli')
     args = parser.parse_args()
     root_folder = args.directory
     report = Runner().run(root_folder)

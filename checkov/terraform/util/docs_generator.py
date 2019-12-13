@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 
 def print_checks():
     printable_checks_list = get_checks()
-    print(tabulate(printable_checks_list, headers=["Resource", "Policy"], tablefmt="github", showindex=True))
+    print(tabulate(printable_checks_list, headers=["id", "Resource", "Policy"], tablefmt="github", showindex=True))
     print("\n\n---\n\n")
 
 
