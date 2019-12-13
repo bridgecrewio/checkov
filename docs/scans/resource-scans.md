@@ -6,7 +6,7 @@ nav_order: 1
 
 # Resource scans (auto generated)
 
-|    |             | Resource                        | Policy                                                                              |
+|    | id          | Resource                        | Policy                                                                              |
 |----|-------------|---------------------------------|-------------------------------------------------------------------------------------|
 |  0 | CKV_AWS_4   | aws_ebs_snapshot                | Ensure all data stored in the EBS Snapshot is securely encrypted                    |
 |  1 | CKV_AWS_7   | aws_kms_key                     | Ensure rotation for customer created CMKs is enabled                                |
