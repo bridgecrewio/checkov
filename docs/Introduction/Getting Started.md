@@ -1,20 +1,20 @@
 ## Getting Started
 
-### Installation
+The installation is quick and straightforward - install, configure input & scan.
 
-```
+
+```bash
+# install from pypi using pip
 pip install checkov
-```
 
-### Configure an input folder
 
-```
+# select an input folder that contains your terraform plan files
 checkov -d /user/tf
 ```
 
 ### Scan result sample (CLI)
 
-```
+```bash
 Passed Checks: 1, Failed Checks: 1, Suppressed Checks: 0
 
 Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
@@ -28,7 +28,7 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 
 ### Export scan to JSON
 
-```
+```bash
 checkov -d /user/tf -o json
 ```
 
@@ -93,5 +93,9 @@ class S3Versioning(BaseResourceCheck):
         return CheckResult.FAILURE
 scanner = S3Versioning()
 ```
+
+### What's Next?
+From this point, you can head to the [Policies](policies.md) for further examples or the How-to Guides section if you’re ready to get your hands dirty.
+
 
 ## 
