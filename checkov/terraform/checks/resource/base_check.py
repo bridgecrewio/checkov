@@ -17,17 +17,24 @@ class BaseResourceCheck(ABC):
         self.logger = logging.getLogger("{}".format(self.__module__))
         resource_registry.register(self)
 
-    def run(self, scanned_file, resource_configuration, resource_name, resource_type, skip=False):
-        if skip:
-            result = CheckResult.SKIPPED
+    def run(self, scanned_file, resource_configuration, resource_name, resource_type, skip_info):
+        check_result={}
+        if skip_info:
+            check_result['result'] = CheckResult.SKIPPED
+            check_result['suppress_comment'] = skip_info['suppress_comment']
+            message = "File {}, Resource \"{}.{}\" check \"{}\" Result: {}, Suppression comment: {} ".format(
+                scanned_file, resource_type,
+                resource_name,
+                self.name,
+                check_result, check_result['suppress_comment'])
         else:
-            result = self.scan_resource_conf(resource_configuration)
-        message = "File {}, Resource \"{}.{}\" check \"{}\" Result: {} ".format(scanned_file, resource_type,
-                                                                                resource_name,
-                                                                                self.name,
-                                                                                result)
+            check_result['result'] = self.scan_resource_conf(resource_configuration)
+            message = "File {}, Resource \"{}.{}\" check \"{}\" Result: {} ".format(scanned_file, resource_type,
+                                                                                    resource_name,
+                                                                                    self.name,
+                                                                                    check_result)
         self.logger.debug(message)
-        return result
+        return check_result
 
     @abstractmethod
     def scan_resource_conf(self, conf):
