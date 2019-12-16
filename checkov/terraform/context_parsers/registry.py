@@ -1,7 +1,6 @@
 import logging
 from checkov.terraform.models.enums import ContextCategories
 
-supported_definitions = [ContextCategories.RESOURCE.name]
 
 
 class ParserRegistry():
@@ -15,6 +14,7 @@ class ParserRegistry():
         self.context_parsers[parser.definition_type] = parser
 
     def enrich_definitions_context(self, definitions):
+        supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_file, definition_blocks_types) = definitions
         definition_blocks_types = {x.upper(): definition_blocks_types[x] for x in definition_blocks_types.keys()}
         for definition_type in definition_blocks_types.keys():
