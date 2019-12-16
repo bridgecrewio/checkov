@@ -84,6 +84,10 @@ jobs:
           pipenv install --dev
       - name: create python package
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch --tags
+          git pull
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@master
