@@ -36,15 +36,17 @@ class Record():
     def __str__(self):
         status = ''
         status_color = "white"
-        if self.check_result == CheckResult.PASSED:
+        if self.check_result['result'] == CheckResult.PASSED:
             status = CheckResult.PASSED.name
             status_color = "green"
-        elif self.check_result == CheckResult.FAILED:
+        elif self.check_result['result'] == CheckResult.FAILED:
             status = CheckResult.FAILED.name
             status_color = "red"
-        elif self.check_result == CheckResult.SKIPPED:
+        elif self.check_result['result'] == CheckResult.SKIPPED:
             status = CheckResult.SKIPPED.name
             status_color = 'blue'
+            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
+
         check_message = colored("Check: \"{}\"\n".format(self.check_name), "white")
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
@@ -52,8 +54,10 @@ class Record():
         code_lines = "{}\n".format("".join(
             [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
-
-        if self.check_result == CheckResult.FAILED:
+        if self.check_result['result'] == CheckResult.FAILED:
             return check_message + status_message + file_details + code_lines
+
+        if self.check_result['result'] == CheckResult.SKIPPED:
+            return check_message + status_message + suppress_comment + file_details
         else:
             return check_message + status_message + file_details

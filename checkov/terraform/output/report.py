@@ -26,11 +26,11 @@ class Report:
             self.parsing_errors.append(file)
 
     def add_record(self, record):
-        if record.check_result == CheckResult.PASSED:
+        if record.check_result['result'] == CheckResult.PASSED:
             self.passed_checks.append(record)
-        if record.check_result == CheckResult.FAILED:
+        if record.check_result['result'] == CheckResult.FAILED:
             self.failed_checks.append(record)
-        if record.check_result == CheckResult.SKIPPED:
+        if record.check_result['result'] == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
 
     def get_summary(self):
@@ -95,12 +95,14 @@ class Report:
 
             test_name = "{} {}".format(check_name, record.resource)
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
-            if record.check_result == CheckResult.FAILED:
+            if record.check_result['result'] == CheckResult.FAILED:
                 test_case.add_failure_info(
                     "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
-            if record.check_result == CheckResult.SKIPPED:
+            if record.check_result['result'] == CheckResult.SKIPPED:
                 test_case.add_skipped_info(
-                    "Resource \"{}\" skipped in check \"{}\"".format(record.resource, check_name))
+                    "Resource \"{}\" skipped in check \"{}\"\n Suppress comment: {}".format(record.resource, check_name,
+                                                                                            record.check_result[
+                                                                                                'suppress_comment']))
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(

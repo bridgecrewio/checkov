@@ -7,6 +7,7 @@ from itertools import islice
 
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
+COMMENT_REGEX = re.compile('(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class BaseContextParser(ABC):
@@ -20,7 +21,6 @@ class BaseContextParser(ABC):
         if definition_type not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
-
         self.definition_type = definition_type
         parser_registry.register(self)
 
@@ -41,15 +41,17 @@ class BaseContextParser(ABC):
             return file_lines
 
     def _collect_skip_comments(self):
-        comment_regex = re.compile('(checkov:skip=)((?: *[A-Z_\d]+,?)+)')
         parsed_file_lines = self._filter_file_lines()
-        comments = [(line_num,re.search(comment_regex,x).group(2).split(",")) for (line_num,x) in parsed_file_lines if re.search(comment_regex,x)]
-        comments = [(_,[comment.strip() for comment in line]) for (_,line) in comments]
-        for (skip_checks_line_num, skip_checks) in comments:
+        comments = [(line_num, {"id": re.search(COMMENT_REGEX, x).group(2),
+                                "suppress_comment": re.search(COMMENT_REGEX, x).group(3)[1:] if re.search(COMMENT_REGEX,
+                                                                                                          x).group(3)
+                                else "No comment provided"}) for (line_num, x) in
+                    parsed_file_lines if re.search(COMMENT_REGEX, x)]
+        for (skip_check_line_num, skip_check) in comments:
             for (block_type, block_def) in self.context.items():
                 for (block_name, block_context) in block_def.items():
-                    if block_context['start_line'] < skip_checks_line_num < block_context['end_line']:
-                       self.context[block_type][block_name]["skipped_checks"] = skip_checks
+                    if block_context['start_line'] < skip_check_line_num < block_context['end_line']:
+                        self.context[block_type][block_name].setdefault('skipped_checks', []).append(skip_check)
         return self.context
 
     def _compute_definition_end_line(self, start_line_num):
