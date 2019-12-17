@@ -66,6 +66,7 @@ resource "aws_s3_bucket" "foo-bucket" {
   tags = {
     Name = "foo-${data.aws_caller_identity.current.account_id}"
   }
+  #checkov:skip=CKV_AWS_20:The bucket is a public static content host
   versioning {
     enabled = true
   }

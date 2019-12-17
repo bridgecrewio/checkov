@@ -21,5 +21,6 @@ resource "aws_s3_bucket" "foo-bucket" {
       }
     }
   }
+  acl           = "public-read"
 }
 data "aws_caller_identity" "current" {}

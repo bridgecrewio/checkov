@@ -1,3 +1,10 @@
+---
+layout: default
+published: true
+title: Checkov Documentation
+order: 1
+---
+
 # Checkov Documentation
 
 Checkov is a static code analysis tool for infrastructure-as-code. 
@@ -11,7 +18,7 @@ See how to [install and get Checkov up and running](Introduction/GettingStarted.
 
 Next [learn how to customize and add policies](Introduction/Policies.md).
 
-Last, Checkov supports export to JUnitXML format that enables simple integration to CICD pipelines. Read more about [here](Results.md) 
+Last, Checkov supports export to JUnitXML format that enables simple integration to CI/CD pipelines. Read more about [here](Results.md) 
 
 
-![](checkov-4-4ec2e1dd74ed.gif)
+![](checkov-recording.gif)
