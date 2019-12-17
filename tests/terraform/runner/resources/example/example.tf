@@ -72,3 +72,47 @@ resource "aws_s3_bucket" "foo-bucket" {
   }
 }
 data "aws_caller_identity" "current" {}
+
+resource "google_sql_database_instance" "gcp_sql_db_instance_bad" {
+  settings {
+    tier = "1"
+  }
+}
+
+resource "google_sql_database_instance" "gcp_sql_db_instance_good" {
+  settings {
+    tier = "1"
+    ip_configuration {
+      require_ssl = "True"
+    }
+  }
+}
+
+resource "google_container_cluster" "primary_good" {
+  name = "google_cluster"
+  enable_legacy_abac = false
+}
+
+resource "google_container_cluster" "primary_good2" {
+  name = "google_cluster"
+  monitoring_service = "monitoring.googleapis.com"
+}
+
+resource "google_container_cluster" "primary_bad" {
+  name = "google_cluster_bad"
+  monitoring_service = "none"
+  enable_legacy_abac = true
+}
+
+resource "google_container_node_pool" "bad_node_pool" {
+  cluster = ""
+  management {
+  }
+}
+
+resource "google_container_node_pool" "good_node_pool" {
+  cluster = ""
+  management {
+    auto_repair = true
+  }
+}

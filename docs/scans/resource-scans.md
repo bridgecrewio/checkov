@@ -42,14 +42,18 @@ nav_order: 1
 | 31 | CKV_AWS_23  | aws_elasticache_security_group  | Ensure every security groups rule has a description                                 |
 | 32 | CKV_AWS_23  | aws_redshift_security_group     | Ensure every security groups rule has a description                                 |
 | 33 | CKV_AWS_27  | aws_sqs_queue                   | Ensure all data stored in the SQS queue  is encrypted                               |
-| 34 | CKV_GCP_1   | google_container_cluster        | Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters          |
-| 35 | CKV_GCP_2   | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
-| 36 | CKV_GCP_3   | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
-| 37 | CKV_GCP_5   | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
-| 38 | CKV_GCP_4   | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
-| 39 | CKV_AZURE_2 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
-| 40 | CKV_AZURE_1 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
-| 41 | CKV_AZURE_3 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
+| 34 | CKV_GCP_7   | google_container_cluster        | Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters       |
+| 35 | CKV_GCP_1   | google_container_cluster        | Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters          |
+| 36 | CKV_GCP_8   | google_container_cluster        | Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters       |
+| 37 | CKV_GCP_2   | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted ssh access       |
+| 38 | CKV_GCP_3   | google_compute_firewall         | Ensure Google compute firewall ingress does not allow unrestricted rdp access       |
+| 39 | CKV_GCP_5   | google_storage_bucket           | Ensure Google storage bucket have encryption enabled                                |
+| 40 | CKV_GCP_9   | google_container_node_pool      | Ensure Legacy Authorization is set to Disabled on Kubernetes Engine Clusters        |
+| 41 | CKV_GCP_6   | google_sql_database_instance    | Ensure all Cloud SQL database instance requires all incoming connections to use SSL |
+| 42 | CKV_GCP_4   | google_compute_ssl_policy       | Ensure Google SSL policy minimal TLS version is TLS_1_2                             |
+| 43 | CKV_AZURE_2 | azurerm_managed_disk            | Ensure Azure managed disk have encryption enabled                                   |
+| 44 | CKV_AZURE_1 | azurerm_virtual_machine         | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)        |
+| 45 | CKV_AZURE_3 | azurerm_storage_account         | Ensure that 'Secure transfer required' is set to 'Enabled'                          |
 
 
 ---
