@@ -7,7 +7,7 @@ class GoogleContainerNodePoolAutoRepairEnabled(BaseResourceCheck):
         name = "Ensure Legacy Authorization is set to Disabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_9"
         supported_resources = ['google_container_node_pool']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

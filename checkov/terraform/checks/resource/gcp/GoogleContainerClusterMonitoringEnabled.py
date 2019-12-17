@@ -7,7 +7,7 @@ class GoogleContainerClusterMonitoringEnabled(BaseResourceCheck):
         name = "Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_8"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
