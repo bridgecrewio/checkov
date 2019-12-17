@@ -1,3 +1,10 @@
+---
+layout: default
+published: true
+title: Suppressions
+order: 5
+---
+
 # Suppressions
 
 Like any static-analysis tool it is limited by its analysis scope. 
