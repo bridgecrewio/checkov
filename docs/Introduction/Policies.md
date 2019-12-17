@@ -15,7 +15,7 @@ A policy needs to specify the following items:
 
 ``name`` : A new policy's unique purpose; It should ideally specify the positive desired outcome of the policy.
 
-``id``: A mandatory unique identifier of a policy; Native policies written by Bridgecrew contributors will follow the following convention ``BC_resourceType_serialNumber``.
+``id``: A mandatory unique identifier of a policy; Native policies written by Bridgecrew contributors will follow the following convention ``CKV_providerType_serialNumber``. (e.g. `CKV_AWS_9` , `CKV_GCP_12`)
 
 ``supported_resources``: Infrastructure objects, as described in Terraform language; This should usually contain one specific resource block.
 
@@ -23,7 +23,7 @@ A policy needs to specify the following items:
 
 
 
-For this tutorial let's produce a policy that ensures that new RDS services spun-up are encrypted at rest ([BC_AWS_RDS_1](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
+For this tutorial let's produce a policy that ensures that new RDS services spun-up are encrypted at rest ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
 
 1. Start by creating a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``
 2. Add this content
@@ -33,33 +33,39 @@ from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 ```
 
-3. At this point, we define the meta entities for this check: ``name``, ``id``, ``supported``, ``resources``, ``categories``
+3. At this point, we define the meta entities for this check: ``name``, ``id``, ``supported_resources``, ``categories``
 
 ```python
-   class RDSEncryption(BaseResourceCheck):
-       def __init__(self):
-           name = "Ensure all data stored in the RDS is securely encrypted at rest"
-           id = "BC_AWS_RDS_1"
-           supported_resources = ['aws_db_instance']
-           categories = [CheckCategories.ENCRYPTION]
-           super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+class RDSEncryption(BaseResourceCheck):
+    def __init__(self):
+        name = "Ensure all data stored in the RDS is securely encrypted at rest"
+        id = "CKV_AWS_16"
+        supported_resources = ['aws_db_instance']
+        categories = [CheckCategories.ENCRYPTION]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 ```
 
 4. Next we define a simple check of the ```aws_db_instance``` resource block to find if ```aws_db_instance``` is disabled ```[0]```. When disabled, we require it will result in a ```CheckResult.FAILURE```.
 
 ```python
-   def scan_resource_conf(self, conf):
-           if 'storage_encrypted' in conf.keys():
-               key = conf['storage_encrypted'][0]
-               if key:
-                   return CheckResult.SUCCESS
-           return CheckResult.FAILURE
+def scan_resource_conf(self, conf):
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            return CheckResult.PASSED
+    return CheckResult.FAILED
 ```
 
 5. Last - our file should conclude the policy name and operationalize it with this statement.
 
 ```python
- check = RDSEncryption()
+check = RDSEncryption()
 ```
 
 
