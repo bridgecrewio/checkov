@@ -44,144 +44,254 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 	SKIPPED for resource: aws_s3_bucket.template_bucket
 	Suppress comment: Honestly dear, I don't give a damn
 	File: /main.tf:81-92     ```
+```
 
 ### JSON Output
 
-Running a Checkov scan with the JSON output parmeter (```-o json```) will result in JSON print output.
+Running a Checkov scan with the JSON output parameter (```-o json```) will result in JSON print output.
 
 ```
 checkov -d /user/tf -o json
 ```
-
-The print includes detailed structured data-blocks that contain exact references to code blocks, line ranges, optional skipped checks,
-and sacnned resources.
 
 ```json
 {
     "results": {
         "passed_checks": [
             {
-                "check_id": "CKV_AWS_20",
-                "check_name": "S3 Bucket has an ACL defined which allows public access.",
+                "check_id": "CKV_AWS_19",
+                "check_name": "Ensure all data stored in the S3 bucket is securely encrypted at rest",
                 "check_result": {
                     "result": "PASSED"
                 },
                 "code_block": [
                     [
-                        23,
-                        "resource \"aws_s3_bucket\" \"sls_deployment_bucket_name\" {\n"
+                        1,
+                        "resource \"aws_s3_bucket\" \"foo-bucket\" {\n"
                     ],
                     [
-                        24,
-                        "  provider      = aws.current_region\n"
-                    ],
-                    [
-                        25,
+                        2,
                         "  region        = var.region\n"
                     ],
                     [
-                        26,
-                        "  bucket        = local.sls_deployment_bucket_name\n"
+                        3,
+                        "  bucket        = local.bucket_name\n"
                     ],
                     [
-                        27,
+                        4,
                         "  force_destroy = true\n"
                     ],
                     [
-                        28,
-                        "  acl           = \"private\"\n"
+                        5,
+                        "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"
                     ],
                     [
-                        29,
+                        6,
                         "  tags = {\n"
                     ],
                     [
-                        30,
-                        "    Name = local.sls_deployment_bucket_name\n"
+                        7,
+                        "    Name = \"foo-${data.aws_caller_identity.current.account_id}\"\n"
                     ],
                     [
-                        31,
+                        8,
                         "  }\n"
                     ],
                     [
-                        32,
+                        9,
+                        "  versioning {\n"
+                    ],
+                    [
+                        10,
+                        "    enabled = false\n"
+                    ],
+                    [
+                        11,
+                        "  }\n"
+                    ],
+                    [
+                        12,
+                        "  logging {\n"
+                    ],
+                    [
+                        13,
+                        "    target_bucket = \"${aws_s3_bucket.log_bucket.id}\"\n"
+                    ],
+                    [
+                        14,
+                        "    target_prefix = \"log/\"\n"
+                    ],
+                    [
+                        15,
+                        "  }\n"
+                    ],
+                    [
+                        16,
+                        "  server_side_encryption_configuration {\n"
+                    ],
+                    [
+                        17,
+                        "    rule {\n"
+                    ],
+                    [
+                        18,
+                        "      apply_server_side_encryption_by_default {\n"
+                    ],
+                    [
+                        19,
+                        "        kms_master_key_id = \"${aws_kms_key.mykey.arn}\"\n"
+                    ],
+                    [
+                        20,
+                        "        sse_algorithm     = \"aws:kms\"\n"
+                    ],
+                    [
+                        21,
+                        "      }\n"
+                    ],
+                    [
+                        22,
+                        "    }\n"
+                    ],
+                    [
+                        23,
+                        "  }\n"
+                    ],
+                    [
+                        24,
+                        "  acl           = \"public-read\"\n"
+                    ],
+                    [
+                        25,
                         "}\n"
                     ]
                 ],
-                "file_path": "/../regionStack/main.tf",
+                "file_path": "/example.tf",
                 "file_line_range": [
-                    23,
-                    32
+                    1,
+                    25
                 ],
-                "resource": "aws_s3_bucket.sls_deployment_bucket_name",
-                "check_class": "checkov.terraform.checks.resource.aws.S3PublicACL"
-            }
-        ],
-        "failed_checks": [
+                "resource": "aws_s3_bucket.foo-bucket",
+                "check_class": "checkov.terraform.checks.resource.aws.S3Encryption"
+            },
             {
                 "check_id": "CKV_AWS_18",
                 "check_name": "Ensure the S3 bucket has access logging enabled",
                 "check_result": {
-                    "result": "FAILED"
+                    "result": "PASSED"
                 },
                 "code_block": [
                     [
-                        81,
-                        "resource \"aws_s3_bucket\" \"template_bucket\" {\n"
+                        1,
+                        "resource \"aws_s3_bucket\" \"foo-bucket\" {\n"
                     ],
                     [
-                        82,
+                        2,
                         "  region        = var.region\n"
                     ],
                     [
-                        83,
+                        3,
                         "  bucket        = local.bucket_name\n"
                     ],
                     [
-                        84,
-                        "  # checkov:skip=CKV_AWS_19:Honestly dear, I don't give a damn\n"
-                    ],
-                    [
-                        85,
-                        "  # checkov:skip=CKV_AWS_20\n"
-                    ],
-                    [
-                        86,
-                        "  acl           = \"public-read\"\n"
-                    ],
-                    [
-                        87,
+                        4,
                         "  force_destroy = true\n"
                     ],
                     [
-                        88,
-                        "\n"
+                        5,
+                        "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"
                     ],
                     [
-                        89,
+                        6,
                         "  tags = {\n"
                     ],
                     [
-                        90,
-                        "    Name = \"${local.bucket_name}-${data.aws_caller_identity.current.account_id}\"\n"
+                        7,
+                        "    Name = \"foo-${data.aws_caller_identity.current.account_id}\"\n"
                     ],
                     [
-                        91,
+                        8,
                         "  }\n"
                     ],
                     [
-                        92,
+                        9,
+                        "  versioning {\n"
+                    ],
+                    [
+                        10,
+                        "    enabled = false\n"
+                    ],
+                    [
+                        11,
+                        "  }\n"
+                    ],
+                    [
+                        12,
+                        "  logging {\n"
+                    ],
+                    [
+                        13,
+                        "    target_bucket = \"${aws_s3_bucket.log_bucket.id}\"\n"
+                    ],
+                    [
+                        14,
+                        "    target_prefix = \"log/\"\n"
+                    ],
+                    [
+                        15,
+                        "  }\n"
+                    ],
+                    [
+                        16,
+                        "  server_side_encryption_configuration {\n"
+                    ],
+                    [
+                        17,
+                        "    rule {\n"
+                    ],
+                    [
+                        18,
+                        "      apply_server_side_encryption_by_default {\n"
+                    ],
+                    [
+                        19,
+                        "        kms_master_key_id = \"${aws_kms_key.mykey.arn}\"\n"
+                    ],
+                    [
+                        20,
+                        "        sse_algorithm     = \"aws:kms\"\n"
+                    ],
+                    [
+                        21,
+                        "      }\n"
+                    ],
+                    [
+                        22,
+                        "    }\n"
+                    ],
+                    [
+                        23,
+                        "  }\n"
+                    ],
+                    [
+                        24,
+                        "  acl           = \"public-read\"\n"
+                    ],
+                    [
+                        25,
                         "}\n"
                     ]
                 ],
-                "file_path": "/main.tf",
+                "file_path": "/example.tf",
                 "file_line_range": [
-                    81,
-                    92
+                    1,
+                    25
                 ],
-                "resource": "aws_s3_bucket.template_bucket",
+                "resource": "aws_s3_bucket.foo-bucket",
                 "check_class": "checkov.terraform.checks.resource.aws.S3AccessLogs"
-            },
+            }
+        ],
+        "failed_checks": [
             {
                 "check_id": "CKV_AWS_21",
                 "check_name": "Ensure all data stored in the S3 bucket have versioning enabled",
@@ -190,142 +300,249 @@ and sacnned resources.
                 },
                 "code_block": [
                     [
-                        81,
-                        "resource \"aws_s3_bucket\" \"template_bucket\" {\n"
+                        1,
+                        "resource \"aws_s3_bucket\" \"foo-bucket\" {\n"
                     ],
                     [
-                        82,
+                        2,
                         "  region        = var.region\n"
                     ],
                     [
-                        83,
+                        3,
                         "  bucket        = local.bucket_name\n"
                     ],
                     [
-                        84,
-                        "  # checkov:skip=CKV_AWS_19:Honestly dear, I don't give a damn\n"
-                    ],
-                    [
-                        85,
-                        "  # checkov:skip=CKV_AWS_20\n"
-                    ],
-                    [
-                        86,
-                        "  acl           = \"public-read\"\n"
-                    ],
-                    [
-                        87,
+                        4,
                         "  force_destroy = true\n"
                     ],
                     [
-                        88,
-                        "\n"
+                        5,
+                        "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"
                     ],
                     [
-                        89,
+                        6,
                         "  tags = {\n"
                     ],
                     [
-                        90,
-                        "    Name = \"${local.bucket_name}-${data.aws_caller_identity.current.account_id}\"\n"
+                        7,
+                        "    Name = \"foo-${data.aws_caller_identity.current.account_id}\"\n"
                     ],
                     [
-                        91,
+                        8,
                         "  }\n"
                     ],
                     [
-                        92,
+                        9,
+                        "  versioning {\n"
+                    ],
+                    [
+                        10,
+                        "    enabled = false\n"
+                    ],
+                    [
+                        11,
+                        "  }\n"
+                    ],
+                    [
+                        12,
+                        "  logging {\n"
+                    ],
+                    [
+                        13,
+                        "    target_bucket = \"${aws_s3_bucket.log_bucket.id}\"\n"
+                    ],
+                    [
+                        14,
+                        "    target_prefix = \"log/\"\n"
+                    ],
+                    [
+                        15,
+                        "  }\n"
+                    ],
+                    [
+                        16,
+                        "  server_side_encryption_configuration {\n"
+                    ],
+                    [
+                        17,
+                        "    rule {\n"
+                    ],
+                    [
+                        18,
+                        "      apply_server_side_encryption_by_default {\n"
+                    ],
+                    [
+                        19,
+                        "        kms_master_key_id = \"${aws_kms_key.mykey.arn}\"\n"
+                    ],
+                    [
+                        20,
+                        "        sse_algorithm     = \"aws:kms\"\n"
+                    ],
+                    [
+                        21,
+                        "      }\n"
+                    ],
+                    [
+                        22,
+                        "    }\n"
+                    ],
+                    [
+                        23,
+                        "  }\n"
+                    ],
+                    [
+                        24,
+                        "  acl           = \"public-read\"\n"
+                    ],
+                    [
+                        25,
                         "}\n"
                     ]
                 ],
-                "file_path": "/main.tf",
+                "file_path": "/example.tf",
                 "file_line_range": [
-                    81,
-                    92
+                    1,
+                    25
                 ],
-                "resource": "aws_s3_bucket.template_bucket",
+                "resource": "aws_s3_bucket.foo-bucket",
                 "check_class": "checkov.terraform.checks.resource.aws.S3Versioning"
-            },
-           
+            }
         ],
         "skipped_checks": [
             {
-                "check_id": "CKV_AWS_19",
-                "check_name": "Ensure all data stored in the S3 bucket is securely encrypted at rest",
+                "check_id": "CKV_AWS_20",
+                "check_name": "S3 Bucket has an ACL defined which allows public access.",
                 "check_result": {
                     "result": "SKIPPED",
-                    "suppress_comment": "Honestly dear, I don't give a damn"
+                    "suppress_comment": "The bucket is a public static content host"
                 },
                 "code_block": [
                     [
-                        81,
-                        "resource \"aws_s3_bucket\" \"template_bucket\" {\n"
+                        1,
+                        "resource \"aws_s3_bucket\" \"foo-bucket\" {\n"
                     ],
                     [
-                        82,
+                        2,
                         "  region        = var.region\n"
                     ],
                     [
-                        83,
+                        3,
                         "  bucket        = local.bucket_name\n"
                     ],
                     [
-                        84,
-                        "  # checkov:skip=CKV_AWS_19:Honestly dear, I don't give a damn\n"
-                    ],
-                    [
-                        85,
-                        "  # checkov:skip=CKV_AWS_20\n"
-                    ],
-                    [
-                        86,
-                        "  acl           = \"public-read\"\n"
-                    ],
-                    [
-                        87,
+                        4,
                         "  force_destroy = true\n"
                     ],
                     [
-                        88,
-                        "\n"
+                        5,
+                        "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"
                     ],
                     [
-                        89,
+                        6,
                         "  tags = {\n"
                     ],
                     [
-                        90,
-                        "    Name = \"${local.bucket_name}-${data.aws_caller_identity.current.account_id}\"\n"
+                        7,
+                        "    Name = \"foo-${data.aws_caller_identity.current.account_id}\"\n"
                     ],
                     [
-                        91,
+                        8,
                         "  }\n"
                     ],
                     [
-                        92,
+                        9,
+                        "  versioning {\n"
+                    ],
+                    [
+                        10,
+                        "    enabled = false\n"
+                    ],
+                    [
+                        11,
+                        "  }\n"
+                    ],
+                    [
+                        12,
+                        "  logging {\n"
+                    ],
+                    [
+                        13,
+                        "    target_bucket = \"${aws_s3_bucket.log_bucket.id}\"\n"
+                    ],
+                    [
+                        14,
+                        "    target_prefix = \"log/\"\n"
+                    ],
+                    [
+                        15,
+                        "  }\n"
+                    ],
+                    [
+                        16,
+                        "  server_side_encryption_configuration {\n"
+                    ],
+                    [
+                        17,
+                        "    rule {\n"
+                    ],
+                    [
+                        18,
+                        "      apply_server_side_encryption_by_default {\n"
+                    ],
+                    [
+                        19,
+                        "        kms_master_key_id = \"${aws_kms_key.mykey.arn}\"\n"
+                    ],
+                    [
+                        20,
+                        "        sse_algorithm     = \"aws:kms\"\n"
+                    ],
+                    [
+                        21,
+                        "      }\n"
+                    ],
+                    [
+                        22,
+                        "    }\n"
+                    ],
+                    [
+                        23,
+                        "  }\n"
+                    ],
+                    [
+                        24,
+                        "  acl           = \"public-read\"\n"
+                    ],
+                    [
+                        25,
                         "}\n"
                     ]
                 ],
-                "file_path": "/main.tf",
+                "file_path": "/example.tf",
                 "file_line_range": [
-                    81,
-                    92
+                    1,
+                    25
                 ],
-                "resource": "aws_s3_bucket.template_bucket",
-                "check_class": "checkov.terraform.checks.resource.aws.S3Encryption"
+                "resource": "aws_s3_bucket.foo-bucket",
+                "check_class": "checkov.terraform.checks.resource.aws.S3PublicACL"
             }
         ],
         "parsing_errors": []
     },
     "summary": {
-        "passed": 1,
-        "failed": 2,
+        "passed": 2,
+        "failed": 1,
         "skipped": 1,
         "parsing_errors": 0,
         "checkov_version": "1.0.63"
     }
 }
 ```
+The print includes detailed structured data-blocks that contain exact references to code blocks, line ranges, optional skipped checks,
+and scanned resources.
+
+
 
 ### JUnit XML
 
@@ -339,91 +556,26 @@ This print also includes detailed structured data-blocks that contain exact refe
 
 ```xml
 <?xml version="1.0" ?>
-<testsuites disabled="0" errors="0" failures="15" tests="24" time="0.0">
-	<testsuite disabled="0" errors="0" failures="0" name="S3 Bucket has an ACL defined which allows public access." package="checkov.terraform.checks.resource.aws.S3PublicACL" skipped="1" tests="4" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.S3PublicACL" file="/../regionStack/main.tf" name="S3 Bucket has an ACL defined which allows public access. aws_s3_bucket.sls_deployment_bucket_name"/>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3PublicACL" file="/../../api/infra/base/appSite/main.tf" name="S3 Bucket has an ACL defined which allows public access. aws_s3_bucket.app_bucket"/>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3PublicACL" file="/../../scanners/infra/base/main.tf" name="S3 Bucket has an ACL defined which allows public access. aws_s3_bucket.scanner_results"/>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3PublicACL" file="/main.tf" name="S3 Bucket has an ACL defined which allows public access. aws_s3_bucket.template_bucket">
-			<skipped message="Resource &quot;aws_s3_bucket.template_bucket&quot; skipped in check &quot;S3 Bucket has an ACL defined which allows public access.&quot;
- Suppress comment: No comment provided" type="skipped"/>
+<testsuites disabled="0" errors="0" failures="1" tests="4" time="0.0">
+	<testsuite disabled="0" errors="0" failures="0" name="Ensure all data stored in the S3 bucket is securely encrypted at rest" package="checkov.terraform.checks.resource.aws.S3Encryption" skipped="0" tests="1" time="0">
+		<testcase classname="checkov.terraform.checks.resource.aws.S3Encryption" file="/example.tf" name="Ensure all data stored in the S3 bucket is securely encrypted at rest aws_s3_bucket.foo-bucket"/>
+	</testsuite>
+	<testsuite disabled="0" errors="0" failures="0" name="Ensure the S3 bucket has access logging enabled" package="checkov.terraform.checks.resource.aws.S3AccessLogs" skipped="0" tests="1" time="0">
+		<testcase classname="checkov.terraform.checks.resource.aws.S3AccessLogs" file="/example.tf" name="Ensure the S3 bucket has access logging enabled aws_s3_bucket.foo-bucket"/>
+	</testsuite>
+	<testsuite disabled="0" errors="0" failures="1" name="Ensure all data stored in the S3 bucket have versioning enabled" package="checkov.terraform.checks.resource.aws.S3Versioning" skipped="0" tests="1" time="0">
+		<testcase classname="checkov.terraform.checks.resource.aws.S3Versioning" file="/example.tf" name="Ensure all data stored in the S3 bucket have versioning enabled aws_s3_bucket.foo-bucket">
+			<failure message="Resource &quot;aws_s3_bucket.foo-bucket&quot; failed in check &quot;Ensure all data stored in the S3 bucket have versioning enabled&quot;" type="failure"/>
 		</testcase>
 	</testsuite>
-	<testsuite disabled="0" errors="0" failures="0" name="Ensure no security groups allow ingress from 0.0.0.0:0 to port 22" package="checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress22" skipped="0" tests="1" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress22" file="/../../scanners/infra/base/main.tf" name="Ensure no security groups allow ingress from 0.0.0.0:0 to port 22 aws_security_group.scanner_tasks_sg"/>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="0" name="Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389" package="checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress3389" skipped="0" tests="1" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress3389" file="/../../scanners/infra/base/main.tf" name="Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 aws_security_group.scanner_tasks_sg"/>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="2" name="Ensure all data stored in the S3 bucket is securely encrypted at rest" package="checkov.terraform.checks.resource.aws.S3Encryption" skipped="1" tests="4" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Encryption" file="/../../scanners/infra/base/main.tf" name="Ensure all data stored in the S3 bucket is securely encrypted at rest aws_s3_bucket.scanner_results"/>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Encryption" file="/../regionStack/main.tf" name="Ensure all data stored in the S3 bucket is securely encrypted at rest aws_s3_bucket.sls_deployment_bucket_name">
-			<failure message="Resource &quot;aws_s3_bucket.sls_deployment_bucket_name&quot; failed in check &quot;Ensure all data stored in the S3 bucket is securely encrypted at rest&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Encryption" file="/../../api/infra/base/appSite/main.tf" name="Ensure all data stored in the S3 bucket is securely encrypted at rest aws_s3_bucket.app_bucket">
-			<failure message="Resource &quot;aws_s3_bucket.app_bucket&quot; failed in check &quot;Ensure all data stored in the S3 bucket is securely encrypted at rest&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Encryption" file="/main.tf" name="Ensure all data stored in the S3 bucket is securely encrypted at rest aws_s3_bucket.template_bucket">
-			<skipped message="Resource &quot;aws_s3_bucket.template_bucket&quot; skipped in check &quot;Ensure all data stored in the S3 bucket is securely encrypted at rest&quot;
- Suppress comment: Honestly dear, I don't give a damn" type="skipped"/>
-		</testcase>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="0" name="Ensure rotation for customer created CMKs is enabled" package="checkov.terraform.checks.resource.aws.KMSRotation" skipped="0" tests="1" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.KMSRotation" file="/../../scanners/infra/base/main.tf" name="Ensure rotation for customer created CMKs is enabled aws_kms_key.scanner_key"/>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="4" name="Ensure the S3 bucket has access logging enabled" package="checkov.terraform.checks.resource.aws.S3AccessLogs" skipped="0" tests="4" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.S3AccessLogs" file="/main.tf" name="Ensure the S3 bucket has access logging enabled aws_s3_bucket.template_bucket">
-			<failure message="Resource &quot;aws_s3_bucket.template_bucket&quot; failed in check &quot;Ensure the S3 bucket has access logging enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3AccessLogs" file="/../regionStack/main.tf" name="Ensure the S3 bucket has access logging enabled aws_s3_bucket.sls_deployment_bucket_name">
-			<failure message="Resource &quot;aws_s3_bucket.sls_deployment_bucket_name&quot; failed in check &quot;Ensure the S3 bucket has access logging enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3AccessLogs" file="/../../api/infra/base/appSite/main.tf" name="Ensure the S3 bucket has access logging enabled aws_s3_bucket.app_bucket">
-			<failure message="Resource &quot;aws_s3_bucket.app_bucket&quot; failed in check &quot;Ensure the S3 bucket has access logging enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3AccessLogs" file="/../../scanners/infra/base/main.tf" name="Ensure the S3 bucket has access logging enabled aws_s3_bucket.scanner_results">
-			<failure message="Resource &quot;aws_s3_bucket.scanner_results&quot; failed in check &quot;Ensure the S3 bucket has access logging enabled&quot;" type="failure"/>
-		</testcase>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="4" name="Ensure all data stored in the S3 bucket have versioning enabled" package="checkov.terraform.checks.resource.aws.S3Versioning" skipped="0" tests="4" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Versioning" file="/main.tf" name="Ensure all data stored in the S3 bucket have versioning enabled aws_s3_bucket.template_bucket">
-			<failure message="Resource &quot;aws_s3_bucket.template_bucket&quot; failed in check &quot;Ensure all data stored in the S3 bucket have versioning enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Versioning" file="/../regionStack/main.tf" name="Ensure all data stored in the S3 bucket have versioning enabled aws_s3_bucket.sls_deployment_bucket_name">
-			<failure message="Resource &quot;aws_s3_bucket.sls_deployment_bucket_name&quot; failed in check &quot;Ensure all data stored in the S3 bucket have versioning enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Versioning" file="/../../api/infra/base/appSite/main.tf" name="Ensure all data stored in the S3 bucket have versioning enabled aws_s3_bucket.app_bucket">
-			<failure message="Resource &quot;aws_s3_bucket.app_bucket&quot; failed in check &quot;Ensure all data stored in the S3 bucket have versioning enabled&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.S3Versioning" file="/../../scanners/infra/base/main.tf" name="Ensure all data stored in the S3 bucket have versioning enabled aws_s3_bucket.scanner_results">
-			<failure message="Resource &quot;aws_s3_bucket.scanner_results&quot; failed in check &quot;Ensure all data stored in the S3 bucket have versioning enabled&quot;" type="failure"/>
-		</testcase>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="3" name="Ensure all data stored in the SNS topic is encrypted" package="checkov.terraform.checks.resource.aws.SNSTopicEncryption" skipped="0" tests="3" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.SNSTopicEncryption" file="/../regionStack/../../monitor/infra/../../utils/terraform/sns/main.tf" name="Ensure all data stored in the SNS topic is encrypted aws_sns_topic.sns_topic">
-			<failure message="Resource &quot;aws_sns_topic.sns_topic&quot; failed in check &quot;Ensure all data stored in the SNS topic is encrypted&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.SNSTopicEncryption" file="/../regionStack/../../utils/terraform/sns/main.tf" name="Ensure all data stored in the SNS topic is encrypted aws_sns_topic.sns_topic">
-			<failure message="Resource &quot;aws_sns_topic.sns_topic&quot; failed in check &quot;Ensure all data stored in the SNS topic is encrypted&quot;" type="failure"/>
-		</testcase>
-		<testcase classname="checkov.terraform.checks.resource.aws.SNSTopicEncryption" file="/../../compliances/infra/base/./remediations/base/../../../../../utils/terraform/sns/main.tf" name="Ensure all data stored in the SNS topic is encrypted aws_sns_topic.sns_topic">
-			<failure message="Resource &quot;aws_sns_topic.sns_topic&quot; failed in check &quot;Ensure all data stored in the SNS topic is encrypted&quot;" type="failure"/>
-		</testcase>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="1" name="Ensure all data stored in the SQS queue  is encrypted" package="checkov.terraform.checks.resource.aws.SQSQueueEncryption" skipped="0" tests="1" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.SQSQueueEncryption" file="/../../logArchive/infra/base/laceworkCloudwatch/main.tf" name="Ensure all data stored in the SQS queue  is encrypted aws_sqs_queue.lacework">
-			<failure message="Resource &quot;aws_sqs_queue.lacework&quot; failed in check &quot;Ensure all data stored in the SQS queue  is encrypted&quot;" type="failure"/>
-		</testcase>
-	</testsuite>
-	<testsuite disabled="0" errors="0" failures="1" name="Ensure every security groups rule has a description" package="checkov.terraform.checks.resource.aws.SecurityGroupRuleDescription" skipped="0" tests="1" time="0">
-		<testcase classname="checkov.terraform.checks.resource.aws.SecurityGroupRuleDescription" file="/../../scanners/infra/base/main.tf" name="Ensure every security groups rule has a description aws_security_group.scanner_tasks_sg">
-			<failure message="Resource &quot;aws_security_group.scanner_tasks_sg&quot; failed in check &quot;Ensure every security groups rule has a description&quot;" type="failure"/>
+	<testsuite disabled="0" errors="0" failures="0" name="S3 Bucket has an ACL defined which allows public access." package="checkov.terraform.checks.resource.aws.S3PublicACL" skipped="1" tests="1" time="0">
+		<testcase classname="checkov.terraform.checks.resource.aws.S3PublicACL" file="/example.tf" name="S3 Bucket has an ACL defined which allows public access. aws_s3_bucket.foo-bucket">
+			<skipped message="Resource &quot;aws_s3_bucket.foo-bucket&quot; skipped in check &quot;S3 Bucket has an ACL defined which allows public access.&quot;
+ Suppress comment: The bucket is a public static content host" type="skipped"/>
 		</testcase>
 	</testsuite>
 </testsuites>
 ```
-
-
 
 ## Next Steps
 

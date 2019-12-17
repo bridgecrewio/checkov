@@ -27,7 +27,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        passing_tf_dir_path = current_dir + "/resources/valid_tf_only_passing_checks"
+        passing_tf_dir_path = current_dir + "/resources/valid_tf_only_passed_checks"
 
         print("testing dir" + passing_tf_dir_path)
         runner = Runner()
