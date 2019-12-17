@@ -29,9 +29,11 @@ Checkov is written in Python and provides a simple method to write and manage po
 ## Screenshots
 
 Scan results in CLI
+
 ![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan.png)
 
 Scheduled scan result in Jenkins
+
 ![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
 
 ## Getting started
