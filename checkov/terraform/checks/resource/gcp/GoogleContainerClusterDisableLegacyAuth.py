@@ -4,7 +4,7 @@ from checkov.terraform.models.enums import CheckResult, CheckCategories
 
 class GoogleContainerClusterMonitoringEnabled(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters"
+        name = "Ensure Legacy Authorization is set to Disabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_7"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.NETWORKING]

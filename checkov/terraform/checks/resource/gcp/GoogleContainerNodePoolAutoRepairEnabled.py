@@ -4,7 +4,7 @@ from checkov.terraform.models.enums import CheckResult, CheckCategories
 
 class GoogleContainerNodePoolAutoRepairEnabled(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Legacy Authorization is set to Disabled on Kubernetes Engine Clusters"
+        name = "Ensure 'Automatic node repair' is enabled for Kubernetes Clusters"
         id = "CKV_GCP_9"
         supported_resources = ['google_container_node_pool']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
