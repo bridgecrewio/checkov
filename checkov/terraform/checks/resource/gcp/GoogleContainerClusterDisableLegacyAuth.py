@@ -17,8 +17,8 @@ class GoogleContainerClusterMonitoringEnabled(BaseResourceCheck):
         :param conf: google_container_cluster configuration
         :return: <CheckResult>
         """
-        if 'monitoring_service' in conf:
-            if conf['monitoring_service'][0] == "none":
+        if 'enable_legacy_abac' in conf:
+            if conf['enable_legacy_abac'][0]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
