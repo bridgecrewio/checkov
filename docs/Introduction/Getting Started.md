@@ -1,3 +1,10 @@
+---
+layout: default
+published: true
+title: Getting Started
+order: 2
+---
+
 # Getting Started
 
 The installation is quick and straightforward - install, configure input & scan.
