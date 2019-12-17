@@ -35,7 +35,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 3. At this point, we define the meta entities for this check: ``name``, ``id``, ``supported``, ``resources``, ``categories``
 
-   ```python
+```python
    class RDSEncryption(BaseResourceCheck):
        def __init__(self):
            name = "Ensure all data stored in the RDS is securely encrypted at rest"
@@ -43,18 +43,18 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
            supported_resources = ['aws_db_instance']
            categories = [CheckCategories.ENCRYPTION]
            super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
-   ```
+```
 
 4. Next we define a simple check of the ```aws_db_instance``` resource block to find if ```aws_db_instance``` is disabled ```[0]```. When disabled, we require it will result in a ```CheckResult.FAILURE```.
 
-   ```python
+```python
    def scan_resource_conf(self, conf):
            if 'storage_encrypted' in conf.keys():
                key = conf['storage_encrypted'][0]
                if key:
                    return CheckResult.SUCCESS
            return CheckResult.FAILURE
-   ```
+```
 
 5. Last - our file should conclude the policy name and operationalize it with this statement.
 
@@ -68,7 +68,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 To run a new scan containing our newly added policy, use the ```checkov``` command.
 
-```python
+```bash
 checkov -d /user/tf
 ```
 
@@ -76,5 +76,6 @@ checkov -d /user/tf
 
 ## Next Steps
 
-Explore your scan's [Results](**TODO)
+Explore your scan [Results](Result.md) and check out the supported output methods (CLI, JSON, Junit XML).
 
+##
