@@ -1,7 +1,7 @@
 remote_theme: carlosperate/jekyll-theme-rtd
 
 site_author: Bridgecrew
-repo_url: "https://github.com/bridgecrewio/terraform-static-analysis/"
+repo_url: "https://github.com/bridgecrewio/checkov/"
 
 edit_on_github: true
 github_docs_folder: true
