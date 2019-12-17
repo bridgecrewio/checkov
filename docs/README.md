@@ -1,9 +1,4 @@
----
-layout: default
-published: true
-title: Checkov Documentation
-order: 1
----
+
 
 # Checkov Documentation
 
