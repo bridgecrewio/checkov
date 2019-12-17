@@ -1,3 +1,10 @@
+---
+layout: default
+published: true
+title: Policies
+order: 3
+---
+
 # Policies
 
 Checkov runs static code analysis on Terraform files. It will scan each resource only for policies that were defined by the policy file. 
