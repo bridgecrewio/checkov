@@ -15,7 +15,7 @@ checkov -d /user/tf
 ## Scan result sample (CLI)
 
 Consider the following Terraform configuration of an S3 bucket:
-```
+```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
   region        = var.region
   bucket        = local.bucket_name
@@ -70,7 +70,7 @@ The scanned bucket's configuration seems to comply with the available ``aws_s3_b
 
 Suppose that now the bucket is used for static content hosting, and thus requires to configured with 
 allowed public access:
-```
+```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
   region        = var.region
   bucket        = local.bucket_name
@@ -153,7 +153,7 @@ The corresponding check would now fail, and the report will include the appropri
 source code.
  
 In order to skip the failed check, we annotate the bucket with a suppression comment (which needs to appear inside the resource scope):
-```
+```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
   # checkov:skip=CKV_AWS_20:The bucket is a public static content host
   region        = var.region
