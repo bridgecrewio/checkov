@@ -37,6 +37,29 @@ Scheduled scan result in Jenkins
 ![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
 
 ## Getting started
+### Installation
+
+```sh
+pip install checkov
+```
+
+### Configure an input folder
+
+```sh
+checkov -d /user/tf
+```
+
+### Scan result sample (CLI)
+
+```sh
+Passed Checks: 1, Failed Checks: 1, Suppressed Checks: 0
+Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
+/main.tf:
+	 Passed for resource: aws_s3_bucket.template_bucket 
+Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
+/../regionStack/main.tf:
+	 Failed for resource: aws_s3_bucket.sls_deployment_bucket_name       
+```
 
 Start using Checkov by reading the [Getting Started](docs/Introduction/Getting%20Started.md) page.
 
