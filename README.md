@@ -75,4 +75,4 @@ For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/c
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for a quick tutorial and examples.
 
-If you need support contact us at support@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+If you need support contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
