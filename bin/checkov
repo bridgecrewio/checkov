@@ -18,10 +18,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Add some integers.')
     parser.add_argument('-d', '--directory',
                         help='terraform root directory')
-    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'],default='cli')
+    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli')
+    parser.add_argument('-g', '--graph', help="enable dependency graph integration", action='store_true')
     args = parser.parse_args()
     root_folder = args.directory
-    report = Runner().run(root_folder)
+    use_graph = args.graph
+    report = Runner().run(root_folder,use_graph)
     if args.output == "json":
         report.print_json()
     elif args.output == "junitxml":

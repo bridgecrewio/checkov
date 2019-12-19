@@ -5,17 +5,21 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.output.record import Record
 from checkov.terraform.output.report import Report
 from checkov.terraform.parser import Parser
-
+from checkov.terraform.graph.dependecy_graphs.dot_graph import DotGraph
 
 class Runner:
 
-    def run(self, root_folder):
+    def run(self, root_folder,use_graph):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
 
         Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
         report.add_parsing_errors(parsing_errors.keys())
+        if use_graph:
+            dot_graph = DotGraph(root_folder)
+            dot_graph.compute_dependency_graph(root_folder)
+            tf_definitions = dot_graph.render_const_variables(tf_definitions)
         for definition in tf_definitions.items():
             full_file_path = definition[0]
             definition_context = parser_registry.enrich_definitions_context(definition)

@@ -9,13 +9,28 @@ order: 2
 
 The installation is quick and straightforward - install, configure input & scan.
 
+## Prerequisites:
+In order to use dependency graph features (`--graph` option), make sure [Terraform](https://www.terraform.io/downloads.html) and [grapviz](https://www.grwaphviz.org/download/) are installed.
 
+Note: If `pip install checkov` fails on `pygraphviz` package, try to install it with `--install-option` that point to `graphviz` `include` and `lib` directories:
+
+
+```bash
+pip install --install-option="--include-path=/path/to/graphviz/include" --install-option "--library-path=/path/to/graphviz/lib" graphviz
+
+
+# Or (if using `pipenv`):
+
+pipenv run pip install --install-option="--include-path=/path/to/graphviz/include" --install-option "--library-path=/path/to/graphviz/lib" graphviz
+```
+
+## Checkov installation
 ```bash
 # install from pypi using pip
 pip install checkov
 
 
-# select an input folder that contains your terraform plan files
+# run Checkov on an input folder that contains your terraform configuration files
 checkov -d /user/tf
 ```
 

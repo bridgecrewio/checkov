@@ -19,6 +19,9 @@ tabulate = "*"
 colorama="*"
 termcolor="*"
 junit-xml ="*"
+networkx = "*"
+pydot = "*"
+pygraphviz = "*"
 
 [requires]
 python_version = "3.7"
