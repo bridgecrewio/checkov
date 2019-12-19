@@ -21,7 +21,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
  ## Features
 
- * [40+ built-in policies](docs/scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * [40+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Policies support variable scanning by building a dynamic code dependency graph (coming soon).
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
@@ -61,7 +61,7 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 	 Failed for resource: aws_s3_bucket.sls_deployment_bucket_name       
 ```
 
-Start using Checkov by reading the [Getting Started](docs/Introduction/Getting%20Started.md) page.
+Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting%20Started.md) page.
 
 ## Alternatives
 

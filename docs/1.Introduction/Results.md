@@ -37,11 +37,11 @@ Check: "Ensure the S3 bucket has access logging enabled"
 		81 | resource "aws_s3_bucket" "template_bucket" {
 		82 |   region        = var.region
 		83 |   bucket        = local.bucket_name
-		84 |   # checkov:skip=CKV_AWS_19:Honestly dear, I don't give a damn
-		85 |   # checkov:skip=CKV_AWS_20
+		84 |   acl           = "public-read"
+		85 |   # checkov:skip=CKV_AWS_20: The bucket is a public static content host
 		86 |   acl           = "public-read"
 		87 |   force_destroy = true
-		88 | 
+		88 |    # checkov:skip=CKV_AWS_19: Bucket access logs is not required for public content
 		89 |   tags = {
 		90 |     Name = "${local.bucket_name}-${data.aws_caller_identity.current.account_id}"
 		91 |   }
@@ -49,7 +49,7 @@ Check: "Ensure the S3 bucket has access logging enabled"
 
 Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 	SKIPPED for resource: aws_s3_bucket.template_bucket
-	Suppress comment: Honestly dear, I don't give a damn
+	Suppress comment: The bucket is a public static content host, that does not require encryption
 	File: /main.tf:81-92     ```
 ```
 
@@ -586,5 +586,5 @@ This print also includes detailed structured data-blocks that contain exact refe
 
 ## Next Steps
 
-Explore the [suppression](../Concepts/Suppressions.md)
+Explore the [suppression](../2.Concepts/Suppressions.md)
 
