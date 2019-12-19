@@ -712,7 +712,7 @@ Sample output
 
 Each Checkov policy is defined by resources it scans and expected values for related resource blocks. 
 
-For example, a policy that ensures all data is stored in S3 is versioned, scans the ``versioning`` configuration for all ``aws_s3_bucket`` supported resources. The `scan_resource_conf` is a method that defines the scan's expectyed behavior, i.e. ``versioning_block['enabled']``
+For example, a policy that ensures all data is stored in S3 is versioned, scans the ``versioning`` configuration for all ``aws_s3_bucket`` supported resources. The `scan_resource_conf` is a method that defines the scan's expected behavior, i.e. ``versioning_block['enabled']``
 
 ```python
 from checkov.terraform.models.enums import CheckResult, CheckCategories
