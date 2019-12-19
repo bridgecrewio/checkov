@@ -35,7 +35,6 @@ if __name__ == '__main__':
         elif args.output == "junitxml":
             report.print_junit_xml()
         else:
-            print(banner)
             report.print_console()
 
         exit(report.get_exit_code())
