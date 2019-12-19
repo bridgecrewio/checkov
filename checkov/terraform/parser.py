@@ -1,5 +1,6 @@
 import logging
 import os
+from os import path
 
 import hcl2
 
@@ -9,6 +10,7 @@ class Parser():
 
     def hcl2(self, directory, tf_definitions={}, parsing_errors={}):
         modules_scan = []
+
         for file in os.listdir(directory):
             if file.endswith(".tf"):
                 tf_file = os.path.join(directory, file)
@@ -31,4 +33,5 @@ class Parser():
                         self.logger.debug('failed while parsing file %s' % tf_file, exc_info=e)
                         parsing_errors[tf_file] = e
         for m in modules_scan:
-            self.hcl2(directory=m, tf_definitions=tf_definitions)
+            if path.exists(m):
+                self.hcl2(directory=m, tf_definitions=tf_definitions)
