@@ -49,7 +49,7 @@ jobs:
 
           ## update docs
           export PYTHONPATH='.'
-          export scansdoc=docs/scans/resource-scans.md
+          export scansdoc=docs/3.Scans/resource-scans.md
           echo "---" > $scansdoc
           echo "layout: default" >> $scansdoc
           echo "title: Resource scans" >> $scansdoc
