@@ -19,6 +19,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Add some integers.')
     parser.add_argument('-d', '--directory',
                         help='Terraform root directory')
+    parser.add_argument('--external-checks-dir', action='append',
+                        help='Directory for custom checks to be loaded. Can be repeated')
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
