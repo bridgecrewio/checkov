@@ -10,7 +10,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/example"
         runner = Runner()
-        report = runner.run(root_folder=valid_dir_path)
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None)
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
@@ -31,7 +31,7 @@ class TestRunnerValid(unittest.TestCase):
 
         print("testing dir" + passing_tf_dir_path)
         runner = Runner()
-        report = runner.run(root_folder=passing_tf_dir_path)
+        report = runner.run(root_folder=passing_tf_dir_path, external_checks_dir=None)
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
