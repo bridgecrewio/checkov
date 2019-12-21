@@ -9,13 +9,13 @@ from checkov.terraform.parser import Parser
 
 class Runner:
 
-    def run(self, root_folder, **kwargs):
+    def run(self, root_folder, external_checks_dir=None):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
 
-        if 'external_checks_dir' in kwargs:
-            for directory in kwargs.get('external_checks_dir'):
+        if external_checks_dir:
+            for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
 
         Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)

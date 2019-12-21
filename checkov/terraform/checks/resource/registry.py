@@ -3,6 +3,7 @@ import sys
 import os
 import importlib
 
+
 class Registry:
     checks = {}
 
@@ -77,8 +78,9 @@ class Registry:
                             importlib.import_module(check_name)
                         except SyntaxError as e:
                             self.logger.error(
-                                "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ({error_line}:{error_column})"
-                                .format(
+                                "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
+                                "{error_line}:{error_column}) "
+                                    .format(
                                     check_name=check_name,
                                     check_full_path=e.args[1][0],
                                     error_message=e.args[0],
@@ -86,5 +88,6 @@ class Registry:
                                     error_column=e.args[1][2]
                                 )
                             )
+
 
 resource_registry = Registry()
