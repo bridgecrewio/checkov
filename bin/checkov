@@ -32,7 +32,7 @@ if __name__ == '__main__':
         import checkov.terraform.util.docs_generator
     else:
         root_folder = args.directory
-        report = Runner().run(root_folder, use_graph, external_checks_dir=args.external_checks_dir)
+        report = Runner().run(root_folder, use_graph=use_graph, external_checks_dir=args.external_checks_dir)
         if args.output == "json":
             report.print_json()
         elif args.output == "junitxml":

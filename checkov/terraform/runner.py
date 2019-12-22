@@ -9,7 +9,7 @@ from checkov.terraform.graph.dependecy_graphs.dot_graph import DotGraph
 
 class Runner:
 
-    def run(self, root_folder,use_graph, external_checks_dir=None):
+    def run(self, root_folder, use_graph=False, external_checks_dir=None):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
