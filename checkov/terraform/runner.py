@@ -9,10 +9,14 @@ from checkov.terraform.graph.dependecy_graphs.dot_graph import DotGraph
 
 class Runner:
 
-    def run(self, root_folder,use_graph):
+    def run(self, root_folder,use_graph, external_checks_dir=None):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
+
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                resource_registry.load_external_checks(directory)
 
         Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
         report.add_parsing_errors(parsing_errors.keys())

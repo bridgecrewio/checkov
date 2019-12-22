@@ -19,6 +19,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Add some integers.')
     parser.add_argument('-d', '--directory',
                         help='Terraform root directory')
+    parser.add_argument('--external-checks-dir', action='append',
+                        help='Directory for custom checks to be loaded. Can be repeated')
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
@@ -30,13 +32,12 @@ if __name__ == '__main__':
         import checkov.terraform.util.docs_generator
     else:
         root_folder = args.directory
-        report = Runner().run(root_folder,use_graph)
+        report = Runner().run(root_folder, use_graph, external_checks_dir=args.external_checks_dir)
         if args.output == "json":
             report.print_json()
         elif args.output == "junitxml":
             report.print_junit_xml()
         else:
-            print(banner)
             report.print_console()
 
         exit(report.get_exit_code())
