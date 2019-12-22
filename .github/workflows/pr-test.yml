@@ -16,7 +16,9 @@ jobs:
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
-          sudo apt install graphviz
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get -y install graphviz
           pipenv install --dev
       - name: Test with pytest
         env:
