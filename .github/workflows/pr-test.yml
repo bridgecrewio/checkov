@@ -18,7 +18,8 @@ jobs:
         run: |
           sudo add-apt-repository universe
           sudo apt update
-          sudo apt install graphviz
+          sudo apt install -y libgraphviz-dev
+          sudo apt install -y graphviz
           pipenv install --dev
       - name: Test with pytest
         env:
