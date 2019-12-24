@@ -12,6 +12,7 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
+- [Contributing](CONTRIBUTING.md)
 - [Support](#support)
 
 ## Description
