@@ -12,7 +12,6 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
-- [Contributing](CONTRIBUTING.md)
 - [Support](#support)
 
 ## Description
@@ -22,7 +21,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
  ## Features
 
- * [40+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * [50+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Policies support variable scanning by building a dynamic code dependency graph (coming soon).
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
@@ -31,7 +30,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
 Scan results in CLI
 
-![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan.png)
+![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-recording.gif)
 
 Scheduled scan result in Jenkins
 
@@ -69,6 +68,13 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).
 
 For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
+
+## Contributing
+Contribution are highly welcome! 
+
+If you are looking on where to start search for a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and view [CONTRIBUTING.md](CONTRIBUTING.md). 
+
+Looking to contribute a new check? Learn how to write a new check (AKA Policy) [here](docs/1.Introduction/Policies.md).
 
 ## Support
 
