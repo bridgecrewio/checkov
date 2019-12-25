@@ -48,6 +48,24 @@ or straight forward features but will help us in evaluating the PR.
 Continuous integration will run these tests either as pre-submits on PRs and post-submits against master branch. 
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
 
+To run tests locally use the following commands (instal dev dependencies, run tests and compute tests coverage):
+```sh
+pipenv install --dev
+pipenv run python -m coverage run -m pytest
+```
+
+### Build package locally
+To build package locally run the following on Checkov root folder:
+```sh
+pipenv run python setup.py sdist bdist_wheel
+```
+- This will create a `*.whl` package under a new folder named `dist`
+
+To install package from local directory run:
+```sh
+pip install dist/checkov-${RELEASE_VERSION}-py3-none-any.whl
+```
+
 ### Documentation is awesome
 
 Contributing to the documentation is not mandatory but it will ensure people are aware of your important contribution. 
