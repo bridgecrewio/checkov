@@ -8,7 +8,7 @@ If you've already developed new checks we'd be happy to take a look at them and 
 
 ## Open an issue
 
-Checkov is an open source project maintained by [Bridgecrew](bridgecrew.io). We have dedicated maintainers developing 
+Checkov is an open source project maintained by [Bridgecrew](https://bridgecrew.io). We have dedicated maintainers developing 
 new content and adding more features. If you have a bug or an idea, start by opening an issue. Try to make it as 
 descriptive as possible. 
 
