@@ -70,16 +70,16 @@ For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfs
 For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
 
 ## Contributing
-Contribution are highly welcome! 
+Contribution is welcomed! 
 
-If you are looking on where to start search for a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and view [CONTRIBUTING.md](CONTRIBUTING.md). 
+Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-Looking to contribute a new check? Learn how to write a new check (AKA Policy) [here](docs/1.Introduction/Policies.md).
+Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/1.Introduction/Policies.md).
 
 ## Support
 
 [Bridgecrew](https://bridgecrew.io) builds and maintains Checkov to make policy-as-code simple and accessible. 
 
-Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for a quick tutorial and examples.
+Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need support contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+If you need direct support you can contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
