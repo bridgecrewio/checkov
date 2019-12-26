@@ -19,7 +19,7 @@ class PasswordPolicyReuse(BaseResourceCheck):
         """
         key = 'password_reuse_prevention'
         if key in conf.keys():
-            if conf[key] >= 24:
+            if conf[key][0] >= 24:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
