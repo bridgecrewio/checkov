@@ -19,7 +19,7 @@ class PasswordPolicyLowercaseLetter(BaseResourceCheck):
         """
         key = 'require_lowercase_characters'
         if key in conf.keys():
-            if conf[key]:
+            if conf[key][0]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

@@ -19,7 +19,7 @@ class PasswordPolicyExpiration(BaseResourceCheck):
         """
         key = 'max_password_age'
         if key in conf.keys():
-            if conf[key] >= 90:
+            if conf[key][0] >= 90:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

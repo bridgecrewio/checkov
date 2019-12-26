@@ -89,17 +89,17 @@ resource "google_sql_database_instance" "gcp_sql_db_instance_good" {
 }
 
 resource "google_container_cluster" "primary_good" {
-  name = "google_cluster"
+  name               = "google_cluster"
   enable_legacy_abac = false
 }
 
 resource "google_container_cluster" "primary_good2" {
-  name = "google_cluster"
+  name               = "google_cluster"
   monitoring_service = "monitoring.googleapis.com"
 }
 
 resource "google_container_cluster" "primary_bad" {
-  name = "google_cluster_bad"
+  name               = "google_cluster_bad"
   monitoring_service = "none"
   enable_legacy_abac = true
 }
@@ -115,4 +115,13 @@ resource "google_container_node_pool" "good_node_pool" {
   management {
     auto_repair = true
   }
+}
+
+resource "aws_iam_account_password_policy" "password-policy" {
+  minimum_password_length        = 15
+  require_lowercase_characters   = true
+  require_numbers                = true
+  require_uppercase_characters   = true
+  require_symbols                = true
+  allow_users_to_change_password = true
 }
