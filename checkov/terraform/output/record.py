@@ -47,7 +47,7 @@ class Record():
             status_color = 'blue'
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
 
-        check_message = colored("Check: \"{}\"\n".format(self.check_name), "white")
+        check_message = colored("Check: {}: \"{}\"\n".format(self.check_id, self.check_name), "white")
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")

@@ -1,0 +1,15 @@
+---
+
+# For use with pre-commit.
+# See usage instructions at http://pre-commit.com
+
+-   id: checkov
+    name: Checkov
+    description: This hook runs checkov.
+    entry: hooks/checkov.sh
+    language: script
+    pass_filenames: true
+    always_run: false
+    files: \.tf$
+    exclude: \.+.terraform\/.*$
+    require_serial: true

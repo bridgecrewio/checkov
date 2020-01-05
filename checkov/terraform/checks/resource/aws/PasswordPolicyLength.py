@@ -19,7 +19,7 @@ class PasswordPolicyLength(BaseResourceCheck):
         """
         key = 'minimum_password_length'
         if key in conf.keys():
-            if conf[key] >= 14:
+            if conf[key][0] >= 14:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

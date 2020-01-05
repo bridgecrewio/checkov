@@ -19,7 +19,7 @@ class PasswordPolicyNumber(BaseResourceCheck):
         """
         key = 'require_numbers'
         if key in conf.keys():
-            if conf[key]:
+            if conf[key][0]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
