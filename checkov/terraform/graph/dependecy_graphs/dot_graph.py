@@ -6,8 +6,9 @@ import re
 
 TERRAFORM_GRAPH_PREFIX = ["terraform", "graph"]
 TERRAFORM_INIT_PREFIX = ["terraform", "init"]
-DOT_REGEX = "\[root\] ([^ ]+)"
-
+DOT_REGEX = r'\[root\] ([^ ]+)'
+VARIABLE_REGEX = r'var\.([^ ]+)'
+MODULE_VARIABLE_REGEX = r'(?!module|var)\.([^ .]+)\.?'
 
 class DotGraph(DependencyGraph):
 
@@ -39,8 +40,18 @@ class DotGraph(DependencyGraph):
         except subprocess.CalledProcessError as e:
             self.logger.error(e.stderr)
 
+    def _set_var_assignment(self, e1, var_value):
+        if re.findall(MODULE_VARIABLE_REGEX,e1):
+            var_path = re.findall(MODULE_VARIABLE_REGEX,e1)
+            self._assign_definition_value('module',var_path,var_value)
+        print(e1)
+
     def _render_variables_assignments(self, e1, e2):
-        pass
+        if re.match(VARIABLE_REGEX, e2):
+            var_name = re.match(VARIABLE_REGEX, e2).group(1)
+            var_value = self.assignments['variable'].get(var_name)
+            if var_value and 'meta.count-boundary' not in e1:
+                self._set_var_assignment(e1, var_value)
 
     def compute_dependency_graph(self, root_folder):
         try:
