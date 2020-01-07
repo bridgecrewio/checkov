@@ -10,6 +10,7 @@ DOT_REGEX = r'\[root\] ([^ ]+)'
 VARIABLE_REGEX = r'var\.([^ ]+)'
 MODULE_VARIABLE_REGEX = r'(?!module|var)\.([^ .]+)\.?'
 
+
 class DotGraph(DependencyGraph):
 
     def __init__(self, root_folder, tf_definitions):
@@ -41,9 +42,9 @@ class DotGraph(DependencyGraph):
             self.logger.error(e.stderr)
 
     def _set_var_assignment(self, e1, var_value):
-        if re.findall(MODULE_VARIABLE_REGEX,e1):
-            var_path = re.findall(MODULE_VARIABLE_REGEX,e1)
-            self._assign_definition_value('module',var_path,var_value)
+        if re.findall(MODULE_VARIABLE_REGEX, e1):
+            var_path = re.findall(MODULE_VARIABLE_REGEX, e1)
+            self._assign_definition_value('module', var_path, var_value)
         print(e1)
 
     def _render_variables_assignments(self, e1, e2):

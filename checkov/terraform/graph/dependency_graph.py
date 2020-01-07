@@ -1,6 +1,9 @@
 import logging
 from abc import ABC, abstractmethod
 import dpath.util
+import re
+
+RENDER_REGEX = r'(\$\{([^ ]+)\})'
 
 
 class DependencyGraph(ABC):
@@ -62,7 +65,9 @@ class DependencyGraph(ABC):
 
     def _assign_definition_value(self, block_type, definition_path, var_value):
         print(block_type, definition_path, var_value)
-        dpath.set(self.assignments, "/".join((block_type, *definition_path)), var_value)
+        definition_expression = dpath.get(self.assignments, "/".join((block_type, *definition_path)))[0]
+        rendered_definition = re.sub(RENDER_REGEX, var_value, definition_expression)
+        dpath.set(self.assignments, "/".join((block_type, *definition_path)), rendered_definition)
 
     @abstractmethod
     def compute_dependency_graph(self, root_dir):
