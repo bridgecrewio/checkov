@@ -48,7 +48,7 @@ or straight forward features but will help us in evaluating the PR.
 Continuous integration will run these tests either as pre-submits on PRs and post-submits against master branch. 
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
 
-To run tests locally use the following commands (instal dev dependencies, run tests and compute tests coverage):
+To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
 ```sh
 pipenv install --dev
 pipenv run python -m coverage run -m pytest
