@@ -45,7 +45,6 @@ class DotGraph(DependencyGraph):
         if re.findall(MODULE_VARIABLE_REGEX, e1):
             var_path = re.findall(MODULE_VARIABLE_REGEX, e1)
             self._assign_definition_value('module', var_path, var_value)
-        print(e1)
 
     def _render_variables_assignments(self, e1, e2):
         if re.match(VARIABLE_REGEX, e2):
