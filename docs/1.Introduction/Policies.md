@@ -33,7 +33,7 @@ A policy needs to specify the following items:
 For this tutorial let's produce a policy that ensures that new RDS services spun-up are encrypted at rest ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
 
 1. Start by creating a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``
-2. Add this content
+2. Import the following:
 
 ```python
 from checkov.terraform.models.enums import CheckResult, CheckCategories
@@ -52,7 +52,7 @@ class RDSEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 ```
 
-4. Next we define a simple check of the ```aws_db_instance``` resource block to find if ```aws_db_instance``` is disabled ```[0]```. When disabled, we require it will result in a ```CheckResult.FAILURE```.
+4. Next we define a simple check of the ```aws_db_instance``` resource block to find if ```aws_db_instance``` is disabled. When disabled, we require it will result in a ```CheckResult.FAILURE```.
 
 ```python
 def scan_resource_conf(self, conf):
