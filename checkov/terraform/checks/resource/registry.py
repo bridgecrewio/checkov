@@ -34,8 +34,8 @@ class Registry:
             resource_name = list(resource_conf.keys())[0]
             resource_conf_def = resource_conf[resource_name]
             self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-            result = check.run(scanned_file=scanned_file, resource_configuration=resource_conf_def,
-                               resource_name=resource_name, resource_type=resource, skip_info=skip_info)
+            result = check.run(scanned_file=scanned_file, entity_configuration=resource_conf_def,
+                               entity_name=resource_name, entity_type=resource, skip_info=skip_info)
 
             results[check] = result
         return results

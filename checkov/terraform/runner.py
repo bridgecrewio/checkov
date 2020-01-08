@@ -1,7 +1,9 @@
 import logging
 
+from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+
 from checkov.terraform.output.record import Record
 from checkov.terraform.output.report import Report
 from checkov.terraform.parser import Parser
@@ -25,21 +27,31 @@ class Runner:
             definition_context = parser_registry.enrich_definitions_context(definition)
             scanned_file = definition[0].split(root_folder)[1]
             logging.debug("Scanning file: %s", scanned_file)
-            if 'resource' in definition[1]:
-                for resource in definition[1]['resource']:
-                    resource_type = list(resource.keys())[0]
-                    resource_name = list(list(resource.values())[0].keys())[0]
-                    resource_id = "{}.{}".format(resource_type, resource_name)
+            for block_type in definition[1].keys():
+                if block_type in ['resource', 'data']:
+                    self.run_block(definition[1][block_type], definition_context, full_file_path, report, scanned_file,
+                                   block_type)
 
-                    resource_context = definition_context[full_file_path][resource_type][resource_name]
-                    resource_lines_range = [resource_context['start_line'], resource_context['end_line']]
-                    resource_code_lines = resource_context['code_lines']
-                    skipped_checks = resource_context.get('skipped_checks')
-                    results = resource_registry.scan(resource, scanned_file, skipped_checks)
-                    for check, check_result in results.items():
-                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                        code_block=resource_code_lines, file_path=scanned_file,
-                                        file_line_range=resource_lines_range,
-                                        resource=resource_id, check_class=check.__class__.__module__)
-                        report.add_record(record=record)
         return report
+
+    def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
+        for entity in entities:
+            entity_type = list(entity.keys())[0]
+            entity_name = list(list(entity.values())[0].keys())[0]
+            entity_id = "{}.{}".format(entity_type, entity_name)
+            if block_type == 'data':
+                print("a")
+            entity_context = definition_context[full_file_path][entity_type][entity_name]
+            entity_lines_range = [entity_context['start_line'], entity_context['end_line']]
+            entity_code_lines = entity_context['code_lines']
+            skipped_checks = entity_context.get('skipped_checks')
+            if block_type == 'resource':
+                results = resource_registry.scan(entity, scanned_file, skipped_checks)
+            if block_type == 'data':
+                results = data_registry.scan(entity, scanned_file, skipped_checks)
+            for check, check_result in results.items():
+                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                code_block=entity_code_lines, file_path=scanned_file,
+                                file_line_range=entity_lines_range,
+                                resource=entity_id, check_class=check.__class__.__module__)
+                report.add_record(record=record)

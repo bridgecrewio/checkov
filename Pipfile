@@ -20,6 +20,7 @@ colorama="*"
 termcolor="*"
 junit-xml ="*"
 checkov = {editable = true,path = "."}
+parliament = "*"
 
 [requires]
 python_version = "3.7"
