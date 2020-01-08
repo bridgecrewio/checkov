@@ -6,6 +6,13 @@ __pycache__/
 *$py.class
 *__pycache__/
 
+# Terraform
+*.tfstate*
+*.terraform*
+*.tfvars
+*.tfbackend
+
+
 # C extensions
 *.so
 
@@ -26,6 +33,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.DS_Store
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
