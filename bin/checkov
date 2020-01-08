@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
-    parser.add_argument('-g', '--graph', help="enable dependency graph integration", action='store_true')
+    parser.add_argument('-g', '--graph', help="enable dependency graph integration - used to apply variable rendering", action='store_true')
     args = parser.parse_args()
     use_graph = args.graph
     if args.list:
