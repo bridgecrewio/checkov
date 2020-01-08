@@ -19,7 +19,7 @@ class PasswordPolicySymbol(BaseResourceCheck):
         """
         key = 'require_symbols'
         if key in conf.keys():
-            if conf[key]:
+            if conf[key][0]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
