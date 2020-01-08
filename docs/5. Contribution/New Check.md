@@ -29,6 +29,8 @@ of the latest implemented check, with respect to the check's provider.
 A more specific type of check may also include additional attributes. For example, a check that scans a Terraform resource
 configuration also contains the `supported_resources` attribute, which is a list of the supported resource types of the check.
 
+### Check result
+
 The check's result on a scanned configuration tells if the configuration complied by the check's policy, which means, 
 a binary result of either `PASSED` or `FAILED`. an `UNKNOWN` option is also included, which means that it is unknown if 
 the scanned configuration complied with the check.
