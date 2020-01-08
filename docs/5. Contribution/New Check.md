@@ -72,7 +72,7 @@ For example, all checks of `resource` type and `aws` provider are implementing t
 `checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement it's base check's abstract method named 
 `scan_resource_conf`, which accepts as an input a dictionary of all the key-valued resource attributes, and outputs a `CheckResult`.
 
-For a full implementation example of a check, refer to [Policies documentation](../1.Introduction/Policies.md).
+For a full implementation example of a check, please refer the [Policies documentation](../1.Introduction/Policies.md).
 
 ## Testing
 
