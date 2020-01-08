@@ -18,7 +18,8 @@ This guide covers all the necessary stages required to building and contributing
 2. Implement the check as described in the [Implementation](#implementation) section.
 3. Provide a unit test suite of the check as described in the [Testing](#testing) section.
 4. Open a PR that contains the implementing code and testing suite, with the following information:
-    * Check id
+    * Check `id`
+    * Check `name`
     * Check type and provider
     * IaC configuration documentation (If available)
     * Example Terraform configuration file
