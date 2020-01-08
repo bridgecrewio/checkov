@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.models.enums import CheckResult
 
+
 class BaseResourceCheck(ABC):
     id = ""
     name = ""
@@ -18,7 +19,7 @@ class BaseResourceCheck(ABC):
         resource_registry.register(self)
 
     def run(self, scanned_file, resource_configuration, resource_name, resource_type, skip_info):
-        check_result={}
+        check_result = {}
         if skip_info:
             check_result['result'] = CheckResult.SKIPPED
             check_result['suppress_comment'] = skip_info['suppress_comment']
