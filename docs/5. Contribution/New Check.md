@@ -6,24 +6,32 @@ Checkov contributors are encouraged to contribute new checks to help increase ou
 
 In our documentation, a check is sometimes referred loosely also as a Policy. We expect to solve a real-world hardening, assessment, auditing or forensic gap you encountered. In other words, a new check should reflect a policy you think should be globally accepted when provisioning and changing infrastructure.
 
-This guide covers all the necessary stages required to building and contributing a new check.
+This guide covers all the necessary stages required to building and contributing a new check, which are:
+
+1. Prerequisites
+2. Implementation
+3. Testing
+4. Pull Request
 
 ## Contribution Stages
 1. Prerequisites
-    * Install Checkov as described in the [Installation](#) subsection.
+    * Install Checkov as described in the [Installation](#installation) subsection.
     * Read about check's structure and functionality in the [Prerequisites](#prerequisites) section.
     * Identify the check's `type` and `provider`, as described [here](#check-structure). 
     * If available, provide the IaC configuration documentation that relates to the check, as described [here](#review-iac-configuration-documentation).
     * Provide an example Terraform configuration file, as described [here](#example-Terraform-configuration). 
-2. Implement the check as described in the [Implementation](#implementation) section.
-3. Provide a unit test suite of the check as described in the [Testing](#testing) section.
-4. Open a PR that contains the implementing code and testing suite, with the following information:
-    * Check `id`
-    * Check `name`
-    * Check type and provider
-    * IaC configuration documentation (If available)
-    * Example Terraform configuration file
-    * Any additional information that would help other members to better understand the check
+2. Implementation
+    * Implement the check as described in the [Implementation](#implementation) section.
+3. Testing
+    * Provide a unit test suite of the check as described in the [Testing](#testing) section.
+4. Pull Request
+    * Open a PR that contains the implementing code and testing suite, with the following information:
+        * Check `id`
+        * Check `name`
+        * Check type and provider
+        * IaC configuration documentation (If available)
+        * Example Terraform configuration file
+        * Any additional information that would help other members to better understand the check
 
 ## Prerequisites
 
