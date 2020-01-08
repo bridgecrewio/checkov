@@ -83,6 +83,3 @@ Assuming the implemented check's class is file is found in `checkov/terraform/ch
 The test suite should cover different check results; Test if the check outputs `PASSED` on a compliant configuration,
 and test if it output `FAILED` on a non-compliant configuration. You are also encouraged to test more specific 
 components of the check, according to their complexity.
-
-## Pull Request
-
