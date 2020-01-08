@@ -6,9 +6,9 @@ import re
 
 TERRAFORM_GRAPH_PREFIX = ["terraform", "graph"]
 TERRAFORM_INIT_PREFIX = ["terraform", "init"]
-DOT_REGEX = r'\[root\] ([^ ]+)'
-VARIABLE_REGEX = r'var\.([^ ]+)'
-MODULE_VARIABLE_REGEX = r'(?!module|var)\.([^ .]+)\.?'
+DOT_REGEX = '\[root\] ([^ ]+)'
+ASSIGNMENT_REGEX = '(output|var)\.([^ ]+)'
+NOT_RESOURCE_REGEX = '(?!module|var|local)\.([^ .]+)\.?'
 
 
 class DotGraph(DependencyGraph):
@@ -24,8 +24,8 @@ class DotGraph(DependencyGraph):
         return re.match(DOT_REGEX, dot_label).group(1)
 
     @staticmethod
-    def _is_var_edge(e1, e2):
-        return 'var' in e2
+    def _is_assignment_edge(e1, e2):
+        return len(re.findall(ASSIGNMENT_REGEX, e2)) > 0
 
     def _init_terraform_directory(self):
         try:
@@ -41,17 +41,21 @@ class DotGraph(DependencyGraph):
         except subprocess.CalledProcessError as e:
             self.logger.error(e.stderr)
 
-    def _set_var_assignment(self, e1, var_value):
-        if re.findall(MODULE_VARIABLE_REGEX, e1):
-            var_path = re.findall(MODULE_VARIABLE_REGEX, e1)
+    def _set_edge_assignment(self, e1, var_value):
+        #TODO - discrimnate between resource (without module,local,var etc.)
+        if re.findall(NOT_RESOURCE_REGEX, e1):
+            var_path = re.findall(NOT_RESOURCE_REGEX, e1)
             self._assign_definition_value('module', var_path, var_value)
 
     def _render_variables_assignments(self, e1, e2):
-        if re.match(VARIABLE_REGEX, e2):
-            var_name = re.match(VARIABLE_REGEX, e2).group(1)
-            var_value = self.assignments['variable'].get(var_name)
-            if var_value and 'meta.count-boundary' not in e1:
-                self._set_var_assignment(e1, var_value)
+        assignment_type, assignment_name = re.findall(ASSIGNMENT_REGEX, e2)[0]
+        if assignment_type == 'var':
+            assignment_value = self.assignments['variable'].get(assignment_name)
+        if assignment_type == 'output':
+            assignment_value = self.assignments['output'].get(assignment_name)
+
+        if assignment_value and 'meta.count-boundary' not in e1:
+            self._set_edge_assignment(e1, assignment_value)
 
     def compute_dependency_graph(self, root_folder):
         try:
@@ -62,10 +66,10 @@ class DotGraph(DependencyGraph):
 
     def render_variables(self):
         super()._populate_assignments_types(self.tf_definitions)
-        var_edges = [(self._parse_dot_to_definition(e1), self._parse_dot_to_definition(e2)) for (e1, e2, _) in
-                     self.graph.edges if self._is_var_edge(e1, e2)]
+        assignment_edges = [(self._parse_dot_to_definition(e1), self._parse_dot_to_definition(e2)) for (e1, e2, _) in
+                            self.graph.edges if self._is_assignment_edge(e1, e2)]
 
-        for (e1, e2) in var_edges:
+        for (e1, e2) in assignment_edges:
             self._render_variables_assignments(e1, e2)
 
         return self.tf_definitions
