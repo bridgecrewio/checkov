@@ -79,9 +79,12 @@ class IAMParliament(BaseDataCheck):
         if analyzed_policy.findings:
             results = []
             for finding in analyzed_policy.findings:
-                results.append(
-                    IAMParliamentFinding(finding))
-            return CheckResult.FAILED, results
+                # terraform statement element is optional - The default is "Allow".
+                if finding.detail != "Statement does not contain an Effect element":
+                    results.append(
+                        IAMParliamentFinding(finding))
+            if results:
+                return CheckResult.FAILED, results
         return CheckResult.PASSED
 
 
