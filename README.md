@@ -75,7 +75,7 @@ Contribution is welcomed!
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/1.Introduction/Policies.md).
+Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md)
 
 ## Support
 
