@@ -15,11 +15,6 @@ field_mappings = [
     {'tf_key': 'resources', 'iam_key': 'Resource', 'mock_var': '*'},
     {'tf_key': 'not_resources', 'iam_key': 'NotResource', 'mock_var': '*'},
 ]
-statement_template = """{{
-    "Effect": "{effect}",
-    "Action": {actions}
-    {resources_block}
-}}"""
 
 policy_template = """{{
     "Version": "2012-10-17",
