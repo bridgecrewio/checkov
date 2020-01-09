@@ -3,12 +3,15 @@ import subprocess
 import tempfile
 from networkx.drawing.nx_agraph import read_dot
 import re
+import dpath.util
 
+TERRAFORM_RESERVED_WORDS = ['module', 'local', 'var', 'output', 'data', 'provider']
 TERRAFORM_GRAPH_PREFIX = ["terraform", "graph"]
 TERRAFORM_INIT_PREFIX = ["terraform", "init"]
 DOT_REGEX = '\[root\] ([^ ]+)'
 ASSIGNMENT_REGEX = '(output|var)\.([^ ]+)'
-NOT_RESOURCE_REGEX = '(?!module|var|local)\.([^ .]+)\.?'
+NON_PATH_WORDS_REGEX = '(output|var)\.'
+DEFINITION_PATH_REGEX = '(([^ .]+)\.([^ .]+)(?!\.)?)'
 
 
 class DotGraph(DependencyGraph):
@@ -41,35 +44,28 @@ class DotGraph(DependencyGraph):
         except subprocess.CalledProcessError as e:
             self.logger.error(e.stderr)
 
-    def _set_edge_assignment(self, e1, var_value):
-        #TODO - discrimnate between resource (without module,local,var etc.)
-        if re.findall(NOT_RESOURCE_REGEX, e1):
-            var_path = re.findall(NOT_RESOURCE_REGEX, e1)
-            self._assign_definition_value('module', var_path, var_value)
-
-    def _render_variables_assignments(self, e1, e2):
-        assignment_type, assignment_name = re.findall(ASSIGNMENT_REGEX, e2)[0]
-        if assignment_type == 'var':
-            assignment_value = self.assignments['variable'].get(assignment_name)
-        if assignment_type == 'output':
-            assignment_value = self.assignments['output'].get(assignment_name)
-
+    def _render_variables_assignments(self, tf_file, e1, e2):
+        assignment_value = dpath.search(self.assignments[tf_file], e2, separator='.')
         if assignment_value and 'meta.count-boundary' not in e1:
-            self._set_edge_assignment(e1, assignment_value)
+            print(1)
+            #TODO - continue handling of block types
+            dpath.set(self.assignments[tf_file], e2, assignment_value)
+        else:
+            print(2)
 
     def compute_dependency_graph(self, root_folder):
         try:
+            super()._populate_definitions_assignments()
             self._generate_dot_file()
             self.graph = read_dot(self.dot_file.name)
         finally:
             self.dot_file.close()
 
-    def render_variables(self):
-        super()._populate_assignments_types(self.tf_definitions)
+    def render_variables(self, tf_file):
         assignment_edges = [(self._parse_dot_to_definition(e1), self._parse_dot_to_definition(e2)) for (e1, e2, _) in
                             self.graph.edges if self._is_assignment_edge(e1, e2)]
 
         for (e1, e2) in assignment_edges:
-            self._render_variables_assignments(e1, e2)
+            self._render_variables_assignments(tf_file, e1, e2)
 
         return self.tf_definitions

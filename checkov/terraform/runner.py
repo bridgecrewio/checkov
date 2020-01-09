@@ -23,10 +23,11 @@ class Runner:
         if use_graph:
             dot_graph = DotGraph(root_folder,tf_definitions)
             dot_graph.compute_dependency_graph(root_folder)
-            tf_definitions = dot_graph.render_variables()
         for definition in tf_definitions.items():
             full_file_path = definition[0]
             definition_context = parser_registry.enrich_definitions_context(definition)
+            if use_graph:
+                tf_definitions = dot_graph.render_variables(tf_file=full_file_path)
             scanned_file = definition[0].split(root_folder)[1]
             logging.debug("Scanning file: %s", scanned_file)
             if 'resource' in definition[1]:
