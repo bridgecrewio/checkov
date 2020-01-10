@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 class DynamodbRecovery(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Dynamodb point in time recovery (backup) is enabled"
-        id = "CKV_AWS_3"
+        id = "CKV_AWS_28"
         supported_resources = ['aws_dynamodb_table']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
