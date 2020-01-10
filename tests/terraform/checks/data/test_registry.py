@@ -6,8 +6,9 @@ from unittest.mock import patch
 class TestRegistry(unittest.TestCase):
 
     def setUp(self):
-        from checkov.terraform.checks.resource.registry import resource_registry
-        self.registry = resource_registry
+        from checkov.terraform.checks.data.registry import data_registry
+        self.registry = data_registry
+
 
     @patch('os.path.exists')
     def test_with_init(self, mock_path_exists):
@@ -26,12 +27,13 @@ class TestRegistry(unittest.TestCase):
 
         external_check_loaded = False
         external_check = None
-        for check in self.registry.checks['aws_s3_bucket']:
-            if check.__class__.__name__ == 'S3PCIPrivateACL':
+        for check in self.registry.checks['aws_iam_policy_document']:
+            if check.__class__.__name__ == 'DummyExternalDataCheck':
                 external_check_loaded = True
                 external_check = check
         self.assertTrue(external_check_loaded)
-        self.registry.checks['aws_s3_bucket'].remove(external_check)
+        self.registry.checks['aws_iam_policy_document'].remove(external_check)
+
 
 if __name__ == '__main__':
     unittest.main()

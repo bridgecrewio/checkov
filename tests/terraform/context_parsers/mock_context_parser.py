@@ -1,5 +1,6 @@
 from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
+
 class MockContextParser(BaseContextParser):
     def __init__(self):
         definition_type = 'MOCK'
@@ -25,5 +26,8 @@ class MockContextParser(BaseContextParser):
             if all(x in line_tokens for x in ['mock', mock_type, mock_name]):
                 self.context[mock_type][mock_name]["start_line"] = 1
                 self.context[mock_type][mock_name]["end_line"] = 5
-                self.context[mock_type][mock_name]["code_lines"] = ['ABC','123']
+                self.context[mock_type][mock_name]["code_lines"] = ['ABC', '123']
         return self.context
+
+    def get_block_type(self):
+        return "resource"

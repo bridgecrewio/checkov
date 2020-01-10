@@ -76,5 +76,30 @@ class BaseContextParser(ABC):
         return self.context
 
     @abstractmethod
-    def enrich_definition_block(self, block):
+    def get_block_type(self):
         raise NotImplementedError()
+
+    def enrich_definition_block(self, block):
+        """
+        Enrich the context of a Terraform block
+        :param block: Terraform block, key-value dictionary
+        :return: Enriched block context
+        """
+        parsed_file_lines = self._filter_file_lines()
+
+        for i, entity_block in enumerate(block):
+            entity_type = next(iter(entity_block.keys()))
+            entity_name = next(iter(entity_block[entity_type]))
+            if not self.context.get(entity_type):
+                self.context[entity_type] = {}
+            if not self.context.get(entity_type).get(entity_name):
+                self.context[entity_type][entity_name] = {}
+            for line_num, line in parsed_file_lines:
+                line_tokens = [x.replace('"', "") for x in line.split()]
+                if all(x in line_tokens for x in [self.get_block_type(), entity_type, entity_name]):
+                    start_line = line_num
+                    end_line = self._compute_definition_end_line(line_num)
+                    self.context[entity_type][entity_name]["start_line"] = start_line
+                    self.context[entity_type][entity_name]["end_line"] = end_line
+                    self.context[entity_type][entity_name]["code_lines"] = self.file_lines[start_line - 1: end_line]
+        return self.context
