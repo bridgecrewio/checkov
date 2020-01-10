@@ -66,6 +66,11 @@ class IAMParliament(BaseDataCheck):
 
                     statement[field['iam_key']] = field_values
 
+            if "Effect" not in statement_data.keys():
+                # terraform statement element is optional - The default is "Allow".
+
+                statement['Effect'] = "Allow"
+
             statements.append(statement)
 
         policy_string = policy_template.format(statements=json.dumps(statements))
@@ -74,10 +79,8 @@ class IAMParliament(BaseDataCheck):
         if analyzed_policy.findings:
             results = []
             for finding in analyzed_policy.findings:
-                # terraform statement element is optional - The default is "Allow".
-                if finding.detail != "Statement does not contain an Effect element":
-                    results.append(
-                        IAMParliamentFinding(finding))
+                results.append(
+                    IAMParliamentFinding(finding))
             if results:
                 return CheckResult.FAILED, results
         return CheckResult.PASSED
