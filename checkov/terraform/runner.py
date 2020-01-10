@@ -50,7 +50,7 @@ class Runner:
             registry = self.block_type_registries[block_type]
 
             if registry:
-                results = resource_registry.scan(entity, scanned_file, skipped_checks)
+                results = registry.scan(entity, scanned_file, skipped_checks)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
