@@ -9,8 +9,6 @@ class TestRegistry(unittest.TestCase):
         from checkov.terraform.checks.data.registry import data_registry
         self.registry = data_registry
 
-    def test_checks_loaded(self):
-        self.assertGreater(len(self.registry.checks), 0)
 
     @patch('os.path.exists')
     def test_with_init(self, mock_path_exists):

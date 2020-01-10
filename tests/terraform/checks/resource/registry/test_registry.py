@@ -6,8 +6,8 @@ from unittest.mock import patch
 class TestRegistry(unittest.TestCase):
 
     def setUp(self):
-        from checkov.terraform.checks.resource.registry import Registry
-        self.registry = Registry()
+        from checkov.terraform.checks.resource.registry import resource_registry
+        self.registry = resource_registry
 
     @patch('os.path.exists')
     def test_with_init(self, mock_path_exists):
