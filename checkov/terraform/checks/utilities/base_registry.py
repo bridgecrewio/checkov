@@ -4,11 +4,12 @@ import os
 import importlib
 
 
-class Registry:
+class Registry(object):
     checks = {}
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.checks = {}
 
     def register(self, check):
         for entity in check.supported_entities:
