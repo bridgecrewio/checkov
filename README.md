@@ -5,7 +5,7 @@
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://bridgecrewio.github.io/checkov/)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
-[![Downloads](https://pepy.tech/badge/checkov/month)](https://pepy.tech/project/checkov/month)
+[![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 
 ## **Table of contents**
