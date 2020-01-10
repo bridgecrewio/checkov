@@ -25,7 +25,7 @@ This guide covers all the necessary stages required to building and contributing
 3. Testing
     * Provide a unit test suite of the check as described in the [Testing](#testing) section.
 4. Pull Request
-    * Open a PR that contains the implementing code and testing suite, with the following information:
+    * Open a PR that contains the implementation code and testing suite, with the following information:
         * Check `id`
         * Check `name`
         * Check type and provider
