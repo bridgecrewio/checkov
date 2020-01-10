@@ -6,10 +6,10 @@ from checkov.terraform.checks.utilities.base_check import BaseCheck
 
 class BaseDataCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_data):
-        self.supported_data = supported_data
-        data_registry.register(self)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_data,
                          block_type="data")
+        self.supported_data = supported_data
+        data_registry.register(self)
 
     @abstractmethod
     def scan_data_conf(self, conf):

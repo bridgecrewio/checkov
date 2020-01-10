@@ -8,6 +8,7 @@ class BaseCheck(ABC):
     id = ""
     name = ""
     categories = []
+    supported_entities = []
 
     def __init__(self, name, id, categories, supported_entities, block_type):
         self.name = name
