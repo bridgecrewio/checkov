@@ -10,6 +10,10 @@ from checkov.terraform.parser import Parser
 
 
 class Runner:
+    block_type_registries = {
+        'resource': resource_registry,
+        'data': data_registry
+    }
 
     def run(self, root_folder, external_checks_dir=None):
         report = Report()
@@ -39,19 +43,17 @@ class Runner:
             entity_type = list(entity.keys())[0]
             entity_name = list(list(entity.values())[0].keys())[0]
             entity_id = "{}.{}".format(entity_type, entity_name)
-            if block_type == 'data':
-                print("a")
             entity_context = definition_context[full_file_path][entity_type][entity_name]
             entity_lines_range = [entity_context['start_line'], entity_context['end_line']]
             entity_code_lines = entity_context['code_lines']
             skipped_checks = entity_context.get('skipped_checks')
-            if block_type == 'resource':
+            registry = self.block_type_registries[block_type]
+
+            if registry:
                 results = resource_registry.scan(entity, scanned_file, skipped_checks)
-            if block_type == 'data':
-                results = data_registry.scan(entity, scanned_file, skipped_checks)
-            for check, check_result in results.items():
-                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                code_block=entity_code_lines, file_path=scanned_file,
-                                file_line_range=entity_lines_range,
-                                resource=entity_id, check_class=check.__class__.__module__)
-                report.add_record(record=record)
+                for check, check_result in results.items():
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                    code_block=entity_code_lines, file_path=scanned_file,
+                                    file_line_range=entity_lines_range,
+                                    resource=entity_id, check_class=check.__class__.__module__)
+                    report.add_record(record=record)
