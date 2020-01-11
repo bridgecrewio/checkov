@@ -64,6 +64,13 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 
 Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting%20Started.md) page.
 
+### Using Docker
+
+```sh
+docker pull bridgecrew/checkov
+docker run bridgecrew/checkov -i -v /user/tf:/tf -d /tf
+```
+
 ## Alternatives
 
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).
