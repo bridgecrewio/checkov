@@ -1,4 +1,5 @@
 import logging
+import os
 
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -15,7 +16,7 @@ class Runner:
         'data': data_registry
     }
 
-    def run(self, root_folder, external_checks_dir=None):
+    def run(self, root_folder, external_checks_dir=None, file=None):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
@@ -23,8 +24,11 @@ class Runner:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-
-        Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+        if file:
+            Parser().parse_file(file=file, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+            root_folder = os.path.dirname(file)
+        else:
+            Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
         report.add_parsing_errors(parsing_errors.keys())
         for definition in tf_definitions.items():
             full_file_path = definition[0]
