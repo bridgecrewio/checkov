@@ -1,16 +1,16 @@
+from checkov.terraform.checks.data.base_check import BaseDataCheck
 from checkov.terraform.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 
-class AdminPolicyDocument(BaseResourceCheck):
+class AdminPolicyDocument(BaseDataCheck):
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         id = "CKV_AWS_1"
-        supported_resource = ['aws_iam_policy_document']
+        supported_data = ['aws_iam_policy_document']
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
+        super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
-    def scan_resource_conf(self, conf):
+    def scan_data_conf(self, conf):
         """
             validates iam policy document
             https://learn.hashicorp.com/terraform/aws/iam-policy
