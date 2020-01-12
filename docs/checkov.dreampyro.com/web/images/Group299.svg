@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="185.081" height="186.028" viewBox="0 0 185.081 186.028">
+  <defs>
+    <filter id="Rectangle_111" x="0" y="89.316" width="110.081" height="96.712" filterUnits="userSpaceOnUse">
+      <feOffset dx="3" dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-opacity="0.102"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_198" x="63" y="89.316" width="122.081" height="82.712" filterUnits="userSpaceOnUse">
+      <feOffset dx="3" dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur-2"/>
+      <feFlood flood-opacity="0.102"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_196" x="0.342" y="0" width="181" height="132" filterUnits="userSpaceOnUse">
+      <feOffset dx="3" dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur-3"/>
+      <feFlood flood-opacity="0.078"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_299" data-name="Group 299" transform="translate(-1035.658 -2573)">
+    <line id="Line_72" data-name="Line 72" y2="26" transform="translate(1087.5 2669.5)" fill="none" stroke="#113386" stroke-width="2"/>
+    <line id="Line_73" data-name="Line 73" y2="31" transform="translate(1156.5 2669.5)" fill="none" stroke="#113386" stroke-width="2"/>
+    <g transform="matrix(1, 0, 0, 1, 1035.66, 2573)" filter="url(#Rectangle_111)">
+      <rect id="Rectangle_111-2" data-name="Rectangle 111" width="50.081" height="36.712" rx="7" transform="translate(27 116.32)" fill="#fff"/>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, 1035.66, 2573)" filter="url(#Rectangle_198)">
+      <rect id="Rectangle_198-2" data-name="Rectangle 198" width="62.081" height="22.712" rx="7" transform="translate(90 116.32)" fill="#fff"/>
+    </g>
+    <line id="Line_74" data-name="Line 74" x2="21.565" transform="translate(1082.5 2700.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <line id="Line_75" data-name="Line 75" x2="6.565" transform="translate(1070.5 2700.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <line id="Line_78" data-name="Line 78" x2="6.565" transform="translate(1070.5 2714.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <line id="Line_80" data-name="Line 80" x2="21.565" transform="translate(1082.5 2714.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <line id="Line_76" data-name="Line 76" x2="17" transform="translate(1070.5 2707.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <g id="Group_274" data-name="Group 274" transform="translate(27 -160)">
+      <line id="Line_81" data-name="Line 81" x2="5" transform="translate(1107.5 2860.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+      <line id="Line_82" data-name="Line 82" x2="16" transform="translate(1118.5 2860.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+      <line id="Line_83" data-name="Line 83" x2="11" transform="translate(1140.5 2860.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    </g>
+    <line id="Line_77" data-name="Line 77" x2="12" transform="translate(1092.5 2707.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+    <g id="Group_273" data-name="Group 273" transform="translate(668 -160)">
+      <rect id="Rectangle_195" data-name="Rectangle 195" width="121" height="86.375" rx="7" transform="translate(395 2742.065)" fill="#113386"/>
+      <g transform="matrix(1, 0, 0, 1, 367.66, 2733)" filter="url(#Rectangle_196)">
+        <path id="Rectangle_196-2" data-name="Rectangle 196" d="M0,0H121a0,0,0,0,1,0,0V65a7,7,0,0,1-7,7H7a7,7,0,0,1-7-7V0A0,0,0,0,1,0,0Z" transform="translate(27.34 27)" fill="#fff"/>
+      </g>
+      <g id="Group_261" data-name="Group 261" transform="translate(-1.025)">
+        <line id="Line_43" data-name="Line 43" y1="0.072" x2="67.989" transform="translate(410.051 2750.694)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_62" data-name="Line 62" x2="10.489" transform="translate(434.454 2781.517)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_44" data-name="Line 44" x2="29.559" transform="translate(434.454 2791.052)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_45" data-name="Line 45" x2="17.64" transform="translate(445.734 2800.587)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_46" data-name="Line 46" x2="45.053" transform="translate(410.051 2810.122)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_63" data-name="Line 63" x2="27.413" transform="translate(410.051 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_47" data-name="Line 47" x2="15.146" y2="0.124" transform="translate(460.433 2809.998)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_48" data-name="Line 48" x2="14.979" transform="translate(468.83 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_49" data-name="Line 49" x2="14.91" transform="translate(489.035 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_50" data-name="Line 50" x2="23.045" y2="0.124" transform="translate(480.901 2809.998)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_67" data-name="Line 67" x2="18.174" transform="translate(410.5 2771.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_64" data-name="Line 64" x2="3.337" transform="translate(437.01 2800.587)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_51" data-name="Line 51" x2="3.337" transform="translate(477.752 2791.14)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_52" data-name="Line 52" x2="3.337" transform="translate(460.171 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_53" data-name="Line 53" x2="3.337" transform="translate(467.256 2781.608)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_40" data-name="Line 40" x2="3.337" transform="translate(500.581 2750.694)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_65" data-name="Line 65" x2="3.337" transform="translate(428.428 2800.587)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_54" data-name="Line 54" x2="3.337" transform="translate(469.092 2791.14)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_66" data-name="Line 66" x2="3.337" transform="translate(433.93 2771.984)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_55" data-name="Line 55" x2="3.337" transform="translate(451.511 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_56" data-name="Line 56" x2="3.337" transform="translate(458.596 2781.608)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_41" data-name="Line 41" x2="3.337" transform="translate(491.922 2750.694)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_68" data-name="Line 68" x2="13.111" transform="translate(410.025 2800.587)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_61" data-name="Line 61" x2="3.337" transform="translate(442.852 2819.657)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_57" data-name="Line 57" x2="3.337" transform="translate(450.199 2781.608)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_58" data-name="Line 58" x2="3.337" transform="translate(483.262 2750.694)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_59" data-name="Line 59" x2="20.5" transform="translate(442.589 2771.981)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_60" data-name="Line 60" y1="0.053" x2="17.535" transform="translate(486.411 2791.052)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+        <line id="Line_42" data-name="Line 42" x2="28.031" transform="translate(475.915 2781.517)" fill="none" stroke="#052882" stroke-linecap="round" stroke-width="2.5"/>
+      </g>
+    </g>
+  </g>
+</svg>
