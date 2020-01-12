@@ -1,4 +1,4 @@
-remote_theme: orema10/checkov-theme
+remote_theme: bridgecrewio/checkov-theme
 
 site_author: Bridgecrew
 repo_url: "https://github.com/bridgecrewio/checkov/"
