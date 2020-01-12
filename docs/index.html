@@ -1,144 +1,359 @@
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!DOCTYPE html>
+<html data-pr-page="5e11d9110227d065447b0858" data-pr-site="5e11d9110227d071927b0857">
 
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="description" content="HTTrack is an easy-to-use website mirror utility. It allows you to download a World Wide website from the Internet to a local directory,building recursively all structures, getting html, images, and other files from the server to your computer. Links are rebuiltrelatively so that you can freely browse to the local site (works with any browser). You can mirror several sites together so that you can jump from one toanother. You can, also, update an existing mirror site, or resume an interrupted download. The robot is fully configurable, with an integrated help" />
-	<meta name="keywords" content="httrack, HTTRACK, HTTrack, winhttrack, WINHTTRACK, WinHTTrack, offline browser, web mirror utility, aspirateur web, surf offline, web capture, www mirror utility, browse offline, local  site builder, website mirroring, aspirateur www, internet grabber, capture de site web, internet tool, hors connexion, unix, dos, windows 95, windows 98, solaris, ibm580, AIX 4.0, HTS, HTGet, web aspirator, web aspirateur, libre, GPL, GNU, free software" />
-	<title>Local index - HTTrack Website Copier</title>
-  <!-- Mirror and index made by HTTrack Website Copier/3.49-2 [XR&CO'2014] -->
-	<style type="text/css">
-	<!--
-
-body {
-	margin: 0;  padding: 0;  margin-bottom: 15px;  margin-top: 8px;
-	background: #77b;
+  <meta charset="utf-8">
+  <title>Checkov</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link href="web/css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="web/css/pyro.css" rel="stylesheet" type="text/css">
+  <link href="web/css/checkov.pyro.css" rel="stylesheet" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["Roboto:regular"]  }});</script>
+  <script src="https://use.typekit.net/byn0kug.js" type="text/javascript"></script>
+  <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+  <!-- [if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js" type="text/javascript"></script><![endif] -->
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link href="web/images/favicon.png" rel="shortcut icon" type="image/x-icon">
+  <link href="web/images/webclip.png" rel="apple-touch-icon">
+  <style>
+.replace-element span {
+	opacity: 0;
+	transition: opacity .3s ease;
 }
-body, td {
-	font: 14px "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-	}
-
-#subTitle {
-	background: #000;  color: #fff;  padding: 4px;  font-weight: bold; 
-	}
-
-#siteNavigation a, #siteNavigation .current {
-	font-weight: bold;  color: #448;
-	}
-#siteNavigation a:link    { text-decoration: none; }
-#siteNavigation a:visited { text-decoration: none; }
-
-#siteNavigation .current { background-color: #ccd; }
-
-#siteNavigation a:hover   { text-decoration: none;  background-color: #fff;  color: #000; }
-#siteNavigation a:active  { text-decoration: none;  background-color: #ccc; }
-
-
-a:link    { text-decoration: underline;  color: #00f; }
-a:visited { text-decoration: underline;  color: #000; }
-a:hover   { text-decoration: underline;  color: #c00; }
-a:active  { text-decoration: underline; }
-
-#pageContent {
-	clear: both;
-	border-bottom: 6px solid #000;
-	padding: 10px;  padding-top: 20px;
-	line-height: 1.65em;
-	background-image: url(backblue.gif);
-	background-repeat: no-repeat;
-	background-position: top right;
-	}
-
-#pageContent, #siteNavigation {
-	background-color: #ccd;
-	}
-
-
-.imgLeft  { float: left;   margin-right: 10px;  margin-bottom: 10px; }
-.imgRight { float: right;  margin-left: 10px;   margin-bottom: 10px; }
-
-hr { height: 1px;  color: #000;  background-color: #000;  margin-bottom: 15px; }
-
-h1 { margin: 0;  font-weight: bold;  font-size: 2em; }
-h2 { margin: 0;  font-weight: bold;  font-size: 1.6em; }
-h3 { margin: 0;  font-weight: bold;  font-size: 1.3em; }
-h4 { margin: 0;  font-weight: bold;  font-size: 1.18em; }
-
-.blak { background-color: #000; }
-.hide { display: none; }
-.tableWidth { min-width: 400px; }
-
-.tblRegular       { border-collapse: collapse; }
-.tblRegular td    { padding: 6px;  background-image: url(fade.gif);  border: 2px solid #99c; }
-.tblHeaderColor, .tblHeaderColor td { background: #99c; }
-.tblNoBorder td   { border: 0; }
-
-
-// -->
+.replace-element.active span {
+	opacity: 1;
+}
+.show-from-bottom {
+    opacity: 0;
+    position: relative;
+    top: 30px;
+    transition: opacity .3s ease, top .3s ease;
+}
+.show-from-bottom.active {
+    opacity: 1;
+    top: 0;
+}
 </style>
-
 </head>
-
-<table width="76%" border="0" align="center" cellspacing="0" cellpadding="3" class="tableWidth">
-	<tr>
-	<td id="subTitle">HTTrack Website Copier - Open Source offline browser</td>
-	</tr>
-</table>
-<table width="76%" border="0" align="center" cellspacing="0" cellpadding="0" class="tableWidth">
-<tr class="blak">
-<td>
-	<table width="100%" border="0" align="center" cellspacing="1" cellpadding="0">
-	<tr>
-	<td colspan="6"> 
-		<table width="100%" border="0" align="center" cellspacing="0" cellpadding="10">
-		<tr> 
-		<td id="pageContent"> 
-<!-- ==================== End prologue ==================== -->
-
-	<meta name="generator" content="HTTrack Website Copier/3.x">
-	<TITLE>Local index - HTTrack</TITLE>
-</HEAD>
-<BODY>
-<H1 ALIGN=Center>Index of locally available sites:</H1>
-	<TABLE BORDER="0" WIDTH="100%" CELLSPACING="1" CELLPADDING="0">
-		<TR>
-			<TD BACKGROUND="fade.gif">
-				&middot;
-					<A HREF="checkov.dreampyro.com/web/index.html">
-						Checkov
-					</A>		
-			</TD>
-		</TR>
-	</TABLE>
-	<BR>
-	<BR>
-	<BR>
-  	<H6 ALIGN="RIGHT">
-	<I>Mirror and index made by HTTrack Website Copier [XR&amp;CO'2008]</I>
-	</H6>
-	<!-- Mirror and index made by HTTrack Website Copier/3.49-2 [XR&CO'2014] -->
-	<!-- Thanks for using HTTrack Website Copier! -->
-	<meta HTTP-EQUIV="Refresh" CONTENT="0; URL=checkov.dreampyro.com/web/index.html">
-
-
-<!-- ==================== Start epilogue ==================== -->
-		</td>
-		</tr>
-		</table>
-	</td>
-	</tr>
-	</table>
-</td>
-</tr>
-</table>
-
-<table width="76%" border="0" align="center" valign="bottom" cellspacing="0" cellpadding="0">
-	<tr>
-	<td id="footer"><small>&copy; 2008 Xavier Roche & other contributors - Web Design: Leto Kauler.</small></td>
-	</tr>
-</table>
-
+<body>
+  <div class="css w-embed">
+    <style>
+	body {
+  	max-width: 100vw;
+    overflow-x: hidden;
+  }
+	.mouse-inner {
+    	-webkit-transform-origin: bottom;
+    	-ms-transform-origin: bottom;
+    	transform-origin: bottom;
+    	-webkit-animation: mouseMove 1.3s ease infinite;
+    	animation: mouseMove 1.3s ease infinite;
+  }
+  .features-slider .w-slider-nav.w-num > div {
+    border: 1px solid #113386;
+    margin: 0 7.5px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    line-height: 1;
+    transition: background .6s;
+	}
+  .features-slider .w-slider-nav.w-num > div.w-active {
+  	background-color: #113386;
+    color: #fff;
+  }
+  .sources-slider .w-slider-nav > div {
+    	width: 60px;
+   	 	height: 3px;
+    	border-radius: 0;
+    	background: #b9c3dd;
+    	margin: 0 7.5px;
+      /*opacity: .3;*/
+      position: relative;
+      overflow: hidden;
+      /*transition: opacity .6s;*/
+  }
+  .sources-slider .w-slider-nav > div.w-active::after {
+    	-webkit-animation: fullWidth 6s ease;
+    	animation: fullWidth 6s ease;
+  }
+  .sources-slider .w-slider-nav > div::after {
+  	content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #002682;
+    z-index: 1;
+  }
+  .checkov-code-img {
+  	object-position: top;
+  }
+  @keyframes fullWidth {
+  	from { width: 0% }
+    to { width: 100%; }
+  }
+  @keyframes mouseMove {
+  		0% {
+    		top: 10px;
+    		-webkit-transform: scaleY(1) translateX(-50%);
+    		transform: scaleY(1) translateX(-50%);
+			}
+			20% {
+   			top: 20px;
+    		-webkit-transform: scaleY(3) translateX(-50%);
+   		 	transform: scaleY(3) translateX(-50%);
+			}
+			50% {
+    		top: 20px;
+    		-webkit-transform: scaleY(1) translateX(-50%);
+    		transform: scaleY(1) translateX(-50%);
+			}
+			60% {
+    		top: 20px;
+    		-webkit-transform: scaleY(1) translateX(-50%);
+    		transform: scaleY(1) translateX(-50%) ;
+			}
+			80% {
+    		top: 7px;
+    		-webkit-transform: scaleY(1) translateX(-50%);
+   	 		transform: scaleY(1) translateX(-50%);
+			}
+    	95% {
+    		top: 10px;
+    		-webkit-transform: scaleY(1) translateX(-50%);
+    		transform: scaleY(1) translateX(-50%);
+			}
+  }
+  @media screen and (min-width: 1024px) {
+  	.footer-li .footer-link {
+      background-image: linear-gradient(to bottom, currentColor 25%, transparent 25%);
+    	background-repeat: no-repeat;
+    	background-size: 0% 3px;
+    	background-position-x: right;
+    	background-position-y: bottom;
+      padding-bottom: 3px;
+    	transition: background-size 0.3s, filter .6s, color .6s, opacity .6s !important;
+    }
+    .footer-li:hover .footer-link {
+      background-position-x: left;
+    	background-size: 100% 3px;
+    }
+    .features-slider, .sources-slider {
+    	display: none !important;
+    }
+  }
+  .sources-slider {
+  	pointer-events: none;
+  }
+</style>
+  </div>
+  <header class="header">
+    <div class="header-container"><a href="#" class="logo-wrapper w-inline-block"><img src="web/images/checkov-logo.svg" alt="" class="image"></a>
+      <div class="btns-container in-header"><a href="#" class="button shadow-none w-button">Install</a><a href="#" class="button shadow-none white-btn try-bc-btn w-button">Try Bridgecrew</a></div>
+    </div>
+  </header>
+  <main class="checkov-page">
+    <section id="hero" class="hero"><img src="web/images/Mask-Group-1.png" srcset="web/images/Mask-Group-1-p-500.png 500w, web/images/Mask-Group-1-p-800.png 800w, web/images/Mask-Group-1-p-1080.png 1080w, web/images/Mask-Group-1-p-1600.png 1600w, web/images/Mask-Group-1.png 1948w" sizes="100vw" alt="" class="hero-img">
+      <div class="hero-bg"></div>
+      <div data-p-id="7b107e6a-2faa-c72e-0226-74a298bd22df" class="hero-text-container">
+        <h1 style="-webkit-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);opacity:0" class="main-title">Prevent cloud misconfigurations during build time</h1>
+        <p style="opacity:0;-webkit-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="hero-text">Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure managed in Terraform and detects misconfigurations.</p><a style="opacity:0;-webkit-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(-200PX, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" href="#" class="button w-button">Install</a></div>
+      <a href="#code" style="opacity:0;-webkit-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="mouse-outer-wrapper w-inline-block">
+        <div class="mouse-outer">
+          <div class="mouse-inner"></div>
+        </div>
+      </a>
+    </section>
+    <section id="code" data-p-id="dc0dfefc-eb7b-02ac-227c-bb8584a8d160" class="checkov-code">
+      <div class="checkov-code-container">
+        <p style="opacity:0" class="checkov-code-text">Checkov is written in Python and provides a simple method to write and manage codified, version-controlled policies.</p><img src="web/images/checkov-recording.gif" style="opacity:0" alt="" class="checkov-code-img">
+        <div style="opacity:0" class="btns-container in-checkov-code"><a href="#" class="button shadow-none big-btn-with-border transparent-btn fix-size-trans-btn w-button">Start using Checkov</a><a href="#" class="button shadow-none white-btn white-btn-big w-button">Documentation</a></div>
+      </div>
+    </section>
+    <section data-p-id="12a4a427-428c-e8fa-528c-fd646016ed2e" class="features center-title">
+      <h2 style="opacity:0" class="main-title">Features</h2>
+      <div class="features-container">
+        <div data-p-id="36de43b8-a2aa-a879-e225-cfebb5a84785" style="opacity:0" class="single-feature">
+          <div class="img-wrapper"><img src="web/images/Group297.svg" alt="" class="feature-img"></div>
+          <p class="feature-text">Built-in policies cover security and compliance best practices for AWS, Azure &amp; Google Cloud</p>
+        </div>
+        <div data-p-id="5632d8de-e193-d205-fa3f-a5d5822de46c" style="opacity:0" class="single-feature">
+          <div class="img-wrapper"><img src="web/images/Group298.svg" alt="" class="feature-img"></div>
+          <p class="feature-text">Get your output in CLI, JSON or JUnit XML</p>
+        </div>
+        <div data-p-id="786a4522-3a62-400e-500f-cf34d06f2c1a" style="opacity:0" class="single-feature">
+          <div class="img-wrapper"><img src="web/images/Group299.svg" alt="" class="feature-img"></div>
+          <p class="feature-text">Handles variables by building a dynamic code dependency graph</p>
+        </div>
+        <div data-p-id="eac2d68d-fc11-a94e-75d2-6f14c0932f0b" style="opacity:0" class="single-feature">
+          <div class="img-wrapper"><img src="web/images/Group300.svg" alt="" class="feature-img"></div>
+          <p class="feature-text">Supports in-line suppression for accepted risk</p>
+        </div>
+      </div>
+      <div data-delay="4000" data-animation="cross" data-autoplay="1" data-duration="1000" data-infinite="1" style="opacity:0;display:none" class="features-slider w-slider">
+        <div class="w-slider-mask">
+          <div class="feature-slider w-slide">
+            <div class="feature-slider-container"><img src="web/images/Group297.svg" alt="" class="feature-img">
+              <p class="feature-text">Built-in policies cover security and compliance best practices for AWS, Azure &amp; Google Cloud</p>
+            </div>
+          </div>
+          <div class="feature-slider w-slide">
+            <div class="feature-slider-container"><img src="web/images/Group298.svg" alt="" class="feature-img">
+              <p class="feature-text">Get your output in CLI, JSON or JUnit XML</p>
+            </div>
+          </div>
+          <div class="feature-slider w-slide">
+            <div class="feature-slider-container"><img src="web/images/Group299.svg" alt="" class="feature-img">
+              <p class="feature-text">Handles variables by building a dynamic code dependency graph</p>
+            </div>
+          </div>
+          <div class="feature-slider w-slide">
+            <div class="feature-slider-container"><img src="web/images/Group300.svg" alt="" class="feature-img">
+              <p class="feature-text">Supports in-line suppression for accepted risk</p>
+            </div>
+          </div>
+        </div>
+        <div class="left-arrow w-slider-arrow-left">
+          <div class="w-icon-slider-left"></div>
+        </div>
+        <div class="right-arrow w-slider-arrow-right">
+          <div class="w-icon-slider-right"></div>
+        </div>
+        <div class="slide-nav w-slider-nav w-round w-num"></div>
+      </div>
+    </section>
+    <section data-p-id="2c47834e-f2f1-e74e-c9b5-cbb026d0fc1d" class="open-source">
+      <h2 style="opacity:0" class="main-title center-title">Simple and open-source</h2>
+      <div class="source-container">
+        <div data-p-id="5337569e-977b-a63c-3e01-5531a222e14d" style="opacity:0" class="single-source">
+          <p class="single-source-text">Install from pypi using pip</p>
+          <div class="source-img-wrapper"><img src="web/images/blue1.png" srcset="web/images/blue1-p-500.png 500w, web/images/blue1.png 680w" sizes="(max-width: 991px) 100vw, 15vw" alt="" class="source-img"></div>
+        </div>
+        <div data-p-id="0384ec2a-14a0-3cc7-db9d-2cf6f9d474fa" style="opacity:0" class="single-source">
+          <p class="single-source-text">Select an input folder that contains your terraform plan files and run scans</p>
+          <div class="source-img-wrapper"><img src="web/images/blue2.png" srcset="web/images/blue2-p-500.png 500w, web/images/blue2.png 680w" sizes="(max-width: 991px) 100vw, 15vw" alt="" class="source-img"></div>
+        </div>
+        <div data-p-id="2ac28bf5-1bfc-5d49-bc10-b77ba1199591" style="opacity:0" class="single-source">
+          <p class="single-source-text">Export results to a color-coded cli print</p>
+          <div class="source-img-wrapper"><img src="web/images/blue3.png" srcset="web/images/blue3-p-500.png 500w, web/images/blue3.png 680w" sizes="(max-width: 991px) 100vw, 15vw" alt="" class="source-img"></div>
+        </div>
+        <div data-p-id="812568cb-81e5-4e69-8c5e-fc7c8f2bd132" style="opacity:0" class="single-source">
+          <p class="single-source-text">Integrate scans to your ci/cd pipelines</p>
+          <div class="source-img-wrapper"><img src="web/images/blue4.png" srcset="web/images/blue4-p-500.png 500w, web/images/blue4.png 680w" sizes="(max-width: 991px) 100vw, 15vw" alt="" class="source-img"></div>
+        </div>
+      </div>
+      <div data-delay="4000" data-animation="slide" data-autoplay="1" data-disable-swipe="1" data-duration="1000" data-infinite="1" style="opacity:0" class="sources-slider w-slider">
+        <div class="w-slider-mask">
+          <div class="source-slider w-slide">
+            <div class="source-slider-container">
+              <p class="single-source-text">Install from pypi using pip</p><img src="web/images/blue1.png" srcset="web/images/blue1-p-500.png 500w, web/images/blue1.png 680w" sizes="(max-width: 479px) 83vw, (max-width: 991px) 341.3125px, 100vw" alt="" class="source-img"></div>
+          </div>
+          <div class="source-slider w-slide">
+            <div class="source-slider-container">
+              <p class="single-source-text">Select an input folder that contains your terraform plan files and run scans</p><img src="web/images/blue3.png" srcset="web/images/blue3-p-500.png 500w, web/images/blue3.png 680w" sizes="(max-width: 479px) 83vw, (max-width: 991px) 341.3125px, 100vw" alt="" class="source-img"></div>
+          </div>
+          <div class="source-slider w-slide">
+            <div class="source-slider-container">
+              <p class="single-source-text">Export results to a color-coded cli print</p><img src="web/images/blue2.png" srcset="web/images/blue2-p-500.png 500w, web/images/blue2.png 680w" sizes="(max-width: 479px) 83vw, (max-width: 991px) 340px, 100vw" alt="" class="source-img"></div>
+          </div>
+          <div class="source-slider w-slide">
+            <div class="source-slider-container">
+              <p class="single-source-text">Integrate scans to your ci/cd pipelines</p><img src="web/images/blue4.png" srcset="web/images/blue4-p-500.png 500w, web/images/blue4.png 680w" sizes="(max-width: 479px) 83vw, (max-width: 991px) 341.3125px, 100vw" alt="" class="source-img"></div>
+          </div>
+        </div>
+        <div class="left-arrow-2 w-slider-arrow-left">
+          <div class="w-icon-slider-left"></div>
+        </div>
+        <div class="right-arrow-2 w-slider-arrow-right">
+          <div class="w-icon-slider-right"></div>
+        </div>
+        <div class="slide-nav source-nav w-slider-nav w-round"></div>
+      </div>
+    </section>
+    <section data-p-id="9a5647e3-d873-cbc9-040c-e9df23694a6f" class="twitter">
+      <h2 style="-webkit-transform:translate3d(0, -200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, -200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, -200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, -200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);opacity:0" class="main-title center-title">Checkov on Twitter</h2>
+      <div style="opacity:0;-webkit-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 200PX, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="twitter-container">
+        <div class="single-twitter-item"></div>
+        <div class="single-twitter-item"></div>
+        <div class="single-twitter-item"></div>
+        <div class="single-twitter-item"></div>
+      </div>
+    </section>
+    <div data-p-id="5df5041b-b9fa-2857-565b-656654349300" class="community">
+      <div class="community-bg pointer-events-none"></div>
+      <div class="community-container">
+        <h2 style="opacity:0" class="main-title center-title community-title">Join our community and stay up to date</h2>
+        <div style="opacity:0" class="btns-container ic-community"><a href="#" class="button shadow-none big-btn-with-border transparent-btn w-button">Talk to us on Slack</a><a href="#" class="button shadow-none white-btn white-btn-big more-size-btn w-button">Contribute checks on Github</a></div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="footer-container">
+      <a href="#" class="footer-logo-wrapper w-inline-block">
+        <p class="powered-text">Powered By</p><img src="web/images/logo.svg" alt="" class="bridge-logo"></a>
+      <nav class="footer-nav">
+        <ul class="footer-links-list w-list-unstyled">
+          <li class="footer-li"><a href="#" class="footer-link">Slack Community</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">About Bridgecrew</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">Platform</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">Terms of use</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">GitHub</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">Our Services</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">Contact Us</a></li>
+          <li class="footer-li"><a href="#" class="footer-link">Privacy policy</a></li>
+        </ul>
+      </nav>
+      <div class="footer-visit-on">
+        <p class="visit-on-text">Visit us on</p>
+        <div class="social-links"><a href="#" class="single-social-link first w-inline-block"><img src="web/images/Fill44.svg" alt="" class="social-img"></a><a href="#" class="single-social-link w-inline-block"><img src="web/images/Path870.svg" alt="" class="social-img"></a><a href="#" class="single-social-link w-inline-block"><img src="web/images/Group253.svg" alt="" class="social-img"></a><a href="#" class="single-social-link last w-inline-block"><img src="web/images/Group254.svg" alt="" class="social-img"></a></div>
+      </div>
+    </div><a href="#hero" class="to-top-btn w-inline-block"><img src="web/images/arrow-up.svg" alt="" class="arrow-up"></a></footer>
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.4.1.min.220afd743d.js" type="text/javascript" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="web/js/pyro.js" type="text/javascript"></script>
+  <!-- [if lte IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/placeholders/3.0.2/placeholders.min.js"></script><![endif] -->
+  <script>
+var GLOBAL_DELAY = 0;
+var elHeader = document.querySelector('header');
+window.onscroll = function() {
+	if(window.scrollY === 0) {
+  	elHeader.style.backgroundColor = 'transparent';
+  } else {
+  	elHeader.style.backgroundColor = '#fff';
+  }
+}
+var heroTitle = document.querySelector('section.hero h1');
+//replaceElementContent(heroTitle);
+function replaceElementContent(el) {
+	var delay = 15;
+  el.classList.add('replace-element');
+  el.innerHTML = el.innerText.split('').map(function(character) {
+      delay += 35;
+      return '<span style="transition-delay: ' + delay + 'ms;" class="char">' + character + '</span>';
+  }).join('');
+  if(delay > GLOBAL_DELAY) {
+  	GLOBAL_DELAY = delay;
+  } 
+}
+document.addEventListener('DOMContentLoaded', function(e) {
+		var elReplaceElements = document.querySelectorAll('.replace-element');
+    if(elReplaceElements.length > 0) {
+    		elReplaceElements.forEach(function(rep) {
+        	rep.classList.add('active');
+        })
+    }
+    setTimeout(function() {
+      	var elShowFromBottom = document.querySelectorAll('.show-from-bottom');
+        if(elShowFromBottom.length > 0) {
+          elShowFromBottom.forEach(function(el) {
+              el.classList.add('active');
+          })
+        }
+    }, GLOBAL_DELAY + 100)
+})
+</script>
 </body>
 
 </html>
-
-
