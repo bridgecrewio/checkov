@@ -49,6 +49,10 @@ pip install checkov
 ```sh
 checkov -d /user/tf
 ```
+Or a specific file
+```sh
+checkov -d /user/tf/example.tf
+```
 
 ### Scan result sample (CLI)
 
