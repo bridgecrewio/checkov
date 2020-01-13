@@ -3,7 +3,7 @@
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
-[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://bridgecrewio.github.io/checkov/)
+[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/documentation)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
@@ -49,6 +49,10 @@ pip install checkov
 ```sh
 checkov -d /user/tf
 ```
+Or a specific file
+```sh
+checkov -f /user/tf/example.tf
+```
 
 ### Scan result sample (CLI)
 
@@ -63,6 +67,13 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 ```
 
 Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting%20Started.md) page.
+
+### Using Docker
+
+```sh
+docker pull bridgecrew/checkov
+docker run bridgecrew/checkov -i -v /user/tf:/tf -d /tf
+```
 
 ## Alternatives
 

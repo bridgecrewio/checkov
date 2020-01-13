@@ -1,4 +1,4 @@
-remote_theme: carlosperate/jekyll-theme-rtd
+remote_theme: bridgecrewio/checkov-theme
 
 site_author: Bridgecrew
 repo_url: "https://github.com/bridgecrewio/checkov/"
@@ -7,5 +7,5 @@ edit_on_github: true
 github_docs_folder: true
 sticky_navigation: true
 prev_next_buttons_location: bottom
-search_enabled: true
+search_enabled: false
 hljs_style: github-gist
