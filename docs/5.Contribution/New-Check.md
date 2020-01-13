@@ -37,7 +37,7 @@ This guide covers all the necessary stages required to building and contributing
 
 ### Installation
 
-First, make sure you installed and configured Checkov correctly. If you are unsure, go back and read the [Getting Started](../1.Introduction/Getting%20Started.md).
+First, make sure you installed and configured Checkov correctly. If you are unsure, go back and read the [Getting Started](../1.Introduction/Getting%20Started.html).
 
 Preferably by now you have either scanned a folder containing Terraform state-files or went ahead and integrated Checkov as part of your CI/CD pipeline.
 
