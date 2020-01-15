@@ -2,7 +2,6 @@ import logging
 from checkov.terraform.models.enums import ContextCategories
 
 
-
 class ParserRegistry():
     context_parsers = {}
     definitions_context = {}
