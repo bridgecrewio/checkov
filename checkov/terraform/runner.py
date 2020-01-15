@@ -7,6 +7,7 @@ from checkov.terraform.output.report import Report
 from checkov.terraform.parser import Parser
 from checkov.terraform.graph.dependecy_graphs.dot_graph import DotGraph
 
+
 class Runner:
 
     def run(self, root_folder, use_graph=False, external_checks_dir=None):
@@ -21,7 +22,7 @@ class Runner:
         Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
         report.add_parsing_errors(parsing_errors.keys())
         if use_graph:
-            dot_graph = DotGraph(root_folder,tf_definitions)
+            dot_graph = DotGraph(root_folder, tf_definitions)
             dot_graph.compute_dependency_graph(root_folder)
         for definition in tf_definitions.items():
             full_file_path = definition[0]
