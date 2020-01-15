@@ -59,6 +59,8 @@ class Report:
     def get_exit_code(self):
         if len(self.failed_checks) > 0:
             return 1
+        if len(self.parsing_errors) > 0:
+            return 2
         return 0
 
     def print_console(self):
