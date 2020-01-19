@@ -16,7 +16,7 @@ class Runner:
         'data': data_registry
     }
 
-    def run(self, root_folder, external_checks_dir=None, file=None):
+    def run(self, root_folder, external_checks_dir=None, files=None):
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
@@ -24,12 +24,23 @@ class Runner:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-        if file:
-            Parser().parse_file(file=file, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
-            root_folder = os.path.dirname(file)
-        else:
+        if root_folder:
             Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+            self.check_tf_definition(report, root_folder, tf_definitions)
+
+        if files:
+            root_folder = os.path.commonprefix(files)
+            for file in files:
+                file_tf_definitions = {}
+                Parser().parse_file(file=file, tf_definitions=file_tf_definitions, parsing_errors=parsing_errors)
+
+                self.check_tf_definition(report, root_folder, file_tf_definitions)
+
         report.add_parsing_errors(parsing_errors.keys())
+
+        return report
+
+    def check_tf_definition(self, report, root_folder, tf_definitions):
         for definition in tf_definitions.items():
             full_file_path = definition[0]
             definition_context = parser_registry.enrich_definitions_context(definition)
@@ -39,8 +50,6 @@ class Runner:
                 if block_type in ['resource', 'data']:
                     self.run_block(definition[1][block_type], definition_context, full_file_path, report, scanned_file,
                                    block_type)
-
-        return report
 
     def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
         for entity in entities:
