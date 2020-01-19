@@ -12,7 +12,7 @@ class ECRImageScanning(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         """
-            Looks for image scanning configuration at EBS snapshot:
+            Looks for image scanning configuration at repository policy:
             https://www.terraform.io/docs/providers/aws/r/ecr_repository.html
         :param conf: aws_ecr_repository configuration
         :return: <CheckResult>

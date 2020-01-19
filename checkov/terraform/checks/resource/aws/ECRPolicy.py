@@ -6,7 +6,7 @@ import json
 
 class ECRPolicy(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure ECR policy is not public"
+        name = "Ensure ECR policy is not set to public"
         id = "CKV_AWS_32"
         supported_resources = ['aws_ecr_repository_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
@@ -14,8 +14,8 @@ class ECRPolicy(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         """
-            Looks for image scanning configuration at EBS snapshot:
-            https://www.terraform.io/docs/providers/aws/r/ecr_repository.html
+            Looks for public * policy for ecr repository:
+            https://www.terraform.io/docs/providers/aws/r/ecr_repository_policy.html
         :param conf: aws_ecr_repository configuration
         :return: <CheckResult>
         """
