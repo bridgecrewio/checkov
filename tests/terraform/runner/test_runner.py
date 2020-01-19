@@ -48,7 +48,7 @@ class TestRunnerValid(unittest.TestCase):
         passing_tf_file_path = current_dir + "/resources/valid_tf_only_passed_checks/example.tf"
 
         runner = Runner()
-        report = runner.run(root_folder=None, external_checks_dir=None, file=passing_tf_file_path)
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
