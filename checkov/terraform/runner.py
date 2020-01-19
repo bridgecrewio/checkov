@@ -4,7 +4,7 @@ import os
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.rendering.rendering_methods.const_variable_rendering import ConstVariableRendering
+from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.output.record import Record
 from checkov.terraform.output.report import Report
 from checkov.terraform.parser import Parser
@@ -32,9 +32,9 @@ class Runner:
         report.add_parsing_errors(parsing_errors.keys())
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
-        variable_renderer = ConstVariableRendering(tf_definitions, definitions_context)
-        variable_renderer.render_variables()
-        tf_definitions, definitions_context = variable_renderer.tf_definitions, variable_renderer.definitions_context
+        variable_evaluator = ConstVariableEvaluation(tf_definitions, definitions_context)
+        variable_evaluator.evaluate_variables()
+        tf_definitions, definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
         for definition in tf_definitions.items():
             full_file_path = definition[0]
             scanned_file = definition[0].split(root_folder)[1]

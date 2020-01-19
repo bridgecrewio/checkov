@@ -1,4 +1,4 @@
-from checkov.terraform.rendering.base_variable_rendering import BaseVariableRendering
+from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 import os
 import dpath
 import re
@@ -6,7 +6,7 @@ import re
 NON_PATH_WORDS_REGEX = r'\b(?!output)[^ .]+'
 
 
-class ConstVariableRendering(BaseVariableRendering):
+class ConstVariableEvaluation(BaseVariableEvaluation):
     def __init__(self, tf_definitions, definitions_context):
         super().__init__(tf_definitions, definitions_context)
 
@@ -15,12 +15,12 @@ class ConstVariableRendering(BaseVariableRendering):
         return ".".join(re.findall(NON_PATH_WORDS_REGEX, path))
 
     @staticmethod
-    def _generate_var_render_regex(path):
+    def _generate_var_evaluation_regex(path):
         return r'(?:\$\{)?var\.' + re.escape(path) + r'\}?'
 
     def _locate_assignments(self, folder, var_name):
         var_assignments_paths = {}
-        assignment_regex = self._generate_var_render_regex(var_name)
+        assignment_regex = self._generate_var_evaluation_regex(var_name)
         for source_file in [file for file in os.listdir(folder) if file.endswith('.tf')]:
             file_path = os.path.join(folder, source_file)
             var_entries = dpath.search(self.tf_definitions[file_path], '**',
@@ -33,7 +33,7 @@ class ConstVariableRendering(BaseVariableRendering):
         return var_assignments_paths
 
     def _assign_definition_value(self, var_name, var_value, var_assignments_paths):
-        assignment_regex = self._generate_var_render_regex(var_name)
+        assignment_regex = self._generate_var_evaluation_regex(var_name)
         for (assignment_file, assignments) in var_assignments_paths.items():
             # Save rendering information in context
             dpath.new(self.definitions_context[assignment_file], f'renders/{var_name}/value', var_value)
@@ -58,7 +58,7 @@ class ConstVariableRendering(BaseVariableRendering):
                         self._assign_definition_value(var_name, var_value, var_assignments_paths)
 
     # Render only variable which assignments are consts
-    def render_variables(self):
+    def evaluate_variables(self):
         definitions_folders = set([os.path.split(file_path)[0] for file_path in self.definitions_context.keys()])
         for folder in definitions_folders:
             self._render_folder_variables(folder)
