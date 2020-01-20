@@ -5,3 +5,5 @@ omit =
     tests/*
     */.pytest_cache/*
     */.local/*
+    docs/*
+    hooks/*
