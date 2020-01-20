@@ -3,7 +3,7 @@ import unittest
 from checkov.terraform.context_parsers.registry import parser_registry
 from tests.terraform.context_parsers.mock_context_parser import MockContextParser
 
-mock_definition = ('tests/terraform/context_parsers/mock_tf_files/mock.tf', {'mock': [
+mock_definition = ('terraform/context_parsers/mock_tf_files/mock.tf', {'mock': [
     {
         'mock_type': {
             'mock_name': {
@@ -18,7 +18,7 @@ class TestScannerRegistry(unittest.TestCase):
         mock_parser = MockContextParser()
         parser_registry.register(mock_parser)
         definition_context = parser_registry.enrich_definitions_context(mock_definition)
-        self.assertIsNotNone(definition_context[mock_definition[0]]['mock_type']['mock_name'])
+        self.assertIsNotNone(definition_context[mock_definition[0]]['mock']['mock_type']['mock_name'])
 
 
 

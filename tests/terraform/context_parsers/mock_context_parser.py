@@ -3,7 +3,7 @@ from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
 class MockContextParser(BaseContextParser):
     def __init__(self):
-        definition_type = 'MOCK'
+        definition_type = 'mock'
         self.definition_type = definition_type
 
     def enrich_definition_block(self, block):
