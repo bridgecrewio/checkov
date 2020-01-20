@@ -4,7 +4,7 @@ from tests.terraform.context_parsers.mock_context_parser import MockContextParse
 from checkov.terraform.context_parsers.registry import parser_registry
 
 
-mock_tf_file = 'terraform/context_parsers/mock_tf_files/mock.tf'
+mock_tf_file = 'tests/terraform/context_parsers/mock_tf_files/mock.tf'
 mock_definition = (mock_tf_file, {'mock': [
     {
         'mock_type': {
