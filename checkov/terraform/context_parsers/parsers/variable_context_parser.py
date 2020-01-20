@@ -5,11 +5,11 @@ import dpath.util
 
 class VariableContextParser(BaseContextParser):
     def __init__(self):
-        definition_type = 'VARIABLE'
+        definition_type = 'variable'
         super().__init__(definition_type=definition_type)
 
     def get_block_type(self):
-        return 'variable'
+        return self.definition_type
 
     def _collect_default_variables_values(self, variable_block):
         (variable_folder, _) = os.path.split(self.tf_file)
@@ -21,9 +21,6 @@ class VariableContextParser(BaseContextParser):
                         if type(value) in (int, float, bool, str):
                             dpath.new(self.context, "//".join(['assignments', variable_name]), value,
                                       separator='//')
-
-    def _extract_variables_references(self):
-        pass
 
     def enrich_definition_block(self, block):
         # self.context = super().enrich_definition_block(block) # TODO, the base class does not generalize to a variable block

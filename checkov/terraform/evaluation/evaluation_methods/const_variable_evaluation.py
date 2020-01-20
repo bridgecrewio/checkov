@@ -4,7 +4,7 @@ import dpath
 import re
 
 NON_PATH_WORDS_REGEX = r'\b(?!output)[^ .]+'
-TF_DEFINITIONS_STRIP_WORDS = r'\b(?!resource)\b(?!\d)\b(?!module)\b(?!local)\b(?!provider)([^\/]+)'
+TF_DEFINITIONS_STRIP_WORDS = r'\b(?!\d)([^\/]+)'
 
 
 class ConstVariableEvaluation(BaseVariableEvaluation):
@@ -21,7 +21,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
 
     @staticmethod
     def _extract_context_path(definition_path):
-        return os.path.split("/".join(re.findall(TF_DEFINITIONS_STRIP_WORDS, definition_path)))[0]
+        return os.path.split("/".join(re.findall(TF_DEFINITIONS_STRIP_WORDS, definition_path)))
 
     def _locate_assignments(self, folder, var_name):
         var_assignments_paths = {}
@@ -44,27 +44,29 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
             for assignment_obj in assignments:
                 definition_path = assignment_obj.get('definition_path')
                 entry_expression = assignment_obj.get('definition_expression')
-                context_path = self._extract_context_path(definition_path)
+                context_path, definition_name = self._extract_context_path(definition_path)
                 dpath.new(self.definitions_context[assignment_file], f'{context_path}/evaluations/{var_name}/value',
                           var_value)
                 dpath.new(self.definitions_context[assignment_file],
                           f'{context_path}/evaluations/{var_name}/expressions',
                           assignments)
+                dpath.new(self.definitions_context[assignment_file],
+                          f'{context_path}/evaluations/{var_name}/definition',
+                          definition_name)
                 rendered_value = str(var_value)
                 rendered_definition = re.sub(assignment_regex, rendered_value, entry_expression)
                 dpath.set(self.tf_definitions[assignment_file], definition_path, rendered_definition)
                 self.logger.debug(
-                    f'Evaluated default value of variable {var_name} in file {assignment_file} to {rendered_value}')
+                    f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_name} to {rendered_value}')
 
     def _evaluate_folder_variables(self, folder):
         assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
         variable_file_object = {k: v for k, v in assignment_files.items() if folder in k}
         if variable_file_object:
             for file_name, variable_assignments in variable_file_object.items():
-                if variable_assignments.get('assignments'):
-                    for var_name, var_value in variable_assignments['assignments'].items():
-                        var_assignments_paths = self._locate_assignments(folder, var_name)
-                        self._assign_definition_value(var_name, var_value, var_assignments_paths)
+                for var_name, var_value in variable_assignments['variable']['assignments'].items():
+                    var_assignments_paths = self._locate_assignments(folder, var_name)
+                    self._assign_definition_value(var_name, var_value, var_assignments_paths)
 
     # Evaluate only variable which assignments are consts
     def evaluate_variables(self):

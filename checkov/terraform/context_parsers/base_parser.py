@@ -18,7 +18,7 @@ class BaseContextParser(ABC):
 
     def __init__(self, definition_type):
         self.logger = logging.getLogger("{}".format(self.__module__))
-        if definition_type not in ContextCategories.__members__:
+        if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
         self.definition_type = definition_type
@@ -70,6 +70,7 @@ class BaseContextParser(ABC):
 
     def run(self, tf_file, block):
         self.tf_file = tf_file
+        self.context = {}
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(block)
         self.context = self._collect_skip_comments()
