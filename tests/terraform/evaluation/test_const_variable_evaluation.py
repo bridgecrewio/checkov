@@ -36,6 +36,8 @@ class TestConstVariableEvaluation(unittest.TestCase):
                           'locals/evaluations/dummy_1/expressions')),
             2)
 
+    def tearDown(self):
+        parser_registry.definitions_context = {}
 
 if __name__ == '__main__':
     unittest.main()
