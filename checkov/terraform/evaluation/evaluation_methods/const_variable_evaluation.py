@@ -16,8 +16,8 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         return ".".join(re.findall(NON_PATH_WORDS_REGEX, path))
 
     @staticmethod
-    def _generate_var_evaluation_regex(path):
-        return r'(?:\$\{)?var\.' + re.escape(path) + r'\}?'
+    def _generate_var_evaluation_regex(var_name):
+        return r'(?:\$\{)?var\.' + re.escape(var_name) + r'\}?'
 
     @staticmethod
     def _extract_context_path(definition_path):
@@ -32,7 +32,9 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                                        afilter=lambda x: re.findall(assignment_regex, str(x)), yielded=True)
             var_assignments_paths[file_path] = []
             for definition_path, expression in var_entries:
-                var_assignments_paths[file_path].append({'definition_expression': expression,
+                context_path, definition_name = self._extract_context_path(definition_path)
+                var_assignments_paths[file_path].append({'definition_name': definition_name,
+                                                         'definition_expression': expression,
                                                          'definition_path': definition_path})
         var_assignments_paths = {k: v for (k, v) in var_assignments_paths.items() if len(v) > 0}
         return var_assignments_paths
@@ -44,15 +46,13 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
             for assignment_obj in assignments:
                 definition_path = assignment_obj.get('definition_path')
                 entry_expression = assignment_obj.get('definition_expression')
-                context_path, definition_name = self._extract_context_path(definition_path)
+                definition_name = assignment_obj.get('definition_name')
+                context_path, _ = self._extract_context_path(definition_path)
                 dpath.new(self.definitions_context[assignment_file], f'{context_path}/evaluations/{var_name}/value',
                           var_value)
                 dpath.new(self.definitions_context[assignment_file],
                           f'{context_path}/evaluations/{var_name}/expressions',
                           assignments)
-                dpath.new(self.definitions_context[assignment_file],
-                          f'{context_path}/evaluations/{var_name}/definition',
-                          definition_name)
                 rendered_value = str(var_value)
                 rendered_definition = re.sub(assignment_regex, rendered_value, entry_expression)
                 dpath.set(self.tf_definitions[assignment_file], definition_path, rendered_definition)

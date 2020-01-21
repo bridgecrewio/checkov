@@ -6,13 +6,21 @@ variable "user_email" {
   default = "checkov@bridgecrew.io"
 }
 
+variable "bucket_name" {
+  default = "MyBucket"
+}
+
+variable "acl" {
+  default = "public-acl"
+}
+
 variable "region" {
   default = "us-west-2"
 }
 
 variable "app_client_id" {
   description = "Indicates whether the app client has been created"
-  default     = "Temp"
+  default = "Temp"
 }
 
 variable "user_pool_id" {
@@ -28,5 +36,5 @@ variable "dummy_1" {
 }
 
 variable "user_exists" {
-  default     = false
+  default = false
 }

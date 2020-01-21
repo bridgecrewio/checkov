@@ -1,6 +1,7 @@
 locals {
   dummy_with_dash      = format("-%s", var.dummy_1)
   dummy_with_comma     = format(":%s", var.dummy_1)
+  bucket_name          = var.bucket_name
 }
 
 resource "aws_cognito_user_group" "user_group" {
@@ -18,4 +19,11 @@ resource "null_resource" "create_cognito_user" {
   provisioner "local-exec" {
     command = "aws --profile=${var.aws_profile} --region=${var.region} cognito-idp admin-create-user --user-pool-id ${var.user_pool_id} --username ${var.user_email}"
   }
+}
+
+resource "aws_s3_bucket" "template_bucket" {
+  region        = var.region
+  bucket        = local.bucket_name
+  acl           = var.acl
+  force_destroy = true
 }
