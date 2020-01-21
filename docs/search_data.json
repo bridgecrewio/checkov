@@ -1,3 +1,8 @@
+---
+layout: null
+nav_exclude: true
+search_exclude: true
+---
 
 {
 {%- for site_page in site.pages %
