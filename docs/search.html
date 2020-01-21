@@ -64,7 +64,7 @@ search_exclude: true
           this.field('author');
           this.field('content');
         });
-        $.getJSON('/search_data.json').then(function(search_data) {
+        return $.getJSON('/search_data.json').then(function(search_data) {
           var idx = lunr(function() {
             this.field('id');
             this.field('title', { boost: 10 });
@@ -82,6 +82,9 @@ search_exclude: true
           })
           .catch(function(error) {
                 console.log(error);
+          })
+          .finally(function(error) {
+            console.log(error);
           });
 
           var results = idx.search(searchQuery);
