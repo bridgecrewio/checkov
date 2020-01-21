@@ -64,7 +64,7 @@ search_exclude: true
           this.field('author');
           this.field('content');
         });
-        $.getJSON('/search_data.json').then(function(search_data) {
+        $.getJSON('/web/search_data.json').then(function(search_data) {
           var idx = lunr(function() {
             this.field('id');
             this.field('title', { boost: 10 });
