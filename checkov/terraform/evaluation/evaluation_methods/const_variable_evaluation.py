@@ -53,11 +53,11 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                 dpath.new(self.definitions_context[assignment_file],
                           f'{context_path}/evaluations/{var_name}/expressions',
                           assignments)
-                rendered_value = str(var_value)
-                rendered_definition = re.sub(assignment_regex, rendered_value, entry_expression)
-                dpath.set(self.tf_definitions[assignment_file], definition_path, rendered_definition)
+                evaluated_value = str(var_value)
+                evaluated_definition = re.sub(assignment_regex, evaluated_value, entry_expression)
+                dpath.set(self.tf_definitions[assignment_file], definition_path, evaluated_definition)
                 self.logger.debug(
-                    f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_name} to {rendered_value}')
+                    f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_name} to {evaluated_value}')
 
     def _evaluate_folder_variables(self, folder):
         assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
