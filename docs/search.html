@@ -85,6 +85,15 @@ search_exclude: true
           displaySearchResults(results, search_data);
         });
       }
-    });
+    })  .done(function() {
+        console.log( "second success" );
+      })
+      .fail(function() {
+        console.log( "error" );
+      })
+      .always(function() {
+        console.log( "complete" );
+      });
+
 
 </script>
