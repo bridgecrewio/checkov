@@ -79,6 +79,9 @@ search_exclude: true
                 'content': search_data[key].content
               });
             }
+          })
+          .catch(function(error) {
+                console.log(error);
           });
 
           var results = idx.search(searchQuery);
