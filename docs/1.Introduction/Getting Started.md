@@ -11,7 +11,7 @@ The installation is quick and straightforward - install, configure input & scan.
 
 
 ```bash
-# install from pypi using pip
+# install from pypi using pip 
 pip install checkov
 
 

@@ -1,0 +1,99 @@
+---
+layout: base
+title: Search
+nav_exclude: true
+search_exclude: true
+---
+
+<h1 id="search">Search Results</h1>
+
+<div id="search-results" class="search-results">
+    Enter a search query in the search box on the left.
+</div>
+
+<!-- We only need to load the search dependencies in this page. -->
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<script type="text/javascript">
+    "use strict";
+
+    // First we figure out if there is a search query and show a "searching..." animation
+    var getQueryVariable = function(variable) {
+      var query = window.location.search.substring(1);
+      var vars = query.split('&');
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (pair[0] === variable) {
+          return decodeURIComponent(pair[1].replace(/\+/g, '%20'));
+        }
+      }
+    };
+    var searchResults = document.getElementById('search-results');
+    var searchQuery = getQueryVariable('q');
+    var dotAnimation = null;
+    if (searchQuery) {
+      document.getElementById('search-query').setAttribute('value', searchQuery);
+      var dotsCount = 0;
+      dotAnimation = setInterval(function() {
+        dotsCount++;
+        var dots = new Array(dotsCount % 5).join('.');
+        searchResults.innerHTML = '<li>Searching' + dots + '</li>';
+      }, 500);
+    }
+
+    // Then we perform the search on page load
+    window.addEventListener('load', function() {
+      var displaySearchResults = function(results, store) {
+        clearInterval(dotAnimation);
+        if (results.length) {
+          var appendString = '';
+          for (var i = 0; i < results.length; i++) {
+            var item = store[results[i].ref];
+            appendString += '<li><a href="' + item.url + '"><h3>' + item.title + '</h3></a>';
+            appendString += '<p>' + item.content.substring(0, 150) + '...</p></li>';
+          }
+          searchResults.innerHTML = appendString;
+        } else {
+          searchResults.innerHTML = '<li>Your search did not match any documents. Please make sure that all words are spelled correctly and that you\'ve selected enough categories.</li>';
+        }
+      };
+
+      if (searchQuery) {
+        var idx = lunr(function() {
+          this.field('id');
+          this.field('title', { boost: 10 });
+          this.field('author');
+          this.field('content');
+        });
+        $.getJSON('/search_data.json',function(search_data) {
+          var idx = lunr(function() {
+            this.field('id');
+            this.field('title', { boost: 10 });
+            this.field('author');
+            this.field('content');
+
+            for (var key in search_data) {
+              this.add({
+                'id': key,
+                'title': search_data[key].title,
+                'author': search_data[key].author,
+                'content': search_data[key].content
+              });
+            }
+          })
+
+          var results = idx.search(searchQuery);
+          displaySearchResults(results, search_data);
+        }).done(function() {
+        console.log( "second success" );
+      })
+      .fail(function(error) {
+        console.log( error );
+      })
+      .always(function() {
+        console.log( "complete" );
+      });
+      }
+    });
+
+
+</script>
