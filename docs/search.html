@@ -83,9 +83,7 @@ search_exclude: true
 
           var results = idx.search(searchQuery);
           displaySearchResults(results, search_data);
-        });
-      }
-    })  .done(function() {
+        }).done(function() {
         console.log( "second success" );
       })
       .fail(function() {
@@ -94,6 +92,8 @@ search_exclude: true
       .always(function() {
         console.log( "complete" );
       });
+      }
+    });
 
 
 </script>
