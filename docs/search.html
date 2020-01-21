@@ -86,8 +86,8 @@ search_exclude: true
         }).done(function() {
         console.log( "second success" );
       })
-      .fail(function() {
-        console.log( "error" );
+      .fail(function(error) {
+        console.log( error );
       })
       .always(function() {
         console.log( "complete" );
