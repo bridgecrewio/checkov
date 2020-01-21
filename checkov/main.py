@@ -4,6 +4,7 @@ import logging
 import argparse
 
 from checkov.terraform.runner import Runner
+from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -17,6 +18,8 @@ console.setFormatter(formatter)
 
 def run():
     parser = argparse.ArgumentParser(description='Add some integers.')
+    parser.add_argument('-v', '--version',
+                        help='Checkov version', action='store_true')
     parser.add_argument('-d', '--directory',
                         help='Terraform root directory (can not be used together with --file). Can be repeated')
     parser.add_argument('-f', '--file', action='append',
@@ -27,10 +30,13 @@ def run():
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
     args = parser.parse_args()
-
+    if args.version:
+        print(version)
+        return
     if args.list:
         # pylint: disable=unused-import
         import checkov.terraform.util.docs_generator
+        return
     else:
         root_folder = args.directory
         file = args.file
