@@ -21,7 +21,6 @@ class Runner:
         report = Report()
         tf_definitions = {}
         parsing_errors = {}
-        definitions_context = {}
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
