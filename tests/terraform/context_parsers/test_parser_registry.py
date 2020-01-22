@@ -18,7 +18,7 @@ class TestScannerRegistry(unittest.TestCase):
         mock_parser = MockContextParser()
         parser_registry.register(mock_parser)
         definition_context = parser_registry.enrich_definitions_context(mock_definition)
-        self.assertIsNotNone(definition_context[mock_definition[0]]['mock']['mock_type']['mock_name'])
+        self.assertIsNotNone(definition_context[mock_definition[0]]['mock_type']['mock_name'])
 
 
 
