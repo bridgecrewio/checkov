@@ -14,6 +14,14 @@ variable "acl" {
   default = "public-acl"
 }
 
+variable "action" {
+  default = "*"
+}
+
+variable "trusted_role_arn" {
+  default = "aws:arn:xxx:xxx"
+}
+
 variable "region" {
   default = "us-west-2"
 }

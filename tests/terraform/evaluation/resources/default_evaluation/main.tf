@@ -21,6 +21,26 @@ resource "null_resource" "create_cognito_user" {
   }
 }
 
+data "aws_iam_policy_document" "event_stream_bucket_role_assume_role_policy" {
+  statement {
+    actions = [var.action]
+
+    resources = [
+      "*",
+      "abc"
+    ]
+    principals {
+      type        = "Service"
+      identifiers = ["firehose.amazonaws.com"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = var.trusted_role_arn
+    }
+  }
+}
+
 resource "aws_s3_bucket" "template_bucket" {
   region        = var.region
   bucket        = local.bucket_name

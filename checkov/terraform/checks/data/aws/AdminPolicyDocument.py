@@ -19,7 +19,7 @@ class AdminPolicyDocument(BaseDataCheck):
         """
         key = 'statement'
         if key in conf.keys():
-            if conf[key][0]['actions'] == ["*"] and conf[key][0]['resources'] == ["*"]:
+            if '*' == conf[key][0]['actions'][0] and '*' == conf[key][0]['resources'][0]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

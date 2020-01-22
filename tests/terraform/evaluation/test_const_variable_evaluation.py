@@ -14,7 +14,7 @@ class TestConstVariableEvaluation(unittest.TestCase):
         Parser().hcl2(directory=test_root_dir, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
-        variable_evaluator = ConstVariableEvaluation(tf_definitions, definitions_context)
+        variable_evaluator = ConstVariableEvaluation(test_root_dir,tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
         self.tf_definitions = variable_evaluator.tf_definitions
         self.definitions_context = variable_evaluator.definitions_context
@@ -33,7 +33,7 @@ class TestConstVariableEvaluation(unittest.TestCase):
     def test_all_expressions_evaluated(self):
         self.assertEqual(
             len(dpath.get(self.definitions_context['tests/terraform/evaluation/resources/default_evaluation/main.tf'],
-                          'locals/evaluations/dummy_1/expressions')),
+                          'evaluations/dummy_1/definitions')),
             2)
 
     def tearDown(self):

@@ -43,7 +43,7 @@ class Runner:
     def check_tf_definition(self, report, root_folder, tf_definitions):
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
-        variable_evaluator = ConstVariableEvaluation(tf_definitions, definitions_context)
+        variable_evaluator = ConstVariableEvaluation(root_folder, tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
         tf_definitions, definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
         for definition in tf_definitions.items():
@@ -61,11 +61,11 @@ class Runner:
             entity_name = list(list(entity.values())[0].keys())[0]
             entity_id = "{}.{}".format(entity_type, entity_name)
             if dpath.search(definition_context[full_file_path], f'**/{entity_type}/{entity_name}'):
-                entity_context = dpath.get(definition_context[full_file_path], f'**/{entity_type}/{entity_name}')
+                entity_context = dpath.get(definition_context[full_file_path], f'*/{entity_type}/{entity_name}')
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
-                variable_evaluations = entity_context.get('evaluations')
+                variable_evaluations = definition_context[full_file_path].get('evaluations')
                 registry = self.block_type_registries[block_type]
 
                 if registry:

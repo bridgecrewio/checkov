@@ -64,12 +64,13 @@ class Record():
                 [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
         if self.evaluations:
             for (var_name, evaluations) in self.evaluations.items():
-                for expression_obj in evaluations['expressions']:
-                    definition_expression = expression_obj["definition_expression"]
+                var_file = evaluations['var_file']
+                for definition_obj in evaluations['definitions']:
+                    definition_expression = definition_obj["definition_expression"]
                     if self._is_expression_in_code_lines(definition_expression):
                         evaluation_message = evaluation_message + colored(
-                            f'\tVariable {colored(var_name, "yellow")} evaluated to value {colored(evaluations["value"], "yellow")} '
-                            f'in expression: {colored(expression_obj["definition_name"] + " = ", "yellow")}{colored(expression_obj["definition_expression"], "yellow")}\n',
+                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(evaluations["value"], "yellow")}" '
+                            f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result['result'] == CheckResult.FAILED and code_lines:

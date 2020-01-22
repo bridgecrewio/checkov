@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Evaluations
+title: Variable Evaluation
 order: 7
 ---
 # Evaluations
@@ -17,7 +17,7 @@ The advantage of variable evaluation is to cover optional scenarios, in which a 
 variable, is set inside a Terraform resource configuration. In that scenario, the resource
 would maybe not meet with certain security compliance.
 
-# Example
+## Example
 
 Recall the `CKV_AWS_20` check, which validates if an S3 Bucket has an ACL defined which allows
 public access:
@@ -73,6 +73,7 @@ variable "region" {
   default = "us-west-2"
 }
 
+### CLI output
 ```
 Checkov would evaluate `var.acl` variable to `public-acl`, resulting the check to fail:
 
@@ -89,8 +90,8 @@ Check: CKV_AWS_20: "S3 Bucket has an ACL defined which allows public access."
 		27 |   acl           = var.acl
 		28 |   force_destroy = true
 		29 | }
-	Variable acl evaluated to value public-read in expression: acl = ${var.acl}
-	Variable region evaluated to value us-west-2 in expression: region = ${var.region}
+	Variable acl (of /variables.tf) evaluated to value "public-acl" in expression: acl = ${var.acl}
+	Variable region (of /variables.tf) evaluated to value "us-west-2" in expression: region = ${var.region}
 ```
 To make the check pass, the value of `var.acl` needs to be set to `private` as follows:
 
@@ -108,6 +109,35 @@ Check: CKV_AWS_20: "S3 Bucket has an ACL defined which allows public access."
 	PASSED for resource: aws_s3_bucket.template_bucket
 	File: /main.tf:24-29
 
-	Variable acl evaluated to value private in expression: acl = ${var.acl}
-	Variable region evaluated to value us-west-2 in expression: region = ${var.region}
+	Variable acl (of /variables.tf) evaluated to value "public-acl" in expression: acl = ${var.acl}
+	Variable region (of /variables.tf) evaluated to value "us-west-2" in expression: region = ${var.region}
+```
+
+### JSON Output
+If available, each `PASSED/FAILED` check contains the evaluation information, which contains all the variables
+ who were evaluated.
+
+Each variable contains it's variable source file path, the evaluated value and the expressions in
+which it was referenced:
+
+```json
+evaluations: {
+  '<var_name>': {
+    'var_file': '<variable_file_relative_path>',
+    'value': '<value>',
+    'definitions': [
+      {
+        'definition_name': 'name',
+        'definition_expression': '${var.customer_name}_group',
+        'definition_path': 'resource/0/aws_cognito_user_group/user_group/name/0'
+      },
+      {
+        'definition_name': 'description',
+        'definition_expression': '${var.customer_name} user group',
+        'definition_path': 'resource/0/aws_cognito_user_group/user_group/description/0'
+      }
+    ]
+  },
+  ...
+}
 ```
