@@ -19,6 +19,7 @@ tabulate = "*"
 colorama="*"
 termcolor="*"
 junit-xml ="*"
+dpath = '*'
 
 [requires]
 python_version = "3.7"

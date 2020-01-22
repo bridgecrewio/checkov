@@ -7,7 +7,7 @@ from itertools import islice
 
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
-COMMENT_REGEX = re.compile('(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
+COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class BaseContextParser(ABC):
@@ -18,7 +18,7 @@ class BaseContextParser(ABC):
 
     def __init__(self, definition_type):
         self.logger = logging.getLogger("{}".format(self.__module__))
-        if definition_type not in ContextCategories.__members__:
+        if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
         self.definition_type = definition_type
@@ -32,9 +32,8 @@ class BaseContextParser(ABC):
         parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in self.file_lines]
         return [(ind, line) for (ind, line) in parsed_file_lines if line]
 
-    def _read_file_lines(self, tf_file):
-        self.tf_file = tf_file
-        with(open(tf_file, 'r')) as file:
+    def _read_file_lines(self):
+        with(open(self.tf_file, 'r')) as file:
             file.seek(0)
             file_lines = [(ind + 1, line) for (ind, line) in
                           list(enumerate(file.readlines()))]
@@ -70,7 +69,9 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(self, tf_file, block):
-        self.file_lines = self._read_file_lines(tf_file)
+        self.tf_file = tf_file
+        self.context = {}
+        self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(block)
         self.context = self._collect_skip_comments()
         return self.context
