@@ -41,6 +41,7 @@ class Runner:
         return report
 
     def check_tf_definition(self, report, root_folder, tf_definitions):
+        definitions_context = {}
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
         variable_evaluator = ConstVariableEvaluation(root_folder, tf_definitions, definitions_context)
