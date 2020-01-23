@@ -1,12 +1,13 @@
 import unittest
 from checkov.terraform.parser import Parser
 from checkov.terraform.context_parsers.registry import parser_registry
+import os
 
 
 class TestVariableContextParser(unittest.TestCase):
 
     def setUp(self):
-        test_root_dir = 'tests/terraform/evaluation/resources/default_evaluation'
+        test_root_dir = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/'
         tf_definitions = {}
         parsing_errors = {}
         Parser().hcl2(directory=test_root_dir, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
@@ -16,17 +17,20 @@ class TestVariableContextParser(unittest.TestCase):
 
     def test_assignments_exists(self):
         self.assertIsNotNone(
-            self.definitions_context['tests/terraform/evaluation/resources/default_evaluation/variables.tf'][
+            self.definitions_context[os.path.dirname(
+                os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][
                 'variable'].get(
                 'assignments'))
 
     def test_assignment_value(self):
         self.assertEqual(
-            self.definitions_context['tests/terraform/evaluation/resources/default_evaluation/variables.tf'][
+            self.definitions_context[os.path.dirname(
+                os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][
                 'variable'].get(
                 'assignments').get('user_exists'), False)
         self.assertEqual(
-            self.definitions_context['tests/terraform/evaluation/resources/default_evaluation/variables.tf'][
+            self.definitions_context[os.path.dirname(
+                os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][
                 'variable'].get(
                 'assignments').get('app_client_id'), 'Temp')
 

@@ -57,13 +57,14 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                 entry_expression = assignment_obj.get('definition_expression')
                 definition_name = assignment_obj.get('definition_name')
                 context_path, _ = self._extract_context_path(definition_path)
-                dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
-                          var_file)
-                dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
-                          var_value)
-                dpath.new(self.definitions_context[assignment_file],
-                          f'evaluations/{var_name}/definitions',
-                          assignments)
+                if assignment_file in self.definitions_context.keys():
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
+                              var_file)
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
+                              var_value)
+                    dpath.new(self.definitions_context[assignment_file],
+                              f'evaluations/{var_name}/definitions',
+                              assignments)
                 if self._is_variable_only_expression(assignment_regex, entry_expression):
                     # Preserve the original type of the variable if not part of a composite expression
                     evaluated_definition = var_value
