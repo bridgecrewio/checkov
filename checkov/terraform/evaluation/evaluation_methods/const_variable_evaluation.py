@@ -26,7 +26,8 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
     def _locate_assignments(self, folder, var_name):
         var_assignments_paths = {}
         assignment_regex = self._generate_var_evaluation_regex(var_name)
-        for source_file in [file for file in os.listdir(folder) if file.endswith('.tf')]:
+        for source_file in [file for file in os.listdir(folder) if
+                            file.endswith('.tf') and self.tf_definitions.get(os.path.join(folder, file))]:
             file_path = os.path.join(folder, source_file)
             var_entries = dpath.search(self.tf_definitions[file_path], '**',
                                        afilter=lambda x: re.findall(assignment_regex, str(x)), yielded=True)
