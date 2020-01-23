@@ -1,6 +1,7 @@
 from termcolor import colored
 from checkov.terraform.models.enums import CheckResult
 from colorama import init, Fore
+import re
 
 init(autoreset=True)
 
@@ -16,6 +17,7 @@ class Record():
     resource = ""
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
+                 evaluations,
                  check_class):
         self.check_id = check_id
         self.check_name = check_name
@@ -24,7 +26,12 @@ class Record():
         self.file_path = file_path
         self.file_line_range = file_line_range
         self.resource = resource
+        self.evaluations = evaluations
         self.check_class = check_class
+
+    def _is_expression_in_code_lines(self, expression):
+        stripped_expression = "".join(re.findall(r'[^ \$\{\}]+', expression))
+        return any([stripped_expression in line for (_, line) in self.code_block])
 
     @staticmethod
     def _code_line_string(line_num, line):
@@ -35,6 +42,7 @@ class Record():
 
     def __str__(self):
         status = ''
+        evaluation_message = f''
         status_color = "white"
         if self.check_result['result'] == CheckResult.PASSED:
             status = CheckResult.PASSED.name
@@ -51,13 +59,24 @@ class Record():
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")
-        code_lines = "{}\n".format("".join(
-            [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
+        if self.code_block:
+            code_lines = "{}\n".format("".join(
+                [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
+        if self.evaluations:
+            for (var_name, evaluations) in self.evaluations.items():
+                var_file = evaluations['var_file']
+                for definition_obj in evaluations['definitions']:
+                    definition_expression = definition_obj["definition_expression"]
+                    if self._is_expression_in_code_lines(definition_expression):
+                        evaluation_message = evaluation_message + colored(
+                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(evaluations["value"], "yellow")}" '
+                            f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
+                            'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
-        if self.check_result['result'] == CheckResult.FAILED:
-            return check_message + status_message + file_details + code_lines
+        if self.check_result['result'] == CheckResult.FAILED and code_lines:
+            return check_message + status_message + file_details + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
             return check_message + status_message + suppress_comment + file_details
         else:
-            return check_message + status_message + file_details
+            return check_message + status_message + file_details + evaluation_message

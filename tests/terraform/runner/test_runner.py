@@ -2,6 +2,7 @@ import os
 import unittest
 
 from checkov.terraform.runner import Runner
+from checkov.terraform.context_parsers.registry import parser_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -59,6 +60,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+    def tearDown(self):
+        parser_registry.definitions_context = {}
 
 
 if __name__ == '__main__':
