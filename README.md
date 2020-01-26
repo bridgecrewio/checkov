@@ -22,7 +22,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
  ## Features
 
- * [50+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * [60+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Policies support evaluation of variables to their optional default value
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
