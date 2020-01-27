@@ -63,13 +63,14 @@ nav_order: 1
 | 52 | CKV_GCP_9   | resource | google_container_node_pool        | Ensure 'Automatic node repair' is enabled for Kubernetes Clusters                                                |
 | 53 | CKV_GCP_10  | resource | google_container_node_pool        | Ensure 'Automatic node upgrade' is enabled for Kubernetes Clusters                                               |
 | 54 | CKV_GCP_6   | resource | google_sql_database_instance      | Ensure all Cloud SQL database instance requires all incoming connections to use SSL                              |
-| 55 | CKV_GCP_11  | resource | google_sql_database_instance      | Ensure that Cloud SQL database Instances are not open to the world                                               |
-| 56 | CKV_GCP_5   | resource | google_storage_bucket             | Ensure Google storage bucket have encryption enabled                                                             |
-| 57 | CKV_GCP_4   | resource | google_compute_ssl_policy         | Ensure Google SSL policy minimal TLS version is TLS_1_2                                                          |
-| 58 | CKV_AZURE_3 | resource | azurerm_storage_account           | Ensure that 'Secure transfer required' is set to 'Enabled'                                                       |
-| 59 | CKV_AZURE_2 | resource | azurerm_managed_disk              | Ensure Azure managed disk have encryption enabled                                                                |
-| 60 | CKV_AZURE_1 | resource | azurerm_virtual_machine           | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)                                     |
-| 61 | CKV_AWS_1   | data     | aws_iam_policy_document           | Ensure IAM policies that allow full "*-*" administrative privileges are not created                              |
+| 55 | CKV_GCP_14  | resource | google_sql_database_instance      | Ensure all Cloud SQL database instance have backup configuration enabled                                         |
+| 56 | CKV_GCP_11  | resource | google_sql_database_instance      | Ensure that Cloud SQL database Instances are not open to the world                                               |
+| 57 | CKV_GCP_5   | resource | google_storage_bucket             | Ensure Google storage bucket have encryption enabled                                                             |
+| 58 | CKV_GCP_4   | resource | google_compute_ssl_policy         | Ensure Google SSL policy minimal TLS version is TLS_1_2                                                          |
+| 59 | CKV_AZURE_3 | resource | azurerm_storage_account           | Ensure that 'Secure transfer required' is set to 'Enabled'                                                       |
+| 60 | CKV_AZURE_2 | resource | azurerm_managed_disk              | Ensure Azure managed disk have encryption enabled                                                                |
+| 61 | CKV_AZURE_1 | resource | azurerm_virtual_machine           | Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)                                     |
+| 62 | CKV_AWS_1   | data     | aws_iam_policy_document           | Ensure IAM policies that allow full "*-*" administrative privileges are not created                              |
 
 
 ---
