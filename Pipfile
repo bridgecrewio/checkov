@@ -11,6 +11,7 @@ coverage-badge = "*"
 detect-secrets = "*"
 pipenv-setup = "*"
 GitPython = "*"
+dpath = "==1.5.0"
 
 [packages]
 python-hcl2 = "*"
@@ -19,7 +20,7 @@ tabulate = "*"
 colorama="*"
 termcolor="*"
 junit-xml ="*"
-dpath = '*'
+dpath = "==1.5.0"
 
 [requires]
 python_version = "3.7"
