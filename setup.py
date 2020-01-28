@@ -66,10 +66,8 @@ setup(
         ]
     },
     install_requires=[
-        "certifi==2019.11.28",
         "chardet==3.0.4",
         "colorama==0.4.3",
-        "detect-secrets==0.13.0",
         "docopt==0.6.2",
         "idna==2.8",
         "junit-xml==1.8",
