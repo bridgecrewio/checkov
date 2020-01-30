@@ -5,7 +5,7 @@ from os import path
 import hcl2
 
 
-class Parser():
+class Parser:
     logger = logging.getLogger(__name__)
 
     def hcl2(self, directory, tf_definitions={}, parsing_errors={}):
