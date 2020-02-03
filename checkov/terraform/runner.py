@@ -12,6 +12,9 @@ import dpath.util
 
 
 class Runner:
+    def __init__(self, parser=Parser()):
+        self.parser = parser
+
     block_type_registries = {
         'resource': resource_registry,
         'data': data_registry
@@ -25,14 +28,14 @@ class Runner:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
         if root_folder:
-            Parser().hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+            self.parser.hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
             self.check_tf_definition(report, root_folder, tf_definitions)
 
         if files:
             root_folder = os.path.commonprefix(files)
             for file in files:
                 file_tf_definitions = {}
-                Parser().parse_file(file=file, tf_definitions=file_tf_definitions, parsing_errors=parsing_errors)
+                self.parser.parse_file(file=file, tf_definitions=file_tf_definitions, parsing_errors=parsing_errors)
 
                 self.check_tf_definition(report, root_folder, file_tf_definitions)
 
