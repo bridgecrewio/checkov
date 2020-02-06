@@ -23,10 +23,16 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
     def _extract_context_path(definition_path):
         return os.path.split("/".join(re.findall(TF_DEFINITIONS_STRIP_WORDS, definition_path)))
 
+    @staticmethod
+    def _is_variable_only_expression(assignment_regex, entry_expression):
+        exact_assignment_regex = r'^' + assignment_regex + r'$'
+        return len(re.findall(exact_assignment_regex, entry_expression)) > 0
+
     def _locate_assignments(self, folder, var_name):
         var_assignments_paths = {}
         assignment_regex = self._generate_var_evaluation_regex(var_name)
-        for source_file in [file for file in os.listdir(folder) if file.endswith('.tf')]:
+        for source_file in [file for file in os.listdir(folder) if
+                            file.endswith('.tf') and self.tf_definitions.get(os.path.join(folder, file))]:
             file_path = os.path.join(folder, source_file)
             var_entries = dpath.search(self.tf_definitions[file_path], '**',
                                        afilter=lambda x: re.findall(assignment_regex, str(x)), yielded=True)
@@ -43,6 +49,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
     def _assign_definition_value(self, var_name, var_value, var_assignments):
         assignment_regex = self._generate_var_evaluation_regex(var_name)
         var_file = var_assignments['var_file']
+        var_value_string = str(var_value)
         for (assignment_file, assignments) in var_assignments['definitions'].items():
             # Save evaluation information in context
             for assignment_obj in assignments:
@@ -50,19 +57,24 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                 entry_expression = assignment_obj.get('definition_expression')
                 definition_name = assignment_obj.get('definition_name')
                 context_path, _ = self._extract_context_path(definition_path)
-                dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
-                          var_file)
-                dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
-                          var_value)
-                dpath.new(self.definitions_context[assignment_file],
-                          f'evaluations/{var_name}/definitions',
-                          assignments)
-                evaluated_value = str(var_value)
-                evaluated_definition = re.sub(assignment_regex, evaluated_value, entry_expression)
+                if assignment_file in self.definitions_context.keys():
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
+                              var_file)
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
+                              var_value)
+                    dpath.new(self.definitions_context[assignment_file],
+                              f'evaluations/{var_name}/definitions',
+                              assignments)
+                if self._is_variable_only_expression(assignment_regex, entry_expression):
+                    # Preserve the original type of the variable if not part of a composite expression
+                    evaluated_definition = var_value
+                else:
+                    evaluated_definition = re.sub(assignment_regex, var_value_string, entry_expression)
+
                 dpath.set(self.tf_definitions[assignment_file], definition_path, evaluated_definition)
                 self.logger.debug(
                     f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_file}: '
-                    f'{var_name} to "{evaluated_value}"')
+                    f'{var_name} to "{var_value_string}"')
 
     def _evaluate_folder_variables(self, folder):
         assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
