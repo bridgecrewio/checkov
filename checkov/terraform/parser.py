@@ -19,7 +19,7 @@ class Parser:
                         with(open(tf_file, 'r')) as file:
                             file.seek(0)
                             tf_definition = hcl2.load(file)
-                            for resource_type in tf_definition['resource']:
+                            for resource_type in tf_definition.get('resource', []):
                                 for resource in resource_type.values():
                                     for named_resource in resource.values():
                                         for dynamic_block in named_resource.get('dynamic', []):
