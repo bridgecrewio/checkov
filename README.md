@@ -72,7 +72,7 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ```sh
 docker pull bridgecrew/checkov
-docker run bridgecrew/checkov -i -v /user/tf:/tf -d /tf
+docker run -v /user/tf:/tf bridgecrew/checkov -i -d /tf
 ```
 
 ## Alternatives

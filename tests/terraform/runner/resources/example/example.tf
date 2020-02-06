@@ -382,3 +382,49 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     max_ttl                = 86400
   }
 }
+
+resource "aws_s3_bucket" "bridgecrew_cws_bucket" {
+  count = var.existing_bucket_name == null ? 1 : 0
+
+  bucket        = local.bucket_name
+  acl           = "private"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    id      = "Delete old log files"
+    enabled = true
+
+    noncurrent_version_expiration {
+      days = var.log_file_expiration
+    }
+
+    expiration {
+      days = var.log_file_expiration
+    }
+  }
+
+  dynamic "logging" {
+    for_each = var.logs_bucket_id != null ? [var.logs_bucket_id] : []
+
+    content {
+      target_bucket = logging.value
+      target_prefix = "/${local.bucket_name}"
+    }
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = local.kms_key
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
+
+  tags = {
+    Name = "BridgecrewCWSBucket"
+  }
+}
