@@ -26,7 +26,7 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
                         return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED
-        return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = LaunchConfigurationEBSEncryption()
