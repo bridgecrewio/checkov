@@ -4,6 +4,7 @@ import logging
 import argparse
 
 from checkov.terraform.runner import Runner
+from checkov.cloudformation.runner import Runner as cfnRunner
 from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
@@ -40,7 +41,7 @@ def run():
     else:
         root_folder = args.directory
         file = args.file
-        report = Runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+        report = cfnRunner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
         if args.output == "json":
             report.print_json()
         elif args.output == "junitxml":
