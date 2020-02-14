@@ -1,7 +1,6 @@
 from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
-
 class ALBListenerHTTPS(BaseResourceCheck):
 
     def __init__(self):

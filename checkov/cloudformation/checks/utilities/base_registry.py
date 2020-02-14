@@ -18,8 +18,6 @@ class Registry(object):
             self.checks[entity].append(check)
 
     def get_checks(self, entity):
-        self.logger.info("ALL CHECKS: {}".format(self.checks.keys()))
-        self.logger.info(" - Looking for Check: {}".format(entity))
         if entity in self.checks.keys():
             return self.checks[entity]
         return []
@@ -29,7 +27,6 @@ class Registry(object):
         entity_configuration = block
         results = {}
         checks = self.get_checks(entity)
-        self.logger.info("Checks: {}".format(checks))
         for check in checks:
             skip_info = {}
             if skipped_checks:
