@@ -34,7 +34,7 @@ class Runner:
             (definitions[file], definitions_raw[file]) = parse(file)
 
         for definition in definitions.keys():
-            logging.debug("Template Dump for {}: {}".format(definition, json.dumps(definitions[definition], indent = 2)))
+            logging.debug("Template Dump for {}: {}".format(definition, definitions[definition], indent = 2))
 
             # Get Parameter Defaults - Locate Refs in Template
             refs = []

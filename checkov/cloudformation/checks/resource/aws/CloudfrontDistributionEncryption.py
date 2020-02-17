@@ -1,8 +1,6 @@
 from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_check import BaseResourceCheck
 
-import logging
-
 class CloudfrontDistributionEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS"
