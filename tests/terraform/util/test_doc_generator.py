@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.terraform.util.docs_generator import get_checks
+from checkov.common.util.docs_generator import get_checks
 
 
 class TestDocGenerator(unittest.TestCase):

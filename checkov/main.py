@@ -3,7 +3,6 @@
 import logging
 import argparse
 
-from checkov.terraform.runner import Runner
 from checkov.cloudformation.runner import Runner as cfnRunner
 from checkov.version import version
 
@@ -36,7 +35,6 @@ def run():
         return
     if args.list:
         # pylint: disable=unused-import
-        import checkov.terraform.util.docs_generator
         return
     else:
         root_folder = args.directory

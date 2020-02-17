@@ -5,8 +5,8 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
-from checkov.terraform.output.record import Record
-from checkov.terraform.output.report import Report
+from checkov.common.output.record import Record
+from checkov.common.output.report import Report
 from checkov.terraform.parser import Parser
 import dpath.util
 

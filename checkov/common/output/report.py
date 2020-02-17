@@ -4,8 +4,8 @@ from colorama import init
 from junit_xml import TestCase, TestSuite
 from termcolor import colored
 
-from checkov.terraform.models.enums import CheckResult
-from checkov.terraform.util.banner import banner
+from checkov.common.models.enums import CheckResult
+from checkov.common.util.banner import banner
 from checkov.version import version
 
 init(autoreset=True)
