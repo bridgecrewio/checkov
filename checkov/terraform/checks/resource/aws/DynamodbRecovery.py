@@ -12,9 +12,9 @@ class DynamodbRecovery(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         """
-            Looks for encryption configuration at ebs volume:
-            https://www.terraform.io/docs/providers/aws/r/ebs_volume.html
-        :param conf: ebs_volume configuration
+            Looks for Point in Time Recovery for DynamoDB Table:
+            https://www.terraform.io/docs/providers/aws/r/dynamodb_table.html
+        :param conf: ddb_table configuration
         :return: <CheckResult>
         """
         if "point_in_time_recovery" in conf.keys():
