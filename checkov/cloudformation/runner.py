@@ -1,14 +1,14 @@
 import logging
 import os
-import json
 
 from checkov.cloudformation.checks.resource.registry import resource_registry
-from checkov.terraform.output.record import Record
-from checkov.terraform.output.report import Report
+from checkov.common.output.record import Record
+from checkov.common.output.report import Report
 from checkov.cloudformation.parser import parse
 
 from functools import reduce
 import operator
+
 
 class Runner:
 
@@ -34,7 +34,7 @@ class Runner:
             (definitions[file], definitions_raw[file]) = parse(file)
 
         for definition in definitions.keys():
-            logging.debug("Template Dump for {}: {}".format(definition, definitions[definition], indent = 2))
+            logging.debug("Template Dump for {}: {}".format(definition, definitions[definition], indent=2))
 
             # Get Parameter Defaults - Locate Refs in Template
             refs = []
@@ -42,12 +42,20 @@ class Runner:
 
             for ref in refs:
                 refname = ref.pop()
-                ref.pop()   # Get rid of the 'Ref' dict key
+                ref.pop()  # Get rid of the 'Ref' dict key
 
-                if 'Parameters' in definitions[definition].keys() and refname in definitions[definition]['Parameters'].keys():
+                if 'Parameters' in definitions[definition].keys() and refname in definitions[definition][
+                    'Parameters'].keys():
                     if 'Default' in definitions[definition]['Parameters'][refname].keys():
-                        logging.debug("Replacing Ref {} in file {} with default parameter value: {}".format(refname, definition, definitions[definition]['Parameters'][refname]['Default']))
-                        setInDict(definitions[definition], ref, definitions[definition]['Parameters'][refname]['Default'])
+                        logging.debug(
+                            "Replacing Ref {} in file {} with default parameter value: {}".format(refname, definition,
+                                                                                                  definitions[
+                                                                                                      definition][
+                                                                                                      'Parameters'][
+                                                                                                      refname][
+                                                                                                      'Default']))
+                        setInDict(definitions[definition], ref,
+                                  definitions[definition]['Parameters'][refname]['Default'])
 
                         ## TODO - Add Variable Eval Message for Output
                         # Output in Checkov looks like this:
@@ -60,7 +68,8 @@ class Runner:
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
 
-                results = resource_registry.scan(definitions[definition]['Resources'][resource], resource, definition, skipped_checks)
+                results = resource_registry.scan(definitions[definition]['Resources'][resource], resource, definition,
+                                                 skipped_checks)
 
                 start_line = min(list(findlines(definitions[definition]['Resources'][resource], '__startline__')))
                 end_line = max(list(findlines(definitions[definition]['Resources'][resource], '__endline__')))
@@ -68,8 +77,6 @@ class Runner:
                 entity_lines_range = [start_line, end_line - 1]
 
                 entity_code_lines = definitions_raw[definition][start_line - 1: end_line - 1]
-
-
 
                 # TODO - Variable Eval Message!
                 variable_evaluations = {}
@@ -112,8 +119,10 @@ class Runner:
 
         return keys
 
+
 def getFromDict(dataDict, mapList):
     return reduce(operator.getitem, mapList, dataDict)
+
 
 def setInDict(dataDict, mapList, value):
     getFromDict(dataDict, mapList[:-1])[mapList[-1]] = value
@@ -123,7 +132,7 @@ def findlines(node, kv):
     if isinstance(node, list):
         for i in node:
             for x in findlines(i, kv):
-               yield x
+                yield x
     elif isinstance(node, dict):
         if kv in node:
             yield node[kv]

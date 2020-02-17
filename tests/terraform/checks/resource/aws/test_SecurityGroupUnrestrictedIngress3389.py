@@ -1,7 +1,7 @@
 import unittest
 
 from checkov.terraform.checks.resource.aws.SecurityGroupUnrestrictedIngress3389 import check
-from checkov.terraform.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult
 
 
 class TestSecurityGroupUnrestrictedIngress3389(unittest.TestCase):

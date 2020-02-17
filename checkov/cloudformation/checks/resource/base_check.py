@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from checkov.terraform.checks.utilities.base_check import BaseCheck
+from checkov.common.base_check import BaseCheck
 from checkov.cloudformation.checks.resource.registry import resource_registry
 
 
