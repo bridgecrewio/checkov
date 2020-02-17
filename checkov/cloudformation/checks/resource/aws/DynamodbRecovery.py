@@ -17,12 +17,11 @@ class DynamodbRecovery(BaseResourceCheck):
         :param conf: ddb_table configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::DynamoDB::Table':
-            if 'Properties' in conf.keys():
-                if 'PointInTimeRecoverySpecification' in conf['Properties'].keys():
-                    if 'PointInTimeRecoveryEnabled' in conf['Properties']['PointInTimeRecoverySpecification'].keys():
-                        if conf['Properties']['PointInTimeRecoverySpecification']['PointInTimeRecoveryEnabled'] == True:
-                            return CheckResult.PASSED
+        if 'Properties' in conf.keys():
+            if 'PointInTimeRecoverySpecification' in conf['Properties'].keys():
+                if 'PointInTimeRecoveryEnabled' in conf['Properties']['PointInTimeRecoverySpecification'].keys():
+                    if conf['Properties']['PointInTimeRecoverySpecification']['PointInTimeRecoveryEnabled'] == True:
+                        return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = DynamodbRecovery()

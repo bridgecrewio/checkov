@@ -17,16 +17,16 @@ class ALBListenerHTTPS(BaseResourceCheck):
         :param conf: aws_alb_listener configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::ElasticLoadBalancingV2::Listener':
-            if 'Properties' in conf.keys():
-                if 'Protocol' in conf['Properties'].keys():
-                    if conf['Properties']['Protocol'] == 'HTTPS' or conf['Properties']['Protocol'] == 'TLS':
-                        return CheckResult.PASSED
-                    else:
-                        if 'DefaultActions' in conf['Properties'].keys():
-                            if conf['Properties']['DefaultActions'][0]['Type'] == 'redirect':
-                                if conf['Properties']['DefaultActions'][0]['RedirectConfig']['Protocol'] == "HTTPS":
-                                    return CheckResult.PASSED
+
+        if 'Properties' in conf.keys():
+            if 'Protocol' in conf['Properties'].keys():
+                if conf['Properties']['Protocol'] == 'HTTPS' or conf['Properties']['Protocol'] == 'TLS':
+                    return CheckResult.PASSED
+                else:
+                    if 'DefaultActions' in conf['Properties'].keys():
+                        if conf['Properties']['DefaultActions'][0]['Type'] == 'redirect':
+                            if conf['Properties']['DefaultActions'][0]['RedirectConfig']['Protocol'] == "HTTPS":
+                                return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = ALBListenerHTTPS()

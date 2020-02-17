@@ -17,12 +17,11 @@ class ElasticsearchEncryption(BaseResourceCheck):
         :param conf: aws_elasticsearch_domain configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::Elasticsearch::Domain':
-            if 'Properties' in conf.keys():
-                if 'EncryptionAtRestOptions' in conf['Properties'].keys():
-                    if 'Enabled' in conf['Properties']['EncryptionAtRestOptions'].keys():
-                        if conf['Properties']['EncryptionAtRestOptions']['Enabled']:
-                            return CheckResult.PASSED
+        if 'Properties' in conf.keys():
+            if 'EncryptionAtRestOptions' in conf['Properties'].keys():
+                if 'Enabled' in conf['Properties']['EncryptionAtRestOptions'].keys():
+                    if conf['Properties']['EncryptionAtRestOptions']['Enabled']:
+                        return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = ElasticsearchEncryption()

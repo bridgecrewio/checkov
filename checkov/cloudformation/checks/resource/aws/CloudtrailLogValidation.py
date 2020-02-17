@@ -17,11 +17,11 @@ class CloudtrailLogValidation(BaseResourceCheck):
         :param conf: cloudtrail configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::CloudTrail::Trail':
-            if 'Properties' in conf.keys():
-                if 'EnableLogFileValidation' in conf['Properties'].keys():
-                    if conf['Properties']['EnableLogFileValidation'] == True:
-                        return CheckResult.PASSED
+
+        if 'Properties' in conf.keys():
+            if 'EnableLogFileValidation' in conf['Properties'].keys():
+                if conf['Properties']['EnableLogFileValidation'] == True:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = CloudtrailLogValidation()

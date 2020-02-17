@@ -17,11 +17,10 @@ class EBSEncryption(BaseResourceCheck):
         :param conf: ebs_volume configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::EC2::Volume':
-            if 'Properties' in conf.keys():
-                if 'Encrypted' in conf['Properties'].keys():
-                    if conf['Properties']['Encrypted'] == True:
-                        return CheckResult.PASSED
+        if 'Properties' in conf.keys():
+            if 'Encrypted' in conf['Properties'].keys():
+                if conf['Properties']['Encrypted'] == True:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = EBSEncryption()

@@ -17,18 +17,18 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :param conf: cloudfront configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::CloudFront::Distribution':
-            if 'Properties' in conf.keys():
-                if 'DistributionConfig' in conf['Properties'].keys():
-                    if 'DefaultCacheBehavior' in conf['Properties']['DistributionConfig'].keys():
-                        if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['DefaultCacheBehavior'].keys():
-                            if conf['Properties']['DistributionConfig']['DefaultCacheBehavior']['ViewerProtocolPolicy'] == 'allow-all':
+
+        if 'Properties' in conf.keys():
+            if 'DistributionConfig' in conf['Properties'].keys():
+                if 'DefaultCacheBehavior' in conf['Properties']['DistributionConfig'].keys():
+                    if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['DefaultCacheBehavior'].keys():
+                        if conf['Properties']['DistributionConfig']['DefaultCacheBehavior']['ViewerProtocolPolicy'] == 'allow-all':
+                            return CheckResult.FAILED
+                if 'CacheBehaviors' in conf['Properties']['DistributionConfig'].keys():
+                    for behavior in range(len(conf['Properties']['DistributionConfig']['CacheBehaviors'])):
+                        if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior].keys():
+                            if conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior]['ViewerProtocolPolicy'] == 'allow-all':
                                 return CheckResult.FAILED
-                    if 'CacheBehaviors' in conf['Properties']['DistributionConfig'].keys():
-                        for behavior in range(len(conf['Properties']['DistributionConfig']['CacheBehaviors'])):
-                            if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior].keys():
-                                if conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior]['ViewerProtocolPolicy'] == 'allow-all':
-                                    return CheckResult.FAILED
-            return CheckResult.PASSED
+        return CheckResult.PASSED
 
 check = CloudfrontDistributionEncryption()

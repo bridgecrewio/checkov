@@ -17,12 +17,11 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
         :param conf: aws_elasticsearch_domain configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::Elasticsearch::Domain':
-            if 'Properties' in conf.keys():
-                if 'NodeToNodeEncryptionOptions' in conf['Properties'].keys():
-                    if 'Enabled' in conf['Properties']['NodeToNodeEncryptionOptions'].keys():
-                        if conf['Properties']['NodeToNodeEncryptionOptions']['Enabled']:
-                            return CheckResult.PASSED
+        if 'Properties' in conf.keys():
+            if 'NodeToNodeEncryptionOptions' in conf['Properties'].keys():
+                if 'Enabled' in conf['Properties']['NodeToNodeEncryptionOptions'].keys():
+                    if conf['Properties']['NodeToNodeEncryptionOptions']['Enabled']:
+                        return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = ElasticsearchNodeToNodeEncryption()

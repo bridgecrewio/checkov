@@ -17,10 +17,9 @@ class CloudtrailEncryption(BaseResourceCheck):
         :param conf: cloudtrail configuration
         :return: <CheckResult>
         """
-        if conf['Type'] == 'AWS::CloudTrail::Trail':
-            if 'Properties' in conf.keys():
-                if 'KMSKeyId' in conf['Properties'].keys():
-                    return CheckResult.PASSED
+        if 'Properties' in conf.keys():
+            if 'KMSKeyId' in conf['Properties'].keys():
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = CloudtrailEncryption()
