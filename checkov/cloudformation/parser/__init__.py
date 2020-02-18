@@ -25,12 +25,15 @@ def parse(filename):
     except IOError as e:
         if e.errno == 2:
             LOGGER.error('Template file not found: %s', filename)
+            sys.exit(1)
         elif e.errno == 21:
             LOGGER.error('Template references a directory, not a file: %s',
                          filename)
+            sys.exit(1)
         elif e.errno == 13:
             LOGGER.error('Permission denied when accessing template file: %s',
                          filename)
+            sys.exit(1)
     except UnicodeDecodeError as err:
         LOGGER.error('Cannot read file contents: %s', filename)
     except cfn_yaml.CfnParseError as err:
