@@ -59,9 +59,6 @@ class JSONDecodeError(ValueError):
         self.pos = pos
         self.lineno = lineno
         self.colno = colno
-        #self.match = cfnlint.rules.Match(
-        #    lineno, colno + 1, lineno,
-        #    colno + 1 + len(key), '', cfnlint.rules.ParseError(), message=msg)
 
     def __reduce__(self):
         return self.__class__, (self.msg, self.doc, self.pos)

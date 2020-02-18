@@ -42,9 +42,6 @@ class CfnParseError(ConstructorError):
         self.line_number = line_number
         self.column_number = column_number
         self.message = message
-        #self.match = cfnlint.rules.Match(
-        #    line_number + 1, column_number + 1, line_number + 1,
-        #    column_number + 1 + len(key), filename, cfnlint.rules.ParseError(), message=message)
 
 
 class NodeConstructor(SafeConstructor):
