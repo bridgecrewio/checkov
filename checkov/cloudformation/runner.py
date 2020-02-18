@@ -84,7 +84,7 @@ class Runner:
                 for check, check_result in results.items():
                     ### TODO - Need to get entity_code_lines and entity_lines_range
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=file,
+                                    code_block=entity_code_lines, file_path=definition,
                                     file_line_range=entity_lines_range,
                                     resource=resource, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__)
