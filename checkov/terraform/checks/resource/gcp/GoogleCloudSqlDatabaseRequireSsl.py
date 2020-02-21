@@ -18,7 +18,7 @@ class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
         """
         if 'settings' in conf and 'ip_configuration' in conf['settings'][0]:
             if 'require_ssl' in conf['settings'][0]['ip_configuration'][0].keys():
-                if conf['settings'][0]['ip_configuration'][0]['require_ssl'][0] == "True":
+                if conf['settings'][0]['ip_configuration'][0]['require_ssl'][0] == True:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
