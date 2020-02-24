@@ -34,11 +34,17 @@ class Record():
         return any([stripped_expression in line for (_, line) in self.code_block])
 
     @staticmethod
-    def _code_line_string(line_num, line):
-        if '#' in line:
-            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + line
-        else:
-            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + Fore.YELLOW + line
+    def _code_line_string(code_block):
+        string_block = ''
+        last_line_number, _ = code_block[-1]
+
+        for (line_num, line) in code_block:
+            spaces = ' ' * (len(str(last_line_number)) - len(str(line_num)))
+            if '#' in line:
+                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + line
+            else:
+                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
+        return string_block
 
     def __str__(self):
         status = ''
@@ -61,7 +67,7 @@ class Record():
             "magenta")
         if self.code_block:
             code_lines = "{}\n".format("".join(
-                [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
+                [self._code_line_string(self.code_block)]))
         if self.evaluations:
             for (var_name, evaluations) in self.evaluations.items():
                 var_file = evaluations['var_file']
