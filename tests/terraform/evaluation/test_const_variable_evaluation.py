@@ -23,7 +23,7 @@ class TestConstVariableEvaluation(unittest.TestCase):
         self.assertEqual(
             dpath.get(self.tf_definitions['tests/terraform/evaluation/resources/default_evaluation/main.tf'],
                       'resource/0/aws_cognito_user_group/user_group/name/0'),
-            '${Pavel_Checkov}_group')
+            'Pavel_Checkov_group')
 
     def test__extract_context_path(self):
         path = 'resource/0/aws_cognito_user_group/user_group/name/0'
