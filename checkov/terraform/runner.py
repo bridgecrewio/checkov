@@ -64,8 +64,8 @@ class Runner:
             entity_type = list(entity.keys())[0]
             entity_name = list(list(entity.values())[0].keys())[0]
             entity_id = "{}.{}".format(entity_type, entity_name)
-            if dpath.search(definition_context[full_file_path], f'**/{entity_type}/{entity_name}'):
-                entity_context = dpath.get(definition_context[full_file_path], f'*/{entity_type}/{entity_name}')
+            if dpath.search(definition_context[full_file_path], f'{block_type}/{entity_type}/{entity_name}'):
+                entity_context = dpath.get(definition_context[full_file_path], f'{block_type}/{entity_type}/{entity_name}')
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
