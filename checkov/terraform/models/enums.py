@@ -15,6 +15,7 @@ class CheckCategories(Enum):
     NETWORKING = 4
     IAM = 5
     BACKUP_AND_RECOVERY = 6
+    CONVENTION = 7
 
 
 class OutputFormat(Enum):

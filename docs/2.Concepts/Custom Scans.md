@@ -34,6 +34,7 @@ resource "aws_s3_bucket" "credit_cards_bucket" {
   }
 }
 ```
+
 For that we will need to add a new check to ensure PCI related S3 buckets will stay private.
 So we will create a new python folder named `my_extra_checks` containing our new check 
 
@@ -45,6 +46,14 @@ So we will create a new python folder named `my_extra_checks` containing our new
     └── __init__.py
     └── S3PCIPrivateACL.py
 
+```
+
+First time setup of your custom checks folder requires a `__init__.py` file
+```python
+from os.path import dirname, basename, isfile, join
+import glob
+modules = glob.glob(join(dirname(__file__), "*.py"))
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
 ```
 
 And we will fill the matching logic in `S3PCIPrivateACL.py`:
@@ -60,6 +69,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
         name = "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
         id = "CKV_AWS_999"
         supported_resources = ['aws_s3_bucket']
+        # CheckCategories are defined in models/enums.py
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

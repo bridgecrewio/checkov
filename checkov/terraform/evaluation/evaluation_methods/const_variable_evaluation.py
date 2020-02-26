@@ -17,7 +17,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
 
     @staticmethod
     def _generate_var_evaluation_regex(var_name):
-        return r'(?:\$\{)?var\.' + re.escape(var_name) + r'\}?'
+        return r'((?:\$\{)?var\.' + re.escape(var_name) + r'\}?)\b'
 
     @staticmethod
     def _extract_context_path(definition_path):
