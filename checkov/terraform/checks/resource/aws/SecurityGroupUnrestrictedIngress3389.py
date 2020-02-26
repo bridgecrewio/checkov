@@ -23,7 +23,7 @@ class SecurityGroupUnrestrictedIngress3389(BaseResourceCheck):
             ingress_conf = conf['ingress']
             for rule in ingress_conf:
                 if isinstance(rule, dict):
-                    if isinstance(rule['from_port'], int) and isinstance(rule['to_port'], int):
+                    if isinstance(rule['from_port'][0], int) and isinstance(rule['to_port'][0], int):
                         if rule['from_port'] == [PORT] and rule['to_port'] == [PORT]:
                             if 'cidr_blocks' in rule.keys():
                                 if rule['cidr_blocks'] == [["0.0.0.0/0"]] and 'security_groups' not in rule.keys():
