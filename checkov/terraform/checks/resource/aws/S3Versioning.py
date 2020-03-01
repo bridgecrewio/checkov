@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
-from checkov.terraform.models.enums import CheckResult, CheckCategories
+from checkov.terraform.models.enums import CheckCategories
 
 
 class S3Versioning(BaseResourceBooleanValueCheck):
