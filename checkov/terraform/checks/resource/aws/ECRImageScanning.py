@@ -1,8 +1,8 @@
-from checkov.terraform.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
+from checkov.terraform.models.enums import CheckCategories
 
 
-class ECRImageScanning(BaseResourceCheck):
+class ECRImageScanning(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure ECR image scanning on push is enabled"
         id = "CKV_AWS_33"
@@ -10,17 +10,7 @@ class ECRImageScanning(BaseResourceCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for image scanning configuration at repository policy:
-            https://www.terraform.io/docs/providers/aws/r/ecr_repository.html
-        :param conf: aws_ecr_repository configuration
-        :return: <CheckResult>
-        """
-        if "image_scanning_configuration" in conf.keys():
-            if conf["image_scanning_configuration"][0]["scan_on_push"][0] == True:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
-
+    def get_inspected_key(self):
+        return "image_scanning_configuration/[0]/scan_on_push"
 
 check = ECRImageScanning()
