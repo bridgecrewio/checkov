@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class EBSSnapshotEncryption(BaseResourceBooleanValueCheck):
+class EBSSnapshotEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the EBS Snapshot is securely encrypted "
         id = "CKV_AWS_4"

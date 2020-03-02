@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class ECRImageScanning(BaseResourceBooleanValueCheck):
+class ECRImageScanning(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure ECR image scanning on push is enabled"
         id = "CKV_AWS_33"

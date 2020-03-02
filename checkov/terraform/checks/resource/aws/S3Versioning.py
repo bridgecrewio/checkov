@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class S3Versioning(BaseResourceBooleanValueCheck):
+class S3Versioning(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the S3 bucket have versioning enabled"
         id = "CKV_AWS_21"

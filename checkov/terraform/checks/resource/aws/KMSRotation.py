@@ -1,9 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
-from checkov.terraform.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
+from checkov.terraform.models.enums import CheckCategories
 
 
-class KMSRotation(BaseResourceBooleanValueCheck):
+class KMSRotation(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure rotation for customer created CMKs is enabled"
         id = "CKV_AWS_7"

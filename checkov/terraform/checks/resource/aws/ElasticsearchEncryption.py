@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class ElasticsearchEncryption(BaseResourceBooleanValueCheck):
+class ElasticsearchEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Elasticsearch is securely encrypted at rest"
         id = "CKV_AWS_5"

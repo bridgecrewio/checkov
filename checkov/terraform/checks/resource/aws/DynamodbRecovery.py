@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class DynamodbRecovery(BaseResourceBooleanValueCheck):
+class DynamodbRecovery(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Dynamodb point in time recovery (backup) is enabled"
         id = "CKV_AWS_28"

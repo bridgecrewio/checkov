@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class RDSEncryption(BaseResourceBooleanValueCheck):
+class RDSEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
         id = "CKV_AWS_16"

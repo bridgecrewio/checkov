@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class CloudtrailLogValidation(BaseResourceBooleanValueCheck):
+class CloudtrailLogValidation(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure CloudTrail log file validation is enabled"
         id = "CKV_AWS_36"

@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.BaseResourceBooleanValueCheck import BaseResourceBooleanValueCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
 from checkov.terraform.models.enums import CheckCategories
 
 
-class ElasticacheReplicationGroupEncryptionAtRest(BaseResourceBooleanValueCheck):
+class ElasticacheReplicationGroupEncryptionAtRest(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Elasticache Replication Group  is securely encrypted at rest"
         id = "CKV_AWS_29"
