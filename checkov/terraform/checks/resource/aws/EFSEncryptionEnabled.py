@@ -2,10 +2,10 @@ from checkov.terraform.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 
-class EFSEncryption(BaseResourceCheck):
+class EFSEncryptionEnabled(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure all that a KMS key is specified"
-        id = "CKV_AWS_41"
+        name = "Ensure EFS is securely encrypted"
+        id = "CKV_AWS_42"
         supported_resources = ['aws_efs_file_system']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -17,9 +17,9 @@ class EFSEncryption(BaseResourceCheck):
         :param conf: efs configuration
         :return: <CheckResult>
         """
-        if "kms_key_id" in conf.keys():
+        if "encrypted" in conf.keys():
             return CheckResult.PASSED
         return CheckResult.FAILED
 
 
-check = EFSEncryption()
+check = EFSEncryptionEnabled()
