@@ -12,7 +12,7 @@ class TestEFSEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf =  {'creation_token': ["my-product"], 'encrypted': [True]}
+        resource_conf =  {'creation_token': ["my-product"], 'encrypted': [True], "kms_key_id": ["aws/efs"]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

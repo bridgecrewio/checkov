@@ -12,14 +12,13 @@ class EFSEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         """
-            Looks for encryption configuration in RFS:
-            https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
-        :param conf: aws_efs_file_system configuration
+            Looks for encryption configuration at cloudtrail:
+            https://www.terraform.io/docs/providers/aws/r/cloudtrail.html
+        :param conf: efs configuration
         :return: <CheckResult>
         """
-        if "encrypted" in conf.keys():
-            if conf["encrypted"][0] == True:
-                return CheckResult.PASSED
+        if "kms_key_id" in conf.keys():
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 
