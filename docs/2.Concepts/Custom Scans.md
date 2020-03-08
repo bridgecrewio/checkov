@@ -34,7 +34,6 @@ resource "aws_s3_bucket" "credit_cards_bucket" {
   }
 }
 ```
-
 For that we will need to add a new check to ensure PCI related S3 buckets will stay private.
 So we will create a new python folder named `my_extra_checks` containing our new check 
 

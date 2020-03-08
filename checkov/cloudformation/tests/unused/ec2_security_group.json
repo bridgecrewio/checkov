@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Create a sec group test",
+
+  "Parameters" : {
+    "VpcId" : {
+      "Type" : "AWS::EC2::VPC::Id",
+      "Description" : "VpcId of your existing Virtual Private Cloud (VPC)"
+    },
+
+    "SourceSG" : {
+      "Type" : "AWS::EC2::SecurityGroup::Id",
+      "Description" : "Source Security Group"
+    }
+
+  },
+
+  "Mappings" : {
+
+  },
+
+  "Resources" : {
+    "TestSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VpcId" },
+        "GroupDescription" : "Enable HTTP access via port 80/22/443 and ICMP access via port *",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "8888", "ToPort" : "8888", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "SourceSecurityGroupId": { "Ref": "SourceSG" }, "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "WebsiteURL" : {
+      "Description" : "URL for newly created KWOS deploy stack",
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "KWOSInstance", "PublicDnsName" ]}]] }
+    },
+    "InstanceId" : {
+      "Value" : { "Ref" : "KWOSInstance" },
+      "Description" : "Instance Id of newly created instance"
+    }
+  }
+}
+

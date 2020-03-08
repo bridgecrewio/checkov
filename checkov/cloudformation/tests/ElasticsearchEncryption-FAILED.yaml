@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElasticsearchDomain resource
+Parameters:
+  DomainName:
+    Description: User defined Elasticsearch Domain name
+    Type: String
+  ElasticsearchVersion:
+    Description: User defined Elasticsearch Version
+    Type: String
+  InstanceType:
+    Type: String
+  AvailabilityZone:
+    Type: String
+  CidrBlock:
+    Type: String
+    AllowedPattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+  #GroupDescription:
+  #  Type: String
+  #SGName:
+  #  Type: String
+  SecurityGroup:
+    Description: Security Group for ALB
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-0123456789abcdefc
+Resources:
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Ref DomainName
+      EncryptionAtRestOptions:
+        Enabled: False
+        #Enabled: True
+      #  KmsKeyId: 1a2a3a4-1a2a-3a4a-5a6a-1a2a3a4a5a6a
+      ##########
+      NodeToNodeEncryptionOptions:
+      #  Enabled: False
+        Enabled: True
+      ElasticsearchVersion: !Ref ElasticsearchVersion
+      ElasticsearchClusterConfig:
+        InstanceCount: 1
+        InstanceType: !Ref InstanceType
+      EBSOptions:
+        EBSEnabled: True
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: 0
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: '*'
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: 'true'
+      Tags:
+        - Key: foo
+          Value: bar
+      VPCOptions:
+        SubnetIds:
+          - !Ref subnet
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+          #- !Ref mySecurityGroup
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !Ref CidrBlock
+      AvailabilityZone: !Ref AvailabilityZone
+  #mySecurityGroup:
+  #  Type: AWS::EC2::SecurityGroup
+  #  Properties:
+  #    GroupDescription: !Ref GroupDescription
+  #    VpcId: !Ref vpc
+  #    GroupName: !Ref SGName
+  #    SecurityGroupIngress:
+  #      - Description: 'HTTP Ingress' 
+  #        FromPort: 443
+  #        IpProtocol: tcp
+  #        ToPort: 443
+  #        CidrIp: 0.0.0.0/0
+Outputs:
+  DomainArn:
+    Value: !GetAtt ElasticsearchDomain.DomainArn
+  DomainEndpoint:
+    Value: !GetAtt ElasticsearchDomain.DomainEndpoint
+  #SecurityGroupId:
+  #  Value: !Ref mySecurityGroup
+  SubnetId:
+    Value: !Ref subnet

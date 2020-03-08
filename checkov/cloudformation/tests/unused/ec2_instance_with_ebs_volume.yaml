@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sample EBS Volume with EC2 instance template
+Resources: 
+  NewVolume:
+    Type: AWS::EC2::Volume
+    Properties: 
+      Size: 100
+      #Encrypted: true
+      Encrypted: false
+      AvailabilityZone: !GetAtt EC2Instance.AvailabilityZone
+      Tags:
+        - Key: MyTag
+          Value: TagValue
+    DeletionPolicy: Snapshot
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.nano
+      ImageId: ami-80861296
+      KeyName: my-key
+      SecurityGroupIds:
+        - sg-abc01234
+      SubnetId: subnet-abc01234
+      Tags:
+        -
+          Key: Name
+          Value: webserver
+      BlockDeviceMappings:
+        # Create a separate volume
+        - DeviceName: /dev/sda11
+          Ebs:
+            DeleteOnTermination: false
+            VolumeSize: 10
+            VolumeType: gp2
+            Encrypted: True	# https://aws.amazon.com/about-aws/whats-new/2019/05/launch-encrypted-ebs-backed-ec2-instances-from-unencrypted-amis-in-a-single-step/
+     # Volumes: 
+     #   - Device: "/dev/sdf"
+     #     VolumeId: !Ref NewVolume
+
+
