@@ -477,7 +477,7 @@ resource "aws_efs_file_system" "sharedstore" {
   }
 
     kms_key_id                      = "aws/efs"
-    encrypted                       = True
+    encrypted                       = true
     performance_mode                = "generalPurpose"
     provisioned_throughput_in_mibps = 0
     throughput_mode                 = "bursting"
