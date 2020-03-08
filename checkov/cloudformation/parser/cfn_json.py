@@ -147,8 +147,8 @@ def _decode_uXXXX(s, pos):
     raise JSONDecodeError(msg, s, pos)
 
 
-def CfnJSONObject(s_and_end, strict, scan_once, object_hook, object_pairs_hook,
-                  memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
+def cfn_json_object(s_and_end, strict, scan_once, object_hook, object_pairs_hook,
+                    memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
     """ Custom Cfn JSON Object to store keys with start and end times """
     s, end = s_and_end
     orginal_end = end
@@ -355,7 +355,7 @@ class CfnJSONDecoder(json.JSONDecoder):
 
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, *args, **kwargs)
-        self.parse_object = CfnJSONObject
+        self.parse_object = cfn_json_object
         self.parse_array = self.JSONArray
         self.parse_string = py_scanstring
         self.memo = {}

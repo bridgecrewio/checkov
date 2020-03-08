@@ -1,6 +1,4 @@
-import fileinput
 import logging
-import sys
 import six
 from yaml.composer import Composer
 from yaml.reader import Reader
@@ -9,16 +7,16 @@ from yaml.resolver import Resolver
 from yaml import ScalarNode
 from yaml import SequenceNode
 from yaml import MappingNode
-from yaml.constructor import Constructor
 from yaml.constructor import SafeConstructor
 from yaml.constructor import ConstructorError
 from checkov.cloudformation.parser.node import str_node, dict_node, list_node
-
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
+
     cyaml = True
 except ImportError:
     from yaml.parser import Parser  # pylint: disable=ungrouped-imports
+
     cyaml = False
 
 UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
@@ -33,7 +31,6 @@ class CfnParseError(ConstructorError):
     """
 
     def __init__(self, filename, message, line_number, column_number, key=' '):
-
         # Call the base class constructor with the parameters it needs
         super(CfnParseError, self).__init__(message)
 
@@ -122,6 +119,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
     """
     Class for marked loading YAML
     """
+
     # pylint: disable=non-parent-init-called,super-init-not-called
 
     def __init__(self, stream, filename):
@@ -139,10 +137,11 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
     def construct_mapping(self, node, deep=False):
         mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
-        #mapping['__line__'] = node.start_mark.line + 1
+        # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
         mapping['__endline__'] = node.end_mark.line + 1
         return mapping
+
 
 def multi_constructor(loader, tag_suffix, node):
     """
@@ -165,7 +164,6 @@ def multi_constructor(loader, tag_suffix, node):
         raise 'Bad tag: !{}'.format(tag_suffix)
 
     return dict_node({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
-
 
 
 def construct_getatt(node):
@@ -194,6 +192,7 @@ def loads(yaml_string, fname=None):
         template = {}
 
     return template
+
 
 def load(filename):
     """

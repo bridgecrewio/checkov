@@ -40,8 +40,8 @@ def run():
     else:
         root_folder = args.directory
         file = args.file
-        # report = cfn_runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
-        report = Runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+        report = cfn_runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+        # report = Runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
         if args.output == "json":
             report.print_json()
         elif args.output == "junitxml":

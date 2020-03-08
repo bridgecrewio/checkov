@@ -9,6 +9,8 @@ from checkov.cloudformation.parser import parse
 from functools import reduce
 import operator
 
+CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
+
 
 class Runner:
 
@@ -25,9 +27,11 @@ class Runner:
         if files:
             for file in files:
                 files_list.append(file)
+
         if root_folder:
             for file in os.listdir(root_folder):
-                if file.endswith(".yaml") or file.endswith(".json") or file.endswith(".template"):
+                file_ending = os.path.splitext(file)[1]
+                if file_ending in CF_POSSIBLE_ENDINGS:
                     files_list.append(os.path.join(root_folder, file))
 
         for file in files_list:
