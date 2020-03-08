@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 
 class EFSEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure all that a KMS key is specified"
+        name = "Ensure all that a KMS key is set"
         id = "CKV_AWS_41"
         supported_resources = ['aws_efs_file_system']
         categories = [CheckCategories.ENCRYPTION]
@@ -12,8 +12,8 @@ class EFSEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         """
-            Looks for encryption configuration at EFS:
-            https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
+            Looks for encryption configuration at efs:
+            https://www.terraform.io/docs/providers/aws/r/efs.html
         :param conf: efs configuration
         :return: <CheckResult>
         """
