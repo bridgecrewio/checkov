@@ -3,7 +3,7 @@ from abc import abstractmethod
 import dpath
 
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
-from checkov.terraform.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult
 
 
 class BaseResourceValueCheck(BaseResourceCheck):

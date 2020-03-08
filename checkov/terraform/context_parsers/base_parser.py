@@ -2,7 +2,7 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.models.enums import ContextCategories
+from checkov.common.models.enums import ContextCategories
 from itertools import islice
 
 OPEN_CURLY = '{'

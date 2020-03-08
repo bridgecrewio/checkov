@@ -35,7 +35,6 @@ def run():
         return
     if args.list:
         # pylint: disable=unused-import
-        import checkov.terraform.util.docs_generator
         return
     else:
         root_folder = args.directory
