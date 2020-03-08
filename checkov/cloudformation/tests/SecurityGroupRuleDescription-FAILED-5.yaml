@@ -1,0 +1,10 @@
+Description: Security Group Example
+Resources:
+  DbSecurityByEC2SecurityGroup: 
+    Type: AWS::RDS::DBSecurityGroup
+    Properties: 
+      ###GroupDescription: "You are missing a GroupDescription!!"
+      DBSecurityGroupIngress: 
+        - 
+          EC2SecurityGroupId: "sg-b0ff1111"
+          EC2SecurityGroupOwnerId: "111122223333"

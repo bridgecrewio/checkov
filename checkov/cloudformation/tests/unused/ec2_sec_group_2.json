@@ -1,0 +1,35 @@
+{
+  "Description": "Create a VPC with a SG which references itself",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "vpctester": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.16.0.0/23",
+        "EnableDnsSupport": false,
+        "EnableDnsHostnames": false,
+        "InstanceTenancy": "default",
+        "Tags": [ { "Key": "Name", "Value": "vpctester" } ]
+      }
+    },
+    "sgtester": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "vpctester",
+      "Properties": {
+        "GroupDescription": "vpc tester sg",
+        "VpcId": { "Ref": "vpctester" }
+      }
+    },
+    "sgtesteringress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "DependsOn": "sgtester",
+      "Properties": {
+        "GroupId": { "Ref": "sgtester" },
+        "IpProtocol": "tcp",
+        "FromPort": "0",
+        "ToPort": "65535",
+        "SourceSecurityGroupId": { "Ref": "sgtester" }
+      }
+    }
+  }
+}
