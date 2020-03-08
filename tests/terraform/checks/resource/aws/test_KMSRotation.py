@@ -10,7 +10,7 @@ class TestKMSRotation(unittest.TestCase):
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
-            "enable_key_rotation": True
+            "enable_key_rotation": [True]
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
@@ -19,7 +19,7 @@ class TestKMSRotation(unittest.TestCase):
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
-            "enable_key_rotation": False
+            "enable_key_rotation": [False]
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)

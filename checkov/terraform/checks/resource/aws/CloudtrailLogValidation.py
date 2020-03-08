@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class CloudtrailLogValidation(BaseResourceCheck):
+class CloudtrailLogValidation(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure CloudTrail log file validation is enabled"
         id = "CKV_AWS_36"
@@ -10,17 +10,8 @@ class CloudtrailLogValidation(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for log validation configuration at cloudtrail:
-            https://www.terraform.io/docs/providers/aws/r/cloudtrail.html
-        :param conf: cloudtrail configuration
-        :return: <CheckResult>
-        """
-        if "enable_log_file_validation" in conf.keys():
-            if conf["enable_log_file_validation"][0] == True:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "enable_log_file_validation"
 
 
 check = CloudtrailLogValidation()

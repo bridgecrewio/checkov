@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class ElasticsearchEncryption(BaseResourceCheck):
+class ElasticsearchEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Elasticsearch is securely encrypted at rest"
         id = "CKV_AWS_5"
@@ -10,17 +10,8 @@ class ElasticsearchEncryption(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration at aws_elasticsearch_domain:
-            https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain.html
-        :param conf: aws_elasticsearch_domain configuration
-        :return: <CheckResult>
-        """
-        if "encrypt_at_rest" in conf.keys():
-            if conf["encrypt_at_rest"][0]["enabled"][0]:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "encrypt_at_rest/[0]/enabled"
 
 
 check = ElasticsearchEncryption()

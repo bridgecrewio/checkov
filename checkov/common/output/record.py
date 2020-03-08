@@ -29,16 +29,30 @@ class Record():
         self.evaluations = evaluations
         self.check_class = check_class
 
+    @staticmethod
+    def _trim_special_chars(expression):
+        return "".join(re.findall(r'[^ \$\{\}]+', expression))
+
     def _is_expression_in_code_lines(self, expression):
-        stripped_expression = "".join(re.findall(r'[^ \$\{\}]+', expression))
-        return any([stripped_expression in line for (_, line) in self.code_block])
+        stripped_expression = self._trim_special_chars(expression)
+        return any([stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block])
 
     @staticmethod
-    def _code_line_string(line_num, line):
-        if '#' in line:
-            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + line
-        else:
-            return "\t\t" + Fore.WHITE + str(line_num) + ' | ' + Fore.YELLOW + line
+    def _code_line_string(code_block):
+        string_block = ''
+        last_line_number, _ = code_block[-1]
+
+        for (line_num, line) in code_block:
+            spaces = ' ' * (len(str(last_line_number)) - len(str(line_num)))
+            if '#' in line:
+                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + line
+            else:
+                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
+        return string_block
+
+    def _get_resource_definitions(self, definitions):
+        resource_path = f"/{self.resource.replace('.', '/')}/"
+        return [definition for definition in definitions if resource_path in definition['definition_path']]
 
     def __str__(self):
         status = ''
@@ -61,15 +75,16 @@ class Record():
             "magenta")
         if self.code_block:
             code_lines = "{}\n".format("".join(
-                [self._code_line_string(line_num, line) for (line_num, line) in self.code_block]))
+                [self._code_line_string(self.code_block)]))
         if self.evaluations:
-            for (var_name, evaluations) in self.evaluations.items():
-                var_file = evaluations['var_file']
-                for definition_obj in evaluations['definitions']:
+            for (var_name, var_evaluations) in self.evaluations.items():
+                var_file = var_evaluations['var_file']
+                var_definitions = self._get_resource_definitions(var_evaluations['definitions'])
+                for definition_obj in var_definitions:
                     definition_expression = definition_obj["definition_expression"]
                     if self._is_expression_in_code_lines(definition_expression):
                         evaluation_message = evaluation_message + colored(
-                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(evaluations["value"], "yellow")}" '
+                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(var_evaluations["value"], "yellow")}" '
                             f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)

@@ -117,6 +117,11 @@ resource "google_container_node_pool" "good_node_pool" {
   }
 }
 
+resource "aws_kms_key" "my_kms_key" {
+  description         = "My KMS Key"
+  enable_key_rotation = true
+}
+
 resource "aws_iam_account_password_policy" "password-policy" {
   minimum_password_length        = 15
   require_lowercase_characters   = true
@@ -416,4 +421,50 @@ resource "aws_iam_user_policy" "lb_ro" {
   ]
 }
 EOF
+}
+
+resource "aws_s3_bucket" "bridgecrew_cws_bucket" {
+  count = var.existing_bucket_name == null ? 1 : 0
+
+  bucket = local.bucket_name
+  acl    = "private"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    id      = "Delete old log files"
+    enabled = true
+
+    noncurrent_version_expiration {
+      days = var.log_file_expiration
+    }
+
+    expiration {
+      days = var.log_file_expiration
+    }
+  }
+
+  dynamic "logging" {
+    for_each = var.logs_bucket_id != null ? [var.logs_bucket_id] : []
+
+    content {
+      target_bucket = logging.value
+      target_prefix = "/${local.bucket_name}"
+    }
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = local.kms_key
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
+
+  tags = {
+    Name = "BridgecrewCWSBucket"
+  }
 }

@@ -5,7 +5,7 @@ from junit_xml import TestCase, TestSuite
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.util.banner import banner
+from checkov.common.util import banner
 from checkov.version import version
 
 init(autoreset=True)

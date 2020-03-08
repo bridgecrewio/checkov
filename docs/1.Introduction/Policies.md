@@ -36,7 +36,7 @@ For this tutorial let's produce a policy that ensures that new RDS services spun
 2. Import the following:
 
 ```python
-from checkov.terraform.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
 ```
 
