@@ -1,5 +1,5 @@
 from termcolor import colored
-from checkov.terraform.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult
 from colorama import init, Fore
 import re
 
