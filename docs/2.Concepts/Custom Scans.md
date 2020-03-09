@@ -59,7 +59,7 @@ And we will fill the matching logic in `S3PCIPrivateACL.py`:
 ```python
 from lark import Token
 
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 

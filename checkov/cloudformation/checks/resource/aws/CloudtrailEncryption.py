@@ -1,5 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_check import BaseResourceCheck
+from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class CloudtrailEncryption(BaseResourceCheck):

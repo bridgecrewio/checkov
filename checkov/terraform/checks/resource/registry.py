@@ -1,3 +1,3 @@
-from checkov.common.checks.base_registry import Registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
-resource_registry = Registry()
+resource_registry = BaseCheckRegistry()

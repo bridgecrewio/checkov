@@ -37,7 +37,7 @@ For this tutorial let's produce a policy that ensures that new RDS services spun
 
 ```python
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 ```
 
 3. At this point, we define the meta entities for this check: ``name``, ``id``, ``supported_resources``, ``categories``

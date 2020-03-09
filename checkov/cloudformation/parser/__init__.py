@@ -17,7 +17,6 @@ def parse(filename):
     """
     template = None
     template_lines = None
-    matches = []
     try:
         (template, template_lines) = cfn_yaml.load(filename)
     except IOError as e:
