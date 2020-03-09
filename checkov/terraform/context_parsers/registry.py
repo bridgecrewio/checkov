@@ -1,5 +1,4 @@
 import logging
-from checkov.terraform.models.enums import ContextCategories
 
 
 class ParserRegistry:

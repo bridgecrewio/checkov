@@ -1,7 +1,7 @@
 import unittest
 
 from checkov.terraform.checks.resource.aws.S3PublicACL import check
-from checkov.terraform.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult
 
 
 class TestS3PublicACL(unittest.TestCase):

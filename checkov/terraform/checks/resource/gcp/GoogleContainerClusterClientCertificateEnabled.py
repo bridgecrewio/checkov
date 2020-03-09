@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_check import BaseResourceCheck
-from checkov.terraform.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 class GoogleContainerClusterClientCertificateEnabled(BaseResourceCheck):
     def __init__(self):

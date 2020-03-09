@@ -1,7 +1,7 @@
 import unittest
 
 from checkov.terraform.checks.resource.azure.StorageAccountsTransportEncryption import check
-from checkov.terraform.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult
 
 
 class TestAzureManagedDiscEncryption(unittest.TestCase):

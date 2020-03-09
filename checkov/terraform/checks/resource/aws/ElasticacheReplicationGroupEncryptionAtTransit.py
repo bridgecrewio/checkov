@@ -1,8 +1,8 @@
-from checkov.terraform.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.BaseResourceValueCheck import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class ElasticacheReplicationGroupEncryptionAtTransit(BaseResourceCheck):
+class ElasticacheReplicationGroupEncryptionAtTransit(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Elasticache Replication Group  is securely encrypted at transit"
         id = "CKV_AWS_30"
@@ -10,17 +10,8 @@ class ElasticacheReplicationGroupEncryptionAtTransit(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration at aws_elasticache_replication_group:
-            https://www.terraform.io/docs/providers/aws/r/elasticache_replication_group.html
-        :param conf: aws_elasticache_replication_group configuration
-        :return: <CheckResult>
-        """
-        if "transit_encryption_enabled" in conf.keys():
-            if conf["transit_encryption_enabled"][0]:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "transit_encryption_enabled"
 
 
 check = ElasticacheReplicationGroupEncryptionAtTransit()

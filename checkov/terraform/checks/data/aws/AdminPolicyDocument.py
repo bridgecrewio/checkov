@@ -1,5 +1,5 @@
 from checkov.terraform.checks.data.base_check import BaseDataCheck
-from checkov.terraform.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class AdminPolicyDocument(BaseDataCheck):
