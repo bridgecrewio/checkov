@@ -2,7 +2,7 @@
 
 import logging
 import argparse
-
+from  checkov.common.util.docs_generator import print_checks
 from checkov.common.runners.runner_registry import runner_registry
 from checkov.version import version
 
@@ -34,7 +34,7 @@ def run():
         print(version)
         return
     if args.list:
-        # pylint: disable=unused-import
+        print_checks()
         return
     else:
         root_folder = args.directory
