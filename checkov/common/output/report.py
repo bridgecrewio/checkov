@@ -115,7 +115,7 @@ class Report:
         print(self.get_json())
 
     def get_new_report_for_check_id(self, check_id):
-        new_report = Report()
+        new_report = Report(self.check_type)
         for record in self.passed_checks:
             if record.check_id == check_id:
                 new_report.add_record(record)
