@@ -19,11 +19,6 @@ class Report:
         self.skipped_checks = []
         self.parsing_errors = []
 
-    def __init__(self):
-        self.passed_checks = []
-        self.failed_checks = []
-        self.skipped_checks = []
-        self.parsing_errors = []
     def add_parsing_errors(self, files):
         for file in files:
             self.add_parsing_error(file)
