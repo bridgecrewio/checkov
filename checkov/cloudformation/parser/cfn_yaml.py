@@ -1,15 +1,22 @@
+"""
+Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: MIT-0
+"""
 import logging
+
 import six
-from yaml.composer import Composer
-from yaml.reader import Reader
-from yaml.scanner import Scanner
-from yaml.resolver import Resolver
+from yaml import MappingNode
 from yaml import ScalarNode
 from yaml import SequenceNode
-from yaml import MappingNode
-from yaml.constructor import SafeConstructor
+from yaml.composer import Composer
 from yaml.constructor import ConstructorError
+from yaml.constructor import SafeConstructor
+from yaml.reader import Reader
+from yaml.resolver import Resolver
+from yaml.scanner import Scanner
+
 from checkov.cloudformation.parser.node import str_node, dict_node, list_node
+
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
 
