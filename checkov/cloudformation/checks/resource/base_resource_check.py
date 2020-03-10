@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from checkov.terraform.checks.utilities.base_check import BaseCheck
-from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.common.checks.base_check import BaseCheck
+from checkov.cloudformation.checks.resource.registry import resource_registry
 
 
 class BaseResourceCheck(BaseCheck):
@@ -10,7 +10,6 @@ class BaseResourceCheck(BaseCheck):
                          block_type="resource")
         self.supported_resources = supported_resources
         resource_registry.register(self)
-
 
     @abstractmethod
     def scan_resource_conf(self, conf):

@@ -2,9 +2,10 @@ import logging
 import sys
 import os
 import importlib
+from abc import abstractmethod
 
 
-class Registry(object):
+class BaseCheckRegistry(object):
     checks = {}
 
     def __init__(self):
@@ -22,26 +23,28 @@ class Registry(object):
             return self.checks[entity]
         return []
 
-    def scan(self, block, scanned_file, skipped_checks):
-        entity = list(block.keys())[0]
-        entity_conf = block[entity]
+    @abstractmethod
+    def extract_entity_details(self, entity):
+        raise NotImplementedError()
+
+    def scan(self, scanned_file, entity, skipped_checks):
+        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
-        checks = self.get_checks(entity)
+        checks = self.get_checks(entity_type)
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            entity_name = list(entity_conf.keys())[0]
-            entity_conf_def = entity_conf[entity_name]
             self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-            result = check.run(scanned_file=scanned_file, entity_configuration=entity_conf_def,
-                               entity_name=entity_name, entity_type=entity, skip_info=skip_info)
+            result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                               entity_name=entity_name, entity_type=entity_type, skip_info=skip_info)
 
             results[check] = result
         return results
 
-    def _directory_has_init_py(self, directory):
+    @staticmethod
+    def _directory_has_init_py(directory):
         """ Check if a given directory contains a file named __init__.py.
 
         __init__.py is needed to ensure the directory is a Python module, thus
@@ -51,7 +54,8 @@ class Registry(object):
             return True
         return False
 
-    def _file_can_be_imported(self, entry):
+    @staticmethod
+    def _file_can_be_imported(entry):
         """ Verify if a directory entry is a non-magic Python file."""
         if entry.is_file() and not entry.name.startswith('__') and entry.name.endswith('.py'):
             return True

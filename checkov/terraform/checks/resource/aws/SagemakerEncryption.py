@@ -1,5 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class SagemakerEncryption(BaseResourceCheck):

@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import dpath
 
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult
 
 

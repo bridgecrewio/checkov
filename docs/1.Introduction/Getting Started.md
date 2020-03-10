@@ -716,7 +716,7 @@ For example, a policy that ensures all data is stored in S3 is versioned, scans 
 
 ```python
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 class S3Versioning(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all data stored in the S3 bucket is versioned"

@@ -7,9 +7,13 @@ order: 4
 
 # Results
 
+## Scan type
+Checkov scans IaC with the context of the IaC's type. Currently, Checkov scans both Terraform and AWS CloudFormation configurations,
+and outputs a scan report for each IaC type.  
+
 ## Scan outputs
 
-After running a ``checkov`` command on a Terraform file or folder, the scan's results will print in your current session Checkov currently supports output in 3 common formats: CLI, JSON & JUnit XML. 
+After running a ``checkov`` command on a IaC file or folder, the scan's results will print in your current session Checkov currently supports output in 3 common formats: CLI, JSON & JUnit XML. 
 
 
 
@@ -18,12 +22,16 @@ After running a ``checkov`` command on a Terraform file or folder, the scan's re
 Running a Checkov scan with no output parameter will result in a color-coded CLI print output.
 
 ```
-checkov -d /user/tf
+checkov -d /user/path/to/iac
 ```
 
 Each print includes a scan summary and detailed scan results following.
+For example, the following are the Terraform and CloudFormation scan reports:
 
 ```bash
+
+Terraform scan results:
+
 Passed checks: 7, Failed checks: 15, Skipped checks: 2
 
 Check: "S3 Bucket has an ACL defined which allows public access."
@@ -51,6 +59,69 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 	SKIPPED for resource: aws_s3_bucket.template_bucket
 	Suppress comment: The bucket is a public static content host, that does not require encryption
 	File: /main.tf:81-92     ```
+
+CloudFormation scan results:
+
+Passed checks: 1, Failed checks: 1, Skipped checks: 0
+
+Check: CKV_AWS_36: "Ensure CloudTrail log file validation is enabled"
+	PASSED for resource: AWS::CloudTrail::Trail.BridgecrewCWSTrail
+	File: /cloud-formation-template.json:300-343
+
+
+Check: CKV_AWS_35: "Ensure CloudTrail logs are encrypted at rest using KMS CMKs"
+	FAILED for resource: AWS::CloudTrail::Trail.BridgecrewCWSTrail
+	File: /cloud-formation-template.json:300-343
+
+		300 |     "BridgecrewCWSTrail": {
+		301 |       "Condition": "CreateNewTrail",
+		302 |       "Type": "AWS::CloudTrail::Trail",
+		303 |       "DependsOn": [
+		304 |         "BridgecrewCWSTopicPolicy",
+		305 |         "BridgecrewCWSBucketPolicy"
+		306 |       ],
+		307 |       "Properties": {
+		308 |         "TrailName": {
+		309 |           "Fn::Join": [
+		310 |             "",
+		311 |             [
+		312 |               {
+		313 |                 "Ref": "ResourceNamePrefix"
+		314 |               },
+		315 |               "-bridgecrewcws"
+		316 |             ]
+		317 |           ]
+		318 |         },
+		319 |         "S3BucketName": {
+		320 |           "Ref": "BridgecrewCWSBucket"
+		321 |         },
+		322 |         "S3KeyPrefix": {
+		323 |           "Fn::If": [
+		324 |             "NewTrailUsesLogFilePrefix",
+		325 |             {
+		326 |               "Ref": "NewTrailLogFilePrefix"
+		327 |             },
+		328 |             {
+		329 |               "Ref": "AWS::NoValue"
+		330 |             }
+		331 |           ]
+		332 |         },
+		333 |         "SnsTopicName": {
+		334 |           "Fn::GetAtt": [
+		335 |             "BridgecrewCWSTopic",
+		336 |             "TopicName"
+		337 |           ]
+		338 |         },
+		339 |         "EnableLogFileValidation": true,
+		340 |         "IncludeGlobalServiceEvents": true,
+		341 |         "IsMultiRegionTrail": true,
+		342 |         "IsLogging": true
+		343 |       }
+
+
+
+Process finished with exit code 1
+
 ```
 
 ### JSON Output
@@ -63,6 +134,7 @@ checkov -d /user/tf -o json
 
 ```json
 {
+    "check_type": "Terraform",
     "results": {
         "passed_checks": [
             {

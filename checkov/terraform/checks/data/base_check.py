@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from checkov.terraform.checks.data.registry import data_registry
-from checkov.terraform.checks.utilities.base_check import BaseCheck
+from checkov.common.checks.base_check import BaseCheck
 
 
 class BaseDataCheck(BaseCheck):

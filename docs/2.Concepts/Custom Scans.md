@@ -34,7 +34,6 @@ resource "aws_s3_bucket" "credit_cards_bucket" {
   }
 }
 ```
-
 For that we will need to add a new check to ensure PCI related S3 buckets will stay private.
 So we will create a new python folder named `my_extra_checks` containing our new check 
 
@@ -60,7 +59,7 @@ And we will fill the matching logic in `S3PCIPrivateACL.py`:
 ```python
 from lark import Token
 
-from checkov.terraform.checks.resource.base_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 

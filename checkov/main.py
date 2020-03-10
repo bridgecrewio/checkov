@@ -2,8 +2,8 @@
 
 import logging
 import argparse
-
-from checkov.terraform.runner import Runner
+from  checkov.common.util.docs_generator import print_checks
+from checkov.common.runners.runner_registry import runner_registry
 from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
@@ -21,9 +21,9 @@ def run():
     parser.add_argument('-v', '--version',
                         help='Checkov version', action='store_true')
     parser.add_argument('-d', '--directory',
-                        help='Terraform root directory (can not be used together with --file). Can be repeated')
+                        help='IaC root directory (can not be used together with --file). Can be repeated')
     parser.add_argument('-f', '--file', action='append',
-                        help='Terraform file(can not be used together with --directory)')
+                        help='IaC file(can not be used together with --directory)')
     parser.add_argument('--external-checks-dir', action='append',
                         help='Directory for custom checks to be loaded. Can be repeated')
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
@@ -34,20 +34,13 @@ def run():
         print(version)
         return
     if args.list:
-        # pylint: disable=unused-import
+        print_checks()
         return
     else:
         root_folder = args.directory
         file = args.file
-        report = Runner().run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
-        if args.output == "json":
-            report.print_json()
-        elif args.output == "junitxml":
-            report.print_junit_xml()
-        else:
-            report.print_console()
-
-        exit(report.get_exit_code())
+        scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+        runner_registry.print_reports(scan_reports, args)
 
 
 if __name__ == '__main__':
