@@ -15,7 +15,7 @@ class TestCloudtrailEncryption(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir).get_new_report_for_check_id(check.id)
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 1)
+        self.assertEqual(summary['passed'], 2)
         self.assertEqual(summary['failed'], 1)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
