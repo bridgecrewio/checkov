@@ -19,11 +19,6 @@ class Report:
         self.skipped_checks = []
         self.parsing_errors = []
 
-    def __init__(self):
-        self.passed_checks = []
-        self.failed_checks = []
-        self.skipped_checks = []
-        self.parsing_errors = []
     def add_parsing_errors(self, files):
         for file in files:
             self.add_parsing_error(file)
@@ -71,7 +66,7 @@ class Report:
 
     def print_console(self):
         summary = self.get_summary()
-        print(colored(f"{self.check_type} scan results:","blue"))
+        print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
             message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"], summary["parsing_errors"])

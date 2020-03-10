@@ -23,7 +23,8 @@ Checkov is written in Python and provides a simple method to write and manage po
  ## Features
 
  * [60+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
- * Policies support evaluation of variables to their optional default value
+ * Scans Terraform and AWS CloudFormation configurations.
+ * Policies support evaluation of variables to their optional default value.
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
 
@@ -47,11 +48,15 @@ pip install checkov
 ### Configure an input folder
 
 ```sh
-checkov -d /user/tf
+checkov -d /user/path/to/iac/code
 ```
 Or a specific file
 ```sh
 checkov -f /user/tf/example.tf
+```
+or
+```sh
+checkov -f /user/cloudformation/example.yml
 ```
 
 ### Scan result sample (CLI)

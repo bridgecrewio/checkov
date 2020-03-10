@@ -24,15 +24,14 @@ A policy needs to specify the following items:
 
 ``id``: A mandatory unique identifier of a policy; Native policies written by Bridgecrew contributors will follow the following convention ``CKV_providerType_serialNumber``. (e.g. `CKV_AWS_9` , `CKV_GCP_12`)
 
-``supported_resources``: Infrastructure objects, as described in Terraform language; This should usually contain one specific resource block.
+``supported_resources``: Infrastructure objects, as described in the scanned IaC's language; This should usually contain one specific resource block.
 
 ``categories``: Categorization of a scan; usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc.
 
 
 
-For this tutorial let's produce a policy that ensures that new RDS services spun-up are encrypted at rest ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
-
-1. Start by creating a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``
+For this tutorial let's produce a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
+1. Start by creating a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``.
 2. Import the following:
 
 ```python
