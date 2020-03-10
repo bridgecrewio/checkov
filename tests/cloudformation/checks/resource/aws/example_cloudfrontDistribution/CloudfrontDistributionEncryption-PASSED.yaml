@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront multiple origins - S3 Website and Elastic Beanstalk'
+Parameters:
+  S3Bucket:
+    Type: String
+    Description: Name of an S3 bucket to contain your website
+    Default: 'mytestbucket'
+Resources:
+  # Create the bucket to contain the website HTML
+  #S3Bucket:
+  #  Type: 'AWS::S3::Bucket'
+  #  Properties:
+  #    BucketName: !Sub 'website-${AWS::AccountId}'
+  #    AccessControl: PublicRead
+  #    WebsiteConfiguration:
+  #      IndexDocument: index.html
+  #      ErrorDocument: 404.html
+  #  DeletionPolicy: Retain
+
+  # Configure the bucket as a CloudFront Origin
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${S3Bucket}/*'
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+  CloudFrontOriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref S3Bucket
+
+  sampleApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      Description: AWS Elastic Beanstalk Sample Application
+
+  sampleApplicationVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Application Version
+      SourceBundle:
+        S3Bucket: !Sub "elasticbeanstalk-samples-${AWS::Region}"
+        S3Key: php-newsample-app.zip
+
+  sampleConfigurationTemplate:
+    Type: AWS::ElasticBeanstalk::ConfigurationTemplate
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Configuration Template
+      OptionSettings:
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: '2'
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: '6'
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: LoadBalanced
+      SolutionStackName: solution-stack
+
+  sampleEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName:
+        Ref: sampleApplication
+      Description: AWS ElasticBeanstalk Sample Environment
+      TemplateName:
+        Ref: sampleConfigurationTemplate
+      VersionLabel:
+        Ref: sampleApplicationVersion
+
+  CloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        CustomErrorResponses:
+          - ErrorCode: 403 # not found
+            ResponseCode: 404
+            ResponsePagePath: '/404.html'
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          DefaultTTL: 3600 # in seconds
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          # MinTTL/MaxTTL in seconds
+          MaxTTL: 86400
+          MinTTL: 60
+          TargetOriginId: s3origin
+          #ViewerProtocolPolicy: 'allow-all'
+          ViewerProtocolPolicy: 'https-only'
+        DefaultRootObject: 'index.html'
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          #- DomainName: !GetAtt 'S3Bucket.DomainName'
+          - DomainName: !Sub 'http://${S3Bucket}.s3-website-us-west-2.amazonaws.com'
+            Id: s3origin
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}'
+          - Id: customorigin
+            DomainName: !GetAtt [sampleEnvironment, EndpointURL]
+            CustomOriginConfig:
+              OriginProtocolPolicy: match-viewer
+        CacheBehaviors:
+          - TargetOriginId: customorigin
+            ForwardedValues:
+              QueryString: false
+            ViewerProtocolPolicy: https-only
+            #ViewerProtocolPolicy: allow-all
+            MinTTL: 500
+            PathPattern: '*.jpg'
+        PriceClass: 'PriceClass_All'
+
+Outputs:
+  BucketName:
+    Description: 'S3 Bucket Name'
+    Value: !Ref S3Bucket
+  DistributionId:
+    Description: 'CloudFront Distribution ID'
+    Value: !Ref CloudFrontDistribution
+  Domain:
+    Description: 'Cloudfront Domain'
+    Value: !GetAtt CloudFrontDistribution.DomainName

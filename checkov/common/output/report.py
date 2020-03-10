@@ -19,6 +19,11 @@ class Report:
         self.skipped_checks = []
         self.parsing_errors = []
 
+    def __init__(self):
+        self.passed_checks = []
+        self.failed_checks = []
+        self.skipped_checks = []
+        self.parsing_errors = []
     def add_parsing_errors(self, files):
         for file in files:
             self.add_parsing_error(file)
@@ -113,3 +118,19 @@ class Report:
 
     def print_json(self):
         print(self.get_json())
+
+    def get_new_report_for_check_id(self, check_id):
+        new_report = Report()
+        for record in self.passed_checks:
+            if record.check_id == check_id:
+                new_report.add_record(record)
+        for record in self.failed_checks:
+            if record.check_id == check_id:
+                new_report.add_record(record)
+        for record in self.skipped_checks:
+            if record.check_id == check_id:
+                new_report.add_record(record)
+        for record in self.parsing_errors:
+            if record.check_id == check_id:
+                new_report.add_record(record)
+        return new_report
