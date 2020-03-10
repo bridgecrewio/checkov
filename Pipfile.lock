@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d86a4f4a47ada0827a0b44485ed5032d7fa10cb52c441f6f4a3a51879fc05246"
+            "sha256": "e5bc3de379a843ec55eefbdab902ba3b9e856e14e4a97ae599b6635cee28ee4e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -52,10 +52,27 @@
         },
         "python-hcl2": {
             "hashes": [
-                "sha256:a92579d1a3b7fbe5def2c119bda54febe21341e30b6219715d48d74950603982"
+                "sha256:51a9c7e41929a440daf0e8b9a153e3afb7d0628b10c536a656ea95f87a5fe1f6"
             ],
             "index": "pypi",
-            "version": "==0.2.4"
+            "version": "==0.2.5"
+        },
+        "pyyaml": {
+            "hashes": [
+                "sha256:0e7f69397d53155e55d10ff68fdfb2cf630a35e6daf65cf0bdeaf04f127c09dc",
+                "sha256:2e9f0b7c5914367b0916c3c104a024bb68f269a486b9d04a2e8ac6f6597b7803",
+                "sha256:35ace9b4147848cafac3db142795ee42deebe9d0dad885ce643928e88daebdcc",
+                "sha256:38a4f0d114101c58c0f3a88aeaa44d63efd588845c5a2df5290b73db8f246d15",
+                "sha256:483eb6a33b671408c8529106df3707270bfacb2447bf8ad856a4b4f57f6e3075",
+                "sha256:4b6be5edb9f6bb73680f5bf4ee08ff25416d1400fbd4535fe0069b2994da07cd",
+                "sha256:7f38e35c00e160db592091751d385cd7b3046d6d51f578b29943225178257b31",
+                "sha256:8100c896ecb361794d8bfdb9c11fce618c7cf83d624d73d5ab38aef3bc82d43f",
+                "sha256:c0ee8eca2c582d29c3c2ec6e2c4f703d1b7f1fb10bc72317355a746057e7346c",
+                "sha256:e4c015484ff0ff197564917b4b4246ca03f411b9bd7f16e02a2f586eb48b6d04",
+                "sha256:ebc4ed52dcc93eeebeae5cf5deb2ae4347b3a81c3fa12b0b8c976544829396a4"
+            ],
+            "index": "pypi",
+            "version": "==5.2"
         },
         "six": {
             "hashes": [
@@ -131,10 +148,10 @@
         },
         "click": {
             "hashes": [
-                "sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13",
-                "sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"
+                "sha256:8a18b4ea89d8820c5d0c7da8a64b2c324b4dabb695804dbfea19b9be9d88c0cc",
+                "sha256:e345d143d80bf5ee7534056164e5e112ea5e22716bbb1ce727941f4c8b471b9a"
             ],
-            "version": "==7.0"
+            "version": "==7.1.1"
         },
         "colorama": {
             "hashes": [
@@ -288,10 +305,10 @@
         },
         "pip-shims": {
             "hashes": [
-                "sha256:1cc3e2e4e5d5863edd4760d2032b180a6ef81719277fe95404df1bb0e58b7261",
-                "sha256:b5bb01c4394a2e0260bddb4cfdc7e6fdd9d6e61c8febd18c3594e2ea2596c190"
+                "sha256:2b9a88ff0fd31e7d27a362d3e36e6e75d8fbc339c9c4367f4a97b72b22e6f4f4",
+                "sha256:5861da6f48e60b55d40b984795c63681e4db7ac576c1c3b05f4b54a9d508e3da"
             ],
-            "version": "==0.5.0"
+            "version": "==0.5.1"
         },
         "pipenv-setup": {
             "hashes": [
@@ -348,10 +365,10 @@
         },
         "python-hcl2": {
             "hashes": [
-                "sha256:a92579d1a3b7fbe5def2c119bda54febe21341e30b6219715d48d74950603982"
+                "sha256:51a9c7e41929a440daf0e8b9a153e3afb7d0628b10c536a656ea95f87a5fe1f6"
             ],
             "index": "pypi",
-            "version": "==0.2.4"
+            "version": "==0.2.5"
         },
         "regex": {
             "hashes": [
@@ -485,11 +502,11 @@
         },
         "zipp": {
             "hashes": [
-                "sha256:12248a63bbdf7548f89cb4c7cda4681e537031eda29c02ea29674bc6854460c2",
-                "sha256:7c0f8e91abc0dc07a5068f315c52cb30c66bfbc581e5b50704c8a2f6ebae794a"
+                "sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b",
+                "sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96"
             ],
             "markers": "python_version < '3.8'",
-            "version": "==3.0.0"
+            "version": "==3.1.0"
         }
     }
 }

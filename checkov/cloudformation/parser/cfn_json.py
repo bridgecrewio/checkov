@@ -1,12 +1,14 @@
-import fileinput
-import sys
-import logging
+"""
+Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: MIT-0
+"""
 import json
+import logging
+import sys
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK
 from json.scanner import NUMBER_RE
-#import cfnlint
-from checkov.cloudformation.parser.node import str_node, dict_node, list_node
 
+from checkov.cloudformation.parser.node import str_node, dict_node, list_node
 
 LOGGER = logging.getLogger(__name__)
 
