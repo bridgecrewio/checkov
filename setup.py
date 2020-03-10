@@ -86,7 +86,7 @@ setup(
     version=version,
     description="Infrastructure as code static analysis",
     author="bridgecrew",
-    author_email="support@bridgecrew.io",
+    author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
     packages=setuptools.find_packages(exclude=["tests*"]),
     scripts=["bin/checkov","bin/checkov.cmd"],
