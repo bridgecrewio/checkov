@@ -2,6 +2,7 @@ import logging
 import sys
 import os
 import importlib
+from abc import abstractmethod
 
 
 class BaseCheckRegistry(object):
@@ -22,7 +23,12 @@ class BaseCheckRegistry(object):
             return self.checks[entity]
         return []
 
-    def scan(self, scanned_file, entity_type, entity_name, entity_configuration, skipped_checks):
+    @abstractmethod
+    def extract_entity_details(self, entity):
+        raise NotImplementedError()
+
+    def scan(self, scanned_file, entity, skipped_checks):
+        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
         for check in checks:

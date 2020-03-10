@@ -1,3 +1,3 @@
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.terraform.checks.data.base_registry import Registry
 
-data_registry = BaseCheckRegistry()
+data_registry = Registry()

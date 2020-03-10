@@ -60,9 +60,9 @@ class Runner:
                                    block_type)
 
     def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
-        for entity_configuration in entities:
-            entity_type = list(entity_configuration.keys())[0]
-            entity_name = list(list(entity_configuration.values())[0].keys())[0]
+        for entity in entities:
+            entity_type = list(entity.keys())[0]
+            entity_name = list(list(entity.values())[0].keys())[0]
             entity_id = "{}.{}".format(entity_type, entity_name)
             if dpath.search(definition_context[full_file_path], f'{block_type}/{entity_type}/{entity_name}'):
                 entity_context = dpath.get(definition_context[full_file_path],
@@ -74,7 +74,7 @@ class Runner:
                 registry = self.block_type_registries[block_type]
 
                 if registry:
-                    results = registry.scan(scanned_file, entity_type, entity_name, entity_configuration,
+                    results = registry.scan(scanned_file, entity,
                                             skipped_checks)
                     for check, check_result in results.items():
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,

@@ -72,9 +72,7 @@ class Runner:
 
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
-                resource_type = resource['Type']
-
-                results = resource_registry.scan(cf_file, resource_type, resource_name, resource,
+                results = resource_registry.scan(cf_file, {resource_name: resource},
                                                  skipped_checks)
                 # TODO refactor into context parsing
                 start_line = min(list(find_lines(resource, '__startline__')))
@@ -97,41 +95,41 @@ class Runner:
                     report.add_record(record=record)
         return report
 
-    def _search_deep_keys(self, searchText, cfndict, path):
+    def _search_deep_keys(self, search_text, cfn_dict, path):
         """Search deep for keys and get their values"""
         keys = []
-        if isinstance(cfndict, dict):
-            for key in cfndict:
+        if isinstance(cfn_dict, dict):
+            for key in cfn_dict:
                 pathprop = path[:]
                 pathprop.append(key)
-                if key == searchText:
-                    pathprop.append(cfndict[key])
+                if key == search_text:
+                    pathprop.append(cfn_dict[key])
                     keys.append(pathprop)
                     # pop the last element off for nesting of found elements for
                     # dict and list checks
                     pathprop = pathprop[:-1]
-                if isinstance(cfndict[key], dict):
-                    keys.extend(self._search_deep_keys(searchText, cfndict[key], pathprop))
-                elif isinstance(cfndict[key], list):
-                    for index, item in enumerate(cfndict[key]):
+                if isinstance(cfn_dict[key], dict):
+                    keys.extend(self._search_deep_keys(search_text, cfn_dict[key], pathprop))
+                elif isinstance(cfn_dict[key], list):
+                    for index, item in enumerate(cfn_dict[key]):
                         pathproparr = pathprop[:]
                         pathproparr.append(index)
-                        keys.extend(self._search_deep_keys(searchText, item, pathproparr))
-        elif isinstance(cfndict, list):
-            for index, item in enumerate(cfndict):
+                        keys.extend(self._search_deep_keys(search_text, item, pathproparr))
+        elif isinstance(cfn_dict, list):
+            for index, item in enumerate(cfn_dict):
                 pathprop = path[:]
                 pathprop.append(index)
-                keys.extend(self._search_deep_keys(searchText, item, pathprop))
+                keys.extend(self._search_deep_keys(search_text, item, pathprop))
 
         return keys
 
 
-def _get_from_dict(dataDict, mapList):
-    return reduce(operator.getitem, mapList, dataDict)
+def _get_from_dict(data_dict, map_list):
+    return reduce(operator.getitem, map_list, data_dict)
 
 
-def _set_in_dict(dataDict, mapList, value):
-    _get_from_dict(dataDict, mapList[:-1])[mapList[-1]] = value
+def _set_in_dict(data_dict, map_list, value):
+    _get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
 
 
 def find_lines(node, kv):

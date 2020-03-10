@@ -6,10 +6,9 @@ class Registry(BaseCheckRegistry):
     def __init__(self):
         super().__init__()
 
-    def scan(self, scanned_file, entity_type, entity_name, entity_configuration, skipped_checks):
-        entity_type = list(entity_configuration.keys())[0]
-        entity_conf = entity_configuration[entity_type]
-        entity_name = list(entity_conf.keys())[0]
-        entity_configuration = entity_conf[entity_name]
-        results = super().scan(scanned_file, entity_type, entity_name, entity_configuration, skipped_checks)
-        return results
+    def extract_entity_details(self, entity):
+        resource_type = list(entity.keys())[0]
+        resource_name = list(list(entity.values())[0].keys())[0]
+        resource_object = entity[resource_type]
+        resource_configuration = resource_object[resource_name]
+        return resource_type, resource_name, resource_configuration
