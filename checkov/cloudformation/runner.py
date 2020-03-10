@@ -13,9 +13,10 @@ CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
 
 class Runner:
+    check_type = "CloudFormation"
 
     def run(self, root_folder, external_checks_dir=None, files=None):
-        report = Report()
+        report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
         parsing_errors = {}
@@ -35,7 +36,8 @@ class Runner:
                     files_list.append(os.path.join(root_folder, file))
 
         for file in files_list:
-            (definitions[file], definitions_raw[file]) = parse(file)
+            relative_file_path = f'/{os.path.relpath(file,os.path.commonprefix((root_folder, file)))}'
+            (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
 
         for cf_file in definitions.keys():
             logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
@@ -69,9 +71,11 @@ class Runner:
             for resource_name, resource in definitions[cf_file]['Resources'].items():
                 if resource_name == '__startline__' or resource_name == '__endline__':
                     continue
+                resource_id = f"{resource['Type']}.{resource_name}"
 
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
+
                 results = resource_registry.scan(cf_file, {resource_name: resource},
                                                  skipped_checks)
                 # TODO refactor into context parsing
@@ -90,7 +94,7 @@ class Runner:
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=cf_file,
                                     file_line_range=entity_lines_range,
-                                    resource=resource, evaluations=variable_evaluations,
+                                    resource=resource_id, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__)
                     report.add_record(record=record)
         return report

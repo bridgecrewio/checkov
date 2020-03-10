@@ -11,7 +11,6 @@ class BaseResourceCheck(BaseCheck):
         self.supported_resources = supported_resources
         resource_registry.register(self)
 
-
     @abstractmethod
     def scan_resource_conf(self, conf):
         raise NotImplementedError()

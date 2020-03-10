@@ -12,6 +12,8 @@ import dpath.util
 
 
 class Runner:
+    check_type = "Terraform"
+
     def __init__(self, parser=Parser()):
         self.parser = parser
 
@@ -21,7 +23,7 @@ class Runner:
     }
 
     def run(self, root_folder, external_checks_dir=None, files=None):
-        report = Report()
+        report = Report(self.check_type)
         tf_definitions = {}
         parsing_errors = {}
         if external_checks_dir:

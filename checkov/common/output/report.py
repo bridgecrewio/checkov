@@ -5,17 +5,19 @@ from junit_xml import TestCase, TestSuite
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.util.banner import banner
 from checkov.version import version
 
 init(autoreset=True)
 
 
 class Report:
-    passed_checks = []
-    failed_checks = []
-    skipped_checks = []
-    parsing_errors = []
+
+    def __init__(self, check_type):
+        self.check_type = check_type
+        self.passed_checks = []
+        self.failed_checks = []
+        self.skipped_checks = []
+        self.parsing_errors = []
 
     def add_parsing_errors(self, files):
         for file in files:
@@ -47,6 +49,7 @@ class Report:
 
     def get_dict(self):
         return {
+            "check_type": self.check_type,
             "results": {
                 "passed_checks": [check.__dict__ for check in self.passed_checks],
                 "failed_checks": [check.__dict__ for check in self.failed_checks],
@@ -62,9 +65,8 @@ class Report:
         return 0
 
     def print_console(self):
-        print(banner)
         summary = self.get_summary()
-
+        print(colored(f"{self.check_type} scan results:","blue"))
         if self.parsing_errors:
             message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"], summary["parsing_errors"])
@@ -93,7 +95,7 @@ class Report:
             if check_name not in test_cases:
                 test_cases[check_name] = []
 
-            test_name = "{} {}".format(check_name, record.resource)
+            test_name = "{} {} {}".format(self.check_type, check_name, record.resource)
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
             if record.check_result['result'] == CheckResult.FAILED:
                 test_case.add_failure_info(

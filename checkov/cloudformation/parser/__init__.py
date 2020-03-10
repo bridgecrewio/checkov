@@ -50,6 +50,6 @@ def parse(filename):
     except YAMLError as err:
         pass
 
-    return (template, template_lines)
+    return template, template_lines
 
 
