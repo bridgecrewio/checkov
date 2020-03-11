@@ -36,6 +36,6 @@ class RunnerRegistry(object):
                     report.print_junit_xml()
                 else:
                     report.print_console()
-                exit_codes.append(report.get_exit_code())
+            exit_codes.append(report.get_exit_code())
         exit_code = reduce((lambda x, y: x * y), exit_codes)
         exit(exit_code)
