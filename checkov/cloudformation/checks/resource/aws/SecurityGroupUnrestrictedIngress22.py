@@ -3,6 +3,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 PORT = 22
 
+
 class SecurityGroupUnrestrictedIngress22(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no security groups allow ingress from 0.0.0.0:0 to port %d" % PORT
@@ -29,11 +30,13 @@ class SecurityGroupUnrestrictedIngress22(BaseResourceCheck):
                 rules.append(conf['Properties'])
 
         for rule in rules:
-            if int(rule['FromPort']) == int(PORT) and int(rule['ToPort']) == int(PORT):
-                if 'CidrIp' in rule.keys() and rule['CidrIp'] == '0.0.0.0/0':
-                    return CheckResult.FAILED
-                elif 'CidrIpv6' in rule.keys() and rule['CidrIpv6'] == '::/0':
-                    return CheckResult.FAILED
+            if rule.__contains__('FromPort') and rule.__contains__('ToPort'):
+                if isinstance(rule['FromPort'], int) and isinstance(rule['ToPort'], int):
+                    if int(rule['FromPort']) == int(PORT) and int(rule['ToPort']) == int(PORT):
+                        if 'CidrIp' in rule.keys() and rule['CidrIp'] == '0.0.0.0/0':
+                            return CheckResult.FAILED
+                        elif 'CidrIpv6' in rule.keys() and rule['CidrIpv6'] == '::/0':
+                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 
