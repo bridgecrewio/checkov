@@ -39,7 +39,7 @@ def run():
         print_checks()
         return
     else:
-        runner_registry = RunnerRegistry(tf_runner, cfn_runner)
+        runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
         root_folder = args.directory
         file = args.file
         scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
