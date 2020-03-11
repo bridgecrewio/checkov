@@ -1,7 +1,9 @@
-from termcolor import colored
-from checkov.common.models.enums import CheckResult
-from colorama import init, Fore
 import re
+
+from colorama import init, Fore
+from termcolor import colored
+
+from checkov.common.models.enums import CheckResult
 
 init(autoreset=True)
 
@@ -73,6 +75,7 @@ class Record():
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")
+        code_lines = ""
         if self.code_block:
             code_lines = "{}\n".format("".join(
                 [self._code_line_string(self.code_block)]))
