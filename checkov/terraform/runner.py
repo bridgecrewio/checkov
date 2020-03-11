@@ -12,7 +12,7 @@ import dpath.util
 
 
 class Runner:
-    check_type = "Terraform"
+    check_type = "terraform"
 
     def __init__(self, parser=Parser()):
         self.parser = parser

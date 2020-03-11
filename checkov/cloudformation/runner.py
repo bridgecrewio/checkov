@@ -13,7 +13,7 @@ CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
 
 class Runner:
-    check_type = "CloudFormation"
+    check_type = "cloudformation"
 
     def run(self, root_folder, external_checks_dir=None, files=None):
         report = Report(self.check_type)
