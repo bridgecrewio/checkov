@@ -40,6 +40,10 @@ class Runner:
             relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
             (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
 
+        # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
+        definitions = {k: v for k, v in definitions.items() if v and v.__contains__("Resources")}
+        definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
         for cf_file in definitions.keys():
             if not 'Resources' in definitions[cf_file].keys():
                 continue
