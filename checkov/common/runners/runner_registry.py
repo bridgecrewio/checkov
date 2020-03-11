@@ -1,9 +1,6 @@
 import logging
 from abc import abstractmethod
-from functools import reduce
 from checkov.common.util.banner import banner
-from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.terraform.runner import Runner as tf_runner
 
 
 class RunnerRegistry(object):
@@ -37,5 +34,5 @@ class RunnerRegistry(object):
                 else:
                     report.print_console()
             exit_codes.append(report.get_exit_code())
-        exit_code = reduce((lambda x, y: x * y), exit_codes)
+        exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
