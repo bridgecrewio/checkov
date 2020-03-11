@@ -2,7 +2,6 @@ import logging
 from abc import abstractmethod
 from functools import reduce
 from checkov.common.util.banner import banner
-
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.terraform.runner import Runner as tf_runner
 
@@ -30,15 +29,13 @@ class RunnerRegistry(object):
         print(f"{banner}\n")
         exit_codes = []
         for report in scan_reports:
-            if args.output == "json":
-                report.print_json()
-            elif args.output == "junitxml":
-                report.print_junit_xml()
-            else:
-                report.print_console()
-            exit_codes.append(report.get_exit_code())
+            if not report.is_empty():
+                if args.output == "json":
+                    report.print_json()
+                elif args.output == "junitxml":
+                    report.print_junit_xml()
+                else:
+                    report.print_console()
+                exit_codes.append(report.get_exit_code())
         exit_code = reduce((lambda x, y: x * y), exit_codes)
         exit(exit_code)
-
-
-runner_registry = RunnerRegistry(tf_runner, cfn_runner)

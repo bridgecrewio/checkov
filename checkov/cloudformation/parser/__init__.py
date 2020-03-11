@@ -1,4 +1,5 @@
 import logging
+
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
@@ -6,7 +7,6 @@ except ImportError:
 from yaml.parser import ParserError, ScannerError
 from yaml import YAMLError
 from checkov.cloudformation.parser import cfn_yaml, cfn_json
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,8 +34,8 @@ def parse(filename):
         pass
     except ScannerError as err:
         if err.problem in [
-                'found character \'\\t\' that cannot start any token',
-                'found unknown escape character']:
+            'found character \'\\t\' that cannot start any token',
+            'found unknown escape character']:
             try:
                 (template, template_lines) = cfn_json.load(filename)
             except cfn_json.JSONDecodeError:
@@ -51,5 +51,3 @@ def parse(filename):
         pass
 
     return template, template_lines
-
-

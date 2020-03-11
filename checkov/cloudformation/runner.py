@@ -30,16 +30,19 @@ class Runner:
                 files_list.append(file)
 
         if root_folder:
-            for file in os.listdir(root_folder):
-                file_ending = os.path.splitext(file)[1]
-                if file_ending in CF_POSSIBLE_ENDINGS:
-                    files_list.append(os.path.join(root_folder, file))
+            for root, d_names, f_names in os.walk(root_folder):
+                for file in f_names:
+                    file_ending = os.path.splitext(file)[1]
+                    if file_ending in CF_POSSIBLE_ENDINGS:
+                        files_list.append(os.path.join(root, file))
 
         for file in files_list:
-            relative_file_path = f'/{os.path.relpath(file,os.path.commonprefix((root_folder, file)))}'
+            relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
             (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
 
         for cf_file in definitions.keys():
+            if not 'Resources' in definitions[cf_file].keys():
+                continue
             logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
 
             # Get Parameter Defaults - Locate Refs in Template

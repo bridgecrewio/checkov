@@ -2,8 +2,10 @@
 
 import logging
 import argparse
-from  checkov.common.util.docs_generator import print_checks
-from checkov.common.runners.runner_registry import runner_registry
+from checkov.common.util.docs_generator import print_checks
+from checkov.cloudformation.runner import Runner as cfn_runner
+from checkov.terraform.runner import Runner as tf_runner
+from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +39,7 @@ def run():
         print_checks()
         return
     else:
+        runner_registry = RunnerRegistry(tf_runner, cfn_runner)
         root_folder = args.directory
         file = args.file
         scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)

@@ -64,6 +64,9 @@ class Report:
             return 1
         return 0
 
+    def is_empty(self):
+        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
+
     def print_console(self):
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
