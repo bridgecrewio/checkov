@@ -21,7 +21,7 @@ provider "aws" {
   secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 }
 ```
-As mentioned in terraform offical docs [here](https://www.terraform.io/docs/providers/aws/index.html#static-credentials):
+As mentioned in terraform official docs [here](https://www.terraform.io/docs/providers/aws/index.html#static-credentials):
 "Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system."
 
 Running checkov to detect secrets:
@@ -30,7 +30,7 @@ Running checkov to detect secrets:
 checkov -f main.tf
 ```
 
-Wil result in the following output:
+Will result in the following output:
 
 ```bash
 

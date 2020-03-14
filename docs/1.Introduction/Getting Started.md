@@ -19,6 +19,33 @@ pip install checkov
 checkov -d /user/tf
 ```
 
+## CLI Options
+```bash
+checkov --help
+
+usage: checkov [-h] [-v] [-d DIRECTORY] [-f FILE]
+               [--external-checks-dir EXTERNAL_CHECKS_DIR] [-l]
+               [-o [{cli,json,junitxml}]] [-s]
+
+Infrastructure as code static analysis
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         Checkov version
+  -d DIRECTORY, --directory DIRECTORY
+                        IaC root directory (can not be used together with
+                        --file). Can be repeated
+  -f FILE, --file FILE  IaC file(can not be used together with --directory)
+  --external-checks-dir EXTERNAL_CHECKS_DIR
+                        Directory for custom checks to be loaded. Can be
+                        repeated
+  -l, --list            List checks
+  -o [{cli,json,junitxml}], --output [{cli,json,junitxml}]
+                        Report output format
+  -s, --soft-fail       Runs checks but suppresses error code
+
+```
+
 ## Scan result sample (CLI)
 
 Consider the following Terraform configuration of an S3 bucket:

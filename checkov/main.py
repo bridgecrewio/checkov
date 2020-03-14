@@ -19,7 +19,7 @@ console.setFormatter(formatter)
 
 
 def run():
-    parser = argparse.ArgumentParser(description='Add some integers.')
+    parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     parser.add_argument('-v', '--version',
                         help='Checkov version', action='store_true')
     parser.add_argument('-d', '--directory',
