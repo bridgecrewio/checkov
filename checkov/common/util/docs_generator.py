@@ -4,6 +4,7 @@ from tabulate import tabulate
 
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.cloudformation.checks.resource.registry import resource_registry as cfn_registry
 
 def print_checks():
@@ -22,6 +23,9 @@ def get_checks():
     for key in data_registry.checks.keys():
         for check in data_registry.checks[key]:
             printable_checks_list.append([check.id, "data", key, check.name, "Terraform"])
+    for key in provider_registry.checks.keys():
+        for check in provider_registry.checks[key]:
+            printable_checks_list.append([check.id, "provider", key, check.name, "Terraform"])
     for key in cfn_registry.checks.keys():
         for check in cfn_registry.checks[key]:
             printable_checks_list.append([check.id, "resource", key, check.name, "Cloudformation"])
