@@ -33,6 +33,6 @@ class RunnerRegistry(object):
                     report.print_junit_xml()
                 else:
                     report.print_console()
-            exit_codes.append(report.get_exit_code())
+            exit_codes.append(report.get_exit_code(args.soft_fail))
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)

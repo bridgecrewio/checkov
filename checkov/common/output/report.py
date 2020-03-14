@@ -59,8 +59,10 @@ class Report:
             "summary": self.get_summary()
         }
 
-    def get_exit_code(self):
-        if len(self.failed_checks) > 0:
+    def get_exit_code(self, soft_fail):
+        if soft_fail:
+            return 0
+        elif len(self.failed_checks) > 0:
             return 1
         return 0
 

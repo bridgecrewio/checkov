@@ -31,6 +31,8 @@ def run():
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
+    parser.add_argument('-s', '--soft-fail',
+                        help='Runs checks but suppresses error code', action='store_true')
     args = parser.parse_args()
     if args.version:
         print(version)
