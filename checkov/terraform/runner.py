@@ -1,14 +1,16 @@
 import logging
 import os
 
-from checkov.terraform.checks.data.registry import data_registry
-from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
+import dpath.util
+
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.parser import Parser
-import dpath.util
 
 
 class Runner:
@@ -19,7 +21,8 @@ class Runner:
 
     block_type_registries = {
         'resource': resource_registry,
-        'data': data_registry
+        'data': data_registry,
+        'provider': provider_registry
     }
 
     def run(self, root_folder, external_checks_dir=None, files=None):
@@ -57,14 +60,18 @@ class Runner:
             scanned_file = definition[0].split(root_folder)[1]
             logging.debug("Scanning file: %s", scanned_file)
             for block_type in definition[1].keys():
-                if block_type in ['resource', 'data']:
+                if block_type in ['resource', 'data', 'provider']:
                     self.run_block(definition[1][block_type], definitions_context, full_file_path, report, scanned_file,
                                    block_type)
 
     def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
         for entity in entities:
-            entity_type = list(entity.keys())[0]
-            entity_name = list(list(entity.values())[0].keys())[0]
+            if block_type == 'provider':
+                entity_type = 'provider'
+                entity_name = list(entity.keys())[0]
+            else:
+                entity_type = list(entity.keys())[0]
+                entity_name = list(list(entity.values())[0].keys())[0]
             entity_id = "{}.{}".format(entity_type, entity_name)
             if dpath.search(definition_context[full_file_path], f'{block_type}/{entity_type}/{entity_name}'):
                 entity_context = dpath.get(definition_context[full_file_path],

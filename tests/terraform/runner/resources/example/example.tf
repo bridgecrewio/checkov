@@ -1,3 +1,8 @@
+provider "aws" {
+  region     = "us-west-2"
+  access_key = "AKIAIOSFODNN7EXAMPLE"
+  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+}
 resource "azurerm_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
   location            = "${azurerm_resource_group.main.location}"
