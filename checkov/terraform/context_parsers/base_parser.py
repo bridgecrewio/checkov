@@ -89,8 +89,7 @@ class BaseContextParser(ABC):
         parsed_file_lines = self._filter_file_lines()
 
         for i, entity_block in enumerate(block):
-            entity_type = next(iter(entity_block.keys()))
-            entity_name = next(iter(entity_block[entity_type]))
+            entity_name, entity_type = self.get_entity_name_and_type(entity_block)
             if not self.context.get(entity_type):
                 self.context[entity_type] = {}
             if not self.context.get(entity_type).get(entity_name):
@@ -104,3 +103,8 @@ class BaseContextParser(ABC):
                     self.context[entity_type][entity_name]["end_line"] = end_line
                     self.context[entity_type][entity_name]["code_lines"] = self.file_lines[start_line - 1: end_line]
         return self.context
+
+    def get_entity_name_and_type(self, entity_block):
+        entity_type = next(iter(entity_block.keys()))
+        entity_name = next(iter(entity_block[entity_type]))
+        return entity_name, entity_type
