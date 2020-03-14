@@ -11,7 +11,7 @@ Cloud account secrets are a priceless target for an attacker to utilize cloud re
 
 Checkov can scan for aws credentials (`access key` and `secret key`) that are hard coded in a terraform code block. 
 
-# Example 
+## Example 
 Let's assume we have the following terraform provider block:
 ```hcl-terraform
 # Snippet from  main.tf
