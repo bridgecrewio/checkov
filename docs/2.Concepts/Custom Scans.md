@@ -17,6 +17,7 @@ Let's assume we have the following directory structure:
 ├── variables.tf
 └── outputs.tf
 ```
+
 And that we have a unique need to enforce bucket ACL policies only when the tag `Scope=PCI` is present.  
 In other words, as security-aware engineers, we want the following bucket definition will trigger a failed check result:
 
@@ -34,6 +35,7 @@ resource "aws_s3_bucket" "credit_cards_bucket" {
   }
 }
 ```
+
 For that we will need to add a new check to ensure PCI related S3 buckets will stay private.
 So we will create a new python folder named `my_extra_checks` containing our new check 
 
@@ -47,7 +49,7 @@ So we will create a new python folder named `my_extra_checks` containing our new
 
 ```
 
-First time setup of your custom checks folder requires a `__init__.py` file
+First time set-up of your custom checks folder requires a `__init__.py` file
 ```python
 from os.path import dirname, basename, isfile, join
 import glob
@@ -93,6 +95,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
 scanner = S3PCIPrivateACL()
 
 ```
+
 Now that we have the new custom check in place, we can run Checkov and verify the results:
 
 ```bash
@@ -101,7 +104,7 @@ pip install checkov
 
 
 # select an input folder that contains your terraform files and enable loading of extra checks
-checkov -d . --extra-checks my_extra_checks
+checkov -d . --external-checks-dir my_extra_checks
 ```
 
 Results:
