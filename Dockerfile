@@ -1,5 +1,5 @@
 FROM python
 
-RUN pip install checkov
+RUN pip install -U checkov
 
 ENTRYPOINT ["checkov"]
