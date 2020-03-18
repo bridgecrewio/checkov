@@ -38,6 +38,7 @@ class Runner:
             self.check_tf_definition(report, root_folder, tf_definitions)
 
         if files:
+            files = [os.path.abspath(file) for file in files]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             for file in files:
                 file_tf_definitions = {}
