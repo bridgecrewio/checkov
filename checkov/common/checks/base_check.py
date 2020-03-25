@@ -40,7 +40,7 @@ class BaseCheck(ABC):
 
             except Exception as e:
                 self.logger.error(
-                    "Failed to run check {} for configuration {} ".format(self.name, str(entity_configuration)))
+                    "Failed to run check: {} for configuration: {} at file: {}".format(self.name, str(entity_configuration),scanned_file))
                 raise e
         return check_result
 
