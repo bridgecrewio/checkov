@@ -33,11 +33,13 @@ class Runner:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
         if root_folder:
+            root_folder = os.path.abspath(root_folder)
             self.parser.hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
             self.check_tf_definition(report, root_folder, tf_definitions)
 
         if files:
-            root_folder = os.path.commonprefix(files)
+            files = [os.path.abspath(file) for file in files]
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
             for file in files:
                 file_tf_definitions = {}
                 self.parser.parse_file(file=file, tf_definitions=file_tf_definitions, parsing_errors=parsing_errors)

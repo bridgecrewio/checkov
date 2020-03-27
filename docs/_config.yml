@@ -7,6 +7,6 @@ edit_on_github: true
 github_docs_folder: true
 sticky_navigation: true
 prev_next_buttons_location: bottom
-search_enabled: true
+search_enabled: false
 hljs_style: github-gist
 google_analytics: UA-156134275-1
