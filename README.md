@@ -137,4 +137,4 @@ Looking to contribute new checks? Learn how to write a new check (AKA policy) [h
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+If you need direct support you can contact us at info@bridgecrew.io 
