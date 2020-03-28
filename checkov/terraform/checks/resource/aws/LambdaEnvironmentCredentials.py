@@ -11,7 +11,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
         name = "Ensure no hard coded AWS access key and and secret key exists in lambda environment"
         id = "CKV_AWS_45"
         supported_resources = ['aws_lambda_function']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
