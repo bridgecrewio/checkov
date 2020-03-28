@@ -11,7 +11,7 @@ class AWSCredentials(BaseProviderCheck):
         name = "Ensure no hard coded AWS access key and and secret key exists in provider"
         id = "CKV_AWS_41"
         supported_provider = ['aws']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
     def scan_provider_conf(self, conf):
