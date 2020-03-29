@@ -7,7 +7,7 @@ class DAXEncryption(BaseResourceValueCheck):
         name = "Ensure DAX is encrypted at rest (default is unencrypted)"
         id = "CKV_AWS_47"
         supported_resources = ['aws_dax_cluster']
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
