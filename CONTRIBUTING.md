@@ -2,7 +2,7 @@
 
 The developer guide is for anyone wanting to contribute directly to the Checkov project. 
 
-If you've already developed new checks we'd be happy to take a look at them and merge them as part of the [fast-lane](Fast-lane for new checks).  
+If you've already developed new checks we'd be happy to take a look at them and merge them as part of the [fast-lane](https://github.com/bridgecrewio/checkov/issues?q=is%3Aopen+is%3Aissue+label%3Afast-lane).  
 
 
 

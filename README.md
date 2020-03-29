@@ -16,13 +16,13 @@
 - [Support](#support)
 
 ## Description
-Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform and detects security and compliance misconfigurations. 
+Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform or cloudformation and detects security and compliance misconfigurations. 
 
 Checkov is written in Python and provides a simple method to write and manage policies. It follows the CIS Foundations benchmarks where applicable.
 
  ## Features
 
- * [80+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * [90+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Scans Terraform and AWS CloudFormation configurations.
  * Policies support evaluation of variables to their optional default value.
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
@@ -137,4 +137,4 @@ Looking to contribute new checks? Learn how to write a new check (AKA policy) [h
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+If you need direct support you can contact us at info@bridgecrew.io 

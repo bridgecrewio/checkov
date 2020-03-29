@@ -1,7 +1,7 @@
-import logging
-import sys
-import os
 import importlib
+import logging
+import os
+import sys
 from abc import abstractmethod
 
 
@@ -17,6 +17,14 @@ class BaseCheckRegistry(object):
             if entity not in self.checks.keys():
                 self.checks[entity] = []
             self.checks[entity].append(check)
+
+    def get_check_by_id(self, check_id):
+        for resource_type in self.checks.keys():
+            resource_type_checks = self.checks[resource_type]
+            for check in resource_type_checks:
+                if check_id == check.id:
+                    return check
+        return None
 
     def get_checks(self, entity):
         if entity in self.checks.keys():

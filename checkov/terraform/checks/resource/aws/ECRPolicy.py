@@ -1,7 +1,7 @@
+import json
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-
-import json
 
 
 class ECRPolicy(BaseResourceCheck):
@@ -20,9 +20,18 @@ class ECRPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "policy" in conf.keys():
-            if json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':
-                return CheckResult.FAILED
+            if is_json(conf["policy"][0]):
+                if json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':
+                    return CheckResult.FAILED
         return CheckResult.PASSED
+
+
+def is_json(myjson):
+    try:
+        json_object = json.loads(myjson)
+    except ValueError as e:
+        return False
+    return True
 
 
 check = ECRPolicy()

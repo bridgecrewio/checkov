@@ -23,7 +23,8 @@ class RunnerRegistry(object):
 
     @staticmethod
     def print_reports(scan_reports, args):
-        print(f"{banner}\n")
+        if args.output != "json" and args.output != "junitxml":
+            print(f"{banner}\n")
         exit_codes = []
         for report in scan_reports:
             if not report.is_empty():
