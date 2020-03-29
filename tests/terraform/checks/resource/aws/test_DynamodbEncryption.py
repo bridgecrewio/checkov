@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.DynamodbRecovery import check
+from checkov.terraform.checks.resource.aws.DynamodbEncryption import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestDynamodbRecovery(unittest.TestCase):
+class TestDynamodbEncryption(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['violations_for_resources${var.unique_tag}'], 'billing_mode': ['PAY_PER_REQUEST'],
@@ -27,7 +27,8 @@ class TestDynamodbRecovery(unittest.TestCase):
                               'range_key': ['aws_account_id'], 'projection_type': ['ALL']}],
                          'attribute': [{'name': ['id'], 'type': ['S']}, {'name': ['violation_id'], 'type': ['S']},
                                        {'name': ['aws_account_id'], 'type': ['S']}],
-                         'point_in_time_recovery': [{'enabled': [True]}]}
+                         'point_in_time_recovery': [{'enabled': [True]}],
+						 'server_side_encryption': [{'enabled': [True]}]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
