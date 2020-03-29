@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.aws.DynamodbRecovery import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestEBSEncryption(unittest.TestCase):
+class TestDynamodbRecovery(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['violations_for_resources${var.unique_tag}'], 'billing_mode': ['PAY_PER_REQUEST'],
