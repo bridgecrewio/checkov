@@ -9,8 +9,8 @@ class TestStarActionPolicyDocument(unittest.TestCase):
     def test_success(self):
         resource_conf = {
             "statement": [{
-                "actions": ["s3:*"],
-                "resources": ["arn:aws:s3:::my_corporate_bucket/*"],
+                "actions": [["s3:*"]],
+                "resources": [["arn:aws:s3:::my_corporate_bucket/*"]],
                 "effect": ["Allow"]
             }]
         }
@@ -20,8 +20,8 @@ class TestStarActionPolicyDocument(unittest.TestCase):
     def test_failure(self):
         resource_conf = {
             "statement": [{
-                "actions": ["*"],
-                "resources": ["arn:aws:s3:::my_corporate_bucket/*"],
+                "actions": [["*"]],
+                "resources": [["arn:aws:s3:::my_corporate_bucket/*"]],
                 "effect": ["Allow"]
             }]
         }

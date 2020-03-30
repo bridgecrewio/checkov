@@ -7,7 +7,7 @@ class AdminPolicyDocument(BaseDataCheck):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         id = "CKV_AWS_1"
         supported_data = ['aws_iam_policy_document']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
     def scan_data_conf(self, conf):
@@ -19,8 +19,9 @@ class AdminPolicyDocument(BaseDataCheck):
         """
         key = 'statement'
         if key in conf.keys():
-            if '*' == conf[key][0]['actions'][0] and '*' == conf[key][0]['resources'][0]:
-                return CheckResult.FAILED
+            for statement in conf[key]:
+                if statement['effect'][0] == 'Allow' and '*' in statement['actions'][0] and '*' in statement['resources'][0]:
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 
