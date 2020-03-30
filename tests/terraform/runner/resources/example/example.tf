@@ -515,7 +515,6 @@ data aws_iam_policy_document "bad_policy_document" {
   statement {
     actions = ["*"]
     resources = ["*"]
-    effect = "Allow"
   }
 }
 
