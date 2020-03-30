@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class StarActionPolicyDocument(BaseDataCheck):
     def __init__(self):
-        name = "Ensure IAM policies that allow \"*\" as the statement's actions are not created"
+        name = "Ensure no IAM policies documents allow \"*\" as a statement's actions"
         id = "CKV_AWS_49"
         supported_data = ['aws_iam_policy_document']
         categories = [CheckCategories.IAM]
