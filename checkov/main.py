@@ -22,7 +22,7 @@ def run():
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     parser.add_argument('-v', '--version',
                         help='Checkov version', action='store_true')
-    parser.add_argument('-d', '--directory',
+    parser.add_argument('-d', '--directory', action='append',
                         help='IaC root directory (can not be used together with --file). Can be repeated')
     parser.add_argument('-f', '--file', action='append',
                         help='IaC file(can not be used together with --directory)')
@@ -40,9 +40,9 @@ def run():
     if args.list:
         print_checks()
         return
-    else:
-        runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
-        root_folder = args.directory
+
+    runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
+    for root_folder in args.directory:
         file = args.file
         scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
         runner_registry.print_reports(scan_reports, args)
