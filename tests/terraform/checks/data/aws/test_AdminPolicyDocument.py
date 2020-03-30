@@ -9,8 +9,9 @@ class TestAdminPolicyDocument(unittest.TestCase):
     def test_success(self):
         resource_conf = {
             "statement": [{
-                "actions": ["Describe*"],
-                "resources": ["arn:aws:s3:::my_corporate_bucket/*"]
+                "actions": ["s3:Describe*"],
+                "resources": ["arn:aws:s3:::my_corporate_bucket/*"],
+                "effect": ["Allow"]
             }]
         }
         scan_result = check.scan_data_conf(conf=resource_conf)
@@ -20,12 +21,12 @@ class TestAdminPolicyDocument(unittest.TestCase):
         resource_conf = {
             "statement": [{
                 "actions": ["*"],
-                "resources": ["*"]
+                "resources": ["*"],
+                "effect": ["Allow"]
             }]
         }
         scan_result = check.scan_data_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
-
 
 
 if __name__ == '__main__':
