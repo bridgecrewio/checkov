@@ -555,3 +555,18 @@ data aws_iam_policy_document "good_deny_policy_document" {
     }
   }
 }
+
+data aws_iam_policy_document "scp_deny_example" {
+  statement {
+    sid    = "NoIAMUsers"
+    effect = "Deny"
+    not_actions = [
+      "iam:Get*",
+      "iam:List*",
+      "iam:Describe*",
+    ]
+    resources = [
+      "arn:aws:iam::*:user/*",
+    ]
+  }
+}
