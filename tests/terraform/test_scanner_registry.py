@@ -14,12 +14,13 @@ class TestScannerRegistry(unittest.TestCase):
 
     def test_non_colliding_check_ids(self):
         check_id_check_class_map = {}
-        for (resource_type,checks) in registry.checks.items():
+        for (resource_type, checks) in registry.checks.items():
             for check in checks:
-                check_id_check_class_map.setdefault(check.id,[]).append(check)
+                check_id_check_class_map.setdefault(check.id, []).append(check)
 
-        for check_id,check_classes in check_id_check_class_map.items():
-            self.assertEqual(len(set(check_classes)),1)
+        for check_id, check_classes in check_id_check_class_map.items():
+            self.assertEqual(len(set(check_classes)), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

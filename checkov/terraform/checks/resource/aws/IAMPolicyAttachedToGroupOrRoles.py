@@ -12,8 +12,9 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'user' in conf.keys() or 'users' in conf.keys():
+        if 'user' in conf.keys() or ('users' in conf.keys() and len(conf['users'][0]) > 0):
             return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = IAMPolicyAttachedToGroupOrRoles()
