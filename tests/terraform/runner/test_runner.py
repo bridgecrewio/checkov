@@ -61,6 +61,40 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+    def test_check_ids_dont_collide(self):
+        runner = Runner()
+        unique_checks = {}
+        bad_checks = []
+        for registry in list(runner.block_type_registries.values()):
+            checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
+            for check in checks:
+                if check.id not in unique_checks:
+                    unique_checks[check.id] = check
+                elif check != unique_checks[check.id]:
+                    # A single check can have multiple resource blocks it checks, which means it will show up multiple times in the registry
+                    bad_checks.append(f'{check.id}: {check.name}')
+                    print(f'{check.id}: {check.name}')
+        self.assertEqual(len(bad_checks), 0)
+
+    def test_no_missing_ids(self):
+        runner = Runner()
+        unique_checks = set()
+        for registry in list(runner.block_type_registries.values()):
+            checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
+            for check in checks:
+                unique_checks.add(check.id)
+        aws_checks = list(filter(lambda check_id: '_AWS_' in check_id, unique_checks))
+        for i in range(1, len(aws_checks)):
+            self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
+
+        gcp_checks = list(filter(lambda check_id: '_GCP_' in check_id, unique_checks))
+        for i in range(1, len(gcp_checks)):
+            self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
+
+        azure_checks = list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks))
+        for i in range(1, len(azure_checks)):
+            self.assertIn(f'CKV_AZURE_{i}', azure_checks, msg=f'The new GCP violation should have the ID "CKV_AZURE_{i}"')
+
     def tearDown(self):
         parser_registry.definitions_context = {}
 
