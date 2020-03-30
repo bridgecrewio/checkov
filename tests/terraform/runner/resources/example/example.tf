@@ -509,3 +509,49 @@ tags = {
 Name  = "${local.resource_prefix.value}-ec2"
 }
 }
+
+data aws_iam_policy_document "bad_policy_document" {
+  version = "2012-10-17"
+  statement {
+    actions = ["*"]
+    resources = ["*"]
+    effect = "Allow"
+  }
+}
+
+data aws_iam_policy_document "good_policy_document" {
+  version = "2012-10-17"
+  statement {
+    actions = ["s3:Get*"]
+    resources = ["*"]
+    effect = "Allow"
+  }
+}
+
+data aws_iam_policy_document "long_bad_policy_document" {
+  version = "2012-10-17"
+  statement {
+    actions = ["s3:Get*"]
+    resources = ["*"]
+    effect = "Allow"
+  }
+  statement {
+    actions = ["*"]
+    resources = ["*"]
+    effect = "Allow"
+  }
+}
+
+data aws_iam_policy_document "good_deny_policy_document" {
+  version = "2012-10-17"
+  statement {
+    actions = ["*"]
+    resources = ["*"]
+    effect = "Deny"
+    condition {
+      test = "ArnLike"
+      values = ["arn:aws:mock:mock:mock"]
+      variable = "aws:mock"
+    }
+  }
+}
