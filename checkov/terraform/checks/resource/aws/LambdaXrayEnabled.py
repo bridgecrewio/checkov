@@ -6,7 +6,7 @@ class LambdaXrayEnabled(BaseResourceCheck):
         name = "X-ray tracing is enabled for Lambda"
         id = "CKV_AWS_50"
         supported_resources = ['aws_lambda_function']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
