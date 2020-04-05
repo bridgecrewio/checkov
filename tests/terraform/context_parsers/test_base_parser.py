@@ -23,7 +23,6 @@ class TestBaseParser(unittest.TestCase):
         self.assertIsNotNone(definition_context[mock_tf_file]['mock']['mock_type']['mock_name'].get('skipped_checks'))
         self.assertEqual(len(definition_context[mock_tf_file]['mock']['mock_type']['mock_name'].get('skipped_checks')),
                          2)
-        pass
 
 
 if __name__ == '__main__':

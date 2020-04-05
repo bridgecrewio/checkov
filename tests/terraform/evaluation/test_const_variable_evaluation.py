@@ -29,7 +29,7 @@ class TestConstVariableEvaluation(unittest.TestCase):
 
     def test__extract_context_path(self):
         path = 'resource/0/aws_cognito_user_group/user_group/name/0'
-        self.assertEqual(ConstVariableEvaluation._extract_context_path(path),
+        self.assertEqual(ConstVariableEvaluation.extract_context_path(path),
                          ('resource/aws_cognito_user_group/user_group', 'name'))
 
     def test_all_expressions_evaluated(self):
