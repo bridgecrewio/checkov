@@ -52,10 +52,6 @@ class Record():
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
         return string_block
 
-    def _get_resource_definitions(self, definitions):
-        resource_path = f"/{self.resource.replace('.', '/')}/"
-        return [definition for definition in definitions if resource_path in definition['definition_path']]
-
     def __str__(self):
         status = ''
         evaluation_message = f''
@@ -82,7 +78,7 @@ class Record():
         if self.evaluations:
             for (var_name, var_evaluations) in self.evaluations.items():
                 var_file = var_evaluations['var_file']
-                var_definitions = self._get_resource_definitions(var_evaluations['definitions'])
+                var_definitions = var_evaluations['definitions']
                 for definition_obj in var_definitions:
                     definition_expression = definition_obj["definition_expression"]
                     if self._is_expression_in_code_lines(definition_expression):

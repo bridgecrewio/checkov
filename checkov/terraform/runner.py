@@ -9,6 +9,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.parser import Parser
 
@@ -60,37 +61,37 @@ class Runner:
         for definition in tf_definitions.items():
             full_file_path = definition[0]
             scanned_file = definition[0].split(root_folder)[1]
-            logging.debug("Scanning file: %s", scanned_file)
+            logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition[1].keys():
                 if block_type in ['resource', 'data', 'provider']:
                     self.run_block(definition[1][block_type], definitions_context, full_file_path, report, scanned_file,
                                    block_type)
 
     def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
-        for entity in entities:
-            if block_type == 'provider':
-                entity_type = 'provider'
-                entity_name = list(entity.keys())[0]
-            else:
-                entity_type = list(entity.keys())[0]
-                entity_name = list(list(entity.values())[0].keys())[0]
-            entity_id = "{}.{}".format(entity_type, entity_name)
-            if dpath.search(definition_context[full_file_path], f'{block_type}/{entity_type}/{entity_name}'):
-                entity_context = dpath.get(definition_context[full_file_path],
-                                           f'{block_type}/{entity_type}/{entity_name}')
-                entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
-                entity_code_lines = entity_context.get('code_lines')
-                skipped_checks = entity_context.get('skipped_checks')
-                variable_evaluations = definition_context[full_file_path].get('evaluations')
-                registry = self.block_type_registries[block_type]
-
-                if registry:
+        registry = self.block_type_registries[block_type]
+        if registry:
+            for entity in entities:
+                entity_evaluations = None
+                context_parser = parser_registry.context_parsers[block_type]
+                definition_path = context_parser.get_entity_context_path(entity)
+                entity_id = ".".join(definition_path)
+                entity_context_path = [block_type] + definition_path
+                if dpath.search(definition_context[full_file_path], entity_context_path):
+                    entity_context = dpath.get(definition_context[full_file_path],
+                                               entity_context_path)
+                    entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
+                    entity_code_lines = entity_context.get('code_lines')
+                    skipped_checks = entity_context.get('skipped_checks')
+                    variables_evaluations = definition_context[full_file_path].get('evaluations')
+                    if variables_evaluations:
+                        entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
+                                                                                               entity_context_path)
                     results = registry.scan(scanned_file, entity,
                                             skipped_checks)
                     for check, check_result in results.items():
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                         code_block=entity_code_lines, file_path=scanned_file,
                                         file_line_range=entity_lines_range,
-                                        resource=entity_id, evaluations=variable_evaluations,
+                                        resource=entity_id, evaluations=entity_evaluations,
                                         check_class=check.__class__.__module__)
                         report.add_record(record=record)
