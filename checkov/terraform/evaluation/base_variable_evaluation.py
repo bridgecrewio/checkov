@@ -5,6 +5,11 @@ import re
 import dpath.util
 
 TF_DEFINITIONS_STRIP_WORDS = r'\b(?!\d)([^\/]+)'
+NON_PATH_WORDS_REGEX = r'\b(?!output)[^ .]+'
+DEFINITION_TYPES_REGEX_MAPPING = {
+    'variable': 'var',
+    'locals': 'local'
+}
 
 
 class BaseVariableEvaluation(ABC):
@@ -23,11 +28,21 @@ class BaseVariableEvaluation(ABC):
         raise NotImplementedError()
 
     @staticmethod
+    def _generate_evaluation_regex(definition_type, var_name):
+        return r'((?:\$\{)?' + re.escape(DEFINITION_TYPES_REGEX_MAPPING[definition_type]) + '\.' + re.escape(
+            var_name) + r'(?:\})?)'
+
+    @staticmethod
+    def _is_variable_only_expression(assignment_regex, entry_expression):
+        exact_assignment_regex = r'^' + assignment_regex + r'$'
+        return len(re.findall(exact_assignment_regex, entry_expression)) > 0
+
+    @staticmethod
     def extract_context_path(definition_path):
         """
         Converts a JSONPath (dpath library standard) definition entry path into valid context parser path
         :param definition_path: entity's JSONPath syntax path in tf_definitions
-        :return:
+        :return:entity path in context parser
         """
         return os.path.split("/".join(re.findall(TF_DEFINITIONS_STRIP_WORDS, definition_path)))
 
@@ -37,7 +52,7 @@ class BaseVariableEvaluation(ABC):
         Reduce variable evaluations only to variables that are included in the entity's code block
         :param variables_evaluations:
         :param entity_context_path:
-        :return:
+        :return: the variable evaluations of the entity
         """
         entity_evaluations = {}
         for var_name, variable_evaluations in variables_evaluations.items():

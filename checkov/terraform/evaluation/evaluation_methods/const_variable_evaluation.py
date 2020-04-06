@@ -3,30 +3,10 @@ import os
 import dpath
 import re
 
-NON_PATH_WORDS_REGEX = r'\b(?!output)[^ .]+'
-DEFINITION_TYPES_REGEX_MAPPING = {
-    'variable': 'var',
-    'locals': 'local'
-}
-
 
 class ConstVariableEvaluation(BaseVariableEvaluation):
     def __init__(self, root_folder, tf_definitions, definitions_context):
         super().__init__(root_folder, tf_definitions, definitions_context)
-
-    @staticmethod
-    def _strip_terraform_keywords(path):
-        return ".".join(re.findall(NON_PATH_WORDS_REGEX, path))
-
-    @staticmethod
-    def _generate_evaluation_regex(definition_type, var_name):
-        return r'((?:\$\{)?' + re.escape(DEFINITION_TYPES_REGEX_MAPPING[definition_type]) + '\.' + re.escape(
-            var_name) + r'(?:\})?)'
-
-    @staticmethod
-    def _is_variable_only_expression(assignment_regex, entry_expression):
-        exact_assignment_regex = r'^' + assignment_regex + r'$'
-        return len(re.findall(exact_assignment_regex, entry_expression)) > 0
 
     def _locate_variables_assignments(self, definition_type, folder, var_name):
         var_assignments_paths = {}
@@ -83,7 +63,6 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                     f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_file}: '
                     f'{var_name} to "{var_value_string}"')
 
-    # Evaluate only variable which assignments are consts
     def evaluate_variables(self):
         """
         Evaluate all default variables found in tf_definitions expressions, per a scanned directory of Terraform files
@@ -96,7 +75,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         """
         Locate all assignments extracted by the context parser, and assigns them to corresponding variables found in
         tf_definitions
-        :param folder: folder of variables
+        :param folder: folder to assign variables in
         :return:
         """
         assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
