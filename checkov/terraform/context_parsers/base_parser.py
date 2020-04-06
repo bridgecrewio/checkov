@@ -25,6 +25,21 @@ class BaseContextParser(ABC):
         self.definition_type = definition_type
         parser_registry.register(self)
 
+    @abstractmethod
+    def get_entity_context_path(self, entity_block):
+        raise NotImplementedError
+
+
+    def _is_block_signature(self, line_tokens, entity_context_path):
+        """
+        Determine if the given tokenized line token is the entity signature line
+        :param line_tokens: list of line tokens
+        :param entity_context_path: the entity's path in the context parser
+        :return: True/False
+        """
+        block_type = self.get_block_type()
+        return all(x in line_tokens for x in [block_type] + entity_context_path)
+
     @staticmethod
     def _trim_whitespaces_linebreaks(text):
         return re.sub('\s+', ' ', text).strip()
@@ -41,6 +56,11 @@ class BaseContextParser(ABC):
             return file_lines
 
     def _collect_skip_comments(self, definition_blocks):
+        """
+        Collects checkov skip comments to all definition blocks
+        :param definition_blocks: parsed definition blocks
+        :return: context enriched with with skipped checks per skipped entity
+        """
         parsed_file_lines = self._filter_file_lines()
         comments = [(line_num, {"id": re.search(COMMENT_REGEX, x).group(2),
                                 "suppress_comment": re.search(COMMENT_REGEX, x).group(3)[1:] if re.search(COMMENT_REGEX,
@@ -83,14 +103,6 @@ class BaseContextParser(ABC):
 
     def get_block_type(self):
         return self.definition_type
-
-    @abstractmethod
-    def get_entity_context_path(self, entity_block):
-        raise NotImplementedError
-
-    def _is_block_signature(self, line_tokens, entity_context_path):
-        block_type = self.get_block_type()
-        return all(x in line_tokens for x in [block_type] + entity_context_path)
 
     def enrich_definition_block(self, definition_blocks):
         """
