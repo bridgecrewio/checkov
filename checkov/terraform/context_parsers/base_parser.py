@@ -27,8 +27,12 @@ class BaseContextParser(ABC):
 
     @abstractmethod
     def get_entity_context_path(self, entity_block):
+        """
+        returns the entity's path in the context parser
+        :param entity_block: entity definition block
+        :return: list of nested entity's keys in the context parser
+        """
         raise NotImplementedError
-
 
     def _is_block_signature(self, line_tokens, entity_context_path):
         """
@@ -79,6 +83,10 @@ class BaseContextParser(ABC):
         return self.context
 
     def _compute_definition_end_line(self, start_line_num):
+        """ Given the code block's start line, compute the block's end line
+        :param start_line_num: code block's first line number (the signature line)
+        :return: the code block's last line number
+        """
         parsed_file_lines = self._filter_file_lines()
         start_line_idx = [line_num for (line_num, _) in parsed_file_lines].index(start_line_num)
         i = 1

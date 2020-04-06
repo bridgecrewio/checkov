@@ -47,6 +47,13 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         return var_assignments_paths
 
     def _assign_definition_value(self, definition_type, var_name, var_value, var_assignments):
+        """
+        assigns var_value to variable var_name in tf_definitions
+        :param definition_type: the entity's block type
+        :param var_name: variable name
+        :param var_value: variable value
+        :param var_assignments: variable assignments
+        """
         assignment_regex = self._generate_evaluation_regex(definition_type, var_name)
         var_file = var_assignments['var_file']
         var_value_string = str(var_value)
@@ -78,17 +85,32 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
 
     # Evaluate only variable which assignments are consts
     def evaluate_variables(self):
+        """
+        Evaluate all default variables found in tf_definitions expressions, per a scanned directory of Terraform files
+        """
         definitions_folders = set([os.path.split(file_path)[0] for file_path in self.definitions_context.keys()])
         for folder in definitions_folders:
             self._evaluate_folder_variables(folder)
 
     def _evaluate_folder_variables(self, folder):
+        """
+        Locate all assignments extracted by the context parser, and assigns them to corresponding variables found in
+        tf_definitions
+        :param folder: folder of variables
+        :return:
+        """
         assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
         assignment_files = {k: v for k, v in assignment_files.items() if folder in k}
         if assignment_files:
             self._assign_definitions(assignment_files, folder)
 
     def _assign_definitions(self, assignment_files, folder):
+        """
+        assign variables in expressions under a Terraform folder
+        :param assignment_files:
+        :param folder:
+        :return:
+        """
         for var_file, variable_assignments in assignment_files.items():
             relative_var_file = f'/{os.path.relpath(var_file, self.root_folder)}'
             for definition_type in variable_assignments.keys():

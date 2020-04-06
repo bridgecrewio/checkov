@@ -16,15 +16,29 @@ class BaseVariableEvaluation(ABC):
 
     @abstractmethod
     def evaluate_variables(self):
+        """
+        evaluate variables of tf_definitions entities
+        :return:
+        """
         raise NotImplementedError()
 
     @staticmethod
-    # Converts a JSONPath (dpath standard) definition entry path into valid context parser path
     def extract_context_path(definition_path):
+        """
+        Converts a JSONPath (dpath library standard) definition entry path into valid context parser path
+        :param definition_path: entity's JSONPath syntax path in tf_definitions
+        :return:
+        """
         return os.path.split("/".join(re.findall(TF_DEFINITIONS_STRIP_WORDS, definition_path)))
 
     @staticmethod
     def reduce_entity_evaluations(variables_evaluations, entity_context_path):
+        """
+        Reduce variable evaluations only to variables that are included in the entity's code block
+        :param variables_evaluations:
+        :param entity_context_path:
+        :return:
+        """
         entity_evaluations = {}
         for var_name, variable_evaluations in variables_evaluations.items():
             entity_definitions = []
