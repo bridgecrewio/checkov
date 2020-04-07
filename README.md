@@ -24,6 +24,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
  * [100+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Scans Terraform and AWS CloudFormation configurations.
+ * Scans for [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
  * Policies support evaluation of variables to their optional default value.
  * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
  * Output currently available as CLI, JSON or JUnit XML.
