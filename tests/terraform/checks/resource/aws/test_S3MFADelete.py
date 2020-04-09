@@ -20,10 +20,11 @@ class TestS3MFADelete(unittest.TestCase):
                          "bucket": ["my_bucket"],
                          "acl": ["public-read"],
                          "force_destroy": [True],
-                         "tags": [{"Name": "my-bucket"}]},
-                         "versioning": [{"enabled": [true]}]}
+                         "tags": [{"Name": "my-bucket"}],
+                         "versioning": [{"enabled": [True]}]}
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
+
 
     def test_success(self):
         resource_conf = {"region": ["us-west-2"],
