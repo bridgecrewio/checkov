@@ -15,22 +15,32 @@ class TestS3MFADelete(unittest.TestCase):
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_failure_versioning_enabled(self):
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],
                          "acl": ["public-read"],
                          "force_destroy": [True],
                          "tags": [{"Name": "my-bucket"}],
-                         "logging": [{"target_bucket": "logging-bucket",
-                                      "target_prefix": "log/"
-                                      }],
-                         "versioning": [
-                             {"enabled": [True]},
-                             {"mfa_delete": [True]}
-                             ]
-                         }
+                         "versioning": [{"enabled": [True]}]}
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+def test_success(self):
+    resource_conf = {"region": ["us-west-2"],
+                     "bucket": ["my_bucket"],
+                     "acl": ["public-read"],
+                     "force_destroy": [True],
+                     "tags": [{"Name": "my-bucket"}],
+                     "logging": [{"target_bucket": "logging-bucket",
+                                  "target_prefix": "log/"
+                                  }],
+                     "versioning": [
+                         {"enabled": [True]},
+                         {"mfa_delete": [True]}
+                     ]
+                     }
+    scan_result = scanner.scan_resource_conf(conf=resource_conf)
+    self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':
