@@ -15,6 +15,16 @@ class TestS3MFADelete(unittest.TestCase):
         scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_versioning_enabled(self):
+        resource_conf = {"region": ["us-west-2"],
+                         "bucket": ["my_bucket"],
+                         "acl": ["public-read"],
+                         "force_destroy": [True],
+                         "tags": [{"Name": "my-bucket"}]},
+                         "versioning": [{"enabled": [true]}]}
+        scan_result = scanner.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],

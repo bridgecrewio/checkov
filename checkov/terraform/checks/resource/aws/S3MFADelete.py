@@ -11,7 +11,7 @@ class S3MFADelete(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "versioning/[0]/enabled"
+        return "versioning/[0]/mfa_delete"
 
 
 scanner = S3MFADelete()
