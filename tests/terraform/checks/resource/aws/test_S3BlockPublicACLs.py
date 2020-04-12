@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.S3BlockPublicACL import scanner
+from checkov.terraform.checks.resource.aws.S3BlockPublicACLs import scanner
 from checkov.common.models.enums import CheckResult
 
 
-class TestS3BlockPublicACL(unittest.TestCase):
+class TestS3BlockPublicACLs(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'bucket':['foo'], 

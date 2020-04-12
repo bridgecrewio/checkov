@@ -2,7 +2,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.enums import CheckCategories
 
 
-class S3BlockPublicACL(BaseResourceValueCheck):
+class S3BlockPublicACLs(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure S3 bucket has block public ACLS enabled"
         id = "CKV_AWS_53"
@@ -14,4 +14,4 @@ class S3BlockPublicACL(BaseResourceValueCheck):
         return "block_public_acls"
 
 
-scanner = S3BlockPublicACL()
+scanner = S3BlockPublicACLs()
