@@ -1,11 +1,16 @@
 class Checkov < Formula
-  desc "Prevent cloud misconfigurations during build time - Terraform & Cloudformation static analysis"
+  include Language::Python::Virtualenv
+  desc "Prevent cloud misconfigurations during build time. Terraform & CFN static analysis"
   homepage "https://www.checkov.io/"
   url "https://github.com/bridgecrewio/checkov/archive/1.0.239.tar.gz"
   sha256 "7cca36f8fd6641dc46752581da5fe6aebb12361253644a9b2d5358bdda2959e5"
 
-  include Language::Python::Virtualenv
-  depends_on "python@3.8"
+  depends_on "python"
+
+  resource "importlib-metadata" do
+    url "https://files.pythonhosted.org/packages/b4/1b/baab42e3cd64c9d5caac25a9d6c054f8324cdc38975a44d600569f1f7158/importlib_metadata-1.6.0.tar.gz"
+    sha256 "34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"
+  end
 
   resource "certifi" do
     url "https://files.pythonhosted.org/packages/b8/e2/a3a86a67c3fc8249ed305fc7b7d290ebe5e4d46ad45573884761ef4dea7b/certifi-2020.4.5.1.tar.gz"
@@ -15,11 +20,6 @@ class Checkov < Formula
   resource "chardet" do
     url "https://files.pythonhosted.org/packages/fc/bb/a5768c230f9ddb03acc9ef3f0d4a3cf93462473795d18e9535498c8f929d/chardet-3.0.4.tar.gz"
     sha256 "84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
-  end
-
-  resource "checkov" do
-    url "https://files.pythonhosted.org/packages/1f/20/24ef945d1fe7b55967892ad88ef5ff901cb2c245ac30a63d4723324187c7/checkov-1.0.239.tar.gz"
-    sha256 "49c74488e4ab12c3d05fb4c36196a04d34917533a87b3ae70e16ce240d89fbed"
   end
 
   resource "colorama" do
@@ -101,6 +101,6 @@ class Checkov < Formula
     #
     # The installed folder is not in the path, so use the entire path to any
     # executables being tested: `system "#{bin}/program", "do", "something"`.
-    system "false"
+    system "#{bin}/checkov", "-h"
   end
 end
