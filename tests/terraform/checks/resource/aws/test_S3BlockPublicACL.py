@@ -1,28 +1,28 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.S3BlockPublicACL import check
+from checkov.terraform.checks.resource.aws.S3BlockPublicACL import scanner
 from checkov.common.models.enums import CheckResult
 
 
 class TestS3BlockPublicACL(unittest.TestCase):
 
     def test_failure(self):
-        resource_conf = {['bucket': ['foo'], 
+        resource_conf = {'bucket':['foo'], 
                         'block_public_acls': [False], 
                         'block_public_policy': [True],
                         'ignore_public_acls': [True],
                         'restrict_public_buckets': [True]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
+        scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf = {['bucket': ['foo'], 
+        resource_conf = {'bucket':['foo'], 
                         'block_public_acls': [True], 
                         'block_public_policy': [True],
                         'ignore_public_acls': [True],
                         'restrict_public_buckets': [True]}
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
+        scan_result = scanner.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
