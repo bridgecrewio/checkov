@@ -65,7 +65,8 @@ jobs:
 
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
-          git commit -m "bump version" checkov/version.py || echo "No changes to commit"
+          cat HomebrewFormula/checkov.rb | sed 's/archive\/1.0.239/'$new_ver'/g' | tee HomebrewFormula/checkov.rb
+          git commit -m "bump version" checkov/version.py HomebrewFormula/checkov.rb || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
