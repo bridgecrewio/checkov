@@ -2,7 +2,7 @@ class Checkov < Formula
   include Language::Python::Virtualenv
   desc "Prevent cloud misconfigurations during build time. Terraform & CFN static analysis"
   homepage "https://www.checkov.io/"
-  url "https://github.com/bridgecrewio/checkov/1.0.241.tar.gz"
+  url "https://github.com/bridgecrewio/checkov/archive/1.0.243.tar.gz"
   sha256 "7cca36f8fd6641dc46752581da5fe6aebb12361253644a9b2d5358bdda2959e5"
 
   depends_on "python"
