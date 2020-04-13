@@ -3,7 +3,7 @@ class Checkov < Formula
   desc "Prevent cloud misconfigurations during build time. Terraform & CFN static analysis"
   homepage "https://www.checkov.io/"
   url "https://github.com/bridgecrewio/checkov/archive/1.0.243.tar.gz"
-  sha256 "7cca36f8fd6641dc46752581da5fe6aebb12361253644a9b2d5358bdda2959e5"
+  sha256 "f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
 
   depends_on "python"
 
