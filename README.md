@@ -45,6 +45,12 @@ Scheduled scan result in Jenkins
 ```sh
 pip install checkov
 ```
+or using homebrew (MacOS only)
+```sh
+brew tap bridgecrewio/checkov https://github.com/bridgecrewio/checkov
+brew update
+brew install checkov
+```
 
 ### Configure an input folder
 
