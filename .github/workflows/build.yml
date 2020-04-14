@@ -104,7 +104,7 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
+      - name: publish brew
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
