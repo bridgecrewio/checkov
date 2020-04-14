@@ -1,16 +1,12 @@
 class Checkov < Formula
   include Language::Python::Virtualenv
-  desc "Prevent cloud misconfigurations during build time. Terraform & CFN static analysis"
-  homepage "https://www.checkov.io/"
-  url "https://github.com/bridgecrewio/checkov/archive/1.0.243.tar.gz"
-  sha256 "f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
 
-  depends_on "python"
+  desc "Shiny new formula"
+  homepage "https://github.com/bridgecrewio/checkov"
+  url "https://files.pythonhosted.org/packages/25/e6/ac1d404365f656e5e7f36ac8fb7c8f32b71fc2bcc7517d5b28f1031c93d9/checkov-1.0.246.tar.gz"
+  sha256 "ea6a23c29b1cc3593b4a6d762d6ba7f7b176a9faa81b7f85d38115e08f6e35e8"
 
-  resource "importlib-metadata" do
-    url "https://files.pythonhosted.org/packages/b4/1b/baab42e3cd64c9d5caac25a9d6c054f8324cdc38975a44d600569f1f7158/importlib_metadata-1.6.0.tar.gz"
-    sha256 "34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"
-  end
+  depends_on "python3"
 
   resource "certifi" do
     url "https://files.pythonhosted.org/packages/b8/e2/a3a86a67c3fc8249ed305fc7b7d290ebe5e4d46ad45573884761ef4dea7b/certifi-2020.4.5.1.tar.gz"
@@ -53,8 +49,8 @@ class Checkov < Formula
   end
 
   resource "python-hcl2" do
-    url "https://files.pythonhosted.org/packages/2f/93/193808a0d4dd5d47397b4a5e3ba038c79d5fc51c93bb5610bb0f7d49c7bf/python-hcl2-0.2.0.tar.gz"
-    sha256 "845a30af9b151625e2449cb9835e5ebc9181b2cb086de38f8d57d4e1e1b516a7"
+    url "https://files.pythonhosted.org/packages/cf/3f/3ff50ca76d5a44a7043b791d3876b5e693b6a2f64db832539e3f162e8323/python-hcl2-0.2.5.tar.gz"
+    sha256 "51a9c7e41929a440daf0e8b9a153e3afb7d0628b10c536a656ea95f87a5fe1f6"
   end
 
   resource "PyYAML" do
@@ -88,19 +84,11 @@ class Checkov < Formula
   end
 
   def install
+    virtualenv_create(libexec, "python3")
     virtualenv_install_with_resources
   end
 
   test do
-    # `test do` will create, run in and delete a temporary directory.
-    #
-    # This test will fail and we won't accept that! For Homebrew/homebrew-core
-    # this will need to be a test that verifies the functionality of the
-    # software. Run the test with `brew test checkov`. Options passed
-    # to `brew install` such as `--HEAD` also need to be provided to `brew test`.
-    #
-    # The installed folder is not in the path, so use the entire path to any
-    # executables being tested: `system "#{bin}/program", "do", "something"`.
-    system "#{bin}/checkov", "-h"
+    false
   end
 end
