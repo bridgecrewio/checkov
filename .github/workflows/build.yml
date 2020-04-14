@@ -110,6 +110,7 @@ jobs:
           git config --local user.name "GitHub Action"
           pipenv run pip install homebrew-pypi-poet
           pipenv run pip install checkov -U
+          git pull
           pipenv run poet -f checkov > HomebrewFormula/checkov.rb
           git commit -m "update brew formula" checkov/version.py HomebrewFormula/checkov.rb || echo "No brew changes to commit"
           git push origin
