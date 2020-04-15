@@ -86,24 +86,26 @@ class Runner:
                 results = resource_registry.scan(cf_file, {resource_name: resource},
                                                  skipped_checks)
                 # TODO refactor into context parsing
-                start_line = min(list(find_lines(resource, '__startline__')))
-                end_line = max(list(find_lines(resource, '__endline__')))
+                find_lines_result_list = list(find_lines(resource, '__startline__'))
+                if len(find_lines_result_list)>=1:
+                    start_line = min(find_lines_result_list)
+                    end_line = max(list(find_lines(resource, '__endline__')))
 
-                entity_lines_range = [start_line, end_line - 1]
+                    entity_lines_range = [start_line, end_line - 1]
 
-                entity_code_lines = definitions_raw[cf_file][start_line - 1: end_line - 1]
+                    entity_code_lines = definitions_raw[cf_file][start_line - 1: end_line - 1]
 
-                # TODO - Variable Eval Message!
-                variable_evaluations = {}
+                    # TODO - Variable Eval Message!
+                    variable_evaluations = {}
 
-                for check, check_result in results.items():
-                    ### TODO - Need to get entity_code_lines and entity_lines_range
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=cf_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=resource_id, evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__)
-                    report.add_record(record=record)
+                    for check, check_result in results.items():
+                        ### TODO - Need to get entity_code_lines and entity_lines_range
+                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                        code_block=entity_code_lines, file_path=cf_file,
+                                        file_line_range=entity_lines_range,
+                                        resource=resource_id, evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__)
+                        report.add_record(record=record)
         return report
 
     def _search_deep_keys(self, search_text, cfn_dict, path):
