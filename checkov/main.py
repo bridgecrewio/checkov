@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-import logging
 import argparse
-from checkov.common.util.docs_generator import print_checks
+import logging
+
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.terraform.runner import Runner as tf_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.util.docs_generator import print_checks
+from checkov.terraform.runner import Runner as tf_runner
+from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
@@ -34,18 +36,24 @@ def run():
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     args = parser.parse_args()
+    runner_registry = RunnerRegistry(tf_runner(), cfn_runner(),k8_runner())
     if args.version:
         print(version)
         return
-    if args.list:
+    elif args.list:
         print_checks()
         return
-
-    runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
-    for root_folder in args.directory:
-        file = args.file
-        scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+    elif args.directory:
+        for root_folder in args.directory:
+            file = args.file
+            scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+            runner_registry.print_reports(scan_reports, args)
+        return
+    elif args.file:
+        scan_reports = runner_registry.run(None, external_checks_dir=args.external_checks_dir, files=args.file)
         runner_registry.print_reports(scan_reports, args)
+    else:
+        print("No argument given. Try `checkov --help` for further information")
 
 
 if __name__ == '__main__':

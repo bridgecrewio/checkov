@@ -17,6 +17,7 @@ class CheckCategories(Enum):
     BACKUP_AND_RECOVERY = 6
     CONVENTION = 7
     SECRETS = 8
+    KUBERNETES = 9
 
 
 class OutputFormat(Enum):
