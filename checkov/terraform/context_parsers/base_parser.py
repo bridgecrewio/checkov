@@ -46,11 +46,12 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def _trim_whitespaces_linebreaks(text):
-        return re.sub('\s+', ' ', text).strip()
+        return text.strip()
 
     def _filter_file_lines(self):
         parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in self.file_lines]
-        return [(ind, line) for (ind, line) in parsed_file_lines if line]
+        self.filtered_lines = [(ind, line) for (ind, line) in parsed_file_lines if line]
+        return self.filtered_lines
 
     def _read_file_lines(self):
         with(open(self.tf_file, 'r')) as file:
@@ -65,7 +66,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with with skipped checks per skipped entity
         """
-        parsed_file_lines = self._filter_file_lines()
+        parsed_file_lines = self.filtered_lines
         comments = [(line_num, {"id": re.search(COMMENT_REGEX, x).group(2),
                                 "suppress_comment": re.search(COMMENT_REGEX, x).group(3)[1:] if re.search(COMMENT_REGEX,
                                                                                                           x).group(3)
@@ -87,7 +88,7 @@ class BaseContextParser(ABC):
         :param start_line_num: code block's first line number (the signature line)
         :return: the code block's last line number
         """
-        parsed_file_lines = self._filter_file_lines()
+        parsed_file_lines = self.filtered_lines
         start_line_idx = [line_num for (line_num, _) in parsed_file_lines].index(start_line_num)
         i = 1
         end_line_num = 0
