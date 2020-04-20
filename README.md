@@ -97,7 +97,7 @@ To skip a check on a given Terraform definition block, apply the following comme
 
 `checkov:skip=<check_id>:<suppression_comment>`
 
-* `<check_id>` is one of the [available check scanners](../3.Scans/resource-scans.md)
+* `<check_id>` is one of the [available check scanners](docs/3.Scans/resource-scans.md)
 * `<suppression_comment>` is an optional suppression reason to be included in the output
 
 #### Example
