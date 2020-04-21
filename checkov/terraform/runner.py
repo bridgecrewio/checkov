@@ -47,10 +47,9 @@ class Runner:
         if files:
             files = [os.path.abspath(file) for file in files]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
+            file_tf_definitions = {}
             for file in files:
-                file_tf_definitions = {}
-                self.parser.parse_file(file=file, tf_definitions=file_tf_definitions, parsing_errors=parsing_errors)
-
+                self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
                 self.check_tf_definition(report, root_folder, file_tf_definitions)
 
         report.add_parsing_errors(parsing_errors.keys())
@@ -68,17 +67,16 @@ class Runner:
                                                          afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
                                                          yielded=True):
                 dpath.set(self.tf_definitions[tf_file], var_path, False)
-        return self.tf_definitions
 
     def check_tf_definition(self, report, root_folder, tf_definitions):
         definitions_context = {}
-        for definition in tf_definitions.items():
+        for definition in self.tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
-        tf_definitions = self.evaluate_string_booleans()
-        variable_evaluator = ConstVariableEvaluation(root_folder, tf_definitions, definitions_context)
+        self.evaluate_string_booleans()
+        variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
-        tf_definitions, definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
-        for definition in tf_definitions.items():
+        self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+        for definition in self.tf_definitions.items():
             full_file_path = definition[0]
             scanned_file = definition[0].split(root_folder)[1]
             logging.debug(f"Scanning file: {scanned_file}")
