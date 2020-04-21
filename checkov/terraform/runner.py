@@ -42,15 +42,14 @@ class Runner:
         if root_folder:
             root_folder = os.path.abspath(root_folder)
             self.parser.hcl2(directory=root_folder, tf_definitions=self.tf_definitions, parsing_errors=parsing_errors)
-            self.check_tf_definition(report, root_folder, self.tf_definitions)
+            self.check_tf_definition(report, root_folder)
 
         if files:
             files = [os.path.abspath(file) for file in files]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            file_tf_definitions = {}
             for file in files:
                 self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
-                self.check_tf_definition(report, root_folder, file_tf_definitions)
+                self.check_tf_definition(report, root_folder)
 
         report.add_parsing_errors(parsing_errors.keys())
 
@@ -68,8 +67,9 @@ class Runner:
                                                          yielded=True):
                 dpath.set(self.tf_definitions[tf_file], var_path, False)
 
-    def check_tf_definition(self, report, root_folder, tf_definitions):
+    def check_tf_definition(self, report, root_folder):
         definitions_context = {}
+        parser_registry.reset_definitions_context()
         for definition in self.tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
         self.evaluate_string_booleans()
