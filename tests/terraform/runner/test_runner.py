@@ -99,7 +99,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_evaluate_string_booleans(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/hcl_0.11"
-        tf_file = "/Users/tronxd/PycharmProjects/checkov/tests/terraform/runner/resources/hcl_0.11/main.tf"
+        tf_file = f"{valid_dir_path}/main.tf"
         runner = Runner()
         runner.run(root_folder=valid_dir_path, external_checks_dir=None)
         runner.evaluate_string_booleans()
