@@ -72,6 +72,7 @@ class Runner:
 
     def check_tf_definition(self, report, root_folder, tf_definitions):
         definitions_context = {}
+        parser_registry.reset_definitions_context()
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
         tf_definitions = self.evaluate_string_booleans()

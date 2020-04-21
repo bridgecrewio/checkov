@@ -12,6 +12,9 @@ class ParserRegistry:
     def register(self, parser):
         self.context_parsers[parser.definition_type] = parser
 
+    def reset_definitions_context(self):
+        self.definitions_context = {}
+
     def enrich_definitions_context(self, definitions):
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_file, definition_blocks_types) = definitions
