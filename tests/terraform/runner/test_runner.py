@@ -1,6 +1,6 @@
 import os
 import unittest
-
+import dpath.util
 from checkov.terraform.runner import Runner
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -93,7 +93,26 @@ class TestRunnerValid(unittest.TestCase):
 
         azure_checks = list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks))
         for i in range(1, len(azure_checks)):
-            self.assertIn(f'CKV_AZURE_{i}', azure_checks, msg=f'The new GCP violation should have the ID "CKV_AZURE_{i}"')
+            self.assertIn(f'CKV_AZURE_{i}', azure_checks,
+                          msg=f'The new GCP violation should have the ID "CKV_AZURE_{i}"')
+
+    def test_evaluate_string_booleans(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/hcl_0.11"
+        tf_file = "/Users/tronxd/PycharmProjects/checkov/tests/terraform/runner/resources/hcl_0.11/main.tf"
+        runner = Runner()
+        runner.run(root_folder=valid_dir_path, external_checks_dir=None)
+        runner.evaluate_string_booleans()
+        print()
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/apply_immediately/0'), True)
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/backup_retention_period/0'),
+            True)
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/storage_encrypted/0'), False)
+        self.assertEqual(dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
+                         False)
 
     def tearDown(self):
         parser_registry.definitions_context = {}

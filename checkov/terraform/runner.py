@@ -13,12 +13,18 @@ from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEv
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.parser import Parser
 
+TRUE_STRING = "true"
+ONE_STRING = "1"
+FALSE_STRING = "false"
+ZERO_STRING = "0"
+
 
 class Runner:
     check_type = "terraform"
 
     def __init__(self, parser=Parser()):
         self.parser = parser
+        self.tf_definitions = {}
 
     block_type_registries = {
         'resource': resource_registry,
@@ -28,15 +34,15 @@ class Runner:
 
     def run(self, root_folder, external_checks_dir=None, files=None):
         report = Report(self.check_type)
-        tf_definitions = {}
+        self.tf_definitions = {}
         parsing_errors = {}
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
         if root_folder:
             root_folder = os.path.abspath(root_folder)
-            self.parser.hcl2(directory=root_folder, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
-            self.check_tf_definition(report, root_folder, tf_definitions)
+            self.parser.hcl2(directory=root_folder, tf_definitions=self.tf_definitions, parsing_errors=parsing_errors)
+            self.check_tf_definition(report, root_folder, self.tf_definitions)
 
         if files:
             files = [os.path.abspath(file) for file in files]
@@ -51,10 +57,24 @@ class Runner:
 
         return report
 
+    def evaluate_string_booleans(self):
+        # Support HCL 0.11 optional boolean syntax - evaluate "true" and "1" to true, "false" and "0" to false
+        for tf_file in self.tf_definitions.keys():
+            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
+                                                         afilter=lambda x: x == TRUE_STRING or x == ONE_STRING,
+                                                         yielded=True):
+                dpath.set(self.tf_definitions[tf_file], var_path, True)
+            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
+                                                         afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
+                                                         yielded=True):
+                dpath.set(self.tf_definitions[tf_file], var_path, False)
+        return self.tf_definitions
+
     def check_tf_definition(self, report, root_folder, tf_definitions):
         definitions_context = {}
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
+        tf_definitions = self.evaluate_string_booleans()
         variable_evaluator = ConstVariableEvaluation(root_folder, tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
         tf_definitions, definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
@@ -85,7 +105,7 @@ class Runner:
                     variables_evaluations = definition_context[full_file_path].get('evaluations')
                     if variables_evaluations:
                         entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
-                                                                                               entity_context_path)
+                                                                                              entity_context_path)
                     results = registry.scan(scanned_file, entity,
                                             skipped_checks)
                     for check, check_result in results.items():
