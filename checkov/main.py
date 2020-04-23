@@ -36,7 +36,7 @@ def run():
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     args = parser.parse_args()
-    runner_registry = RunnerRegistry(tf_runner(), cfn_runner(),k8_runner())
+    runner_registry = RunnerRegistry(tf_runner(), cfn_runner(), k8_runner())
     if args.version:
         print(version)
         return

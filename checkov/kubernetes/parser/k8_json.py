@@ -6,22 +6,30 @@ def loads(filename):
     Load the given YAML string
     """
     template = None
-    with open(filename, 'r') as stream:
+    template_temp = None
+    with open(filename, 'r') as fp:
+        content = fp.read()
 
-        template = list(yaml.load_all(stream, Loader=SafeLineLoader))
+
+        content = "[" + content + "]"
+        content = content.replace('}{', '},{')
+        content = content.replace('}\n{', '},\n{')
+
+        template_temp = list(yaml.load_all(content, Loader=SafeLineLoader))
 
     # Convert an empty file to an empty dict
-    if template is None:
+    if template_temp is None:
         template = {}
+    else:
+        template = template_temp[0]
 
     return template
 
 
 def load(filename):
     """
-    Load the given YAML file
+    Load the given JSON file
     """
-
     content = ''
 
     with open(filename) as fp:

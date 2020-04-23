@@ -8,7 +8,7 @@ from checkov.common.output.report import Report
 from checkov.kubernetes.parser.parser import parse
 from checkov.kubernetes.registry import registry
 
-K8_POSSIBLE_ENDINGS = [".yaml"]
+K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 class Runner:
@@ -40,41 +40,43 @@ class Runner:
                 (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-K8 template files
-        definitions = {k: v for k, v in definitions.items() if
-                       v and (v.__contains__("apiVersion") and v.__contains__("kind"))}
-        definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+        #definitions = {k: v for k, v in definitions.items() if
+        #               v and (v.__contains__("apiVersion") and v.__contains__("kind"))}
+        #definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for k8_file in definitions.keys():
-            if (not 'apiVersion' in definitions[k8_file].keys()) and (not 'kind' in definitions[k8_file].keys()):
-                continue
-            logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file], indent=2))
+            for i in range(len(definitions[k8_file])):
+                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    continue
+                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
-            entity_conf = definitions[k8_file]
-            ## TODO - Evaluate skipped_checks
-            skipped_checks = {}
+                entity_conf = definitions[k8_file][i]
+                ## TODO - Evaluate skipped_checks
+                skipped_checks = {}
 
-            results = registry.scan(k8_file, entity_conf,
-                                    skipped_checks)
-            # TODO refactor into context parsing
-            find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
-            start_line = entity_conf["__startline__"]
-            end_line = entity_conf["__endline__"]
+                results = registry.scan(k8_file, entity_conf,
+                                        skipped_checks)
+                # TODO refactor into context parsing
+                find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
+                start_line = entity_conf["__startline__"]
+                end_line = entity_conf["__endline__"]
 
-            entity_lines_range = [start_line, end_line - 1]
+                entity_lines_range = [start_line, end_line - 1]
 
-            entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+                entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+                ### TODO - Fix Unhashabale slice... Likely because I don't have the 'raw' returned
 
-            # TODO - Variable Eval Message!
-            variable_evaluations = {}
+                # TODO - Variable Eval Message!
+                variable_evaluations = {}
 
-            for check, check_result in results.items():
-                ### TODO - Need to get entity_code_lines and entity_lines_range
-                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                code_block=entity_code_lines, file_path=k8_file,
-                                file_line_range=entity_lines_range,
-                                resource=check.get_resource_id(), evaluations=variable_evaluations,
-                                check_class=check.__class__.__module__)
-                report.add_record(record=record)
+                for check, check_result in results.items():
+                    ### TODO - Need to get entity_code_lines and entity_lines_range
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                    code_block=entity_code_lines, file_path=k8_file,
+                                    file_line_range=entity_lines_range,
+                                    resource=check.get_resource_id(), evaluations=variable_evaluations,
+                                    check_class=check.__class__.__module__)
+                    report.add_record(record=record)
 
 
         return report
