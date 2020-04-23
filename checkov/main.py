@@ -52,11 +52,12 @@ def run():
             file = args.file
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
-            scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
+            scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=args.external_checks_dir,
+                                               files=file)
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
-        scan_reports = runner_registry.run(None, external_checks_dir=args.external_checks_dir, files=args.file)
+        scan_reports = runner_registry.run(external_checks_dir=args.external_checks_dir, files=args.file)
         runner_registry.print_reports(scan_reports, args)
     else:
         print("No argument given. Try `checkov --help` for further information")
