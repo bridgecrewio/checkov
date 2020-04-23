@@ -8,7 +8,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.docs_generator import print_checks
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
-from checkov.common.bridgecrew.token_integration import setup_bridgecrew_credentials, persist_repository
+from checkov.common.bridgecrew.token_integration import BcPlatformIntegration
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -37,18 +37,21 @@ def run():
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key', action='append')
     args = parser.parse_args()
+    bc_integration = BcPlatformIntegration()
     runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
     if args.version:
         print(version)
         return
     elif args.bc_api_key:
-        credentials, timestamp = setup_bridgecrew_credentials(bc_api_key=args.bc_api_key)
+        bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key)
     elif args.list:
         print_checks()
         return
     elif args.directory:
         for root_folder in args.directory:
             file = args.file
+            if bc_integration.is_integration_configured():
+                bc_integration.persist_repository(root_folder)
             scan_reports = runner_registry.run(root_folder, external_checks_dir=args.external_checks_dir, files=file)
             runner_registry.print_reports(scan_reports, args)
         return
