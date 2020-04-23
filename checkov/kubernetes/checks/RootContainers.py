@@ -7,12 +7,12 @@ class RootContainers(BaseK8Check):
     def __init__(self):
         # CIS-1.3 1.7.6
         name = "Do not admit root containers"
-        id = "CKV_K8_6"
+        id = "CKV_K8S_6"
         supported_kind = ['PodSecurityPolicy']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self):
+    def get_resource_id(self, conf):
         return 'PodSecurityPolicy.spec.runAsUser.rule'
 
     def scan_spec_conf(self, conf):
