@@ -8,6 +8,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.docs_generator import print_checks
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
+from checkov.common.bridgecrew.token_integration import setup_bridgecrew_credentials, persist_repository
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -41,7 +42,7 @@ def run():
         print(version)
         return
     elif args.bc_api_key:
-        print(1)
+        credentials, timestamp = setup_bridgecrew_credentials(bc_api_key=args.bc_api_key)
     elif args.list:
         print_checks()
         return
