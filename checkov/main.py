@@ -34,11 +34,14 @@ def run():
                         help='Report output format')
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
+    parser.add_argument('--bc-api-key', help='Bridgecrew API key', action='append')
     args = parser.parse_args()
     runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
     if args.version:
         print(version)
         return
+    elif args.bc_api_key:
+        print(1)
     elif args.list:
         print_checks()
         return
