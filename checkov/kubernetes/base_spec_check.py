@@ -19,5 +19,5 @@ class BaseK8Check(BaseCheck):
         return self.scan_spec_conf(conf)
 
     @abstractmethod
-    def get_resource_id(self):
+    def get_resource_id(self, conf):
         pass

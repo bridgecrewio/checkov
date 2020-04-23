@@ -61,10 +61,12 @@ class Runner:
                 start_line = entity_conf["__startline__"]
                 end_line = entity_conf["__endline__"]
 
-                entity_lines_range = [start_line, end_line - 1]
-
-                entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
-                ### TODO - Fix Unhashabale slice... Likely because I don't have the 'raw' returned
+                if start_line == end_line:
+                    entity_lines_range = [start_line, end_line]
+                    entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line]
+                else:
+                    entity_lines_range = [start_line, end_line - 1]
+                    entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
 
                 # TODO - Variable Eval Message!
                 variable_evaluations = {}
@@ -74,7 +76,7 @@ class Runner:
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=k8_file,
                                     file_line_range=entity_lines_range,
-                                    resource=check.get_resource_id(), evaluations=variable_evaluations,
+                                    resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__)
                     report.add_record(record=record)
 
