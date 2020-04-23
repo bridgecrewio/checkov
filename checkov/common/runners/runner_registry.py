@@ -15,7 +15,7 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder, external_checks_dir=None, files=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None):
         for runner in self.runners:
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files)
             self.scan_reports.append(scan_report)
