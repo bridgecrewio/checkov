@@ -35,19 +35,23 @@ def run():
                         help='Report output format')
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
-    parser.add_argument('--bc-api-key', help='Bridgecrew API key', action='append')
+    parser.add_argument('--bc-api-key', help='Bridgecrew API key')
+    parser.add_argument('--repo-id',
+                        help='Identity string of the repository, with form <repo_owner>/<repo_name>')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_registry = RunnerRegistry(tf_runner(), cfn_runner())
     if args.version:
         print(version)
         return
-    elif args.bc_api_key:
-        bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key)
-    elif args.list:
+    if args.bc_api_key:
+        if args.repo_id is None:
+            parser.error("--repo-id argument is required when using --bc-api-key")
+        bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
+    if args.list:
         print_checks()
         return
-    elif args.directory:
+    if args.directory:
         for root_folder in args.directory:
             file = args.file
             if bc_integration.is_integration_configured():
