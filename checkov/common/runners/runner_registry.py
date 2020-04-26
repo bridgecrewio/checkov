@@ -1,15 +1,16 @@
 import logging
 from abc import abstractmethod
-from checkov.common.util.banner import banner
 
 
 class RunnerRegistry(object):
     runners = []
     scan_reports = []
+    banner = ""
 
-    def __init__(self, *runners):
+    def __init__(self,banner, *runners):
         self.logger = logging.getLogger(__name__)
         self.runners = runners
+        self.banner = banner
 
     @abstractmethod
     def extract_entity_details(self, entity):
@@ -21,10 +22,9 @@ class RunnerRegistry(object):
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    @staticmethod
-    def print_reports(scan_reports, args):
+    def print_reports(self,scan_reports, args):
         if args.output != "json" and args.output != "junitxml":
-            print(f"{banner}\n")
+            print(f"{self.banner}\n")
         exit_codes = []
         for report in scan_reports:
             if not report.is_empty():
