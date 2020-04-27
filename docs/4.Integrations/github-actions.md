@@ -2,7 +2,10 @@
 
 You can integrate Checkov into Github Actions. This provides a simple, automatic way of applying policies to your Terraform code both during merge request review and as part of any build process.
 
-## Basic Set-up
+## Use a checkov action from the marketplace:
+go to https://github.com/bridgecrewio/checkov-action and use a pre-made action!
+
+## Create your own action: Basic Set-up
 
 Add a new step in the `workflow.yml`.
 
