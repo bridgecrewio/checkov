@@ -9,7 +9,7 @@ from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
-from checkov.common.bridgecrew.token_integration import BcPlatformIntegration
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -21,7 +21,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 console.setFormatter(formatter)
 
 
-def run(banner = checkov_banner):
+def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     parser.add_argument('-v', '--version',
                         help='version', action='store_true')

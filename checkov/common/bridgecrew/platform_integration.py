@@ -3,6 +3,7 @@ import boto3
 import json
 import logging
 import os
+from time import sleep
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -45,8 +46,10 @@ class BcPlatformIntegration(object):
             self.s3_client = boto3.client("s3",
                                           aws_access_key_id=self.credentials["AccessKeyId"],
                                           aws_secret_access_key=self.credentials["SecretAccessKey"],
+                                          aws_session_token=self.credentials["SessionToken"],
                                           region_name=DEFAULT_REGION
                                           )
+            sleep(10)  # Wait for the policy to update
         except Exception as e:
             logging.error(f"Failed to get customer assumed role\n{e}")
             raise e
@@ -63,17 +66,18 @@ class BcPlatformIntegration(object):
         Persist the repository found on root_dir path to Bridgecrew's platform
         :param root_dir: Absolute path of the directory containing the repository root level
         """
-        for root, d_names, f_names in os.walk(root_dir):
-            for file in f_names:
-                _, file_extension = os.path.splitext(file)
+        for root_path, d_names, f_names in os.walk(root_dir):
+            for file_path in f_names:
+                _, file_extension = os.path.splitext(file_path)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    self._persist_file(os.path.join(root, file))
+                    full_file_path = os.path.join(root_path, file_path)
+                    relative_file_path = os.path.relpath(full_file_path, root_dir)
+                    self._persist_file(full_file_path, relative_file_path)
 
-    def _persist_file(self, file_path):
-        _, file_name = os.path.split(file_path)
-        file_object_key = os.path.join(self.repo_path, file_name)
+    def _persist_file(self, full_file_path, relative_file_path):
+        file_object_key = os.path.join(self.repo_path, relative_file_path)
         try:
-            self.s3_client.upload_file(file_path, self.bucket, file_object_key)
+            self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
         except Exception as e:
-            logging.error(f"failed to persist file {file_path} into S3\n{e}")
+            logging.error(f"failed to persist file {full_file_path} into S3\n{e}")
             raise e
