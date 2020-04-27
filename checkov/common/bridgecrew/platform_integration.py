@@ -19,6 +19,7 @@ console.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # tell the handler to use this format
 console.setFormatter(formatter)
+
 BC_API_URL = "https://www.bridgecrew.cloud/api/v1"
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
