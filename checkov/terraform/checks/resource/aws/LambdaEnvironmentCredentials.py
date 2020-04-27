@@ -17,9 +17,11 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'environment' in conf.keys():
             if 'variables' in conf['environment'][0]:
-                for value in list(conf['environment'][0]['variables'][0].values())[0]:
-                    if re.match(access_key_pattern, value) or re.match(secret_key_pattern, value):
-                        return CheckResult.FAILED
+                if type(conf['environment'][0]['variables']) is dict:
+                    # variables can be a string, which in this case it points to a variable
+                    for value in list(conf['environment'][0]['variables'][0].values())[0]:
+                        if re.match(access_key_pattern, value) or re.match(secret_key_pattern, value):
+                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 
