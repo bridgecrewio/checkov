@@ -3,7 +3,7 @@ import os
 import json
 import itertools
 import dpath.util
-from .platform_integration import SUPPORTED_FILE_EXTENSIONS
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr

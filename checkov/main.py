@@ -60,6 +60,7 @@ def run(banner=checkov_banner):
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
+                bc_integration.commit_repository()
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:

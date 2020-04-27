@@ -4,11 +4,12 @@ import json
 import logging
 import os
 from time import sleep
-from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
 from urllib3.exceptions import HTTPError
 from botocore.exceptions import ClientError
 from json import JSONDecodeError
 import dpath.util
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -18,15 +19,15 @@ console.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # tell the handler to use this format
 console.setFormatter(formatter)
-
 BC_API_URL = "https://www.bridgecrew.cloud/api/v1"
-SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
+INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 http = urllib3.PoolManager()
 DEFAULT_REGION = "us-west-2"
 
 
 class BcPlatformIntegration(object):
     def __init__(self):
+        self.bc_api_key = None
         self.s3_client = None
         self.bucket = None
         self.credentials = None
@@ -40,9 +41,9 @@ class BcPlatformIntegration(object):
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
         :param bc_api_key: Bridgecrew issued API key
         """
-        credentials_api_url = f"{BC_API_URL}/v1/integrations/types/checkov"
+        self.bc_api_key = bc_api_key
         try:
-            request = http.request("POST", credentials_api_url, body=json.dumps({"repoId": repo_id}),
+            request = http.request("POST", INTEGRATIONS_API_URL, body=json.dumps({"repoId": repo_id}),
                                    headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
             repo_full_path = response["path"]
@@ -63,7 +64,7 @@ class BcPlatformIntegration(object):
             logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
             raise e
         except JSONDecodeError as e:
-            logging.error(f"Response of {credentials_api_url} is not a valid JSON\n{e}")
+            logging.error(f"Response of {INTEGRATIONS_API_URL} is not a valid JSON\n{e}")
             raise e
 
     def is_integration_configured(self):
@@ -88,7 +89,7 @@ class BcPlatformIntegration(object):
 
     def persist_scan_results(self, scan_reports):
         """
-        Persist checkov's scan result into bridgecrew's platform
+        Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
         self.scan_reports = scan_reports
@@ -97,6 +98,28 @@ class BcPlatformIntegration(object):
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    def commit_repository(self):
+        """
+        Finalize the repository's scanning in bridgecrew's platform.
+        """
+        request = None
+        try:
+            request = http.request("PUT", INTEGRATIONS_API_URL,
+                                   body=json.dumps({"path": self.repo_path, "branch": "master"}),
+                                   headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
+            response = json.loads(request.data.decode("utf8"))
+        except HTTPError as e:
+            logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
+            raise e
+        except JSONDecodeError as e:
+            logging.error(f"Response of {INTEGRATIONS_API_URL} is not a valid JSON\n{e}")
+            raise e
+        finally:
+            if request.status == 201 and response["result"] == "Success":
+                logging.info(f"Finalize repository {self.repo_path} in bridgecrew's platform")
+            else:
+                raise Exception(f"Failed to finalize repository {self.repo_path} in bridgecrew's platform")
 
     def _persist_file(self, full_file_path, relative_file_path):
         file_object_key = os.path.join(self.repo_path, relative_file_path)
