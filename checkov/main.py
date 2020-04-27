@@ -64,7 +64,7 @@ def run(banner=checkov_banner):
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
-        scan_reports = runner_registry.run(None, external_checks_dir=args.external_checks_dir, files=args.file)
+        scan_reports = runner_registry.run(external_checks_dir=args.external_checks_dir, files=args.file)
         runner_registry.print_reports(scan_reports, args)
     else:
         print("No argument given. Try ` --help` for further information")
