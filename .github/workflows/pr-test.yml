@@ -3,12 +3,25 @@ name: PR Test
 on: pull_request
 
 jobs:
+  checkov-job:
+    runs-on: ubuntu-latest
+    name: checkov-action
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: tests/terraform/runner/resources/example
   test:
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v1
+        
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
