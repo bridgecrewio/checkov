@@ -21,8 +21,8 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 console.setFormatter(formatter)
 BC_API_URL = "https://www.bridgecrew.cloud/api/v1"
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
-http = urllib3.PoolManager()
 DEFAULT_REGION = "us-west-2"
+http = urllib3.PoolManager()
 
 
 class BcPlatformIntegration(object):
