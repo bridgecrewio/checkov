@@ -55,10 +55,11 @@ def run(banner=checkov_banner):
     if args.directory:
         for root_folder in args.directory:
             file = args.file
-            if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder)
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=args.external_checks_dir,
                                                files=file)
+            if bc_integration.is_integration_configured():
+                bc_integration.persist_repository(root_folder)
+                bc_integration.persist_scan_results(scan_reports)
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:

@@ -4,6 +4,11 @@ import json
 import logging
 import os
 from time import sleep
+from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from urllib3.exceptions import HTTPError
+from botocore.exceptions import ClientError
+from json import JSONDecodeError
+import dpath.util
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -27,6 +32,7 @@ class BcPlatformIntegration(object):
         self.credentials = None
         self.repo_path = None
         self.timestamp = None
+        self.scan_reports = []
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -50,8 +56,14 @@ class BcPlatformIntegration(object):
                                           region_name=DEFAULT_REGION
                                           )
             sleep(10)  # Wait for the policy to update
-        except Exception as e:
+        except HTTPError as e:
             logging.error(f"Failed to get customer assumed role\n{e}")
+            raise e
+        except ClientError as e:
+            logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
+            raise e
+        except JSONDecodeError as e:
+            logging.error(f"Response of {credentials_api_url} is not a valid JSON\n{e}")
             raise e
 
     def is_integration_configured(self):
@@ -74,10 +86,22 @@ class BcPlatformIntegration(object):
                     relative_file_path = os.path.relpath(full_file_path, root_dir)
                     self._persist_file(full_file_path, relative_file_path)
 
+    def persist_scan_results(self, scan_reports):
+        """
+        Persist checkov's scan result into bridgecrew's platform
+        :param scan_reports: List of checkov scan reports
+        """
+        self.scan_reports = scan_reports
+        reduced_scan_reports = reduce_scan_reports(scan_reports)
+        checks_metadata_paths = enrich_and_persist_checks_metadata(scan_reports, self.s3_client, self.bucket,
+                                                                   self.repo_path)
+        dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
+        persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
     def _persist_file(self, full_file_path, relative_file_path):
         file_object_key = os.path.join(self.repo_path, relative_file_path)
         try:
             self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
         except Exception as e:
-            logging.error(f"failed to persist file {full_file_path} into S3\n{e}")
+            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
             raise e
