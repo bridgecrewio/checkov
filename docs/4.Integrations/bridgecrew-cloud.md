@@ -20,5 +20,5 @@ After successfully terminating, the results are persisted on bridgecrew's platfo
 
 
 ## Example usage
-
 `checkov -d . --bc-api-key 84b8f259-a3dv-5c1e-9422-1bdc9aec0487 --repo-id bridgecrewio/checkov`
+//TODO add a screenshot of violations
