@@ -33,6 +33,7 @@ class BcPlatformIntegration(object):
         self.bucket = None
         self.credentials = None
         self.repo_path = None
+        self.repo_id = None
         self.timestamp = None
         self.scan_reports = []
 
@@ -43,6 +44,7 @@ class BcPlatformIntegration(object):
         :param bc_api_key: Bridgecrew issued API key
         """
         self.bc_api_key = bc_api_key
+        self.repo_id = repo_id
         try:
             request = http.request("POST", INTEGRATIONS_API_URL, body=json.dumps({"repoId": repo_id}),
                                    headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
@@ -109,7 +111,6 @@ class BcPlatformIntegration(object):
         try:
             request = http.request("PUT", INTEGRATIONS_API_URL,
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
-                                   # TODO get the actual branch name
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
         except HTTPError as e:
@@ -120,9 +121,9 @@ class BcPlatformIntegration(object):
             raise e
         finally:
             if request.status == 201 and response["result"] == "Success":
-                logging.info(f"Finalize repository {self.repo_path} in bridgecrew's platform")
+                logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
             else:
-                raise Exception(f"Failed to finalize repository {self.repo_path} in bridgecrew's platform")
+                raise Exception(f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
     def _persist_file(self, full_file_path, relative_file_path):
         file_object_key = os.path.join(self.repo_path, relative_file_path)
