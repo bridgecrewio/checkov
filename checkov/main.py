@@ -39,6 +39,7 @@ def run(banner=checkov_banner):
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
     parser.add_argument('--repo-id',
                         help='Identity string of the repository, with form <repo_owner>/<repo_name>')
+    parser.add_argument('-b', '--branch', help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag", default='master')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_registry = RunnerRegistry(banner, tf_runner(), cfn_runner())
@@ -60,7 +61,7 @@ def run(banner=checkov_banner):
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
-                bc_integration.commit_repository()
+                bc_integration.commit_repository(args.branch)
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
