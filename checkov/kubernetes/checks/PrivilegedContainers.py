@@ -1,22 +1,26 @@
-from checkov.common.models.enums import CheckCategories
-from checkov.kubernetes.base_spec_omitted_or_value_check import BaseSpecOmittedOrValueCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
-class PrivilegedContainers(BaseSpecOmittedOrValueCheck):
+class PrivilegedContainers(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.1
-        name = "Do not admit privileged containers"
-        id = "CKV_K8S_2"
-        supported_kind = ['PodSecurityPolicy']
+        # CIS-1.5 5.2.1
+        name = "Container should not be privileged"
+        id = "CKV_K8S_16"
+        supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_inspected_key(self):
-        return "spec/privileged"
-
     def get_resource_id(self, conf):
-        return 'PodSecurityPolicy.spec.privileged'
+        return conf['parent'] + '.securityContext.privileged'
 
+    def scan_spec_conf(self, conf):
+        if "securityContext" in conf:
+            if "privileged" in conf["securityContext"]:
+                if conf["securityContext"]["privileged"]:
+                    return CheckResult.FAILED
+        return CheckResult.PASSED
 
 check = PrivilegedContainers()
