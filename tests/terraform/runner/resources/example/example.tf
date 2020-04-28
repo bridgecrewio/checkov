@@ -570,3 +570,40 @@ data aws_iam_policy_document "scp_deny_example" {
     ]
   }
 }
+
+resource aws_lambda_function "good-function" {
+  filename      = "lambda_function_payload.zip"
+  function_name = "good_lambda_function_name"
+  role          = "${aws_iam_role.iam_for_lambda.arn}"
+  handler       = "exports.test"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = "${filebase64sha256("lambda_function_payload.zip")}"
+
+  runtime = "nodejs12.x"
+  environment {
+    variables = "${var.variables_map}"
+  }
+}
+
+resource aws_lambda_function "bad-function" {
+  filename = "lambda_function_payload.zip"
+  function_name = "bad_lambda_function_name"
+  role = "${aws_iam_role.iam_for_lambda.arn}"
+  handler = "exports.test"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = "${filebase64sha256("lambda_function_payload.zip")}"
+
+  runtime = "nodejs12.x"
+  environment {
+    variables = {
+      AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
+      secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    }
+  }
+}
