@@ -1,21 +1,51 @@
-from checkov.common.models.enums import CheckCategories
-from checkov.kubernetes.base_spec_omitted_or_value_check import BaseSpecOmittedOrValueCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
-class SharedHostNetworkNamespace(BaseSpecOmittedOrValueCheck):
+class SharedHostNetworkNamespace(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.4
-        name = "Do not admit containers wishing to share the host network namespace"
-        id = "CKV_K8S_4"
-        supported_kind = ['PodSecurityPolicy']
+        # CIS-1.5 5.2.4
+        name = "Containers should not share the host network namespace"
+        id = "CKV_K8S_19"
+        supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_inspected_key(self):
-        return "spec/hostNetwork"
-
     def get_resource_id(self, conf):
-        return 'PodSecurityPolicy.spec.hostNetwork'
+        if conf['kind'] == 'Pod':
+            return 'Pod.spec.hostNetwork'
+        elif conf['kind'] == 'CronJob':
+            return 'CronJob.spec.jobTemplate.spec.template.spec.hostNetwork'
+        else:
+            return conf['kind'] + '.spec.template.spec.hostNetwork'
+
+    def scan_spec_conf(self, conf):
+        spec = {}
+
+        if conf['kind'] == 'Pod':
+            if "spec" in conf:
+                spec = conf["spec"]
+        elif conf['kind'] == 'CronJob':
+            if "spec" in conf:
+                if "jobTemplate" in conf["spec"]:
+                    if "spec" in conf["spec"]["jobTemplate"]:
+                        if "template" in conf["spec"]["jobTemplate"]["spec"]:
+                            if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
+                                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+        else:
+            if "spec" in conf:
+                if "template" in conf["spec"]:
+                    if "spec" in conf["spec"]["template"]:
+                        spec = conf["spec"]["template"]["spec"]
+        if spec:
+            if "hostNetwork" in spec:
+                if spec["hostNetwork"]:
+                    return CheckResult.FAILED
+                else:
+                    return CheckResult.PASSED
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 check = SharedHostNetworkNamespace()

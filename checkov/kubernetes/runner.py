@@ -51,8 +51,39 @@ class Runner:
                 logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                 entity_conf = definitions[k8_file][i]
+
+                # Append containers and initContainers to definitions list
+                for type in ["containers", "initContainers"]:
+                    containers = []
+                    containers = self._search_deep_keys(type, entity_conf, [])
+                    if not containers:
+                        continue
+                    containers = containers.pop()
+                    #containers.insert(0,entity_conf['kind'])
+                    containerDef = {}
+                    containerDef["containers"] = containers.pop()
+                    for cd in containerDef["containers"]:
+                        i = containerDef["containers"].index(cd)
+                        containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
+                        containerDef["containers"][i]["kind"] = type
+                        containerDef["containers"][i]["parent"] = entity_conf['kind'] + '.' + '.'.join(containers) + '[' + str(i) + ']'
+                        ## TODO - Grab Parant Annotations
+                    definitions[k8_file].extend(containerDef["containers"])
+
+            # Run for each definition included added container definitions
+            for i in range(len(definitions[k8_file])):
+                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    continue
+                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+
+                entity_conf = definitions[k8_file][i]
+
+
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
+                # skipped_checks = entity_context.get('skipped_checks')
+
+                # Evaluate each container
 
                 results = registry.scan(k8_file, entity_conf,
                                         skipped_checks)
@@ -68,11 +99,10 @@ class Runner:
                     entity_lines_range = [start_line, end_line - 1]
                     entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
 
-                # TODO - Variable Eval Message!
+                # TODO? - Variable Eval Message!
                 variable_evaluations = {}
 
                 for check, check_result in results.items():
-                    ### TODO - Need to get entity_code_lines and entity_lines_range
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=k8_file,
                                     file_line_range=entity_lines_range,
@@ -84,33 +114,33 @@ class Runner:
         return report
 
 
-def _search_deep_keys(self, search_text, k8n_dict, path):
-    """Search deep for keys and get their values"""
-    keys = []
-    if isinstance(k8n_dict, dict):
-        for key in k8n_dict:
-            pathprop = path[:]
-            pathprop.append(key)
-            if key == search_text:
-                pathprop.append(k8n_dict[key])
-                keys.append(pathprop)
-                # pop the last element off for nesting of found elements for
-                # dict and list checks
-                pathprop = pathprop[:-1]
-            if isinstance(k8n_dict[key], dict):
-                keys.extend(self._search_deep_keys(search_text, k8n_dict[key], pathprop))
-            elif isinstance(k8n_dict[key], list):
-                for index, item in enumerate(k8n_dict[key]):
-                    pathproparr = pathprop[:]
-                    pathproparr.append(index)
-                    keys.extend(self._search_deep_keys(search_text, item, pathproparr))
-    elif isinstance(k8n_dict, list):
-        for index, item in enumerate(k8n_dict):
-            pathprop = path[:]
-            pathprop.append(index)
-            keys.extend(self._search_deep_keys(search_text, item, pathprop))
+    def _search_deep_keys(self, search_text, k8n_dict, path):
+        """Search deep for keys and get their values"""
+        keys = []
+        if isinstance(k8n_dict, dict):
+            for key in k8n_dict:
+                pathprop = path[:]
+                pathprop.append(key)
+                if key == search_text:
+                    pathprop.append(k8n_dict[key])
+                    keys.append(pathprop)
+                    # pop the last element off for nesting of found elements for
+                    # dict and list checks
+                    pathprop = pathprop[:-1]
+                if isinstance(k8n_dict[key], dict):
+                    keys.extend(self._search_deep_keys(search_text, k8n_dict[key], pathprop))
+                elif isinstance(k8n_dict[key], list):
+                    for index, item in enumerate(k8n_dict[key]):
+                        pathproparr = pathprop[:]
+                        pathproparr.append(index)
+                        keys.extend(self._search_deep_keys(search_text, item, pathproparr))
+        elif isinstance(k8n_dict, list):
+            for index, item in enumerate(k8n_dict):
+                pathprop = path[:]
+                pathprop.append(index)
+                keys.extend(self._search_deep_keys(search_text, item, pathprop))
 
-    return keys
+        return keys
 
 
 def _get_from_dict(data_dict, map_list):
