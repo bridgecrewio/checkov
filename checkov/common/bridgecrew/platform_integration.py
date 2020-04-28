@@ -108,6 +108,7 @@ class BcPlatformIntegration(object):
         try:
             request = http.request("PUT", INTEGRATIONS_API_URL,
                                    body=json.dumps({"path": self.repo_path, "branch": "master"}),
+                                   # TODO get the actual branch name
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
         except HTTPError as e:
