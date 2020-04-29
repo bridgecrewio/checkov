@@ -344,6 +344,43 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+dynamic "ordered_cache_behavior" {
+    for_each = var.ordered_cache
+
+    content {
+      path_pattern = ordered_cache_behavior.value.path_pattern
+
+      allowed_methods  = ordered_cache_behavior.value.allowed_methods
+      cached_methods   = ordered_cache_behavior.value.cached_methods
+      target_origin_id = module.distribution_label.id
+      compress         = ordered_cache_behavior.value.compress
+      trusted_signers  = var.trusted_signers
+
+      forwarded_values {
+        query_string = ordered_cache_behavior.value.forward_query_string
+        headers      = ordered_cache_behavior.value.forward_header_values
+
+        cookies {
+          forward = ordered_cache_behavior.value.forward_cookies
+        }
+      }
+
+      viewer_protocol_policy = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl            = ordered_cache_behavior.value.default_ttl
+      min_ttl                = ordered_cache_behavior.value.min_ttl
+      max_ttl                = ordered_cache_behavior.value.max_ttl
+
+      dynamic "lambda_function_association" {
+        for_each = ordered_cache_behavior.value.lambda_function_association
+        content {
+          event_type   = lambda_function_association.value.event_type
+          include_body = lookup(lambda_function_association.value, "include_body", null)
+          lambda_arn   = lambda_function_association.value.lambda_arn
+        }
+      }
+    }
+  }
+
   price_class = "PriceClass_200"
 
   restrictions {
