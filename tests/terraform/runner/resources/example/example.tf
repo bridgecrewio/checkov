@@ -688,3 +688,26 @@ resource "aws_lambda_function" "block environment variables" {
     }
   }
 }
+
+resource "aws_lambda_function" "environment and variables with '= {' example" {
+  filename         = "${data.archive_file.ami_backup.output_path}"
+  function_name    = "${module.label_backup.id}"
+  description      = "Automatically backup EC2 instance (create AMI)"
+  role             = "${aws_iam_role.ami_backup.arn}"
+  timeout          = 60
+  handler          = "ami_backup.lambda_handler"
+  runtime          = "python2.7"
+  source_code_hash = "${data.archive_file.ami_backup.output_base64sha256}"
+
+  environment = {
+    variables = {
+      region                = "${var.region}"
+      ami_owner             = "${var.ami_owner}"
+      instance_id           = "${var.instance_id}"
+      retention             = "${var.retention_days}"
+      label_id              = "${module.label.id}"
+      reboot                = "${var.reboot ? "1" : "0"}"
+      block_device_mappings = "${jsonencode(var.block_device_mappings)}"
+    }
+  }
+}
