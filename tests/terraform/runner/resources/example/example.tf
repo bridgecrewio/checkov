@@ -475,6 +475,28 @@ resource "aws_s3_bucket" "bridgecrew_cws_bucket" {
   }
 }
 
+resource "aws_s3_bucket" "dynamic ssee block as string" {
+  count = local.using_existing_origin ? 0 : 1
+  bucket = module.origin_label.id
+  acl = "private"
+  tags = module.origin_label.tags
+  force_destroy = var.origin_force_destroy
+  region = data.aws_region.current.name
+
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.encryption_enabled ? [
+      "true"] : []
+
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm = "AES256"
+        }
+      }
+    }
+  }
+}
+
 resource "aws_efs_file_system" "sharedstore" {
   creation_token                  = "my-product"
 
