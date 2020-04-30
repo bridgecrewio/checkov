@@ -344,6 +344,43 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+dynamic "ordered_cache_behavior" {
+    for_each = var.ordered_cache
+
+    content {
+      path_pattern = ordered_cache_behavior.value.path_pattern
+
+      allowed_methods  = ordered_cache_behavior.value.allowed_methods
+      cached_methods   = ordered_cache_behavior.value.cached_methods
+      target_origin_id = module.distribution_label.id
+      compress         = ordered_cache_behavior.value.compress
+      trusted_signers  = var.trusted_signers
+
+      forwarded_values {
+        query_string = ordered_cache_behavior.value.forward_query_string
+        headers      = ordered_cache_behavior.value.forward_header_values
+
+        cookies {
+          forward = ordered_cache_behavior.value.forward_cookies
+        }
+      }
+
+      viewer_protocol_policy = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl            = ordered_cache_behavior.value.default_ttl
+      min_ttl                = ordered_cache_behavior.value.min_ttl
+      max_ttl                = ordered_cache_behavior.value.max_ttl
+
+      dynamic "lambda_function_association" {
+        for_each = ordered_cache_behavior.value.lambda_function_association
+        content {
+          event_type   = lambda_function_association.value.event_type
+          include_body = lookup(lambda_function_association.value, "include_body", null)
+          lambda_arn   = lambda_function_association.value.lambda_arn
+        }
+      }
+    }
+  }
+
   price_class = "PriceClass_200"
 
   restrictions {
@@ -472,6 +509,28 @@ resource "aws_s3_bucket" "bridgecrew_cws_bucket" {
 
   tags = {
     Name = "BridgecrewCWSBucket"
+  }
+}
+
+resource "aws_s3_bucket" "dynamic ssee block as string" {
+  count = local.using_existing_origin ? 0 : 1
+  bucket = module.origin_label.id
+  acl = "private"
+  tags = module.origin_label.tags
+  force_destroy = var.origin_force_destroy
+  region = data.aws_region.current.name
+
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.encryption_enabled ? [
+      "true"] : []
+
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm = "AES256"
+        }
+      }
+    }
   }
 }
 
@@ -628,4 +687,48 @@ resource "aws_lambda_function" "block environment variables" {
       password = "${var.canary_encrytped_password}"
     }
   }
+}
+
+resource "aws_lambda_function" "environment and variables with '= {' example" {
+  filename         = "${data.archive_file.ami_backup.output_path}"
+  function_name    = "${module.label_backup.id}"
+  description      = "Automatically backup EC2 instance (create AMI)"
+  role             = "${aws_iam_role.ami_backup.arn}"
+  timeout          = 60
+  handler          = "ami_backup.lambda_handler"
+  runtime          = "python2.7"
+  source_code_hash = "${data.archive_file.ami_backup.output_base64sha256}"
+
+  environment = {
+    variables = {
+      region                = "${var.region}"
+      ami_owner             = "${var.ami_owner}"
+      instance_id           = "${var.instance_id}"
+      retention             = "${var.retention_days}"
+      label_id              = "${module.label.id}"
+      reboot                = "${var.reboot ? "1" : "0"}"
+      block_device_mappings = "${jsonencode(var.block_device_mappings)}"
+    }
+  }
+}
+
+resource "aws_s3_bucket" "versioning as string example" {
+  bucket = "${var.bucket}"
+  region = "${var.region}"
+  acl    = "${var.acl}"
+
+  cors_rule = "${var.cors_rule}"
+  website   = "${var.website}"
+
+  force_destroy = "${var.force_destroy}"
+
+  lifecycle_rule = "${var.lifecycle_rule}"
+  versioning     = "${var.versioning}"
+  logging        = "${var.logging}"
+
+  request_payer                        = "${var.request_payer}"
+  replication_configuration            = "${var.replication_configuration}"
+  server_side_encryption_configuration = "${var.server_side_encryption_configuration}"
+
+  tags = "${var.tags}"
 }

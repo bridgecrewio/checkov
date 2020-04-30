@@ -23,8 +23,10 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
                 return CheckResult.FAILED
         if "ordered_cache_behavior" in conf.keys():
             for behavior in conf["ordered_cache_behavior"]:
-                if behavior["viewer_protocol_policy"][0] == "allow-all":
-                    return CheckResult.FAILED
+                if type(behavior) is dict:
+                    # behavior which is a string will return PASSED
+                    if behavior["viewer_protocol_policy"][0] == "allow-all":
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 

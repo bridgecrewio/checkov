@@ -17,6 +17,8 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'environment' in conf.keys():
             if 'variables' in conf['environment'][0]:
+                if type (conf['environment'][0]['variables']) is not list:
+                    conf['environment'][0]['variables'] = [conf['environment'][0]['variables']]
                 if type(conf['environment'][0]['variables'][0]) is dict:
                     # variables can be a string, which in this case it points to a variable
                     for values in list(conf['environment'][0]['variables'][0].values()):

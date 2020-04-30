@@ -19,11 +19,14 @@ class S3Encryption(BaseResourceCheck):
         """
         if 'server_side_encryption_configuration' in conf.keys():
             sse_block = conf['server_side_encryption_configuration']
+            if type(sse_block[0]) is not dict:
+                # all non-dict sse_blocks will return as PASSED
+                return CheckResult.PASSED
             if 'rule' in sse_block[0].keys():
                 rule_block = sse_block[0]['rule']
                 if 'apply_server_side_encryption_by_default' in rule_block[0].keys():
                     encryption_block = rule_block[0]['apply_server_side_encryption_by_default']
-                    if  'sse_algorithm' in encryption_block[0].keys():
+                    if 'sse_algorithm' in encryption_block[0].keys():
                         return CheckResult.PASSED
         return CheckResult.FAILED
 

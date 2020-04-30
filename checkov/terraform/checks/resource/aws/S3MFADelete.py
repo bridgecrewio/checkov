@@ -17,6 +17,8 @@ class S3MFADelete(BaseResourceCheck):
         if 'versioning' in conf.keys():
             versioning_block = conf['versioning']
             for block in versioning_block:
+                if type(block) is not dict:
+                    return CheckResult.PASSED
                 if 'mfa_delete' in block.keys():
                     if block['mfa_delete']:
 
