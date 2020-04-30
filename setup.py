@@ -66,6 +66,7 @@ setup(
         ]
     },
     install_requires=[
+        "boto3==1.12.43",
         "chardet==3.0.4",
         "colorama==0.4.3",
         "docopt==0.6.2",
