@@ -3,22 +3,25 @@ You can integrate checkov with bridgecrew's platform. This allows you to include
 into your bridgecrew account.
 
 ## Setup
-In order to do so, first you need to acquire a bridgecrew issued API key.
- 
-//todo add screens when available
-
+First, you need to acquire a bridgecrew issued API key, which can be easily done by the following steps:
+- Register (for free) to bridgecrew's platform at https://www.bridgecrew.cloud/
+- After signing in, navigate to the [integrations page](https://www.bridgecrew.cloud/integrations), and click the API Token integration:
+![bc-api-key](bc-api-integration.png)
+- Acquire the issued API key (under the `Bridgecrew Token` title) for execution
 ## Execution
-After acquiring the API key, run checkov as follows:
-
+After acquiring the issued API key, run checkov as follows:
 `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
 
 arguments:
 - `<key>` - Bridgecrew issued API key
-- `<repo_id>` - Identifying string of the scanned repository, of the standard Git repository naming form: `<owner>/<name>`
-- `<branch>` - Branch name to be persisted on platform, defaults to the master branch
-After successfully terminating, the results are persisted on bridgecrew's platform, and are available in it.
+- `<repo_id>` - Identifying string of the scanned repository, following the standard Git repository naming scheme: `<owner>/<name>`
+- `<branch>` - Branch name to be persisted on platform, defaults to the master branch. NOTE: please make sure the scanned directory (supplied with `-d` flag)
+is currently checked out from the given branch name.
 
+After successfully terminating, the results are persisted on bridgecrew's platform, and are available as possible violations that can be seen
+in the [incidents view](https://www.bridgecrew.cloud/incidents):
+![bc-violations](bc-violations.png)
 
 ## Example usage
-`checkov -d . --bc-api-key 84b8f259-a3dv-5c1e-9422-1bdc9aec0487 --repo-id bridgecrewio/checkov --branch some_feature` 
-//TODO add a screenshot of violations
+The following command scans the repository identified as `foo/bar`, on branch `develop`, using a bridgecrew API key:
+`checkov -d . --bc-api-key 84b8f259-a3dv-5c1e-9422-1bdc9aec0487 --repo-id foo/bar --branch develop` 

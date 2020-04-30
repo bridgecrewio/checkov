@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import os
 
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
@@ -39,7 +40,9 @@ def run(banner=checkov_banner):
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
     parser.add_argument('--repo-id',
                         help='Identity string of the repository, with form <repo_owner>/<repo_name>')
-    parser.add_argument('-b', '--branch', help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag", default='master')
+    parser.add_argument('-b', '--branch',
+                        help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
+                        default='master')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_registry = RunnerRegistry(banner, tf_runner(), cfn_runner())
@@ -66,6 +69,12 @@ def run(banner=checkov_banner):
         return
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=args.external_checks_dir, files=args.file)
+        if bc_integration.is_integration_configured():
+            files = [os.path.abspath(file) for file in args.file]
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+            bc_integration.persist_repository(root_folder)
+            bc_integration.persist_scan_results(scan_reports)
+            bc_integration.commit_repository(args.branch)
         runner_registry.print_reports(scan_reports, args)
     else:
         print("No argument given. Try ` --help` for further information")

@@ -87,7 +87,7 @@ class Runner:
                                                  skipped_checks)
                 # TODO refactor into context parsing
                 find_lines_result_list = list(find_lines(resource, '__startline__'))
-                if len(find_lines_result_list)>=1:
+                if len(find_lines_result_list) >= 1:
                     start_line = min(find_lines_result_list)
                     end_line = max(list(find_lines(resource, '__endline__')))
 
