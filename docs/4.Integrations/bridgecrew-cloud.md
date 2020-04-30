@@ -1,13 +1,15 @@
 # Integrate Checkov with Bridgecrew Cloud
 You can integrate checkov with Bridgecrew's platform. This allows you to include checkov's scan results of a repository
 into your Bridgecrew account.
+First, you need to acquire a Bridgecrew issued API token. To do so, follow these steps:- Register (for free) to Bridgecrew's platform at [bridgecrew.cloud](https://www.bridgecrew.cloud/)
 
 ## Setup
-First, you need to acquire a Bridgecrew issued API key, which can be easily done by the following steps:
+First, you need to acquire a Bridgecrew issued API token. To do so, follow these steps: 
 - Register (for free) to Bridgecrew's platform at [bridgecrew.cloud](https://www.bridgecrew.cloud/)
 - After signing in, navigate to the [integrations page](https://www.bridgecrew.cloud/integrations), and click the API Token integration:
 ![bc-api-key](bc-api-integration.png)
 - Acquire the issued API key (under the `Bridgecrew Token` title) for execution
+
 ## Execution
 After acquiring the issued API key, run checkov as follows:
 
