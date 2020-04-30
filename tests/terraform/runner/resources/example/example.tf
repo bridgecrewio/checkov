@@ -570,3 +570,62 @@ data aws_iam_policy_document "scp_deny_example" {
     ]
   }
 }
+
+resource aws_lambda_function "good-function" {
+  filename      = "lambda_function_payload.zip"
+  function_name = "good_lambda_function_name"
+  role          = "${aws_iam_role.iam_for_lambda.arn}"
+  handler       = "exports.test"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = "${filebase64sha256("lambda_function_payload.zip")}"
+
+  runtime = "nodejs12.x"
+  environment {
+    variables = "${var.variables_map}"
+  }
+}
+
+resource aws_lambda_function "bad-function" {
+  filename = "lambda_function_payload.zip"
+  function_name = "bad_lambda_function_name"
+  role = "${aws_iam_role.iam_for_lambda.arn}"
+  handler = "exports.test"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = "${filebase64sha256("lambda_function_payload.zip")}"
+
+  runtime = "nodejs12.x"
+  environment {
+    variables = {
+      AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
+      secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    }
+  }
+}
+
+resource "aws_lambda_function" "block environment variables" {
+
+  filename = "${path.module}/canary_sensor_api_capture.zip"
+  description = "A lamba that reaches out to the Canary API used on the Canary website, obtains bearer tokens for communication, gets a list of the devices attached to the account, and fetches the sensor data for those devices."
+  function_name = "canary_sensor_api_capture"
+  role = "${aws_iam_role.canary_sensor_api_capture_role.arn}"
+  handler = "canary_sensor_api_capture.lambda_handler"
+  source_code_hash = "${data.archive_file.canary_sensor_api_capture_zip.output_base64sha256}"
+  runtime = "python2.7"
+  timeout = 10
+
+  environment {
+
+    variables {
+
+      kmsArn = "${var.kms_arn}"
+      username = "${var.canary_username}"
+      password = "${var.canary_encrytped_password}"
+    }
+  }
+}
