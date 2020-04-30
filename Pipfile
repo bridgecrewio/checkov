@@ -20,6 +20,7 @@ termcolor="*"
 junit-xml ="*"
 dpath = "==1.5.0"
 pyyaml = "==5.2"
+boto3 = "*"
 
 [requires]
 python_version = "3.7"
