@@ -10,15 +10,21 @@ First, you need to acquire a bridgecrew issued API key, which can be easily done
 - Acquire the issued API key (under the `Bridgecrew Token` title) for execution
 ## Execution
 After acquiring the issued API key, run checkov as follows:
-`checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
 
-arguments:
+- `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
+
+Or by using the `-f` file flag:
+- `checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
+
+### Arguments:
 - `<key>` - Bridgecrew issued API key
 - `<repo_id>` - Identifying string of the scanned repository, following the standard Git repository naming scheme: `<owner>/<name>`
 - `<branch>` - Branch name to be persisted on platform, defaults to the master branch. NOTE: please make sure the scanned directory (supplied with `-d` flag)
 is currently checked out from the given branch name.
 
-After successfully terminating, the results are persisted on bridgecrew's platform, and are available as possible violations that can be seen
+## Bridgecrew cloud view
+After successfully terminating, the scan results are persisted on bridgecrew's cloud platform, and are available as possible violations,
+that can be seen
 in the [incidents view](https://www.bridgecrew.cloud/incidents):
 ![bc-violations](bc-violations.png)
 
