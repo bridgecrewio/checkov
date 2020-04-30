@@ -29,7 +29,7 @@ class BaseVariableEvaluation(ABC):
 
     @staticmethod
     def _generate_evaluation_regex(definition_type, var_name):
-        return r'((?:\$\{)?' + re.escape(DEFINITION_TYPES_REGEX_MAPPING[definition_type]) + '\.' + re.escape(
+        return r'((?:\$\{)?' + re.escape(DEFINITION_TYPES_REGEX_MAPPING[definition_type]) + r'[.]' + re.escape(
             var_name) + r'(?:\})?)'
 
     @staticmethod
