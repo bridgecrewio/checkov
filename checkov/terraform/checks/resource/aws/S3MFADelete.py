@@ -17,10 +17,11 @@ class S3MFADelete(BaseResourceCheck):
         if 'versioning' in conf.keys():
             versioning_block = conf['versioning']
             for block in versioning_block:
-                if 'mfa_delete' in block.keys():
-                    if block['mfa_delete']:
+                if type(block) is dict:
+                    if 'mfa_delete' in block.keys():
+                        if block['mfa_delete']:
 
-                        return CheckResult.PASSED
+                            return CheckResult.PASSED
         return CheckResult.FAILED
 
 scanner = S3MFADelete()
