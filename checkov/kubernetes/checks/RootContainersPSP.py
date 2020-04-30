@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
-class RootContainers(BaseK8Check):
+class RootContainersPSP(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.6
@@ -29,4 +29,4 @@ class RootContainers(BaseK8Check):
         return CheckResult.FAILED
 
 
-check = RootContainers()
+check = RootContainersPSP()
