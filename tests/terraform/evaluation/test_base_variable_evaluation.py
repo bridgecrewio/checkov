@@ -49,9 +49,9 @@ class TestBaseVariableEvaluation(unittest.TestCase):
         definition_type1, var_name1 = 'locals', 'dummy'
         definition_type2, var_name2 = 'variable', 'customer_name'
         self.assertEqual(BaseVariableEvaluation._generate_evaluation_regex(definition_type1, var_name1),
-                         "((?:\$\{)?local\.dummy(?:\})?)")
+                         "((?:\$\{)?local[.]dummy(?:\})?)")
         self.assertEqual(BaseVariableEvaluation._generate_evaluation_regex(definition_type2, var_name2),
-                         "((?:\$\{)?var\.customer_name(?:\})?)")
+                         "((?:\$\{)?var[.]customer_name(?:\})?)")
 
     def tearDown(self):
         parser_registry.definitions_context = {}

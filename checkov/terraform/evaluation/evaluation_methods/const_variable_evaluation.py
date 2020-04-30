@@ -56,7 +56,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                     # Preserve the original type of the variable if not part of a composite expression
                     evaluated_definition = var_value
                 else:
-                    evaluated_definition = re.sub(assignment_regex, var_value_string, entry_expression)
+                    evaluated_definition = re.sub(assignment_regex, re.escape(var_value_string), entry_expression)
 
                 dpath.set(self.tf_definitions[assignment_file], definition_path, evaluated_definition)
                 self.logger.debug(
