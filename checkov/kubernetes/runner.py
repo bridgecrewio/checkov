@@ -67,7 +67,7 @@ class Runner:
                         containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
                         containerDef["containers"][i]["kind"] = type
                         containerDef["containers"][i]["parent"] = entity_conf['kind'] + '.' + '.'.join(containers) + '[' + str(i) + ']'
-                        ## TODO - Grab Parant Annotations
+                        containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
                     definitions[k8_file].extend(containerDef["containers"])
 
             # Run for each definition included added container definitions
@@ -80,7 +80,8 @@ class Runner:
 
 
                 ## TODO - Evaluate skipped_checks
-                skipped_checks = {}
+                #skipped_checks = {}
+                skipped_checks = get_skipped_checks(entity_conf)
                 # skipped_checks = entity_context.get('skipped_checks')
 
                 # Evaluate each container
@@ -142,6 +143,27 @@ class Runner:
 
         return keys
 
+def get_skipped_checks(entity_conf):
+    skipped = []
+    if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
+        metadata = entity_conf["parent_metadata"]
+    else:
+        metadata = entity_conf["metadata"]
+    if "annotations" in metadata.keys():
+        for key in metadata["annotations"].keys():
+            skipped_item = {}
+            if "checkov.io/skip" in key:
+                if "CKV_K8S" in metadata["annotations"][key]:
+                    if "=" in metadata["annotations"][key]:
+                        (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")
+                    else:
+                        skipped_item["id"] = metadata["annotations"][key]
+                        skipped_item["suppress_comment"] = "No comment provided"
+                    skipped.append(skipped_item)
+                else:
+                    logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                    continue
+    return skipped
 
 def _get_from_dict(data_dict, map_list):
     return reduce(operator.getitem, map_list, data_dict)
