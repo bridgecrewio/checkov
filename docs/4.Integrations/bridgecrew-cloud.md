@@ -16,7 +16,7 @@ After acquiring the issued API key, run checkov as follows:
 - `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
 
 Or by using the `-f` file flag:
-- `checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
+- `checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <branch>`
 
 ### Arguments:
 - `<key>` - Bridgecrew issued API key
