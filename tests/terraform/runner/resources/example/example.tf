@@ -160,7 +160,6 @@ resource "aws_security_group" "bar-sg" {
 
 }
 
-
 resource "aws_iam_policy" "example" {
   name   = "example_policy"
   path   = "/"
@@ -534,6 +533,26 @@ resource "aws_s3_bucket" "dynamic ssee block as string" {
   }
 }
 
+resource "aws_s3_bucket" "sse_block and rule_block as maps" {
+  bucket = "${var.bucket_name}"
+  policy = "${data.aws_iam_policy_document.iam_policy_document_s3.json}"
+
+  versioning = {
+    enabled = true
+  }
+
+  lifecycle = {
+    prevent_destroy = true
+  }
+
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+}
 resource "aws_efs_file_system" "sharedstore" {
   creation_token                  = "my-product"
 
