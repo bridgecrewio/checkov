@@ -160,6 +160,46 @@ resource "aws_security_group" "bar-sg" {
 
 }
 
+
+resource "aws_security_group" "ingress as map instead of block" {
+  name        = "${var.name}_elasticsearch"
+  description = "ELK ${var.name} ElasticSearch instances"
+  vpc_id      = "${data.aws_vpc.selected.id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress = {
+    from_port       = 9200
+    to_port         = 9200
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.elk_logstash.id}"]
+  }
+
+  ingress = {
+    from_port       = 9300
+    to_port         = 9400
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.elk_kibana.id}"]
+    self            = true
+  }
+
+  ingress = {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = "${concat(list(aws_security_group.elk_admin.id), var.admin_sg_ids)}"
+    cidr_blocks     = "${var.admin_cidrs}"
+  }
+
+  tags = "${merge(var.tags, map("Module", var.module))}"
+}
+
+
 resource "aws_iam_policy" "example" {
   name   = "example_policy"
   path   = "/"
