@@ -52,6 +52,21 @@ class Runner:
 
                 entity_conf = definitions[k8_file][i]
 
+                # Split out resources if entity kind is List
+                if entity_conf["kind"] == "List":
+                    for item in entity_conf["items"]:
+                        definitions[k8_file].append(item)
+
+            for i in range(len(definitions[k8_file])):
+                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    continue
+                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+
+                entity_conf = definitions[k8_file][i]
+
+                if entity_conf["kind"] == "List":
+                    continue
+
                 # Append containers and initContainers to definitions list
                 for type in ["containers", "initContainers"]:
                     containers = []
@@ -78,6 +93,8 @@ class Runner:
 
                 entity_conf = definitions[k8_file][i]
 
+                if entity_conf["kind"] == "List":
+                    continue
 
                 ## TODO - Evaluate skipped_checks
                 #skipped_checks = {}
