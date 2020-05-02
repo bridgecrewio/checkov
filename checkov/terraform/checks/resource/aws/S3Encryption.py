@@ -24,8 +24,12 @@ class S3Encryption(BaseResourceCheck):
                 return CheckResult.PASSED
             if 'rule' in sse_block[0].keys():
                 rule_block = sse_block[0]['rule']
+                if isinstance(rule_block, dict):
+                    rule_block = [rule_block]
                 if 'apply_server_side_encryption_by_default' in rule_block[0].keys():
                     encryption_block = rule_block[0]['apply_server_side_encryption_by_default']
+                    if isinstance(encryption_block, dict):
+                        encryption_block = [encryption_block]
                     if 'sse_algorithm' in encryption_block[0].keys():
                         return CheckResult.PASSED
         return CheckResult.FAILED

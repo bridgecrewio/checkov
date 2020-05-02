@@ -13,7 +13,10 @@ class BaseResourceValueCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         inspected_key = self.get_inspected_key()
         if dpath.util.search(conf, inspected_key) != {}:
-            if dpath.util.get(conf, inspected_key)[0] == self.get_expected_value():
+            value = dpath.util.get(conf, inspected_key)
+            if isinstance(value, bool):
+                value = [value]
+            if value[0] == self.get_expected_value():
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
