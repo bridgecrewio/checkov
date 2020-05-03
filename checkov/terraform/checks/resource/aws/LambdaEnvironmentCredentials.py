@@ -25,8 +25,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                         for values in list(conf['environment'][0]['variables'][0].values()):
                             if type(values) is not list:
                                 values = [values]
-                            for value in values:
-                                if isinstance(value, str):
+                            for value in list(filter(lambda value: type(value) is str, values)):
                                     if re.match(access_key_pattern, value) or re.match(secret_key_pattern, value):
                                         return CheckResult.FAILED
         return CheckResult.PASSED
