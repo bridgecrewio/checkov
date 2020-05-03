@@ -13,7 +13,7 @@ First, you need to acquire a Bridgecrew issued API token. To do so, follow these
 ## Execution
 After acquiring the issued API key, run checkov as follows:
 
-- `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <name>`
+- `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <branch>`
 
 Or by using the `-f` file flag:
 - `checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <branch>`
