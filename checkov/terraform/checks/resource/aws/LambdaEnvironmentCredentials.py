@@ -18,14 +18,14 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
         if 'environment' in conf.keys():
             if isinstance(conf['environment'][0], dict):
                 if 'variables' in conf['environment'][0]:
-                    if type (conf['environment'][0]['variables']) is not list:
+                    if not isinstance(conf['environment'][0]['variables'], list):
                         conf['environment'][0]['variables'] = [conf['environment'][0]['variables']]
-                    if type(conf['environment'][0]['variables'][0]) is dict:
+                    if isinstance(conf['environment'][0]['variables'][0], dict):
                         # variables can be a string, which in this case it points to a variable
                         for values in list(conf['environment'][0]['variables'][0].values()):
-                            if type(values) is not list:
+                            if not isinstance(values, list):
                                 values = [values]
-                            for value in list(filter(lambda value: type(value) is str, values)):
+                            for value in list(filter(lambda value: isinstance(value, str), values)):
                                     if re.match(access_key_pattern, value) or re.match(secret_key_pattern, value):
                                         return CheckResult.FAILED
         return CheckResult.PASSED
