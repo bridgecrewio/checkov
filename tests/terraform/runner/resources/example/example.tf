@@ -770,6 +770,29 @@ resource "aws_lambda_function" "environment and variables with '= {' example" {
   }
 }
 
+resource "aws_lambda_function" "dynamic environment that appears as string example" {
+  function_name = var.name
+  filename = "${path.module}/lambda_function.zip"
+  role = aws_iam_role.this.arn
+  handler = var.handler
+  runtime = var.runtime
+  memory_size = var.memory_size
+  timeout = var.timeout
+  layers = var.layers
+  description = var.description
+  reserved_concurrent_executions = var.reserved_concurrent_executions
+  publish = var.publish
+  kms_key_arn = var.kms_key_arn
+
+  dynamic "environment" {
+    for_each = length(var.environment_variables) > 0 ? [
+      true] : []
+
+    content {
+      variables = var.environment_variables
+    }
+  }
+}
 resource "aws_s3_bucket" "versioning as string example" {
   bucket = "${var.bucket}"
   region = "${var.region}"
