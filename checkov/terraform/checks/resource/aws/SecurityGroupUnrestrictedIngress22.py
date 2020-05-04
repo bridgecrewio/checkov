@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.util.force_list import force_list
 
 PORT = 22
 
@@ -23,10 +24,7 @@ class SecurityGroupUnrestrictedIngress22(BaseResourceCheck):
             ingress_conf = conf['ingress']
             for rule in ingress_conf:
                 if isinstance(rule, dict):
-                    if isinstance(rule['from_port'], int) and isinstance(rule['to_port'], int):
-                        rule['from_port'] = [rule['from_port']]
-                        rule['to_port'] = [rule['to_port']]
-                    if isinstance(rule['from_port'][0], int) and isinstance(rule['to_port'][0], int):
+                    if isinstance(force_list(rule['from_port'])[0],int) and isinstance(force_list(rule['to_port'])[0],int):
                         if rule['from_port'] == [PORT] and rule['to_port'] == [PORT]:
                             if 'cidr_blocks' in rule.keys():
                                 if rule['cidr_blocks'] == [["0.0.0.0/0"]] and 'security_groups' not in rule.keys():
