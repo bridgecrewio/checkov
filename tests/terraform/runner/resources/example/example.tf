@@ -137,6 +137,18 @@ resource "aws_iam_account_password_policy" "password-policy" {
   allow_users_to_change_password = true
 }
 
+resource "aws_iam_account_password_policy" "paswword-policy example with string values instead of int" {
+  allow_users_to_change_password = var.allow_users_to_change_password
+  hard_expiry                    = var.hard_expiry
+  minimum_password_length        = "14"
+  max_password_age               = "40"
+  password_reuse_prevention      = "3"
+  require_lowercase_characters   = var.require_lowercase_characters
+  require_uppercase_characters   = var.require_uppercase_characters
+  require_numbers                = var.require_numbers
+  require_symbols                = var.require_symbols
+}
+
 resource "aws_security_group" "bar-sg" {
   name   = "sg-bar"
   vpc_id = aws_vpc.main.id

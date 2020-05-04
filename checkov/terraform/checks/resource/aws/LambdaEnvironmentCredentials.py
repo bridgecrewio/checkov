@@ -3,7 +3,7 @@ import re
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.checks.utils.consts import access_key_pattern, secret_key_pattern
-from checkov.common.util.force_list import force_list
+from checkov.common.util.type_forcers import force_list
 
 
 class LambdaEnvironmentCredentials(BaseResourceCheck):
