@@ -95,62 +95,6 @@ class RootContainers(BaseK8Check):
                             return CheckResult.FAILED
                 return CheckResult.PASSED
 
-
-
-
-            '''
-            # Passed if runAsNonRoot in pod and nothing set in containers
-            if pod_run_as_non_root:
-                if not container_run_as_non_root:
-                    return CheckResult.PASSED
-                else:
-                    # Passed if runAsNonRoot in pod and any runAsNonRoot in container is true
-                    all_non_root = True
-                    for c in container_run_as_non_root:
-                        if c == False:
-                            all_non_root == False
-                    if all_non_root:
-                        return CheckResult.PASSED
-                ### TODO - We really want to capture per container both values...
-                    ### if runAsNonRoot is false, but RunAsUser is set > 0, this is fine...
-            '''
-            '''
-            else:
-
-            ### if pod runAsNonRoot = True and nothing set in containers...
-            ###    pass
-            #if (pod runAsNonRoot = False or not set) and set to True in all container
-            #    pass
-            if (pod / container set to false or not set)
-                # check for runAsUser
-                if podRunAsUser > 0 and nothing set in containers...
-                    pass
-                if (podRunAsUser 0 or not set) and all containers have runasuser > 0
-                    pass
-            else
-                fail
-            '''
-
-            '''
-            HIGH LEVEL FLOW: 
-            ... Grab container spec values...
-            ... Grab Pod spec values...
-            ... Eval for runAsNonRoot...
-            ... Eval for runAsUser...
-            '''
-
-        '''OLD CHECK HERE:
-        if "spec" in conf:
-            if "runAsUser" in conf["spec"]:
-                if "rule" in conf["spec"]["runAsUser"]:
-                    inspected_value = conf["spec"]["runAsUser"]["rule"]
-                    if inspected_value == "MustRunAsNonRoot":
-                        return CheckResult.PASSED
-                    elif inspected_value == "MustRunAs":
-                        if "ranges" in conf["spec"]["runAsUser"]:
-                            if conf["spec"]["runAsUser"]["ranges"]["min"] > 0:
-                                return CheckResult.PASSED
-        LAST LINE ALSO PART OF THE OLD CHECK'''
         return CheckResult.FAILED
 
 check = RootContainers()
