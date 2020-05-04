@@ -21,7 +21,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 if 'variables' in conf['environment'][0]:
                     if isinstance(force_list(conf['environment'][0]['variables'])[0], dict):
                         # variables can be a string, which in this case it points to a variable
-                        for values in list(conf['environment'][0]['variables'][0].values()):
+                        for values in list(force_list(conf['environment'][0]['variables'])[0].values()):
                             for value in list(filter(lambda value: isinstance(value, str), force_list(values))):
                                 if re.match(access_key_pattern, value) or re.match(secret_key_pattern, value):
                                     return CheckResult.FAILED
