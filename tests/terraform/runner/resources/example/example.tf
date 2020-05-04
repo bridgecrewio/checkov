@@ -825,3 +825,21 @@ resource "aws_s3_bucket" "versioning as string example" {
 
   tags = "${var.tags}"
 }
+
+resource "aws_elasticsearch_domain" "dynamic cluster config example" {
+  domain_name = var.domain_name
+  elasticsearch_version = var.elasticsearch_version
+  access_policies = var.access_policies
+  advanced_options = var.advanced_options == null ? {} : var.advanced_options
+  dynamic "cluster_config" {
+    for_each = local.cluster_config
+    content {
+      instance_type = lookup(cluster_config.value, "instance_type")
+      instance_count = lookup(cluster_config.value, "instance_count")
+      dedicated_master_enabled = lookup(cluster_config.value, "dedicated_master_enabled")
+      dedicated_master_type = lookup(cluster_config.value, "dedicated_master_type")
+      dedicated_master_count = lookup(cluster_config.value, "dedicated_master_count")
+      zone_awareness_enabled = lookup(cluster_config.value, "zone_awareness_enabled")
+    }
+  }
+}
