@@ -5,6 +5,7 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 class DefaultNamespace(BaseK8Check):
 
     def __init__(self):
+        # CIS-1.5 5.7.4
         name = "The default namespace should not be used"
         id = "CKV_K8S_18"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob', 'Service', 'Secret', 'ServiceAccount', 'Role', 'RoleBinding', 'ConfigMap', 'Ingress']

@@ -6,6 +6,7 @@ class RootContainersPSP(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.6
+        # CIS-1.5 5.2.6
         name = "Do not admit root containers"
         id = "CKV_K8S_6"
         supported_kind = ['PodSecurityPolicy']
