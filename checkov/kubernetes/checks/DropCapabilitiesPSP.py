@@ -6,14 +6,15 @@ class DropCapabilities(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.7
-        name = "Do not admit containers with dangerous capabilities"
+        # CIS-1.5 5.2.7
+        name = "Do not admit containers with the NET_RAW capability"
         id = "CKV_K8S_7"
         supported_kind = ['PodSecurityPolicy']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return 'PodSecurityPolicy.spec.runAsUser.rule'
+        return 'PodSecurityPolicy.spec.requiredDropCapabilities'
 
     def scan_spec_conf(self, conf):
         if "spec" in conf:
