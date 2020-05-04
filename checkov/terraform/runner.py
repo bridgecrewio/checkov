@@ -25,6 +25,7 @@ class Runner:
     def __init__(self, parser=Parser()):
         self.parser = parser
         self.tf_definitions = {}
+        self.definitions_context = {}
 
     block_type_registries = {
         'resource': resource_registry,
@@ -76,13 +77,12 @@ class Runner:
         variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
         self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
-        for definition in self.tf_definitions.items():
-            full_file_path = definition[0]
-            scanned_file = definition[0].split(root_folder)[1]
+        for full_file_path, definition in self.tf_definitions.items():
+            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
-            for block_type in definition[1].keys():
+            for block_type in definition.keys():
                 if block_type in ['resource', 'data', 'provider']:
-                    self.run_block(definition[1][block_type], definitions_context, full_file_path, report, scanned_file,
+                    self.run_block(definition[block_type], definitions_context, full_file_path, report, scanned_file,
                                    block_type)
 
     def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type):
