@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.gcp.GoogleContainerClusterDisableLegacyAuth import check
+from checkov.terraform.checks.resource.gcp.GKEDisableLegacyAuth import check
 from checkov.common.models.enums import CheckResult
 
 
-class GoogleContainerClusterDisableLegacyAuth(unittest.TestCase):
+class GKEDisableLegacyAuth(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['google_cluster'], 'enable_legacy_abac': [True]}
