@@ -100,6 +100,10 @@ resource "google_container_cluster" "primary_good" {
   resource_labels {
     Owner = "SomeoneNotWorkingHere"
   }
+
+  node_config {
+    image_type = "cos"
+  }
 }
 
 resource "google_container_cluster" "primary_good2" {
@@ -112,6 +116,10 @@ resource "google_container_cluster" "primary_good2" {
     client_certificate_config {
       issue_client_certificate = false
     }
+  }
+
+  node_config {
+    image_type = "not-cos"
   }
 }
 
