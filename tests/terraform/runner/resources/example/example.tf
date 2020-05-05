@@ -123,6 +123,10 @@ resource "google_container_cluster" "primary_good2" {
   node_config {
     image_type = "not-cos"
   }
+
+  pod_security_policy_config {
+    enabled = true
+  }
 }
 
 resource "google_container_cluster" "primary_bad" {
