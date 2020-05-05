@@ -104,6 +104,12 @@ resource "google_container_cluster" "primary_good2" {
   monitoring_service = "monitoring.googleapis.com"
 
   master_authorized_networks_config {}
+
+  master_auth {
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
 }
 
 resource "google_container_cluster" "primary_bad" {
@@ -116,6 +122,11 @@ resource "google_container_cluster" "primary_bad" {
       cidr_block = "0.0.0.0/0"
       display_name = "The world"
     }
+  }
+
+  master_auth {
+    username = "test"
+    password = "password"
   }
 }
 
