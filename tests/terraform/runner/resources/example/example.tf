@@ -925,6 +925,10 @@ resource azurerm_kubernetes_cluster "example" {
   }
 
   addon_profile {
+    kube_dashboard {
+      enabled = true
+    }
+
     oms_agent {
       enabled = true
       log_analytics_workspace_id = ""
@@ -957,6 +961,10 @@ resource azurerm_kubernetes_cluster "bad-example" {
     enabled = true
   }
 
+  network_profile {
+    network_plugin = "azure"
+  }
+
   tags = {
     Environment = "Production"
   }
@@ -983,6 +991,17 @@ resource azurerm_kubernetes_cluster "bad-example" {
 
   role_based_access_control {
     enabled = false
+  }
+
+  addon_profile {
+    kube_dashboard {
+      enabled = false
+    }
+  }
+
+  network_profile {
+    network_plugin = "azure"
+    network_policy = "network_policy"
   }
 
   tags = {
