@@ -97,6 +97,9 @@ resource "google_sql_database_instance" "gcp_sql_db_instance_good" {
 resource "google_container_cluster" "primary_good" {
   name               = "google_cluster"
   enable_legacy_abac = false
+  resource_labels {
+    Owner = "SomeoneNotWorkingHere"
+  }
 }
 
 resource "google_container_cluster" "primary_good2" {
@@ -128,6 +131,8 @@ resource "google_container_cluster" "primary_bad" {
     username = "test"
     password = "password"
   }
+
+  resource_labels {}
 }
 
 resource "google_container_node_pool" "bad_node_pool" {
