@@ -898,3 +898,58 @@ resource aws_eks_cluster "eks_good" {
     resources = ["secrets"]
   }
 }
+
+resource azurerm_kubernetes_cluster "example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  tags = {
+    Environment = "Production"
+  }
+
+  addon_profile {
+    oms_agent {
+      enabled = true
+      log_analytics_workspace_id = ""
+    }
+  }
+}
+
+resource azurerm_kubernetes_cluster "bad-example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  tags = {
+    Environment = "Production"
+  }
+}
