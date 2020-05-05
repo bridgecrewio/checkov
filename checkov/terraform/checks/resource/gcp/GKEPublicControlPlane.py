@@ -7,7 +7,7 @@ class GKEPublicControlPlane(BaseResourceCheck):
         name = "Ensure GKE Control Plane is not public"
         id = "CKV_GCP_18"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

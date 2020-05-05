@@ -7,7 +7,7 @@ class GKEBasicAuth(BaseResourceCheck):
         name = "Ensure GKE basic auth is disabled"
         id = "CKV_GCP_19"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

@@ -7,7 +7,7 @@ class GKEUseCosImage(BaseResourceCheck):
         name = "Ensure Container-Optimized OS (cos) is used for Kubernetes Engine Clusters Node image"
         id = "CKV_GCP_22"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

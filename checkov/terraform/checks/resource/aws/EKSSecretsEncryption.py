@@ -7,7 +7,7 @@ class EKSSecretsEncryption(BaseResourceCheck):
         name = "Ensure EKS Cluster has Secrets Encryption Enabled"
         id = "CKV_AWS_58"
         supported_resources = ['aws_eks_cluster']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

@@ -7,7 +7,7 @@ class GKEBasicAuth(BaseResourceCheck):
         name = "Ensure Kubernetes Clusters are configured with Labels"
         id = "CKV_GCP_21"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

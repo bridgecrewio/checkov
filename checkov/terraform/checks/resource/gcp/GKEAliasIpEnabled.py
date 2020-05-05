@@ -7,7 +7,7 @@ class GKEAliasIpEnabled(BaseResourceCheck):
         name = "Ensure Kubernetes Cluster is created with Alias IP ranges enabled"
         id = "CKV_GCP_23"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

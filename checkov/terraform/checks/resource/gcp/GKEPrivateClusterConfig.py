@@ -7,7 +7,7 @@ class GKEPodSecurityPolicyEnabled(BaseResourceCheck):
         name = "Ensure Kubernetes Cluster is created with Private cluster enabled"
         id = "CKV_GCP_25"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

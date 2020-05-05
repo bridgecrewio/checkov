@@ -7,7 +7,7 @@ class EKSPublicAccess(BaseResourceCheck):
         name = "Ensure Amazon EKS public endpoint disabled"
         id = "CKV_AWS_39"
         supported_resources = ['aws_eks_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

@@ -7,7 +7,7 @@ class GKEPodSecurityPolicyEnabled(BaseResourceValueCheck):
         name = "Ensure PodSecurityPolicy controller is enabled on the Kubernetes Engine Clusters"
         id = "CKV_GCP_24"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
