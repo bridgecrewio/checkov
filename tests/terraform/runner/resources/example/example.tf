@@ -102,12 +102,21 @@ resource "google_container_cluster" "primary_good" {
 resource "google_container_cluster" "primary_good2" {
   name               = "google_cluster"
   monitoring_service = "monitoring.googleapis.com"
+
+  master_authorized_networks_config {}
 }
 
 resource "google_container_cluster" "primary_bad" {
   name               = "google_cluster_bad"
   monitoring_service = "none"
   enable_legacy_abac = true
+
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block = "0.0.0.0/0"
+      display_name = "The world"
+    }
+  }
 }
 
 resource "google_container_node_pool" "bad_node_pool" {
@@ -838,8 +847,6 @@ resource aws_eks_cluster "eks_bad2" {
     subnet_ids = []
     endpoint_public_access = true
   }
-
-
 }
 
 resource aws_eks_cluster "eks_good" {
