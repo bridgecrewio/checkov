@@ -2,10 +2,10 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class S3PublicACL(BaseResourceCheck):
+class S3PublicACLWrite(BaseResourceCheck):
     def __init__(self):
-        name = "S3 Bucket has an ACL defined which allows public access."
-        id = "CKV_AWS_20"
+        name = "S3 Bucket has an ACL defined which allows public WRITE access."
+        id = "CKV_AWS_57"
         supported_resources = ['aws_s3_bucket']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -19,9 +19,9 @@ class S3PublicACL(BaseResourceCheck):
         """
         if 'acl' in conf.keys():
             acl_block = conf['acl']
-            if acl_block in [["public-read"],["public-read-write"],["website"]]:
+            if acl_block[0] == "public-read-write":
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
 
-check = S3PublicACL()
+check = S3PublicACLWrite()
