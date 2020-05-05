@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class EKSPublicAccess(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Amazon EKS public endpoint disabled"
@@ -17,15 +18,15 @@ class EKSPublicAccess(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "vpc_config" in conf.keys():
-           if "endpoint_public_access" in conf["vpc_config"][0].keys():
-               if conf["vpc_config"][0]["endpoint_public_access"][0] == False:
-                   return CheckResult.PASSED
-               else:
-                   return CheckResult.FAILED
-           else: 
-               return CheckResult.FAILED
+            if "endpoint_public_access" in conf["vpc_config"][0].keys():
+                if not conf["vpc_config"][0]["endpoint_public_access"][0]:
+                    return CheckResult.PASSED
+                else:
+                    return CheckResult.FAILED
+            else:
+                return CheckResult.FAILED
         else:
-           return CheckResult.UNKNOWN
-     
-check = EKSPublicAccess()
+            return CheckResult.UNKNOWN
 
+
+check = EKSPublicAccess()

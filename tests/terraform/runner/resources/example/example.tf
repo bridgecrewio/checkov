@@ -813,3 +813,47 @@ resource "aws_s3_bucket" "versioning as string example" {
 
   tags = "${var.tags}"
 }
+
+resource aws_eks_cluster "eks_bad" {
+  name = "bad-eks"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+
+
+  encryption_config {
+    provider {
+      key_arn = var.key_arn
+    }
+    resources = []
+  }
+}
+
+resource aws_eks_cluster "eks_bad2" {
+  name = "bad-eks2"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+
+
+}
+
+resource aws_eks_cluster "eks_good" {
+  name = "good-eks2"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+
+  encryption_config {
+    provider {
+      key_arn = var.key_arn
+    }
+    resources = ["secrets"]
+  }
+}
