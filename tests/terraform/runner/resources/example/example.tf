@@ -106,6 +106,8 @@ resource "google_container_cluster" "primary_good" {
   }
 
   ip_allocation_policy {}
+
+  private_cluster_config {}
 }
 
 resource "google_container_cluster" "primary_good2" {
@@ -127,6 +129,8 @@ resource "google_container_cluster" "primary_good2" {
   pod_security_policy_config {
     enabled = true
   }
+
+  private_cluster_config {}
 }
 
 resource "google_container_cluster" "primary_bad" {
