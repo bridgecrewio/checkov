@@ -1,15 +1,15 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.S3PublicACL import check
+from checkov.terraform.checks.resource.aws.S3PublicACLWRITE import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestS3PublicACL(unittest.TestCase):
+class TestS3PublicACLWrite(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],
-                         "acl": ["public-read"],
+                         "acl": ["public-read-write"],
                          "force_destroy": [True],
                          "tags": [{"Name": "my-bucket"}],
                          }
@@ -17,6 +17,16 @@ class TestS3PublicACL(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
+        resource_conf = {"region": ["us-west-2"],
+                         "bucket": ["my_bucket"],
+                         "acl": ["public-read"],
+                         "force_destroy": [True],
+                         "tags": [{"Name": "my-bucket"}],
+                         }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success2(self):
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],
                          "force_destroy": [True],
