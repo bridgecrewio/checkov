@@ -5,9 +5,9 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class EKSSecretsEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure EKS Cluster has Secrets Encryption Enabled"
-        id = "CKV_AWS_70"
+        id = "CKV_AWS_58"
         supported_resources = ['aws_eks_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
