@@ -949,6 +949,38 @@ resource azurerm_kubernetes_cluster "bad-example" {
   agent_pool_profile {}
   service_principal {}
 
+  role_based_access_control {
+    enabled = true
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+}
+
+resource azurerm_kubernetes_cluster "bad-example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  role_based_access_control {
+    enabled = false
+  }
+
   tags = {
     Environment = "Production"
   }
