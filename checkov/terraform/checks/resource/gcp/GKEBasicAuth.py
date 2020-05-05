@@ -18,9 +18,10 @@ class GKEBasicAuth(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'master_auth' in conf.keys():
-            if 'username' in conf['master_auth'][0].keys() and 'password' in conf['master_auth'][0].keys():
+            if conf['master_auth'][0].get('username') or conf['master_auth'][0].get('password'):
                 return CheckResult.FAILED
-        return CheckResult.PASSED
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = GKEBasicAuth()
