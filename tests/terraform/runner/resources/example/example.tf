@@ -104,6 +104,8 @@ resource "google_container_cluster" "primary_good" {
   node_config {
     image_type = "cos"
   }
+
+  ip_allocation_policy {}
 }
 
 resource "google_container_cluster" "primary_good2" {
