@@ -918,6 +918,8 @@ resource azurerm_kubernetes_cluster "example" {
   agent_pool_profile {}
   service_principal {}
 
+  api_server_authorized_ip_ranges = ["192.168.0.0/16"]
+
   tags = {
     Environment = "Production"
   }
@@ -948,6 +950,8 @@ resource azurerm_kubernetes_cluster "bad-example" {
 
   agent_pool_profile {}
   service_principal {}
+
+  api_server_authorized_ip_ranges = []
 
   role_based_access_control {
     enabled = true
