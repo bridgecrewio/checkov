@@ -254,13 +254,13 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 ```
 
 ### Running a specific check(s)
-To scan you directory with only a specific check use the `-c`\ `--check` flag. The flag can be repeated. 
+To scan you directory with only a specific check use the `-c`\ `--check` flag. You can use multiple checks with comma `,` delimiter.
 This is another way to skip execution of specific checks on a whitelist fashion
 
 The following example will show results only for 2 scans (CKV_AWS_1 and CKV_AWS_2) :
 
 ```bash
-checkov -d /user/tf --check CKV_AWS_1 --check CKV_AWS_2
+checkov -d /user/tf --check CKV_AWS_1,CKV_AWS_2
 ``` 
 
 ## Export scan to JSON

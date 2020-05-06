@@ -38,7 +38,8 @@ def run(banner=checkov_banner):
                         help='Report output format')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')
-    parser.add_argument('-c', '--check', help='filter scan to run only on a specific check identifier', nargs='?',)
+    parser.add_argument('-c', '--check', help='filter scan to run only on a specific check identifier, You can '
+                                              'specify multiple checks separated by comma delimiter',)
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
