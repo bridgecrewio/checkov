@@ -5,12 +5,13 @@ import logging
 import os
 
 from checkov.cloudformation.runner import Runner as cfn_runner
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -35,6 +36,9 @@ def run(banner=checkov_banner):
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
     parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
                         help='Report output format')
+    parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
+                        choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')
+    parser.add_argument('-c', '--check', help='filter scan to run only on a specific check identifier', nargs='?',)
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
@@ -45,7 +49,8 @@ def run(banner=checkov_banner):
                         default='master')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
-    runner_registry = RunnerRegistry(banner, tf_runner(), cfn_runner())
+    runner_filter = RunnerFilter(framework=args.framework,checks=args.check)
+    runner_registry = RunnerRegistry(banner,runner_filter, tf_runner(), cfn_runner())
     if args.version:
         print(version)
         return
