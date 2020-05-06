@@ -51,8 +51,9 @@ class Runner(BaseRunner):
             files = [os.path.abspath(file) for file in files]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             for file in files:
-                self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
-                self.check_tf_definition(report, root_folder,runner_filter)
+                if file.endswith(".tf"):
+                    self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
+                    self.check_tf_definition(report, root_folder,runner_filter)
 
         report.add_parsing_errors(parsing_errors.keys())
 
