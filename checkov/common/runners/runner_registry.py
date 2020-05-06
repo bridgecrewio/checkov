@@ -20,7 +20,7 @@ class RunnerRegistry(object):
 
     def run(self, root_folder=None, external_checks_dir=None, files=None):
         for runner in self.runners:
-            scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,runner_filter=self.runner_filter)
+            scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files, runner_filter=self.runner_filter)
             self.scan_reports.append(scan_report)
         return self.scan_reports
 

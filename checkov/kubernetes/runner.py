@@ -3,6 +3,8 @@ import operator
 import os
 from functools import reduce
 
+from checkov.common.runners.base_runner import BaseRunner
+from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.kubernetes.parser.parser import parse
@@ -11,10 +13,10 @@ from checkov.kubernetes.registry import registry
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
-class Runner:
+class Runner(BaseRunner):
     check_type = "kubernetes"
 
-    def run(self, root_folder, external_checks_dir=None, files=None):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -45,88 +47,84 @@ class Runner:
         #definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for k8_file in definitions.keys():
-            for i in range(len(definitions[k8_file])):
-                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
-                    continue
-                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
-
-                entity_conf = definitions[k8_file][i]
-
-                # Split out resources if entity kind is List
-                if entity_conf["kind"] == "List":
-                    for item in entity_conf["items"]:
-                        definitions[k8_file].append(item)
-
-            for i in range(len(definitions[k8_file])):
-                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
-                    continue
-                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
-
-                entity_conf = definitions[k8_file][i]
-
-                if entity_conf["kind"] == "List":
-                    continue
-
-                # Append containers and initContainers to definitions list
-                for type in ["containers", "initContainers"]:
-                    containers = []
-                    containers = self._search_deep_keys(type, entity_conf, [])
-                    if not containers:
+            if definitions[k8_file]:
+                for i in range(len(definitions[k8_file])):
+                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
                         continue
-                    containers = containers.pop()
-                    #containers.insert(0,entity_conf['kind'])
-                    containerDef = {}
-                    containerDef["containers"] = containers.pop()
-                    for cd in containerDef["containers"]:
-                        i = containerDef["containers"].index(cd)
-                        containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
-                        containerDef["containers"][i]["kind"] = type
-                        containerDef["containers"][i]["parent"] = entity_conf['kind'] + '.' + '.'.join(containers) + '[' + str(i) + ']'
-                        containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
-                    definitions[k8_file].extend(containerDef["containers"])
+                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
-            # Run for each definition included added container definitions
-            for i in range(len(definitions[k8_file])):
-                if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
-                    continue
-                logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+                    entity_conf = definitions[k8_file][i]
 
-                entity_conf = definitions[k8_file][i]
+                    # Split out resources if entity kind is List
+                    if entity_conf["kind"] == "List":
+                        for item in entity_conf["items"]:
+                            definitions[k8_file].append(item)
 
-                if entity_conf["kind"] == "List":
-                    continue
+                for i in range(len(definitions[k8_file])):
+                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                        continue
+                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
-                ## TODO - Evaluate skipped_checks
-                #skipped_checks = {}
-                skipped_checks = get_skipped_checks(entity_conf)
-                # skipped_checks = entity_context.get('skipped_checks')
+                    entity_conf = definitions[k8_file][i]
 
-                # Evaluate each container
+                    if entity_conf["kind"] == "List":
+                        continue
 
-                results = registry.scan(k8_file, entity_conf,
-                                        skipped_checks)
-                # TODO refactor into context parsing
-                find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
-                start_line = entity_conf["__startline__"]
-                end_line = entity_conf["__endline__"]
+                    # Append containers and initContainers to definitions list
+                    for type in ["containers", "initContainers"]:
+                        containers = []
+                        containers = self._search_deep_keys(type, entity_conf, [])
+                        if not containers:
+                            continue
+                        containers = containers.pop()
+                        #containers.insert(0,entity_conf['kind'])
+                        containerDef = {}
+                        containerDef["containers"] = containers.pop()
+                        for cd in containerDef["containers"]:
+                            i = containerDef["containers"].index(cd)
+                            containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
+                            containerDef["containers"][i]["kind"] = type
+                            containerDef["containers"][i]["parent"] = entity_conf['kind'] + '.' + '.'.join(containers) + '[' + str(i) + ']'
+                            containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
+                        definitions[k8_file].extend(containerDef["containers"])
 
-                if start_line == end_line:
-                    entity_lines_range = [start_line, end_line]
-                    entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line]
-                else:
-                    entity_lines_range = [start_line, end_line - 1]
-                    entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+                # Run for each definition included added container definitions
+                for i in range(len(definitions[k8_file])):
+                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                        continue
+                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
-                # TODO? - Variable Eval Message!
-                variable_evaluations = {}
+                    entity_conf = definitions[k8_file][i]
 
-                for check, check_result in results.items():
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=k8_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__)
-                    report.add_record(record=record)
+                    if entity_conf["kind"] == "List":
+                        continue
+
+                    skipped_checks = get_skipped_checks(entity_conf)
+
+                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter.checks)
+
+                    # TODO refactor into context parsing
+                    find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
+                    start_line = entity_conf["__startline__"]
+                    end_line = entity_conf["__endline__"]
+
+                    if start_line == end_line:
+                        entity_lines_range = [start_line, end_line]
+                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line]
+                    else:
+                        entity_lines_range = [start_line, end_line - 1]
+                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+
+                    # TODO? - Variable Eval Message!
+                    variable_evaluations = {}
+
+                    for check, check_result in results.items():
+                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                        code_block=entity_code_lines, file_path=k8_file,
+                                        file_line_range=entity_lines_range,
+                                        resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__)
+                        report.add_record(record=record)
 
 
         return report

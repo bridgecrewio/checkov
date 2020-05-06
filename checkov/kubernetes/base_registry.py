@@ -9,9 +9,9 @@ class Registry(BaseCheckRegistry):
     def extract_entity_details(self, entity):
         kind = entity["kind"]
         conf = entity
-        return kind , conf
+        return kind, conf
 
-    def scan(self, scanned_file, entity, skipped_checks):
+    def scan(self, scanned_file, entity, skipped_checks, check_id_whitelist=None):
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
@@ -20,9 +20,17 @@ class Registry(BaseCheckRegistry):
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-            result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
-                               entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+            if check_id_whitelist:
+                if check.id in check_id_whitelist:
+                    self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
-            results[check] = result
+                    result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                                       entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+                    results[check] = result
+            else:
+                self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
+                result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                                   entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+
+                results[check] = result
         return results
