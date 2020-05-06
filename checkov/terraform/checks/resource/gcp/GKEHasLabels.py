@@ -2,7 +2,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GKEBasicAuth(BaseResourceCheck):
+class GKEHasLabels(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Kubernetes Clusters are configured with Labels"
         id = "CKV_GCP_21"
@@ -22,4 +22,4 @@ class GKEBasicAuth(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = GKEBasicAuth()
+check = GKEHasLabels()

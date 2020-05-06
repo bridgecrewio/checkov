@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class AKSNetworkPolicy(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure RBAC is enabled on AKS clusters"
+        name = "Ensure AKS cluster has Network Policy configured"
         id = "CKV_AZURE_7"
         supported_resources = ['azurerm_kubernetes_cluster']
         categories = [CheckCategories.KUBERNETES]

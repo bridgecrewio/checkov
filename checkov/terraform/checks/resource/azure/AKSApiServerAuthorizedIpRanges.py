@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure RBAC is enabled on AKS clusters"
+        name = "Ensure AKS has an API Server Authorized IP Ranges enabled"
         id = "CKV_AZURE_6"
         supported_resources = ['azurerm_kubernetes_cluster']
         categories = [CheckCategories.KUBERNETES]
