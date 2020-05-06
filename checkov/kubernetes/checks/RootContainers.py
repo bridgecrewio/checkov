@@ -22,9 +22,9 @@ class RootContainers(BaseK8Check):
         if conf['kind'] == 'Pod':
             return 'Pod.spec.runAsUser'
         elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.runAsUser'
+            return 'CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser'
         else:
-            return conf['kind'] + '.spec.template.spec.runAsUser'
+            return conf['kind'] + '.spec.template.spec.securityContext.runAsUser'
 
     def scan_spec_conf(self, conf):
         spec = {}
