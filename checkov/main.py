@@ -34,7 +34,7 @@ def run(banner=checkov_banner):
     parser.add_argument('--external-checks-dir', action='append',
                         help='Directory for custom checks to be loaded. Can be repeated')
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
-    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml'], default='cli',
+    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml','github_failed_only'], default='cli',
                         help='Report output format')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')

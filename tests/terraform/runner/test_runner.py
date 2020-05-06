@@ -42,6 +42,7 @@ class TestRunnerValid(unittest.TestCase):
         report.print_json()
         report.print_console()
         report.print_junit_xml()
+        report.print_failed_github_md()
 
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

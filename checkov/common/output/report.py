@@ -6,6 +6,7 @@ from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
 from checkov.version import version
+from tabulate import tabulate
 
 init(autoreset=True)
 
@@ -91,6 +92,14 @@ class Report:
         ts = self.get_test_suites()
         print(TestSuite.to_xml_string(ts))
 
+    def print_failed_github_md(self):
+        result = []
+        for record in self.failed_checks:
+            result.append([record.check_id,record.file_path,record.resource,record.check_name])
+        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name"], tablefmt="github",
+                 showindex=True))
+        print("\n\n---\n\n")
+
     def get_test_suites(self):
         test_cases = {}
         test_suites = []
@@ -116,21 +125,7 @@ class Report:
                 TestSuite(name=key, test_cases=test_cases[key], package=test_cases[key][0].classname))
         return test_suites
 
+
     def print_json(self):
         print(self.get_json())
 
-    def get_new_report_for_check_id(self, check_id):
-        new_report = Report(self.check_type)
-        for record in self.passed_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.failed_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.skipped_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.parsing_errors:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        return new_report
