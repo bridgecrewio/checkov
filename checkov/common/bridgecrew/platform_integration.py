@@ -10,6 +10,7 @@ from json import JSONDecodeError
 import dpath.util
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+import os
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -20,7 +21,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 # tell the handler to use this format
 console.setFormatter(formatter)
 
-BC_API_URL = "https://www.bridgecrew.cloud/api/v1"
+BC_API_URL = os.getenv('BC_API_URL',"https://www.bridgecrew.cloud/api/v1")
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()

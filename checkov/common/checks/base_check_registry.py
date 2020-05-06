@@ -7,10 +7,12 @@ from abc import abstractmethod
 
 class BaseCheckRegistry(object):
     checks = {}
+    check_id_whitelist = None
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.checks = {}
+        self.check_id_whitelist = None
 
     def register(self, check):
         for entity in check.supported_entities:
@@ -31,11 +33,15 @@ class BaseCheckRegistry(object):
             return self.checks[entity]
         return []
 
+    def set_checks_whitelist(self,runner_filter):
+        if runner_filter.checks:
+            self.check_id_whitelist = runner_filter.checks
+
     @abstractmethod
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def scan(self, scanned_file, entity, skipped_checks):
+    def scan(self, scanned_file, entity, skipped_checks, check_id_whitelist=None):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
@@ -44,12 +50,20 @@ class BaseCheckRegistry(object):
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-            result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
-                               entity_name=entity_name, entity_type=entity_type, skip_info=skip_info)
-
-            results[check] = result
+            if check_id_whitelist:
+                if check.id in check_id_whitelist:
+                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                    results[check] = result
+            else:
+                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                results[check] = result
         return results
+
+    def run_check(self, check, entity_configuration, entity_name, entity_type, scanned_file, skip_info):
+        self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
+        result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                           entity_name=entity_name, entity_type=entity_type, skip_info=skip_info)
+        return result
 
     @staticmethod
     def _directory_has_init_py(directory):

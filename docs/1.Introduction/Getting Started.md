@@ -31,7 +31,7 @@ Infrastructure as code static analysis
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --version         Checkov version
+  -v, --version         version
   -d DIRECTORY, --directory DIRECTORY
                         IaC root directory (can not be used together with
                         --file). Can be repeated
@@ -42,7 +42,19 @@ optional arguments:
   -l, --list            List checks
   -o [{cli,json,junitxml}], --output [{cli,json,junitxml}]
                         Report output format
+  --framework {cloudformation,terraform,kubernetes,all}
+                        filter scan to run only on a specific infrastructure
+                        code frameworks
+  -c [CHECK], --check [CHECK]
+                        filter scan to run only on a specific check identifier
   -s, --soft-fail       Runs checks but suppresses error code
+  --bc-api-key BC_API_KEY
+                        Bridgecrew API key
+  --repo-id REPO_ID     Identity string of the repository, with form
+                        <repo_owner>/<repo_name>
+  -b BRANCH, --branch BRANCH
+                        Selected branch of the persisted repository. Only has
+                        effect when using the --bc-api-key flag
 
 ```
 
@@ -240,6 +252,16 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	Suppress comment: The bucket is a public static content host
 	File: /example.tf:1-25
 ```
+
+### Running a specific check(s)
+To scan you directory with only a specific check use the `-c`\ `--check` flag. The flag can be repeated. 
+This is another way to skip execution of specific checks on a whitelist fashion
+
+The following example will show results only for 2 scans (CKV_AWS_1 and CKV_AWS_2) :
+
+```bash
+checkov -d /user/tf --check CKV_AWS_1 --check CKV_AWS_2
+``` 
 
 ## Export scan to JSON
 For the sake of the example, we use the previous bucket configuration and disable it;s versioning is disabled for a check to fail.
