@@ -14,7 +14,7 @@ class ShareHostPIDPSP(BaseSpecOmittedOrValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_inspected_key(self):
-        return "spec.hostPID"
+        return "spec/hostPID"
 
     def get_resource_id(self, conf):
         return 'PodSecurityPolicy.spec.hostPID'
