@@ -1,12 +1,13 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
-class GoogleContainerClusterClientCertificateEnabled(BaseResourceCheck):
+
+class GKEClientCertificateEnabled(BaseResourceCheck):
     def __init__(self):
         name = "Ensure a client certificate is used by clients to authenticate to Kubernetes Engine Clusters"
         id = "CKV_GCP_13"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -23,4 +24,4 @@ class GoogleContainerClusterClientCertificateEnabled(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = GoogleContainerClusterClientCertificateEnabled()
+check = GKEClientCertificateEnabled()

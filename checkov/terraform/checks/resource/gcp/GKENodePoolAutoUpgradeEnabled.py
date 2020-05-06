@@ -7,7 +7,7 @@ class GoogleContainerNodePoolAutoUpgradeEnabled(BaseResourceCheck):
         name = "Ensure 'Automatic node upgrade' is enabled for Kubernetes Clusters"
         id = "CKV_GCP_10"
         supported_resources = ['google_container_node_pool']
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

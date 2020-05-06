@@ -2,12 +2,12 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GoogleContainerNodePoolAutoRepairEnabled(BaseResourceCheck):
+class GKENodePoolAutoRepairEnabled(BaseResourceCheck):
     def __init__(self):
         name = "Ensure 'Automatic node repair' is enabled for Kubernetes Clusters"
         id = "CKV_GCP_9"
         supported_resources = ['google_container_node_pool']
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -23,4 +23,4 @@ class GoogleContainerNodePoolAutoRepairEnabled(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = GoogleContainerNodePoolAutoRepairEnabled()
+check = GKENodePoolAutoRepairEnabled()

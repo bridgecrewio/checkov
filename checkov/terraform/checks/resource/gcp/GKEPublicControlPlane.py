@@ -2,10 +2,10 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GKEClusterLogging(BaseResourceCheck):
+class GKEPublicControlPlane(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters"
-        id = "CKV_GCP_1"
+        name = "Ensure GKE Control Plane is not public"
+        id = "CKV_GCP_18"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -17,10 +17,12 @@ class GKEClusterLogging(BaseResourceCheck):
         :param conf: google_compute_ssl_policy configuration
         :return: <CheckResult>
         """
-        if 'logging_service' in conf.keys():
-            if conf['logging_service'][0] == "none":
-                return CheckResult.FAILED
+        if 'master_authorized_networks_config' in conf.keys():
+            if 'cidr_blocks' in conf['master_authorized_networks_config'][0].keys():
+                for cidr_block_conf in conf['master_authorized_networks_config'][0]['cidr_blocks']:
+                    if '0.0.0.0/0' in cidr_block_conf['cidr_block']:
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 
-check = GKEClusterLogging()
+check = GKEPublicControlPlane()

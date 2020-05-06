@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class ECRPolicy(BaseResourceCheck):
     def __init__(self):
         name = "Ensure ECR policy is not set to public"
