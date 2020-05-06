@@ -7,5 +7,6 @@ class RunnerFilter(object):
             checks = []
         if isinstance(checks,str):
             self.checks = checks.split(",")
+        else:
+            self.checks = checks
         self.framework = framework
-        self.checks = checks
