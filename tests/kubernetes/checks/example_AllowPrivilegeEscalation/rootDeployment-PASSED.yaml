@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hello
+  labels: 
+    app: hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+  template: 
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - image: k8s.gcr.io/echoserver:1.4
+        name: hello
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 0
+
+

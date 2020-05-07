@@ -7,7 +7,7 @@ class DefaultNamespace(BaseK8Check):
     def __init__(self):
         # CIS-1.5 5.7.4
         name = "The default namespace should not be used"
-        id = "CKV_K8S_18"
+        id = "CKV_K8S_21"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob', 'Service', 'Secret', 'ServiceAccount', 'Role', 'RoleBinding', 'ConfigMap', 'Ingress']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)

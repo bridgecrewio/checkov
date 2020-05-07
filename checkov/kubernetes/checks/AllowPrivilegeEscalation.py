@@ -7,6 +7,8 @@ class AllowPrivilegeEscalation(BaseK8Check):
         # CIS-1.3 1.7.5
         # CIS-1.5 5.2.5
         # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+        #https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+        # Default is allow / true
         # AllowPrivilegeEscalation is true always when the container is: 1) run as Privileged OR 2) has CAP_SYS_ADMIN.
         # This could be enforced via PodSecurityPolicy
         name = "Containers should not run with allowPrivilegeEscalation"
