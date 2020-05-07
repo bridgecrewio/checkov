@@ -18,21 +18,18 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "cluster_config" in conf.keys():
-
-            instance_count = conf["cluster_config"][0]["instance_count"][0]
-            if isinstance(instance_count,int):
-                if instance_count > 1:
-                    if "node_to_node_encryption" in conf.keys():
-                        if conf["node_to_node_encryption"][0]["enabled"][0]:
-                            return CheckResult.PASSED
+            if isinstance(conf["cluster_config"][0], dict):
+                instance_count = conf["cluster_config"][0]["instance_count"][0]
+                if isinstance(instance_count, int):
+                    if instance_count > 1:
+                        if "node_to_node_encryption" in conf.keys() and conf["node_to_node_encryption"][0]["enabled"][0]:
+                                return CheckResult.PASSED
                         else:
                             return CheckResult.FAILED
                     else:
-                        return CheckResult.FAILED
+                        return CheckResult.PASSED
                 else:
-                    return CheckResult.PASSED
-            else:
-                return CheckResult.UNKNOWN
+                    return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
 

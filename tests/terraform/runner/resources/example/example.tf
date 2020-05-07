@@ -180,6 +180,18 @@ resource "aws_iam_account_password_policy" "password-policy" {
   allow_users_to_change_password = true
 }
 
+resource "aws_iam_account_password_policy" "paswword-policy example with string values instead of int" {
+  allow_users_to_change_password = var.allow_users_to_change_password
+  hard_expiry                    = var.hard_expiry
+  minimum_password_length        = "14"
+  max_password_age               = "40"
+  password_reuse_prevention      = "3"
+  require_lowercase_characters   = var.require_lowercase_characters
+  require_uppercase_characters   = var.require_uppercase_characters
+  require_numbers                = var.require_numbers
+  require_symbols                = var.require_symbols
+}
+
 resource "aws_security_group" "bar-sg" {
   name   = "sg-bar"
   vpc_id = aws_vpc.main.id
@@ -1006,5 +1018,24 @@ resource azurerm_kubernetes_cluster "bad-example" {
 
   tags = {
     Environment = "Production"
+  }
+}
+
+
+resource "aws_elasticsearch_domain" "dynamic cluster config example" {
+  domain_name = var.domain_name
+  elasticsearch_version = var.elasticsearch_version
+  access_policies = var.access_policies
+  advanced_options = var.advanced_options == null ? {} : var.advanced_options
+  dynamic "cluster_config" {
+    for_each = local.cluster_config
+    content {
+      instance_type = lookup(cluster_config.value, "instance_type")
+      instance_count = lookup(cluster_config.value, "instance_count")
+      dedicated_master_enabled = lookup(cluster_config.value, "dedicated_master_enabled")
+      dedicated_master_type = lookup(cluster_config.value, "dedicated_master_type")
+      dedicated_master_count = lookup(cluster_config.value, "dedicated_master_count")
+      zone_awareness_enabled = lookup(cluster_config.value, "zone_awareness_enabled")
+    }
   }
 }

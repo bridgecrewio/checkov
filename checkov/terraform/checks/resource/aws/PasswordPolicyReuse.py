@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.util.type_forcers import force_int
 
 
 class PasswordPolicyReuse(BaseResourceCheck):
@@ -19,8 +20,7 @@ class PasswordPolicyReuse(BaseResourceCheck):
         """
         key = 'password_reuse_prevention'
         if key in conf.keys():
-            password_reuse_prevention_value = conf[key][0]
-            if isinstance(password_reuse_prevention_value, str) or password_reuse_prevention_value >= 24:
+            if not (force_int(conf[key][0]) and force_int(conf[key][0]) < 24):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
