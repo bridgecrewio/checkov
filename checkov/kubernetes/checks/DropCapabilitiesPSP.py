@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
-class DropCapabilities(BaseK8Check):
+class DropCapabilitiesPSP(BaseK8Check):
 
     def __init__(self):
         # CIS-1.3 1.7.7
@@ -25,4 +25,4 @@ class DropCapabilities(BaseK8Check):
         return CheckResult.FAILED
 
 
-check = DropCapabilities()
+check = DropCapabilitiesPSP()

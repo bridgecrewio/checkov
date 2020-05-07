@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-drop-all-capability
+spec:
+  containers:
+    - name: main
+      image: fedora
+      command: ["/bin/sleep", "999999"]
+      securityContext:
+        capabilities:
+          drop:
+            - ALL
+
+# kubectl exec -it pod-drop-all-capability -- bash
+# dnf -y install libcap-ng-utils
+  ### You'll see with drop all you can't do this!

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-drop-net-raw-capability
+spec:
+  containers:
+    - name: main
+      image: fedora
+      command: ["/bin/sleep", "999999"]
+      securityContext:
+        capabilities:
+          drop:
+            - NET_RAW
+# kubectl exec -it pod-drop-net-raw-capability -- bash
+# dnf -y install libcap-ng-utils
+# pscap
+### Notice no net_raw capability
