@@ -1,21 +1,22 @@
 import logging
+import operator
 import os
+from functools import reduce
 
 from checkov.cloudformation.checks.resource.registry import resource_registry
+from checkov.cloudformation.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.cloudformation.parser import parse
-
-from functools import reduce
-import operator
+from checkov.common.runners.base_runner import BaseRunner
+from checkov.runner_filter import RunnerFilter
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
 
-class Runner:
+class Runner(BaseRunner):
     check_type = "cloudformation"
 
-    def run(self, root_folder, external_checks_dir=None, files=None):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -83,8 +84,7 @@ class Runner:
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
 
-                results = resource_registry.scan(cf_file, {resource_name: resource},
-                                                 skipped_checks)
+                results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks,runner_filter.checks)
                 # TODO refactor into context parsing
                 find_lines_result_list = list(find_lines(resource, '__startline__'))
                 if len(find_lines_result_list) >= 1:

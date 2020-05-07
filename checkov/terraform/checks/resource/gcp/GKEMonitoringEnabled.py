@@ -1,12 +1,13 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
-class GoogleContainerClusterNetworkPolicyEnabled(BaseResourceCheck):
+
+class GKEMonitoringEnabled(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Network Policy is enabled on Kubernetes Engine Clusters"
-        id = "CKV_GCP_12"
+        name = "Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters"
+        id = "CKV_GCP_8"
         supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -16,10 +17,10 @@ class GoogleContainerClusterNetworkPolicyEnabled(BaseResourceCheck):
         :param conf: google_container_cluster configuration
         :return: <CheckResult>
         """
-        if 'network_policy' in conf:
-            if 'enabled' in conf['network_policy'][0]:
-                if conf['network_policy'][0]['enabled']:
-                    return CheckResult.PASSED
-        return CheckResult.FAILED
+        if 'monitoring_service' in conf:
+            if conf['monitoring_service'][0] == "none":
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
-check = GoogleContainerClusterNetworkPolicyEnabled()
+
+check = GKEMonitoringEnabled()

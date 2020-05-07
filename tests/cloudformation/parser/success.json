@@ -910,6 +910,19 @@
         ]
       }
     },
+    "eksCluster": {
+      "Type": "AWS::EKS::Cluster",
+      "Properties": {
+        "EncryptionConfig" : [
+          {
+            "Provider": {
+              "KeyArn": ""
+            },
+            "Resources": ["secrets"]
+          }
+        ]
+      }
+    },
     "acmeSnsCustomResource": {
       "Type": "Custom::acmeSnsCustomResource",
       "DependsOn": [

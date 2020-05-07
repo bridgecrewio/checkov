@@ -97,17 +97,60 @@ resource "google_sql_database_instance" "gcp_sql_db_instance_good" {
 resource "google_container_cluster" "primary_good" {
   name               = "google_cluster"
   enable_legacy_abac = false
+  resource_labels {
+    Owner = "SomeoneNotWorkingHere"
+  }
+
+  node_config {
+    image_type = "cos"
+  }
+
+  ip_allocation_policy {}
+
+  private_cluster_config {}
 }
 
 resource "google_container_cluster" "primary_good2" {
   name               = "google_cluster"
   monitoring_service = "monitoring.googleapis.com"
+
+  master_authorized_networks_config {}
+
+  master_auth {
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+
+  node_config {
+    image_type = "not-cos"
+  }
+
+  pod_security_policy_config {
+    enabled = true
+  }
+
+  private_cluster_config {}
 }
 
 resource "google_container_cluster" "primary_bad" {
   name               = "google_cluster_bad"
   monitoring_service = "none"
   enable_legacy_abac = true
+
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block = "0.0.0.0/0"
+      display_name = "The world"
+    }
+  }
+
+  master_auth {
+    username = "test"
+    password = "password"
+  }
+
+  resource_labels {}
 }
 
 resource "google_container_node_pool" "bad_node_pool" {
@@ -825,6 +868,159 @@ resource "aws_s3_bucket" "versioning as string example" {
 
   tags = "${var.tags}"
 }
+
+resource aws_eks_cluster "eks_bad" {
+  name = "bad-eks"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+
+
+  encryption_config {
+    provider {
+      key_arn = var.key_arn
+    }
+    resources = []
+  }
+}
+
+resource aws_eks_cluster "eks_bad2" {
+  name = "bad-eks2"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+}
+
+resource aws_eks_cluster "eks_good" {
+  name = "good-eks2"
+  role_arn = var.role_arn
+  vpc_config {
+    subnet_ids = []
+    endpoint_public_access = true
+  }
+
+  encryption_config {
+    provider {
+      key_arn = var.key_arn
+    }
+    resources = ["secrets"]
+  }
+}
+
+resource azurerm_kubernetes_cluster "example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  api_server_authorized_ip_ranges = ["192.168.0.0/16"]
+
+  tags = {
+    Environment = "Production"
+  }
+
+  addon_profile {
+    kube_dashboard {
+      enabled = true
+    }
+
+    oms_agent {
+      enabled = true
+      log_analytics_workspace_id = ""
+    }
+  }
+}
+
+resource azurerm_kubernetes_cluster "bad-example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  api_server_authorized_ip_ranges = []
+
+  role_based_access_control {
+    enabled = true
+  }
+
+  network_profile {
+    network_plugin = "azure"
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+}
+
+resource azurerm_kubernetes_cluster "bad-example" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  agent_pool_profile {}
+  service_principal {}
+
+  role_based_access_control {
+    enabled = false
+  }
+
+  addon_profile {
+    kube_dashboard {
+      enabled = false
+    }
+  }
+
+  network_profile {
+    network_plugin = "azure"
+    network_policy = "network_policy"
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+}
+
 
 resource "aws_elasticsearch_domain" "dynamic cluster config example" {
   domain_name = var.domain_name

@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.gcp.GoogleContainerClusterClientCertificateEnabled import check
+from checkov.terraform.checks.resource.gcp.GKEClientCertificateEnabled import check
 from checkov.common.models.enums import CheckResult
 
 
-class GoogleContainerClusterClientCertificateEnabled(unittest.TestCase):
+class GKEClientCertificateEnabled(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['google_cluster'], 'master_auth': [{'client_certificate_config': [{'issue_client_certificate': [False]}]}]}
