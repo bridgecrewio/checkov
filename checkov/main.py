@@ -58,6 +58,9 @@ def run(banner=checkov_banner):
     if args.bc_api_key:
         if args.repo_id is None:
             parser.error("--repo-id argument is required when using --bc-api-key")
+            if len(args.repo_id.split('/')) != 2:
+                parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
+                             "bridgecrewio/checkov")
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
     if args.list:
         print_checks()
