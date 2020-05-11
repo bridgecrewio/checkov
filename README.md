@@ -26,7 +26,7 @@ Checkov is written in Python and provides a simple method to write and manage po
  * Scans Terraform and AWS CloudFormation configurations.
  * Scans for [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
  * Policies support evaluation of variables to their optional default value.
- * Supports in-line suppression of accepted risks or false-positives to reduce recurring scan failures.
+ * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
  * Output currently available as CLI, JSON or JUnit XML.
 
 ## Screenshots

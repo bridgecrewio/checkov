@@ -45,3 +45,6 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	
 ...
 ```
+
+# Global skip
+If you'd like to whitelist or blacklist a check_id from being executed, use the `--check`(whitelist) or `--skip-check` flags
