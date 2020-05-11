@@ -41,10 +41,12 @@ class BaseCheckRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def scan(self, scanned_file, entity, skipped_checks, check_id_whitelist=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
+        check_id_whitelist = runner_filter.checks
+        check_id_blacklist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
@@ -52,6 +54,10 @@ class BaseCheckRegistry(object):
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
             if check_id_whitelist:
                 if check.id in check_id_whitelist:
+                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                    results[check] = result
+            elif check_id_blacklist:
+                if check.id not in check_id_blacklist:
                     result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                     results[check] = result
             else:
