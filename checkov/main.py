@@ -67,7 +67,7 @@ def run(banner=checkov_banner):
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
-    if args.checks and args.skip_checks:
+    if args.check and args.skip_check:
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
     if args.list:
