@@ -3,10 +3,10 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 import json
 
 
-class IAMRoleAttachedToService(BaseResourceCheck):
+class IAMRoleAllowsPublicAssume(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure IAM Role is attached to a specific service"
+        name = "Ensure IAM role allows only specific services or principals to assume it"
         id = "CKV_AWS_60"
         supported_resources = ['aws_iam_role']
         categories = [CheckCategories.IAM]
@@ -26,4 +26,4 @@ class IAMRoleAttachedToService(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = IAMRoleAttachedToService()
+check = IAMRoleAllowsPublicAssume()

@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.IAMRoleAttachedToService import check
+from checkov.terraform.checks.resource.aws.IAMRoleAllowsPublicAssume import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestIAMRoleAttachedToService(unittest.TestCase):
+class TestIAMRoleAllowsPublicAssume(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {
