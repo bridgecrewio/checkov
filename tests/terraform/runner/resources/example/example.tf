@@ -1039,3 +1039,17 @@ resource "aws_elasticsearch_domain" "dynamic cluster config example" {
     }
   }
 }
+
+resource "aws_api_gateway_method" "api gateway method example with authorization" {
+  rest_api_id   = "${var.rest_api_id}"
+  resource_id   = "${var.resource_id}"
+  http_method   = "${var.method}"
+  authorization = "AWS_IAM"
+}
+
+resource "aws_api_gateway_method" "api gateway method example without authorization" {
+  rest_api_id   = var.api_id
+  resource_id   = var.api_resource_id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
