@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.IAMRoleAllowsPrincipals import check
+from checkov.terraform.checks.resource.aws.IAMRoleAllowsAllPrincipals import check
 from checkov.common.models.enums import CheckResult
 
 
