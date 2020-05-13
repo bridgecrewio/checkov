@@ -20,15 +20,25 @@ class SecurityGroupUnrestrictedIngress22(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
-        if 'ingress' in conf.keys():
+
+        if 'ingress' in conf:
             ingress_conf = conf['ingress']
-            for rule in ingress_conf:
-                if isinstance(rule, dict):
-                    if isinstance(force_list(rule['from_port'])[0],int) and isinstance(force_list(rule['to_port'])[0],int):
-                        if rule['from_port'] == [PORT] and rule['to_port'] == [PORT]:
-                            if 'cidr_blocks' in rule.keys():
-                                if rule['cidr_blocks'] == [["0.0.0.0/0"]] and 'security_groups' not in rule.keys():
-                                    return CheckResult.FAILED
+            for ingress in ingress_conf:
+                # It's not clear why these are double-nested list
+                for rule in ingress:
+                    from_port = int(force_list(rule['from_port'])[0])
+                    to_port = int(force_list(rule['to_port'])[0])
+
+
+                    if from_port <= PORT and to_port >= PORT:
+                        # It's not clear whether these can ever be a type other
+                        # than an empty list but just in case…
+                        cidr_blocks = rule.get('cidr_blocks', [])
+                        security_groups = rule.get('security_groups', [])
+                        print(rule, cidr_blocks, security_groups)
+
+                        if "0.0.0.0/0" in cidr_blocks and not security_groups:
+                                return CheckResult.FAILED
 
         return CheckResult.PASSED
 
