@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.aws.IAMRoleAllowsAllPrincipals import che
 from checkov.common.models.enums import CheckResult
 
 
-class TestIAMRoleAllowsPrincipals(unittest.TestCase):
+class TestIAMRoleAllowsAllPrincipals(unittest.TestCase):
 
     def test_failure_1(self):
         resource_conf = {
