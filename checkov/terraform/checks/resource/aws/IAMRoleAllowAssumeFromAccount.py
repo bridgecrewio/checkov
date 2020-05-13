@@ -4,11 +4,11 @@ import json
 import re
 
 
-class IAMRoleAllowsAllPrincipals(BaseResourceCheck):
+class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure IAM role allows only specific services or principals to assume it"
-        id = "CKV_AWS_60"
+        name = "Ensure IAM role allows only specific principals in account to assume it"
+        id = "CKV_AWS_61"
         supported_resources = ['aws_iam_role']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -28,4 +28,4 @@ class IAMRoleAllowsAllPrincipals(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = IAMRoleAllowsAllPrincipals()
+check = IAMRoleAllowAssumeFromAccount()
