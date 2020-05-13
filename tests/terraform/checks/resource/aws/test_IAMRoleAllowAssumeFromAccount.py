@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.IAMRoleAllowsAllPrincipals import check
+from checkov.terraform.checks.resource.aws.IAMRoleAllowAssumeFromAccount import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestIAMRoleAllowsAllPrincipals(unittest.TestCase):
+class TestIAMRoleAllowAssumeFromAccount(unittest.TestCase):
 
     def test_failure_1(self):
         resource_conf = {
