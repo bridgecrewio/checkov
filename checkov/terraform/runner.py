@@ -107,7 +107,7 @@ class Runner(BaseRunner):
                     if variables_evaluations:
                         entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                               entity_context_path)
-                    results = registry.scan(scanned_file, entity, skipped_checks, runner_filter.checks)
+                    results = registry.scan(scanned_file, entity, skipped_checks,runner_filter)
                     for check, check_result in results.items():
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                         code_block=entity_code_lines, file_path=scanned_file,

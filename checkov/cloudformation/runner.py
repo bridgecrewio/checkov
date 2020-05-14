@@ -84,7 +84,7 @@ class Runner(BaseRunner):
                 ## TODO - Evaluate skipped_checks
                 skipped_checks = {}
 
-                results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks, runner_filter.checks)
+                results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks,runner_filter)
                 # TODO refactor into context parsing
                 find_lines_result_list = list(find_lines(resource, '__startline__'))
                 if len(find_lines_result_list) >= 1:

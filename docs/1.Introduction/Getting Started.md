@@ -21,15 +21,6 @@ checkov -d /user/tf
 
 ## CLI Options
 ```bash
-checkov --help
-
-usage: checkov [-h] [-v] [-d DIRECTORY] [-f FILE]
-               [--external-checks-dir EXTERNAL_CHECKS_DIR] [-l]
-               [-o [{cli,json,junitxml}]] [-s]
-
-Infrastructure as code static analysis
-
-optional arguments:
   -h, --help            show this help message and exit
   -v, --version         version
   -d DIRECTORY, --directory DIRECTORY
@@ -40,13 +31,19 @@ optional arguments:
                         Directory for custom checks to be loaded. Can be
                         repeated
   -l, --list            List checks
-  -o [{cli,json,junitxml}], --output [{cli,json,junitxml}]
+  -o [{cli,json,junitxml,github_failed_only}], --output [{cli,json,junitxml,github_failed_only}]
                         Report output format
   --framework {cloudformation,terraform,kubernetes,all}
                         filter scan to run only on a specific infrastructure
                         code frameworks
-  -c [CHECK], --check [CHECK]
-                        filter scan to run only on a specific check identifier
+  -c CHECK, --check CHECK
+                        filter scan to run only on a specific check
+                        identifier(whitelist), You can specify multiple checks
+                        separated by comma delimiter
+  --skip-check SKIP_CHECK
+                        filter scan to run on all check but a specific check
+                        identifier(blacklist), You can specify multiple checks
+                        separated by comma delimiter
   -s, --soft-fail       Runs checks but suppresses error code
   --bc-api-key BC_API_KEY
                         Bridgecrew API key
