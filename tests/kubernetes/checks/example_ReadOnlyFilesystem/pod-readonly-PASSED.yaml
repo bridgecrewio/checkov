@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: readonly-container
+  name: readonly-container
+spec:
+  containers:
+  - image: ubuntu
+    name: readonly-container
+    command: ["/bin/sh", "-c", "sleep infinity"]
+    securityContext:
+      readOnlyRootFilesystem: true
+  restartPolicy: Never
+
+

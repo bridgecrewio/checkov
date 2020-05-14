@@ -11,6 +11,7 @@ from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.version import version
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +42,7 @@ def run(banner=checkov_banner):
                         choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(whitelist), You can '
-                             'specify multiple checks separated by comma delimiter')
+                             'specify multiple checks separated by comma delimiter', default=None)
     parser.add_argument('--skip-check',
                         help='filter scan to run on all check but a specific check identifier(blacklist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
@@ -55,8 +56,8 @@ def run(banner=checkov_banner):
                         default='master')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
-    runner_filter = RunnerFilter(framework=args.framework, checks=args.check,skip_checks=args.skip_check)
-    runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner())
+    runner_filter = RunnerFilter(framework=args.framework,checks=args.check,skip_checks=args.skip_check)
+    runner_registry = RunnerRegistry(banner,runner_filter, tf_runner(), cfn_runner(),k8_runner())
     if args.version:
         print(version)
         return

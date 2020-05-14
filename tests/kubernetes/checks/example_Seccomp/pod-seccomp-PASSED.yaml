@@ -1,0 +1,33 @@
+# Source: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seccomp-passed
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: docker/default
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  volumes:
+  - name: sec-ctx-vol
+    emptyDir: {}
+  containers:
+  - name: sec-ctx-demo
+    image: busybox
+    command: [ "sh", "-c", "sleep 1h" ]
+    volumeMounts:
+    - name: sec-ctx-vol
+      mountPath: /data/demo
+    securityContext:
+      allowPrivilegeEscalation: false
+# kubectl exec -it seccomp-passed -- grep Seccomp /proc/1/status
+### This will return 'Seccomp:   2' indicating the Seccomp filter is on in the container
+###
+# kubectl exec -it seccomp-passed -- /bin/sh
+# touch /tmp/testfile
+# chown 100:100 /tmp/testfile	# This will fail - blocked by Seccomp
+# cat /proc/sys/kernel/seccomp/actions_avail	# This shows the available actions (on newer kernels)
+
+

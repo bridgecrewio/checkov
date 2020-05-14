@@ -1,0 +1,57 @@
+# Pod runAsUser not set, container runAsUser not set or < 10000 (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+---
+# Pod runAsUser not set, container runAsUser not set or < 10000 (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+    securityContext:
+      runAsUser: 0
+---
+# Pod runAsUser >= 10000, override at container < 10000 (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod3
+spec:
+  securityContext:
+    runAsUser: 11000
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+  - name: main2
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+    securityContext:
+      runAsUser: 0
+---
+# Pod runAsUser < 10000, no override at container (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod4
+spec:
+  securityContext:
+    runAsUser: 1000
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+  - name: main2
+    image: alpine
+    command: ["/bin/sleep", "999999"]

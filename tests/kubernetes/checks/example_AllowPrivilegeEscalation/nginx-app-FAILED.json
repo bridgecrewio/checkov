@@ -1,0 +1,53 @@
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "nginx"
+  }
+}
+{
+  "kind": "Pod",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "my-nginx",
+    "namespace": "nginx",
+    "labels": {
+      "app": "nginx"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "nginx",
+        "image": "nginx:1.14.2",
+        "ports": [
+          {
+            "name": "http",
+            "containerPort": 80
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "my-nginx-svc",
+    "namespace": "nginx",
+    "labels": {
+      "app": "nginx"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "port": 80
+      }
+    ],
+    "selector": {
+      "app": "nginx"
+    }
+  }
+}

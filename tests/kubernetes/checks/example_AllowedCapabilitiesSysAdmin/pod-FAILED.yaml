@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo-1
+spec:
+  containers:
+    - name: sec-ctx-1
+      image: gcr.io/google-samples/node-hello:1.0
+      securityContext:
+        capabilities:
+          add: ["SYS_ADMIN"]
