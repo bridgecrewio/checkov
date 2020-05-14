@@ -1039,3 +1039,137 @@ resource "aws_elasticsearch_domain" "dynamic cluster config example" {
     }
   }
 }
+
+resource "aws_api_gateway_method" "api gateway method example with authorization" {
+  rest_api_id   = "${var.rest_api_id}"
+  resource_id   = "${var.resource_id}"
+  http_method   = "OPTIONS}"
+  authorization = "AWS_IAM"
+}
+
+resource "aws_api_gateway_method" "api gateway method example without authorization" {
+  rest_api_id   = var.api_id
+  resource_id   = var.api_resource_id
+  http_method   = var.http_method
+  authorization = "NONE"
+}
+
+resource "aws_iam_role" "example with specific service attached" {
+  name = "${var.name}-${var.environment}"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role" "example with no specific service attached" {
+  name = "${var.name}-${var.environment}"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "json bad policy" {
+  name = "test_policy"
+  role = aws_iam_role.test_role.id
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Action": [
+          "*"
+        ],
+        "Effect": "Allow",
+        "Resource": "*"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_iam_role_policy" "json good policy" {
+  name = "test_policy"
+  role = aws_iam_role.test_role.id
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Action": [
+          "ec2:Describe*"
+        ],
+        "Effect": "Allow",
+        "Resource": "*"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_iam_role" "example 1 allowing all aws principals" {
+  name = "${var.name}-${var.environment}"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS": "123123123123"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role" "example 2 allowing all aws principals" {
+  name = "${var.name}-${var.environment}"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS": "arn:aws:iam::123123123123:root"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}

@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/89/0c/0c3ae658dcd91d8c592b45fb393ce6b20160fb315ee8ccc8d084d52e968c/checkov-1.0.281.tar.gz"
-  sha256 "d7984f416a17d91ff249c43113914f885a50465adf23db45844139c31511ee34"
+  url "https://files.pythonhosted.org/packages/d7/e8/068c18835d6841c47d102d0a7d97cf22c4777c6a66400953af4ea09582d3/checkov-1.0.289.tar.gz"
+  sha256 "16060a7b93216143c9a5ef36925a83ae7e9c2a6997025af54fef3b7ca55357aa"
 
   depends_on "python3"
 
@@ -54,8 +54,8 @@ class Checkov < Formula
   end
 
   resource "jmespath" do
-    url "https://files.pythonhosted.org/packages/5c/40/3bed01fc17e2bb1b02633efc29878dfa25da479ad19a69cfb11d2b88ea8e/jmespath-0.9.5.tar.gz"
-    sha256 "cca55c8d153173e21baa59983015ad0daf603f9cb799904ff057bfb8ff8dc2d9"
+    url "https://files.pythonhosted.org/packages/3c/56/3f325b1eef9791759784aa5046a8f6a1aff8f7c898a2e34506771d3b99d8/jmespath-0.10.0.tar.gz"
+    sha256 "b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"
   end
 
   resource "junit-xml" do
