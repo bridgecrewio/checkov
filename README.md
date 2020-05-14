@@ -1,4 +1,5 @@
-# Checkov
+![](docs/web/images/checkov_by_bridgecrew.png)
+
 
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
@@ -7,6 +8,7 @@
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
+
 
 ## **Table of contents**
 - [Description](#description)
@@ -22,7 +24,7 @@ Checkov is written in Python and provides a simple method to write and manage po
 
  ## Features
 
- * [100+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * [250+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
  * Scans Terraform and AWS CloudFormation configurations.
  * Scans for [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
  * Policies support evaluation of variables to their optional default value.
