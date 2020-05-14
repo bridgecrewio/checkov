@@ -35,7 +35,10 @@ class Runner(BaseRunner):
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in K8_POSSIBLE_ENDINGS:
-                        files_list.append(os.path.join(root, file))
+                        full_path = os.path.join(root, file)
+                        if 'node_modules' not in full_path and "/." not in full_path and file not in ['package.json','package-lock.json']:
+                            # skip temp directories
+                            files_list.append(full_path)
 
             for file in files_list:
                 relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
