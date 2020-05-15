@@ -9,12 +9,13 @@ class AllowedCapabilitiesSysAdmin(BaseK8Check):
         # This provides the most privilege and is similar to root
         # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
         id = "CKV_K8S_39"
+        # Location: container .spec.allowedCapabilities
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.spec.allowedCapabilities'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:

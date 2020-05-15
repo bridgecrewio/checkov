@@ -9,21 +9,19 @@ class ServiceAccountTokens(BaseK8Check):
         # CIS-1.5 5.1.6
         name = "Ensure that Service Account Tokens are only mounted where necessary"
         # Check automountServiceAccountToken in Pod spec and/or containers
+        # Location: Pod.spec.automountServiceAccountToken
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.automountServiceAccountToken
+        # Location: *.spec.template.spec.automountServiceAccountToken
         id = "CKV_K8S_38"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-
-
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.automountServiceAccountToken'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.automountServiceAccountToken'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.automountServiceAccountToken'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

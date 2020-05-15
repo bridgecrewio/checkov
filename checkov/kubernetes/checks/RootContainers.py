@@ -10,6 +10,9 @@ class RootContainers(BaseK8Check):
         # CIS-1.5 5.2.6
         name = "Minimize the admission of root containers"
         # Check runAsNonRoot.  If false, then ensure runAsUser > 0
+        # Location: Pod.spec.runAsUser / runAsNonRoot
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser / runAsNonRoot
+        # Location: *.spec.template.spec.securityContext.runAsUser / runAsNonRoot
         id = "CKV_K8S_23"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
@@ -18,13 +21,10 @@ class RootContainers(BaseK8Check):
 
 
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.runAsUser'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.securityContext.runAsUser'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

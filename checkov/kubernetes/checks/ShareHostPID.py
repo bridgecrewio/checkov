@@ -9,17 +9,18 @@ class ShareHostPID(BaseK8Check):
         # CIS-1.5 5.2.2
         name = "Containers should not share the host process ID namespace"
         id = "CKV_K8S_17"
+        # Location: Pod.spec.hostPID
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.hostPID
+        # Location: *.spec.template.spec.hostPID
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.hostPID'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.hostPID'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.hostPID'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

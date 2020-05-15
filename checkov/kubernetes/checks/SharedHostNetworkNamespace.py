@@ -9,17 +9,18 @@ class SharedHostNetworkNamespace(BaseK8Check):
         # CIS-1.5 5.2.4
         name = "Containers should not share the host network namespace"
         id = "CKV_K8S_19"
+        # Location: Pod.spec.hostNetwork
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.hostNetwork
+        # Location: *.spec.template.spec.hostNetwork
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.hostNetwork'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.hostNetwork'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.hostNetwork'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

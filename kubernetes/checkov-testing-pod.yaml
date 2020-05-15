@@ -1,0 +1,197 @@
+### This pod is for testing checkov
+### It just runs infinitely
+### kubectl exec -it checkov -n checkov -- /bin/bash
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: checkov
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: checkov
+  namespace: checkov
+---
+### View all resources EXCEPT secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: checkov-view
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - endpoints
+      - persistentvolumeclaims
+      - pods
+      - replicationcontrollers
+      - replicationcontrollers/scale
+      - serviceaccounts
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - bindings
+      - events
+      - limitranges
+      - namespaces/status
+      - pods/log
+      - pods/status
+      - replicationcontrollers/status
+      - resourcequotas
+      - resourcequotas/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - controllerrevisions
+      - daemonsets
+      - deployments
+      - deployments/scale
+      - replicasets
+      - replicasets/scale
+      - statefulsets
+      - statefulsets/scale
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+      - deployments
+      - deployments/scale
+      - ingresses
+      - networkpolicies
+      - podsecuritypolicies
+      - replicasets
+      - replicasets/scale
+      - replicationcontrollers/scale
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - metrics.k8s.io
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+      - roles
+      - clusterrolebindings
+      - clusterroles
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: checkov
+subjects:
+  - kind: ServiceAccount
+    name: checkov
+    namespace: checkov
+roleRef:
+  kind: ClusterRole
+  name: checkov-view
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: checkov
+  namespace: checkov
+  annotations:
+    checkov.io/skip: CKV_K8S_22=Checkov requires filesystem write access to dump resource definitions
+spec:
+  securityContext:
+    runAsUser: 12000
+    runAsNonRoot: true
+  restartPolicy: Never
+  serviceAccountName: checkov
+  containers:
+    - name: checkov
+      image: bridgecrew/checkov-k8s:latest
+      #image: python
+      command: [ "/bin/sh", "-c", "sleep infinity" ]
+      resources:
+        requests:
+          memory: "1024Mi"
+          cpu: "500m"
+        limits:
+          memory: "1024Mi"
+          cpu: "500m"
+      env:
+        - name: BC_API_URL
+          value: "https://21i7dltbvc.execute-api.us-west-2.amazonaws.com/v1/api/v1"
+      securityContext:
+        allowPrivilegeEscalation: false
+      volumeMounts:
+          - name: checkov-rt-secret
+            mountPath: "/etc/checkov"
+            readOnly: true
+  volumes:
+    - name: checkov-rt-secret
+      secret:
+        secretName: checkov-rt-secret
+        optional: true

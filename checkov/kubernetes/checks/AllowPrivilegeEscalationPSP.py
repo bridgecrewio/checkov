@@ -12,6 +12,7 @@ class AllowPrivilegeEscalationPSP(BaseK8Check):
         # AllowPrivilegeEscalation - This defaults to allow to not break setuid binaries
         # DefaultAllowPrivilegeEscalation - Default is to allow as to not breat setuid binaries
         ## If you omit allowPrivilegeEscalation from PSP, it defaults to true
+        # Location: PodSecurityPolicy.spec.allowPrivilegeEscalation
         name = "Containers should not run with allowPrivilegeEscalation"
         id = "CKV_K8S_5"
         supported_kind = ['PodSecurityPolicy']
@@ -19,6 +20,9 @@ class AllowPrivilegeEscalationPSP(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
+        if "metadata" in conf:
+            if "name" in conf["metadata"]:
+                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
         return 'PodSecurityPolicy.spec.allowPrivilegeEscalation'
 
     def scan_spec_conf(self, conf):
