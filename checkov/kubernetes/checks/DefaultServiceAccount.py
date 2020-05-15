@@ -15,6 +15,10 @@ class DefaultServiceAccount(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
+        if "namespace" in conf["metadata"]:
+            return "ServiceAccount.{}.{}".format(conf["metadata"]["name"], conf["metadata"]["namespace"])
+        else:
+            return "ServiceAccount.{}.default".format(conf["metadata"]["name"])
         return 'ServiceAccount.automountServiceAccountToken'
 
     def scan_spec_conf(self, conf):

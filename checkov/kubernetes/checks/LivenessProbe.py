@@ -8,12 +8,13 @@ class LivenessProbe(BaseK8Check):
         name = "Liveness Probe Should be Configured"
         id = "CKV_K8S_8"
         # initContainers do not need Liveness Probes...
+        # Location: container .livenessProbe
         supported_kind = ['containers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.livenessProbe'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         # Don't check Job/CronJob

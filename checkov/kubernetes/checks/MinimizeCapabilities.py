@@ -8,12 +8,13 @@ class MinimizeCapabilities(BaseK8Check):
         # CIS-1.5 5.2.9
         name = "Minimize the admission of containers with capabilities assigned"
         id = "CKV_K8S_37"
+        # Location: container .securityContext.capabilities.drop
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.securityContext.capabilities.drop'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:

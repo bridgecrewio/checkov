@@ -7,12 +7,13 @@ class KubernetesDashboard(BaseK8Check):
     def __init__(self):
         name = "Ensure the Kubernetes dashboard is not deployed"
         id = "CKV_K8S_33"
+        # Location: container .image
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-            return conf['parent'] + '.image'
+            return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "image" in conf:

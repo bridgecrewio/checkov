@@ -8,6 +8,9 @@ class RootContainersHighUID(BaseK8Check):
     def __init__(self):
         name = "Containers should run as a high UID to avoid host conflict"
         # runAsUser should be >= 10000 at pod spec or container level
+        # Location: Pod.spec.runAsUser
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser
+        # Location: *.spec.template.spec.securityContext.runAsUser
         id = "CKV_K8S_40"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
@@ -16,13 +19,10 @@ class RootContainersHighUID(BaseK8Check):
 
 
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.runAsUser'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.securityContext.runAsUser'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

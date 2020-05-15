@@ -7,12 +7,13 @@ class MemoryLimits(BaseK8Check):
     def __init__(self):
         name = "Memory limits should be set"
         id = "CKV_K8S_13"
+        # Location: container .resources.limits.memory
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.resources.limits.memory'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "resources" in conf:

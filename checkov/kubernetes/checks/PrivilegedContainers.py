@@ -9,12 +9,13 @@ class PrivilegedContainers(BaseK8Check):
         # CIS-1.5 5.2.1
         name = "Container should not be privileged"
         id = "CKV_K8S_16"
+        # Location: container .securityContext.privileged
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.securityContext.privileged'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:

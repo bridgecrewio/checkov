@@ -8,11 +8,15 @@ class SeccompPSP(BaseK8Check):
         # CIS-1.5 5.7.2
         name = "Ensure default seccomp profile set to docker/default or runtime/default"
         id = "CKV_K8S_32"
+        # Location: PodSecurityPolicy.annotations.seccomp.security.alpha.kubernetes.io/defaultProfileName
         supported_kind = ['PodSecurityPolicy']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
+        if "metadata" in conf:
+            if "name" in conf["metadata"]:
+                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
         return 'PodSecurityPolicy.annotations.seccomp.security.alpha.kubernetes.io/defaultProfileName'
 
     def scan_spec_conf(self, conf):

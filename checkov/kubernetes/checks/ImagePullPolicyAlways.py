@@ -14,12 +14,13 @@ class ImagePullPolicyAlways(BaseK8Check):
         """
         name = "Image Pull Policy should be Always"
         id = "CKV_K8S_15"
+        # Location: container .imagePullPolicy
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.imagePullPolicy'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "image" in conf:

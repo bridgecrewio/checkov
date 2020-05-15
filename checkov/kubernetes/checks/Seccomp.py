@@ -9,18 +9,18 @@ class Seccomp(BaseK8Check):
         # CIS-1.5 5.7.2
         name = "Ensure that the seccomp profile is set to docker/default or runtime/default"
         id = "CKV_K8S_31"
+        # Location: Pod.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
+        # Location: CronJob.spec.jobTemplate.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
+        # Location: *.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         metadata = {}

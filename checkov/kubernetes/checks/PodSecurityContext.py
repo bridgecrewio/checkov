@@ -10,18 +10,18 @@ class PodSecurityContext(BaseK8Check):
         name = "Apply security context to your pods and containers"
         # Security context can be set at pod or container level.
         id = "CKV_K8S_29"
+        # Location: Pod.spec.securityContext
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext
+        # Location: *.spec.template.spec.securityContext
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.securityContext'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.securityContext'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.securityContext'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

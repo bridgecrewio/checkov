@@ -10,12 +10,13 @@ class DropCapabilities(BaseK8Check):
         # NET_RAW allows a process to spy on packets on its network
         name = "Minimize the admission of containers with the NET_RAW capability"
         id = "CKV_K8S_28"
+        # Location: container .securityContext.capabilities.drop
         supported_kind = ['containers', 'initContainers']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent'] + '.securityContext.capabilities.drop'
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:

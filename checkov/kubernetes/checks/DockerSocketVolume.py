@@ -9,6 +9,9 @@ class DockerSocketVolume(BaseK8Check):
         name = "Do not expose the docker daemon socket to containers"
         # Exposing the socket gives container information and increases risk of exploit
         # read-only is not a solution but only makes it harder to exploit.
+        # Location: Pod.spec.volumes[].hostPath.path
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.volumes[].hostPath.path
+        # Location: *.spec.template.spec.volumes[].hostPath.path
         id = "CKV_K8S_27"
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
@@ -17,13 +20,10 @@ class DockerSocketVolume(BaseK8Check):
 
 
     def get_resource_id(self, conf):
-
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.volumes[].hostPath.path'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.volumes[].hostPath.path'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.volumes[].hostPath.path'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}

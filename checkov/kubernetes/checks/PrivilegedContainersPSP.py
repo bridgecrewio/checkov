@@ -9,6 +9,7 @@ class PrivilegedContainersPSP(BaseSpecOmittedOrValueCheck):
         # CIS-1.5 5.2.1
         name = "Do not admit privileged containers"
         id = "CKV_K8S_2"
+        # Location: PodSecurityPolicy.spec.privileged
         supported_kind = ['PodSecurityPolicy']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
@@ -17,6 +18,9 @@ class PrivilegedContainersPSP(BaseSpecOmittedOrValueCheck):
         return "spec/privileged"
 
     def get_resource_id(self, conf):
+        if "metadata" in conf:
+            if "name" in conf["metadata"]:
+                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
         return 'PodSecurityPolicy.spec.privileged'
 
 

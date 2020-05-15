@@ -84,12 +84,18 @@ class Runner(BaseRunner):
                         containers = containers.pop()
                         #containers.insert(0,entity_conf['kind'])
                         containerDef = {}
+                        namespace = ""
+                        if "namespace" in entity_conf["metadata"]:
+                            namespace = entity_conf["metadata"]["namespace"]
+                        else:
+                            namespace = "default"
                         containerDef["containers"] = containers.pop()
                         for cd in containerDef["containers"]:
                             i = containerDef["containers"].index(cd)
                             containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
                             containerDef["containers"][i]["kind"] = type
-                            containerDef["containers"][i]["parent"] = entity_conf['kind'] + '.' + '.'.join(containers) + '[' + str(i) + ']'
+                            containerDef["containers"][i]["parent"] = "{}.{}.{} (container {})".format(
+                                entity_conf["kind"], entity_conf["metadata"]["name"], namespace, str(i))
                             containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
                         definitions[k8_file].extend(containerDef["containers"])
 

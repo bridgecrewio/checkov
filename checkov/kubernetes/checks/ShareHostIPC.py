@@ -9,17 +9,18 @@ class ShareHostIPC(BaseK8Check):
         # CIS-1.5 5.2.3
         name = "Containers should not share the host IPC namespace"
         id = "CKV_K8S_18"
+        # Location: Pod.spec.hostIPC
+        # Location: CronJob.spec.jobTemplate.spec.template.spec.hostIPC
+        # Location: *..spec.template.spec.hostIPC
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        if conf['kind'] == 'Pod':
-            return 'Pod.spec.hostIPC'
-        elif conf['kind'] == 'CronJob':
-            return 'CronJob.spec.jobTemplate.spec.template.spec.hostIPC'
+        if "namespace" in conf["metadata"]:
+            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
-            return conf['kind'] + '.spec.template.spec.hostIPC'
+            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}
