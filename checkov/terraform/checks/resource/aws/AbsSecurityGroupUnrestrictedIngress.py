@@ -28,7 +28,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                         from_port = force_int(force_list(rule['from_port'])[0])
                         to_port = force_int(force_list(rule['to_port'])[0])
 
-                        if from_port <= self.port <= to_port:
+                        if from_port and to_port and from_port <= self.port <= to_port:
                             # It's not clear whether these can ever be a type other
                             # than an empty list but just in case…
                             cidr_blocks = force_list(rule.get('cidr_blocks', [[]])[0])
