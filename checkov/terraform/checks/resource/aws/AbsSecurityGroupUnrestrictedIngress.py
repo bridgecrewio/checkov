@@ -22,17 +22,19 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if 'ingress' in conf:
             ingress_conf = conf['ingress']
             for ingress_rule in ingress_conf:
-                if isinstance(ingress_rule, dict):
-                    from_port = force_int(force_list(ingress_rule['from_port'])[0])
-                    to_port = force_int(force_list(ingress_rule['to_port'])[0])
+                ingress_rules = force_list(ingress_rule)
+                for rule in ingress_rules:
+                    if isinstance(rule, dict):
+                        from_port = force_int(force_list(rule['from_port'])[0])
+                        to_port = force_int(force_list(rule['to_port'])[0])
 
-                    if from_port <= self.port <= to_port:
-                        # It's not clear whether these can ever be a type other
-                        # than an empty list but just in case…
-                        cidr_blocks = ingress_rule.get('cidr_blocks', [[]])[0]
-                        security_groups = ingress_rule.get('security_groups', [])
+                        if from_port <= self.port <= to_port:
+                            # It's not clear whether these can ever be a type other
+                            # than an empty list but just in case…
+                            cidr_blocks = force_list(rule.get('cidr_blocks', [[]])[0])
+                            security_groups = rule.get('security_groups', [])
 
-                        if "0.0.0.0/0" in cidr_blocks and not security_groups:
-                            return CheckResult.FAILED
+                            if "0.0.0.0/0" in cidr_blocks and not security_groups:
+                                return CheckResult.FAILED
 
         return CheckResult.PASSED
