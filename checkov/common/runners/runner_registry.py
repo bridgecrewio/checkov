@@ -13,6 +13,7 @@ class RunnerRegistry(object):
         self.runners = runners
         self.banner = banner
         self.filter_runner_framework()
+        self.scan_reports = []
 
     @abstractmethod
     def extract_entity_details(self, entity):
