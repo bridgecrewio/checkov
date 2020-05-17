@@ -39,7 +39,7 @@ class RunnerRegistry(object):
                 elif args.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console()
+                    report.print_console(is_quiet=args.quiet)
             exit_codes.append(report.get_exit_code(args.soft_fail))
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)

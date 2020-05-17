@@ -7,4 +7,4 @@ banner = """
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-version: {} """.format(version)
+by bridgecrew.io | version: {} """.format(version)
