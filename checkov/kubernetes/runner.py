@@ -28,7 +28,9 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                (definitions[file], definitions_raw[file]) = parse(file)
+                parse_result = parse(file)
+                if parse_result:
+                    (definitions[file], definitions_raw[file]) = parse_result
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
