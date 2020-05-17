@@ -58,6 +58,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["parsing_errors"], 1)
         report.print_json()
         report.print_console()
+        report.print_console(is_quiet=True)
         report.print_junit_xml()
         report.print_failed_github_md()
 

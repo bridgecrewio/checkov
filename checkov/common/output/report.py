@@ -70,7 +70,7 @@ class Report:
     def is_empty(self):
         return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
 
-    def print_console(self):
+    def print_console(self,is_quiet=False):
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -80,13 +80,14 @@ class Report:
             message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"])
         print(colored(message, "cyan"))
-
-        for record in self.passed_checks:
-            print(record)
+        if not is_quiet:
+            for record in self.passed_checks:
+                print(record)
         for record in self.failed_checks:
             print(record)
-        for record in self.skipped_checks:
-            print(record)
+        if not is_quiet:
+            for record in self.skipped_checks:
+                print(record)
 
     def print_junit_xml(self):
         ts = self.get_test_suites()
