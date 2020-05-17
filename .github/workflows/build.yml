@@ -109,6 +109,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           pipenv run pip install homebrew-pypi-poet
+#          it takes about 2 minutes for package to be available on pypi
+          sleep 2m
           pipenv run pip install checkov -U
           git pull
           pipenv run poet -f checkov > HomebrewFormula/checkov.rb
