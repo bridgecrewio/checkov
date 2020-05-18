@@ -11,7 +11,7 @@ class S3AccessLogs(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf['Properties'].get('AccessControl') == 'PublicReadWrite':
+        if conf.get('Properties') and conf['Properties'].get('AccessControl') == 'PublicReadWrite':
             return CheckResult.FAILED
         return CheckResult.PASSED
 

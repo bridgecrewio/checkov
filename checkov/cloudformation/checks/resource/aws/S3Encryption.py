@@ -11,7 +11,7 @@ class S3Encryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf['Properties'].get('ServerSideEncryptionRule'):
+        if conf.get('Properties') and conf['Properties'].get('ServerSideEncryptionRule'):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
