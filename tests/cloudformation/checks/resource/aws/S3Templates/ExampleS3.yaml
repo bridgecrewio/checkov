@@ -1,5 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Resources:
+  S3BucketNoProps:
+    Type: AWS::S3::Bucket
+  S3BucketPublicRead:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:

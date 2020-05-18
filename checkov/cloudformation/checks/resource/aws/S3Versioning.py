@@ -11,7 +11,8 @@ class S3AccessLogs(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf['Properties'].get('VersioningConfiguration') is not None and conf['Properties']['VersioningConfiguration']['Status'] == 'Enabled':
+        if conf.get('Properties') and conf['Properties'].get('VersioningConfiguration') is not None\
+                and conf['Properties']['VersioningConfiguration']['Status'] == 'Enabled':
             return CheckResult.PASSED
         return CheckResult.FAILED
 
