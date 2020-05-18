@@ -59,8 +59,8 @@ def run(banner=checkov_banner):
                         default='master')
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
-    runner_filter = RunnerFilter(framework=args.framework,checks=args.check,skip_checks=args.skip_check)
-    runner_registry = RunnerRegistry(banner,runner_filter, tf_runner(), cfn_runner(),k8_runner())
+    runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
+    runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
     if args.version:
         print(version)
         return
