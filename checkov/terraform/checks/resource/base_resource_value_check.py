@@ -41,7 +41,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:
-            if expected_values == [ANY_VALUE]:
+            if ANY_VALUE in expected_values:
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
             value = dpath.get(conf, inspected_key)
@@ -86,7 +86,6 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
     def get_expected_value(self):
         """
-
-        :return:
+        Returns the default expected value, governed by provider best practices
         """
         return True
