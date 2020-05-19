@@ -20,10 +20,10 @@ def parse(filename):
         if filename.endswith(".json"):
             (template, template_lines) = k8_json.load(filename)
         if template:
-            if isinstance(template,list):
+            if isinstance(template, list):
                 for i in range(len(template)):
-                    if isinstance(template[i],dict):
-                        if (not 'apiVersion' in template[i].keys()) and (not 'kind' in template[i].keys()):
+                    if isinstance(template[i], dict):
+                        if not ('apiVersion' in template[i].keys() and 'kind' in template[i].keys()):
                             return
                     else:
                         return
