@@ -31,6 +31,6 @@ class ImageDigest(BaseK8Check):
             return CheckResult.PASSED if has_digest else CheckResult.FAILED
         else:
             return CheckResult.FAILED
-        return CheckResult.PASSED
+
 
 check = ImageDigest()
