@@ -1,6 +1,6 @@
 from checkov.version import version
 
-banner = """
+banner = r"""
        _               _              
    ___| |__   ___  ___| | _______   __
   / __| '_ \ / _ \/ __| |/ / _ \ \ / /
