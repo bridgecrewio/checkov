@@ -15,11 +15,11 @@ class BaseResourceValueCheck(BaseResourceCheck):
     @staticmethod
     def _filter_key_path(path):
         """
-        Filter an attribute path to contain only named attributes
+        Filter an attribute path to contain only named attributes by dropping array indices from the path)
         :param path: valid JSONPath of an attribute
-        :return: JSONPath path to contain only named attributes
+        :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r'\[?\d+\]?', x)]
+        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
 
     @staticmethod
     def _is_variable_dependant(value):
