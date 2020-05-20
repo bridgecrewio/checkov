@@ -22,11 +22,17 @@ class ImageTagFixed(BaseK8Check):
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
+
+            # Remove the digest, if present
+            image_val = conf["image"]
+            if '@' in image_val:
+                image_val = image_val[0:image_val.index('@')]
+
             # Split on :
-            if ":" in conf["image"]:
-                (image, tag) = conf["image"].split(':')
+            if ":" in image_val:
+                (image, tag) = image_val.split(':')
             else:
-                image = conf["image"]
+                image = image_val
                 tag = ""
             if tag == "latest" or tag == "":
                 return CheckResult.FAILED
