@@ -20,7 +20,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                 if 'Statement' in assume_role_block.keys():
                     if 'Principal' in assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
-                            account_access = re.compile('\d{12}|arn:aws:iam::\d{12}:root')
+                            account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
                             if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS']):
                                 return CheckResult.FAILED
             except:
