@@ -1,5 +1,7 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
+from checkov.common.models.consts import DOCKER_IMAGE_REGEX
+import re
 
 
 class ImagePullPolicyAlways(BaseK8Check):
@@ -24,18 +26,12 @@ class ImagePullPolicyAlways(BaseK8Check):
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
-            
             # Remove the digest, if present
             image_val = conf["image"]
             if '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
-            # Split on :
-            if ":" in image_val:
-                (image, tag) = image_val.split(':')
-            else:
-                image = image_val
-                tag = ""
+            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
             if "imagePullPolicy" not in conf:
                 if tag == "latest" or tag == "":
                     # Default imagePullPolicy = Always
@@ -49,5 +45,6 @@ class ImagePullPolicyAlways(BaseK8Check):
         else:
             return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = ImagePullPolicyAlways()
