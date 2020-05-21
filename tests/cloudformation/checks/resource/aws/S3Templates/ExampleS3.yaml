@@ -6,6 +6,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: PublicRead
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -26,7 +30,7 @@ Resources:
         Status: Enabled
       ServerSideEncryptionRule:
         ServerSideEncryptionByDefault:
-          SSEAlgorithm: AWS256
+          SSEAlgorithm: AES256
       LoggingConfiguration:
         DestinationBucketName: String
         LogFilePrefix: String
