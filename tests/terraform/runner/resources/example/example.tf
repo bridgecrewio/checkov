@@ -180,7 +180,7 @@ resource "aws_iam_account_password_policy" "password-policy" {
   allow_users_to_change_password = true
 }
 
-resource "aws_iam_account_password_policy" "paswword-policy example with string values instead of int" {
+resource "aws_iam_account_password_policy" "paswword-policy_example_with_string_values" {
   allow_users_to_change_password = var.allow_users_to_change_password
   hard_expiry                    = var.hard_expiry
   minimum_password_length        = "14"
@@ -215,7 +215,7 @@ resource "aws_security_group" "bar-sg" {
 
 }
 
-resource "aws_security_group" "ingress as map instead of block" {
+resource "aws_security_group" "ingress_as_map" {
   name        = "${var.name}_elasticsearch"
   description = "ELK ${var.name} ElasticSearch instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
@@ -604,7 +604,7 @@ resource "aws_s3_bucket" "bridgecrew_cws_bucket" {
   }
 }
 
-resource "aws_s3_bucket" "dynamic ssee block as string" {
+resource "aws_s3_bucket" "dynamic_sse_block_string" {
   count = local.using_existing_origin ? 0 : 1
   bucket = module.origin_label.id
   acl = "private"
@@ -626,7 +626,7 @@ resource "aws_s3_bucket" "dynamic ssee block as string" {
   }
 }
 
-resource "aws_s3_bucket" "sse_block and rule_block as maps" {
+resource "aws_s3_bucket" "sse_block_and_rule_block_as_map" {
   bucket = "${var.bucket_name}"
   policy = "${data.aws_iam_policy_document.iam_policy_document_s3.json}"
 
@@ -780,7 +780,7 @@ resource aws_lambda_function "bad-function" {
   }
 }
 
-resource "aws_lambda_function" "block environment variables" {
+resource "aws_lambda_function" "block_environment_variables" {
 
   filename = "${path.module}/canary_sensor_api_capture.zip"
   description = "A lamba that reaches out to the Canary API used on the Canary website, obtains bearer tokens for communication, gets a list of the devices attached to the account, and fetches the sensor data for those devices."
@@ -802,7 +802,7 @@ resource "aws_lambda_function" "block environment variables" {
   }
 }
 
-resource "aws_lambda_function" "environment and variables with '= {' example" {
+resource "aws_lambda_function" "environment_and_variables_map" {
   filename         = "${data.archive_file.ami_backup.output_path}"
   function_name    = "${module.label_backup.id}"
   description      = "Automatically backup EC2 instance (create AMI)"
@@ -825,7 +825,7 @@ resource "aws_lambda_function" "environment and variables with '= {' example" {
   }
 }
 
-resource "aws_lambda_function" "dynamic environment that appears as string example" {
+resource "aws_lambda_function" "dynamic_environment_example" {
   function_name = var.name
   filename = "${path.module}/lambda_function.zip"
   role = aws_iam_role.this.arn
@@ -848,7 +848,7 @@ resource "aws_lambda_function" "dynamic environment that appears as string examp
     }
   }
 }
-resource "aws_s3_bucket" "versioning as string example" {
+resource "aws_s3_bucket" "versioning-string" {
   bucket = "${var.bucket}"
   region = "${var.region}"
   acl    = "${var.acl}"
@@ -1022,7 +1022,7 @@ resource azurerm_kubernetes_cluster "bad-example" {
 }
 
 
-resource "aws_elasticsearch_domain" "dynamic cluster config example" {
+resource "aws_elasticsearch_domain" "dynamic_cluster_config_example" {
   domain_name = var.domain_name
   elasticsearch_version = var.elasticsearch_version
   access_policies = var.access_policies
@@ -1040,21 +1040,21 @@ resource "aws_elasticsearch_domain" "dynamic cluster config example" {
   }
 }
 
-resource "aws_api_gateway_method" "api gateway method example with authorization" {
+resource "aws_api_gateway_method" "apigateway_method_with_authorization" {
   rest_api_id   = "${var.rest_api_id}"
   resource_id   = "${var.resource_id}"
   http_method   = "OPTIONS}"
   authorization = "AWS_IAM"
 }
 
-resource "aws_api_gateway_method" "api gateway method example without authorization" {
+resource "aws_api_gateway_method" "apigateway_method_no_authorization" {
   rest_api_id   = var.api_id
   resource_id   = var.api_resource_id
   http_method   = var.http_method
   authorization = "NONE"
 }
 
-resource "aws_iam_role" "example with specific service attached" {
+resource "aws_iam_role" "example_with_specific_service" {
   name = "${var.name}-${var.environment}"
 
   assume_role_policy = <<EOF
@@ -1074,7 +1074,7 @@ resource "aws_iam_role" "example with specific service attached" {
 EOF
 }
 
-resource "aws_iam_role" "example with no specific service attached" {
+resource "aws_iam_role" "example_with_no_specific_service_attached" {
   name = "${var.name}-${var.environment}"
 
   assume_role_policy = <<EOF
@@ -1094,7 +1094,7 @@ resource "aws_iam_role" "example with no specific service attached" {
 EOF
 }
 
-resource "aws_iam_role_policy" "json bad policy" {
+resource "aws_iam_role_policy" "json_bad_policy" {
   name = "test_policy"
   role = aws_iam_role.test_role.id
 
@@ -1114,7 +1114,7 @@ resource "aws_iam_role_policy" "json bad policy" {
   EOF
 }
 
-resource "aws_iam_role_policy" "json good policy" {
+resource "aws_iam_role_policy" "json_good_policy" {
   name = "test_policy"
   role = aws_iam_role.test_role.id
 
@@ -1134,7 +1134,7 @@ resource "aws_iam_role_policy" "json good policy" {
   EOF
 }
 
-resource "aws_iam_role" "example 1 allowing all aws principals" {
+resource "aws_iam_role" "example_1_allowing_all_aws_principals" {
   name = "${var.name}-${var.environment}"
 
   assume_role_policy = <<EOF
@@ -1154,7 +1154,7 @@ resource "aws_iam_role" "example 1 allowing all aws principals" {
 EOF
 }
 
-resource "aws_iam_role" "example 2 allowing all aws principals" {
+resource "aws_iam_role" "example_2_allowing_all_aws_principals" {
   name = "${var.name}-${var.environment}"
 
   assume_role_policy = <<EOF
