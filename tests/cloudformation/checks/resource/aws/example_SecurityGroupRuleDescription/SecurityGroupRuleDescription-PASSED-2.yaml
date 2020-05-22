@@ -1,17 +1,10 @@
-AWSTemplateFormatVersion: 2010-09-09
 Resources:
-  TargetSG:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      VpcId: vpc-1a2b3c4d
-      GroupDescription: Security group allowing ingress for security scanners
   InboundRule:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       Description: HTTP Ingress
-      GroupId: !GetAtt TargetSG.GroupId
+      GroupId: sg-87654321
       IpProtocol: tcp
       FromPort: 80
       ToPort: 80
       SourceSecurityGroupId: sg-12345678
-      SourceSecurityGroupOwnerId: '123456789012'

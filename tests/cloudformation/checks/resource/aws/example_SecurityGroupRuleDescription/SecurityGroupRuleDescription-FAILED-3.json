@@ -3,7 +3,6 @@
     "OutboundRule": {
        "Type": "AWS::EC2::SecurityGroupEgress",
        "Properties":{
-          "Description": "Everything Out",
           "IpProtocol": "tcp",
           "FromPort": 0,
           "ToPort": 65535,
