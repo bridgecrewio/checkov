@@ -8,9 +8,13 @@ from urllib3.exceptions import HTTPError
 from botocore.exceptions import ClientError
 from json import JSONDecodeError
 import dpath.util
+
+from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
 import os
+
+UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
 logging.basicConfig(level=logging.INFO)
 # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -50,6 +54,9 @@ class BcPlatformIntegration(object):
             request = http.request("POST", INTEGRATIONS_API_URL, body=json.dumps({"repoId": repo_id}),
                                    headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
+            if 'Message' in response:
+                if response['Message'] == UNAUTHORIZED_MESSAGE:
+                    raise BridgecrewAuthError()
             repo_full_path = response["path"]
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
             self.timestamp = self.repo_path.split("/")[-1]
