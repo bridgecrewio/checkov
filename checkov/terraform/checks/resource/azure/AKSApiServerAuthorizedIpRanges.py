@@ -1,8 +1,9 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.common.models.consts import ANY_VALUE
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
+class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure AKS has an API Server Authorized IP Ranges enabled"
         id = "CKV_AZURE_6"
@@ -10,10 +11,11 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if len(conf.get('api_server_authorized_ip_ranges', [[]])[0]) > 0:
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'api_server_authorized_ip_ranges/[0]/[0]'
+
+    def get_expected_value(self):
+        return ANY_VALUE
 
 
 check = AKSApiServerAuthorizedIpRanges()
