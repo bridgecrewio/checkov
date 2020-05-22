@@ -1,0 +1,7 @@
+templates:
+  - tests/cloudformation/checks/resource/aws/**/*.json
+  - tests/cloudformation/checks/resource/aws/**/*.yaml
+ignore_templates:
+  - tests/cloudformation/checks/resource/aws/unused/*
+ignore_checks:
+  - W
