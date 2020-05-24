@@ -1,0 +1,11 @@
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    # Test case for check skip via comment
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'

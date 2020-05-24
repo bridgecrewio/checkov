@@ -1,6 +1,7 @@
 import logging
 import operator
 import os
+import re
 from functools import reduce
 
 from checkov.cloudformation.checks.resource.registry import resource_registry
@@ -11,6 +12,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
+COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class Runner(BaseRunner):
@@ -81,10 +83,6 @@ class Runner(BaseRunner):
                     continue
                 resource_id = f"{resource['Type']}.{resource_name}"
 
-                ## TODO - Evaluate skipped_checks
-                skipped_checks = {}
-
-                results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks,runner_filter)
                 # TODO refactor into context parsing
                 find_lines_result_list = list(find_lines(resource, '__startline__'))
                 if len(find_lines_result_list) >= 1:
@@ -98,6 +96,18 @@ class Runner(BaseRunner):
                     # TODO - Variable Eval Message!
                     variable_evaluations = {}
 
+                    skipped_checks = []
+                    for line in entity_code_lines:
+                        skip_search = re.search(COMMENT_REGEX, str(line))
+                        if skip_search:
+                            skipped_checks.append(
+                                {
+                                    'id': skip_search.group(2),
+                                    'suppress_comment': skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
+                                }
+                            )
+
+                    results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks, runner_filter)
                     for check, check_result in results.items():
                         ### TODO - Need to get entity_code_lines and entity_lines_range
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
