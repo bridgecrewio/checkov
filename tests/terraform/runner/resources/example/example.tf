@@ -1193,3 +1193,21 @@ resource "google_compute_subnetwork" "subnet with logging" {
             metadata             = "INCLUDE_ALL_METADATA"
           }
         }
+
+resource "google_compute_ssl_policy" "modern-profile-without-min-tls" {
+  name    = "production-ssl-policy"
+  profile = "MODERN"
+}
+
+resource "google_compute_ssl_policy" "modern-profile-with-min-tls" {
+  name            = "nonprod-ssl-policy"
+  profile         = "MODERN"
+  min_tls_version = "TLS_1_2"
+}
+
+resource "google_compute_ssl_policy" "custom-profile" {
+  name            = "custom-ssl-policy"
+  min_tls_version = "TLS_1_2"
+  profile         = "CUSTOM"
+  custom_features = ["TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
+}
