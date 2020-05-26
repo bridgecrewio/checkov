@@ -1238,3 +1238,13 @@ resource "google_storage_bucket_iam_binding" "binding-with-public-member" {
     "allAuthenticatedUsers",
   ]
 }
+
+resource "google_storage_bucket" "bucket-with-uniform-access-enabled" {
+  name          = "image-store.com"
+  location      = "EU"
+  force_destroy = true
+
+  bucket_policy_only = true
+
+  }
+}
