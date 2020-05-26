@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class KinesisStreamEncryptionType(BaseResourceCheck):
+class KinesisStreamEncryptionType(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Kinesis Stream is securely encrypted"
         id = "CKV_AWS_43"
@@ -10,22 +10,11 @@ class KinesisStreamEncryptionType(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption_type to be KMS  at aws_kinesis_stream:
-            https://www.terraform.io/docs/providers/aws/r/kinesis_stream.html
-        :param conf:  aws_kinesis_stream configuration
-        :return: <CheckResult>
-        """
-        if "encryption_type" in conf.keys():
-            if (conf["encryption_type"][0] == "KMS"):
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "encryption_type"
 
+    def get_expected_value(self):
+        return "KMS"
 
 
 check = KinesisStreamEncryptionType()
-
