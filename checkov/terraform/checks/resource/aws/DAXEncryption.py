@@ -13,4 +13,5 @@ class DAXEncryption(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "server_side_encryption/[0]/enabled"
 
+
 check = DAXEncryption()

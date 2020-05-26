@@ -13,4 +13,5 @@ class DynamodbRecovery(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "point_in_time_recovery/[0]/enabled"
 
+
 check = DynamodbRecovery()
