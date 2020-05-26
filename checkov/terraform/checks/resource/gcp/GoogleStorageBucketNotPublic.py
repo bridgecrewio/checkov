@@ -14,7 +14,7 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         if 'member' in conf.keys():
             member_conf = conf['member']
         elif 'members' in conf.keys():
-            member_conf = conf['members']
+            member_conf = conf['members'][0]
         if not any(object in member_conf for object in ['allUsers', 'allAuthenticatedUsers']):
             return CheckResult.PASSED
         return CheckResult.FAILED
