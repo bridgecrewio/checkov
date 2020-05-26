@@ -1224,3 +1224,17 @@ resource "google_project" "no-default-network-created" {
   org_id     = "1234567"
   auto_create_network = false
 }
+
+resource "google_storage_bucket_iam_member" "member-not-public" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  member = "user:jane@example.com"
+}
+
+resource "google_storage_bucket_iam_binding" "binding-with-public-member" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  members = [
+    "allAuthenticatedUsers",
+  ]
+}
