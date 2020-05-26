@@ -14,10 +14,11 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: PublicRead
-      ServerSideEncryptionRule:
-        ServerSideEncryptionByDefault:
-          KMSMasterKeyID: String
-          SSEAlgorithm: String
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: String
+              SSEAlgorithm: aws:kms
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
@@ -28,9 +29,10 @@ Resources:
       AccessControl: PublicReadWrite
       VersioningConfiguration:
         Status: Enabled
-      ServerSideEncryptionRule:
-        ServerSideEncryptionByDefault:
-          SSEAlgorithm: AES256
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       LoggingConfiguration:
         DestinationBucketName: String
         LogFilePrefix: String

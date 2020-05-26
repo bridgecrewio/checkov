@@ -1,4 +1,3 @@
-Description: Security Group Example
 Parameters:
   HTTPSLocation:
     Description: The IP address range that can be used to connect via HTTPS
@@ -8,14 +7,13 @@ Parameters:
     Default: 0.0.0.0/0
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
-Resources:
-  InstanceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      SecurityGroupIngress:
-      - Description: 'HTTPS Ingress'
-        IpProtocol: tcp
-        FromPort: 443
-        ToPort: 443
-        CidrIp: !Ref 'HTTPSLocation'
 
+Resources:
+  InboundRule:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: sg-87654321
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: !Ref 'HTTPSLocation'

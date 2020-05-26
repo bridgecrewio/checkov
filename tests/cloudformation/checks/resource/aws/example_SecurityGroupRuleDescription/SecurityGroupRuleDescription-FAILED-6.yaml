@@ -1,5 +1,0 @@
-Resources: 
-  ECSG:
-    Type: AWS::ElastiCache::SecurityGroup
-    #Properties: 
-    #  Description: SuperCool(tm) security group

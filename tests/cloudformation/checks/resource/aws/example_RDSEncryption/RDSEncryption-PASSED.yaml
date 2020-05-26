@@ -3,8 +3,7 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'
-      DBInstanceClass: 't3.micro'
-      AllocatedStorage: 5
+      DBInstanceClass: 'db.t3.micro'
       Engine: 'mysql'
       MasterUsername: 'master'
       MasterUserPassword: 'password'
