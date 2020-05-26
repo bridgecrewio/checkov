@@ -1211,3 +1211,16 @@ resource "google_compute_ssl_policy" "custom-profile" {
   profile         = "CUSTOM"
   custom_features = ["TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
 }
+
+resource "google_project" "default-network-created" {
+  name       = "My Project"
+  project_id = "your-project-id"
+  org_id     = "1234567"
+}
+
+resource "google_project" "no-default-network-created" {
+  name       = "My Project"
+  project_id = "your-project-id"
+  org_id     = "1234567"
+  auto_create_network = false
+}
