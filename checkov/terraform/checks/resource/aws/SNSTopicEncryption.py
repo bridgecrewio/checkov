@@ -1,8 +1,9 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.common.models.consts import ANY_VALUE
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class SNSTopicEncryption(BaseResourceCheck):
+class SNSTopicEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the SNS topic is encrypted"
         id = "CKV_AWS_26"
@@ -10,17 +11,14 @@ class SNSTopicEncryption(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration at aws_sns_topic:
-            https://www.terraform.io/docs/providers/aws/r/sns_topic.html
-        :param conf: aws_s3_bucket configuration
-        :return: <CheckResult>
-        """
-        if 'kms_master_key_id' in conf.keys():
-            if conf['kms_master_key_id']:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'kms_master_key_id'
+
+    def get_expected_values(self):
+        return [ANY_VALUE]
+
+    def get_expected_value(self):
+        return 'alias/aws/sns'
 
 
 check = SNSTopicEncryption()
