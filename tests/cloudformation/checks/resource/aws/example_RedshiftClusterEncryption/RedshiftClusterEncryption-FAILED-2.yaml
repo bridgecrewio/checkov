@@ -4,7 +4,6 @@ Resources:
     Properties:
       DBName: "mydb"
       MasterUsername: "master"
-      MasterUserPassword:
-        Ref: "MasterUserPassword"
+      MasterUserPassword: "MasterUserPassword"
       NodeType: "ds2.xlarge"
       ClusterType: "single-node"

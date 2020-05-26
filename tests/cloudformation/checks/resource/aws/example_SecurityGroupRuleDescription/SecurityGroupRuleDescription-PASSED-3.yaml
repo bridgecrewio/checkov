@@ -2,6 +2,7 @@ Resources:
   OutboundRule:
     Type: 'AWS::EC2::SecurityGroupEgress'
     Properties:
+      Description: HTTPS Egress
       GroupId: sg-87654321
       IpProtocol: tcp
       FromPort: 443

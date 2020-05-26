@@ -2,21 +2,35 @@ import unittest
 
 from checkov.terraform.checks.resource.gcp.GKEAliasIpEnabled import check
 from checkov.common.models.enums import CheckResult
+import hcl2
+
+
+resource_conf = '''
+resource "google_container_cluster" "fail" {
+  name                     = "fail-cluster"
+}
+
+resource "google_container_cluster" "success" {
+  name                     = "success-cluster"
+  ip_allocation_policy {}
+}
+'''
 
 
 class TestGKEAliasIpEnabled(unittest.TestCase):
 
     def test_failure(self):
-        resource_conf = {'name': ['google_cluster'], 'monitoring_service': ['monitoring.googleapis.com'], 'master_authorized_networks_config': [{}], 'master_auth': [{'client_certificate_config': [{'issue_client_certificate': [False]}]}], 'node_config': [{'image_type': ['not-cos']}]}
-
-        scan_result = check.scan_resource_conf(conf=resource_conf)
+        resource = hcl2.loads(resource_conf)[
+            'resource'][0]['google_container_cluster']['fail']
+        scan_result = check.scan_resource_conf(conf=resource)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf = {'name': ['google_cluster'], 'enable_legacy_abac': [False], 'resource_labels': [{'Owner': ['SomeoneNotWorkingHere']}],
-                         'node_config': [{'image_type': ['cos']}], 'ip_allocation_policy': [{}]}
+        resource = hcl2.loads(resource_conf)[
+            'resource'][1]['google_container_cluster']['success']
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
+        scan_result = check.scan_resource_conf(
+            conf=resource)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 

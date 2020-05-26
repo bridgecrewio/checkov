@@ -4,8 +4,8 @@
   "Mappings": {
     "acmeEnvironment": {
       "env": {
-        "organizationID": "${account_id}",
-        "SnsNameForConfirmCustomerDeployment": "${sns_name}"
+        "organizationID": "123456789",
+        "SnsNameForConfirmCustomerDeployment": "sns_name"
       }
     }
   },
@@ -967,7 +967,7 @@
         },
         "ActionType": "CustomerSignUp",
         "Account": "acme",
-        "TemplateVersion": "${template_version}",
+        "TemplateVersion": "1",
         "AWSAccountId": {
           "Ref": "AWS::AccountId"
         },
@@ -1024,7 +1024,7 @@
     },
     "TemplateVersion": {
       "Description": "acme.io template version",
-      "Value": "${template_version}"
+      "Value": "1"
     }
   }
 }

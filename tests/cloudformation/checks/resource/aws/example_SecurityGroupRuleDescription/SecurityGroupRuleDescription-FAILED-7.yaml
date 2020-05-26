@@ -1,8 +1,0 @@
-Resources: 
-  myClusterSecurityGroup: 
-    Type: "AWS::Redshift::ClusterSecurityGroup"
-    Properties: 
-      #Description: "You better not forget this description"
-      Tags:
-        - Key: foo
-          Value: bar
