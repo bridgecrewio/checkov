@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 PORT = '3389'
 
 
-class GoogleComputeFirewallUnrestrictedIngress22(BaseResourceCheck):
+class GoogleComputeFirewallUnrestrictedIngress3389(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Google compute firewall ingress does not allow unrestricted rdp access"
         id = "CKV_GCP_3"
@@ -30,4 +30,4 @@ class GoogleComputeFirewallUnrestrictedIngress22(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = GoogleComputeFirewallUnrestrictedIngress22()
+check = GoogleComputeFirewallUnrestrictedIngress3389()

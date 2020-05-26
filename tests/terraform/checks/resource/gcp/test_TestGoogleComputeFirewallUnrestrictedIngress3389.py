@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngr
 from checkov.common.models.enums import CheckResult
 
 
-class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
+class TestGoogleComputeFirewallUnrestrictedIngress3389(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['${var.name}-${var.region}-mesos-ssh'],

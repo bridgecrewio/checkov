@@ -1173,3 +1173,54 @@ resource "aws_iam_role" "example_2_allowing_all_aws_principals" {
 }
 EOF
 }
+
+resource "google_compute_subnetwork" "subnet without logging" {
+          name          = "log-test-subnetwork"
+          ip_cidr_range = "10.2.0.0/16"
+          region        = "us-central1"
+          network       = google_compute_network.custom-test.id
+        }
+
+resource "google_compute_subnetwork" "subnet with logging" {
+          name          = "log-test-subnetwork"
+          ip_cidr_range = "10.2.0.0/16"
+          region        = "us-central1"
+          network       = google_compute_network.custom-test.id
+
+          log_config {
+            aggregation_interval = "INTERVAL_10_MIN"
+            flow_sampling        = 0.5
+            metadata             = "INCLUDE_ALL_METADATA"
+          }
+        }
+
+resource "google_compute_ssl_policy" "modern-profile-without-min-tls" {
+  name    = "production-ssl-policy"
+  profile = "MODERN"
+}
+
+resource "google_compute_ssl_policy" "modern-profile-with-min-tls" {
+  name            = "nonprod-ssl-policy"
+  profile         = "MODERN"
+  min_tls_version = "TLS_1_2"
+}
+
+resource "google_compute_ssl_policy" "custom-profile" {
+  name            = "custom-ssl-policy"
+  min_tls_version = "TLS_1_2"
+  profile         = "CUSTOM"
+  custom_features = ["TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
+}
+
+resource "google_project" "default-network-created" {
+  name       = "My Project"
+  project_id = "your-project-id"
+  org_id     = "1234567"
+}
+
+resource "google_project" "no-default-network-created" {
+  name       = "My Project"
+  project_id = "your-project-id"
+  org_id     = "1234567"
+  auto_create_network = false
+}
