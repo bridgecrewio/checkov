@@ -17,18 +17,18 @@ class GoogleComputeSSLPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'profile' in conf.keys():
-            if conf['profile'] == 'RESTRICTED':
+            if conf['profile'][0] == 'RESTRICTED':
                 return CheckResult.PASSED
-            elif conf['profile'] == 'MODERN':
+            elif conf['profile'][0] == 'MODERN':
                 if 'min_tls_version' in conf.keys():
                     if conf['min_tls_version'][0] == "TLS_1_2":
                         return CheckResult.PASSED
-            elif conf['profile'] == 'CUSTOM':
-                if not any(item in conf['custom_features'] for item in ['TLS_RSA_WITH_AES_128_GCM_SHA256',
+            elif conf['profile'][0] == 'CUSTOM':
+                if not any(item in conf['custom_features'][0] for item in ['TLS_RSA_WITH_AES_128_GCM_SHA256',
                                                                     'TLS_RSA_WITH_AES_256_GCM_SHA384',
                                                                     'TLS_RSA_WITH_AES_128_CBC_SHA',
                                                                     'TLS_RSA_WITH_AES_256_CBC_SHA',
-                                                                    'TLS_RSA_WITH_3DES_EDE_CBC_SHA']:
+                                                                    'TLS_RSA_WITH_3DES_EDE_CBC_SHA']):
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
