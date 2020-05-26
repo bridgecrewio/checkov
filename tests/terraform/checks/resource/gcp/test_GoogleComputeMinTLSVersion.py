@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.terraform.checks.resource.gcp.GoogleComputeMinTLSVersion import check
+from checkov.terraform.checks.resource.gcp.GoogleComputeSSLPolicy import check
 from checkov.common.models.enums import CheckResult
 
 
