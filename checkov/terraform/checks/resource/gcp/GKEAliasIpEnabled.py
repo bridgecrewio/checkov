@@ -17,8 +17,5 @@ class GKEAliasIpEnabled(BaseResourceValueCheck):
     def get_expected_values(self):
         return [ANY_VALUE]
 
-    def get_expected_value(self):
-        return {}
-
 
 check = GKEAliasIpEnabled()
