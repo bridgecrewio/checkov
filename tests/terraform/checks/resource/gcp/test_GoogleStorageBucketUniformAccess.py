@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.gcp.GoogleStorageBucketUniformAccess impo
 from checkov.common.models.enums import CheckResult
 
 
-class TestGoogleProjectDefaultNetwork(unittest.TestCase):
+class TestGoogleStorageBucketUniformAccess(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
