@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GKEClusterLogging(BaseResourceValueCheck):
+class GKEClusterLogging(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_1"
@@ -21,9 +21,6 @@ class GKEClusterLogging(BaseResourceValueCheck):
             if conf['logging_service'][0] == "none":
                 return CheckResult.FAILED
         return CheckResult.PASSED
-
-    def get_inspected_key(self):
-        return 'logging_service/[0]'
 
 
 check = GKEClusterLogging()
