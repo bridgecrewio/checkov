@@ -10,19 +10,6 @@ class GKEClientCertificateEnabled(BaseResourceValueCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    # def scan_resource_conf(self, conf):
-    #     """
-    #         Looks for client certificate configuration on google_container_cluster:
-    #         https://www.terraform.io/docs/providers/google/r/container_cluster.html#client_certificate_config
-    #     :param conf: google_container_cluster configuration
-    #     :return: <CheckResult>
-    #     """
-    #     if 'master_auth' in conf and 'client_certificate_config' in conf['master_auth'][0]:
-    #         if 'issue_client_certificate' in conf['master_auth'][0]['client_certificate_config'][0]:
-    #             if conf['master_auth'][0]['client_certificate_config'][0]['issue_client_certificate'][0]:
-    #                 return CheckResult.PASSED
-    #     return CheckResult.FAILED
-
     def get_inspected_key(self):
         """
                     Looks for client certificate configuration on google_container_cluster:
