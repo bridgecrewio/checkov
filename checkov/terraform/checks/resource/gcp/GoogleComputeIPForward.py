@@ -14,8 +14,8 @@ class GoogleComputeIPForward(BaseResourceCheck):
         # Instances created by GKE should be excluded because they need to have IP forwarding enabled
         if conf['name'][0].startswith('gke-'):
             return CheckResult.PASSED
-        if 'can_ip_forawrd' in conf.keys():
-            if conf['can_ip_forward']:
+        elif 'can_ip_forward' in conf.keys():
+            if conf['can_ip_forward'][0]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
