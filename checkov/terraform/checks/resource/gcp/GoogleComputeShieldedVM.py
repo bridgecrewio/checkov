@@ -19,8 +19,11 @@ class GoogleComputeShieldedVM(BaseResourceCheck):
         """
 
         if 'shielded_instance_config' in conf.keys():
-            if not conf['shielded_instance_config'][0]['enable_vtpm'] or \
-                    not conf['shielded_instance_config'][0]['enable_integrity_monitoring']:
+            if 'enable_vtpm' in conf['shielded_instance_config'][0] and \
+                    not conf['shielded_instance_config'][0].get('enable_vtpm')[0]:
+                return CheckResult.FAILED
+            if 'enable_integrity_monitoring' in conf['shielded_instance_config'][0] and \
+                    not conf['shielded_instance_config'][0].get('enable_integrity_monitoring')[0]:
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
