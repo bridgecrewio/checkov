@@ -12,7 +12,7 @@ class GoogleComputeDiskEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'disk_encryption_key' in conf.keys():
-            if len(conf['disk_encryption_key']) > 0:
+            if len(conf['disk_encryption_key'][0]) > 0:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
