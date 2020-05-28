@@ -1,8 +1,9 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.common.models.consts import ANY_VALUE
 
 
-class GKEAliasIpEnabled(BaseResourceCheck):
+class GKEAliasIpEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Kubernetes Cluster is created with Alias IP ranges enabled"
         id = "CKV_GCP_23"
@@ -10,16 +11,11 @@ class GKEAliasIpEnabled(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for password configuration at azure_instance:
-            https://www.terraform.io/docs/providers/google/r/compute_ssl_policy.html
-        :param conf: google_compute_ssl_policy configuration
-        :return: <CheckResult>
-        """
-        if conf.get('ip_allocation_policy'):
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'ip_allocation_policy'
+
+    def get_expected_values(self):
+        return [ANY_VALUE]
 
 
 check = GKEAliasIpEnabled()

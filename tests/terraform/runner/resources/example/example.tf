@@ -1174,14 +1174,14 @@ resource "aws_iam_role" "example_2_allowing_all_aws_principals" {
 EOF
 }
 
-resource "google_compute_subnetwork" "subnet without logging" {
+resource "google_compute_subnetwork" "subnet-without-logging" {
           name          = "log-test-subnetwork"
           ip_cidr_range = "10.2.0.0/16"
           region        = "us-central1"
           network       = google_compute_network.custom-test.id
         }
 
-resource "google_compute_subnetwork" "subnet with logging" {
+resource "google_compute_subnetwork" "subnet-with-logging" {
           name          = "log-test-subnetwork"
           ip_cidr_range = "10.2.0.0/16"
           region        = "us-central1"
@@ -1224,3 +1224,27 @@ resource "google_project" "no-default-network-created" {
   org_id     = "1234567"
   auto_create_network = false
 }
+
+resource "google_storage_bucket_iam_member" "member-not-public" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  member = "user:jane@example.com"
+}
+
+resource "google_storage_bucket_iam_binding" "binding-with-public-member" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  members = [
+    "allAuthenticatedUsers"
+  ]
+}
+
+resource "google_storage_bucket" "bucket-with-uniform-access-enabled" {
+  name          = "image-store.com"
+  location      = "EU"
+  force_destroy = true
+
+  bucket_policy_only = true
+
+  }
+

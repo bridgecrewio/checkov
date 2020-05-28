@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class GKEClientCertificateEnabled(BaseResourceCheck):
+class GKEClientCertificateEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure a client certificate is used by clients to authenticate to Kubernetes Engine Clusters"
         id = "CKV_GCP_13"
@@ -10,18 +10,14 @@ class GKEClientCertificateEnabled(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def get_inspected_key(self):
         """
-            Looks for client certificate configuration on google_container_cluster:
-            https://www.terraform.io/docs/providers/google/r/container_cluster.html#client_certificate_config
-        :param conf: google_container_cluster configuration
-        :return: <CheckResult>
+                    Looks for client certificate configuration on google_container_cluster:
+                    https://www.terraform.io/docs/providers/google/r/container_cluster.html#client_certificate_config
+                :param conf: google_container_cluster configuration
+                :return: <CheckResult>
         """
-        if 'master_auth' in conf and 'client_certificate_config' in conf['master_auth'][0]:
-            if 'issue_client_certificate' in conf['master_auth'][0]['client_certificate_config'][0]:
-                if conf['master_auth'][0]['client_certificate_config'][0]['issue_client_certificate'][0]:
-                    return CheckResult.PASSED
-        return CheckResult.FAILED
+        return 'master_auth/[0]/client_certificate_config/[0]/issue_client_certificate/[0]'
 
 
 check = GKEClientCertificateEnabled()
