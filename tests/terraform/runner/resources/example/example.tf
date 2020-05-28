@@ -1267,6 +1267,9 @@ zone         = "us-central1-a"
     scopes = ["https://www.googleapis.com/auth/cloud-platform", "compute-ro", "storage-ro"]
     email = "example@email.com"
   }
+  metadata = {
+       block-project-ssh-keys = true
+              }
   boot_disk {}
   network_interface {}
 }
