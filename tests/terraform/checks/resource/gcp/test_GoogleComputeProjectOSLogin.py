@@ -20,7 +20,6 @@ class TestGoogleComputeProjectOSLogin(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-
     def test_success(self):
         hcl_res = hcl2.loads("""
                     resource "google_compute_project_metadata" "default" {
