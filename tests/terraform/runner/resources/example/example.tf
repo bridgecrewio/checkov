@@ -1256,7 +1256,8 @@ zone         = "us-central1-a"
     scopes = ["https://www.googleapis.com/auth/cloud-platform", "compute-ro", "storage-ro"]
   }
   metadata = {
-       enable-oslogin = false
+    enable-oslogin = false
+    serial-port-enable = '80'
               }
   boot_disk {}
   network_interface {}
