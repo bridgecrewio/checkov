@@ -1248,3 +1248,32 @@ resource "google_storage_bucket" "bucket-with-uniform-access-enabled" {
 
   }
 
+resource "google_compute_instance" "bad-example" {
+name         = "test"
+machine_type = "n1-standard-1"
+zone         = "us-central1-a"
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-9"
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {
+        // Ephemeral IP
+      }
+    }
+}
+
+resource "google_compute_instance" "good-example" {
+name         = "test"
+machine_type = "n1-standard-1"
+zone         = "us-central1-a"
+  service_account {
+    scopes = []
+    email = "example@email.com"
+  }
+  boot_disk {}
+  network_interface {}
+}
+
