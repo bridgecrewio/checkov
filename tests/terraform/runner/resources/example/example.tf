@@ -1278,6 +1278,7 @@ zone         = "us-central1-a"
   boot_disk {
     disk_encryption_key_raw = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
   }
+  shielded_instance_config {}
   network_interface {}
 }
 
