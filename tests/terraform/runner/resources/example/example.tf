@@ -1274,3 +1274,17 @@ zone         = "us-central1-a"
   network_interface {}
 }
 
+resource "google_compute_project_metadata" "good-example" {
+  metadata = {
+    foo  = "bar"
+    enable-oslogin = true
+  }
+}
+
+resource "google_compute_project_metadata" "bad-example" {
+  metadata = {
+    foo  = "bar"
+    enable-oslogin = true
+  }
+}
+
