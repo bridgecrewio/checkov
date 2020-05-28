@@ -16,7 +16,7 @@ class TestGoogleComputeSerialPorts(unittest.TestCase):
               zone         = "us-central1-a"
               boot_disk {}
               metadata = {
-                 serial-port-enable = false
+                 serial-port-enable = "80"
               }
             }
                 """)
@@ -24,7 +24,20 @@ class TestGoogleComputeSerialPorts(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_failure_2(self):
+    def test_success_1(self):
+        hcl_res = hcl2.loads("""
+            resource "google_compute_instance" "default" {
+              name         = "test"
+              machine_type = "n1-standard-1"
+              zone         = "us-central1-a"
+              boot_disk {}
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_2(self):
         hcl_res = hcl2.loads("""
             resource "google_compute_instance" "default" {
               name         = "test"
@@ -32,21 +45,8 @@ class TestGoogleComputeSerialPorts(unittest.TestCase):
               zone         = "us-central1-a"
               boot_disk {}
               metadata = {
-                 serial-port-enable = "0"
+                 serial-port-enable = false
               }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance" "default" {
-              name         = "test"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-              boot_disk {}
             }
                 """)
         resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']

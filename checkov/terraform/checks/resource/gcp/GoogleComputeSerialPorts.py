@@ -13,7 +13,7 @@ class GoogleComputeSerialPorts(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'metadata' in conf.keys():
             if 'serial-port-enable'in conf['metadata'][0]:
-                if conf['metadata'][0]['serial-port-enable'] == '0' or not conf['metadata'][0]['serial-port-enable']:
+                if conf['metadata'][0]['serial-port-enable'] not in ['0', False]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
