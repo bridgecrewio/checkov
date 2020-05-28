@@ -2,7 +2,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GoogleComputeInstanceOSLogin(BaseResourceCheck):
+class GoogleComputeSerialPorts(BaseResourceCheck):
     def __init__(self):
         name = "Ensure 'Enable connecting to serial ports' is not enabled for VM Instance"
         id = "CKV_GCP_35"
@@ -13,9 +13,9 @@ class GoogleComputeInstanceOSLogin(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'metadata' in conf.keys():
             if 'serial-port-enable'in conf['metadata'][0]:
-                if conf['metadata'][0]['serial-port-enable'][0] == '0' or conf['metadata'][0]['serial-port-enable'][0] is False:
+                if conf['metadata'][0]['serial-port-enable'] == '0' or not conf['metadata'][0]['serial-port-enable']:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
 
-check = GoogleComputeInstanceOSLogin()
+check = GoogleComputeSerialPorts()
