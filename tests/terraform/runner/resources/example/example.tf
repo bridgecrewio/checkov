@@ -1275,7 +1275,9 @@ zone         = "us-central1-a"
   metadata = {
        block-project-ssh-keys = true
               }
-  boot_disk {}
+  boot_disk {
+    disk_encryption_key_raw = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+  }
   network_interface {}
 }
 
@@ -1291,5 +1293,16 @@ resource "google_compute_project_metadata" "bad-example" {
     foo  = "bar"
     enable-oslogin = true
   }
+}
+
+resource "google_compute_disk" "good_example" {
+  name  = "test-disk"
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+  image = "debian-8-jessie-v20170523"
+  physical_block_size_bytes = 4096
+  disk_encryption_key {
+    raw_key = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+    }
 }
 
