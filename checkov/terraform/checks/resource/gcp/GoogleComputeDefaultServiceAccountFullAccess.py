@@ -22,16 +22,16 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         :param conf: google_compute_instance configuration
         :return: <CheckResult>
         """
+        if conf['name'][0].startswith('gke-'):
+            return CheckResult.PASSED
         if 'service_account' in conf.keys():
             if 'email' in conf['service_account'][0]:
                 if re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
-                    if FULL_ACCESS_API in conf['service_account'][0]['scopes']:
+                    if FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
                         return CheckResult.FAILED
-            elif FULL_ACCESS_API in conf['service_account'][0]['scopes']:
+            elif FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
                 return CheckResult.FAILED
-        if conf['name'][0].startswith('gke-'):
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = GoogleComputeDefaultServiceAccountFullAccess()
