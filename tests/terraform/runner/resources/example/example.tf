@@ -1307,3 +1307,18 @@ resource "google_compute_disk" "good_example" {
     }
 }
 
+resource "google_project_iam_member" "bad-role" {
+    project = "your-project-id"
+    role    = "roles/iam.serviceAccountUser"
+    member  = "user:jane@example.com"
+}
+
+resource "google_project_iam_binding" "bad-role" {
+  project = "your-project-id"
+  role    = "roles/iam.serviceAccountTokenCreator"
+
+  members = [
+    "user:jane@example.com",
+  ]
+}
+
