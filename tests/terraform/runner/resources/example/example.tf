@@ -1322,3 +1322,9 @@ resource "google_project_iam_binding" "bad-role" {
   ]
 }
 
+resource "google_project_iam_member" "admin-user-managed-member" {
+  project = "your-project-id"
+  role    = "roles/owner"
+  member  = "user:user@123456789.iam.gserviceaccount.com"
+}
+
