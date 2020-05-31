@@ -10,6 +10,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
+from checkov.cloudformation.parser.node import dict_node
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
@@ -48,7 +49,7 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for cf_file in definitions.keys():
-            if isinstance(definitions[cf_file], dict) and 'Resources' in definitions[cf_file].keys():
+            if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
                 logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
 
                 # Get Parameter Defaults - Locate Refs in Template
