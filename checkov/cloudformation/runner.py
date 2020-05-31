@@ -10,6 +10,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
+from checkov.cloudformation.parser.node import dict_node
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
@@ -48,74 +49,75 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for cf_file in definitions.keys():
-            if not 'Resources' in definitions[cf_file].keys():
-                continue
-            logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
+            if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
+                logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
 
-            # Get Parameter Defaults - Locate Refs in Template
-            refs = []
-            refs.extend(self._search_deep_keys('Ref', definitions[cf_file], []))
+                # Get Parameter Defaults - Locate Refs in Template
+                refs = []
+                refs.extend(self._search_deep_keys('Ref', definitions[cf_file], []))
 
-            for ref in refs:
-                refname = ref.pop()
-                ref.pop()  # Get rid of the 'Ref' dict key
+                for ref in refs:
+                    refname = ref.pop()
+                    ref.pop()  # Get rid of the 'Ref' dict key
 
-                if 'Parameters' in definitions[cf_file].keys() and refname in definitions[cf_file][
-                    'Parameters'].keys():
-                    # TODO refactor into evaluations
-                    if 'Default' in definitions[cf_file]['Parameters'][refname].keys():
-                        logging.debug(
-                            "Replacing Ref {} in file {} with default parameter value: {}".format(refname, cf_file,
-                                                                                                  definitions[
-                                                                                                      cf_file][
-                                                                                                      'Parameters'][
-                                                                                                      refname][
-                                                                                                      'Default']))
-                        _set_in_dict(definitions[cf_file], ref,
-                                     definitions[cf_file]['Parameters'][refname]['Default'])
+                    if 'Parameters' in definitions[cf_file].keys() and refname in definitions[cf_file][
+                        'Parameters'].keys():
+                        # TODO refactor into evaluations
+                        if 'Default' in definitions[cf_file]['Parameters'][refname].keys():
+                            logging.debug(
+                                "Replacing Ref {} in file {} with default parameter value: {}".format(refname, cf_file,
+                                                                                                      definitions[
+                                                                                                          cf_file][
+                                                                                                          'Parameters'][
+                                                                                                          refname][
+                                                                                                          'Default']))
+                            _set_in_dict(definitions[cf_file], ref,
+                                         definitions[cf_file]['Parameters'][refname]['Default'])
 
-                        ## TODO - Add Variable Eval Message for Output
-                        # Output in Checkov looks like this:
-                        # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
+                            ## TODO - Add Variable Eval Message for Output
+                            # Output in Checkov looks like this:
+                            # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
-            for resource_name, resource in definitions[cf_file]['Resources'].items():
-                if resource_name == '__startline__' or resource_name == '__endline__':
-                    continue
-                resource_id = f"{resource['Type']}.{resource_name}"
+                for resource_name, resource in definitions[cf_file]['Resources'].items():
+                    if resource_name == '__startline__' or resource_name == '__endline__':
+                        continue
+                    resource_id = f"{resource['Type']}.{resource_name}"
 
-                # TODO refactor into context parsing
-                find_lines_result_list = list(find_lines(resource, '__startline__'))
-                if len(find_lines_result_list) >= 1:
-                    start_line = min(find_lines_result_list)
-                    end_line = max(list(find_lines(resource, '__endline__')))
+                    # TODO refactor into context parsing
+                    find_lines_result_list = list(find_lines(resource, '__startline__'))
+                    if len(find_lines_result_list) >= 1:
+                        start_line = min(find_lines_result_list)
+                        end_line = max(list(find_lines(resource, '__endline__')))
 
-                    entity_lines_range = [start_line, end_line - 1]
+                        entity_lines_range = [start_line, end_line - 1]
 
-                    entity_code_lines = definitions_raw[cf_file][start_line - 1: end_line - 1]
+                        entity_code_lines = definitions_raw[cf_file][start_line - 1: end_line - 1]
 
-                    # TODO - Variable Eval Message!
-                    variable_evaluations = {}
+                        # TODO - Variable Eval Message!
+                        variable_evaluations = {}
 
-                    skipped_checks = []
-                    for line in entity_code_lines:
-                        skip_search = re.search(COMMENT_REGEX, str(line))
-                        if skip_search:
-                            skipped_checks.append(
-                                {
-                                    'id': skip_search.group(2),
-                                    'suppress_comment': skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
-                                }
-                            )
+                        skipped_checks = []
+                        for line in entity_code_lines:
+                            skip_search = re.search(COMMENT_REGEX, str(line))
+                            if skip_search:
+                                skipped_checks.append(
+                                    {
+                                        'id': skip_search.group(2),
+                                        'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
+                                            3) else "No comment provided"
+                                    }
+                                )
 
-                    results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks, runner_filter)
-                    for check, check_result in results.items():
-                        ### TODO - Need to get entity_code_lines and entity_lines_range
-                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                        code_block=entity_code_lines, file_path=cf_file,
-                                        file_line_range=entity_lines_range,
-                                        resource=resource_id, evaluations=variable_evaluations,
-                                        check_class=check.__class__.__module__)
-                        report.add_record(record=record)
+                        results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
+                                                         runner_filter)
+                        for check, check_result in results.items():
+                            ### TODO - Need to get entity_code_lines and entity_lines_range
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                            code_block=entity_code_lines, file_path=cf_file,
+                                            file_line_range=entity_lines_range,
+                                            resource=resource_id, evaluations=variable_evaluations,
+                                            check_class=check.__class__.__module__)
+                            report.add_record(record=record)
         return report
 
     def _search_deep_keys(self, search_text, cfn_dict, path):

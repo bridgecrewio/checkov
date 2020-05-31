@@ -5,15 +5,6 @@ import itertools
 import dpath.util
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 
-logging.basicConfig(level=logging.INFO)
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-# set a format which is simpler for console use
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# tell the handler to use this format
-console.setFormatter(formatter)
-
 checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
