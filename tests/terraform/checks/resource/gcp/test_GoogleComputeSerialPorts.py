@@ -16,7 +16,7 @@ class TestGoogleComputeSerialPorts(unittest.TestCase):
               zone         = "us-central1-a"
               boot_disk {}
               metadata = {
-                 serial-port-enable = "80"
+                 serial-port-enable = true
               }
             }
                 """)
