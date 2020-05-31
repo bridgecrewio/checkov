@@ -127,6 +127,12 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	
 ...
 ```
+
+#### Logging
+For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
+
+Default `LOGGING_LEVEL` value is `WARNING`.
+
 ## Alternatives
 
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).

@@ -16,15 +16,6 @@ import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
-logging.basicConfig(level=logging.INFO)
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-# set a format which is simpler for console use
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# tell the handler to use this format
-console.setFormatter(formatter)
-
 BC_API_URL = os.getenv('BC_API_URL',"https://www.bridgecrew.cloud/api/v1")
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
