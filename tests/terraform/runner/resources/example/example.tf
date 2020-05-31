@@ -1257,12 +1257,12 @@ zone         = "us-central1-a"
   }
   metadata = {
     enable-oslogin = false
-    serial-port-enable = '80'
+    serial-port-enable = true
               }
   can_ip_forward = true
   boot_disk {}
   network_interface {}
-    }
+}
 
 resource "google_compute_instance" "good-example" {
 name         = "test"
