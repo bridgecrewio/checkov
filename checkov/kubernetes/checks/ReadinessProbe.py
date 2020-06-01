@@ -17,10 +17,15 @@ class ReadinessProbe(BaseK8Check):
         return conf['parent']
 
     def scan_spec_conf(self, conf):
-        # Don't check Job/CronJob
+        # Don't check Job/CronJob (or Pods in runtime derived from Job/CronJob)
         if "parent" in conf:
             if "Job" in conf["parent"]:
                 return CheckResult.PASSED
+            if "parent_metadata" in conf:
+                if "ownerReferences" in conf["parent_metadata"]:
+                    for ref in conf["parent_metadata"]["ownerReferences"]:
+                        if ref["kind"] == "Job":
+                            return CheckResult.PASSED
         if "readinessProbe" not in conf:
             return CheckResult.FAILED
         return CheckResult.PASSED

@@ -95,7 +95,7 @@ a suppression can be inserted as a simple code annotation.
 
 #### Suppression comment format
 
-To skip a check on a given Terraform definition block, apply the following comment pattern inside it's scope:
+To skip a check on a given Terraform definition block or CloudFormation resource, apply the following comment pattern inside it's scope:
 
 `checkov:skip=<check_id>:<suppression_comment>`
 
@@ -128,6 +128,24 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 ...
 ```
 
+To suppress checks in Kubernetes manifests, annotations are used with the following format:
+`checkov.io/skip#: <check_id>=<suppression_comment>`
+
+For example: 
+```bash
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+  annotations:
+    checkov.io/skip1: CKV_K8S_20=I don't care about Privilege Escalation :-O
+    checkov.io/skip2: CKV_K8S_14
+    checkov.io/skip3: CKV_K8S_11=I have not set CPU limits as I want BestEffort QoS
+spec:
+  containers:
+...
+```
+
 #### Logging
 For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
 
@@ -138,6 +156,8 @@ Default `LOGGING_LEVEL` value is `WARNING`.
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).
 
 For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
+
+For Kubernetes scanning check out [kube-scan](https://github.com/octarinesec/kube-scan) and [Polaris](https://github.com/FairwindsOps/polaris)
 
 ## Contributing
 Contribution is welcomed! 

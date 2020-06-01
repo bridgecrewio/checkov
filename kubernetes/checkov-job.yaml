@@ -106,6 +106,7 @@ rules:
   - policy
   resources:
   - poddisruptionbudgets
+  - podsecuritypolicies
   verbs:
   - get
   - list
@@ -161,11 +162,17 @@ metadata:
   annotations:
     checkov.io/skip1: CKV_K8S_22=Checkov requires filesystem write access to dump resource definitions
     checkov.io/skip2: CKV_K8S_38=Service Account is required for read-only API access
+    checkov.io/skip3: CKV_K8S_14=Preferring latest rules every run - image pull always
+    checkov.io/skip4: CKV_K8S_43=Preferring latest rules every run - image pull always
 spec:
   template:
     metadata:
       annotations:
         seccomp.security.alpha.kubernetes.io/pod: runtime/default
+        checkov.io/skip1: CKV_K8S_22=Checkov requires filesystem write access to dump resource definitions
+        checkov.io/skip2: CKV_K8S_38=Service Account is required for read-only API access
+        checkov.io/skip3: CKV_K8S_14=Preferring latest rules every run - image pull always
+        checkov.io/skip4: CKV_K8S_43=Preferring latest rules every run - image pull always
     spec:
       securityContext:
         runAsUser: 12000
