@@ -8,7 +8,7 @@ ADMIN_ROLE = re.compile ('.*(.*Admin|.*admin|editor|owner)')
 class GoogleProjectAdminServiceAccount(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Service Account has no Admin privileges"
-        id = "CKV_GCP_43"
+        id = "CKV_GCP_42"
         supported_resources = ['google_project_iam_member']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -7,7 +7,7 @@ ONE_DAY = {'d': 1, 'h': 24, 'm': 1440, 's': 86400}
 class GoogleKMSKeyRotationPeriod(BaseResourceCheck):
     def __init__(self):
         name = "Ensure KMS encryption keys are rotated within a period of 90 days"
-        id = "CKV_GCP_44"
+        id = "CKV_GCP_43"
         supported_resources = ['google_kms_crypto_key']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
