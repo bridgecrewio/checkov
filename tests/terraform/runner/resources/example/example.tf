@@ -1307,3 +1307,33 @@ resource "google_compute_disk" "good_example" {
     }
 }
 
+resource "google_project_iam_member" "bad-role" {
+    project = "your-project-id"
+    role    = "roles/iam.serviceAccountUser"
+    member  = "user:jane@example.com"
+}
+
+resource "google_project_iam_binding" "bad-role" {
+  project = "your-project-id"
+  role    = "roles/iam.serviceAccountTokenCreator"
+
+  members = [
+    "user:jane@example.com",
+  ]
+}
+
+resource "google_project_iam_member" "admin-user-managed-member" {
+  project = "your-project-id"
+  role    = "roles/owner"
+  member  = "user:user@123456789.iam.gserviceaccount.com"
+}
+
+resource "google_kms_crypto_key" "good-rotation-period" {
+  name            = "crypto-key-example"
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = "90d"
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
