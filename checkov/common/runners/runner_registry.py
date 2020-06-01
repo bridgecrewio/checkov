@@ -1,3 +1,4 @@
+import json
 import logging
 from abc import abstractmethod
 
@@ -30,10 +31,11 @@ class RunnerRegistry(object):
         if args.output != "json" and args.output != "junitxml" and args.output != "github_failed_only":
             print(f"{self.banner}\n")
         exit_codes = []
+        report_jsons = []
         for report in scan_reports:
             if not report.is_empty():
                 if args.output == "json":
-                    report.print_json()
+                    report_jsons.append(report.get_dict())
                 elif args.output == "junitxml":
                     report.print_junit_xml()
                 elif args.output == 'github_failed_only':
@@ -41,6 +43,8 @@ class RunnerRegistry(object):
                 else:
                     report.print_console(is_quiet=args.quiet)
             exit_codes.append(report.get_exit_code(args.soft_fail))
+        if args.output == "json":
+            print(json.dumps(report_jsons, indent=4))
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
 

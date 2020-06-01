@@ -1248,3 +1248,62 @@ resource "google_storage_bucket" "bucket-with-uniform-access-enabled" {
 
   }
 
+resource "google_compute_instance" "bad-example" {
+name         = "test"
+machine_type = "n1-standard-1"
+zone         = "us-central1-a"
+  service_account {
+    scopes = ["https://www.googleapis.com/auth/cloud-platform", "compute-ro", "storage-ro"]
+  }
+  metadata = {
+    enable-oslogin = false
+    serial-port-enable = true
+              }
+  can_ip_forward = true
+  boot_disk {}
+  network_interface {}
+}
+
+resource "google_compute_instance" "good-example" {
+name         = "test"
+machine_type = "n1-standard-1"
+zone         = "us-central1-a"
+  service_account {
+    scopes = ["https://www.googleapis.com/auth/cloud-platform", "compute-ro", "storage-ro"]
+    email = "example@email.com"
+  }
+  metadata = {
+       block-project-ssh-keys = true
+              }
+  boot_disk {
+    disk_encryption_key_raw = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+  }
+  shielded_instance_config {}
+  network_interface {}
+}
+
+resource "google_compute_project_metadata" "good-example" {
+  metadata = {
+    foo  = "bar"
+    enable-oslogin = true
+  }
+}
+
+resource "google_compute_project_metadata" "bad-example" {
+  metadata = {
+    foo  = "bar"
+    enable-oslogin = true
+  }
+}
+
+resource "google_compute_disk" "good_example" {
+  name  = "test-disk"
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+  image = "debian-8-jessie-v20170523"
+  physical_block_size_bytes = 4096
+  disk_encryption_key {
+    raw_key = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+    }
+}
+

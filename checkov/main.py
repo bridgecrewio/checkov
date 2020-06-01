@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import logging
 import os
 
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -9,20 +8,13 @@ from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
+from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
-from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.version import version
 
-logging.basicConfig(level=logging.INFO)
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-# set a format which is simpler for console use
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# tell the handler to use this format
-console.setFormatter(formatter)
-
+logging_init()
 
 def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
