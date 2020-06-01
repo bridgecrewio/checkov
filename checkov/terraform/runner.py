@@ -14,6 +14,8 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.parser import Parser
+# Allow the evaluation of empty variables
+dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 TRUE_STRING = "true"
 ONE_STRING = "1"
@@ -45,7 +47,7 @@ class Runner(BaseRunner):
         if root_folder:
             root_folder = os.path.abspath(root_folder)
             self.parser.hcl2(directory=root_folder, tf_definitions=self.tf_definitions, parsing_errors=parsing_errors)
-            self.check_tf_definition(report, root_folder,runner_filter)
+            self.check_tf_definition(report, root_folder, runner_filter)
 
         if files:
             files = [os.path.abspath(file) for file in files]
@@ -53,7 +55,7 @@ class Runner(BaseRunner):
             for file in files:
                 if file.endswith(".tf"):
                     self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
-                    self.check_tf_definition(report, root_folder,runner_filter)
+                    self.check_tf_definition(report, root_folder, runner_filter)
 
         report.add_parsing_errors(parsing_errors.keys())
 
@@ -71,7 +73,7 @@ class Runner(BaseRunner):
                                                          yielded=True):
                 dpath.set(self.tf_definitions[tf_file], var_path, False)
 
-    def check_tf_definition(self, report, root_folder,runner_filter):
+    def check_tf_definition(self, report, root_folder, runner_filter):
         definitions_context = {}
         parser_registry.reset_definitions_context()
         for definition in self.tf_definitions.items():
@@ -86,9 +88,10 @@ class Runner(BaseRunner):
             for block_type in definition.keys():
                 if block_type in ['resource', 'data', 'provider']:
                     self.run_block(definition[block_type], definitions_context, full_file_path, report, scanned_file,
-                                   block_type,runner_filter)
+                                   block_type, runner_filter)
 
-    def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type,runner_filter=None):
+    def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type,
+                  runner_filter=None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -107,7 +110,7 @@ class Runner(BaseRunner):
                     if variables_evaluations:
                         entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                               entity_context_path)
-                    results = registry.scan(scanned_file, entity, skipped_checks,runner_filter)
+                    results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
                     for check, check_result in results.items():
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                         code_block=entity_code_lines, file_path=scanned_file,
