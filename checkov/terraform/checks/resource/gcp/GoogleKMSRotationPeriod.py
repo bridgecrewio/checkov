@@ -1,8 +1,9 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
-NINETY_DAYS = {'d': 90, 'h': 2160, 'm': 129600, 's': 7776000}
-ONE_DAY = {'d': 1, 'h': 24, 'm': 1440, 's': 86400}
+# rotation_period time unit is seconds
+NINETY_DAYS = 7776000
+ONE_DAY = 86400
 
 class GoogleKMSKeyRotationPeriod(BaseResourceCheck):
     def __init__(self):
@@ -14,9 +15,8 @@ class GoogleKMSKeyRotationPeriod(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'rotation_period' in conf.keys():
-            time_unit = conf['rotation_period'][0][-1]
             time = int(conf['rotation_period'][0][:-1])
-            if ONE_DAY[time_unit] <= time <= NINETY_DAYS[time_unit]:
+            if ONE_DAY <= time <= NINETY_DAYS:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
