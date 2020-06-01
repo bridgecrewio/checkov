@@ -8,7 +8,7 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
         name = "Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network"
         id = "CKV_GCP_26"
         supported_resources = ['google_compute_subnetwork']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):

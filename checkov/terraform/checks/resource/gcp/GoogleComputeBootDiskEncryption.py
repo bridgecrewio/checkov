@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class GoogleComputeBootDiskEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure VM disks for critical VMs are encrypted with CustomerSupplied Encryption Keys (CSEK)"
+        name = "Ensure VM disks for critical VMs are encrypted with Customer Supplied Encryption Keys (CSEK)"
         id = "CKV_GCP_38"
         supported_resources = ['google_compute_instance']
         categories = [CheckCategories.ENCRYPTION]
@@ -15,7 +15,6 @@ class GoogleComputeBootDiskEncryption(BaseResourceCheck):
             if 'disk_encryption_key_raw' in conf['boot_disk'][0] or 'kms_key_self_link' in conf['boot_disk'][0]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
-
 
 
 check = GoogleComputeBootDiskEncryption()

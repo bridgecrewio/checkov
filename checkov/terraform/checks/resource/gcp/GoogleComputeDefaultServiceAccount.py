@@ -7,7 +7,7 @@ DEFAULT_SERVICE_ACCOUNT = re.compile('\d+-compute@developer\.gserviceaccount\.co
 
 class GoogleComputeDefaultServiceAccount(BaseResourceCheck):
     def __init__(self):
-        name = " Ensure that instances are not configured to use the default service account"
+        name = "Ensure that instances are not configured to use the default service account"
         id = "CKV_GCP_30"
         supported_resources = ['google_compute_instance']
         categories = [CheckCategories.NETWORKING]

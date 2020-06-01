@@ -1,5 +1,5 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
 class GoogleCloudSqlDatabaseRequireSsl(BaseResourceValueCheck):
@@ -19,5 +19,6 @@ class GoogleCloudSqlDatabaseRequireSsl(BaseResourceValueCheck):
         :return: < CheckResult >
         """
         return 'settings/[0]/ip_configuration/[0]/require_ssl/[0]'
+
 
 check = GoogleCloudSqlDatabaseRequireSsl()

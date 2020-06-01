@@ -5,6 +5,7 @@ import re
 USER_MANAGED_SERVICE_ACCOUNT = re.compile ('.*@.*\.iam\.gserviceaccount\.com$')
 ADMIN_ROLE = re.compile ('.*(.*Admin|.*admin|editor|owner)')
 
+
 class GoogleProjectAdminServiceAccount(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Service Account has no Admin privileges"

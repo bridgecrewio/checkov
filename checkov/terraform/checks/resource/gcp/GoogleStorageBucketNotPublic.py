@@ -4,10 +4,10 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class GoogleStorageBucketNotPublic(BaseResourceCheck):
     def __init__(self):
-        name = " Ensure that Cloud Storage bucket is not anonymously or publicly accessible"
+        name = "Ensure that Cloud Storage bucket is not anonymously or publicly accessible"
         id = "CKV_GCP_28"
         supported_resources = ['google_storage_bucket_iam_member', 'google_storage_bucket_iam_binding']
-        categories = [CheckCategories.IAM]
+        categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

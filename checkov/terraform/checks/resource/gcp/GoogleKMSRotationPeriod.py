@@ -1,9 +1,10 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 # rotation_period time unit is seconds
-NINETY_DAYS = 7776000
-ONE_DAY = 86400
+ONE_DAY = 24 * 60 * 60
+NINETY_DAYS = 90 * ONE_DAY
+
 
 class GoogleKMSKeyRotationPeriod(BaseResourceCheck):
     def __init__(self):
