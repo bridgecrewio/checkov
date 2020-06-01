@@ -34,6 +34,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           pipenv run python -m coverage run -m pytest
           pipenv run python -m coverage report
           pipenv run python -m coverage html
