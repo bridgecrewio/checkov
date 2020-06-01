@@ -13,7 +13,7 @@ class TestGoogleComputeDiskEncryption(unittest.TestCase):
             resource "google_project_iam_member" "project" {
               project = "your-project-id"
               role    = "roles/owner"
-              member  = "user:user@123456789.iam.gserviceaccount.com"
+              member  = "user:test@example-project.iam.gserviceaccount.com"
             }
                 """)
         resource_conf = hcl_res['resource'][0]['google_project_iam_member']['project']
