@@ -1328,3 +1328,12 @@ resource "google_project_iam_member" "admin-user-managed-member" {
   member  = "user:user@123456789.iam.gserviceaccount.com"
 }
 
+resource "google_kms_crypto_key" "good-rotation-period" {
+  name            = "crypto-key-example"
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = "90d"
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
