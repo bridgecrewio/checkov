@@ -80,6 +80,8 @@ class Runner(BaseRunner):
                     # Append containers and initContainers to definitions list
                     for type in ["containers", "initContainers"]:
                         containers = []
+                        if entity_conf["kind"] == "CustomResourceDefinition":
+                            continue
                         containers = self._search_deep_keys(type, entity_conf, [])
                         if not containers:
                             continue
