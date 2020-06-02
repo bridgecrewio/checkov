@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult
 from checkov.common.models.consts import ANY_VALUE
 
-VARIABLE_DEPENDANT_REGEX = r'\b(?:local|var)\.[^\s]+'
+VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -23,7 +23,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
     @staticmethod
     def _is_variable_dependant(value):
-        if isinstance(value, str) and re.search(VARIABLE_DEPENDANT_REGEX, value):
+        if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
             return True
         return False
 
