@@ -67,7 +67,7 @@ def run(banner=checkov_banner):
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
     if args.list:
-        print_checks()
+        print_checks(framework=args.framework)
         return
     if args.directory:
         for root_folder in args.directory:
