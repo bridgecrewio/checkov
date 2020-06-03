@@ -149,9 +149,6 @@ jobs:
   publish-checkov-k8s-dockerhub:
     runs-on: ubuntu-latest
     needs: publish-package
-    defaults:
-      run:
-        working-directory: kubernetes
     steps:
       - uses: actions/checkout@master
       - name: update checkov-k8s version

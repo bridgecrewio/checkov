@@ -1,6 +1,6 @@
 FROM python
 
-COPY requirements.txt /requirements.txt
+COPY kubernetes/requirements.txt /requirements.txt
 
 # Install checkov
 RUN pip install -r /requirements.txt
