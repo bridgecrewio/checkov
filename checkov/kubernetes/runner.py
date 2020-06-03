@@ -114,6 +114,10 @@ class Runner(BaseRunner):
                     if entity_conf["kind"] == "List":
                         continue
 
+                    # Skip Kustomization Templates (for now)
+                    if entity_conf["kind"] == "Kustomization":
+                        continue
+
                     skipped_checks = get_skipped_checks(entity_conf)
 
                     results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter.checks)
