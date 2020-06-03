@@ -195,13 +195,4 @@ spec:
             capabilities:
               drop:
                 - ALL
-          volumeMounts:
-            - name: checkov-rt-secret
-              mountPath: "/etc/checkov"
-              readOnly: true
-      volumes:
-        - name: checkov-rt-secret
-          secret:
-            secretName: checkov-rt-secret
-            optional: true
 

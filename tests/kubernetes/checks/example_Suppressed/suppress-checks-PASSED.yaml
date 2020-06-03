@@ -32,6 +32,38 @@ spec:
       - -c
       - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
 ---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: bcliveness
+  name: bcliveness-exec
+  annotations:
+    bridgecrew.io/skip1: CKV_K8S_20=I don't care about Privilege Escalation in the first container in this pod
+    bridgecrew.io/skip2: CKV_K8S_14
+    bridgecrew.io/skip3: CKV_K8S_11=I don't care about CPU limits
+spec:
+  containers:
+    - name: bcliveness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+      livenessProbe:
+        exec:
+          command:
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        periodSeconds: 5
+    - name: bcnoliveness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

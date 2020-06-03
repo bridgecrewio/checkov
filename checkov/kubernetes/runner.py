@@ -182,7 +182,7 @@ def get_skipped_checks(entity_conf):
     if "annotations" in metadata.keys():
         for key in metadata["annotations"].keys():
             skipped_item = {}
-            if "checkov.io/skip" in key:
+            if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
                 if "CKV_K8S" in metadata["annotations"][key]:
                     if "=" in metadata["annotations"][key]:
                         (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")

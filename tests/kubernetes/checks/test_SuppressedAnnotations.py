@@ -18,7 +18,7 @@ class TestCPULimits(unittest.TestCase):
 
         self.assertEqual(summary['passed'], 0)
         self.assertEqual(summary['failed'], 1)
-        self.assertEqual(summary['skipped'], 8)
+        self.assertEqual(summary['skipped'], 10)
         self.assertEqual(summary['parsing_errors'], 0)
 
 
