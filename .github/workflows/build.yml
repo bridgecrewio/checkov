@@ -166,4 +166,4 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }}"
-          dockerfile: Dockerfile
+          dockerfile: kubernetes/Dockerfile
