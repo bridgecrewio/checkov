@@ -65,7 +65,9 @@ jobs:
 
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
-          git commit -m "bump version to '$new_tag'" checkov/version.py HomebrewFormula/checkov.rb || echo "No changes to commit"
+          echo "checkov==$checkov_version" > 'kubernetes/requirements.txt'
+
+          git commit -m "bump version to '$new_tag'" checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
@@ -133,7 +135,10 @@ jobs:
       - uses: actions/checkout@master
       - name: Get release version
         id: get_version
-        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+        run: |
+          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
+          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
@@ -148,20 +153,9 @@ jobs:
       - uses: actions/checkout@master
       - name: update checkov-k8s version
         run: |
-          # update checkov version
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
-          echo "checkov==$checkov_version" > 'kubernetes/requirements.txt'
-          echo "version = '$checkov_version'"
-
-          # create a release
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git fetch --tags
-          git commit -am "update checkov version to '$checkov_version'"
-          git push
-      - name: Get release version
-        id: get_version
-        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          echo $RELEASE_VERSION
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
