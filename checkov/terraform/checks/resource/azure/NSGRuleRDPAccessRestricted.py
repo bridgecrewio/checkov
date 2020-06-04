@@ -5,7 +5,8 @@ import re
 
 PORT_RANGE = re.compile('\d+-\d+')
 
-class SGRuleRDPAccessRestricted(BaseResourceCheck):
+
+class NSGRuleRDPAccessRestricted(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that RDP access is restricted from the internet"
         id = "CKV_AZURE_9"
@@ -38,4 +39,4 @@ class SGRuleRDPAccessRestricted(BaseResourceCheck):
 
 
 
-check = SGRuleRDPAccessRestricted()
+check = NSGRuleRDPAccessRestricted()
