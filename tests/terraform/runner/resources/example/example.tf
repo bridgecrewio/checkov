@@ -1386,11 +1386,12 @@ retention_policy {
 }
 }
 
-resource "azurerm_app_service" "example" {
+resource "azurerm_app_service" "appservice-with-https-and-auth" {
   name                = "example-app-service"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
 
   auth_settings {
     enabled                       = true
