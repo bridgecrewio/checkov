@@ -12,8 +12,8 @@ class AppServiceMinTLSVersion(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'site_config' in conf and 'min_tls_version' in conf['site_config'][0]:
-            if conf['site_config'][0]['min_tls_config'][0] != '1.2':
-                    return CheckResult.FAILED
+            if conf['site_config'][0]['min_tls_version'][0] != '1.2':
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
