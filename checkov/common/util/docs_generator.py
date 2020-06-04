@@ -17,7 +17,7 @@ def print_checks(framework="all"):
     print("\n\n---\n\n")
 
 
-def get_checks(framework):
+def get_checks(framework="all"):
     printable_checks_list = []
     if framework == "terraform" or framework == "all":
         for key in resource_registry.checks.keys():
