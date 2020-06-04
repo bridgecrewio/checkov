@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class AppServiceClientCertificate(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure the web app has 'Client Certificates (Incoming client certificates)' set to 'On' "
-        id = "CKV_AZURE_16"
+        id = "CKV_AZURE_17"
         supported_resources = ['azurerm_app_service']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

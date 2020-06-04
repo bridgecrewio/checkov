@@ -1399,6 +1399,11 @@ resource "azurerm_app_service" "good-example" {
     issuer                        = "https://sts.windows.net/d13958f6-b541-4dad-97b9-5a39c6b01297"
     default_provider              = "AzureActiveDirectory"
     unauthenticated_client_action = "RedirectToLoginPage"
-  }
+              }
+
+  identity {
+                type = "SystemAssigned"
+              }
 }
+
 
