@@ -1373,4 +1373,16 @@ resource "azurerm_mysql_firewall_rule" "open-to-internet" {
   end_ip_address      = "255.255.255.255"
 }
 
+resource "azurerm_network_watcher_flow_log" "good-retention-policy" {
+network_watcher_name = azurerm_network_watcher.test.name
+resource_group_name  = azurerm_resource_group.test.name
+network_security_group_id = azurerm_network_security_group.test.id
+storage_account_id        = azurerm_storage_account.test.id
+enabled                   = true
+
+retention_policy {
+  enabled = true
+  days    = 90
+}
+}
 
