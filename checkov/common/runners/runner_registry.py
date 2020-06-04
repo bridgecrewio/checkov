@@ -44,7 +44,10 @@ class RunnerRegistry(object):
                     report.print_console(is_quiet=args.quiet)
             exit_codes.append(report.get_exit_code(args.soft_fail))
         if args.output == "json":
-            print(json.dumps(report_jsons, indent=4))
+            if len(report_jsons) == 1:
+                print(json.dumps(report_jsons[0], indent=4))
+            else:
+                print(json.dumps(report_jsons, indent=4))
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
 
