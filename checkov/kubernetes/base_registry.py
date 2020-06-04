@@ -11,10 +11,12 @@ class Registry(BaseCheckRegistry):
         conf = entity
         return kind, conf
 
-    def scan(self, scanned_file, entity, skipped_checks, check_id_whitelist=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
+        check_id_whitelist = runner_filter.checks
+        check_id_blacklist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
@@ -24,6 +26,11 @@ class Registry(BaseCheckRegistry):
                 if check.id in check_id_whitelist:
                     self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
+                    result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                                       entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+                    results[check] = result
+            elif check_id_blacklist:
+                if check.id not in check_id_blacklist:
                     result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
                                        entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
                     results[check] = result
