@@ -120,7 +120,7 @@ class Runner(BaseRunner):
 
                     skipped_checks = get_skipped_checks(entity_conf)
 
-                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter.checks)
+                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
 
                     # TODO refactor into context parsing
                     find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
