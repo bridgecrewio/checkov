@@ -17,7 +17,7 @@ class GKEUseCosImage(BaseResourceCheck):
         :param conf: google_compute_ssl_policy configuration
         :return: <CheckResult>
         """
-        if conf.get('node_config', [{}])[0].get('image_type', [''])[0].startswith('cos'):
+        if conf.get('node_config', [{}])[0].get('image_type', [''])[0].lower().startswith('cos'):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
