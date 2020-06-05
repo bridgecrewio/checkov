@@ -179,10 +179,14 @@ class Runner(BaseRunner):
 
 def get_skipped_checks(entity_conf):
     skipped = []
+    metadata = {}
+    if not isinstance(entity_conf,dict):
+        return skipped
     if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
         metadata = entity_conf["parent_metadata"]
     else:
-        metadata = entity_conf["metadata"]
+        if "metadata" in entity_conf.keys():
+            metadata = entity_conf["metadata"]
     if "annotations" in metadata.keys():
         for key in metadata["annotations"].keys():
             skipped_item = {}
