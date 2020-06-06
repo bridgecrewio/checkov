@@ -2,7 +2,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.enums import CheckCategories
 
 
-class GoogleContainerNodePoolAutoUpgradeEnabled(BaseResourceValueCheck):
+class GKENodePoolAutoUpgradeEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure 'Automatic node upgrade' is enabled for Kubernetes Clusters"
         id = "CKV_GCP_10"
@@ -20,4 +20,4 @@ class GoogleContainerNodePoolAutoUpgradeEnabled(BaseResourceValueCheck):
         return 'management/[0]/auto_upgrade/[0]'
 
 
-check = GoogleContainerNodePoolAutoUpgradeEnabled()
+check = GKENodePoolAutoUpgradeEnabled()
