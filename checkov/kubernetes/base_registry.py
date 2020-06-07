@@ -15,22 +15,22 @@ class Registry(BaseCheckRegistry):
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
-        check_id_whitelist = runner_filter.checks
-        check_id_blacklist = runner_filter.skip_checks
+        check_id_allowlist = runner_filter.checks
+        check_id_denylist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            if check_id_whitelist:
-                if check.id in check_id_whitelist:
+            if check_id_allowlist:
+                if check.id in check_id_allowlist:
                     self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
                     result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
                                        entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
                     results[check] = result
-            elif check_id_blacklist:
-                if check.id not in check_id_blacklist:
+            elif check_id_denylist:
+                if check.id not in check_id_denylist:
                     result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
                                        entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
                     results[check] = result
