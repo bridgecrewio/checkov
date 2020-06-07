@@ -2,11 +2,11 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.SGRuleSSHAccessRestricted import check
+from checkov.terraform.checks.resource.azure.NSGRuleSSHAccessRestricted import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestSGRuleSSHAccessRestricted(unittest.TestCase):
+class TestNSGRuleSSHAccessRestricted(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
