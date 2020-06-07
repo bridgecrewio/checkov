@@ -99,7 +99,7 @@ spec:
             - containerPort: 8080
               name: http
             - containerPort: 50000
-              name: slavelistener
+              name: agentlistener
           livenessProbe:
             httpGet:
               path: "/login"
