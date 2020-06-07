@@ -149,7 +149,7 @@ spec:
 #### Logging
 For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
 
-Default `LOGGING_LEVEL` value is `WARNING`.
+Default `LOG_LEVEL` value is `WARNING`.
 
 ## Alternatives
 
