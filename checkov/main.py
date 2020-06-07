@@ -36,10 +36,10 @@ def run(banner=checkov_banner):
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')
     parser.add_argument('-c', '--check',
-                        help='filter scan to run only on a specific check identifier(whitelist), You can '
+                        help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
     parser.add_argument('--skip-check',
-                        help='filter scan to run on all check but a specific check identifier(blacklist), You can '
+                        help='filter scan to run on all check but a specific check identifier(denylist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
