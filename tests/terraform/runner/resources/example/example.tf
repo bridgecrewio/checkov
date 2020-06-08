@@ -1404,6 +1404,10 @@ resource "azurerm_app_service" "good-example" {
   identity {
                 type = "SystemAssigned"
               }
+
+  site_config {
+    http2_enabled = true
+  }
 }
 
 
