@@ -1,0 +1,16 @@
+name: build
+
+on:
+  on: pull_request
+  push:
+    branches:
+      - master
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: security test
+        uses: jpetrucciani/bandit-check@master
+        with:
+          path: '.'
