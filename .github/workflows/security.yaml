@@ -1,4 +1,4 @@
-name: securiity
+name: security
 
 on:
   pull_request:
