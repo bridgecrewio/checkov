@@ -1,4 +1,4 @@
-name: build
+name: securiity
 
 on:
   pull_request:
