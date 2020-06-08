@@ -23,7 +23,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                             account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
                             if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS']):
                                 return CheckResult.FAILED
-            except:
+            except: # nosec
                 pass
         return CheckResult.PASSED
 
