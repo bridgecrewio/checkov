@@ -1410,4 +1410,16 @@ resource "azurerm_app_service" "good-example" {
   }
 }
 
+resource "azurerm_security_center_subscription_pricing" "example" {
+      tier = "Standard"
+    }
+
+resource "azurerm_security_center_contact" "good-example" {
+  email = "contact@example.com"
+  phone = "+1-555-555-5555"
+
+  alert_notifications = true
+  alerts_to_admins    = true
+}
+
 
