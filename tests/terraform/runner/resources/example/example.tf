@@ -1414,7 +1414,7 @@ resource "azurerm_security_center_subscription_pricing" "example" {
       tier = "Standard"
     }
 
-resource "azurerm_security_center_contact" "example" {
+resource "azurerm_security_center_contact" "good-example" {
   email = "contact@example.com"
   phone = "+1-555-555-5555"
 
