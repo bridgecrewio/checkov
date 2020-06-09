@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 
 class EBSEncryption(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure all data stored in the EBS is securely encrypted "
+        name = "Ensure all data stored in the EBS is securely encrypted"
         id = "CKV_AWS_3"
         supported_resources = ['aws_ebs_volume']
         categories = [CheckCategories.ENCRYPTION]

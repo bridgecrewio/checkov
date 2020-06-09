@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure all data stored in the Launch configuration EBS is securely encrypted "
+        name = "Ensure all data stored in the Launch configuration EBS is securely encrypted"
         id = "CKV_AWS_8"
         supported_resources = ['aws_launch_configuration', 'aws_instance']
         categories = [CheckCategories.ENCRYPTION]

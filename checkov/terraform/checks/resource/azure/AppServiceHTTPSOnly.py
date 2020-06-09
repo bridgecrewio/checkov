@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class AppServiceHTTPSOnly(BaseResourceValueCheck):
     def __init__(self):
-        name = " Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service"
+        name = "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service"
         id = "CKV_AZURE_14"
         supported_resources = ['azurerm_app_service']
         categories = [CheckCategories.NETWORKING]

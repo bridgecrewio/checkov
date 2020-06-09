@@ -7,9 +7,8 @@ class NetworkWatcherFlowLogEnabled(BaseResourceCheck):
         name = "Ensure that Network Security Group Flow Log retention period is 'greater than 90 days'"
         id = "CKV_AZURE_12"
         supported_resources = ['azurerm_network_watcher_flow_log']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
-
 
     def scan_resource_conf(self, conf):
         if 'enabled' in conf and conf['enabled'][0]:
