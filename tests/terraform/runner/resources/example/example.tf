@@ -1337,3 +1337,89 @@ resource "google_kms_crypto_key" "good-rotation-period" {
   }
 }
 
+resource "azurerm_network_security_rule" "inbound-rdp" {
+  name                        = "test123"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "TCP"
+  source_port_range           = "*"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.example.name
+  network_security_group_name = azurerm_network_security_group.example.name
+}
+
+resource "azurerm_network_security_rule" "inbound-ssh" {
+  name                        = "test123"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "TCP"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.example.name
+  network_security_group_name = azurerm_network_security_group.example.name
+}
+
+resource "azurerm_mysql_firewall_rule" "open-to-internet" {
+  name                = "office"
+  resource_group_name = azurerm_resource_group.example.name
+  server_name         = azurerm_mysql_server.example.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "255.255.255.255"
+}
+
+resource "azurerm_network_watcher_flow_log" "good-retention-policy" {
+network_watcher_name = azurerm_network_watcher.test.name
+resource_group_name  = azurerm_resource_group.test.name
+network_security_group_id = azurerm_network_security_group.test.id
+storage_account_id        = azurerm_storage_account.test.id
+enabled                   = true
+
+retention_policy {
+  enabled = true
+  days    = 90
+}
+}
+
+resource "azurerm_app_service" "good-example" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
+  client_cert_enabled = true
+
+  auth_settings {
+    enabled                       = true
+    issuer                        = "https://sts.windows.net/d13958f6-b541-4dad-97b9-5a39c6b01297"
+    default_provider              = "AzureActiveDirectory"
+    unauthenticated_client_action = "RedirectToLoginPage"
+              }
+
+  identity {
+                type = "SystemAssigned"
+              }
+
+  site_config {
+    http2_enabled = true
+  }
+}
+
+resource "azurerm_security_center_subscription_pricing" "example" {
+      tier = "Standard"
+    }
+
+resource "azurerm_security_center_contact" "good-example" {
+  email = "contact@example.com"
+  phone = "+1-555-555-5555"
+
+  alert_notifications = true
+  alerts_to_admins    = true
+}
+
+

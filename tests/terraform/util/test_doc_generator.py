@@ -8,6 +8,9 @@ class TestDocGenerator(unittest.TestCase):
     def test_doc_generator_initiation(self):
         checks = get_checks("all")
         self.assertGreater(len(checks), 0)
+        checks = get_checks()
+        self.assertGreater(len(checks), 0)
+
 
 
 if __name__ == '__main__':

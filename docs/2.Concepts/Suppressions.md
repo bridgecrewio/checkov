@@ -7,8 +7,8 @@ order: 5
 
 # Suppressions
 
-Like any static-analysis tool it is limited by its analysis scope. 
-For example, if a resource is managed manually, or using subsequent configuration management tooling, 
+Like any static-analysis tool it is limited by its analysis scope.
+For example, if a resource is managed manually, or using subsequent configuration management tooling,
 a suppression can be inserted as a simple code annotation.
 
 ## Suppression comment format
@@ -42,7 +42,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	SKIPPED for resource: aws_s3_bucket.foo-bucket
 	Suppress comment: The bucket is a public static content host
 	File: /example_skip_acl.tf:1-25
-	
+
 ...
 ```
 
@@ -65,4 +65,4 @@ spec:
 ```
 
 # Global skip
-If you'd like to whitelist or blacklist a check_id from being executed, use the `--check`(whitelist) or `--skip-check` flags
+If you'd like to allowlist or denylist a check_id from being executed, use the `--check`(allowlist) or `--skip-check` flags

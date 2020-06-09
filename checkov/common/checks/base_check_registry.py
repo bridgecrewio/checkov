@@ -7,12 +7,12 @@ from abc import abstractmethod
 
 class BaseCheckRegistry(object):
     checks = {}
-    check_id_whitelist = None
+    check_id_allowlist = None
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.checks = {}
-        self.check_id_whitelist = None
+        self.check_id_allowlist = None
 
     def register(self, check):
         for entity in check.supported_entities:
@@ -33,9 +33,9 @@ class BaseCheckRegistry(object):
             return self.checks[entity]
         return []
 
-    def set_checks_whitelist(self,runner_filter):
+    def set_checks_allowlist(self,runner_filter):
         if runner_filter.checks:
-            self.check_id_whitelist = runner_filter.checks
+            self.check_id_allowlist = runner_filter.checks
 
     @abstractmethod
     def extract_entity_details(self, entity):
@@ -45,19 +45,19 @@ class BaseCheckRegistry(object):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
-        check_id_whitelist = runner_filter.checks
-        check_id_blacklist = runner_filter.skip_checks
+        check_id_allowlist = runner_filter.checks
+        check_id_denylist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            if check_id_whitelist:
-                if check.id in check_id_whitelist:
+            if check_id_allowlist:
+                if check.id in check_id_allowlist:
                     result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                     results[check] = result
-            elif check_id_blacklist:
-                if check.id not in check_id_blacklist:
+            elif check_id_denylist:
+                if check.id not in check_id_denylist:
                     result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                     results[check] = result
             else:

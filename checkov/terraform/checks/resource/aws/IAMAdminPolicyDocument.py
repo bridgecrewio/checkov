@@ -23,7 +23,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                                 'Resource' in policy_block['Statement'][0] and \
                                 policy_block['Statement'][0]['Resource'] == '*':
                             return CheckResult.FAILED
-            except:
+            except: # nosec
                 pass
         return CheckResult.PASSED
 

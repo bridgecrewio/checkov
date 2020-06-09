@@ -9,7 +9,7 @@ from checkov.cloudformation.checks.resource.registry import resource_registry as
 from checkov.kubernetes.registry import registry as k8_registry
 
 
-def print_checks(framework=all):
+def print_checks(framework="all"):
     printable_checks_list = get_checks(framework)
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
@@ -17,7 +17,7 @@ def print_checks(framework=all):
     print("\n\n---\n\n")
 
 
-def get_checks(framework):
+def get_checks(framework="all"):
     printable_checks_list = []
     if framework == "terraform" or framework == "all":
         for key in resource_registry.checks.keys():

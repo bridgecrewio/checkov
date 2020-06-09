@@ -1,7 +1,10 @@
-from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
+import logging
 import os
-import dpath
 import re
+
+import dpath
+
+from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 
 
 class ConstVariableEvaluation(BaseVariableEvaluation):
@@ -43,6 +46,11 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                 definition_path = assignment_obj.get('definition_path')
                 entry_expression = assignment_obj.get('definition_expression')
                 definition_name = assignment_obj.get('definition_name')
+                if not isinstance(entry_expression, str):
+                    # Example of unsupported evaluation:
+                    # cidr_blocks = local.ip_ranges.ipv4Prefixes[*].prefix
+                    logging.info(f'Ran into a complex evaluation which isn\'t supported yet, on {assignment_file}')
+                    continue
                 context_path, _ = self.extract_context_path(definition_path)
                 if assignment_file in self.definitions_context.keys():
                     dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
