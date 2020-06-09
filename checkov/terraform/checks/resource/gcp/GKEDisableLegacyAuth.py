@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class GKEMonitoringEnabled(BaseResourceCheck):
+class GKEDisabledLegacyAuth(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Legacy Authorization is set to Disabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_7"
@@ -23,4 +23,4 @@ class GKEMonitoringEnabled(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = GKEMonitoringEnabled()
+check = GKEDisabledLegacyAuth()

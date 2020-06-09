@@ -1386,3 +1386,28 @@ retention_policy {
 }
 }
 
+resource "azurerm_app_service" "good-example" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
+  client_cert_enabled = true
+
+  auth_settings {
+    enabled                       = true
+    issuer                        = "https://sts.windows.net/d13958f6-b541-4dad-97b9-5a39c6b01297"
+    default_provider              = "AzureActiveDirectory"
+    unauthenticated_client_action = "RedirectToLoginPage"
+              }
+
+  identity {
+                type = "SystemAssigned"
+              }
+
+  site_config {
+    http2_enabled = true
+  }
+}
+
+
