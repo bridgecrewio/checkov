@@ -81,6 +81,9 @@ class Runner(BaseRunner):
                 for resource_name, resource in definitions[cf_file]['Resources'].items():
                     if resource_name == '__startline__' or resource_name == '__endline__':
                         continue
+                    if 'Type' not in resource:
+                        # This is not a CloudFormation resource, skip
+                        continue
                     resource_id = f"{resource['Type']}.{resource_name}"
 
                     # TODO refactor into context parsing
