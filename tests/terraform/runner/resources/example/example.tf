@@ -1447,6 +1447,7 @@ resource "azurerm_mssql_server_security_alert_policy" "example" {
   disabled_alerts = []
   retention_days = 20
   email_addresses = ["example@gmail.com"]
+  email_account_admins = true
 }
 
 
