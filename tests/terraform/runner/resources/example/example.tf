@@ -1488,8 +1488,15 @@ resource "azurerm_postgresql_server" "example" {
   ssl_minimal_tls_version_enforced = "TLS1_2"
 }
 
-resource "azurerm_postgresql_configuration" "bad-conf" {
+resource "azurerm_postgresql_configuration" "log-checkpoints-misconfig" {
   name                = "log_checkpoints"
+  resource_group_name = data.azurerm_resource_group.example.name
+  server_name         = azurerm_postgresql_server.example.name
+  value               = "off"
+}
+
+resource "azurerm_postgresql_configuration" "log-connections-misconfig" {
+  name                = "log_connections"
   resource_group_name = data.azurerm_resource_group.example.name
   server_name         = azurerm_postgresql_server.example.name
   value               = "off"
