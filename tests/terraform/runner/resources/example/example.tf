@@ -1446,6 +1446,7 @@ resource "azurerm_mssql_server_security_alert_policy" "example" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   disabled_alerts = []
   retention_days = 20
+  email_addresses = ["example@gmail.com"]
 }
 
 
