@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class SQLServerAuditingEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that standard pricing tier is selected"
+        name = "Ensure that 'Auditing' is set to 'On' "
         id = "CKV_AZURE_23"
         supported_resources = ['azurerm_sql_server', 'azurerm_mssql_server']
         categories = [CheckCategories.GENERAL_SECURITY]
