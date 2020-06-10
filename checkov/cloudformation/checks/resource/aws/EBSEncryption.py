@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 class EBSEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure all data stored in the EBS is securely encrypted "
+        name = "Ensure all data stored in the EBS is securely encrypted"
         id = "CKV_AWS_3"
         supported_resources = ['AWS::EC2::Volume']
         categories = [CheckCategories.ENCRYPTION]

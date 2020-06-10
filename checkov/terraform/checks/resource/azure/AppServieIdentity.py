@@ -8,7 +8,7 @@ class AppServiceIdentity(BaseResourceValueCheck):
         name = "Ensure that Register with Azure Active Directory is enabled on App Service"
         id = "CKV_AZURE_16"
         supported_resources = ['azurerm_app_service']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
