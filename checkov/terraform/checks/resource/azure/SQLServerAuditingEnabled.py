@@ -8,7 +8,7 @@ class SQLServerAuditingEnabled(BaseResourceValueCheck):
         name = "Ensure that 'Auditing' is set to 'On' "
         id = "CKV_AZURE_23"
         supported_resources = ['azurerm_sql_server', 'azurerm_mssql_server']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
