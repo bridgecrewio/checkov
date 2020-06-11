@@ -1,12 +1,12 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.S3Encryption import check
+from checkov.cloudformation.checks.resource.aws.S3RestrictPublicBuckets import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestS3Versioning(unittest.TestCase):
+class TestS3RestrictPublicBuckets(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
@@ -16,8 +16,8 @@ class TestS3Versioning(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 3)
-        self.assertEqual(summary['failed'], 3)
+        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['failed'], 6)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
