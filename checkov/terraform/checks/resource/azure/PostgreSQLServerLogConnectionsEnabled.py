@@ -7,7 +7,7 @@ class PostgreSQLServerLogConnectionsEnabled(BaseResourceCheck):
         name = "Ensure server parameter 'log_connections' is set to 'ON' for PostgreSQL Database Server"
         id = "CKV_AZURE_31"
         supported_resources = ['azurerm_postgresql_configuration']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
