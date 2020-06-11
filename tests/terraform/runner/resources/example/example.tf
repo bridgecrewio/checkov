@@ -1422,4 +1422,91 @@ resource "azurerm_security_center_contact" "good-example" {
   alerts_to_admins    = true
 }
 
+resource "azurerm_sql_server" "example" {
+  name                         = "mssqlserver"
+  resource_group_name          = azurerm_resource_group.example.name
+  location                     = azurerm_resource_group.example.location
+  version                      = "12.0"
+  administrator_login          = "mradministrator"
+  administrator_login_password = "thisIsDog11"
+
+  extended_auditing_policy {
+    storage_endpoint                        = azurerm_storage_account.example.primary_blob_endpoint
+    storage_account_access_key              = azurerm_storage_account.example.primary_access_key
+    storage_account_access_key_is_secondary = true
+    retention_in_days                       = 100
+  }
+}
+
+resource "azurerm_mssql_server_security_alert_policy" "example" {
+  resource_group_name        = azurerm_resource_group.example.name
+  server_name                = azurerm_sql_server.example.name
+  state                      = "Enabled"
+  storage_endpoint           = azurerm_storage_account.example.primary_blob_endpoint
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  disabled_alerts = []
+  retention_days = 20
+  email_addresses = ["example@gmail.com"]
+  email_account_admins = true
+}
+
+resource "azurerm_mysql_server" "example" {
+  name                = "example-mysqlserver"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  administrator_login          = "mysqladminun"
+  administrator_login_password = "H@Sh1CoR3!"
+
+  sku_name   = "B_Gen5_2"
+  storage_mb = 5120
+  version    = "5.7"
+
+  auto_grow_enabled                 = true
+  backup_retention_days             = 7
+  geo_redundant_backup_enabled      = true
+  infrastructure_encryption_enabled = true
+  public_network_access_enabled     = false
+  ssl_enforcement_enabled           = true
+  ssl_minimal_tls_version_enforced  = "TLS1_2"
+}
+
+resource "azurerm_postgresql_server" "example" {
+  name                = "example-psqlserver"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  administrator_login          = "psqladminun"
+  administrator_login_password = "H@Sh1CoR3!"
+  sku_name   = "GP_Gen5_4"
+  version    = "9.6"
+  storage_mb = 640000
+  backup_retention_days        = 7
+  geo_redundant_backup_enabled = true
+  auto_grow_enabled            = true
+  public_network_access_enabled    = false
+  ssl_enforcement_enabled          = true
+  ssl_minimal_tls_version_enforced = "TLS1_2"
+}
+
+resource "azurerm_postgresql_configuration" "log-checkpoints-misconfig" {
+  name                = "log_checkpoints"
+  resource_group_name = data.azurerm_resource_group.example.name
+  server_name         = azurerm_postgresql_server.example.name
+  value               = "off"
+}
+
+resource "azurerm_postgresql_configuration" "log-connections-misconfig" {
+  name                = "log_connections"
+  resource_group_name = data.azurerm_resource_group.example.name
+  server_name         = azurerm_postgresql_server.example.name
+  value               = "off"
+}
+
+resource "azurerm_postgresql_configuration" "connection-throttling-misconfig" {
+  name                = "connection-throttling"
+  resource_group_name = data.azurerm_resource_group.example.name
+  server_name         = azurerm_postgresql_server.example.name
+  value               = "off"
+}
+
 
