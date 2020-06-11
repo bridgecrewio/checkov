@@ -28,7 +28,7 @@ class TestPasswordPolicyExpiration(unittest.TestCase):
             "require_uppercase_characters": [True],
             "require_symbols": [True],
             "allow_users_to_change_password": [True],
-            "max_password_age": [89]
+            "max_password_age": [91]
 
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
