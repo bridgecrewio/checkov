@@ -7,7 +7,7 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
         name = "Ensure that 'Auditing' Retention is 'greater than 90 days'"
         id = "CKV_AZURE_24"
         supported_resources = ['azurerm_sql_server', 'azurerm_mssql_server']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
