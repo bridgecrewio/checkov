@@ -48,6 +48,29 @@ class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_failure2(self):
+        hcl_res = hcl2.loads("""
+        resource "azurerm_network_security_group" "tfer--Second-002D-nsg" {
+          location            = "eastus"
+          name                = "Second-nsg"
+          resource_group_name = "Ariel"
+        
+          security_rule {
+            access                     = "Allow"
+            destination_address_prefix = "*"
+            destination_port_range     = "3389"
+            direction                  = "Inbound"
+            name                       = "RDP"
+            priority                   = "300"
+            protocol                   = "TCP"
+            source_address_prefix      = "*"
+            source_port_range          = "*"
+          }
+        }
+        """)
+        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['tfer--Second-002D-nsg']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':
