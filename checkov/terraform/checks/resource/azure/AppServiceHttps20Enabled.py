@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class AppServiceHttps20Enabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that 'HTTP Version' is the latest, if used to run the web app"
+        name = "Ensure that 'HTTP Version' is the latest if used to run the web app"
         id = "CKV_AZURE_18"
         supported_resources = ['azurerm_app_service']
         categories = [CheckCategories.NETWORKING]
