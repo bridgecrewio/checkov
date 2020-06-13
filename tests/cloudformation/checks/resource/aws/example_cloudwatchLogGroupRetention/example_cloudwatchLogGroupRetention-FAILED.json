@@ -1,0 +1,13 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "acme AWS CloudTrail and Config Security Audit Integration",
+    "Resources": {
+        "logGroup": {
+        "Type" : "AWS::Logs::LogGroup",
+        "Properties" : {
+            "LogGroupName" : "String"
+            }
+        }    
+    }
+    }
+  
