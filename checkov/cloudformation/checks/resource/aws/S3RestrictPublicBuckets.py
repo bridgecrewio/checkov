@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class S3BlockPublicPolicy(BaseResourceCheck):
+class S3RestrictPublicBuckets(BaseResourceCheck):
     def __init__(self):
         name = "Ensure S3 bucket has 'restrict_public_bucket' enabled"
         id = "CKV_AWS_56"
@@ -18,4 +18,4 @@ class S3BlockPublicPolicy(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = S3BlockPublicPolicy()
+check = S3RestrictPublicBuckets()
