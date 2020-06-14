@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class S3BlockPublicPolicy(BaseResourceCheck):
+class S3IgnorePublicACLs(BaseResourceCheck):
     def __init__(self):
         name = "Ensure S3 bucket has ignore public ACLs enabled"
         id = "CKV_AWS_55"
@@ -18,4 +18,4 @@ class S3BlockPublicPolicy(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = S3BlockPublicPolicy()
+check = S3IgnorePublicACLs()
