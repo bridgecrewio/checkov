@@ -13,7 +13,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         """
         Looks for configuration at security group ingress rules:
-        https://www.terraform.io/docs/providers/aws/r/security_group.html
+        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group-ingress.html
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
