@@ -9,4 +9,3 @@ Resources:
       ReplicationFactor: 1
       IAMRoleARN: "arn:aws:iam::111122223333:role/DaxAccess"
       Description: "DAX cluster created with CloudFormation"
-      SubnetGroupName: !Ref subnetGroupCluster

@@ -6,13 +6,12 @@ Resources:
     Properties:
       ImageId: ami-0ff8a91507f77f867
       SecurityGroups:
-      - Ref: myEC2SecurityGroup
       - myExistingEC2SecurityGroup
       InstanceType: m1.small
       BlockDeviceMappings:
       - DeviceName: "/dev/sdk"
         Ebs:
-          VolumeSize: '50'
+          VolumeSize: 50
           Encrypted: true
       - DeviceName: "/dev/sdc"
         VirtualName: ephemeral0

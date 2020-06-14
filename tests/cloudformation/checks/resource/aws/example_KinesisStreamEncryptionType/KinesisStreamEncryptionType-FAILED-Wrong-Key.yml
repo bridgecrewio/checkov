@@ -9,4 +9,4 @@ Resources:
           ShardCount: 3
           StreamEncryption:
               EncryptionType: NonKms
-              KeyId: !Ref myKey
+              KeyId: myKey

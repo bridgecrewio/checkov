@@ -3,13 +3,12 @@ Description: Example Neptune DB cluster
 Resources:
   NeptuneDBCluster:
     Type: "AWS::Neptune::DBCluster"
-    DependsOn: NeptuneDBSG
     Properties:
-      BackupRetentionPeriod: !Ref BackupRetentionPeriod
-      DBClusterIdentifier: !Ref DBClusterIdentifier
-      DBClusterParameterGroupName: !Ref NeptuneDBClusterParameterGroup
-      DBSubnetGroupName: !Ref NeptuneDBSubnetGroup
-      IamAuthEnabled: !Ref IAMAuthEnabled
-      Port: !Ref Port
-      PreferredBackupWindow: !Ref NeptuneDBClusterPreferredBackupWindow
-      PreferredMaintenanceWindow: !Ref NeptuneDBClusterPreferredMaintenanceWindow
+      BackupRetentionPeriod: 100
+      DBClusterIdentifier: DBClusterIdentifier
+      DBClusterParameterGroupName: NeptuneDBClusterParameterGroup
+      DBSubnetGroupName: NeptuneDBSubnetGroup
+      IamAuthEnabled: true
+      Port: 8080
+      PreferredBackupWindow: NeptuneDBClusterPreferredBackupWindow
+      PreferredMaintenanceWindow: NeptuneDBClusterPreferredMaintenanceWindow

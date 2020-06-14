@@ -12,6 +12,6 @@ Resources:
             Action: '*'
             Resource: '*'
       Roles:
-        - !Ref RootRole
+        - example_role
       Users:
         - admin

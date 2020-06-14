@@ -10,6 +10,3 @@ Resources:
       FileSystemTags:
         - Key: Name
           Value: TestFileSystem
-      KmsKeyId: !GetAtt
-        - key
-        - Arn
