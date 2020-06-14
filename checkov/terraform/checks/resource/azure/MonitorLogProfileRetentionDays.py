@@ -7,7 +7,7 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Activity Log Retention is set 365 days or greater"
         id = "CKV_AZURE_37"
-        supported_resources = ['azurerm_storage_account', 'azurerm_storage_account_network_rules']
+        supported_resources = ['azurerm_monitor_log_profile']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
