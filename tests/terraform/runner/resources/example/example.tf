@@ -1509,4 +1509,34 @@ resource "azurerm_postgresql_configuration" "connection-throttling-misconfig" {
   value               = "off"
 }
 
+resource "azurerm_storage_account" "example" {
+  name                     = "arielkstorageaccount"
+  resource_group_name      = data.azurerm_resource_group.example.name
+  location                 = data.azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  queue_properties  {
+
+    logging {
+      delete                = true
+      read                  = true
+      write                 = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+    hour_metrics {
+      enabled               = true
+      include_apis          = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+    minute_metrics {
+      enabled               = true
+      include_apis          = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+  }
+}
+
 
