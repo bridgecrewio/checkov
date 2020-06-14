@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class SQLServerEmailAlertsToAdminsEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that 'Email service and co-administrators' is 'Enabled'"
+        name = "Ensure that 'Email service and co-administrators' is 'Enabled' for MSSQL servers"
         id = "CKV_AZURE_27"
         supported_resources = ['azurerm_mssql_server_security_alert_policy']
         categories = [CheckCategories.GENERAL_SECURITY]

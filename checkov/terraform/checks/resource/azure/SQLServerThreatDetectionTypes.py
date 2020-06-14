@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class SQLServerThreatDetectionTypes(BaseResourceCheck):
     def __init__(self):
-        name = " Ensure that 'Threat Detection types' is set to 'All'"
+        name = "Ensure that 'Threat Detection types' is set to 'All'"
         id = "CKV_AZURE_25"
         supported_resources = ['azurerm_mssql_server_security_alert_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
