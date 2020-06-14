@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example SNS topic
+Resources:
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint:
+            Fn::GetAtt:
+              - "MyQueue1"
+              - "Arn"
+          Protocol: "sqs"
+        - Endpoint:
+            Fn::GetAtt:
+              - "MyQueue2"
+              - "Arn"
+          Protocol: "sqs"
+      TopicName: "SampleTopic"
+      KmsMasterKeyId: "kms_id"
