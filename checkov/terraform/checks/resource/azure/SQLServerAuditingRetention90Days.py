@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class SQLServerAuditingRetention90Days(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure that 'Auditing' Retention is 'greater than 90 days'"
+        name = "Ensure that 'Auditing' Retention is 'greater than 90 days' for SQL servers"
         id = "CKV_AZURE_24"
         supported_resources = ['azurerm_sql_server', 'azurerm_mssql_server']
         categories = [CheckCategories.LOGGING]

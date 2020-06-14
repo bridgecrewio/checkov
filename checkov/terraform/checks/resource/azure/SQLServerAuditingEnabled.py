@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class SQLServerAuditingEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that 'Auditing' is set to 'On' "
+        name = "Ensure that 'Auditing' is set to 'On' for SQL servers"
         id = "CKV_AZURE_23"
         supported_resources = ['azurerm_sql_server', 'azurerm_mssql_server']
         categories = [CheckCategories.LOGGING]

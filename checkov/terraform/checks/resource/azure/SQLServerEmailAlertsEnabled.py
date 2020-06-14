@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class SQLServerEmailAlertsEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that 'Send alerts to' is set"
+        name = "Ensure that 'Send Alerts To' is enabled for MSSQL servers"
         id = "CKV_AZURE_26"
         supported_resources = ['azurerm_mssql_server_security_alert_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
