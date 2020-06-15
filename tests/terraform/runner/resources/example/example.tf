@@ -1509,4 +1509,79 @@ resource "azurerm_postgresql_configuration" "connection-throttling-misconfig" {
   value               = "off"
 }
 
+resource "azurerm_storage_account" "example" {
+  name                     = "arielkstorageaccount"
+  resource_group_name      = data.azurerm_resource_group.example.name
+  location                 = data.azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  queue_properties  {
+
+    logging {
+      delete                = true
+      read                  = true
+      write                 = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+    hour_metrics {
+      enabled               = true
+      include_apis          = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+    minute_metrics {
+      enabled               = true
+      include_apis          = true
+      version               = "1.0"
+      retention_policy_days = 10
+    }
+  }
+  network_rules {
+    default_action             = "Deny"
+    ip_rules                   = ["100.0.0.1"]
+    virtual_network_subnet_ids = [azurerm_subnet.example.id]
+  }
+}
+
+resource "azurerm_storage_account_network_rules" "test" {
+  resource_group_name  = azurerm_resource_group.test.name
+  storage_account_name = azurerm_storage_account.test.name
+
+  default_action             = "Allow"
+  ip_rules                   = ["127.0.0.1"]
+  virtual_network_subnet_ids = [azurerm_subnet.test.id]
+  bypass                     = ["Metrics"]
+}
+
+resource "azurerm_storage_container" "not-private-container" {
+  name                  = "vhds"
+  storage_account_name  = azurerm_storage_account.example.name
+  container_access_type = "blob"
+}
+
+resource "azurerm_monitor_log_profile" "example" {
+  name = "default"
+
+  categories = [
+    "Action",
+    "Delete",
+    "Write",
+  ]
+
+  locations = [
+    "westus",
+    "global",
+  ]
+
+  # RootManageSharedAccessKey is created by default with listen, send, manage permissions
+  servicebus_rule_id = "${azurerm_eventhub_namespace.example.id}/authorizationrules/RootManageSharedAccessKey"
+  storage_account_id = azurerm_storage_account.example.id
+
+  retention_policy {
+    enabled = true
+    days    = 365
+  }
+}
+
 
