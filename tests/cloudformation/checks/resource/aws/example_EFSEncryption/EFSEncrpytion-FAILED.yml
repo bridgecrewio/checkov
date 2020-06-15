@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  FileSystemResource:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      PerformanceMode: maxIO
+      Encrypted: false
+      LifecyclePolicies:
+        - TransitionToIA: AFTER_30_DAYS
+      FileSystemTags:
+        - Key: Name
+          Value: TestFileSystem

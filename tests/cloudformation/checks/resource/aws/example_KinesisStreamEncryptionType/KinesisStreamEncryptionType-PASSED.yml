@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElasticsearchDomain resource
+Resources:
+  MyStream:
+      Type: AWS::Kinesis::Stream
+      Properties:
+          Name: MyKinesisStream
+          RetentionPeriodHours: 168
+          ShardCount: 3
+          StreamEncryption:
+              EncryptionType: KMS
+              KeyId: myKey
