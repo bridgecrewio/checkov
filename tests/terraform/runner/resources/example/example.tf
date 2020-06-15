@@ -1584,4 +1584,57 @@ resource "azurerm_monitor_log_profile" "example" {
   }
 }
 
+resource "azurerm_role_definition" "example" {
+  name        = "my-custom-role"
+  scope       = data.azurerm_subscription.primary.id
+  description = "This is a custom role created via Terraform"
+
+  permissions {
+    actions     = ["*"]
+    not_actions = []
+  }
+
+  assignable_scopes = [
+    data.azurerm_subscription.primary.id
+  ]
+}
+
+resource "azurerm_key_vault_key" "generated" {
+  name         = "generated-certificate"
+  key_vault_id = azurerm_key_vault.example.id
+  key_type     = "RSA"
+  key_size     = 2048
+
+  key_opts = [
+    "decrypt",
+    "encrypt",
+    "sign",
+    "unwrapKey",
+    "verify",
+    "wrapKey",
+  ]
+  expiration_date = "2020-12-30T20:00:00Z"
+}
+
+resource "azurerm_key_vault_secret" "example" {
+  name         = "secret-sauce"
+  value        = "szechuan"
+  key_vault_id = azurerm_key_vault.example.id
+
+  tags = {
+    environment = "Production"
+  }
+  expiration_date = "2020-12-30T20:00:00Z"
+}
+
+resource "azurerm_key_vault" "example" {
+  name                        = "testvault"
+  location                    = azurerm_resource_group.example.location
+  resource_group_name         = azurerm_resource_group.example.name
+  enabled_for_disk_encryption = true
+  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  soft_delete_enabled         = true
+  purge_protection_enabled    = true
+  sku_name = "standard"
+}
 
