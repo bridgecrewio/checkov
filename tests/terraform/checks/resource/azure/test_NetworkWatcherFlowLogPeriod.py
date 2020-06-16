@@ -2,11 +2,11 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.NetworkWatcherFlowLogEnabled import check
+from checkov.terraform.checks.resource.azure.NetworkWatcherFlowLogPeriod import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestNetworkWatcherFlowLogEnabled(unittest.TestCase):
+class TestNetworkWatcherFlowLogPeriod(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
