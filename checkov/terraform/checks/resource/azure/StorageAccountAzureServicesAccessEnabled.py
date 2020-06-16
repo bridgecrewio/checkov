@@ -14,8 +14,14 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
         network_conf = [conf]
         if 'network_rules' in conf:
             network_conf = conf['network_rules']
-        if 'bypass' in network_conf[0]:
-            if 'AzureServices' not in network_conf[0]['bypass'][0]:
+        if 'default_action' in network_conf[0]:
+            # A required field in network rules, hence if not exist there are no network rules and Azure services
+            # have access --> Pass
+            if network_conf[0]['default_action'][0] == 'Allow':
+                return CheckResult.PASSED
+            elif 'bypass' in network_conf[0]:
+                if 'AzureServices' in network_conf[0]['bypass'][0]:
+                    return CheckResult.PASSED
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
