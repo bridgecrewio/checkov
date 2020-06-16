@@ -9,6 +9,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
 from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.serverless.runner import Runner as sls_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
@@ -52,7 +53,7 @@ def run(banner=checkov_banner):
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
-    runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
+    runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner())
     if args.version:
         print(version)
         return
