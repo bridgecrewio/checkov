@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
-class NetworkWatcherFlowLogEnabled(BaseResourceCheck):
+class NetworkWatcherFlowLogPeriod(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Network Security Group Flow Log retention period is 'greater than 90 days'"
         id = "CKV_AZURE_12"
@@ -18,4 +18,4 @@ class NetworkWatcherFlowLogEnabled(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = NetworkWatcherFlowLogEnabled()
+check = NetworkWatcherFlowLogPeriod()
