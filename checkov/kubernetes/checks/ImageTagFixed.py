@@ -27,12 +27,12 @@ class ImageTagFixed(BaseK8Check):
 
             # Remove the digest, if present
             image_val = conf["image"]
-            if '@' in image_val:
+            if isinstance(image_val,dict) and '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
-            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
-            if tag == "latest" or tag == "":
-                return CheckResult.FAILED
+                (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
+                if tag == "latest" or tag == "":
+                    return CheckResult.FAILED
         else:
             return CheckResult.FAILED
         return CheckResult.PASSED

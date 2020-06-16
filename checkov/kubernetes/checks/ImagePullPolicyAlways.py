@@ -28,20 +28,20 @@ class ImagePullPolicyAlways(BaseK8Check):
         if "image" in conf:
             # Remove the digest, if present
             image_val = conf["image"]
-            if '@' in image_val:
+            if isinstance(image_val,dict) and '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
-            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
-            if "imagePullPolicy" not in conf:
-                if tag == "latest" or tag == "":
-                    # Default imagePullPolicy = Always
-                    return CheckResult.PASSED
+                (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
+                if "imagePullPolicy" not in conf:
+                    if tag == "latest" or tag == "":
+                        # Default imagePullPolicy = Always
+                        return CheckResult.PASSED
+                    else:
+                        # Default imagePullPolicy = IfNotPresent
+                        return CheckResult.FAILED
                 else:
-                    # Default imagePullPolicy = IfNotPresent
-                    return CheckResult.FAILED
-            else:
-                if conf["imagePullPolicy"] != "Always":
-                    return CheckResult.FAILED
+                    if conf["imagePullPolicy"] != "Always":
+                        return CheckResult.FAILED
         else:
             return CheckResult.FAILED
         return CheckResult.PASSED

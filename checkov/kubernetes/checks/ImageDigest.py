@@ -27,8 +27,10 @@ class ImageDigest(BaseK8Check):
 
             # The @ indicates there is a digest. It's technically possible to use a tag as well, but it doesn't make
             # a difference. So, this @ is all we need to pass the check.
-            has_digest = '@' in conf["image"]
-            return CheckResult.PASSED if has_digest else CheckResult.FAILED
+            image_conf = conf["image"]
+            if isinstance(image_conf,dict):
+                has_digest = '@' in image_conf
+                return CheckResult.PASSED if has_digest else CheckResult.FAILED
         else:
             return CheckResult.FAILED
 

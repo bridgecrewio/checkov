@@ -17,7 +17,8 @@ class KubernetesDashboard(BaseK8Check):
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
-            if "kubernetes-dashboard" in conf["image"] or "kubernetesui" in conf["image"]:
+            conf_image = conf["image"]
+            if isinstance(conf_image,dict) and ("kubernetes-dashboard" in conf_image or "kubernetesui" in conf_image):
                     return CheckResult.FAILED
         else:
             return CheckResult.FAILED
