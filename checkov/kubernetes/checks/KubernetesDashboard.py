@@ -13,12 +13,15 @@ class KubernetesDashboard(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-            return conf['parent']
+        return conf['parent']
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
-            if "kubernetes-dashboard" in conf["image"] or "kubernetesui" in conf["image"]:
-                    return CheckResult.FAILED
+            conf_image = conf["image"]
+            if not isinstance(conf_image, str):
+                return CheckResult.FAILED
+            if ("kubernetes-dashboard" in conf_image or "kubernetesui" in conf_image):
+                return CheckResult.FAILED
         else:
             return CheckResult.FAILED
         if "parent_metadata" in conf:
@@ -30,5 +33,6 @@ class KubernetesDashboard(BaseK8Check):
                     if conf["parent_metadata"]["labels"]["k8s-app"] == "kubernetes-dashboard":
                         return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = KubernetesDashboard()

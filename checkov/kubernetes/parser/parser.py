@@ -47,6 +47,7 @@ def parse(filename):
         logger.error('Cannot read file contents: %s', filename)
         return
     except YAMLError as err:
+        logger.error('Cannot read file contents: %s - is it a yaml?', filename)
         return
 
     return template, template_lines
