@@ -10,24 +10,32 @@
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 
+**Checkov** is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform, Cloudformation or Kubernetes and detects security and compliance misconfigurations.
+
+
+Checkov also powers [**Bridgecrew**](https://bridgecrew.io/), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
+
+<a href="https://www.bridgecrew.cloud/login/signUp/?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=get-started-button" title="Try_Bridgecrew">
+    <img src="https://dabuttonfactory.com/button.png?t=Try+Bridgecrew&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=662eff" align="right" width="120">
+</a>
+
+
+<a href="https://docs.bridgecrew.io?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=read-docs-button" title="Docs">
+    <img src="https://dabuttonfactory.com/button.png?t=Read+the+Docs&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=662eff" align="right" width="120">
+</a>
 
 ## **Table of contents**
-- [Description](#description)
+
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
 - [Support](#support)
 
-## Description
-Checkov is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform, Cloudformation or kubernetes and detects security and compliance misconfigurations. 
-
-Checkov is written in Python and provides a simple method to write and manage policies. It follows the CIS Foundations benchmarks where applicable.
-
  ## Features
 
- * [100+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
- * Scans Terraform and AWS CloudFormation configurations.
- * Scans for [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
+ * [300+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
+ * Scans Terraform, AWS CloudFormation and Kubernetes configuration files.
+ * Detects [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
  * Policies support evaluation of variables to their optional default value.
  * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
  * Output currently available as CLI, JSON or JUnit XML.
@@ -43,12 +51,15 @@ Scheduled scan result in Jenkins
 ![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
 
 ## Getting started
+
 ### Installation
 
 ```sh
 pip install checkov
 ```
+
 or using homebrew (MacOS only)
+
 ```sh
 brew tap bridgecrewio/checkov https://github.com/bridgecrewio/checkov
 brew update
@@ -60,11 +71,15 @@ brew install checkov
 ```sh
 checkov -d /user/path/to/iac/code
 ```
+
 Or a specific file
+
 ```sh
 checkov -f /user/tf/example.tf
 ```
+
 or
+
 ```sh
 checkov -f /user/cloudformation/example.yml
 ```
@@ -89,7 +104,9 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 docker pull bridgecrew/checkov
 docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
 ```
+
 ### Suppressing/Ignoring a check
+
 Like any static-analysis tool it is limited by its analysis scope. 
 For example, if a resource is managed manually, or using subsequent configuration management tooling, 
 a suppression can be inserted as a simple code annotation.
@@ -104,8 +121,10 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 * `<suppression_comment>` is an optional suppression reason to be included in the output
 
 #### Example
+
 The following comment skip the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
 In the example, the bucket is configured with a public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
+
 ```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
   region        = var.region
@@ -133,6 +152,7 @@ To suppress checks in Kubernetes manifests, annotations are used with the follow
 `checkov.io/skip#: <check_id>=<suppression_comment>`
 
 For example: 
+
 ```bash
 apiVersion: v1
 kind: Pod
@@ -148,6 +168,7 @@ spec:
 ```
 
 #### Logging
+
 For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
 
 Default `LOG_LEVEL` value is `WARNING`.
@@ -158,14 +179,15 @@ For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfs
 
 For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
 
-For Kubernetes scanning check out [kube-scan](https://github.com/octarinesec/kube-scan) and [Polaris](https://github.com/FairwindsOps/polaris)
+For Kubernetes scanning check out [kube-scan](https://github.com/octarinesec/kube-scan) and [Polaris](https://github.com/FairwindsOps/polaris).
 
 ## Contributing
+
 Contribution is welcomed! 
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md)
+Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md).
 
 ## Support
 
@@ -173,4 +195,4 @@ Looking to contribute new checks? Learn how to write a new check (AKA policy) [h
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io 
+If you need direct support you can contact us at info@bridgecrew.io .
