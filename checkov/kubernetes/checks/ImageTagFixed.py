@@ -1,7 +1,8 @@
+import re
+
+from checkov.common.models.consts import DOCKER_IMAGE_REGEX
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
-from checkov.common.models.consts import DOCKER_IMAGE_REGEX
-import re
 
 
 class ImageTagFixed(BaseK8Check):
@@ -27,12 +28,14 @@ class ImageTagFixed(BaseK8Check):
 
             # Remove the digest, if present
             image_val = conf["image"]
-            if isinstance(image_val,dict) and '@' in image_val:
+            if not isinstance(image_val, str):
+                return CheckResult.FAILED
+            if '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
-                (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
-                if tag == "latest" or tag == "":
-                    return CheckResult.FAILED
+            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
+            if tag == "latest" or tag == "":
+                return CheckResult.FAILED
         else:
             return CheckResult.FAILED
         return CheckResult.PASSED
