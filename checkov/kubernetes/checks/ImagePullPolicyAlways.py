@@ -28,7 +28,7 @@ class ImagePullPolicyAlways(BaseK8Check):
         if "image" in conf:
             # Remove the digest, if present
             image_val = conf["image"]
-            if isinstance(image_val,dict) and '@' in image_val:
+            if isinstance(image_val,str) and '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
                 (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
