@@ -7,7 +7,7 @@ class SecurityCenterContactPhone(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that security contact 'Phone number' is set"
         id = "CKV_AZURE_20"
-        supported_resources = ['azurerm_security_center_contact"']
+        supported_resources = ['azurerm_security_center_contact']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

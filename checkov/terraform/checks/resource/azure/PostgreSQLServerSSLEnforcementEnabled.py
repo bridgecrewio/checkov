@@ -7,7 +7,7 @@ class PostgreSQLServerSSLEnforcementEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure 'Enforce SSL connection' is set to 'ENABLED' for PostgreSQL Database Server"
         id = "CKV_AZURE_29"
-        supported_resources = ['azurerm_postgre_server']
+        supported_resources = ['azurerm_postgresql_server']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
