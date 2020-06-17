@@ -24,7 +24,26 @@ class TestStorageAccountAzureServicesAccessEnabled(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_success_1(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_storage_account" "example" {
+              name                     = "example"
+              resource_group_name      = data.azurerm_resource_group.example.name
+              location                 = data.azurerm_resource_group.example.location
+              account_tier             = "Standard"
+              account_replication_type = "GRS"
+              network_rules {
+                default_action             = "Allow"
+                ip_rules                   = ["100.0.0.1"]
+                virtual_network_subnet_ids = [azurerm_subnet.example.id]
+              }
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_2(self):
         hcl_res = hcl2.loads("""
             resource "azurerm_storage_account" "example" {
               name                     = "example"
@@ -36,6 +55,7 @@ class TestStorageAccountAzureServicesAccessEnabled(unittest.TestCase):
                 default_action             = "Deny"
                 ip_rules                   = ["100.0.0.1"]
                 virtual_network_subnet_ids = [azurerm_subnet.example.id]
+                bypass                     = ["Metrics", "AzureServices"]
               }
             }
                 """)

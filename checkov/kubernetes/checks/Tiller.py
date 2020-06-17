@@ -17,7 +17,8 @@ class Tiller(BaseK8Check):
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
-            if "tiller" in conf["image"]:
+            conf_image = conf["image"]
+            if isinstance(conf_image,str) and  "tiller" in conf_image:
                     return CheckResult.FAILED
         else:
             return CheckResult.FAILED
