@@ -16,7 +16,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         """
         raise NotImplementedError()
 
-    def get_vulnerable_values(self):
+    def get_bad_values(self):
         """
         Returns the vulnerable value for the inspected, governed by provider best practices
         """

@@ -22,7 +22,7 @@ class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'can_ip_forward'
 
-    def get_vulnerable_values(self):
+    def get_bad_values(self):
         return [True]
 
     def get_excluded_key(self):
