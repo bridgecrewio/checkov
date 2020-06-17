@@ -6,7 +6,7 @@ class SecurityCenterEmailAlertAdmins(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that 'Send email notification for high severity alerts' is set to 'On'"
         id = "CKV_AZURE_22"
-        supported_resources = ['azurerm_security_center_contact"']
+        supported_resources = ['azurerm_security_center_contact']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
