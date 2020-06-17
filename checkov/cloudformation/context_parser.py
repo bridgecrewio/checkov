@@ -12,7 +12,7 @@ class ContextParser(object):
     def evaluate_default_refs(self):
         # Get Parameter Defaults - Locate Refs in Template
         refs = []
-        refs.extend(self._search_deep_keys('Ref', self.cf_template, []))
+        refs.extend(self.search_deep_keys('Ref', self.cf_template, []))
 
         for ref in refs:
             refname = ref.pop()
@@ -67,7 +67,8 @@ class ContextParser(object):
                 for x in self.find_lines(j, kv):
                     yield x
 
-    def _search_deep_keys(self, search_text, cfn_dict, path):
+    @staticmethod
+    def search_deep_keys(search_text, cfn_dict, path):
         """Search deep for keys and get their values"""
         keys = []
         if isinstance(cfn_dict, dict):
@@ -81,17 +82,17 @@ class ContextParser(object):
                     # dict and list checks
                     pathprop = pathprop[:-1]
                 if isinstance(cfn_dict[key], dict):
-                    keys.extend(self._search_deep_keys(search_text, cfn_dict[key], pathprop))
+                    keys.extend(ContextParser.search_deep_keys(search_text, cfn_dict[key], pathprop))
                 elif isinstance(cfn_dict[key], list):
                     for index, item in enumerate(cfn_dict[key]):
                         pathproparr = pathprop[:]
                         pathproparr.append(index)
-                        keys.extend(self._search_deep_keys(search_text, item, pathproparr))
+                        keys.extend(ContextParser.search_deep_keys(search_text, item, pathproparr))
         elif isinstance(cfn_dict, list):
             for index, item in enumerate(cfn_dict):
                 pathprop = path[:]
                 pathprop.append(index)
-                keys.extend(self._search_deep_keys(search_text, item, pathprop))
+                keys.extend(ContextParser.search_deep_keys(search_text, item, pathprop))
 
         return keys
 

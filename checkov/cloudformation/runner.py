@@ -1,8 +1,6 @@
 import logging
-import operator
 import os
 import re
-from functools import reduce
 
 from checkov.cloudformation.checks.resource.registry import resource_registry
 from checkov.cloudformation.parser import parse
@@ -55,7 +53,6 @@ class Runner(BaseRunner):
                 cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
                 logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
                 cf_context_parser.evaluate_default_refs()
-                # evalutate_default_refs
                 for resource_name, resource in definitions[cf_file]['Resources'].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(resource)

@@ -2,6 +2,7 @@ import logging
 from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
+from checkov.cloudformation.context_parser import ContextParser
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,22 @@ def parse(filename):
 
 
 def is_checked_sls_template(template):
-    if template.__contains__('provider') and template.__contains__('resources'):
-        if template['provider'].get('name').lower() == 'aws' and template['resources'].get('Resources'):
+    if template.__contains__('provider'):
+        # support AWS provider serverless templates
+        if template['provider'].get('name').lower() == 'aws':
+            if template_contains_cf_resources(template) or template_contains_iam_policies(template):
+                return True
+    return False
+
+
+def template_contains_cf_resources(template):
+    if template.__contains__('resources'):
+        if template['resources'].get('Resources'):
             return True
+    return False
+
+
+def template_contains_iam_policies(template):
+    if ContextParser.search_deep_keys('iamRoleStatements', template, []):
+        return True
     return False
