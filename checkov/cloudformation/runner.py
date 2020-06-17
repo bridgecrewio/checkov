@@ -6,11 +6,11 @@ from functools import reduce
 
 from checkov.cloudformation.checks.resource.registry import resource_registry
 from checkov.cloudformation.parser import parse
+from checkov.cloudformation.parser.node import dict_node
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.cloudformation.parser.node import dict_node
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
@@ -35,6 +35,7 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
+                filter_ignored_directories(d_names)
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in CF_POSSIBLE_ENDINGS:

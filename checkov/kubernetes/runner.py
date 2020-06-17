@@ -3,12 +3,12 @@ import operator
 import os
 from functools import reduce
 
-from checkov.common.runners.base_runner import BaseRunner
-from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.kubernetes.parser.parser import parse
 from checkov.kubernetes.registry import registry
+from checkov.runner_filter import RunnerFilter
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
@@ -34,11 +34,13 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
+                filter_ignored_directories(d_names)
+
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in K8_POSSIBLE_ENDINGS:
                         full_path = os.path.join(root, file)
-                        if 'node_modules' not in full_path and "/." not in full_path and file not in ['package.json','package-lock.json']:
+                        if "/." not in full_path and file not in ['package.json','package-lock.json']:
                             # skip temp directories
                             files_list.append(full_path)
 
@@ -147,6 +149,7 @@ class Runner(BaseRunner):
 
 
         return report
+
 
 
     def _search_deep_keys(self, search_text, k8n_dict, path):

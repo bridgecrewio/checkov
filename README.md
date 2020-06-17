@@ -171,7 +171,11 @@ spec:
 
 For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
 
-Default `LOG_LEVEL` value is `WARNING`.
+Default is `LOG_LEVEL=WARNING`.
+
+#### Skipping directories
+To skip a whole directory, use the environment variable `CKV_IGNORED_DIRECTORIES`. 
+Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
 
 ## Alternatives
 
