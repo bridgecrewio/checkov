@@ -4,6 +4,8 @@ from os import path
 
 import hcl2
 
+from checkov.common.runners.base_runner import ignored_directories
+
 
 class Parser:
     logger = logging.getLogger(__name__)
@@ -33,6 +35,7 @@ class Parser:
     def hcl2(self, directory, tf_definitions={}, parsing_errors={}):
         modules_scan = set()
         for root, d_names, f_names in os.walk(directory):
+            [d_names.remove(d) for d in list(d_names) if d in ignored_directories]
             self._mark_parsed(os.path.abspath(root))
             for file in f_names:
                 if file.endswith(".tf"):

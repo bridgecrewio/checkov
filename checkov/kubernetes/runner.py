@@ -3,7 +3,7 @@ import operator
 import os
 from functools import reduce
 
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -34,11 +34,13 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
+                [d_names.remove(d) for d in list(d_names) if d in ignored_directories]
+
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in K8_POSSIBLE_ENDINGS:
                         full_path = os.path.join(root, file)
-                        if 'node_modules' not in full_path and "/." not in full_path and file not in ['package.json','package-lock.json']:
+                        if "/." not in full_path and file not in ['package.json','package-lock.json']:
                             # skip temp directories
                             files_list.append(full_path)
 
