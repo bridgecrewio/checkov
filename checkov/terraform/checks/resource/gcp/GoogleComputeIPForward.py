@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GoogleComputeIPForward(BaseResourceCheck):
+class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that IP forwarding is not enabled on Instances"
         id = "CKV_GCP_36"
@@ -18,6 +18,20 @@ class GoogleComputeIPForward(BaseResourceCheck):
             if conf['can_ip_forward'][0]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_inspected_key(self):
+        return 'can_ip_forward'
+
+    def get_vulnerable_values(self):
+        return [True]
+
+    def get_excluded_key(self):
+        return "name"
+
+    def get_excluded_condition(self):
+        def check_condition(value):
+            return value.startswith('gke-')
+        return check_condition
 
 
 check = GoogleComputeIPForward()

@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GoogleComputeInstanceOSLogin(BaseResourceCheck):
+class GoogleComputeInstanceOSLogin(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that no instance in the project overrides the project setting for enabling OSLogin" \
                "(OSLogin needs to be enabled in prject metadata for all instances)"
@@ -18,6 +18,11 @@ class GoogleComputeInstanceOSLogin(BaseResourceCheck):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
+    def get_inspected_key(self):
+        return 'metadata/[0]/enable-oslogin'
+
+    def get_vulnerable_values(self):
+        return [False]
 
 
 check = GoogleComputeInstanceOSLogin()
