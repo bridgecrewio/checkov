@@ -23,13 +23,10 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         bad_values = self.get_forbidden_values()
         if dpath.search(conf, inspected_key) != {}:
-            if len(bad_values) == 0:
-                return CheckResult.FAILED
-
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            if value in bad_values:
+            if value in bad_values or len(bad_values) == 0:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED
