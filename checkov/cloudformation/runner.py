@@ -12,6 +12,7 @@ from checkov.cloudformation.context_parser import ContextParser
 
 CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
+
 class Runner(BaseRunner):
     check_type = "cloudformation"
 

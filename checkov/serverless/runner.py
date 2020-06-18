@@ -7,7 +7,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.serverless.parser.parser import parse
+from checkov.serverless.parsers.parser import parse, collect_iam_role_statements
 from checkov.kubernetes.registry import registry
 from checkov.cloudformation.parser.node import dict_node
 
@@ -61,6 +61,8 @@ class Runner(BaseRunner):
                     logging.debug("Template Dump for {}: {}".format(sls_file, definitions[sls_file], indent=2))
                     cf_context_parser.evaluate_default_refs()
                     for resource_name, resource in cf_sub_template['Resources'].items():
+                        if resource_name == '__startline__' or resource_name == '__endline__':
+                            continue
                         resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                         entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
                             resource)
@@ -78,6 +80,8 @@ class Runner(BaseRunner):
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__)
                                 report.add_record(record=record)
+
+                    template_iam_role_statements = collect_iam_role_statements(definitions[sls_file])
 
                 # TODO handle iamRoleStatements
 

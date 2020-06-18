@@ -7,6 +7,9 @@ COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class ContextParser(object):
+    """
+    CloudFormation template context parser
+    """
     def __init__(self, cf_file, cf_template, cf_template_lines):
         self.cf_file = cf_file
         self.cf_template = cf_template
@@ -38,7 +41,8 @@ class ContextParser(object):
                     # Output in Checkov looks like this:
                     # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
-    def extract_cf_resource_id(self, cf_resource, cf_resource_name):
+    @staticmethod
+    def extract_cf_resource_id(cf_resource, cf_resource_name):
         if cf_resource_name == '__startline__' or cf_resource_name == '__endline__':
             return
         if 'Type' not in cf_resource:
