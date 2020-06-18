@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 
 
 class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
@@ -10,15 +10,6 @@ class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        # Instances created by GKE should be excluded because they need to have IP forwarding enabled
-        if conf['name'][0].startswith('gke-'):
-            return CheckResult.PASSED
-        elif 'can_ip_forward' in conf.keys():
-            if conf['can_ip_forward'][0]:
-                return CheckResult.FAILED
-        return CheckResult.PASSED
-
     def get_inspected_key(self):
         return 'can_ip_forward'
 
@@ -28,10 +19,8 @@ class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
     def get_excluded_key(self):
         return "name"
 
-    def get_excluded_condition(self):
-        def check_condition(value):
-            return value.startswith('gke-')
-        return check_condition
+    def check_excluded_condition(self, value):
+        return value.startswith('gke-')
 
 
 check = GoogleComputeIPForward()

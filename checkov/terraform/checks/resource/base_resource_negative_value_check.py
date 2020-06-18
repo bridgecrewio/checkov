@@ -1,4 +1,8 @@
 from abc import abstractmethod
+
+import dpath
+
+from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -7,7 +11,28 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        raise NotImplementedError()
+        excluded_key = self.get_excluded_key()
+        if excluded_key is not None:
+            if dpath.search(conf, excluded_key) != {}:
+                value = dpath.get(conf, excluded_key)
+                if isinstance(value, list) and len(value) == 1:
+                    value = value[0]
+                if self.check_excluded_condition(value):
+                    return CheckResult.PASSED
+
+        inspected_key = self.get_inspected_key()
+        bad_values = self.get_bad_values()
+        if dpath.search(conf, inspected_key) != {}:
+            if len(bad_values) == 0:
+                return CheckResult.FAILED
+
+            value = dpath.get(conf, inspected_key)
+            if isinstance(value, list) and len(value) == 1:
+                value = value[0]
+            if value in bad_values:
+                return CheckResult.FAILED
+
+        return CheckResult.PASSED
 
     @abstractmethod
     def get_inspected_key(self):
@@ -28,11 +53,10 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         """
         return None
 
-    def get_excluded_condition(self):
+    def check_excluded_condition(self, value):
         """
-        Returns the excluded value for the excluded key, which states the vulnerable value is valid for it
+        :param:  value: value for  excluded_key
+        :return: True if the value should exclude the check from failing if the inspected key has a bad value
         """
-        def check_condition(value):
-            return self.get_excluded_key() is not None
-        return check_condition
+        return False
 
