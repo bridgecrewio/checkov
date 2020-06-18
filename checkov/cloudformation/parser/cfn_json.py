@@ -4,7 +4,6 @@ SPDX-License-Identifier: MIT-0
 """
 import json
 import logging
-import sys
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK
 from json.scanner import NUMBER_RE
 
@@ -130,10 +129,10 @@ def py_scanstring(s, end, strict=True,
                     uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
                     end += 6
             # pylint: disable=undefined-variable
-            if sys.version_info >= (3, 0):
-                char = chr(uni)
-            else:
+            try:
                 char = unichr(uni)
+            except NameError:
+                char = chr(uni)
         _append(char)
     return ''.join(chunks), end
 
