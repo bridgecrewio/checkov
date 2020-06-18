@@ -57,6 +57,11 @@ Scheduled scan result in Jenkins
 ```sh
 pip install checkov
 ```
+Installation on Alpine:
+```sh
+pip3 install --upgrade pip && pip3 install --upgrade setuptools
+pip3 install checkov
+```
 
 or using homebrew (MacOS only)
 
