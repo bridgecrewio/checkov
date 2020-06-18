@@ -14,7 +14,7 @@ class GoogleComputeInstanceOSLogin(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'metadata/[0]/enable-oslogin'
 
-    def get_bad_values(self):
+    def get_forbidden_values(self):
         return [False]
 
 

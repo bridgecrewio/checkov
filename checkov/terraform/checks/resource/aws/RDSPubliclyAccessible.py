@@ -13,5 +13,8 @@ class RDSPubliclyAccessible(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'publicly_accessible'
 
+    def get_forbidden_values(self):
+        return []
+
 
 check = RDSPubliclyAccessible()

@@ -13,5 +13,8 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'access_config'
 
+    def get_forbidden_values(self):
+        return []
+
 
 check = GoogleComputeExternalIP()

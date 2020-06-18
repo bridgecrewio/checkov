@@ -13,7 +13,7 @@ class GKEDisabledLegacyAuth(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'enable_legacy_abac'
 
-    def get_bad_values(self):
+    def get_forbidden_values(self):
         return [True]
 
 

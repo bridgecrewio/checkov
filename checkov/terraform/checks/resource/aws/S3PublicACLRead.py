@@ -13,7 +13,7 @@ class S3PublicACLRead(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'acl'
 
-    def get_bad_values(self):
+    def get_forbidden_values(self):
         return ["public-read", "public-read-write", "website"]
 
 

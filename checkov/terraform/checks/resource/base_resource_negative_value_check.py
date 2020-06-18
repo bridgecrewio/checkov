@@ -21,7 +21,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
                     return CheckResult.PASSED
 
         inspected_key = self.get_inspected_key()
-        bad_values = self.get_bad_values()
+        bad_values = self.get_forbidden_values()
         if dpath.search(conf, inspected_key) != {}:
             if len(bad_values) == 0:
                 return CheckResult.FAILED
@@ -41,11 +41,12 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         """
         raise NotImplementedError()
 
-    def get_bad_values(self):
+    @abstractmethod
+    def get_forbidden_values(self):
         """
-        Returns the vulnerable value for the inspected, governed by provider best practices
+        Returns a list of vulnerable values for the inspected key, governed by provider best practices
         """
-        return []
+        raise NotImplementedError()
 
     def get_excluded_key(self):
         """
