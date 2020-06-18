@@ -1,6 +1,9 @@
 import logging
 import operator
 from functools import reduce
+import re
+
+COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class ContextParser(object):
@@ -66,6 +69,21 @@ class ContextParser(object):
             for j in node.values():
                 for x in self.find_lines(j, kv):
                     yield x
+
+    @staticmethod
+    def collect_skip_comments(entity_code_lines):
+        skipped_checks = []
+        for line in entity_code_lines:
+            skip_search = re.search(COMMENT_REGEX, str(line))
+            if skip_search:
+                skipped_checks.append(
+                    {
+                        'id': skip_search.group(2),
+                        'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
+                            3) else "No comment provided"
+                    }
+                )
+        return skipped_checks
 
     @staticmethod
     def search_deep_keys(search_text, cfn_dict, path):

@@ -1,6 +1,7 @@
 import logging
 import os
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.checks.resource.registry import resource_registry
 
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
@@ -64,9 +65,20 @@ class Runner(BaseRunner):
                         entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
                             resource)
                         if entity_lines_range and entity_code_lines:
+                            skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-                        #TODO scan with cf registry
-                #TODO handle iamRoleStatements
+
+                            results = resource_registry.scan(sls_file, {resource_name: resource}, skipped_checks,
+                                                             runner_filter)
+                            for check, check_result in results.items():
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                                code_block=entity_code_lines, file_path=sls_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=resource_id, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__)
+                                report.add_record(record=record)
+
+                # TODO handle iamRoleStatements
 
         return report
