@@ -1,5 +1,7 @@
 import unittest
 
+import hcl2
+
 from checkov.terraform.checks.resource.gcp.GKEUseCosImage import check
 from checkov.common.models.enums import CheckResult
 
@@ -21,6 +23,32 @@ class TestGKEUseCosImage(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_remove_node_pool(self):
+        hcl_res = hcl2.loads("""
+                    resource "google_container_cluster" "primary" {
+                      name     = "my-gke-cluster"
+                      location = "us-central1"
+                    
+                      # We can't create a cluster with no node pool defined, but we want to only use
+                      # separately managed node pools. So we create the smallest possible default
+                      # node pool and immediately delete it.
+                      remove_default_node_pool = true
+                      initial_node_count       = 1
+                    
+                      master_auth {
+                        username = ""
+                        password = ""
+                    
+                        client_certificate_config {
+                          issue_client_certificate = false
+                        }
+                      }
+                    }
+
+                """)
+        resource_conf = hcl_res['resource'][0]['google_container_cluster']['primary']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
