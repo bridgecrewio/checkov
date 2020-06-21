@@ -1,7 +1,7 @@
 import logging
 import os
 
-from checkov.cloudformation.checks.resource.registry import resource_registry
+from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                resource_registry.load_external_checks(directory)
+                cfn_registry.load_external_checks(directory)
 
         if files:
             for file in files:
@@ -60,8 +60,8 @@ class Runner(BaseRunner):
 
                         skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
 
-                        results = resource_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
-                                                         runner_filter)
+                        results = cfn_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
+                                                    runner_filter)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=cf_file,

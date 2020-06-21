@@ -62,16 +62,17 @@ class ContextParser(object):
             return entity_lines_range, entity_code_lines
         return None, None
 
-    def find_lines(self, node, kv):
+    @staticmethod
+    def find_lines(node, kv):
         if isinstance(node, list):
             for i in node:
-                for x in self.find_lines(i, kv):
+                for x in ContextParser.find_lines(i, kv):
                     yield x
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
             for j in node.values():
-                for x in self.find_lines(j, kv):
+                for x in ContextParser.find_lines(j, kv):
                     yield x
 
     @staticmethod

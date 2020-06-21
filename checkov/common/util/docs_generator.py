@@ -5,7 +5,7 @@ from tabulate import tabulate
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.checks.provider.registry import provider_registry
-from checkov.cloudformation.checks.resource.registry import resource_registry as cfn_registry
+from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.kubernetes.registry import registry as k8_registry
 
 

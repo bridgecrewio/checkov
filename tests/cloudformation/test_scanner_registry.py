@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.cloudformation.checks.resource.registry import resource_registry as registry
+from checkov.cloudformation.checks.resource.registry import cfn_registry as registry
 
 
 class TestScannerRegistry(unittest.TestCase):
