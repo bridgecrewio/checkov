@@ -21,7 +21,19 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         if 'description' in conf.keys():
             if conf['description']:
                 return CheckResult.PASSED
+        egress_result = self.check_rule(rule_type='egress', conf=conf)
+        ingress_result = self.check_rule(rule_type='ingress', conf=conf)
+        if egress_result == CheckResult.PASSED and ingress_result == CheckResult.PASSED:
+            return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def check_rule(self, rule_type, conf):
+        if rule_type in conf.keys():
+            for rule in conf[rule_type]:
+                if isinstance(rule, dict):
+                    if 'description' not in rule.keys():
+                        return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = SecurityGroupRuleDescription()
