@@ -18,7 +18,9 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
-
+        if 'description' in conf.keys():
+            if conf['description']:
+                return CheckResult.PASSED
         egress_result = self.check_rule(rule_type='egress', conf=conf)
         ingress_result = self.check_rule(rule_type='ingress', conf=conf)
         if egress_result == CheckResult.PASSED and ingress_result == CheckResult.PASSED:
