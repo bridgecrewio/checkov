@@ -95,9 +95,8 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
                             sls_context_parser.enrich_function_iam_roles(sls_function_name)
                             results = sls_registry.scan(sls_file, {'function': sls_function,
-                                                                   'provider': sls_context_parser.provider_conf},
+                                                                   'provider_type': sls_context_parser.provider_conf.get('name')},
                                                         skipped_checks, runner_filter)
-                            # TODO handle functions and attach IAMrolestatements
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=sls_file,

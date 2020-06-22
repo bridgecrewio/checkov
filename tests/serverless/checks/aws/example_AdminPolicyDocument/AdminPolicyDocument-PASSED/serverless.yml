@@ -1,0 +1,31 @@
+service: my-sls-service
+
+provider:
+  name: aws
+  runtime: python3.7
+  stackName: lambda-${self:service.name}
+  tag: ${opt:tag}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:GetObject"
+      Resource:
+        - "arn:aws:s3:::somebucket/*"
+
+functions:
+  myFunc:
+    name: myFunc
+    tags:
+      RESOURCE: lambda
+      PUBLIC: false
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "lambda:InvokeFunction"
+        Resource:
+          - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:invokedLambda"
+    handler: Handler.handle
+    timeout: 600
+    memorySize: 320

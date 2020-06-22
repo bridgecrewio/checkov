@@ -46,7 +46,7 @@ class Record():
 
         for (line_num, line) in code_block:
             spaces = ' ' * (len(str(last_line_number)) - len(str(line_num)))
-            if '#' in line:
+            if line.lstrip().startswith('#'):
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + line
             else:
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line

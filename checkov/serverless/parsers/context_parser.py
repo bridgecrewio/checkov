@@ -18,7 +18,7 @@ class ContextParser(object):
     def extract_function_code_lines(self, sls_function):
         find_lines_result_list = list(CfnContextParser.find_lines(sls_function, '__startline__'))
         if len(find_lines_result_list) >= 1:
-            start_line = min(find_lines_result_list)
+            start_line = min(find_lines_result_list) - 1
             end_line = max(list(CfnContextParser.find_lines(sls_function, '__endline__')))
 
             entity_lines_range = [start_line, end_line - 1]

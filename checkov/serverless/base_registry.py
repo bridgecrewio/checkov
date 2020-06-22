@@ -7,7 +7,7 @@ class Registry(BaseCheckRegistry):
         super().__init__()
 
     def extract_entity_details(self, entity):
-        provider_type = entity["provider"].get('name')
+        provider_type = entity["provider_type"]
         conf = entity["function"]
         return provider_type, conf
 
