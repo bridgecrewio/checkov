@@ -83,9 +83,8 @@ class Runner(BaseRunner):
                                                 check_class=check.__class__.__module__)
                                 report.add_record(record=record)
                 if FUNCTIONS_TOKEN in definitions[sls_file]:
+                    template_functions = definitions[sls_file][FUNCTIONS_TOKEN]
                     sls_context_parser = SlsContextParser(sls_file, definitions[sls_file], definitions_raw[sls_file])
-                    sls_context_parser.enrich_functions_iam_roles()
-                    template_functions = sls_context_parser.functions_conf
                     for sls_function_name, sls_function in template_functions.items():
                         if not isinstance(sls_function, dict_node):
                             continue
@@ -94,6 +93,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                             variable_evaluations = {}
+                            sls_context_parser.enrich_function_iam_roles(sls_function_name)
                             results = sls_registry.scan(sls_file, {'function': sls_function,
                                                                    'provider': sls_context_parser.provider_conf},
                                                         skipped_checks, runner_filter)

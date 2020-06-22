@@ -27,14 +27,11 @@ class ContextParser(object):
             return entity_lines_range, entity_code_lines
         return None, None
 
-    def enrich_functions_iam_roles(self):
-        if self.provider_conf.get('name').lower() == 'aws':
-            if self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN):
-                global_iam_role = self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN)
-                for _, template_function in self.functions_conf.items():
-                    if not isinstance(template_function,dict_node):
-                        continue
-                    if template_function.get(IAM_ROLE_STATEMENTS_TOKEN):
-                        template_function[IAM_ROLE_STATEMENTS_TOKEN].extend(global_iam_role)
-                    else:
-                        template_function[IAM_ROLE_STATEMENTS_TOKEN] = global_iam_role
+    def enrich_function_iam_roles(self, sls_function_name):
+        if self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN):
+            global_iam_role = self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN)
+            template_function = self.functions_conf[sls_function_name]
+            if template_function.get(IAM_ROLE_STATEMENTS_TOKEN):
+                template_function[IAM_ROLE_STATEMENTS_TOKEN].extend(global_iam_role)
+            else:
+                template_function[IAM_ROLE_STATEMENTS_TOKEN] = global_iam_role

@@ -1,6 +1,6 @@
 from checkov.serverless.checks.base_function_check import BaseFunctionCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.serverless.parsers.parser import
+from checkov.serverless.parsers.parser import IAM_ROLE_STATEMENTS_TOKEN
 
 class AdminPolicyDocument(BaseFunctionCheck):
     def __init__(self):
@@ -12,16 +12,16 @@ class AdminPolicyDocument(BaseFunctionCheck):
 
     def scan_function_conf(self, conf):
         """
-            validates iam policy document
-            https://learn.hashicorp.com/terraform/aws/iam-policy
+        validates iam policy document
+        https://learn.hashicorp.com/terraform/aws/iam-policy
         :param conf: aws_kms_key configuration
         :return: <CheckResult>
         """
-        key = 'statement'
+        key = IAM_ROLE_STATEMENTS_TOKEN
         if key in conf.keys():
             for statement in conf[key]:
-                if 'actions' in statement and statement.get('effect', ['Allow'])[0] == 'Allow' and '*' in statement['actions'][0] \
-                        and '*' in statement['resources'][0]:
+                if 'Action' in statement and statement.get('Effect') == 'Allow' and '*' in statement['Action'] \
+                        and '*' in statement['Resource']:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
