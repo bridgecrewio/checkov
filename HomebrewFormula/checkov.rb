@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/ac/f6/12fc06c9e034c955ce659253a32fcaee31fd599fd0f15f26bf60f4e0c639/checkov-1.0.385.tar.gz"
-  sha256 "35f12d9ebec0c544cc3ecdccf5373ec5130d9a60d1bdedd5e363c5882da528dc"
+  url "https://files.pythonhosted.org/packages/3b/dd/5d1bc8abbbcc5ccffe336c8c864f54228b188a8d35970800ccd85193b3ee/checkov-1.0.388.tar.gz"
+  sha256 "8f29125a4e82bb9fa21f8b7c72150dcfff1efa7348bdde1125329224bf1ddaa5"
 
   depends_on "python3"
 
@@ -19,8 +19,8 @@ class Checkov < Formula
   end
 
   resource "certifi" do
-    url "https://files.pythonhosted.org/packages/b4/19/53433f37a31543364c8676f30b291d128cdf4cd5b31b755b7890f8e89ac8/certifi-2020.4.5.2.tar.gz"
-    sha256 "5ad7e9a056d25ffa5082862e36f119f7f7cec6457fa07ee2f8c339814b80c9b1"
+    url "https://files.pythonhosted.org/packages/40/a7/ded59fa294b85ca206082306bba75469a38ea1c7d44ea7e1d64f5443d67a/certifi-2020.6.20.tar.gz"
+    sha256 "5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3"
   end
 
   resource "chardet" do
