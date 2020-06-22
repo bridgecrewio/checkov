@@ -14,7 +14,7 @@ class GoogleComputeSerialPorts(BaseResourceNegativeValueCheck):
         return 'metadata/[0]/serial-port-enable'
 
     def get_forbidden_values(self):
-        return ['1', True]
+        return [True]
 
 
 check = GoogleComputeSerialPorts()
