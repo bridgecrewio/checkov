@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 import dpath
 
+from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -26,7 +27,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            if value in bad_values or len(bad_values) == 0:
+            if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

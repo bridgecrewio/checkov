@@ -1,3 +1,4 @@
+from checkov.common.models.consts import ANY_VALUE
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckCategories
 
@@ -14,7 +15,7 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
         return 'access_config'
 
     def get_forbidden_values(self):
-        return []
+        return [ANY_VALUE]
 
 
 check = GoogleComputeExternalIP()
