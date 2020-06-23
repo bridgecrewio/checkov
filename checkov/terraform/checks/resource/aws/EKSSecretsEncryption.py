@@ -11,7 +11,7 @@ class EKSSecretsEncryption(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "encryption_config/[0]/resources/[0]/resources"
+        return "encryption_config/[0]/resources"
 
     def get_expected_value(self):
         return ["secrets"]
