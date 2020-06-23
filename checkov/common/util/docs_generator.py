@@ -7,6 +7,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.kubernetes.registry import registry as k8_registry
+from checkov.serverless.registry import sls_registry
 
 
 def print_checks(framework="all"):
@@ -37,6 +38,10 @@ def get_checks(framework="all"):
         for key in k8_registry.checks.keys():
             for check in k8_registry.checks[key]:
                 printable_checks_list.append([check.id, "PodSecurityPolicy", key, check.name, "Kubernetes"])
+    if framework == "serverless" or framework == "all":
+        for key in sls_registry.checks.keys():
+            for check in sls_registry.checks[key]:
+                printable_checks_list.append([check.id, "resource", key, check.name, "serverless"])
     return sorted(printable_checks_list, key=lambda x: x[0])
 
 if __name__ == '__main__':

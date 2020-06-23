@@ -35,7 +35,7 @@ def run(banner=checkov_banner):
                         default=False,
                         help='in case of CLI output, display only failed checks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
-                        choices=['cloudformation', 'terraform', 'kubernetes', 'all'], default='all')
+                        choices=['cloudformation', 'terraform', 'kubernetes', 'serverless', 'all'], default='all')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)

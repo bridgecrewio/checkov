@@ -7,7 +7,7 @@ class StarActionPolicyDocument(BaseFunctionCheck):
     def __init__(self):
         name = "Ensure no IAM policies documents allow \"*\" as a statement's actions"
         id = "CKV_AWS_49"
-        supported_entities = ['aws']
+        supported_entities = ['serverless_aws']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
 

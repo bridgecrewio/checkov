@@ -6,7 +6,7 @@ class AdminPolicyDocument(BaseFunctionCheck):
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         id = "CKV_AWS_1"
-        supported_entities = ['aws']
+        supported_entities = ['serverless_aws']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
 
