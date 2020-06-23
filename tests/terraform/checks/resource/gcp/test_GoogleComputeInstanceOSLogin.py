@@ -24,7 +24,7 @@ class TestGoogleComputeInstanceOSLogin(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_success_1(self):
         hcl_res = hcl2.loads("""
             resource "google_compute_instance" "default" {
               name         = "test"
@@ -33,6 +33,22 @@ class TestGoogleComputeInstanceOSLogin(unittest.TestCase):
               boot_disk {}
               metadata = {
                  foo = "bar"
+              }
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_2(self):
+        hcl_res = hcl2.loads("""
+            resource "google_compute_instance" "default" {
+              name         = "test"
+              machine_type = "n1-standard-1"
+              zone         = "us-central1-a"
+              boot_disk {}
+              metadata = {
+                 enable-oslogin = true
               }
             }
                 """)
