@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class EKSPublicAccess(BaseResourceCheck):
+class EKSPublicAccess(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Amazon EKS public endpoint disabled"
         id = "CKV_AWS_39"
@@ -10,23 +10,11 @@ class EKSPublicAccess(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for endpoint_public_access disabled at aws_eks_cluster:
-            https://www.terraform.io/docs/providers/aws/r/eks_cluster.html
-        :param conf: aws_eks_cluster configuration
-        :return: <CheckResult>
-        """
-        if "vpc_config" in conf.keys():
-            if "endpoint_public_access" in conf["vpc_config"][0].keys():
-                if not conf["vpc_config"][0]["endpoint_public_access"][0]:
-                    return CheckResult.PASSED
-                else:
-                    return CheckResult.FAILED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.UNKNOWN
+    def get_inspected_key(self):
+        return 'vpc_config/[0]/endpoint_public_access/[0]/endpoint_public_access'
+
+    def get_expected_value(self):
+        return False
 
 
 check = EKSPublicAccess()

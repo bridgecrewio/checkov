@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class EKSSecretsEncryption(BaseResourceCheck):
+class EKSSecretsEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure EKS Cluster has Secrets Encryption Enabled"
         id = "CKV_AWS_58"
@@ -10,12 +10,11 @@ class EKSSecretsEncryption(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if "encryption_config" in conf.keys() and "resources" in conf["encryption_config"][0] and \
-                "secrets" in conf["encryption_config"][0]["resources"][0]:
-            return CheckResult.PASSED
-        else:
-            return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "encryption_config/[0]/resources/[0]/resources"
+
+    def get_expected_value(self):
+        return ["secrets"]
 
 
 check = EKSSecretsEncryption()
