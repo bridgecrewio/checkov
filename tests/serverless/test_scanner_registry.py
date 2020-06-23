@@ -1,20 +1,20 @@
 import unittest
 
-from checkov.cloudformation.checks.resource.registry import cfn_registry as registry
+from checkov.serverless.registry import sls_registry
 
 
 class TestScannerRegistry(unittest.TestCase):
 
     def test_num_of_scanners(self):
         scanners_counter = 0
-        for key in list(registry.checks.keys()):
-            scanners_counter += len(registry.checks[key])
+        for key in list(sls_registry.checks.keys()):
+            scanners_counter += len(sls_registry.checks[key])
 
         self.assertGreater(scanners_counter, 1)
 
     def test_non_colliding_check_ids(self):
         check_id_check_class_map = {}
-        for (resource_type, checks) in registry.checks.items():
+        for (resource_type, checks) in sls_registry.checks.items():
             for check in checks:
                 check_id_check_class_map.setdefault(check.id, []).append(check)
 
