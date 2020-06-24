@@ -15,7 +15,7 @@ class RDSPubliclyAccessible(BaseResourceNegativeValueCheck):
         return 'publicly_accessible'
 
     def get_forbidden_values(self):
-        return [ANY_VALUE]
+        return [True]
 
 
 check = RDSPubliclyAccessible()

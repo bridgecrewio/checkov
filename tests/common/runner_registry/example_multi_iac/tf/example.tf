@@ -24,3 +24,11 @@ resource "aws_s3_bucket" "foo-bucket" {
   acl           = "private"
 }
 data "aws_caller_identity" "current" {}
+
+resource aws_rds_cluster "rds_cluster" {}
+
+resource aws_rds_cluster_instance "rds_cluster_public" {
+  cluster_identifier = "id"
+  instance_class = "foo-bar"
+  publicly_accessible = false
+}
