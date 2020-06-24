@@ -96,14 +96,15 @@ class Runner(BaseRunner):
                         else:
                             namespace = "default"
                         containerDef["containers"] = containers.pop()
-                        for cd in containerDef["containers"]:
-                            i = containerDef["containers"].index(cd)
-                            containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
-                            containerDef["containers"][i]["kind"] = type
-                            containerDef["containers"][i]["parent"] = "{}.{}.{} (container {})".format(
-                                entity_conf["kind"], entity_conf["metadata"]["name"], namespace, str(i))
-                            containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
-                        definitions[k8_file].extend(containerDef["containers"])
+                        if containerDef["containers"] is not None:
+                            for cd in containerDef["containers"]:
+                                i = containerDef["containers"].index(cd)
+                                containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]
+                                containerDef["containers"][i]["kind"] = type
+                                containerDef["containers"][i]["parent"] = "{}.{}.{} (container {})".format(
+                                    entity_conf["kind"], entity_conf["metadata"]["name"], namespace, str(i))
+                                containerDef["containers"][i]["parent_metadata"] = entity_conf["metadata"]
+                            definitions[k8_file].extend(containerDef["containers"])
 
                 # Run for each definition included added container definitions
                 for i in range(len(definitions[k8_file])):
