@@ -95,7 +95,7 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
                             sls_context_parser.enrich_function_with_provider(sls_function_name)
                             results = sls_registry.scan(sls_file, {'function': sls_function,
-                                                                   'provider_type': sls_context_parser.provider_conf.get('name')},
+                                                                   'provider_type': sls_context_parser.provider_type},
                                                         skipped_checks, runner_filter)
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
