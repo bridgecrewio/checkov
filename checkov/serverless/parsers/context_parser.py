@@ -1,5 +1,6 @@
-from checkov.cloudformation.parser.node import dict_node
-from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN
+from checkov.cloudformation.parser.node import dict_node, list_node
+from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
+    ENVIRONMENT_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 
 
@@ -7,6 +8,8 @@ class ContextParser(object):
     """
     serverless functions template context parser
     """
+    # control on inherited provider attributes to scanned functions
+    ENRICHED_ATTRIBUTES = [IAM_ROLE_STATEMENTS_TOKEN, ENVIRONMENT_TOKEN]
 
     def __init__(self, sls_file, sls_template, sls_template_lines):
         self.sls_file = sls_file
@@ -27,11 +30,20 @@ class ContextParser(object):
             return entity_lines_range, entity_code_lines
         return None, None
 
-    def enrich_function_iam_roles(self, sls_function_name):
-        if self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN):
-            global_iam_role = self.provider_conf.get(IAM_ROLE_STATEMENTS_TOKEN)
-            template_function = self.functions_conf[sls_function_name]
-            if template_function.get(IAM_ROLE_STATEMENTS_TOKEN):
-                template_function[IAM_ROLE_STATEMENTS_TOKEN].extend(global_iam_role)
-            else:
-                template_function[IAM_ROLE_STATEMENTS_TOKEN] = global_iam_role
+    def enrich_function_with_provider(self, sls_function_name):
+        """
+        Update inplace a function's template with pre-defined inherited provider attributes
+        :param sls_function_name: scanned function
+        :return: None
+        """
+        for enriched_attribute in self.ENRICHED_ATTRIBUTES:
+            if self.provider_conf.get(enriched_attribute):
+                provider_attribute = self.provider_conf.get(enriched_attribute)
+                template_function = self.functions_conf[sls_function_name]
+                if template_function.get(enriched_attribute):
+                    if isinstance(template_function[enriched_attribute], list_node):
+                        template_function[enriched_attribute].extend(provider_attribute)
+                    if isinstance(template_function[enriched_attribute], dict_node):
+                        template_function[enriched_attribute].update(provider_attribute)
+                else:
+                    template_function[enriched_attribute] = provider_attribute

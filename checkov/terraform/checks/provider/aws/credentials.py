@@ -1,8 +1,7 @@
 import re
-
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
-from checkov.terraform.checks.utils.consts import access_key_pattern, secret_key_pattern
+from checkov.common.models.consts import access_key_pattern, secret_key_pattern
 
 
 class AWSCredentials(BaseProviderCheck):

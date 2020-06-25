@@ -10,6 +10,7 @@ IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'
 CFN_RESOURCES_TOKEN = 'resources'
 PROVIDER_TOKEN = 'provider'
 FUNCTIONS_TOKEN = 'functions'
+ENVIRONMENT_TOKEN = 'environment'
 
 
 def parse(filename):
