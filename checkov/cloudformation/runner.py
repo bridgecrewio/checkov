@@ -53,20 +53,22 @@ class Runner(BaseRunner):
                 cf_context_parser.evaluate_default_refs()
                 for resource_name, resource in definitions[cf_file]['Resources'].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
-                    entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(resource)
-                    if entity_lines_range and entity_code_lines:
-                        # TODO - Variable Eval Message!
-                        variable_evaluations = {}
+                    # check that the resource can be parsed as a CF resource
+                    if resource_id:
+                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(resource)
+                        if entity_lines_range and entity_code_lines:
+                            # TODO - Variable Eval Message!
+                            variable_evaluations = {}
 
-                        skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
+                            skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
 
-                        results = cfn_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
-                        for check, check_result in results.items():
-                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=cf_file,
-                                            file_line_range=entity_lines_range,
-                                            resource=resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__)
-                            report.add_record(record=record)
+                            results = cfn_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
+                                                        runner_filter)
+                            for check, check_result in results.items():
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                                code_block=entity_code_lines, file_path=cf_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=resource_id, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__)
+                                report.add_record(record=record)
         return report
