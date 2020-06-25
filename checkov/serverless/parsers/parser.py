@@ -11,6 +11,7 @@ CFN_RESOURCES_TOKEN = 'resources'
 PROVIDER_TOKEN = 'provider'
 FUNCTIONS_TOKEN = 'functions'
 ENVIRONMENT_TOKEN = 'environment'
+SUPPORTED_PROVIDERS = ['aws']
 
 
 def parse(filename):
@@ -43,8 +44,8 @@ def parse(filename):
 
 def is_checked_sls_template(template):
     if template.__contains__('provider'):
-        # support AWS provider serverless templates
-        if template['provider'].get('name').lower() == 'aws':
+        if template['provider'].get('name').lower() in SUPPORTED_PROVIDERS or \
+                template['provider'] in SUPPORTED_PROVIDERS:
             if template_contains_cfn_resources(template) or template_contains_key(template, FUNCTIONS_TOKEN):
                 return True
     return False
