@@ -93,7 +93,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                             variable_evaluations = {}
-                            sls_context_parser.enrich_function_iam_roles(sls_function_name)
+                            sls_context_parser.enrich_function_with_provider(sls_function_name)
                             results = sls_registry.scan(sls_file, {'function': sls_function,
                                                                    'provider_type': sls_context_parser.provider_conf.get('name')},
                                                         skipped_checks, runner_filter)
