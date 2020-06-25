@@ -3,6 +3,7 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.parser.node import dict_node, str_node
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ CFN_RESOURCES_TOKEN = 'resources'
 PROVIDER_TOKEN = 'provider'
 FUNCTIONS_TOKEN = 'functions'
 ENVIRONMENT_TOKEN = 'environment'
+SUPPORTED_PROVIDERS = ['aws']
 
 
 def parse(filename):
@@ -43,10 +45,16 @@ def parse(filename):
 
 def is_checked_sls_template(template):
     if template.__contains__('provider'):
-        # support AWS provider serverless templates
-        if template['provider'].get('name').lower() == 'aws':
-            if template_contains_cfn_resources(template) or template_contains_key(template, FUNCTIONS_TOKEN):
-                return True
+        # Case provider is a dictionary
+        if isinstance(template['provider'], dict_node):
+            if template['provider'].get('name').lower() not in SUPPORTED_PROVIDERS:
+                return False
+        # Case provider is direct provider name
+        if isinstance(template['provider'], str_node):
+            if template['provider'] not in SUPPORTED_PROVIDERS:
+                return False
+        if template_contains_cfn_resources(template) or template_contains_key(template, FUNCTIONS_TOKEN):
+            return True
     return False
 
 
