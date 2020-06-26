@@ -49,7 +49,7 @@ setup(
             "pytest==5.3.1",
             "python-hcl2==0.2.0",
             "pytz==2019.3",
-            "pyyaml==5.1.2",
+            "pyyaml==5.3.1",
             "requests==2.22.0",
             "six==1.13.0",
             "snowballstemmer==2.0.0",
