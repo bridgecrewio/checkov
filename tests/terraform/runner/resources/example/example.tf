@@ -1259,7 +1259,6 @@ zone         = "us-central1-a"
     enable-oslogin = false
     serial-port-enable = true
               }
-  can_ip_forward = true
   boot_disk {}
   network_interface {}
 }
