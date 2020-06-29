@@ -26,9 +26,11 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
                     if conf[key][0]["encrypted"] == [False]:
                         return CheckResult.FAILED
                     else:
-                        return CheckResult.PASSED
+                        all_blocks_encrypted = True
                 else:
                     return CheckResult.FAILED
+        if all_blocks_encrypted:
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 
