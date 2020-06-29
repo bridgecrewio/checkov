@@ -50,11 +50,6 @@ class Runner(BaseRunner):
                 if parse_result:
                     (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
 
-        # Filter out empty files that have not been parsed successfully, and filter out non-K8 template files
-        #definitions = {k: v for k, v in definitions.items() if
-        #               v and (v.__contains__("apiVersion") and v.__contains__("kind"))}
-        #definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
-
         for k8_file in definitions.keys():
             if definitions[k8_file]:
                 for i in range(len(definitions[k8_file])):
@@ -77,6 +72,13 @@ class Runner(BaseRunner):
                     entity_conf = definitions[k8_file][i]
 
                     if entity_conf["kind"] == "List":
+                        continue
+
+                    # Skip entity without metadata["name"]
+                    if "metadata" in entity_conf:
+                        if not "name" in entity_conf["metadata"]:
+                            continue
+                    else:
                         continue
 
                     # Append containers and initContainers to definitions list
@@ -116,6 +118,14 @@ class Runner(BaseRunner):
 
                     if entity_conf["kind"] == "List":
                         continue
+
+                    # Skip entity without metadata["name"] or parent_metadata["name"]
+                    if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
+                        if "metadata" in entity_conf:
+                            if not "name" in entity_conf["metadata"]:
+                                continue
+                        else:
+                            continue
 
                     # Skip Kustomization Templates (for now)
                     if entity_conf["kind"] == "Kustomization":
