@@ -20,6 +20,7 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
+        all_blocks_encrypted = False
         for key in conf.keys():
             if "block_device" in key and "ephemeral" not in key:
                 if "encrypted" in conf[key][0]:
