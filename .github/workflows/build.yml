@@ -61,13 +61,13 @@ jobs:
           git pull
           pipenv run python ./checkov/common/util/docs_generator.py >> $scansdoc
 
-          git commit -m "update resource scans doc" $scansdoc || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} $scansdoc || echo "No changes to commit"
 
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          git commit -m "bump version to '$new_tag'" checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
@@ -117,7 +117,7 @@ jobs:
           pipenv run pip install checkov -U
           git pull
           pipenv run poet -f checkov > HomebrewFormula/checkov.rb
-          git commit -m "update brew formula" HomebrewFormula/checkov.rb || echo "No brew changes to commit"
+          git commit --reuse-message=HEAD@{1} HomebrewFormula/checkov.rb || echo "No brew changes to commit"
           git push origin
   update-bridgecrew-projects:
     needs: publish-package
