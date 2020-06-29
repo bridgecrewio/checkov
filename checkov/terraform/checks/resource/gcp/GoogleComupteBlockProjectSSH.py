@@ -11,7 +11,7 @@ class GoogleComputeBlockProjectSSH(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'metadata/[0]/block-project-ssh-keys/[0]'
+        return 'metadata/block-project-ssh-keys'
 
 
 check = GoogleComputeBlockProjectSSH()
