@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.LaunchConfigurationEBSEncryption impo
 from checkov.common.models.enums import CheckResult
 
 
-class TestS3Encryption(unittest.TestCase):
+class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'image_id': ['ami-123'], 'instance_type': ['t2.micro'],
