@@ -101,14 +101,14 @@ class BcPlatformIntegration(object):
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
-    def commit_repository(self, branch):
+    def commit_repository(self, branch, cicd_type):
         """
         :param branch: branch to be persisted
         Finalize the repository's scanning in bridgecrew's platform.
         """
         request = None
         try:
-            request = http.request("PUT", INTEGRATIONS_API_URL,
+            request = http.request("PUT", f"{INTEGRATIONS_API_URL}/?cicdType={cicd_type}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
