@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/cf/40/1e9aed1c07682b3f4b723c26332fff9ca533bb048b75a2a94487ffcb1c7a/checkov-1.0.404.tar.gz"
-  sha256 "f17687251311e7ac951142c133e156a8ea1c76ea47dd86b0b9aae5599d8eb4ae"
+  url "https://files.pythonhosted.org/packages/bb/6a/165395c80255a65f452cdec61ab52bd4d5bfd3d3b1ec46e90bf156296328/checkov-1.0.405.tar.gz"
+  sha256 "acce90f354e938841d17665320284c5e0a9b30eb45adeec1f1adfe9182243ef0"
 
   depends_on "python3"
 
