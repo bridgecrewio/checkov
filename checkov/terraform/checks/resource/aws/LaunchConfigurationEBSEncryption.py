@@ -20,19 +20,11 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
-        all_blocks_encrypted = False
         for key in conf.keys():
             if "block_device" in key and "ephemeral" not in key:
-                if "encrypted" in conf[key][0]:
-                    if conf[key][0]["encrypted"] == [False]:
-                        return CheckResult.FAILED
-                    else:
-                        all_blocks_encrypted = True
-                else:
+                if isinstance(conf[key][0], dict) and conf[key][0].get("encrypted") != [True]:
                     return CheckResult.FAILED
-        if all_blocks_encrypted:
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = LaunchConfigurationEBSEncryption()
