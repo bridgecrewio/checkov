@@ -18,7 +18,6 @@ UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an e
 
 BC_API_URL = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
 BC_SOURCE = os.getenv('BC_SOURCE', "cli")
-BC_REPO = os.getenv('BC_REPO', "")
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()

@@ -17,6 +17,7 @@ from checkov.version import version
 
 logging_init()
 
+
 def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     parser.add_argument('-v', '--version',
