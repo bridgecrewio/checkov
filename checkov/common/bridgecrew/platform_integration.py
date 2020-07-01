@@ -140,9 +140,6 @@ class BcPlatformIntegration(object):
             guidelines_map = response["guidelines"]
             logging.debug(f"Got guidelines form Bridgecrew BE")
             return guidelines_map
-        except HTTPError as e:
-            logging.debug(f"Failed to get guidelines\n{e}")
-            return {}
-        except JSONDecodeError as e:
-            logging.debug(f"Response of {GUIDELINES_API_URL} is not a valid JSON\n{e}")
+        except Exception as e:
+            logging.debug(f"Failed to get the guidelines from {GUIDELINES_API_URL}, error:\n{e}")
             return {}

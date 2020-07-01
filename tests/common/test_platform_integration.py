@@ -10,10 +10,10 @@ responses = Responses('requests.packages.urllib3')
 
 class TestBCApiUrl(unittest.TestCase):
 
-    @mock.patch.dict(os.environ, {'BC_API_URL': 'foo'})
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
     def test_overriding_bc_api_url(self):
         from checkov.common.bridgecrew.platform_integration import BC_API_URL
-        self.assertEqual(BC_API_URL, "foo")
+        self.assertEqual(BC_API_URL, "http://test.com")
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
     @responses.activate
