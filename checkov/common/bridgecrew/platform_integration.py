@@ -1,23 +1,23 @@
-import urllib3
-import boto3
 import json
 import logging
 import os
-from time import sleep
-from urllib3.exceptions import HTTPError
-from botocore.exceptions import ClientError
 from json import JSONDecodeError
+from time import sleep
+
+import boto3
 import dpath.util
+import urllib3
+from botocore.exceptions import ClientError
+from urllib3.exceptions import HTTPError
 
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
-
-BC_API_URL = os.getenv('BC_API_URL',"https://www.bridgecrew.cloud/api/v1")
-INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
+BC_API_URL = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+INTEGRATIONS_API_URL = f"{BC_API_URL}/api/v1/integrations/types/checkov"
+GUIDELINES_API_URL = f"{BC_API_URL}/api/v1/guidelines"
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()
 
@@ -131,3 +131,18 @@ class BcPlatformIntegration(object):
         except Exception as e:
             logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
             raise e
+
+    @staticmethod
+    def get_guidelines() -> dict:
+        try:
+            request = http.request("GET", GUIDELINES_API_URL)
+            response = json.loads(request.data.decode("utf8"))
+            guidelines_map = response["guidelines"]
+            logging.debug(f"Got guidelines form Bridgecrew BE")
+            return guidelines_map
+        except HTTPError as e:
+            logging.debug(f"Failed to get guidelines\n{e}")
+            return {}
+        except JSONDecodeError as e:
+            logging.debug(f"Response of {GUIDELINES_API_URL} is not a valid JSON\n{e}")
+            return {}

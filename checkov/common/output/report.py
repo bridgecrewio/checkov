@@ -70,7 +70,7 @@ class Report:
     def is_empty(self):
         return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
 
-    def print_console(self,is_quiet=False):
+    def print_console(self, is_quiet=False):
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -97,8 +97,7 @@ class Report:
         result = []
         for record in self.failed_checks:
             result.append([record.check_id,record.file_path,record.resource,record.check_name])
-        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name"], tablefmt="github",
-                 showindex=True))
+        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name"], tablefmt="github", showindex=True))
         print("\n\n---\n\n")
 
     def get_test_suites(self):
@@ -125,7 +124,6 @@ class Report:
             test_suites.append(
                 TestSuite(name=key, test_cases=test_cases[key], package=test_cases[key][0].classname))
         return test_suites
-
 
     def print_json(self):
         print(self.get_json())
