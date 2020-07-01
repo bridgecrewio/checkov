@@ -62,6 +62,6 @@ class RunnerRegistry(object):
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
-        for record in scan_report.failed_checks:
+        for record in scan_report.failed_checks + scan_report.passed_checks + scan_report.skipped_checks:
             if record.check_id in guidelines:
                 record.set_guideline(guidelines[record.check_id])

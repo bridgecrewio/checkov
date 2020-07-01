@@ -97,6 +97,6 @@ class Record:
             return check_message + status_message + guideline_message + file_details + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
-            return check_message + status_message + suppress_comment + file_details
+            return check_message + status_message + guideline_message + suppress_comment + file_details
         else:
-            return check_message + status_message + file_details + evaluation_message
+            return check_message + status_message + guideline_message + file_details + evaluation_message

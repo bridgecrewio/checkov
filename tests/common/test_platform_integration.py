@@ -1,6 +1,10 @@
+import json
 import os
 import unittest
 from unittest import mock
+
+from urllib3_mock import Responses
+
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 responses = Responses('requests.packages.urllib3')
@@ -8,19 +12,10 @@ responses = Responses('requests.packages.urllib3')
 
 class TestBCApiUrl(unittest.TestCase):
 
-    @mock.patch.dict(os.environ,{'BC_API_URL':'foo'})
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'foo'})
     def test_overriding_bc_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_api_url,"foo")
-
-    @mock.patch.dict(os.environ,{'BC_SOURCE':'foo'})
-    def test_overriding_bc_source(self):
-        instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_source,"foo")
-
-    def test_default_bc_source(self):
-        instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_source,"cli")
+        self.assertEqual(instance.bc_api_url, "foo")
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
     @responses.activate
@@ -36,7 +31,6 @@ class TestBCApiUrl(unittest.TestCase):
         responses.add_callback('GET', '/api/v1/guidelines',
                                callback=request_callback,
                                content_type='application/json')
-        from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
         guidelines = BcPlatformIntegration().get_guidelines()
         self.assertTrue(isinstance(guidelines, dict))
         self.assertEqual(len(guidelines), 2)
@@ -45,7 +39,6 @@ class TestBCApiUrl(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
     def test_guidelines_received(self):
-        from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
         guidelines = BcPlatformIntegration().get_guidelines()
         self.assertEqual(guidelines, {})
 

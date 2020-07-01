@@ -30,7 +30,6 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', "cli")
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/api/v1/guidelines"
 
@@ -109,7 +108,7 @@ class BcPlatformIntegration(object):
         """
         request = None
         try:
-            request = http.request("PUT", f"{self.integrations_api_url}/?source={self.bc_source}",
+            request = http.request("PUT", f"{self.integrations_api_url}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
@@ -133,8 +132,7 @@ class BcPlatformIntegration(object):
             logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
             raise e
 
-    @staticmethod
-    def get_guidelines() -> dict:
+    def get_guidelines(self) -> dict:
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
