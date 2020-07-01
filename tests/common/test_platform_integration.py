@@ -4,7 +4,6 @@ import unittest
 from unittest import mock
 
 
-
 class TestBCApiUrl(unittest.TestCase):
 
     @mock.patch.dict(os.environ,{'BC_API_URL':'foo'})
