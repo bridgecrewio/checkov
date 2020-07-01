@@ -50,8 +50,6 @@ def run(banner=checkov_banner):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
-    parser.add_argument('--cicd-type',
-                        help='describe which CI trigger Checkov', default='cli')
 
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
@@ -81,7 +79,7 @@ def run(banner=checkov_banner):
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
-                bc_integration.commit_repository(args.branch, args.cicd_type)
+                bc_integration.commit_repository(args.branch)
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
@@ -91,7 +89,7 @@ def run(banner=checkov_banner):
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
-            bc_integration.commit_repository(args.branch, args.cicd_type)
+            bc_integration.commit_repository(args.branch)
         runner_registry.print_reports(scan_reports, args)
     else:
         print("No argument given. Try ` --help` for further information")

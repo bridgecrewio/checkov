@@ -16,7 +16,9 @@ import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
-BC_API_URL = os.getenv('BC_API_URL',"https://www.bridgecrew.cloud/api/v1")
+BC_API_URL = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
+BC_SOURCE = os.getenv('BC_SOURCE', "cli")
+BC_REPO = os.getenv('BC_REPO', "")
 INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()
@@ -101,14 +103,14 @@ class BcPlatformIntegration(object):
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
-    def commit_repository(self, branch, cicd_type):
+    def commit_repository(self, branch):
         """
         :param branch: branch to be persisted
         Finalize the repository's scanning in bridgecrew's platform.
         """
         request = None
         try:
-            request = http.request("PUT", f"{INTEGRATIONS_API_URL}/?cicdType={cicd_type}",
+            request = http.request("PUT", f"{INTEGRATIONS_API_URL}/?source={BC_SOURCE}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
