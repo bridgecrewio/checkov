@@ -40,6 +40,25 @@ Once I have corrected the configuration, checkov verifies that all is well.
 
 ![GitLab Results](gitlab_results.png)
 
+## Colored Output
+
+Note that in the above examples the output of the test results does not display colors. This is because GitLab Runner runs without an interactive TTY. Although checkov does not currently support an environment variable to force colored output, the `script` command can be used to emulate `tty` so colors are displayed:
+```yaml
+stages:
+    - validate
+
+checkov:
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  stage: validate
+  script:
+    # Use `script` to emulate `tty` for colored output.
+    - script -q -c 'checkov -d .'
+```
+
 ## Further Reading
 
 See the [GitLab CI documentation](https://docs.gitlab.com/ee/ci/) for additional information.
