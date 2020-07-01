@@ -16,7 +16,8 @@ import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
-
+BC_API_URL = os.getenv('BC_API_URL',"https://www.bridgecrew.cloud/api/v1")
+INTEGRATIONS_API_URL = f"{BC_API_URL}/integrations/types/checkov"
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()
 
@@ -31,9 +32,6 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.timestamp = None
         self.scan_reports = []
-        self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', "cli")
-        self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -44,7 +42,7 @@ class BcPlatformIntegration(object):
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
         try:
-            request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
+            request = http.request("POST", INTEGRATIONS_API_URL, body=json.dumps({"repoId": repo_id}),
                                    headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
             if 'Message' in response:
@@ -68,7 +66,7 @@ class BcPlatformIntegration(object):
             logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
             raise e
         except JSONDecodeError as e:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+            logging.error(f"Response of {INTEGRATIONS_API_URL} is not a valid JSON\n{e}")
             raise e
 
     def is_integration_configured(self):
@@ -110,7 +108,7 @@ class BcPlatformIntegration(object):
         """
         request = None
         try:
-            request = http.request("PUT", f"{self.integrations_api_url}/?source={self.bc_source}",
+            request = http.request("PUT", INTEGRATIONS_API_URL,
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
@@ -118,7 +116,7 @@ class BcPlatformIntegration(object):
             logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
             raise e
         except JSONDecodeError as e:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+            logging.error(f"Response of {INTEGRATIONS_API_URL} is not a valid JSON\n{e}")
             raise e
         finally:
             if request.status == 201 and response["result"] == "Success":
