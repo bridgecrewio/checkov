@@ -17,7 +17,7 @@ class TestBCApiUrl(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
     @responses.activate
-    def test_overriding_bc_api_url(self):
+    def test_guidelines_received(self):
         guideline1 = 'https://some.guideline.com/111'
         guideline2 = 'https://another.guideline.com/AWS/asdasd'
 
@@ -35,6 +35,12 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(len(guidelines), 2)
         self.assertEqual(guidelines['CKV_AWS_1'], guideline1)
         self.assertEqual(guidelines['CKV_AWS_2'], guideline2)
+
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
+    def test_guidelines_received(self):
+        from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+        guidelines = BcPlatformIntegration().get_guidelines()
+        self.assertEqual(guidelines, {})
 
 
 if __name__ == '__main__':
