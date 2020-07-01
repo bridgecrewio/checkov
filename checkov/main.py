@@ -17,6 +17,7 @@ from checkov.version import version
 
 logging_init()
 
+
 def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     parser.add_argument('-v', '--version',
@@ -50,6 +51,7 @@ def run(banner=checkov_banner):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
+
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
