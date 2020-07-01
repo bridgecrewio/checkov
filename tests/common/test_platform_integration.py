@@ -18,7 +18,5 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(BC_SOURCE,"foo")
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
