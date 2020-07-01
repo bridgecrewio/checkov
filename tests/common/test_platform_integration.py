@@ -13,10 +13,12 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(BC_API_URL,"foo")
 
     @mock.patch.dict(os.environ,{'BC_SOURCE':'foo'})
-    def test_overriding_bc_api_url(self):
+    def test_overriding_bc_source(self):
         from checkov.common.bridgecrew.platform_integration import BC_SOURCE
         self.assertEqual(BC_SOURCE,"foo")
 
-        
+
+
+
 if __name__ == '__main__':
     unittest.main()
