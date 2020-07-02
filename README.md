@@ -200,9 +200,10 @@ Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, t
 Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md).
 
 ## Disclaimer
-`checkov` doesn't save, publish or share with anyone any identifiable customer information.  
+`checkov` does not save, publish or share with anyone any identifiable customer information.  
 No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
 `checkov` uses Bridgecrew's API to enrich the results with links to remediation guides.
+To skip this API call use the flag `--no-guide`.
 
 ## Support
 
