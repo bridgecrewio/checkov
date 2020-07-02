@@ -19,7 +19,7 @@ class AzureManagedDiscEncryption(BaseResourceCheck):
         """
         if 'encryption_settings' in conf.keys():
             config = conf['encryption_settings'][0]
-            if isinstance(config, dict) and config['enabled'][0] ==[False]:
+            if isinstance(config, dict) and not config['enabled'][0]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
