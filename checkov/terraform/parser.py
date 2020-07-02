@@ -21,17 +21,16 @@ class Parser:
 
     @staticmethod
     def _parse_tf_definitions(tf_file):
-        try:
-            with(open(tf_file, 'r')) as file:
+        with(open(tf_file, 'r')) as file:
+            try:
                 file.seek(0)
                 tf_definition = hcl2.load(file)
-        except Exception as hcl2_exception:
-            try:
-                with(open(tf_file, 'r')) as file:
+            except Exception as hcl2_exception:
+                try:
                     file.seek(0)
                     tf_definition = hcl.load(file)
-            except Exception:
-                raise hcl2_exception
+                except Exception:
+                    raise hcl2_exception
         for resource_type in tf_definition.get('resource', []):
             for resource in resource_type.values():
                 for named_resource in resource.values():
