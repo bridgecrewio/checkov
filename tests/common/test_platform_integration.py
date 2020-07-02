@@ -17,7 +17,7 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         self.assertEqual(instance.bc_api_url, "foo")
 
-    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.invalid'})
     @responses.activate
     def test_guidelines_received(self):
         guideline1 = 'https://some.guideline.com/111'
@@ -37,7 +37,7 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(guidelines['CKV_AWS_1'], guideline1)
         self.assertEqual(guidelines['CKV_AWS_2'], guideline2)
 
-    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.invalid'})
     def test_guidelines_not_received(self):
         guidelines = BcPlatformIntegration().get_guidelines()
         self.assertEqual(guidelines, {})
