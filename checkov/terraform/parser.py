@@ -1,3 +1,4 @@
+import hcl
 import hcl2
 import logging
 import os
@@ -20,15 +21,23 @@ class Parser:
 
     @staticmethod
     def _parse_tf_definitions(tf_file):
-        with(open(tf_file, 'r')) as file:
-            file.seek(0)
-            tf_definition = hcl2.load(file)
-            for resource_type in tf_definition.get('resource', []):
-                for resource in resource_type.values():
-                    for named_resource in resource.values():
-                        for dynamic_block in named_resource.get('dynamic', []):
-                            for dynamic_field_name, dynamic_field_value in dynamic_block.items():
-                                named_resource[dynamic_field_name] = dynamic_field_value['for_each']
+        try:
+            with(open(tf_file, 'r')) as file:
+                file.seek(0)
+                tf_definition = hcl2.load(file)
+        except Exception as hcl2_exception:
+            try:
+                with(open(tf_file, 'r')) as file:
+                    file.seek(0)
+                    tf_definition = hcl.load(file)
+            except Exception:
+                raise hcl2_exception
+        for resource_type in tf_definition.get('resource', []):
+            for resource in resource_type.values():
+                for named_resource in resource.values():
+                    for dynamic_block in named_resource.get('dynamic', []):
+                        for dynamic_field_name, dynamic_field_value in dynamic_block.items():
+                            named_resource[dynamic_field_name] = dynamic_field_value['for_each']
         return tf_definition
 
     def hcl2(self, directory, tf_definitions={}, parsing_errors={}):

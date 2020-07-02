@@ -14,6 +14,7 @@ urllib3-mock = "*"
 
 [packages]
 python-hcl2 = "*"
+pyhcl = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
