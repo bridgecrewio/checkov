@@ -20,10 +20,11 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines={}):
         for runner in self.runners:
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                      runner_filter=self.runner_filter)
+            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
@@ -58,3 +59,9 @@ class RunnerRegistry(object):
             if runner.check_type == self.runner_filter.framework:
                 self.runners = [runner]
                 return
+
+    @staticmethod
+    def enrich_report_with_guidelines(scan_report, guidelines):
+        for record in scan_report.failed_checks + scan_report.passed_checks + scan_report.skipped_checks:
+            if record.check_id in guidelines:
+                record.set_guideline(guidelines[record.check_id])

@@ -64,6 +64,8 @@ def run(banner=checkov_banner):
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
+
+    guidelines = bc_integration.get_guidelines()
     if args.check and args.skip_check:
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
@@ -74,7 +76,7 @@ def run(banner=checkov_banner):
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=args.external_checks_dir,
-                                               files=file)
+                                               files=file, guidelines=guidelines)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
@@ -82,7 +84,7 @@ def run(banner=checkov_banner):
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
-        scan_reports = runner_registry.run(external_checks_dir=args.external_checks_dir, files=args.file)
+        scan_reports = runner_registry.run(external_checks_dir=args.external_checks_dir, files=args.file, guidelines=guidelines)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
