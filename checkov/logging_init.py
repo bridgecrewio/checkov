@@ -3,6 +3,7 @@ import sys
 import logging
 import os
 
+
 def init():
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
     logging.basicConfig(level=LOG_LEVEL)
@@ -12,3 +13,7 @@ def init():
     consoleHandler.setFormatter(logFormatter)
     consoleHandler.setLevel(LOG_LEVEL)
     rootLogger.addHandler(consoleHandler)
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
+    logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+    logging.getLogger("urllib3.connectionpool").propagate = False
+    logging.getLogger("urllib3").propagate = False
