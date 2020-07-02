@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/60/32/5ef8a50ca561f27c90bb4fba5ae455a54f75a6a20c523b2026d4ec56c628/checkov-1.0.422.tar.gz"
-  sha256 "15c82906ad59798be84ec081ec2e9437c7a5c08138bf2fb77b133d4820d84026"
+  url "https://files.pythonhosted.org/packages/17/cf/2597febe36375c4b81ac06a8defcdeddc1b0ec0e1e0404d5bcac12231357/checkov-1.0.423.tar.gz"
+  sha256 "6574b93d6c731c5378b0a589070942c441d1ad84c3f8d603bb9862a80db49b26"
 
   depends_on "python3"
 
@@ -66,11 +66,6 @@ class Checkov < Formula
   resource "lark-parser" do
     url "https://files.pythonhosted.org/packages/34/b8/aa7d6cf2d5efdd2fcd85cf39b33584fe12a0f7086ed451176ceb7fb510eb/lark-parser-0.7.8.tar.gz"
     sha256 "26215ebb157e6fb2ee74319aa4445b9f3b7e456e26be215ce19fdaaa901c20a4"
-  end
-
-  resource "pyhcl" do
-    url "https://files.pythonhosted.org/packages/91/b0/dd4f1d01b77be3b66d9f550ed958b68fa553764be1d27c7d604906c06b42/pyhcl-0.4.4.tar.gz"
-    sha256 "2d9b9dcdf1023d812bfed561ba72c99104c5b3f52e558d595130a44ce081b003"
   end
 
   resource "python-dateutil" do
