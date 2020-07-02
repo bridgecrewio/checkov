@@ -1006,6 +1006,9 @@ resource azurerm_kubernetes_cluster "bad-example" {
   }
 
   addon_profile {
+    oms_agent {
+      enabled = true
+    }
     kube_dashboard {
       enabled = false
     }
