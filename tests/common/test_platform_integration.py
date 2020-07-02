@@ -28,7 +28,7 @@ class TestBCApiUrl(unittest.TestCase):
             headers = {'Content-Type': 'application/json'}
             return 200, headers, json.dumps(resp_body)
 
-        responses.add_callback('GET', '/api/v1/guidelines',
+        responses.add_callback('GET', '/guidelines',
                                callback=request_callback,
                                content_type='application/json')
         guidelines = BcPlatformIntegration().get_guidelines()
@@ -38,9 +38,13 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(guidelines['CKV_AWS_2'], guideline2)
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'http://test.com'})
-    def test_guidelines_received(self):
+    def test_guidelines_not_received(self):
         guidelines = BcPlatformIntegration().get_guidelines()
         self.assertEqual(guidelines, {})
+
+    def test_real_guidelines(self):
+        guidelines = BcPlatformIntegration().get_guidelines()
+        self.assertGreater(len(guidelines.keys()), 0)
 
 
 if __name__ == '__main__':

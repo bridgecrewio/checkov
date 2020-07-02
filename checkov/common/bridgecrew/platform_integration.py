@@ -31,7 +31,7 @@ class BcPlatformIntegration(object):
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
-        self.guidelines_api_url = f"{self.bc_api_url}/api/v1/guidelines"
+        self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
