@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
@@ -13,8 +14,10 @@ class NetworkWatcherFlowLogPeriod(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'enabled' in conf and conf['enabled'][0]:
             retention_block = conf['retention_policy'][0]
-            if retention_block['enabled'][0] and int(retention_block['days'][0]) >= 90:
-                return CheckResult.PASSED
+            if retention_block['enabled'][0]:
+                retention_in_days = force_int(retention_block['days'][0])
+                if retention_in_days and retention_in_days >= 90:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 
