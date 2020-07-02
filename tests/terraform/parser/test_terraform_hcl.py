@@ -20,7 +20,7 @@ class TestTerraformHcl(unittest.TestCase):
         parse_errors = {}
         result = parser.parse_file(f'{current_dir}/{test_file}', parse_errors)
 
-        with open(test_expected_file, 'r') as f:
+        with open(f'{current_dir}/{test_expected_file}', 'r') as f:
             expected_result = json.load(f)
 
         self.assertEqual(expected_result, result)
