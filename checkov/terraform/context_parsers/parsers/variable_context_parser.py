@@ -10,13 +10,14 @@ class VariableContextParser(BaseContextParser):
 
     def _collect_default_variables_values(self, variable_block):
         (variable_folder, _) = os.path.split(self.tf_file)
-        for variable_name, values in variable_block.items():
-            if 'default' in values.keys():
-                for key, value in values.items():
-                    if isinstance(value, list) and len(value) == 1:
-                        value = values['default'][0]
-                        if type(value) in (int, float, bool, str):
-                            dpath.new(self.context, ['assignments', variable_name], value)
+        if isinstance(variable_block,dict):
+            for variable_name, values in variable_block.items():
+                if 'default' in values.keys():
+                    for key, value in values.items():
+                        if isinstance(value, list) and len(value) == 1:
+                            value = values['default'][0]
+                            if type(value) in (int, float, bool, str):
+                                dpath.new(self.context, ['assignments', variable_name], value)
 
     def get_entity_context_path(self, entity_block):
         return []
