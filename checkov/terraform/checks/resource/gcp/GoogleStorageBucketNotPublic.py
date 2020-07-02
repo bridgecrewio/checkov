@@ -11,7 +11,9 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        member_conf = conf.get('member', []) + conf.get('members', [[]])[0]
+        members = conf.get('members', [[]])[0]
+        members = members if isinstance(members, list) else []
+        member_conf = conf.get('member', []) + members
         if not any(member in member_conf for member in ['allUsers', 'allAuthenticatedUsers']):
             return CheckResult.PASSED
         return CheckResult.FAILED
