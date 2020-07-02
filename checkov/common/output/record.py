@@ -1,6 +1,6 @@
 import re
 
-from colorama import init, Fore
+from colorama import init, Fore, Style
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
@@ -73,7 +73,7 @@ class Record:
         check_message = colored("Check: {}: \"{}\"\n".format(self.check_id, self.check_name), "white")
         guideline_message = ''
         if self.guideline:
-            guideline_message = f"\tGuide: {self.guideline}\n"
+            guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")
