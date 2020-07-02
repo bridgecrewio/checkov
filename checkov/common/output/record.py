@@ -1,6 +1,6 @@
 import re
 
-from colorama import init, Fore
+from colorama import init, Fore, Style
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
@@ -8,7 +8,7 @@ from checkov.common.models.enums import CheckResult
 init(autoreset=True)
 
 
-class Record():
+class Record:
     check_id = ""
     check_name = ""
     check_result = None
@@ -17,10 +17,10 @@ class Record():
     file_path = ""
     file_line_range = []
     resource = ""
+    guideline = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations,
-                 check_class):
+                 evaluations, check_class):
         self.check_id = check_id
         self.check_name = check_name
         self.check_result = check_result
@@ -31,9 +31,12 @@ class Record():
         self.evaluations = evaluations
         self.check_class = check_class
 
+    def set_guideline(self, guideline):
+        self.guideline = guideline
+
     @staticmethod
     def _trim_special_chars(expression):
-        return "".join(re.findall(r'[^ \$\{\}]+', expression))
+        return "".join(re.findall(r'[^ ${\}]+', expression))
 
     def _is_expression_in_code_lines(self, expression):
         stripped_expression = self._trim_special_chars(expression)
@@ -68,6 +71,9 @@ class Record():
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
 
         check_message = colored("Check: {}: \"{}\"\n".format(self.check_id, self.check_name), "white")
+        guideline_message = ''
+        if self.guideline:
+            guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
         file_details = colored(
             "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")
@@ -88,9 +94,9 @@ class Record():
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result['result'] == CheckResult.FAILED and code_lines:
-            return check_message + status_message + file_details + code_lines + evaluation_message
+            return check_message + status_message + guideline_message + file_details + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
-            return check_message + status_message + suppress_comment + file_details
+            return check_message + status_message + guideline_message + suppress_comment + file_details
         else:
-            return check_message + status_message + file_details + evaluation_message
+            return check_message + status_message + guideline_message + file_details + evaluation_message

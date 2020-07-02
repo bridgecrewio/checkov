@@ -8,6 +8,7 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.kubernetes.registry import registry as k8_registry
 from checkov.serverless.registry import sls_registry
+from checkov.arm.registry import arm_registry
 
 
 def print_checks(framework="all"):
@@ -42,6 +43,10 @@ def get_checks(framework="all"):
         for key in sls_registry.checks.keys():
             for check in sls_registry.checks[key]:
                 printable_checks_list.append([check.id, "resource", key, check.name, "serverless"])
+    if framework == "arm" or framework == "all":
+        for key in arm_registry.checks.keys():
+            for check in arm_registry.checks[key]:
+                printable_checks_list.append([check.id, "resource", key, check.name, "arm"])
     return sorted(printable_checks_list, key=lambda x: x[0])
 
 if __name__ == '__main__':

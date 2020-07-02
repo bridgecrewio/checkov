@@ -17,8 +17,10 @@ class GKEHasLabels(BaseResourceCheck):
         :param conf: google_compute_ssl_policy configuration
         :return: <CheckResult>
         """
-        if conf.get('resource_labels') and len(conf.get('resource_labels')[0].keys()) > 0:
-            return CheckResult.PASSED
+        if 'resource_labels' in conf:
+            resource_labels = conf.get('resource_labels')
+            if isinstance(resource_labels[0], dict) and len(resource_labels[0].keys()) > 0:
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 

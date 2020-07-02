@@ -29,6 +29,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/), the developer-firs
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
+- [Disclaimer](#disclaimer)
 - [Support](#support)
 
  ## Features
@@ -197,6 +198,11 @@ Contribution is welcomed!
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md).
+
+## Disclaimer
+`checkov` doesn't save, publish or share with anyone any identifiable customer information.  
+No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
+`checkov` uses Bridgecrew's API to enrich the results with links to remediation guides.
 
 ## Support
 

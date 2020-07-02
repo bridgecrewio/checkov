@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class GoogleRoleServiceAccountUser(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that IAM users are not assigned the Service Account User or Service Account Token Creator roles" \
-               "at project level"
+               " at project level"
         id = "CKV_GCP_41"
         supported_resources = ['google_project_iam_binding', 'google_project_iam_member']
         categories = [CheckCategories.IAM]
