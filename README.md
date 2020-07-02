@@ -8,7 +8,7 @@
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/documentation?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
-[![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.11.0-blue.svg)](#)
+[![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 
 **Checkov** is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform, Cloudformation or Kubernetes and detects security and compliance misconfigurations.
 
