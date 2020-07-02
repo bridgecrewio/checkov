@@ -1,3 +1,5 @@
+from checkov.common.util.type_forcers import force_int
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -23,8 +25,8 @@ class GoogleKMSKeyRotationPeriod(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf):
         if 'rotation_period' in conf.keys():
-            time = int(conf['rotation_period'][0][:-1])
-            if ONE_DAY <= time <= NINETY_DAYS:
+            time = force_int(conf['rotation_period'][0][:-1])
+            if time and ONE_DAY <= time <= NINETY_DAYS:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

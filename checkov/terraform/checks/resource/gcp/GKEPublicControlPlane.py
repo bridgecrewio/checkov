@@ -18,7 +18,7 @@ class GKEPublicControlPlane(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'master_authorized_networks_config' in conf.keys():
-            if 'cidr_blocks' in conf['master_authorized_networks_config'][0].keys():
+            if isinstance(conf['master_authorized_networks_config'][0], dict) and 'cidr_blocks' in conf['master_authorized_networks_config'][0]:
                 for cidr_block_conf in conf['master_authorized_networks_config'][0]['cidr_blocks']:
                     if '0.0.0.0/0' in cidr_block_conf['cidr_block']:
                         return CheckResult.FAILED
