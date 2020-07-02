@@ -1,0 +1,7 @@
+NOTE: https://docs.microsoft.com/en-us/azure/templates/microsoft.storage/2019-04-01/storageaccounts 
+supportsHttpsTrafficOnly: Allows https traffic only to storage service if sets to true. The default value is true since
+API version 2019-04-01.
+
+Supported API versions for storage accounts are: 2019-06-01, 2019-04-01, 2018-11-01, 2018-07-01, 2018-03-01-preview,
+2018-02-01, 2017-10-01, 2017-06-01, 2016-12-01, 2016-05-01, 2016-01-01, 2015-06-15, 2015-05-01-preview
+
