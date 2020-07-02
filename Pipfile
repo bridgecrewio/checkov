@@ -15,6 +15,7 @@ bandit = "*"
 
 [packages]
 python-hcl2 = "*"
+pyhcl = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
