@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/1a/57/9d3cd2873f24da834baef6f9fd55d37c8fe5e6bd99c610e0064b034e4471/checkov-1.0.425.tar.gz"
-  sha256 "7c654298af2899d17748bb16f4eb12af54e62d10a317842bd073e67c7adbd628"
+  url "https://files.pythonhosted.org/packages/e8/e0/3c29fc47b20cb4e938c05c20f35ca3fac18718f8d124c070b371b3b5aa18/checkov-1.0.426.tar.gz"
+  sha256 "fef01a1c4a91f3cc28a59e68f5a80bf06393807080bc414135cf1a43b8bcd1f5"
 
   depends_on "python3"
 
@@ -79,8 +79,8 @@ class Checkov < Formula
   end
 
   resource "PyYAML" do
-    url "https://files.pythonhosted.org/packages/8d/c9/e5be955a117a1ac548cdd31e37e8fd7b02ce987f9655f5c7563c656d5dcb/PyYAML-5.2.tar.gz"
-    sha256 "c0ee8eca2c582d29c3c2ec6e2c4f703d1b7f1fb10bc72317355a746057e7346c"
+    url "https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz"
+    sha256 "b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"
   end
 
   resource "requests" do
