@@ -758,6 +758,9 @@ resource aws_lambda_function "good-function" {
   environment {
     variables = "${var.variables_map}"
   }
+  tracing_config {
+    mode = "PassThrough"
+  }
 }
 
 resource aws_lambda_function "bad-function" {
