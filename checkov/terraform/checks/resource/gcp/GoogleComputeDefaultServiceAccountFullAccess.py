@@ -25,12 +25,14 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         if conf['name'][0].startswith('gke-'):
             return CheckResult.PASSED
         if 'service_account' in conf.keys():
-            if 'email' in conf['service_account'][0]:
-                if re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
-                    if FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
-                        return CheckResult.FAILED
-            elif FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
-                return CheckResult.FAILED
+            service_account_conf = conf['service_account'][0]
+            if isinstance(service_account_conf, dict):
+                if 'email' in conf['service_account'][0]:
+                    if re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
+                        if FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
+                            return CheckResult.FAILED
+                elif FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 

@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
@@ -12,7 +13,11 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'extended_auditing_policy' in conf:
-            if int(conf['extended_auditing_policy'][0]['retention_in_days'][0]) >= 90:
+            policy = conf['extended_auditing_policy'][0]
+            if not isinstance(policy, dict):
+                return CheckResult.UNKNOWN
+            retention = force_int(conf['extended_auditing_policy'][0]['retention_in_days'][0])
+            if retention and retention >= 90:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
