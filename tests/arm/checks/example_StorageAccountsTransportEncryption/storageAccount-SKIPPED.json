@@ -40,7 +40,7 @@
         "supportsHttpsTrafficOnly": false
       },
       "metadata": {
-        "checkov": "CKV_ARM_3:We don't care about secure data."
+        "checkov": "CKV_AZURE_3:We don't care about secure data."
       }
     }
   ],

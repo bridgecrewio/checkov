@@ -40,7 +40,7 @@
         "supportsHttpsTrafficOnly": false
       },
       "metadata": {
-        "checkov": "CKV_ARM_3"
+        "checkov": "CKV_AZURE_3"
       }
     }
   ],

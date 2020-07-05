@@ -7,7 +7,7 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         # supportsHttpsTrafficOnly: Allows https traffic only to storage service if sets to true. The default value is
         # true since API version 2019-04-01.
         name = "Ensure that 'supportsHttpsTrafficOnly' is set to 'true'"
-        id = "CKV_ARM_3"
+        id = "CKV_AZURE_3"
         supported_resources = ['Microsoft.Storage/storageAccounts']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
