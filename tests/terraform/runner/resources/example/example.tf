@@ -800,6 +800,9 @@ resource "aws_lambda_function" "block_environment_variables" {
       password = "${var.canary_encrytped_password}"
     }
   }
+  tracing_config {
+    mode = "PassThrough"
+  }
 }
 
 resource "aws_lambda_function" "environment_and_variables_map" {
