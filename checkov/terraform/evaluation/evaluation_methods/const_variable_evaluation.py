@@ -53,16 +53,13 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                     continue
                 context_path, _ = self.extract_context_path(definition_path)
                 if assignment_file in self.definitions_context.keys():
-                    try:
-                        dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
-                                  var_file)
-                        dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
-                                  var_value)
-                        dpath.new(self.definitions_context[assignment_file],
-                                  f'evaluations/{var_name}/definitions',
-                                  assignments)
-                    except Exception as e:
-                        print(e)
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
+                              var_file)
+                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
+                              var_value)
+                    dpath.new(self.definitions_context[assignment_file],
+                              f'evaluations/{var_name}/definitions',
+                              assignments)
                 if self._is_variable_only_expression(assignment_regex, entry_expression):
                     # Preserve the original type of the variable if not part of a composite expression
                     evaluated_definition = var_value
