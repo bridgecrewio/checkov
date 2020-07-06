@@ -53,13 +53,16 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                     continue
                 context_path, _ = self.extract_context_path(definition_path)
                 if assignment_file in self.definitions_context.keys():
-                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
-                              var_file)
-                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
-                              var_value)
-                    dpath.new(self.definitions_context[assignment_file],
-                              f'evaluations/{var_name}/definitions',
-                              assignments)
+                    try:
+                        dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
+                                  var_file)
+                        dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
+                                  var_value)
+                        dpath.new(self.definitions_context[assignment_file],
+                                  f'evaluations/{var_name}/definitions',
+                                  assignments)
+                    except Exception as e:
+                        print(e)
                 if self._is_variable_only_expression(assignment_regex, entry_expression):
                     # Preserve the original type of the variable if not part of a composite expression
                     evaluated_definition = var_value
@@ -101,7 +104,9 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         for var_file, variable_assignments in assignment_files.items():
             relative_var_file = f'/{os.path.relpath(var_file, self.root_folder)}'
             for definition_type in variable_assignments.keys():
-                for var_name, var_value in variable_assignments[definition_type]['assignments'].items():
+                for var_name, var_value in variable_assignments[definition_type].get('assignments', {}).items():
+                    if var_name == '':
+                        continue
                     evaluated_definitions = self._locate_variables_assignments(definition_type, folder, var_name)
                     var_assignments = {'definitions': evaluated_definitions, 'var_file': relative_var_file}
                     self._assign_definition_value(definition_type, var_name, var_value, var_assignments)
