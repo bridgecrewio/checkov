@@ -40,7 +40,10 @@ class Runner(BaseRunner):
 
             for file in files_list:
                 relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+                try:
+                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+                except TypeError:
+                    logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("Resources")}
