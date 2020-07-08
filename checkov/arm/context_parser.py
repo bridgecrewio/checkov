@@ -82,9 +82,9 @@ class ContextParser(object):
             start_line = min(find_lines_result_list)
             end_line = max(list(self.find_lines(arm_resource, '__endline__')))
 
-            entity_lines_range = [start_line, end_line - 1]
+            entity_lines_range = [start_line, end_line]
 
-            entity_code_lines = self.arm_template_lines[start_line - 1: end_line - 1]
+            entity_code_lines = self.arm_template_lines[start_line - 1: end_line]
             return entity_lines_range, entity_code_lines
         return None, None
 
