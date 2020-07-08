@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
-class GKEMonitoringEnabled(BaseResourceCheck):
+class GKEMonitoringEnabled(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure Stackdriver Monitoring is set to Enabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_8"
@@ -10,17 +10,11 @@ class GKEMonitoringEnabled(BaseResourceCheck):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for monitoring configuration on google_container_cluster:
-            https://www.terraform.io/docs/providers/google/r/container_cluster.html
-        :param conf: google_container_cluster configuration
-        :return: <CheckResult>
-        """
-        if 'monitoring_service' in conf:
-            if conf['monitoring_service'][0] == "none":
-                return CheckResult.FAILED
-        return CheckResult.PASSED
+    def get_inspected_key(self):
+        return 'monitoring_service/0'
+
+    def get_forbidden_values(self):
+        return ['none']
 
 
 check = GKEMonitoringEnabled()
