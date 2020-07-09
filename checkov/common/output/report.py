@@ -96,8 +96,8 @@ class Report:
     def print_failed_github_md(self):
         result = []
         for record in self.failed_checks:
-            result.append([record.check_id,record.file_path,record.resource,record.check_name])
-        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name"], tablefmt="github", showindex=True))
+            result.append([record.check_id, record.file_path ,record.resource, record.check_name, record.guideline])
+        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name", "guideline"], tablefmt="github", showindex=True))
         print("\n\n---\n\n")
 
     def get_test_suites(self):
