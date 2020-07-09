@@ -34,6 +34,7 @@ class BcPlatformIntegration(object):
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
         self.bc_source = os.getenv('BC_SOURCE', "cli")
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
+        self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -133,3 +134,14 @@ class BcPlatformIntegration(object):
         except Exception as e:
             logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
             raise e
+
+    def get_guidelines(self) -> dict:
+        try:
+            request = http.request("GET", self.guidelines_api_url)
+            response = json.loads(request.data.decode("utf8"))
+            guidelines_map = response["guidelines"]
+            logging.debug(f"Got guidelines form Bridgecrew BE")
+            return guidelines_map
+        except Exception as e:
+            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            return {}
