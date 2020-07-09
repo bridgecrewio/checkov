@@ -43,10 +43,9 @@ class ContextParser(object):
         for key_entry in keys_w_params:
             param = re.sub("\[parameters\('|'\)\]", "", self._get_from_dict(dict(self.arm_template),
                                                                             key_entry[:-1])[key_entry[-1]])
-            self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
-            logging.debug(
-                "Replacing parameter {} in file {} with default value: {}".format(param, self.arm_file,
-                                                                                  parameter_defaults[param]))
+            if param in parameter_defaults:
+                logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
+                self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
 
         for key_entry in keys_w_vars:
             param = re.sub("\[variables\('|'\)\]", "", self._get_from_dict(dict(self.arm_template),
@@ -83,9 +82,9 @@ class ContextParser(object):
             start_line = min(find_lines_result_list)
             end_line = max(list(self.find_lines(arm_resource, '__endline__')))
 
-            entity_lines_range = [start_line, end_line - 1]
+            entity_lines_range = [start_line, end_line]
 
-            entity_code_lines = self.arm_template_lines[start_line - 1: end_line - 1]
+            entity_code_lines = self.arm_template_lines[start_line - 1: end_line]
             return entity_lines_range, entity_code_lines
         return None, None
 

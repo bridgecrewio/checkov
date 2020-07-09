@@ -101,7 +101,9 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         for var_file, variable_assignments in assignment_files.items():
             relative_var_file = f'/{os.path.relpath(var_file, self.root_folder)}'
             for definition_type in variable_assignments.keys():
-                for var_name, var_value in variable_assignments[definition_type]['assignments'].items():
+                for var_name, var_value in variable_assignments[definition_type].get('assignments', {}).items():
+                    if var_name == '':
+                        continue
                     evaluated_definitions = self._locate_variables_assignments(definition_type, folder, var_name)
                     var_assignments = {'definitions': evaluated_definitions, 'var_file': relative_var_file}
                     self._assign_definition_value(definition_type, var_name, var_value, var_assignments)

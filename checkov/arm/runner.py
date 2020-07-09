@@ -2,12 +2,12 @@ import logging
 import os
 
 from checkov.arm.registry import arm_registry
-from checkov.cloudformation.parser import parse
+from checkov.arm.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.cloudformation.parser.node import dict_node
+from checkov.arm.parser.node import dict_node
 from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
