@@ -1,7 +1,7 @@
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.gcp.AbsGoogleComputeFirewallUnrestrictedIngress import AbsGoogleComputeFirewallUnrestrictedIngress
 
-PORT = '22'
+PORT = 22
 
 
 class GoogleComputeFirewallUnrestrictedIngress22(AbsGoogleComputeFirewallUnrestrictedIngress):
