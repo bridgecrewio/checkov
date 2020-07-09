@@ -14,5 +14,4 @@ class GoogleComputeProjectOSLogin(BaseResourceValueCheck):
         return 'metadata/[0]/enable-oslogin'
 
 
-
 check = GoogleComputeProjectOSLogin()
