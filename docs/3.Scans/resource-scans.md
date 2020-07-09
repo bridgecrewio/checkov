@@ -411,7 +411,7 @@ nav_order: 1
 | 400 | CKV_K8S_7    | PodSecurityPolicy | PodSecurityPolicy                                     | Do not admit containers with the NET_RAW capability                                                                                                                                                      | Kubernetes     |
 | 401 | CKV_K8S_8    | PodSecurityPolicy | containers                                            | Liveness Probe Should be Configured                                                                                                                                                                      | Kubernetes     |
 | 402 | CKV_K8S_9    | PodSecurityPolicy | containers                                            | Readiness Probe Should be Configured                                                                                                                                                                     | Kubernetes     |
-
+| 403 | CKV_AZURE_43 | resource          | azurerm_storage_account                               | Ensure the Storage Account naming rules                                                                                                                                                                  | Terraform      |
 
 ---
 
