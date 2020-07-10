@@ -1,0 +1,128 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "pricing": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "autoProvisioning": {
+      "type": "string",
+      "allowedValues": [
+        "On",
+        "Off"
+      ],
+      "defaultValue": "On",
+      "metadata": {
+        "description": "Turn automatic deployment by ASC of the MMA (OMS VM extension) on or off"
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the name of your custom Log Analytics workspace to collect ASC data."
+      }
+    },
+    "workspaceSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subscriptionId where the custom Log Analytics workspace is deployed."
+      }
+    },
+    "workspaceResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the resource group where the custom Log Analytics workspace is deployed."
+      }
+    },
+    "phoneSecurityContact": {
+      "type": "string",
+      "defaultValue": "8675309",
+      "metadata": {
+        "description": "phone number of the Security Contact"
+      }
+    },
+    "alertNotifications": {
+      "type": "string",
+      "allowedValues": [
+        "On",
+        "Off"
+      ],
+      "defaultValue": "On",
+      "metadata": {
+        "description": "Send alert notifications to Security Contact"
+      }
+    },
+    "alertsToAdmin": {
+      "type": "string",
+      "allowedValues": [
+        "On",
+        "Off"
+      ],
+      "defaultValue": "On",
+      "metadata": {
+        "description": "Send alert notifications to Admins"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2017-08-01-preview",
+      "name": "default",
+      "properties": {
+        "pricingTier": "[parameters('pricing')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "SqlServers",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/default')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricing')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "AppServices",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/SqlServers')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricing')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "VirtualMachines",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/AppServices')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricing')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/securityContacts",
+      "name": "default1",
+      "apiVersion": "2017-08-01-preview",
+      "properties": {
+        "email": "[parameters('emailSecurityContact')]",
+        "phone": "[parameters('phoneSecurityContact')]",
+        "alertNotifications": "[parameters('alertNotifications')]",
+        "alertsToAdmins": "[parameters('alertsToAdmin')]"
+      }
+    }
+  ],
+  "outputs": {}
+}
+
