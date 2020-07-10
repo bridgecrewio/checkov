@@ -7,6 +7,7 @@ resource "aws_s3_bucket" "foo-bucket" {
   }
   versioning {
     enabled = true
+    mfa_delete = true
   }
   logging {
     target_bucket = "${aws_s3_bucket.log_bucket.id}"

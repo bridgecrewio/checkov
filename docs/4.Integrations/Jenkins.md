@@ -22,7 +22,7 @@ To prevent developer frustration from failed builds, we recommend training and e
            docker {
                image 'kennethreitz/pipenv:latest'
                args '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
-               label 'slave'
+               label 'agent'
            }
        }
        stages {
@@ -35,8 +35,8 @@ To prevent developer frustration from failed builds, we recommend training and e
                        sh "pipenv run checkov --directory tests/terraform/runner/resources/example -o junitxml > result.xml || true"
                        junit "result.xml"
                    }
-                   
-                   
+
+
                }
            }
        }
@@ -48,7 +48,7 @@ To prevent developer frustration from failed builds, we recommend training and e
    }
    ```
 
-   
+
 
    Modify the directory parameter to enable Checkov on the project terraform directory:
 
@@ -56,7 +56,7 @@ To prevent developer frustration from failed builds, we recommend training and e
    sh "pipenv run checkov --directory $TERRAFORM_MAIN_DIRECTORY_HERE -o junitxml > result.xml || true"
    ```
 
-   
+
 
    Example
    ![](jenkins_pipeline_definition.png)
@@ -65,19 +65,19 @@ To prevent developer frustration from failed builds, we recommend training and e
 
 3. Run `Build Now`
 
-   
+
 
    View build dashboard
 
    ![](jenkins_all_jobs.png)
 
-   
+
 
    View job status
 
    ![](jenkins_failed_job.png)
 
-   
+
 
    Review test result
 

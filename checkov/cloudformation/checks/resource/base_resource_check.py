@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from checkov.common.checks.base_check import BaseCheck
-from checkov.cloudformation.checks.resource.registry import resource_registry
+from checkov.cloudformation.checks.resource.registry import cfn_registry
 
 
 class BaseResourceCheck(BaseCheck):
@@ -9,7 +9,7 @@ class BaseResourceCheck(BaseCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type="resource")
         self.supported_resources = supported_resources
-        resource_registry.register(self)
+        cfn_registry.register(self)
 
     @abstractmethod
     def scan_resource_conf(self, conf):

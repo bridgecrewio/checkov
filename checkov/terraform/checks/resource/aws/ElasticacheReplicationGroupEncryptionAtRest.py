@@ -13,4 +13,5 @@ class ElasticacheReplicationGroupEncryptionAtRest(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "at_rest_encryption_enabled"
 
+
 check = ElasticacheReplicationGroupEncryptionAtRest()

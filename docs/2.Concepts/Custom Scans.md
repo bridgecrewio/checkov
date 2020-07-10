@@ -101,7 +101,7 @@ pip install checkov
 
 
 # select an input folder that contains your terraform files and enable loading of extra checks
-checkov -d . --extra-checks my_extra_checks
+checkov -d . --external-checks-dir my_extra_checks
 ```
 
 Results:

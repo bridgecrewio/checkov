@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-drop-none
+spec:
+  containers:
+    - name: main
+      image: fedora
+      command: ["/bin/sleep", "999999"]
+
+# kubectl exec -it pod-drop-none -- bash
+# dnf -y install libcap-ng-utils
+# pscap
+## Notice net_raw capability

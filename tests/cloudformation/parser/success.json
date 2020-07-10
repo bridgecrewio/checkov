@@ -242,6 +242,64 @@
         }
       }
     },
+    "acmeCWSBucket2": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws-",
+              {
+                "Ref": "AWS::AccountId"
+              }
+            ]
+          ]
+        },
+        "LoggingConfiguration": {
+          "DestinationBucketName": "dest-bucket",
+          "LogFilePrefix": ""
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "Delete old log files",
+              "Status": "Enabled",
+              "ExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              },
+              "NoncurrentVersionExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              }
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "Fn::If": [
+                  "CreateNewTrail",
+                  {
+                    "KMSMasterKeyID": {
+                      "Ref": "CloudtrailKMSKeyAlias"
+                    },
+                    "SSEAlgorithm": "aws:kms"
+                  },
+                  {
+                    "SSEAlgorithm": "AES256"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
     "acmeCWSBucketPolicy": {
       "Condition": "CreateNewTrail",
       "Type": "AWS::S3::BucketPolicy",
@@ -906,6 +964,19 @@
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    "eksCluster": {
+      "Type": "AWS::EKS::Cluster",
+      "Properties": {
+        "EncryptionConfig" : [
+          {
+            "Provider": {
+              "KeyArn": ""
+            },
+            "Resources": ["secrets"]
           }
         ]
       }

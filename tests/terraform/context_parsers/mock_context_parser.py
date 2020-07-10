@@ -6,15 +6,15 @@ class MockContextParser(BaseContextParser):
         definition_type = 'mock'
         self.definition_type = definition_type
 
-    def enrich_definition_block(self, block):
+    def enrich_definition_block(self, definition_blocks):
         """
         Enrich the context of a Terraform resource block
-        :param block: Terraform resource block, key-value dictionary
+        :param definition_blocks: Terraform resource block, key-value dictionary
         :return: Enriched resource block context
         """
         parsed_file_lines = self._filter_file_lines()
 
-        for i, mock_block in enumerate(block):
+        for i, mock_block in enumerate(definition_blocks):
             mock_type = next(iter(mock_block.keys()))
             mock_name = next(iter(mock_block[mock_type]))
         if not self.context.get(mock_type):
@@ -31,3 +31,8 @@ class MockContextParser(BaseContextParser):
 
     def get_block_type(self):
         return "resource"
+
+    def get_entity_context_path(self, entity_block):
+        entity_type = next(iter(entity_block.keys()))
+        entity_name = next(iter(entity_block[entity_type]))
+        return [entity_type, entity_name]

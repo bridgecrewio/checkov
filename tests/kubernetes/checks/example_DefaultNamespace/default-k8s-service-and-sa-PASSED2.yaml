@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+  namespace: default
+secrets:
+  - name: default-token-tgp9r
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+secrets:
+  - name: default-token-tgp9r
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2020-05-26T15:59:43Z"
+  labels:
+    component: apiserver
+    provider: kubernetes
+  name: kubernetes
+  namespace: default
+  resourceVersion: "148"
+  selfLink: /api/v1/namespaces/default/services/kubernetes
+  uid: 288b4e4d-9706-4780-b594-39f1abd2a715
+spec:
+  clusterIP: 172.20.0.1
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2020-05-26T15:59:43Z"
+  labels:
+    component: apiserver
+    provider: kubernetes
+  name: kubernetes
+  resourceVersion: "148"
+  selfLink: /api/v1/namespaces/default/services/kubernetes
+  uid: 288b4e4d-9706-4780-b594-39f1abd2a715
+spec:
+  clusterIP: 172.20.0.1
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

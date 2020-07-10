@@ -72,7 +72,7 @@ class TestLambdaXrayEnabled(unittest.TestCase):
               "timeout": "${var.timeout}",
               "tracing_config": [
                 {
-                  "mode": "${var.tracing_mode}"
+                  "mode": "PassThrough"
                 }
               ],
               "vpc_config": [

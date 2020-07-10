@@ -6,6 +6,7 @@ from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
 from checkov.version import version
+from tabulate import tabulate
 
 init(autoreset=True)
 
@@ -69,7 +70,7 @@ class Report:
     def is_empty(self):
         return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
 
-    def print_console(self):
+    def print_console(self, is_quiet=False):
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -79,17 +80,25 @@ class Report:
             message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
                 summary["passed"], summary["failed"], summary["skipped"])
         print(colored(message, "cyan"))
-
-        for record in self.passed_checks:
-            print(record)
+        if not is_quiet:
+            for record in self.passed_checks:
+                print(record)
         for record in self.failed_checks:
             print(record)
-        for record in self.skipped_checks:
-            print(record)
+        if not is_quiet:
+            for record in self.skipped_checks:
+                print(record)
 
     def print_junit_xml(self):
         ts = self.get_test_suites()
         print(TestSuite.to_xml_string(ts))
+
+    def print_failed_github_md(self):
+        result = []
+        for record in self.failed_checks:
+            result.append([record.check_id, record.file_path ,record.resource, record.check_name, record.guideline])
+        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name", "guideline"], tablefmt="github", showindex=True))
+        print("\n\n---\n\n")
 
     def get_test_suites(self):
         test_cases = {}
@@ -119,18 +128,3 @@ class Report:
     def print_json(self):
         print(self.get_json())
 
-    def get_new_report_for_check_id(self, check_id):
-        new_report = Report(self.check_type)
-        for record in self.passed_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.failed_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.skipped_checks:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        for record in self.parsing_errors:
-            if record.check_id == check_id:
-                new_report.add_record(record)
-        return new_report

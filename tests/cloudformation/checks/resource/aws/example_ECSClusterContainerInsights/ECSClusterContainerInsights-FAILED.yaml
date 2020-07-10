@@ -1,0 +1,5 @@
+Resources:
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: 'MyCluster'

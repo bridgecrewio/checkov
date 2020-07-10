@@ -3,7 +3,6 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
-
 import six
 from yaml import MappingNode
 from yaml import ScalarNode
@@ -88,13 +87,13 @@ class NodeConstructor(SafeConstructor):
 
     def construct_yaml_str(self, node):
         obj = SafeConstructor.construct_yaml_str(self, node)
-        assert isinstance(obj, (six.string_types))
+        assert isinstance(obj, (six.string_types))  # nosec
         return str_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
         obj, = SafeConstructor.construct_yaml_seq(self, node)
-        assert isinstance(obj, list)
-        return list_node(obj, node.start_mark, node.end_mark)
+        assert isinstance(obj, list) # nosec
+        return list_node(obj, node.start_mark, node.end_mark) # nosec
 
     def construct_yaml_null_error(self, node):
         """Throw a null error"""

@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example SNS topic
+Resources:
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: "SNSEndpoint"
+          Protocol: "sqs"
+      TopicName: "SampleTopic"
+      KmsMasterKeyId: "kms_id"

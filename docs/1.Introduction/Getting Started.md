@@ -11,7 +11,7 @@ The installation is quick and straightforward - install, configure input & scan.
 
 
 ```bash
-# install from pypi using pip 
+# install from pypi using pip
 pip install checkov
 
 
@@ -21,17 +21,8 @@ checkov -d /user/tf
 
 ## CLI Options
 ```bash
-checkov --help
-
-usage: checkov [-h] [-v] [-d DIRECTORY] [-f FILE]
-               [--external-checks-dir EXTERNAL_CHECKS_DIR] [-l]
-               [-o [{cli,json,junitxml}]] [-s]
-
-Infrastructure as code static analysis
-
-optional arguments:
   -h, --help            show this help message and exit
-  -v, --version         Checkov version
+  -v, --version         version
   -d DIRECTORY, --directory DIRECTORY
                         IaC root directory (can not be used together with
                         --file). Can be repeated
@@ -40,9 +31,28 @@ optional arguments:
                         Directory for custom checks to be loaded. Can be
                         repeated
   -l, --list            List checks
-  -o [{cli,json,junitxml}], --output [{cli,json,junitxml}]
+  -o [{cli,json,junitxml,github_failed_only}], --output [{cli,json,junitxml,github_failed_only}]
                         Report output format
+  --quiet               in case of CLI output, display only failed checks
+  --framework {cloudformation,terraform,kubernetes,all}
+                        filter scan to run only on a specific infrastructure
+                        code frameworks
+  -c CHECK, --check CHECK
+                        filter scan to run only on a specific check
+                        identifier(allowlist), You can specify multiple checks
+                        separated by comma delimiter
+  --skip-check SKIP_CHECK
+                        filter scan to run on all check but a specific check
+                        identifier(denylist), You can specify multiple checks
+                        separated by comma delimiter
   -s, --soft-fail       Runs checks but suppresses error code
+  --bc-api-key BC_API_KEY
+                        Bridgecrew API key
+  --repo-id REPO_ID     Identity string of the repository, with form
+                        <repo_owner>/<repo_name>
+  -b BRANCH, --branch BRANCH
+                        Selected branch of the persisted repository. Only has
+                        effect when using the --bc-api-key flag
 
 ```
 
@@ -102,7 +112,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 ```
 The scanned bucket's configuration seems to comply with the available ``aws_s3_bucket`` resource type checks.
 
-Suppose that now the bucket is used for static content hosting, and thus requires to configured with 
+Suppose that now the bucket is used for static content hosting, and thus requires to configured with
 allowed public access:
 ```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
@@ -160,7 +170,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 		2 |   region        = var.region
 		3 |   bucket        = local.bucket_name
 		4 |   force_destroy = true
-		5 | 
+		5 |
 		6 |   tags = {
 		7 |     Name = "foo-${data.aws_caller_identity.current.account_id}"
 		8 |   }
@@ -185,7 +195,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 ```
 The corresponding check would now fail, and the report will include the appropriate failing configuration
 source code.
- 
+
 In order to skip the failed check, we annotate the bucket with a suppression comment (which needs to appear inside the resource scope):
 ```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
@@ -239,6 +249,16 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	SKIPPED for resource: aws_s3_bucket.foo-bucket
 	Suppress comment: The bucket is a public static content host
 	File: /example.tf:1-25
+```
+
+### Running a specific check(s)
+To scan you directory with only a specific check use the `-c`\ `--check` flag. You can use multiple checks with comma `,` delimiter.
+This is another way to skip execution of specific checks on a allowlist fashion
+
+The following example will show results only for 2 scans (CKV_AWS_1 and CKV_AWS_2) :
+
+```bash
+checkov -d /user/tf --check CKV_AWS_1,CKV_AWS_2
 ```
 
 ## Export scan to JSON
@@ -737,7 +757,7 @@ Sample output
 
 ### Sample policy
 
-Each Checkov policy is defined by resources it scans and expected values for related resource blocks. 
+Each Checkov policy is defined by resources it scans and expected values for related resource blocks.
 
 For example, a policy that ensures all data is stored in S3 is versioned, scans the ``versioning`` configuration for all ``aws_s3_bucket`` supported resources. The `scan_resource_conf` is a method that defines the scan's expected behavior, i.e. ``versioning_block['enabled']``
 
@@ -807,7 +827,7 @@ resource "aws_s3_bucket" "foo-bucket" {
 }
 
 ```
-Run result: 
+Run result:
 
 
 ```bash
@@ -821,7 +841,7 @@ Check: "Ensure all data stored in the S3 bucket have versioning enabled"
 		2 |   region        = var.region
 		3 |   bucket        = local.bucket_name
 		4 |   force_destroy = true
-		5 | 
+		5 |
 		6 |   tags = {
 		7 |     Name = "foo-${data.aws_caller_identity.current.account_id}"
 		8 |   }

@@ -1,11 +1,45 @@
 import os
 import unittest
 
-from checkov.terraform.runner import Runner
+import dpath.util
+
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.runner import Runner
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_runner_two_checks_only(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/example"
+        runner = Runner()
+        checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        for record in report.failed_checks:
+            self.assertIn(record.check_id, checks_allowlist)
+
+    def test_runner_denylist_checks(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/example"
+        runner = Runner()
+        checks_denylist = ['CKV_AWS_41', 'CKV_AZURE_1']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all', skip_checks=checks_denylist))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        for record in report.failed_checks:
+            self.assertNotIn(record.check_id, checks_denylist)
 
     def test_runner_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,7 +58,9 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["parsing_errors"], 1)
         report.print_json()
         report.print_console()
+        report.print_console(is_quiet=True)
         report.print_junit_xml()
+        report.print_failed_github_md()
 
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -42,6 +78,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(summary['failed'], 0)
+        self.assertEqual(summary['skipped'], 2)
         self.assertEqual(summary["parsing_errors"], 0)
 
     def test_runner_specific_file(self):
@@ -85,6 +122,9 @@ class TestRunnerValid(unittest.TestCase):
                 unique_checks.add(check.id)
         aws_checks = list(filter(lambda check_id: '_AWS_' in check_id, unique_checks))
         for i in range(1, len(aws_checks)):
+            if f'CKV_AWS_{i}' == 'CKV_AWS_4':
+                # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = list(filter(lambda check_id: '_GCP_' in check_id, unique_checks))
@@ -93,7 +133,26 @@ class TestRunnerValid(unittest.TestCase):
 
         azure_checks = list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks))
         for i in range(1, len(azure_checks)):
-            self.assertIn(f'CKV_AZURE_{i}', azure_checks, msg=f'The new GCP violation should have the ID "CKV_AZURE_{i}"')
+            self.assertIn(f'CKV_AZURE_{i}', azure_checks,
+                          msg=f'The new GCP violation should have the ID "CKV_AZURE_{i}"')
+
+    def test_evaluate_string_booleans(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/hcl_0.11"
+        tf_file = f"{valid_dir_path}/main.tf"
+        runner = Runner()
+        runner.run(root_folder=valid_dir_path, external_checks_dir=None)
+        runner.evaluate_string_booleans()
+        print()
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/apply_immediately/0'), True)
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/backup_retention_period/0'),
+            True)
+        self.assertEqual(
+            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/storage_encrypted/0'), False)
+        self.assertEqual(dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
+                         False)
 
     def tearDown(self):
         parser_registry.definitions_context = {}

@@ -13,4 +13,5 @@ class MQBrokerLogging(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "logs/[0]/general"
 
+
 check = MQBrokerLogging()

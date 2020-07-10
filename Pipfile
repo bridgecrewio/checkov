@@ -4,13 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-python-hcl2 = "*"
 pytest = "*"
 coverage ="*"
 coverage-badge = "*"
 pipenv-setup = "*"
 GitPython = "*"
-dpath = "==1.5.0"
+bandit = "*"
+urllib3-mock = "*"
 
 [packages]
 python-hcl2 = "*"
@@ -19,7 +19,8 @@ colorama="*"
 termcolor="*"
 junit-xml ="*"
 dpath = "==1.5.0"
-pyyaml = "==5.2"
+pyyaml = "==5.3.1"
+boto3 = "*"
 
 [requires]
 python_version = "3.7"

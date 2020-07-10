@@ -15,7 +15,7 @@ body {
   bottom: auto;
   z-index: 10;
   width: 100vw;
-  padding: 20px 6vw;
+  padding: 8px 6vw;
   -webkit-transition: background-color 500ms ease;
   transition: background-color 500ms ease;
 }
@@ -36,7 +36,7 @@ body {
 }
 
 .image {
-  height: 35px;
+  height: 45px;
 }
 
 .btns-container {

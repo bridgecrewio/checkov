@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
     def __init__(self):
         name = "Ensure IAM policies are attached only to groups or roles (Reducing access management complexity may " \
-               "in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges.) "
+               "in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges.)"
         id = "CKV_AWS_40"
         supported_resources = ['aws_iam_user_policy_attachment', 'aws_iam_user_policy', 'aws_iam_policy_attachment']
         categories = [CheckCategories.IAM]

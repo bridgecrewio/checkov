@@ -1,0 +1,257 @@
+## ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
+## Run for CKV_K8S_11 - CPU Limits are not set
+apiVersion: v1
+kind: Pod
+metadata:
+  labels: 
+    test: liveness
+  name: liveness-exec
+  annotations:
+    checkov.io/skip1: CKV_K8S_20=I don't care about Privilege Escalation in the first container in this pod
+    checkov.io/skip2: CKV_K8S_14
+    checkov.io/skip3: CKV_K8S_11=I don't care about CPU limits
+spec: 
+  containers: 
+  - name: liveness
+    image: k8s.gcr.io/busybox
+    args:
+    - /bin/sh
+    - -c 
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe: 
+      exec: 
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+  - name: noliveness
+    image: k8s.gcr.io/busybox
+    args:
+      - /bin/sh
+      - -c
+      - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: bcliveness
+  name: bcliveness-exec
+  annotations:
+    bridgecrew.io/skip1: CKV_K8S_20=I don't care about Privilege Escalation in the first container in this pod
+    bridgecrew.io/skip2: CKV_K8S_14
+    bridgecrew.io/skip3: CKV_K8S_11=I don't care about CPU limits
+spec:
+  containers:
+    - name: bcliveness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+      livenessProbe:
+        exec:
+          command:
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        periodSeconds: 5
+    - name: bcnoliveness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  annotations:
+    checkov.io/skip1: CKV_K8S_11
+spec:
+  selector:
+    matchLabels:
+      app: nginx # has to match .spec.template.metadata.labels
+  serviceName: "nginx"
+  replicas: 3 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: nginx # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: nginx
+          image: k8s.gcr.io/nginx-slim:0.8
+          ports:
+            - containerPort: 80
+              name: web
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "my-storage-class"
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hello
+  labels:
+    app: hello
+  annotations:
+    checkov.io/skip1: CKV_K8S_1=I am not a valid suppress for this check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+        - image: k8s.gcr.io/echoserver:1.4
+          name: hello
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+  annotations:
+    checkov.io/skip: CKV_K8S_11=I don't need CPU
+spec:
+  replicas: 2
+  selector:
+    app: myapp
+    deployment: initial
+  template:
+    metadata:
+      labels:
+        app: myapp
+        deployment: initial
+    spec:
+      containers:
+        - name: myapp
+          image: myregistry.com/myapp:5c3dda6b
+          ports:
+            - containerPort: 80
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: passed-but-skipped
+  annotations:
+    checkov.io/skip99: CKV_K8S_11=I passed but I am skipped
+spec:
+  selector:
+    matchLabels:
+      name: privileged-container
+  template:
+    metadata:
+      labels:
+        name: privileged-container
+    spec:
+      containers:
+        - name: busybox
+          image: busybox
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          stdin: true
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: host-root-volume
+              mountPath: /host
+              readOnly: false
+      volumes:
+        - name: host-root-volume
+          hostPath:
+            path: /
+      hostNetwork: true
+      hostPID: true
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+  annotations:
+    checkov.io/skip99: CKV_K8S_11
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+        - name: php-redis
+          image: gcr.io/google_samples/gb-frontend:v3
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+  annotations:
+    checkov.io/skipME: CKV_K8S_11
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: hello
+              image: busybox
+              args:
+                - /bin/sh
+                - -c
+                - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+          hostPID: true
+          hostIPC: true
+          hostNetwork: true
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+  annotations:
+    checkov.io/skip1: CKV_K8S_11=My job is BestEffort QoS
+spec:
+  template:
+    spec:
+      containers:
+        - name: pi
+          image: perl
+          command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 4
