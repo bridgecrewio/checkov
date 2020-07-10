@@ -8,7 +8,7 @@ class AKSNetworkPolicy(BaseResourceCheck):
         name = "Ensure AKS cluster has Network Policy configured"
         id = "CKV_AZURE_7"
         supported_resources = ['Microsoft.ContainerService/managedClusters']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
