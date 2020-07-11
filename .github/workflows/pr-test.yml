@@ -48,6 +48,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run checkov on terragoat
         run: |
-          checkov -d terragoat/ -o json > checkov_report_terragoat.json
+          pwd
+          ls
+          pipenv run checkov -d terragoat/ -o json > checkov_report_terragoat.json
+          cat checkov_report_terragoat.json
 
 
