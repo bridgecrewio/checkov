@@ -30,13 +30,13 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev
-      - name: Test with pytest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+#      - name: Unit tests
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          pipenv run python -m coverage run -m pytest tests
+#          pipenv run python -m coverage report
+#          pipenv run python -m coverage html
       - name: Build & install checkov package
         run: |
           pipenv run python setup.py sdist bdist_wheel
@@ -46,7 +46,7 @@ jobs:
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           token: ${{ secrets.GITHUB_TOKEN }}
-          clean: 'false'
+          clean: false
       - name: Run checkov on terragoat
         run: |
           pwd
