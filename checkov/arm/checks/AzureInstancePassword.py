@@ -7,7 +7,7 @@ class AzureInstancePassword(BaseResourceCheck):
         name = "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)"
         id = "CKV_AZURE_1"
         supported_resources = ['Microsoft.Compute/virtualMachines']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
