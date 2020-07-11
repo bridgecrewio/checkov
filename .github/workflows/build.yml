@@ -21,7 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest
+          pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
           pipenv run python -m coverage html
           pipenv run python -m coverage_badge -o coverage.svg -f

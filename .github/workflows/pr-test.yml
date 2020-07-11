@@ -34,10 +34,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest
+          pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
           pipenv run python -m coverage html
-      - name: Test packaging
+      - name: Build & install checkov package
         run: |
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*
