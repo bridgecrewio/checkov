@@ -17,7 +17,7 @@ jobs:
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
 
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -37,7 +37,8 @@ jobs:
           pipenv run python -m coverage report
           pipenv run python -m coverage html
 
-  integration-test:
+  integration-tests:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
