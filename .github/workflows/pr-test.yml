@@ -47,6 +47,7 @@ jobs:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
+          path: 'terragoat'
       - name: Run checkov on terragoat
         run: |
           pwd
