@@ -21,7 +21,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest
+          pipenv run python -m coverage run -m pytest tests
+          pipenv run python -m coverage report
+          pipenv run python -m coverage html
+          pipenv run python -m coverage_badge -o coverage.svg -f
   bump-version:
     needs: test
     runs-on: ubuntu-latest
@@ -67,7 +70,7 @@ jobs:
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb coverage.svg || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag

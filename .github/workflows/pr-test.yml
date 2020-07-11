@@ -16,10 +16,9 @@ jobs:
       - name: Lint Cloudformation templates
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
-  test:
 
+  unit-tests:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
       - name: Set up Python 3.7
@@ -30,10 +29,57 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev
-      - name: Test with pytest
+      - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest
+          pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
           pipenv run python -m coverage html
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+      - name: Build & install checkov package
+        run: |
+          pipenv run pip install pytest
+          pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install dist/checkov-*
+      - name: Clone Terragoat - vulnerable terraform
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+      - name: Clone Cfngoat - vulnerable cloudformation
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'cfngoat'
+      - name: Clone Kubernetes-goat - vulnerable kubernetes
+        uses: actions/checkout@master
+        with:
+          repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'kubernetes-goat'
+      - name: Create checkov reports
+        run: |
+          pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
+          pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+          pipenv run checkov -s -d kubernetes-goat/ -o json > checkov_report_kubernetes-goat.json
+
+      - name: Run integration tests
+        run: |
+          pipenv run pytest integration_tests
+
+
+
