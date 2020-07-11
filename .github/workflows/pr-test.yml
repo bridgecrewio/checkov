@@ -16,10 +16,9 @@ jobs:
       - name: Lint Cloudformation templates
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+
   test:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
       - name: Set up Python 3.7
@@ -30,13 +29,20 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev
-#      - name: Unit tests
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          pipenv run python -m coverage run -m pytest tests
-#          pipenv run python -m coverage report
-#          pipenv run python -m coverage html
+      - name: Unit tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pipenv run python -m coverage run -m pytest tests
+          pipenv run python -m coverage report
+          pipenv run python -m coverage html
+
+  integration-test:
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
       - name: Build & install checkov package
         run: |
           pipenv run python setup.py sdist bdist_wheel
@@ -48,13 +54,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
+      - name: Clone Cfngoat
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'cfngoat'
       - name: Run checkov on terragoat
         run: |
-          pwd
-          ls
           pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
-          cat checkov_report_terragoat.json
-          pipenv run pytest integreation_tests
+          pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+          pipenv run pytest integration_tests
 
 
 
