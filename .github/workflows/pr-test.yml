@@ -50,24 +50,26 @@ jobs:
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*
-      - name: Clone Terragoat
+      - name: Clone Terragoat - vulnerable terraform
         uses: actions/checkout@master
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
-      - name: Clone Cfngoat
+      - name: Clone Cfngoat - vulnerable cloudformation
         uses: actions/checkout@master
         with:
           repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'cfngoat'
-      - name: Run checkov on terragoat
+      - name: Create checkov reports
         run: |
           pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+      - name: Run integration tests
+        run: |
           pipenv run pytest integration_tests
 
 

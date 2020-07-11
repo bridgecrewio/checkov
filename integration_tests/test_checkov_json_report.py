@@ -8,11 +8,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestCheckovJsonReport(unittest.TestCase):
 
     def test_terragoat_report(self):
-        report_path = current_dir + "../checkov_report_terragoat.json"
+        report_path = current_dir + "/../checkov_report_terragoat.json"
         self.validate_report(report_path)
 
     def test_cfngoat_report(self):
-        report_path = current_dir + "../checkov_report_cfngoat.json"
+        report_path = current_dir + "/../checkov_report_cfngoat.json"
         self.validate_report(report_path)
 
     def validate_report(self, report_path):
