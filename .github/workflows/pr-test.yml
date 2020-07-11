@@ -37,3 +37,17 @@ jobs:
           pipenv run python -m coverage run -m pytest
           pipenv run python -m coverage report
           pipenv run python -m coverage html
+      - name: Test packaging
+        run: |
+          pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install dist/checkov-*
+      - name: Clone Terragoat
+        uses: actions/checkout@master
+        with:
+          name: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          ref: refs/heads/release
+      - name: Run checkov on terragoat
+        run: |
+          checkov -d terragoat/ -o json > checkov_report_terragoat.json
+
+
