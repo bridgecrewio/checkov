@@ -64,10 +64,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'cfngoat'
+      - name: Clone Kubernetes-goat - vulnerable kubernetes
+        uses: actions/checkout@master
+        with:
+          repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'kubernetes-goat'
       - name: Create checkov reports
         run: |
           pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+          pipenv run checkov -s -d kubernetes-goat/ -o json > checkov_report_kubernetes-goat.json
+
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests

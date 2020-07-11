@@ -15,6 +15,10 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = current_dir + "/../checkov_report_cfngoat.json"
         self.validate_report(report_path)
 
+    def test_k8goat_report(self):
+        report_path = current_dir + "/../checkov_report_kubernetes-goat.json"
+        self.validate_report(report_path)
+
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
