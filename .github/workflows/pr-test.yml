@@ -44,7 +44,8 @@ jobs:
       - name: Clone Terragoat
         uses: actions/checkout@master
         with:
-          name: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run checkov on terragoat
         run: |
           checkov -d terragoat/ -o json > checkov_report_terragoat.json
