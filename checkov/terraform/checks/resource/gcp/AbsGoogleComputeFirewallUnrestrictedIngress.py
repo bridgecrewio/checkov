@@ -33,6 +33,6 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
                     [from_port, to_port] = port_range.split('-')
                     if int(from_port) <= self.port <= int(to_port):
                         return True
-                except:
-                    continue
+                except Exception:
+                    return CheckResult.UNKNOWN
         return False
