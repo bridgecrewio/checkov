@@ -8,7 +8,7 @@ class WAFEnabled(BaseResourceValueCheck):
         name = "CloudFront Distribution should have WAF enabled"
         id = "CKV_AWS_68"
         supported_resources = ['aws_cloudfront_distribution']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.APPLICATION_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
