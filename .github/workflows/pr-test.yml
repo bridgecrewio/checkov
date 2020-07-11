@@ -46,11 +46,14 @@ jobs:
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           token: ${{ secrets.GITHUB_TOKEN }}
+          clean: 'false'
       - name: Run checkov on terragoat
         run: |
           pwd
           ls
-          pipenv run checkov -s -d terraform/ -o json > checkov_report_terragoat.json
+          pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           cat checkov_report_terragoat.json
+          pipenv run pytest integreation_tests
+
 
 
