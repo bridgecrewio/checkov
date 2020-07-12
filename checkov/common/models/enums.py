@@ -18,6 +18,7 @@ class CheckCategories(Enum):
     CONVENTION = 7
     SECRETS = 8
     KUBERNETES = 9
+    APPLICATION_SECURITY = 10
 
 
 class OutputFormat(Enum):

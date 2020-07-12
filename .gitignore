@@ -12,6 +12,8 @@ __pycache__/
 *.tfvars
 *.tfbackend
 
+# git
+*.orig
 
 # C extensions
 *.so

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json",
+  "contentVersion": "0.0.0.1",
+  "parameters": {
+    "vnetName": {
+      "type": "string"
+    },
+    "vnetAddressPrefix": {
+      "type": "string"
+    },
+
+    "webServerSubnetName": {
+      "type": "string"
+    },
+    "webServerSubnetAddressPrefix": {
+      "type": "string"
+    },
+    "webServerNsgName": {
+      "type": "string"
+    },
+    "testRunnerIpRange": {
+      "type": "string",
+      "defaultValue": "*",
+
+
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2019-11-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('webServerNsgName')]"
+      ],
+
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('webServerSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('webServerSubnetAddressPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('webServerNsgName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('webServerNsgName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-11-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "DefaultDeny",
+            "properties": {
+              "description": "Denies all inbound traffic not matched by a previous rule",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 4096,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "name": "[concat(parameters('webServerNsgName'),'/allowAllFromAll')]",
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('webServerNsgName')]"
+      ],
+      "condition": "[greater(length(parameters('testRunnerIpRange')),0)]",
+
+      "apiVersion": "2019-11-01",
+      "properties": {
+        "description": "nsgRuleDescription",
+        "protocol": "tcp",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "[parameters('testRunnerIpRange')]",
+        "destinationAddressPrefix": "[parameters('webServerSubnetAddressPrefix')]",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Inbound"
+      }
+    }
+  ]
+}

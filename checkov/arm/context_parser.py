@@ -50,10 +50,15 @@ class ContextParser(object):
         for key_entry in keys_w_vars:
             param = re.sub("\[variables\('|'\)\]", "", self._get_from_dict(dict(self.arm_template),
                                                                             key_entry[:-1])[key_entry[-1]])
-            self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
-            logging.debug(
-                "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
+            if param in variable_values.keys():
+                self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
+                logging.debug(
+                    "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
                                                                                   variable_values[param]))
+            else:
+                logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
+
+
 
     @staticmethod
     def extract_arm_resource_id(arm_resource):
