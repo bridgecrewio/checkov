@@ -23,4 +23,4 @@ jobs:
       - name: detect secrets
         uses: edplato/trufflehog-actions-scan@master
         with:
-          scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt -max_depth 1"
+          scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"
