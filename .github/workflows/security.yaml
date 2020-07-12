@@ -16,3 +16,11 @@ jobs:
         uses: jpetrucciani/bandit-check@master
         with:
           path: '.'
+  detect-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: detect secrets
+        uses: edplato/trufflehog-actions-scan@master
+        with:
+          scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt"

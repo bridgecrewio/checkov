@@ -1,0 +1,11 @@
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-func_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-func_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
+tests/terraform/checks/resource/aws/test_LambdaEnvironmentCredentials.py
+tests/terraform/runner/resources/example/example.tf
+.*Pipfile.lock
+tests/terraform/checks/provider/aws/test_credentials.py
+tests/terraform/checks/resource/aws/test_EC2Credentials.py
+.*Scans.md
