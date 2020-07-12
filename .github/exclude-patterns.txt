@@ -1,0 +1,5 @@
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-func_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-func_level/serverless.yml
+tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
