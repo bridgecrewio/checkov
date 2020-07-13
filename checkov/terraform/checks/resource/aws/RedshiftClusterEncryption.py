@@ -11,7 +11,7 @@ class RedshiftClusterEncryption(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "encryption"
+        return "encrypted"
 
 
 check = RedshiftClusterEncryption()
