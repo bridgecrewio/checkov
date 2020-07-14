@@ -10,7 +10,9 @@
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 
-**Checkov** is a static code analysis tool for infrastructure-as-code. It scans cloud infrastructure provisioned using Terraform, Cloudformation or Kubernetes and detects security and compliance misconfigurations.
+**Checkov** is a static code analysis tool for infrastructure-as-code.
+
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Cloudformation](https://aws.amazon.com/cloudformation/), [Kubernetes](https://kubernetes.io/), [Serverless](https://www.serverless.com/) or [ARM Templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) and detects security and compliance misconfigurations.
 
 
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
@@ -34,12 +36,13 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/), the developer-firs
 
  ## Features
 
- * [300+ built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure & Google Cloud.
- * Scans Terraform, AWS CloudFormation and Kubernetes configuration files.
+ * [Over 400 built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
+ * Scans Terraform, CloudFormation and Kubernetes, Serverless framework and ARM template files.
  * Detects [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terrafrom providers 
- * Policies support evaluation of variables to their optional default value.
+ * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
+ * Policies support evaluation of [variables](docs/2.Concepts/Evaluations.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * Output currently available as CLI, JSON or JUnit XML.
+* [Output](docs/1.Introduction/Results.md) currently available as CLI, JSON or JUnit XML and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
 
 ## Screenshots
 
@@ -211,4 +214,4 @@ To skip this API call use the flag `--no-guide`.
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io .
+If you need direct support you can contact us at info@bridgecrew.io.
