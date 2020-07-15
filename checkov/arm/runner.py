@@ -54,7 +54,7 @@ class Runner(BaseRunner):
 
                 # Split out nested resources from base resource
                 for resource in definitions[arm_file]['resources']:
-                    if "parent" in resource.keys():
+                    if "parent_name" in resource.keys():
                         continue
                     nested_resources = []
                     nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
@@ -65,9 +65,10 @@ class Runner(BaseRunner):
                                 for element in nr_element:
                                     new_resource = {}
                                     new_resource = element
-                                    new_resource["parent_name"] = resource["name"]
-                                    new_resource["parent_type"] = resource["type"]
-                                    definitions[arm_file]['resources'].append(new_resource)
+                                    if isinstance(new_resource, dict):
+                                        new_resource["parent_name"] = resource["name"]
+                                        new_resource["parent_type"] = resource["type"]
+                                        definitions[arm_file]['resources'].append(new_resource)
 
                 for resource in definitions[arm_file]['resources']:
                     resource_id = arm_context_parser.extract_arm_resource_id(resource)
