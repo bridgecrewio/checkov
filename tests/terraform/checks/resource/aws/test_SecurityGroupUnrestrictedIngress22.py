@@ -166,6 +166,24 @@ resource "aws_security_group" "bar-sg" {
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_egress_only(self):
+        hcl_res = hcl2.loads("""
+resource "aws_security_group" "bar-sg" {
+  name   = "sg-bar"
+  vpc_id = aws_vpc.main.id
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_security_group']['bar-sg']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_ingress_rules_list(self):
         hcl_res = hcl2.loads("""
 resource "aws_security_group" "inline_rules" {
@@ -208,7 +226,7 @@ resource "aws_security_group_rule" "ingress" {
 
         resource_conf = hcl_res['resource'][0]['aws_security_group']['bar-sg']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
         resource_conf = hcl_res['resource'][1]['aws_security_group_rule']['ingress']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -232,7 +250,7 @@ resource "aws_security_group_rule" "ingress" {
 
     def test_unknown_separate_rule_egress(self):
         hcl_res = hcl2.loads("""
-resource "aws_security_group_rule" "ingress" {
+resource "aws_security_group_rule" "egress" {
   type              = "egress"
   from_port         = 22
   to_port           = 22
@@ -242,7 +260,7 @@ resource "aws_security_group_rule" "ingress" {
 }
         """)
 
-        resource_conf = hcl_res['resource'][0]['aws_security_group_rule']['ingress']
+        resource_conf = hcl_res['resource'][0]['aws_security_group_rule']['egress']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.UNKNOWN, scan_result)
 
