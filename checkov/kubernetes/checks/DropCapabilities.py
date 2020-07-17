@@ -16,7 +16,7 @@ class DropCapabilities(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent']
+        return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:
@@ -26,5 +26,6 @@ class DropCapabilities(BaseK8Check):
                         if "ALL" in d or "NET_RAW" in d:
                             return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = DropCapabilities()

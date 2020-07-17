@@ -34,9 +34,10 @@ class BaseContextParser(ABC):
         """
         raise NotImplementedError
 
-    def _is_block_signature(self, line_tokens, entity_context_path):
+    def _is_block_signature(self, line_num, line_tokens, entity_context_path):
         """
         Determine if the given tokenized line token is the entity signature line
+        :param line_num: The line number in the file
         :param line_tokens: list of line tokens
         :param entity_context_path: the entity's path in the context parser
         :return: True/False
@@ -124,7 +125,7 @@ class BaseContextParser(ABC):
             entity_context_path = self.get_entity_context_path(entity_block)
             for line_num, line in parsed_file_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
-                if self._is_block_signature(line_tokens, entity_context_path):
+                if self._is_block_signature(line_num, line_tokens, entity_context_path):
                     start_line = line_num
                     end_line = self._compute_definition_end_line(line_num)
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
