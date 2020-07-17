@@ -154,6 +154,15 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
                          False)
 
+    def test_provider_uniqueness(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/many_providers"
+        tf_file = f"{valid_dir_path}/main.tf"
+        runner = Runner()
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(checks='CKV_AWS_41'))
+        self.assertEqual(len(result.passed_checks), 16)
+        self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
+
     def tearDown(self):
         parser_registry.definitions_context = {}
 
