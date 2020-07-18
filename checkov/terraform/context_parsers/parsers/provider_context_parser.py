@@ -15,7 +15,7 @@ class ProviderContextParser(BaseContextParser):
     def _is_block_signature(self, line_num, line_tokens, entity_context_path):
         # Ignore the alias as it is not part of the signature
         is_provider = super()._is_block_signature(line_num, line_tokens, entity_context_path[0:-1])
-        if not is_provider:
+        if not is_provider or '=' in line_tokens:
             return False
 
         end_line = self._compute_definition_end_line(line_num)
