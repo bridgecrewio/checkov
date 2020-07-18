@@ -158,7 +158,6 @@ class Runner(BaseRunner):
                                         check_class=check.__class__.__module__)
                         report.add_record(record=record)
 
-
         return report
 
 
