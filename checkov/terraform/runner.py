@@ -67,11 +67,13 @@ class Runner(BaseRunner):
             for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
                                                          afilter=lambda x: x == TRUE_STRING or x == ONE_STRING,
                                                          yielded=True):
-                dpath.set(self.tf_definitions[tf_file], var_path, True)
+                if not var_path.endswith('alias/0'):
+                    dpath.set(self.tf_definitions[tf_file], var_path, True)
             for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
                                                          afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
                                                          yielded=True):
-                dpath.set(self.tf_definitions[tf_file], var_path, False)
+                if not var_path.endswith('alias/0'):
+                    dpath.set(self.tf_definitions[tf_file], var_path, False)
 
     def check_tf_definition(self, report, root_folder, runner_filter):
         definitions_context = {}
