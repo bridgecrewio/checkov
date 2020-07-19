@@ -63,6 +63,7 @@ setup(
             "urllib3==1.25.7",
             "wcwidth==0.1.7",
             "zipp==0.6.0",
+            "gitpython==3.1.7"
         ]
     },
     install_requires=[
