@@ -1,11 +1,11 @@
 ---
 layout: default
 published: true
-title: Custom Scans
+title: Custom Policies
 order: 6
 ---
 
-# Custom Scans
+# Custom Policies
 
 Checkov is delivered with a  [set of built-in policies](../3.Scans/resource-scans.md) that checks for compliance and security best practices at its core.
  In addition, Checkov enables loading of extra checks, that give the user a possibility to author and execute custom policies.
