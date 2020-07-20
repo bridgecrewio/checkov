@@ -51,7 +51,7 @@ Results will appear under [actions](https://github.com/bridgecrewio/checkov/acti
 To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
 ```sh
 pipenv install --dev
-pipenv run python -m coverage run -m pytest
+pipenv run python -m coverage run -m pytest tests
 ```
 
 ### Build package locally
