@@ -81,6 +81,12 @@ class Runner(BaseRunner):
                     else:
                         continue
 
+                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
+                    # We will alert in runtime only
+                    if "ownerReferences" in entity_conf["metadata"] and \
+                            entity_conf["metadata"]["ownerReferences"] is not None:
+                        continue
+
                     # Append containers and initContainers to definitions list
                     for type in ["containers", "initContainers"]:
                         containers = []
@@ -125,6 +131,13 @@ class Runner(BaseRunner):
                             if not "name" in entity_conf["metadata"]:
                                 continue
                         else:
+                            continue
+
+                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
+                    # We will alert in runtime only
+                    if "metadata" in entity_conf:
+                        if "ownerReferences" in entity_conf["metadata"] and \
+                                entity_conf["metadata"]["ownerReferences"] is not None:
                             continue
 
                     # Skip Kustomization Templates (for now)
