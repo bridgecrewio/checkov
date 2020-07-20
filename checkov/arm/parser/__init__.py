@@ -50,6 +50,6 @@ def parse(filename):
     except YAMLError as err:
         pass
 
-    if '$schema' in template and 'resources' in template:
+    if template is not None and '$schema' in template and 'resources' in template:
         return template, template_lines
     return None, None
