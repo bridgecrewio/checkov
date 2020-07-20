@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from checkov.runner_filter import RunnerFilter
 
-IGNORED_DIRECTORIES_ENV = os.getenv('CKV_IGNORED_DIRECTORIES', "node_modules,.terraform,.serverless")
+IGNORED_DIRECTORIES_ENV = os.getenv('CKV_IGNORED_DIRECTORIES', "node_modules,.terraform,.serverless,fixes,checkov_results")
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
