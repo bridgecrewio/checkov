@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/da/5a/a1304f23890ba824a0abd0a7fe4898138933b35b3e4ee136594ef1095ae5/checkov-1.0.452.tar.gz"
-  sha256 "3f7a3d75b73254ef0f549efe933b3f636cb87d8fb0cf3691980ed1af3f62e01e"
+  url "https://files.pythonhosted.org/packages/74/24/f50ffd4acb4197b0ce3596a64cdf7b58403d798be7bf06c96a4a65219629/checkov-1.0.453.tar.gz"
+  sha256 "f6195a2999306048870b3916bf50b4e40c99de1f5c81d719e967ba4fead22068"
 
   depends_on "python3"
 
@@ -46,6 +46,16 @@ class Checkov < Formula
   resource "dpath" do
     url "https://files.pythonhosted.org/packages/88/b2/abc5803f37a2ea1045d68765acfcb4ec166bc9e08c3ba451c53af29a73f2/dpath-1.5.0.tar.gz"
     sha256 "496615b4ea84236d18e0d286122de74869a60e0f87e2c7ec6787ff286c48361b"
+  end
+
+  resource "gitdb" do
+    url "https://files.pythonhosted.org/packages/d1/05/eaf2ac564344030d8b3ce870b116d7bb559020163e80d9aa4a3d75f3e820/gitdb-4.0.5.tar.gz"
+    sha256 "c9e1f2d0db7ddb9a704c2a0217be31214e91a4fe1dea1efad19ae42ba0c285c9"
+  end
+
+  resource "GitPython" do
+    url "https://files.pythonhosted.org/packages/53/ea/fc34cddaa30bfc5e283f13e754fb3e2648ccd9f7019eaa3518fb5350ae51/GitPython-3.1.7.tar.gz"
+    sha256 "2db287d71a284e22e5c2846042d0602465c7434d910406990d5b74df4afb0858"
   end
 
   resource "idna" do
@@ -96,6 +106,11 @@ class Checkov < Formula
   resource "six" do
     url "https://files.pythonhosted.org/packages/94/3e/edcf6fef41d89187df7e38e868b2dd2182677922b600e880baad7749c865/six-1.13.0.tar.gz"
     sha256 "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
+  end
+
+  resource "smmap" do
+    url "https://files.pythonhosted.org/packages/75/fb/2f594e5364f9c986b2c89eb662fc6067292cb3df2b88ae31c939b9138bb9/smmap-3.0.4.tar.gz"
+    sha256 "9c98bbd1f9786d22f14b3d4126894d56befb835ec90cef151af566c7e19b5d24"
   end
 
   resource "tabulate" do
