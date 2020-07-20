@@ -31,7 +31,6 @@ setup(
             "chardet==3.0.4",
             "coverage==4.5.4",
             "coverage-badge==1.0.1",
-            "detect-secrets==0.13.0",
             "docopt==0.6.2",
             "docutils==0.15.2",
             "idna==2.8",
@@ -63,7 +62,8 @@ setup(
             "urllib3==1.25.7",
             "wcwidth==0.1.7",
             "zipp==0.6.0",
-            "gitpython==3.1.7"
+            "GitPython==3.1.7",
+            "gitdb==4.0.5"
         ]
     },
     install_requires=[
@@ -81,7 +81,9 @@ setup(
         "tabulate==0.8.6",
         "termcolor==1.1.0",
         "urllib3==1.25.7",
-        "dpath==1.5.0"
+        "dpath==1.5.0",
+        "GitPython==3.1.7",
+        "gitdb==4.0.5"
     ],
     license="Apache License 2.0",
     name="checkov",
