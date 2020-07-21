@@ -213,7 +213,7 @@ def get_skipped_checks(entity_conf):
     else:
         if "metadata" in entity_conf.keys():
             metadata = entity_conf["metadata"]
-    if "annotations" in metadata.keys():
+    if "annotations" in metadata.keys() and metadata["annotations"] is not None:
         for key in metadata["annotations"].keys():
             skipped_item = {}
             if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
