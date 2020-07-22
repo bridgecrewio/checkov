@@ -26,6 +26,17 @@ class TestAdminPolicyDocument(unittest.TestCase):
         scan_result = check.scan_entity_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_multiple_statements(self):
+        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
+                         'policy': [
+                             '{"Version":"2012-10-17","Statement":[{"Sid":"SqsAllow","Effect":"Allow","Action":['
+                             '"sqs:GetQueueAttributes","sqs:GetQueueUrl","sqs:ListDeadLetterSourceQueues",'
+                             '"sqs:ListQueues","sqs:ReceiveMessage","sqs:SendMessage","sqs:SendMessageBatch"],'
+                             '"Resource":"*"},{"Sid":"ALL","Effect":"Allow","Action":["*"],"Resource":["*"]}]} '
+                             ]}
+        scan_result = check.scan_entity_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
