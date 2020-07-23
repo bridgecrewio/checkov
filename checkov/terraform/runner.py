@@ -43,7 +43,7 @@ class Runner(BaseRunner):
         parsing_errors = {}
         if external_checks_dir:
             for directory in external_checks_dir:
-                resource_registry.load_external_checks(directory)
+                resource_registry.load_external_checks(directory, runner_filter)
         if root_folder:
             root_folder = os.path.abspath(root_folder)
             self.parser.hcl2(directory=root_folder, tf_definitions=self.tf_definitions, parsing_errors=parsing_errors)
