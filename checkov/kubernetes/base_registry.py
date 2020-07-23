@@ -11,19 +11,17 @@ class Registry(BaseCheckRegistry):
         conf = entity
         return kind, conf
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
-        check_id_allowlist = runner_filter.checks
-        check_id_denylist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
 
-            if self._should_run_scan(check.id, entity_configuration, check_id_allowlist, check_id_denylist):
+            if self._should_run_scan(check.id, entity_configuration, runner_filter):
                 self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
                 result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
@@ -32,7 +30,9 @@ class Registry(BaseCheckRegistry):
         return results
 
     @staticmethod
-    def _should_run_scan(check_id, entity_configuration, check_id_allowlist, check_id_denylist):
+    def _should_run_scan(check_id, entity_configuration, runner_filter):
+        check_id_allowlist = runner_filter.checks
+        check_id_denylist = runner_filter.skip_checks
         if check_id_allowlist:
             # Allow list provides namespace-only allows, check-only allows, or both
             # If namespaces not specified, all namespaces are scanned
@@ -50,7 +50,7 @@ class Registry(BaseCheckRegistry):
                     if "default" in allowed_namespaces:
                         run_check = True
             else:
-                if check_id in check_id_allowlist:
+                if check_id in check_id_allowlist or check_id in runner_filter.external_check_ids:
                     if allowed_namespaces:
                         # Check if namespace in allowed namespaces
                         if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:

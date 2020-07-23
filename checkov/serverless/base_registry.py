@@ -11,7 +11,7 @@ class Registry(BaseCheckRegistry):
         conf = entity["function"]
         return function_type, conf
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
         entity_type, entity_configuration = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
