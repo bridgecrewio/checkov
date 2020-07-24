@@ -114,6 +114,32 @@ docker pull bridgecrew/checkov
 docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
 ```
 
+### Running or skipping checks 
+
+Using command line flags you can specify to run only named checks (allow list) or run all checks except 
+those listed (deny list).
+
+List available checks:
+```sh
+checkov -l 
+```
+
+Allow only 2 checks to run: 
+```sh
+checkov -d . --check CKV_AWS_20,CKV_AWS_57
+```
+
+Run all checks except 1 specified:
+```sh
+checkov -d . --skip-check CKV_AWS_52
+```
+
+For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
+kube-system namespace:
+```sh
+checkov -d . --skip-check kube-system
+```
+
 ### Suppressing/Ignoring a check
 
 Like any static-analysis tool it is limited by its analysis scope. 
