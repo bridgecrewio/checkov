@@ -81,7 +81,7 @@ setup(
         "tabulate==0.8.6",
         "termcolor==1.1.0",
         "urllib3==1.25.7",
-        "dpath==1.5.0",
+        "dpath==2.0.1",
         "GitPython==3.1.7",
         "gitdb==4.0.5"
     ],
