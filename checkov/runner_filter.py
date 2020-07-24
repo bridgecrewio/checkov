@@ -25,7 +25,7 @@ class RunnerFilter(object):
 
     def should_run_check(self, check_id):
         if check_id in self.external_check_ids:
-            pass        # enabled unless kipped
+            pass        # enabled unless skipped
         elif self.checks:
             if check_id in self.checks:
                 return True
