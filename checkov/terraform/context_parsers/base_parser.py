@@ -76,12 +76,12 @@ class BaseContextParser(ABC):
         for entity_block in definition_blocks:
             skipped_checks = []
             entity_context_path = self.get_entity_context_path(entity_block)
-            context_search = dpath.search(self.context, entity_context_path, yielded=True)
+            context_search = dpath.util.search(self.context, entity_context_path, yielded=True)
             for _, entity_context in context_search:
                 for (skip_check_line_num, skip_check) in comments:
                     if entity_context['start_line'] < skip_check_line_num < entity_context['end_line']:
                         skipped_checks.append(skip_check)
-            dpath.new(self.context, entity_context_path + ['skipped_checks'], skipped_checks)
+            dpath.util.new(self.context, entity_context_path + ['skipped_checks'], skipped_checks)
         return self.context
 
     def _compute_definition_end_line(self, start_line_num):
@@ -128,8 +128,8 @@ class BaseContextParser(ABC):
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
                     start_line = line_num
                     end_line = self._compute_definition_end_line(line_num)
-                    dpath.new(self.context, entity_context_path + ["start_line"], start_line)
-                    dpath.new(self.context, entity_context_path + ["end_line"], end_line)
-                    dpath.new(self.context, entity_context_path + ["code_lines"],
+                    dpath.util.new(self.context, entity_context_path + ["start_line"], start_line)
+                    dpath.util.new(self.context, entity_context_path + ["end_line"], end_line)
+                    dpath.util.new(self.context, entity_context_path + ["code_lines"],
                               self.file_lines[start_line - 1: end_line])
         return self.context

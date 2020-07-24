@@ -2,7 +2,7 @@ import logging
 import os
 import re
 
-import dpath
+import dpath.util
 
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 
@@ -17,8 +17,10 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         for source_file in [file for file in os.listdir(folder) if
                             file.endswith('.tf') and self.tf_definitions.get(os.path.join(folder, file))]:
             file_path = os.path.join(folder, source_file)
-            var_entries = dpath.search(self.tf_definitions[file_path], '**',
-                                       afilter=lambda x: re.findall(assignment_regex, str(x)), yielded=True)
+            var_entries = dpath.util.search(self.tf_definitions[file_path], '**',
+                                            afilter=lambda x: re.findall(assignment_regex, str(x)),
+                                            dirs=False,     # dpath 1.5.0 compat with afilter
+                                            yielded=True)
             var_assignments_paths[file_path] = []
             for definition_path, expression in var_entries:
                 context_path, definition_name = self.extract_context_path(definition_path)
@@ -53,20 +55,20 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
                     continue
                 context_path, _ = self.extract_context_path(definition_path)
                 if assignment_file in self.definitions_context.keys():
-                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
-                              var_file)
-                    dpath.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
-                              var_value)
-                    dpath.new(self.definitions_context[assignment_file],
-                              f'evaluations/{var_name}/definitions',
-                              assignments)
+                    dpath.util.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/var_file',
+                                   var_file)
+                    dpath.util.new(self.definitions_context[assignment_file], f'evaluations/{var_name}/value',
+                                   var_value)
+                    dpath.util.new(self.definitions_context[assignment_file],
+                                   f'evaluations/{var_name}/definitions',
+                                   assignments)
                 if self._is_variable_only_expression(assignment_regex, entry_expression):
                     # Preserve the original type of the variable if not part of a composite expression
                     evaluated_definition = var_value
                 else:
                     evaluated_definition = re.sub(assignment_regex, re.escape(var_value_string), entry_expression)
 
-                dpath.set(self.tf_definitions[assignment_file], definition_path, evaluated_definition)
+                dpath.util.set(self.tf_definitions[assignment_file], definition_path, evaluated_definition)
                 self.logger.debug(
                     f'Evaluated definition {definition_name} in file {assignment_file}: default value of variable {var_file}: '
                     f'{var_name} to "{var_value_string}"')
@@ -86,7 +88,7 @@ class ConstVariableEvaluation(BaseVariableEvaluation):
         :param folder: folder to assign variables in
         :return:
         """
-        assignment_files = dpath.search(self.definitions_context, f'**.assignments', separator='.')
+        assignment_files = dpath.util.search(self.definitions_context, f'**.assignments', separator='.')
         assignment_files = {k: v for k, v in assignment_files.items() if folder in k}
         if assignment_files:
             self._assign_definitions(assignment_files, folder)

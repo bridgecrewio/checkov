@@ -145,13 +145,13 @@ class TestRunnerValid(unittest.TestCase):
         runner.evaluate_string_booleans()
         print()
         self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/apply_immediately/0'), True)
+            dpath.util.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/apply_immediately/0'), True)
         self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/backup_retention_period/0'),
+            dpath.util.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/backup_retention_period/0'),
             True)
         self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/storage_encrypted/0'), False)
-        self.assertEqual(dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
+            dpath.util.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/storage_encrypted/0'), False)
+        self.assertEqual(dpath.util.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
                          False)
 
     def test_provider_uniqueness(self):

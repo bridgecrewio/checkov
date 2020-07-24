@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-import dpath
+import dpath.util
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
 

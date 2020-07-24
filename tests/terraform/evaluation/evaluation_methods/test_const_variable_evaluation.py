@@ -22,14 +22,14 @@ class TestConstVariableEvaluation(unittest.TestCase):
 
     def test_evaluate_variables(self):
         self.assertEqual(
-            dpath.get(self.tf_definitions[
+            dpath.util.get(self.tf_definitions[
                           os.path.dirname(os.path.realpath(__file__)) + '/../resources/default_evaluation/main.tf'],
                       'resource/0/aws_cognito_user_group/user_group/name/0'),
             'Pavel_Checkov_group')
 
     def test_all_expressions_evaluated(self):
         self.assertEqual(
-            len(dpath.get(self.definitions_context[
+            len(dpath.util.get(self.definitions_context[
                               os.path.dirname(os.path.realpath(__file__)) + '/../resources/default_evaluation/main.tf'],
                           'evaluations/dummy_1/definitions')),
             2)

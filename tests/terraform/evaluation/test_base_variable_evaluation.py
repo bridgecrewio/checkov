@@ -1,3 +1,4 @@
+import json
 import unittest
 from checkov.terraform.parser import Parser
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
@@ -15,12 +16,16 @@ class TestBaseVariableEvaluation(unittest.TestCase):
         parsing_errors = {}
         definitions_context = {}
         Parser().hcl2(directory=test_root_dir, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+        print(f"BEFORE tf_definitions: \n{json.dumps(tf_definitions, indent=2)}")
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
+        print(f"BEFORE definitions_context: \n{json.dumps(definitions_context, indent=2)}")
         variable_evaluator = ConstVariableEvaluation(test_root_dir, tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
         self.tf_definitions = variable_evaluator.tf_definitions
+        print(f"AFTER tf_definitions: \n{json.dumps(self.tf_definitions, indent=2)}")
         self.definitions_context = variable_evaluator.definitions_context
+        print(f"AFTER definitions_context: \n{json.dumps(self.definitions_context, indent=2)}")
 
     def test_extract_context_path(self):
         path = 'resource/0/aws_cognito_user_group/user_group/name/0'
@@ -29,7 +34,7 @@ class TestBaseVariableEvaluation(unittest.TestCase):
 
     def test_all_expressions_evaluated(self):
         self.assertEqual(
-            len(dpath.get(self.definitions_context[
+            len(dpath.util.get(self.definitions_context[
                               os.path.dirname(os.path.realpath(__file__)) + '/resources/default_evaluation/main.tf'],
                           'evaluations/dummy_1/definitions')),
             2)

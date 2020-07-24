@@ -40,11 +40,11 @@ class BaseResourceValueCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
-        if dpath.search(conf, inspected_key) != {}:
+        if dpath.util.search(conf, inspected_key) != {}:
             if ANY_VALUE in expected_values:
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
-            value = dpath.get(conf, inspected_key)
+            value = dpath.util.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
             if self._is_variable_dependant(value):
@@ -56,7 +56,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
             for attribute in reversed(inspected_attributes):
-                for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
+                for sub_key, sub_conf in dpath.util.search(conf, f'**/{attribute}', yielded=True):
                     filtered_sub_key = self._filter_key_path(sub_key)
                     if self._is_nesting_key(inspected_attributes, filtered_sub_key):
                         if isinstance(sub_conf, list) and len(sub_conf) == 1:

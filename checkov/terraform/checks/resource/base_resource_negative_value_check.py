@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-import dpath
+import dpath.util
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
@@ -14,8 +14,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:
-            if dpath.search(conf, excluded_key) != {}:
-                value = dpath.get(conf, excluded_key)
+            if dpath.util.search(conf, excluded_key) != {}:
+                value = dpath.util.get(conf, excluded_key)
                 if isinstance(value, list) and len(value) == 1:
                     value = value[0]
                 if self.check_excluded_condition(value):
@@ -23,8 +23,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
 
         inspected_key = self.get_inspected_key()
         bad_values = self.get_forbidden_values()
-        if dpath.search(conf, inspected_key) != {}:
-            value = dpath.get(conf, inspected_key)
+        if dpath.util.search(conf, inspected_key) != {}:
+            value = dpath.util.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
             if value in bad_values or ANY_VALUE in bad_values:

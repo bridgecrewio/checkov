@@ -17,7 +17,7 @@ class VariableContextParser(BaseContextParser):
                         if isinstance(value, list) and len(value) == 1:
                             value = values['default'][0]
                             if type(value) in (int, float, bool, str):
-                                dpath.new(self.context, ['assignments', variable_name], value)
+                                dpath.util.new(self.context, ['assignments', variable_name], value)
 
     def get_entity_context_path(self, entity_block):
         return []

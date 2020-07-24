@@ -68,12 +68,12 @@ class Runner(BaseRunner):
                                                          afilter=lambda x: x == TRUE_STRING or x == ONE_STRING,
                                                          yielded=True):
                 if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, True)
+                    dpath.util.set(self.tf_definitions[tf_file], var_path, True)
             for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
                                                          afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
                                                          yielded=True):
                 if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, False)
+                    dpath.util.set(self.tf_definitions[tf_file], var_path, False)
 
     def check_tf_definition(self, report, root_folder, runner_filter):
         definitions_context = {}
@@ -102,8 +102,8 @@ class Runner(BaseRunner):
                 definition_path = context_parser.get_entity_context_path(entity)
                 entity_id = ".".join(definition_path)
                 entity_context_path = [block_type] + definition_path
-                if dpath.search(definition_context[full_file_path], entity_context_path):
-                    entity_context = dpath.get(definition_context[full_file_path],
+                if dpath.util.search(definition_context[full_file_path], entity_context_path):
+                    entity_context = dpath.util.get(definition_context[full_file_path],
                                                entity_context_path)
                     entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                     entity_code_lines = entity_context.get('code_lines')
