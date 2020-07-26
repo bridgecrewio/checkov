@@ -111,7 +111,7 @@ class BcPlatformIntegration(object):
         """
         request = None
         try:
-            request = http.request("PUT", f"{self.integrations_api_url}/?source={self.bc_source}",
+            request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
