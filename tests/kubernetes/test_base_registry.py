@@ -68,14 +68,12 @@ class TestRunnerFilter(unittest.TestCase):
         instance = Registry()
         run_filter = RunnerFilter(checks=["default"], skip_checks=[])
         config = {"metadata": {"namespace": "not_matched"}}
-        # TODO: Maybe this case SHOULD run? Matching old state (false) for now. - @robeden
         self.assertFalse(instance._should_run_scan("CKV_1", config, run_filter))
 
     def test_namespace_deny_default(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["default"])
         config = {"metadata": {"namespace": "not_matched"}}
-        # TODO: Maybe this case SHOULDN'T run? Matching old state (true) for now. - @robeden
         self.assertTrue(instance._should_run_scan("CKV_1", config, run_filter))
 
     def test_namespace_allow_specific(self):
