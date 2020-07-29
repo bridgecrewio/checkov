@@ -13,8 +13,19 @@ class BaseCheckRegistry(object):
         self.logger = logging.getLogger(__name__)
         self.checks = {}
         self.check_id_allowlist = None
+        self.external_checks_runner_filter = None
 
     def register(self, check):
+        # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
+        #                      (see BaseResourceCheck.__init__() for the various frameworks). The only
+        #                      difficultly with this process is that external checks need to be specially
+        #                      identified for filter handling. That's why you'll see stateful setting of
+        #                      RunnerFilters during load_external_checks.
+        #                      Built-in checks are registered immediately at script start, before
+        #                      external checks.
+        if self.external_checks_runner_filter:
+            self.external_checks_runner_filter.notify_external_check(check.id)
+
         for entity in check.supported_entities:
             if entity not in self.checks.keys():
                 self.checks[entity] = []
@@ -41,26 +52,17 @@ class BaseCheckRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
-        check_id_allowlist = runner_filter.checks
-        check_id_denylist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            if check_id_allowlist:
-                if check.id in check_id_allowlist:
-                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
-                    results[check] = result
-            elif check_id_denylist:
-                if check.id not in check_id_denylist:
-                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
-                    results[check] = result
-            else:
+
+            if runner_filter.should_run_check(check.id):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -89,7 +91,7 @@ class BaseCheckRegistry(object):
             return True
         return False
 
-    def load_external_checks(self, directory):
+    def load_external_checks(self, directory, runner_filter):
         """ Browse a directory looking for .py files to import.
 
         Log an error when the directory does not contains an __init__.py or
@@ -106,7 +108,12 @@ class BaseCheckRegistry(object):
                 for entry in directory_content:
                     if self._file_can_be_imported(entry):
                         check_name = entry.name.replace('.py', '')
+
+                        # Filter is set while loading external checks so the filter can be informed
+                        # of the checks, which need to be handled specially.
+                        prior_external_checks_runner_filter = self.external_checks_runner_filter
                         try:
+                            self.external_checks_runner_filter = runner_filter
                             self.logger.debug("Importing external check '{}'".format(check_name))
                             importlib.import_module(check_name)
                         except SyntaxError as e:
@@ -121,3 +128,6 @@ class BaseCheckRegistry(object):
                                     error_column=e.args[1][2]
                                 )
                             )
+                        finally:
+                            self.external_checks_runner_filter = prior_external_checks_runner_filter
+

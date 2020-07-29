@@ -26,7 +26,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                sls_registry.load_external_checks(directory)
+                sls_registry.load_external_checks(directory, runner_filter)
 
         if files:
             for file in files:

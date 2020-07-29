@@ -2,6 +2,7 @@ class RunnerFilter(object):
     framework = 'all'
     checks = []
     skip_checks = []
+    external_check_ids = set()
 
     def __init__(self, framework='all', checks=None, skip_checks=None):
         if checks is None:
@@ -18,3 +19,18 @@ class RunnerFilter(object):
         else:
             self.skip_checks = skip_checks
         self.framework = framework
+
+    def notify_external_check(self, check_id):
+        self.external_check_ids.add(check_id)
+
+    def should_run_check(self, check_id):
+        if check_id in self.external_check_ids:
+            pass        # enabled unless skipped
+        elif self.checks:
+            if check_id in self.checks:
+                return True
+            else:
+                return False
+        if self.skip_checks and check_id in self.skip_checks:
+            return False
+        return True
