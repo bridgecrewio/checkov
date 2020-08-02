@@ -3,10 +3,15 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/c3/6e/bac67f2df39813475d650fe030227673516077b3119d706c174f1e88bebf/checkov-1.0.463.tar.gz"
-  sha256 "7bf36f723a95e73516a07fb81d002f3012c10d7fb3cd9f485e53203da89f9da1"
+  url "https://files.pythonhosted.org/packages/f0/15/2112a319606c4a98a48523c4d5aa43121d5ee5dc69471b93e4295380412f/checkov-1.0.464.tar.gz"
+  sha256 "3516f65ca7e7dc9a4eacbded28bdec3a23561a95f8a4d181c99b29fe65e5c119"
 
   depends_on "python3"
+
+  resource "bc-python-hcl2" do
+    url "https://files.pythonhosted.org/packages/65/e1/25559576031021e978d3a1acba4dc839bcf092e8041fa36c5feb84e146ac/bc-python-hcl2-0.3.5.tar.gz"
+    sha256 "ffdbf376150bd1abb677be05c3c3813f6a9249feebb85402c3a0ccace6430d39"
+  end
 
   resource "boto3" do
     url "https://files.pythonhosted.org/packages/ad/08/0d977abed3d7adbd7158ffc1027c63e56381877e7442b06c7a849cb4cc1f/boto3-1.12.43.tar.gz"
@@ -81,11 +86,6 @@ class Checkov < Formula
   resource "python-dateutil" do
     url "https://files.pythonhosted.org/packages/be/ed/5bbc91f03fa4c839c4c7360375da77f9659af5f7086b7a7bdda65771c8e0/python-dateutil-2.8.1.tar.gz"
     sha256 "73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"
-  end
-
-  resource "python-hcl2" do
-    url "https://files.pythonhosted.org/packages/cf/3f/3ff50ca76d5a44a7043b791d3876b5e693b6a2f64db832539e3f162e8323/python-hcl2-0.2.5.tar.gz"
-    sha256 "51a9c7e41929a440daf0e8b9a153e3afb7d0628b10c536a656ea95f87a5fe1f6"
   end
 
   resource "PyYAML" do
