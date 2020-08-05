@@ -43,7 +43,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Policies support evaluation of [variables](docs/2.Concepts/Evaluations.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
 * [Output](docs/1.Introduction/Results.md) currently available as CLI, JSON or JUnit XML and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
-
+ 
 ## Screenshots
 
 Scan results in CLI
