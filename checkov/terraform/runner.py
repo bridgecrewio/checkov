@@ -8,6 +8,7 @@ from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -34,7 +35,8 @@ class Runner(BaseRunner):
     block_type_registries = {
         'resource': resource_registry,
         'data': data_registry,
-        'provider': provider_registry
+        'provider': provider_registry,
+        'module': module_registry,
     }
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
@@ -88,7 +90,7 @@ class Runner(BaseRunner):
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
-                if block_type in ['resource', 'data', 'provider']:
+                if block_type in ['resource', 'data', 'provider', 'module']:
                     self.run_block(definition[block_type], definitions_context, full_file_path, report, scanned_file,
                                    block_type, runner_filter)
 
