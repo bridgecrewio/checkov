@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/ce/cc/f910813df80fecb8dde8403fbafc1632913159911b171849c923ee7d415e/checkov-1.0.475.tar.gz"
-  sha256 "3e2388b1e9b55bff0d496385345a9ac0e8807991457f34de2b3cb506189657a5"
+  url "https://files.pythonhosted.org/packages/ea/7c/26dab4e344be982703c3bbb5476b14399d242dea30bafc8f117821c43cb4/checkov-1.0.476.tar.gz"
+  sha256 "0e1f112780df3560f0ee263fc24d9aeedacf059fdebb13c0dec4224da08ada1f"
 
   depends_on "python3"
 
@@ -104,8 +104,8 @@ class Checkov < Formula
   end
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/94/3e/edcf6fef41d89187df7e38e868b2dd2182677922b600e880baad7749c865/six-1.13.0.tar.gz"
-    sha256 "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
   end
 
   resource "smmap" do
