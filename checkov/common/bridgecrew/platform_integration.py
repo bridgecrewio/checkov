@@ -128,12 +128,24 @@ class BcPlatformIntegration(object):
                 raise Exception(f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
     def _persist_file(self, full_file_path, relative_file_path):
+        tries = 4
+        curr_try = 0
         file_object_key = os.path.join(self.repo_path, relative_file_path)
-        try:
-            self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
-        except Exception as e:
-            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-            raise e
+        while curr_try < tries:
+            try:
+                self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
+            except ClientError as e:
+                if e.response.get('Error', {}).get('Code') == 'AccessDenied':
+                    time.sleep(5)
+                    curr_try += 1
+                else:
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
+                    raise e
+            except Exception as e:
+                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
+                raise e
+        if curr_try == tries:
+            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_guidelines(self) -> dict:
         try:
