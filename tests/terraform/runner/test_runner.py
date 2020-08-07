@@ -163,6 +163,40 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 16)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
 
+    def test_terraform_module_checks_are_performed(self):
+        check_name = "TF_M_1"
+
+        from checkov.common.models.enums import CheckResult
+        from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
+        from checkov.terraform.checks.module.registry import module_registry
+
+        class ModuleCheck(BaseModuleCheck):
+
+            def __init__(self):
+                name = "Test check"
+                id = check_name
+                supported_resources = ['module']
+                categories = []
+                super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+            def scan_resource_conf(self, conf):
+                return CheckResult.PASSED
+
+        check = ModuleCheck()
+
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources/valid_tf_only_module_usage")
+        runner = Runner()
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(checks=check_name))
+
+        # unregister check
+        for resource in check.supported_resources:
+            module_registry.checks[resource].remove(check)
+
+        self.assertEqual(len(result.passed_checks), 1)
+        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+
     def tearDown(self):
         parser_registry.definitions_context = {}
 

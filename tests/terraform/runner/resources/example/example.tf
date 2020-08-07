@@ -1642,3 +1642,7 @@ resource aws_s3_bucket "other-provider-bucket" {
   bucket   = "other_provider_bucket"
   provider = "non-default"
 }
+
+module "some-module" {
+  source = "git::ssh://github.com/example/module//s3/s3-logging?ref=tags/1.0.0"
+}
