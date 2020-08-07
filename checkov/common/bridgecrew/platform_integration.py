@@ -1,20 +1,20 @@
-import urllib3
-import boto3
 import json
 import logging
-from time import sleep
-from urllib3.exceptions import HTTPError
-from botocore.exceptions import ClientError
+import os
 from json import JSONDecodeError
+from time import sleep
+
+import boto3
 import dpath.util
+import urllib3
+from botocore.exceptions import ClientError
+from urllib3.exceptions import HTTPError
 
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
-
 
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()
@@ -133,6 +133,7 @@ class BcPlatformIntegration(object):
         while curr_try < tries:
             try:
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
+                return
             except ClientError as e:
                 if e.response.get('Error', {}).get('Code') == 'AccessDenied':
                     sleep(5)
