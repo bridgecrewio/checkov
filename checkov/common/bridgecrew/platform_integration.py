@@ -2,7 +2,6 @@ import urllib3
 import boto3
 import json
 import logging
-import os
 from time import sleep
 from urllib3.exceptions import HTTPError
 from botocore.exceptions import ClientError
@@ -136,7 +135,7 @@ class BcPlatformIntegration(object):
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
             except ClientError as e:
                 if e.response.get('Error', {}).get('Code') == 'AccessDenied':
-                    time.sleep(5)
+                    sleep(5)
                     curr_try += 1
                 else:
                     logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
