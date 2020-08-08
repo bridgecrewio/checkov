@@ -27,7 +27,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if any("dynamic" in s for s in conf):
-            return CheckResult.SKIPPED
+            return CheckResult.UNKNOWN
             
         rule_confs = [conf]
         if 'security_rule' in conf:
