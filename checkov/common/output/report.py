@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 
 from colorama import init
 from junit_xml import TestCase, TestSuite
@@ -101,13 +102,11 @@ class Report:
         print("\n\n---\n\n")
 
     def get_test_suites(self):
-        test_cases = {}
+        test_cases = defaultdict(list)
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = record.check_name
-            if check_name not in test_cases:
-                test_cases[check_name] = []
 
             test_name = "{} {} {}".format(self.check_type, check_name, record.resource)
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)

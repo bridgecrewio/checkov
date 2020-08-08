@@ -4,14 +4,16 @@ import os
 import sys
 from abc import abstractmethod
 
+from collections import defaultdict
+
 
 class BaseCheckRegistry(object):
-    checks = {}
+    checks = defaultdict(list)
     check_id_allowlist = None
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.checks = {}
+        self.checks = defaultdict(list)
         self.check_id_allowlist = None
         self.external_checks_runner_filter = None
 
@@ -27,8 +29,6 @@ class BaseCheckRegistry(object):
             self.external_checks_runner_filter.notify_external_check(check.id)
 
         for entity in check.supported_entities:
-            if entity not in self.checks.keys():
-                self.checks[entity] = []
             self.checks[entity].append(check)
 
     def get_check_by_id(self, check_id):
