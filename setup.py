@@ -74,7 +74,7 @@ setup(
         "idna==2.8",
         "junit-xml==1.8",
         "lark-parser==0.7.8",
-        "bc-python-hcl2>=0.3.7",
+        "bc-python-hcl2>=0.3.8",
         "pyyaml==5.3.1",
         "requests==2.22.0",
         "six==1.15.0",
