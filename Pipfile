@@ -13,7 +13,7 @@ bandit = "*"
 urllib3-mock = "*"
 
 [packages]
-bc-python-hcl2 = ">=0.3.8"
+bc-python-hcl2 = {editable = true,path = "."}
 tabulate = "*"
 colorama="*"
 termcolor="*"
