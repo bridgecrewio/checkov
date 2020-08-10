@@ -9,8 +9,8 @@ class Checkov < Formula
   depends_on "python3"
 
   resource "bc-python-hcl2" do
-    url "https://files.pythonhosted.org/packages/63/ac/b8d298e253a43e7f7ca16c9b60fea93e887c945357536b22cd7f9cd7e2c9/bc-python-hcl2-0.3.8.tar.gz"
-    sha256 "0a9e78b675df05b6990dc6c3f653410f5df15f80ba23315a63a726ac0a6e7944"
+    url "https://files.pythonhosted.org/packages/9c/27/bc2797a0e22d8ff25e1da7d3cdbccfe509441c46eeadce23ce070370285c/bc-python-hcl2-0.3.9.tar.gz"
+    sha256 "c8f4726947341a194d4a4440db0fcc09ea7266edbdd657502a7468dacee0d8db"
   end
 
   resource "boto3" do
