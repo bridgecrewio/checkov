@@ -1,21 +1,20 @@
-import urllib3
-import boto3
 import json
 import logging
 import os
-from time import sleep
-from urllib3.exceptions import HTTPError
-from botocore.exceptions import ClientError
 from json import JSONDecodeError
+from time import sleep
+
+import boto3
 import dpath.util
+import urllib3
+from botocore.exceptions import ClientError
+from urllib3.exceptions import HTTPError
 
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-import os
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
-
 
 DEFAULT_REGION = "us-west-2"
 http = urllib3.PoolManager()
@@ -128,12 +127,25 @@ class BcPlatformIntegration(object):
                 raise Exception(f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
     def _persist_file(self, full_file_path, relative_file_path):
+        tries = 4
+        curr_try = 0
         file_object_key = os.path.join(self.repo_path, relative_file_path)
-        try:
-            self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
-        except Exception as e:
-            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-            raise e
+        while curr_try < tries:
+            try:
+                self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
+                return
+            except ClientError as e:
+                if e.response.get('Error', {}).get('Code') == 'AccessDenied':
+                    sleep(5)
+                    curr_try += 1
+                else:
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
+                    raise e
+            except Exception as e:
+                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
+                raise e
+        if curr_try == tries:
+            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_guidelines(self) -> dict:
         try:

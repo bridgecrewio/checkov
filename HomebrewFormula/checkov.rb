@@ -3,14 +3,14 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/f0/15/2112a319606c4a98a48523c4d5aa43121d5ee5dc69471b93e4295380412f/checkov-1.0.464.tar.gz"
-  sha256 "3516f65ca7e7dc9a4eacbded28bdec3a23561a95f8a4d181c99b29fe65e5c119"
+  url "https://files.pythonhosted.org/packages/ef/d5/1fe2f7b36cd74280674eb9b4879c6217d6cf90f6e764a86d2198bf43e99f/checkov-1.0.482.tar.gz"
+  sha256 "598d6ebdba6e59945d9f13c0d43dd363d60849aa2ab6e386c05c9b5a2dda062b"
 
   depends_on "python3"
 
   resource "bc-python-hcl2" do
-    url "https://files.pythonhosted.org/packages/65/e1/25559576031021e978d3a1acba4dc839bcf092e8041fa36c5feb84e146ac/bc-python-hcl2-0.3.5.tar.gz"
-    sha256 "ffdbf376150bd1abb677be05c3c3813f6a9249feebb85402c3a0ccace6430d39"
+    url "https://files.pythonhosted.org/packages/9c/27/bc2797a0e22d8ff25e1da7d3cdbccfe509441c46eeadce23ce070370285c/bc-python-hcl2-0.3.9.tar.gz"
+    sha256 "c8f4726947341a194d4a4440db0fcc09ea7266edbdd657502a7468dacee0d8db"
   end
 
   resource "boto3" do
@@ -104,8 +104,8 @@ class Checkov < Formula
   end
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/94/3e/edcf6fef41d89187df7e38e868b2dd2182677922b600e880baad7749c865/six-1.13.0.tar.gz"
-    sha256 "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
   end
 
   resource "smmap" do
