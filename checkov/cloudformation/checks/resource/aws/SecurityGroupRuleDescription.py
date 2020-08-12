@@ -30,7 +30,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
                 return CheckResult.PASSED
 
         elif conf['Type'] == 'AWS::EC2::SecurityGroupIngress' or conf['Type'] == 'AWS::EC2::SecurityGroupEgress':
-            if 'Properties' in conf.keys() and 'Description' in conf['Properties']:
+            if 'Properties' in conf.keys() and 'GroupDescription' in conf['Properties']:
                 return CheckResult.PASSED
 
         return CheckResult.FAILED
