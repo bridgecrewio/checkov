@@ -24,23 +24,34 @@ class BaseCheck(ABC):
             check_result['result'] = CheckResult.SKIPPED
             check_result['suppress_comment'] = skip_info['suppress_comment']
             message = "File {}, {} \"{}.{}\" check \"{}\" Result: {}, Suppression comment: {} ".format(
-                scanned_file, self.block_type, entity_type,
+                scanned_file,
+                self.block_type,
+                entity_type,
                 entity_name,
                 self.name,
-                check_result, check_result['suppress_comment'])
+                check_result,
+                check_result['suppress_comment']
+            )
         else:
             try:
                 check_result['result'] = self.scan_entity_conf(entity_configuration, entity_type)
-                message = "File {}, {}  \"{}.{}\" check \"{}\" Result: {} ".format(scanned_file, self.block_type,
-                                                                                   entity_type,
-                                                                                   entity_name,
-                                                                                   self.name,
-                                                                                   check_result)
+                message = "File {}, {}  \"{}.{}\" check \"{}\" Result: {} ".format(
+                    scanned_file,
+                    self.block_type,
+                    entity_type,
+                    entity_name,
+                    self.name,
+                    check_result
+                )
                 self.logger.debug(message)
 
             except Exception as e:
                 self.logger.error(
-                    "Failed to run check: {} for configuration: {} at file: {}".format(self.name, str(entity_configuration),scanned_file))
+                    "Failed to run check: {} for configuration: {} at file: {}".format(
+                        self.name,
+                        str(entity_configuration),
+                        scanned_file)
+                )
                 raise e
         return check_result
 
