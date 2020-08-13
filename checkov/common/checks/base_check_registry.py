@@ -6,6 +6,9 @@ import sys
 from abc import abstractmethod
 from collections import defaultdict
 from itertools import chain
+from typing import Generator, Tuple
+
+from checkov.common.checks.base_check import BaseCheck
 
 
 class BaseCheckRegistry(object):
@@ -52,6 +55,14 @@ class BaseCheckRegistry(object):
                 lambda c: c.id == check_id,
                 chain(*self.checks.values(), *self.wildcard_checks.values())
             ), None)
+
+    def all_checks(self) -> Generator[Tuple[str, BaseCheck], None, None]:
+        for entity, checks in self.checks.items():
+            for check in checks:
+                yield entity, check
+        for entity, checks in self.wildcard_checks.items():
+            for check in checks:
+                yield entity, check
 
     def get_checks(self, entity):
         if not self.wildcard_checks:
