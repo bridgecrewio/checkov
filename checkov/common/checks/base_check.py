@@ -32,6 +32,7 @@ class BaseCheck(ABC):
                 check_result,
                 check_result['suppress_comment']
             )
+            self.logger.debug(message)
         else:
             try:
                 check_result['result'] = self.scan_entity_conf(entity_configuration, entity_type)
