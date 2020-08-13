@@ -64,6 +64,10 @@ class BaseCheckRegistry(object):
             for check in checks:
                 yield entity, check
 
+    @property
+    def contains_wildcard(self) -> bool:
+        return bool(self.wildcard_checks)
+
     def get_checks(self, entity):
         if not self.wildcard_checks:
             # Optimisation: When no wildcards are used, we can use the list in self.checks
