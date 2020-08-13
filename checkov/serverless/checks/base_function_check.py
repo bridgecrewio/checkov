@@ -15,5 +15,5 @@ class BaseFunctionCheck(BaseCheck):
     def scan_function_conf(self, conf):
         raise NotImplementedError()
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         return self.scan_function_conf(conf)

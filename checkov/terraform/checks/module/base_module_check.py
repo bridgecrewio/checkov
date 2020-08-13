@@ -15,5 +15,5 @@ class BaseModuleCheck(BaseCheck):
     def scan_resource_conf(self, conf):
         raise NotImplementedError()
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         return self.scan_resource_conf(conf)

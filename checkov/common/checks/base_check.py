@@ -30,7 +30,7 @@ class BaseCheck(ABC):
                 check_result, check_result['suppress_comment'])
         else:
             try:
-                check_result['result'] = self.scan_entity_conf(entity_configuration)
+                check_result['result'] = self.scan_entity_conf(entity_configuration, entity_type)
                 message = "File {}, {}  \"{}.{}\" check \"{}\" Result: {} ".format(scanned_file, self.block_type,
                                                                                    entity_type,
                                                                                    entity_name,
@@ -45,5 +45,5 @@ class BaseCheck(ABC):
         return check_result
 
     @abstractmethod
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         raise NotImplementedError()

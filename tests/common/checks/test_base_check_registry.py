@@ -14,7 +14,7 @@ class TestCheck(BaseCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
                          block_type=block_type)
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         pass
 
 
