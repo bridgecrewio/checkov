@@ -24,7 +24,7 @@ A policy needs to specify the following items:
 
 ``id``: A mandatory unique identifier of a policy; Native policies written by Bridgecrew contributors will follow the following convention ``CKV_providerType_serialNumber``. (e.g. `CKV_AWS_9` , `CKV_GCP_12`)
 
-``supported_resources``: Infrastructure objects, as described in the scanned IaC's language; This should usually contain one specific resource block.
+``supported_resources``: Infrastructure objects, as described in the scanned IaC's language; This should usually contain one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain (This depends on which check base class you extend. If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all terraform resources.) `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`.
 
 ``categories``: Categorization of a scan; usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc.
 
