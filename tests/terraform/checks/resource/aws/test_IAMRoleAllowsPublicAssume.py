@@ -96,6 +96,29 @@ EOF
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_deny(self):
+        hcl_res = hcl2.loads("""
+resource "aws_iam_role" "lambdaRole" {
+    name = "test-role"
+    assume_role_policy = <<EOF
+{
+"Version": "2012-10-17",
+"Statement": [
+{
+"Action": "sts:AssumeRole",
+"Principal" : {"AWS": "*"},
+"Effect": "Deny"
+}
+]
+}
+
+EOF
+}        
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_iam_role']['lambdaRole']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
