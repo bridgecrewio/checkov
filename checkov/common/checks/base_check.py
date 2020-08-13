@@ -51,7 +51,8 @@ class BaseCheck(ABC):
                     "Failed to run check: {} for configuration: {} at file: {}".format(
                         self.name,
                         str(entity_configuration),
-                        scanned_file)
+                        scanned_file
+                    )
                 )
                 raise e
         return check_result
