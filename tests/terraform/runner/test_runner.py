@@ -4,6 +4,7 @@ import unittest
 import dpath.util
 
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.module.typed_base_module_check import TypedBaseModuleCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
 
@@ -180,6 +181,42 @@ class TestRunnerValid(unittest.TestCase):
                 super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
             def scan_module_conf(self, conf):
+                return CheckResult.PASSED
+
+        check = ModuleCheck()
+
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources/valid_tf_only_module_usage")
+        runner = Runner()
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(checks=check_name))
+
+        # unregister check
+        for resource in check.supported_resources:
+            module_registry.checks[resource].remove(check)
+
+        self.assertEqual(len(result.passed_checks), 1)
+        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+
+    def test_typed_terraform_module_checks_are_performed(self):
+        check_name = "CKV_TF_M_1"
+        test_self = self
+
+        from checkov.common.models.enums import CheckResult
+        from checkov.terraform.checks.module.registry import module_registry
+
+        class ModuleCheck(TypedBaseModuleCheck):
+
+            def __init__(self):
+                name = "Test check"
+                id = check_name
+                supported_resources = ['module']
+                categories = []
+                super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+            def typed_scan_module_conf(self, conf, entity_type):
+                nonlocal test_self
+                test_self.assertEqual("module", entity_type)
                 return CheckResult.PASSED
 
         check = ModuleCheck()
