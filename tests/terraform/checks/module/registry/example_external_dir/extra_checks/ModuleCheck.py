@@ -10,7 +10,7 @@ class ModuleCheck(BaseModuleCheck):
         categories = []
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_module_conf(self, conf):
         """
         Some test for module source
         :param conf: module call

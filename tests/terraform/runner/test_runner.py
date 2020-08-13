@@ -179,7 +179,7 @@ class TestRunnerValid(unittest.TestCase):
                 categories = []
                 super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-            def scan_resource_conf(self, conf):
+            def scan_module_conf(self, conf):
                 return CheckResult.PASSED
 
         check = ModuleCheck()
