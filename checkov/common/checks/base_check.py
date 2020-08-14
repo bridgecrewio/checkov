@@ -1,10 +1,42 @@
+import inspect
 import logging
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABCMeta
 
 from checkov.common.models.enums import CheckResult
 
 
-class BaseCheck(ABC):
+class _CheckMeta(ABCMeta):
+    def __new__(mcs, name, bases, *args, **kwargs):
+        cls = super().__new__(mcs, name, bases, *args, **kwargs)
+        _CheckMeta._fix_scan_entity_conf(cls)
+        return cls
+
+    @staticmethod
+    def _fix_scan_entity_conf(cls):
+        """
+        Ensures that `scan_entity_conf` must not expect entity_type. If the implementation doesn't expect it, the method
+        is wrapped into a method that expects it but discards it.
+        :param cls: the check class to modify.
+        """
+        function = cls.scan_entity_conf
+        args = inspect.getargs(function.__code__).args
+        cls.scan_entity_conf = _CheckMeta._get_scan_entity_conf_wrapper(function, args)
+
+    @staticmethod
+    def _get_scan_entity_conf_wrapper(function, args):
+        if args == ["self", "conf", "entity_type"]:
+            # correct implementation according to the current standpoint.
+            return function
+        elif args == ["self", "conf"]:
+            # First implementation which does not expect `entity_type`
+            # we discard the argument
+            return lambda self, conf, entity_type: function(self, conf)
+        else:
+            # unknown implementation
+            raise NotImplementedError(f"The signature {args} for {function.__name__} is not supported.")
+
+
+class BaseCheck(metaclass=_CheckMeta):
     id = ""
     name = ""
     categories = []
