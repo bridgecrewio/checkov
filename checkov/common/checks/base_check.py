@@ -20,20 +20,21 @@ class _CheckMeta(ABCMeta):
         """
         function = cls.scan_entity_conf
         args = inspect.getargs(function.__code__).args
-        cls.scan_entity_conf = _CheckMeta._get_scan_entity_conf_wrapper(function, args)
-
-    @staticmethod
-    def _get_scan_entity_conf_wrapper(function, args):
         if args == ["self", "conf", "entity_type"]:
             # correct implementation according to the current standpoint.
-            return function
+            wrapper = function
         elif args == ["self", "conf"]:
             # First implementation which does not expect `entity_type`
             # we discard the argument
-            return lambda self, conf, entity_type: function(self, conf)
+            def wrapper(self, conf, entity_type):
+                return function(self, conf)
         else:
             # unknown implementation
-            raise NotImplementedError(f"The signature {args} for {function.__name__} is not supported.")
+            raise NotImplementedError(
+                f"The signature {args} for {function.__name__} is not supported. "
+                f"See {BaseCheck.__module__}.{BaseCheck.__name__}.{BaseCheck.scan_entity_conf.__name__}."
+            )
+        cls.scan_entity_conf = wrapper
 
 
 class BaseCheck(metaclass=_CheckMeta):
