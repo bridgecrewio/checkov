@@ -18,6 +18,11 @@ class TestCheckTypeNotInSignature(BaseCheck):
 
     # noinspection PyMethodOverriding
     def scan_entity_conf(self, conf):
+        """
+        My documentation
+        :param conf:
+        :return:
+        """
         return CheckResult.PASSED
 
 
@@ -32,6 +37,11 @@ class TestBaseCheck(unittest.TestCase):
         # noinspection PyArgumentList
         scan_result = check.scan_entity_conf({}, "Some name")
         self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEquals(check.scan_entity_conf.__doc__, """
+        My documentation
+        :param conf:
+        :return:
+        """)
 
     def test_invalid_signature_is_detected(self):
         with self.assertRaises(NotImplementedError) as context:

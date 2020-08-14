@@ -1,6 +1,7 @@
 import inspect
 import logging
 from abc import abstractmethod, ABCMeta
+from functools import update_wrapper
 
 from checkov.common.models.enums import CheckResult
 
@@ -34,6 +35,7 @@ class _CheckMeta(ABCMeta):
                 f"The signature {args} for {function.__name__} is not supported. "
                 f"See {BaseCheck.__module__}.{BaseCheck.__name__}.{BaseCheck.scan_entity_conf.__name__}."
             )
+        update_wrapper(wrapper, function)
         cls.scan_entity_conf = wrapper
 
 
