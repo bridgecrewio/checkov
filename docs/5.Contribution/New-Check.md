@@ -107,7 +107,6 @@ For example, all checks of `resource` type and `aws` provider are implementing t
 
 For a full implementation example of a check, please refer the [Policies documentation](../1.Introduction/Policies.md).
 
-If you in the situation, where you wan't to validate something general like a naming convention, you can use the typed `abstract` base class. This will provide you with an additional argument indicating the type of the current resource. But do not use this to write more complex checks for different types. Checks should still have one purpose and be focused on one thing. 
 
 ## Testing
 
