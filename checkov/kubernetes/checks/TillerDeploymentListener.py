@@ -6,7 +6,7 @@ from checkov.kubernetes.checks.Tiller import Tiller
 class TillerDeploymentListener(BaseK8Check):
 
     def __init__(self):
-        name = "Ensure that the Helm v2 Tiller Deployment is not accessible from within the cluster"
+        name = "Ensure the Tiller Deployment (Helm V2) is not accessible from within the cluster"
         id = "CKV_K8S_45"
         # Location: container .image
         supported_kind = ['containers', 'initContainers']
