@@ -18,9 +18,8 @@ class TillerDeploymentListener(BaseK8Check):
 
     def scan_spec_conf(self, conf):
 
-        # reuse the existing logic in case it ever changes.
-        is_tiller = Tiller().scan_spec_conf(conf) == CheckResult.FAILED
-
+        is_tiller = Tiller.is_tiller(conf)
+        
         if not is_tiller:
             return CheckResult.UNKNOWN
 
