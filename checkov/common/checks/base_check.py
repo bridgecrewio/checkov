@@ -66,7 +66,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     @classmethod
     @scan_entity_conf.add_signature(args=["self", "conf"])
     def _scan_entity_conf_self_conf(cls, wrapped):
-        def wrapper(self, conf, entity_type):
+        def wrapper(self, conf, entity_type=None):
+            # keep default argument for entity_type so old code, that doesn't set it, will work.
             return wrapped(self, conf)
 
         return wrapper

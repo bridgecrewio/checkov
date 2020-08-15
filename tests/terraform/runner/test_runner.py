@@ -4,7 +4,7 @@ import unittest
 import dpath.util
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.module.typed_base_module_check import TypedBaseModuleCheck
+from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
 
@@ -16,7 +16,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/example"
         runner = Runner()
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
-        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
@@ -160,7 +161,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/many_providers"
         tf_file = f"{valid_dir_path}/main.tf"
         runner = Runner()
-        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(checks='CKV_AWS_41'))
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(checks='CKV_AWS_41'))
         self.assertEqual(len(result.passed_checks), 16)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
 
@@ -205,7 +207,7 @@ class TestRunnerValid(unittest.TestCase):
         from checkov.common.models.enums import CheckResult
         from checkov.terraform.checks.module.registry import module_registry
 
-        class ModuleCheck(TypedBaseModuleCheck):
+        class ModuleCheck(BaseModuleCheck):
 
             def __init__(self):
                 name = "Test check"
@@ -214,7 +216,7 @@ class TestRunnerValid(unittest.TestCase):
                 categories = []
                 super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-            def typed_scan_module_conf(self, conf, entity_type):
+            def scan_module_conf(self, conf, entity_type):
                 nonlocal test_self
                 test_self.assertEqual("module", entity_type)
                 return CheckResult.PASSED
