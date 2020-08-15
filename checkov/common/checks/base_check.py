@@ -1,45 +1,11 @@
-import inspect
 import logging
-from abc import abstractmethod, ABCMeta
-from functools import update_wrapper
+from abc import abstractmethod
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
 
-class _CheckMeta(ABCMeta):
-    def __new__(mcs, name, bases, *args, **kwargs):
-        cls = super().__new__(mcs, name, bases, *args, **kwargs)
-        _CheckMeta._fix_scan_entity_conf(cls)
-        return cls
-
-    @staticmethod
-    def _fix_scan_entity_conf(cls):
-        """
-        Ensures that `scan_entity_conf` must not expect entity_type. If the implementation doesn't expect it, the method
-        is wrapped into a method that expects it but discards it.
-        :param cls: the check class to modify.
-        """
-        function = cls.scan_entity_conf
-        args = inspect.getargs(function.__code__).args
-        if args == ["self", "conf", "entity_type"]:
-            # correct implementation according to the current standpoint.
-            wrapper = function
-        elif args == ["self", "conf"]:
-            # First implementation which does not expect `entity_type`
-            # we discard the argument
-            def wrapper(self, conf, entity_type):
-                return function(self, conf)
-        else:
-            # unknown implementation
-            raise NotImplementedError(
-                f"The signature {args} for {function.__name__} is not supported. "
-                f"See {BaseCheck.__module__}.{BaseCheck.__name__}.{BaseCheck.scan_entity_conf.__name__}."
-            )
-        update_wrapper(wrapper, function)
-        cls.scan_entity_conf = wrapper
-
-
-class BaseCheck(metaclass=_CheckMeta):
+class BaseCheck(metaclass=MultiSignatureMeta):
     id = ""
     name = ""
     categories = []
@@ -93,5 +59,14 @@ class BaseCheck(metaclass=_CheckMeta):
         return check_result
 
     @abstractmethod
+    @multi_signature()
     def scan_entity_conf(self, conf, entity_type):
         raise NotImplementedError()
+
+    @classmethod
+    @scan_entity_conf.add_signature(args=["self", "conf"])
+    def _scan_entity_conf_self_conf(cls, wrapped):
+        def wrapper(self, conf, entity_type):
+            return wrapped(self, conf)
+
+        return wrapper

@@ -61,8 +61,8 @@ class TestBaseCheck(unittest.TestCase):
                     return CheckResult.PASSED
         self.assertIsInstance(context.exception, NotImplementedError)
         self.assertEquals(
-            f'The signature {["self", "conf", "some_unexpected_parameter_123"]} for scan_entity_conf is not supported. '
-            f'See {BaseCheck.__module__}.{BaseCheck.__name__}.{BaseCheck.scan_entity_conf.__name__}.',
+            "The signature ((\'self\', \'conf\', \'some_unexpected_parameter_123\'), None, None) for scan_entity_conf "
+            "is not supported.",
             context.exception.args[0]
         )
 
