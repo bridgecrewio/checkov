@@ -17,7 +17,11 @@ from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_per
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
 DEFAULT_REGION = "us-west-2"
-http = urllib3.PoolManager()
+
+try:
+    http = urllib3.ProxyManager(os.environ['https_proxy'])
+except KeyError:
+    http = urllib3.PoolManager()
 
 
 class BcPlatformIntegration(object):
