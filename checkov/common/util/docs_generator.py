@@ -1,34 +1,29 @@
 #!/usr/bin/env python
-from functools import cmp_to_key
+
+import re
 
 from tabulate import tabulate
 
-from checkov.terraform.checks.data.registry import data_registry
-from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.arm.registry import arm_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.kubernetes.registry import registry as k8_registry
 from checkov.serverless.registry import sls_registry
-from checkov.arm.registry import arm_registry
+from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.resource.registry import resource_registry
+
+ID_PARTS_PATTERN = re.compile(r'(\D*)(\d*)')
 
 
-def check_compare(c1, c2):
-    c1: str = c1[0]
-    c2: str = c2[0]
-
-    c1_index = c1.rindex('_')
-    c2_index = c2.rindex('_')
-
-    c1_prefix = c1[0:c1_index]
-    c1_number = int(c1[c1_index + 1:])
-
-    c2_prefix = c2[0:c2_index]
-    c2_number = int(c2[c2_index + 1:])
-
-    if c1_prefix == c2_prefix:
-        return c1_number - c2_number
-    else:
-        return -1 if c1 < c2 else 1
+def get_compare_key(c):
+    res = []
+    for match in ID_PARTS_PATTERN.finditer(c[0]):
+        text, number = match.groups()
+        numeric_value = int(number) if number else 0
+        # count number of leading zeros
+        same_number_ordering = len(number) - len(number.lstrip('0'))
+        res.append((text, numeric_value, same_number_ordering))
+    return res
 
 
 def print_checks(framework="all"):
@@ -67,7 +62,8 @@ def get_checks(framework="all"):
         for key in arm_registry.checks.keys():
             for check in arm_registry.checks[key]:
                 printable_checks_list.append([check.id, "resource", key, check.name, "arm"])
-    return sorted(printable_checks_list, key=cmp_to_key(check_compare))
+    return sorted(printable_checks_list, key=get_compare_key)
+
 
 if __name__ == '__main__':
     print_checks()
