@@ -37,11 +37,16 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
+                # Don't walk in to "node_modules" directories under the root folder. If –for some reason–
+                # scanning one of these is desired, it can be directly specified.
+                if "node_modules" in d_names:
+                    d_names.remove("node_modules")
+
                 filter_ignored_directories(d_names)
                 for file in f_names:
                     if file in SLS_FILE_MASK:
                         full_path = os.path.join(root, file)
-                        if 'node_modules' not in full_path and "/." not in full_path:
+                        if "/." not in full_path:
                             # skip temp directories
                             files_list.append(full_path)
 
