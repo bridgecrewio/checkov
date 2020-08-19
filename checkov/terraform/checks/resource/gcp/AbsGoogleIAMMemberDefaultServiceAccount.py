@@ -13,11 +13,7 @@ class AbsGoogleIAMMemberDefaultServiceAccount(BaseResourceCheck):
         super().__init__(name, id, categories, supported_resources)
 
     def scan_resource_conf(self, conf):
-        members_conf = []
-        if 'members' in conf:
-            members_conf = conf['members'][0]
-        elif 'member' in conf:
-            members_conf = conf['member']
+        members_conf = conf['members'][0] if 'members' in conf else conf.get('member', [])
         if any(re.match(DEFAULT_SA, member) for member in members_conf):
             return CheckResult.FAILED
         return CheckResult.PASSED
