@@ -1,7 +1,7 @@
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-DENIED_ROLES = [
+IMPERSONATION_ROLES = [
     "roles/owner",
     "roles/editor",
     "roles/iam.securityAdmin",
@@ -22,11 +22,11 @@ DENIED_ROLES = [
 ]
 
 
-class AbsGoogleImpersonationRole(BaseResourceCheck):
+class AbsGoogleImpersonationRoles(BaseResourceCheck):
     def __init__(self, name, id, categories, supported_resources):
         super().__init__(name, id, categories, supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'role' in conf and conf['role'][0] in DENIED_ROLES:
+        if 'role' in conf and conf['role'][0] in IMPERSONATION_ROLES:
             return CheckResult.FAILED
         return CheckResult.PASSED
