@@ -8,7 +8,7 @@ from checkov.terraform.checks.data.base_check import BaseDataCheck
 DEFAULT_SA = re.compile(".*-compute@developer\.gserviceaccount\.com|.*@appspot\.gserviceaccount\.com")
 
 
-class AbsGoogleIAMMemberDefaultServiceAccount(BaseDataCheck):
+class AbsGooglePolicyDefaultServiceAccount(BaseDataCheck):
     def __init__(self, name, id, categories, supported_data):
         super().__init__(name, id, categories, supported_data)
 
