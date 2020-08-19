@@ -30,7 +30,7 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if file in SLS_FILE_MASK:
+                if os.path.basename(file) in SLS_FILE_MASK:
                     parse_result = parse(file)
                     if parse_result:
                         (definitions[file], definitions_raw[file]) = parse_result
