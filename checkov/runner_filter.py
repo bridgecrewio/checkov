@@ -24,13 +24,9 @@ class RunnerFilter(object):
         self.external_check_ids.add(check_id)
 
     def should_run_check(self, check_id):
-        if check_id in self.external_check_ids:
-            pass        # enabled unless skipped
-        elif self.checks:
-            if check_id in self.checks:
-                return True
-            else:
-                return False
-        if self.skip_checks and check_id in self.skip_checks:
-            return False
+        if self.checks:
+            return check_id in self.checks
+        elif self.skip_checks:
+            return check_id not in self.skip_checks
+
         return True
