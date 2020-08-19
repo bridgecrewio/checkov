@@ -2,11 +2,11 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GoogleProjectDefaultSAImpersonationRole import check
+from checkov.terraform.checks.resource.gcp.GoogleProjectMemberDefaultServiceAccount import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestGoogleProjectImpersonationRole(unittest.TestCase):
+class TestGoogleProjectMemberDefaultServiceAccount(unittest.TestCase):
 
     def test_failure_binding(self):
         hcl_res = hcl2.loads("""
