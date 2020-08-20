@@ -106,7 +106,6 @@ the real values.
                         default = default.strip()
 
                     try:
-                        print(f"dpath.get: {location}: {template}")
                         # NOTE: String must be quoted to avoid issues with dashes and other reserved
                         #       characters. If we just wrap the whole thing, dot separators won't work so:
                         #       split and join with individually wrapped tokens.
