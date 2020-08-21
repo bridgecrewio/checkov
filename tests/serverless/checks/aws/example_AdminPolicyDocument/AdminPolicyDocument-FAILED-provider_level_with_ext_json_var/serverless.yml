@@ -1,0 +1,30 @@
+service: my-sls-service
+
+custom: ${file(customVars.json)}
+
+provider:
+  name: aws
+  runtime: python3.7
+  stackName: lambda-${self:service.name}
+  tag: ${opt:tag}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: ${self:custom.my_sneaky_custom_var}
+      Resource: ${self:custom.my_sneaky_custom_var}
+
+functions:
+  myFunc:
+    name: myFunc-provider-level-with-var
+    tags:
+      RESOURCE: lambda
+      PUBLIC: false
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "lambda:InvokeFunction"
+        Resource:
+          - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:invokedLambda"
+    handler: Handler.handle
+    timeout: 600
+    memorySize: 320

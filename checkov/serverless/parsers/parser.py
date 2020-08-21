@@ -1,7 +1,11 @@
+import json
+import os
+
 import jmespath
 import logging
 import re
 
+import yaml
 from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
@@ -17,9 +21,16 @@ FUNCTIONS_TOKEN = 'functions'
 ENVIRONMENT_TOKEN = 'environment'
 SUPPORTED_PROVIDERS = ['aws']
 
+# Examples: ${self:myValue,aDefault}
+#           ${self:myValue}
 SELF_VAR_PATTERN = re.compile(r"\${self:(?P<loc>[\w\-_.]+)(,(?P<default>[\w\-_.]+))?}")
+# Examples: ${file(../myCustomFile.yml):myValue,aDefault}
+#           ${file(../myCustomFile.yml):myValue}
+#           ${file(../myCustomFile.yml)}
+FILE_VAR_PATTERN = re.compile(r"\${file\((?P<file>.*)\)(:(?P<loc>[\w\-_.]+)(,(?P<default>[\w\-_.]+))?)?}")
 
 def parse(filename):
+    print(f"**** {os.path.dirname(filename)} ****")
     template = None
     template_lines = None
     try:
@@ -44,7 +55,7 @@ def parse(filename):
     except YAMLError as err:
         return
 
-    process_variables(template)
+    process_variables(template, os.path.dirname(filename))
 
     return template, template_lines
 
@@ -77,55 +88,101 @@ def template_contains_key(template, key):
     return False
 
 
-def process_variables(template):
+def process_variables(template, directory):
     """
 Modifies the template data in-place to resolve variables.
     """
-    process_self_variables(template)
+
+    # Support for ${file(...):...} variables
+    file_data_cache = {}
+    process_variables_loop(template, FILE_VAR_PATTERN,
+                           lambda d: _file_var_data_lookup(d, file_data_cache, directory))
+
+    # Support for ${self:...} variables
+    process_variables_loop(template, SELF_VAR_PATTERN,
+                           lambda d: _self_var_data_lookup(d, template))
 
 
-def process_self_variables(template, processing_subdict=None):
+def process_variables_loop(processing_dict, var_pattern, match_groups_to_value):
     """
-This processes "self" variables (e.g., "${self:custom.var}) in values and replaces such variables with
-the real values.
+Generic processing loop for variables.
+    :param processing_dict:                 The dictionary currently being processed. This function will
+                                            be called recursively starting at dict provided.
+    :param var_pattern:                     A compiled regex pattern which should name match groups
+                                            if they are needed for looking up the data source.
+    :param match_groups_to_value:           A Callable accepting a dictionary of match groups
+                                            (via `groupdict`) and returning a final value to substitute for
+                                            the matched portion. If None is returned, the variable will be
+                                            left unreplaced.
     """
-    if processing_subdict is None:
-        processing_subdict = template
-
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
     def process_items(key_value_iterator, data_map):
         for key, value in key_value_iterator():
             if isinstance(value, str):
                 altered_value = value
-                for match in SELF_VAR_PATTERN.finditer(value):
-                    location = match.group("loc")
-                    default = match.group("default")
-                    if default is None:
-                        default = ""
-                    else:
-                        default = default.strip()
-
-                    try:
-                        # NOTE: String must be quoted to avoid issues with dashes and other reserved
-                        #       characters. If we just wrap the whole thing, dot separators won't work so:
-                        #       split and join with individually wrapped tokens.
-                        #         Original:  foo.bar-baz
-                        #         Wrapped:   "foo"."bar-baz"
-                        location = ".".join([f'"{token}"' for token in location.split(".")])
-                        source_value = jmespath.search(location, template)
-                    except KeyError:
-                        source_value = default
-                    except Exception as e:
-                        print(e)
-                        continue
-                    if source_value is None:
-                        source_value = default
-
-                    altered_value = altered_value.replace(match[0], source_value)
-                data_map[key] = altered_value
+                for match in var_pattern.finditer(value):
+                    source_value = match_groups_to_value(match.groupdict())
+                    if altered_value == match[0]:           # complete replacement
+                        altered_value = source_value
+                    else:                                   # partial replacement
+                        altered_value = altered_value.replace(match[0], source_value)
+                if value != altered_value:
+                    data_map[key] = altered_value
+                    print(f"Resolved - {key} : {value} -> {altered_value}")
             elif isinstance(value, dict):
-                process_self_variables(template, value)
+                process_variables_loop(value, var_pattern, match_groups_to_value)
             elif isinstance(value, list):
                 process_items(lambda: enumerate(value), value)
 
-    process_items(processing_subdict.items, processing_subdict)
+    process_items(processing_dict.items, processing_dict)
+
+
+def _load_file_data(file):
+    try:
+        with open(file, "r") as f:
+            if file.endswith(".json"):
+                return json.load(f)
+            elif file.endswith(".yml") or file.endswith(".yaml"):
+                return yaml.safe_load(f)
+    except:
+        return {}
+
+
+def _determine_variable_value_from_dict(source_dict, location_str, default):
+    if location_str is None:
+        return source_dict
+
+    if default is None:
+        default = ""
+    else:
+        default = default.strip()
+
+    # NOTE: String must be quoted to avoid issues with dashes and other reserved
+    #       characters. If we just wrap the whole thing, dot separators won't work so:
+    #       split and join with individually wrapped tokens.
+    #         Original:  foo.bar-baz
+    #         Wrapped:   "foo"."bar-baz"
+    location = ".".join([f'"{token}"' for token in location_str.split(".")])
+    source_value = jmespath.search(location, source_dict)
+    if source_value is None:
+        source_value = default
+    return source_value
+
+
+def _self_var_data_lookup(group_dict, template):
+    location = group_dict["loc"]
+    default = group_dict.get("default")
+    return _determine_variable_value_from_dict(template, location, default)
+
+
+def _file_var_data_lookup(group_dict, file_data_cache, directory):
+    file = group_dict["file"]
+
+    data = file_data_cache.get(file)
+    if data is None:
+        data = _load_file_data(os.path.join(directory, file))
+        file_data_cache[file] = data
+
+    location = group_dict["loc"]
+    default = group_dict.get("default")
+    return _determine_variable_value_from_dict(data, location, default)
