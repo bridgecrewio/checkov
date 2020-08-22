@@ -17,10 +17,10 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'min_tls_version' in conf:
-            if conf['min_tls_version'][0] == 'TLS1_2':
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+        if 'min_tls_version' not in conf or \
+                conf['min_tls_version'][0] == 'TLS1_0' or conf['min_tls_version'][0] == 'TLS1_1':
+            return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = StorageAccountMinimumTlsVersion()
