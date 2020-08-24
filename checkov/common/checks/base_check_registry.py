@@ -10,6 +10,8 @@ from typing import Generator, Tuple
 
 from checkov.common.checks.base_check import BaseCheck
 
+from collections import defaultdict
+
 
 class BaseCheckRegistry(object):
     # TODO why do we had static elements in the first place?

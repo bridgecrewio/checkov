@@ -214,7 +214,7 @@ Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
 
 ## Alternatives
 
-For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec), [Terrascan](https://github.com/cesar-rodriguez/terrascan) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline).
+For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline) for secured basline.
 
 For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
 

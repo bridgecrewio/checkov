@@ -11,9 +11,10 @@ pipenv-setup = "*"
 GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"
+bc-python-hcl2 = "*"
 
 [packages]
-bc-python-hcl2 = ">=0.3.2"
+bc-python-hcl2 = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tiller
+  labels:
+    app: tiller
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: helm
+      name: tiller
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: helm
+        name: tiller
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - args:
+        - --listen=0.0.0.0:44134
+        env:
+        - name: TILLER_NAMESPACE
+          value: kube-system
+        - name: TILLER_HISTORY_MAX
+          value: "0"
+        image: gcr.io/kubernetes-helm/tiller:v2.16.9
+        name: tiller
+        ports:
+        - containerPort: 44134
+          name: tiller
+          protocol: TCP
+        - containerPort: 44135
+          name: http
+          protocol: TCP

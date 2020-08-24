@@ -31,7 +31,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         if rule_type in conf.keys():
             for rule in conf[rule_type]:
                 if isinstance(rule, dict):
-                    if 'description' not in rule.keys():
+                    if 'description' not in rule.keys() or not rule['description']:
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
