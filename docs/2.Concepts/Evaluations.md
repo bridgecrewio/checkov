@@ -141,3 +141,37 @@ evaluations: {
   ...
 }
 ```
+
+# Further Terraform Concepts
+
+## Scanning third party Terraform modules
+
+Third party Terraform modules often reduce complexity for deploying services made up of many objects.
+
+For example, the third party EKS module by howdio reduces the terraform required to the nine lines below, however, in doing so abstracts the terraform configuration away from a regular Checkov scan on the current directory.
+
+```
+module "eks" {
+  source = "howdio/eks/aws"
+
+  name        = "examplecluster"
+  default_vpc = true
+
+  enable_kubectl   = true
+  enable_dashboard = true
+}
+```
+
+To ensure coverage of objects within these modules, you can instruct checkov to scan the `.terraform` directory, after a `terraform init`, which will have retreived the third party modules and any associated `.tf` files.
+
+```sh
+terraform init
+checkov -d . # Your TF files.
+checkov -d .terraform # Module TF files.
+```
+
+
+![module-scanning-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/scanning-terraform-module.png)
+
+
+It is worth noting however, when scanning the `.terraform` directory, Checkov cannot differentiate between third party and internally written modules, however, you will gain scanning coverage for all of them.
