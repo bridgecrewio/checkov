@@ -29,8 +29,8 @@ SELF_VAR_PATTERN = re.compile(r"\${self:(?P<loc>[\w\-_.]+)(,(?P<default>[\w\-_.]
 #           ${file(../myCustomFile.yml)}
 FILE_VAR_PATTERN = re.compile(r"\${file\((?P<file>.*)\)(:(?P<loc>[\w\-_.]+)(,(?P<default>[\w\-_.]+))?)?}")
 
+
 def parse(filename):
-    print(f"**** {os.path.dirname(filename)} ****")
     template = None
     template_lines = None
     try:
@@ -49,10 +49,10 @@ def parse(filename):
             logger.error('Permission denied when accessing template file: %s',
                          filename)
             return
-    except UnicodeDecodeError as err:
+    except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return
-    except YAMLError as err:
+    except YAMLError:
         return
 
     process_variables(template, os.path.dirname(filename))
@@ -93,14 +93,28 @@ def process_variables(template, directory):
 Modifies the template data in-place to resolve variables.
     """
 
-    # Support for ${file(...):...} variables
-    file_data_cache = {}
-    process_variables_loop(template, FILE_VAR_PATTERN,
-                           lambda d: _file_var_data_lookup(d, file_data_cache, directory))
+    # Processing is done in a loop to deal with chained references and the like.
+    # Loop while the data is being changed, stop when no more changes are happening.
+    # To ensure there's not some kind of oscillation, a cap of 25 passes is in place.
+    # More than a loop or two isn't normally expected.
+    for i in range(0, 25):
+        made_change = False
 
-    # Support for ${self:...} variables
-    process_variables_loop(template, SELF_VAR_PATTERN,
-                           lambda d: _self_var_data_lookup(d, template))
+        # Support for ${file(...):...} variables
+        file_data_cache = {}
+        if process_variables_loop(template, FILE_VAR_PATTERN,
+                                  lambda d: _file_var_data_lookup(d, file_data_cache, directory)):
+            made_change = True
+
+        # Support for ${self:...} variables
+        if process_variables_loop(template, SELF_VAR_PATTERN,
+                                  lambda d: _self_var_data_lookup(d, template)):
+            made_change = True
+
+        if not made_change:
+            break
+
+    return template
 
 
 def process_variables_loop(processing_dict, var_pattern, match_groups_to_value):
@@ -117,24 +131,33 @@ Generic processing loop for variables.
     """
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
     def process_items(key_value_iterator, data_map):
+        made_change = False
         for key, value in key_value_iterator():
             if isinstance(value, str):
                 altered_value = value
                 for match in var_pattern.finditer(value):
                     source_value = match_groups_to_value(match.groupdict())
+
+                    # If we can't find a value, skip it
+                    if source_value is None:
+                        continue
+
                     if altered_value == match[0]:           # complete replacement
                         altered_value = source_value
                     else:                                   # partial replacement
                         altered_value = altered_value.replace(match[0], source_value)
                 if value != altered_value:
                     data_map[key] = altered_value
-                    print(f"Resolved - {key} : {value} -> {altered_value}")
+                    made_change = True
             elif isinstance(value, dict):
-                process_variables_loop(value, var_pattern, match_groups_to_value)
+                if process_variables_loop(value, var_pattern, match_groups_to_value):
+                    made_change = True
             elif isinstance(value, list):
-                process_items(lambda: enumerate(value), value)
+                if process_items(lambda: enumerate(value), value):
+                    made_change = True
+        return made_change
 
-    process_items(processing_dict.items, processing_dict)
+    return process_items(processing_dict.items, processing_dict)
 
 
 def _load_file_data(file):
@@ -152,9 +175,7 @@ def _determine_variable_value_from_dict(source_dict, location_str, default):
     if location_str is None:
         return source_dict
 
-    if default is None:
-        default = ""
-    else:
+    if default is not None:
         default = default.strip()
 
     # NOTE: String must be quoted to avoid issues with dashes and other reserved
@@ -165,7 +186,7 @@ def _determine_variable_value_from_dict(source_dict, location_str, default):
     location = ".".join([f'"{token}"' for token in location_str.split(".")])
     source_value = jmespath.search(location, source_dict)
     if source_value is None:
-        source_value = default
+        return default
     return source_value
 
 
