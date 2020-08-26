@@ -57,7 +57,7 @@ class Runner(BaseRunner):
 
         for sls_file in definitions.keys():
             if isinstance(definitions[sls_file], dict_node):
-                if CFN_RESOURCES_TOKEN in definitions[sls_file]:
+                if CFN_RESOURCES_TOKEN in definitions[sls_file] and isinstance(definitions[sls_file][CFN_RESOURCES_TOKEN], dict_node):
                     cf_sub_template = definitions[sls_file][CFN_RESOURCES_TOKEN]
                     cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
                     logging.debug("Template Dump for {}: {}".format(sls_file, definitions[sls_file], indent=2))
