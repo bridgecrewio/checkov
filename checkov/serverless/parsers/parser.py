@@ -59,7 +59,7 @@ def is_checked_sls_template(template):
 
 
 def template_contains_cfn_resources(template):
-    if template.__contains__(CFN_RESOURCES_TOKEN):
+    if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], dict_node):
         if template[CFN_RESOURCES_TOKEN].get('Resources'):
             return True
     return False
