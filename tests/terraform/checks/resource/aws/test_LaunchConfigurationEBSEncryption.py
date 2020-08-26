@@ -45,6 +45,39 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_omission_root_block_device_1(self):
+        #Test to ensure no false negative as raised in issue 496
+        hcl_res = hcl2.loads("""
+                            resource "aws_instance" "test" {
+                              ami                  = var.ami_id
+                              instance_type        = var.instance_type
+                              key_name             = var.key_name
+
+                              ebs_block_device {
+                                volume_type = "gp2"
+                                volume_size = var.ebs_volume_size
+                                device_name = "/dev/xvdb"
+                                encrypted = false
+                              }
+                            }
+                                """)
+        resource_conf = hcl_res['resource'][0]['aws_instance']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)    
+
+    def test_failure_omission_root_block_device_2(self):
+        #Test to ensure no false negative as raised in issue 496
+        hcl_res = hcl2.loads("""
+                            resource "aws_instance" "test" {
+                              ami                  = var.ami_id
+                              instance_type        = var.instance_type
+                              key_name             = var.key_name
+                            }
+                                """)
+        resource_conf = hcl_res['resource'][0]['aws_instance']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)    
+
     def test_success(self):
         hcl_res = hcl2.loads("""
                         resource "aws_instance" "test" {
@@ -63,6 +96,31 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_multiple_ordering(self):
+        hcl_res = hcl2.loads("""
+                            resource "aws_instance" "test" {
+                              ami                  = var.ami_id
+                              instance_type        = var.instance_type
+                              key_name             = var.key_name
+
+                              ebs_block_device {
+                                volume_type = "gp2"
+                                volume_size = var.ebs_volume_size
+                                device_name = "/dev/xvdb"
+                                encrypted = true
+                              }
+
+                              root_block_device {
+                                volume_type = "gp2"
+                                volume_size = var.root_volume_size
+                                encrypted = true
+                              }
+
+                            }
+                                """)
+        resource_conf = hcl_res['resource'][0]['aws_instance']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
