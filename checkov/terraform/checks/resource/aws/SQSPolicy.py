@@ -21,7 +21,7 @@ class SQSPolicy(BaseResourceCheck):
         """
         if "policy" in conf.keys():
             if is_json(conf["policy"][0]):
-                if json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':
+                if json.loads(conf["policy"][0])['Statement'][0]['Action'] == '*':
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
