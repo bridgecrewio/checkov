@@ -22,7 +22,7 @@ class TestSQSPolicy(unittest.TestCase):
                         "Sid": "First",
                         "Effect": "Allow",
                         "Principal": "*",
-                        "Action": "sqs:SendMessage",
+                        "Action": "*",
                         "Resource": "${aws_sqs_queue.q.arn}",
                         "Condition": {
                             "ArnEquals": {
