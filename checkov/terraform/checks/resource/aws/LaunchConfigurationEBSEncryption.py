@@ -20,10 +20,17 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
+        have_root_block = 0
         for key in conf.keys():
             if "block_device" in key and "ephemeral" not in key:
                 if isinstance(conf[key][0], dict) and conf[key][0].get("encrypted") != [True]:
                     return CheckResult.FAILED
+            if "root_block_device" in key:
+                # Issue 496 - TF will create unencrypted EBS root by default if whole root_block_device block is omitted.
+                have_root_block = 1
+        if have_root_block == 0: 
+            return CheckResult.FAILED
+
         return CheckResult.PASSED
 
 
