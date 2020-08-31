@@ -1,21 +1,13 @@
 import os
 import unittest
 
-from checkov.serverless.parsers.parser import process_variables, SELF_VAR_PATTERN
+from checkov.serverless.parsers.parser \
+    import process_variables, _tokenize_by_commas, _token_to_type_and_loc, _parse_var
 
 
 IRRELEVANT_DIR = os.curdir
 
 class TestParser(unittest.TestCase):
-
-    def test_ungreedy_match(self):
-        count = 0
-        for m in SELF_VAR_PATTERN.finditer("${self:source.nested1} - "
-                                           "${self:source.more_nesting.nested2} - "
-                                           "${self:bogus,aDefault}"):
-            print(m[0])
-            count += 1
-        self.assertEqual(3, count)
 
     #########################################
     # "Self" variable processing
@@ -248,6 +240,146 @@ class TestParser(unittest.TestCase):
         }
         # Should just finish, no hang, no changes
         self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_nested(self):
+        case = {
+            "second-value": "final",
+            "first-value": "second",
+            "consumer": "${self:${self:first-value}-value}"
+        }
+        expected = {
+            "second-value": "final",
+            "first-value": "second",
+            "consumer": "final"
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_overwriting_variables(self):
+        case = {
+            "fallback": "final",
+            "value": "${self:doesnt-exist, self:fallback}"
+        }
+        expected = {
+            "fallback": "final",
+            "value": "final"
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_custom_variable_syntax(self):
+        case = {
+            "provider": {
+                "variableSyntax": "\\${{([ ~:a-zA-Z0-9._@\\'\",\\-\\/\\(\\)]+?)}}"
+            },
+            "custom": {
+                "consumer": "${{self: custom.source}}",
+                "source": "final"
+            }
+        }
+        expected = {
+            # NOTE: variableSyntax entry is removed to prevent self-matching
+            "provider": {},
+            "custom": {
+                "consumer": "final",
+                "source": "final"
+            }
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_deep_var_override(self):
+        case = {
+            "custom": {
+                "val1": "${self:not.a.value, 'bar'}",
+                "val2": "${self:custom.val1}"
+            }
+        }
+        expected = {
+            "custom": {
+                "val1": "bar",
+                "val2": "bar"
+            }
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_deep_references_into_deep_vars(self):
+        case = {
+            "custom": {
+                "val0": {
+                    "foo": "bar"
+                },
+                "val1": '${self:custom.val0}',
+                "val2": '${self:custom.val1.foo}',
+            }
+        }
+        expected = {
+            "custom": {
+                "val0": {
+                    "foo": 'bar',
+                },
+                "val1": {
+                    "foo": 'bar',
+                },
+                "val2": 'bar',
+            }
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_quoted_vars(self):
+        case = {
+            "consumer": "${self: custom.bogus, \"value, with, commas\"}",
+        }
+        expected = {
+            "consumer": "value, with, commas"
+        }
+        self.assertEqual(expected, process_variables(case, IRRELEVANT_DIR))
+
+    def test_tokenize_by_commas(self):
+        self.assertEqual(["single"],
+                         _tokenize_by_commas("single"))
+        self.assertEqual(["one", "two"],
+                         _tokenize_by_commas("one,two"))
+        self.assertEqual(["one", "two"],
+                         _tokenize_by_commas("one, two"))
+        # Double quotes
+        self.assertEqual(["separate", "commas, in, value", "another"],
+                         _tokenize_by_commas("separate, \"commas, in, value\", another"))
+        self.assertEqual(["commas, in, value", "another"],
+                         _tokenize_by_commas("\"commas, in, value\", another"))
+        self.assertEqual(["separate", "commas, in, value"],
+                         _tokenize_by_commas("separate, \"commas, in, value\""))
+        # Single quotes
+        self.assertEqual(["separate", "commas, in, value", "another"],
+                         _tokenize_by_commas("separate, 'commas, in, value', another"))
+        self.assertEqual(["commas, in, value", "another"],
+                         _tokenize_by_commas("'commas, in, value', another"))
+        self.assertEqual(["separate", "commas, in, value"],
+                         _tokenize_by_commas("separate, 'commas, in, value'"))
+
+    def test_token_to_type_and_loc(self):
+        self.assertEqual(("self", "foo"),
+                         _token_to_type_and_loc("self:foo"))
+        self.assertEqual(("self", "foo"),
+                         _token_to_type_and_loc("self: foo"))
+        self.assertEqual(("something_made_up", "bar"),
+                         _token_to_type_and_loc("something_made_up:bar"))
+        self.assertEqual(("file(~/settings.yaml)", "foo"),
+                         _token_to_type_and_loc("file(~/settings.yaml):foo"))
+        self.assertEqual(("file(~/settings.yaml)", None),
+                         _token_to_type_and_loc("file(~/settings.yaml)"))
+
+    def test_parse_var(self):
+        self.assertEqual(("self", "foo", "self", "bar"),
+                         _parse_var("self:foo,self:bar"))
+        self.assertEqual(("self", "foo", None, "bar"),
+                         _parse_var("self:foo,bar"))
+        self.assertEqual(("file(settings.yaml)", "foo", "self", "bar"),
+                         _parse_var("file(settings.yaml):foo,self:bar"))
+        self.assertEqual(("file(settings.yaml)", "foo", None, None),
+                         _parse_var("file(settings.yaml):foo"))
+        self.assertEqual(("file(settings.yaml)", None, None, None),
+                         _parse_var("file(settings.yaml)"))
+
+        self.assertEqual(("self", "foo", None, None),
+                         _parse_var("self: foo"))       # eat whitespace
 
 
 if __name__ == '__main__':

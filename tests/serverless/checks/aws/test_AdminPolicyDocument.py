@@ -12,13 +12,16 @@ class TestAdminPolicyDocument(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
+        # Used in
+        os.environ["sneaky_var"] = "*"
+
         test_files_dir = current_dir + "/example_AdminPolicyDocument"
-        report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 1,
                          f"Passed checks: {[fc.file_path for fc in report.passed_checks]}")
-        self.assertEqual(summary['failed'], 5,
+        self.assertEqual(summary['failed'], 6,
                          f"Failed checks: {[fc.file_path for fc in report.failed_checks]}")
         self.assertEqual(summary['skipped'], 0,
                          f"Skipped checks: {[fc.file_path for fc in report.skipped_checks]}")
