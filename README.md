@@ -9,6 +9,7 @@
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
+[![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
