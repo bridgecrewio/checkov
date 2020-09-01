@@ -13,6 +13,15 @@ This guide covers all the necessary stages required to building and contributing
 3. Testing
 4. Pull Request
 
+# Video guide
+
+<div align="left">
+      <a href="https://www.youtube.com/watch?v=62F1-50g9D4">
+         <img src="https://img.youtube.com/vi/62F1-50g9D4/0.jpg" style="width:100%;">
+      </a>
+</div>
+
+# Scripted guide
 ## Contribution Stages
 1. Prerequisites
     * Install Checkov as described in the [Installation](#installation) subsection.

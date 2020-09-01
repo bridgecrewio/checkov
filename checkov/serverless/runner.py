@@ -30,18 +30,23 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if file in SLS_FILE_MASK:
+                if os.path.basename(file) in SLS_FILE_MASK:
                     parse_result = parse(file)
                     if parse_result:
                         (definitions[file], definitions_raw[file]) = parse_result
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
+                # Don't walk in to "node_modules" directories under the root folder. If –for some reason–
+                # scanning one of these is desired, it can be directly specified.
+                if "node_modules" in d_names:
+                    d_names.remove("node_modules")
+
                 filter_ignored_directories(d_names)
                 for file in f_names:
                     if file in SLS_FILE_MASK:
                         full_path = os.path.join(root, file)
-                        if 'node_modules' not in full_path and "/." not in full_path:
+                        if "/." not in full_path:
                             # skip temp directories
                             files_list.append(full_path)
 
@@ -56,53 +61,55 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for sls_file in definitions.keys():
-            if isinstance(definitions[sls_file], dict_node):
-                if CFN_RESOURCES_TOKEN in definitions[sls_file]:
-                    cf_sub_template = definitions[sls_file][CFN_RESOURCES_TOKEN]
-                    cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
-                    logging.debug("Template Dump for {}: {}".format(sls_file, definitions[sls_file], indent=2))
-                    cf_context_parser.evaluate_default_refs()
-                    for resource_name, resource in cf_sub_template['Resources'].items():
-                        if not isinstance(resource, dict_node):
-                            continue
-                        cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
-                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
-                            resource)
-                        if entity_lines_range and entity_code_lines:
-                            skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                            # TODO - Variable Eval Message!
-                            variable_evaluations = {}
+            if not isinstance(definitions[sls_file], dict_node):
+                continue
 
-                            results = cfn_registry.scan(sls_file, {resource_name: resource}, skipped_checks,
-                                                        runner_filter)
-                            for check, check_result in results.items():
-                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=sls_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=cf_resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__)
-                                report.add_record(record=record)
-                if FUNCTIONS_TOKEN in definitions[sls_file]:
-                    template_functions = definitions[sls_file][FUNCTIONS_TOKEN]
-                    sls_context_parser = SlsContextParser(sls_file, definitions[sls_file], definitions_raw[sls_file])
-                    for sls_function_name, sls_function in template_functions.items():
-                        if not isinstance(sls_function, dict_node):
-                            continue
-                        entity_lines_range, entity_code_lines = sls_context_parser.extract_function_code_lines(
-                            sls_function)
-                        if entity_lines_range and entity_code_lines:
-                            skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                            variable_evaluations = {}
-                            sls_context_parser.enrich_function_with_provider(sls_function_name)
-                            results = sls_registry.scan(sls_file, {'function': sls_function,
-                                                                   'provider_type': sls_context_parser.provider_type},
-                                                        skipped_checks, runner_filter)
-                            for check, check_result in results.items():
-                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=sls_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=sls_function_name, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__)
-                                report.add_record(record=record)
+            if CFN_RESOURCES_TOKEN in definitions[sls_file] and isinstance(definitions[sls_file][CFN_RESOURCES_TOKEN], dict_node):
+                cf_sub_template = definitions[sls_file][CFN_RESOURCES_TOKEN]
+                cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
+                logging.debug("Template Dump for {}: {}".format(sls_file, definitions[sls_file], indent=2))
+                cf_context_parser.evaluate_default_refs()
+                for resource_name, resource in cf_sub_template['Resources'].items():
+                    if not isinstance(resource, dict_node):
+                        continue
+                    cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
+                    entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
+                        resource)
+                    if entity_lines_range and entity_code_lines:
+                        skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
+                        # TODO - Variable Eval Message!
+                        variable_evaluations = {}
+
+                        results = cfn_registry.scan(sls_file, {resource_name: resource}, skipped_checks,
+                                                    runner_filter)
+                        for check, check_result in results.items():
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                            code_block=entity_code_lines, file_path=sls_file,
+                                            file_line_range=entity_lines_range,
+                                            resource=cf_resource_id, evaluations=variable_evaluations,
+                                            check_class=check.__class__.__module__)
+                            report.add_record(record=record)
+            if FUNCTIONS_TOKEN in definitions[sls_file]:
+                template_functions = definitions[sls_file][FUNCTIONS_TOKEN]
+                sls_context_parser = SlsContextParser(sls_file, definitions[sls_file], definitions_raw[sls_file])
+                for sls_function_name, sls_function in template_functions.items():
+                    if not isinstance(sls_function, dict_node):
+                        continue
+                    entity_lines_range, entity_code_lines = sls_context_parser.extract_function_code_lines(
+                        sls_function)
+                    if entity_lines_range and entity_code_lines:
+                        skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
+                        variable_evaluations = {}
+                        sls_context_parser.enrich_function_with_provider(sls_function_name)
+                        results = sls_registry.scan(sls_file, {'function': sls_function,
+                                                               'provider_type': sls_context_parser.provider_type},
+                                                    skipped_checks, runner_filter)
+                        for check, check_result in results.items():
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                            code_block=entity_code_lines, file_path=sls_file,
+                                            file_line_range=entity_lines_range,
+                                            resource=sls_function_name, evaluations=variable_evaluations,
+                                            check_class=check.__class__.__module__)
+                            report.add_record(record=record)
 
         return report
