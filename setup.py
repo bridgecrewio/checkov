@@ -72,6 +72,7 @@ setup(
         "colorama==0.4.3",
         "docopt==0.6.2",
         "idna==2.8",
+        "jmespath==0.10.0",
         "junit-xml==1.8",
         "lark-parser==0.7.8",
         "bc-python-hcl2>=0.3.9",
