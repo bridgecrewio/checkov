@@ -1,6 +1,12 @@
 import logging
 import shutil
-from git import Repo
+
+try:
+    from git import Repo
+    git_import_error = None
+except ImportError as e:
+    git_import_error = e
+
 
 from checkov.common.goget.base_getter import BaseGetter
 
@@ -11,6 +17,10 @@ class GitGetter(BaseGetter):
         super().__init__(url)
 
     def do_get(self):
+        if git_import_error is not None:
+            raise ImportError("Unable to load git module (is the git executable available?)") \
+                from git_import_error
+
         clone_dir = self.temp_dir + "/clone/"
         result_dir = self.temp_dir + "/result/"
 
