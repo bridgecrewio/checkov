@@ -302,9 +302,9 @@ Tokenize the given value by commas, respecting quoted blocks.
 
     def clean(s):
         s = s.strip()                               # whitespace
-        if s[0] == '"' and s[len(s)-1] == '"':      # surrounding quotes
+        if len(s) > 0 and s[0] == '"' and s[len(s)-1] == '"':      # surrounding quotes
             s = s[1:-1]
-        if s[0] == "'" and s[len(s)-1] == "'":
+        if len(s) > 0 and s[0] == "'" and s[len(s)-1] == "'":
             s = s[1:-1]
         return s
 
