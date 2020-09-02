@@ -20,15 +20,25 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
-        have_root_block = 0
         for key in conf.keys():
-            if "block_device" in key and "ephemeral" not in key:
-                if isinstance(conf[key][0], dict) and conf[key][0].get("encrypted") != [True]:
+            if (
+                "block_device" in key
+                and
+                "ephemeral" not in key
+            ):
+                if (
+                    isinstance(conf[key][0], dict)
+                    and
+                    conf[key][0].get("encrypted") != [True]
+                    and
+                    # If present, the encrypted flag will be determined by the snapshot
+                    # Note: checkov does not know if snapshot is encrypted, so we default to PASSED
+                    not conf[key][0].get("snapshot_id")
+                ):
                     return CheckResult.FAILED
-            if "root_block_device" in key:
-                # Issue 496 - TF will create unencrypted EBS root by default if whole root_block_device block is omitted.
-                have_root_block = 1
-        if have_root_block == 0: 
+
+        # Issue 496 - TF will create unencrypted EBS root by default if whole root_block_device block is omitted.
+        if "root_block_device" not in conf.keys():
             return CheckResult.FAILED
 
         return CheckResult.PASSED
