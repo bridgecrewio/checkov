@@ -1,19 +1,32 @@
+import fnmatch
 import importlib
 import logging
 import os
 import sys
 from abc import abstractmethod
+from collections import defaultdict
+from itertools import chain
+from typing import Generator, Tuple
+
+from checkov.common.checks.base_check import BaseCheck
 
 from collections import defaultdict
 
 
 class BaseCheckRegistry(object):
-    checks = defaultdict(list)
-    check_id_allowlist = None
+    # TODO why do we had static elements in the first place?
+    # checks = defaultdict(list)
+    # wildcard_checks = defaultdict(list)
+    # check_id_allowlist = None
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
         self.checks = defaultdict(list)
+        # IMPLEMENTATION NOTE: When using a wildcard, every pattern needs to be checked. To reduce the
+        #                      number of checks checks with the same pattern are grouped, which is the
+        #                      reason to use a dict for this too.
+        self.wildcard_checks = defaultdict(list)
         self.check_id_allowlist = None
         self.external_checks_runner_filter = None
 
@@ -29,22 +42,47 @@ class BaseCheckRegistry(object):
             self.external_checks_runner_filter.notify_external_check(check.id)
 
         for entity in check.supported_entities:
-            self.checks[entity].append(check)
+            checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
+            checks[entity].append(check)
+
+    @staticmethod
+    def _is_wildcard(entity):
+        return ('*' in entity
+                or '?' in entity
+                or ('[' in entity and ']' in entity))
 
     def get_check_by_id(self, check_id):
-        for resource_type in self.checks.keys():
-            resource_type_checks = self.checks[resource_type]
-            for check in resource_type_checks:
-                if check_id == check.id:
-                    return check
-        return None
+        return next(
+            filter(
+                lambda c: c.id == check_id,
+                chain(*self.checks.values(), *self.wildcard_checks.values())
+            ), None)
+
+    def all_checks(self) -> Generator[Tuple[str, BaseCheck], None, None]:
+        for entity, checks in self.checks.items():
+            for check in checks:
+                yield entity, check
+        for entity, checks in self.wildcard_checks.items():
+            for check in checks:
+                yield entity, check
+
+    @property
+    def contains_wildcard(self) -> bool:
+        return bool(self.wildcard_checks)
 
     def get_checks(self, entity):
-        if entity in self.checks.keys():
-            return self.checks[entity]
-        return []
+        if not self.wildcard_checks:
+            # Optimisation: When no wildcards are used, we can use the list in self.checks
+            return self.checks.get(entity) or []
+        else:
+            res = self.checks[entity].copy() if entity in self.checks.keys() else []
+            # check wildcards
+            for pattern, checks in self.wildcard_checks.items():
+                if fnmatch.fnmatchcase(entity, pattern):
+                    res += checks
+            return res
 
-    def set_checks_allowlist(self,runner_filter):
+    def set_checks_allowlist(self, runner_filter):
         if runner_filter.checks:
             self.check_id_allowlist = runner_filter.checks
 
@@ -130,4 +168,3 @@ class BaseCheckRegistry(object):
                             )
                         finally:
                             self.external_checks_runner_filter = prior_external_checks_runner_filter
-

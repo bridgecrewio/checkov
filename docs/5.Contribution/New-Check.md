@@ -116,6 +116,7 @@ For example, all checks of `resource` type and `aws` provider are implementing t
 
 For a full implementation example of a check, please refer the [Policies documentation](../1.Introduction/Policies.md).
 
+
 ## Testing
 
 Assuming the implemented check's class is file is found in `checkov/terraform/checks/<type>/<provider>` directory, named `<ClassName>.py`, create an appropriate unit test file in `tests/terraform/checks/<type>/<provider>` directory, named `test_<ClassName>.py`.

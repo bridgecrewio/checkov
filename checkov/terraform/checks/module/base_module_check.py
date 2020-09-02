@@ -11,9 +11,10 @@ class BaseModuleCheck(BaseCheck):
         self.supported_resources = supported_resources
         module_registry.register(self)
 
-    @abstractmethod
-    def scan_resource_conf(self, conf):
-        raise NotImplementedError()
+    def scan_entity_conf(self, conf, entity_type):
+        # entity_type is always 'module'
+        return self.scan_module_conf(conf)
 
-    def scan_entity_conf(self, conf):
-        return self.scan_resource_conf(conf)
+    @abstractmethod
+    def scan_module_conf(self, conf):
+        raise NotImplementedError()

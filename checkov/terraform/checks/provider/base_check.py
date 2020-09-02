@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.common.checks.base_check import BaseCheck
+from checkov.terraform.checks.provider.registry import provider_registry
 
 
 class BaseProviderCheck(BaseCheck):
@@ -11,9 +11,10 @@ class BaseProviderCheck(BaseCheck):
         self.supported_provider = supported_provider
         provider_registry.register(self)
 
+    def scan_entity_conf(self, conf, entity_type):
+        # entity_type is always 'provider'
+        return self.scan_provider_conf(conf)
+
     @abstractmethod
     def scan_provider_conf(self, conf):
         raise NotImplementedError()
-
-    def scan_entity_conf(self, conf):
-        return self.scan_provider_conf(conf)

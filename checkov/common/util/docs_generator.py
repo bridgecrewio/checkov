@@ -5,6 +5,10 @@ import re
 from tabulate import tabulate
 
 from checkov.arm.registry import arm_registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.kubernetes.registry import registry as k8_registry
 from checkov.serverless.registry import sls_registry
@@ -36,32 +40,25 @@ def print_checks(framework="all"):
 
 def get_checks(framework="all"):
     printable_checks_list = []
+
+    def add_from_repository(registry: BaseCheckRegistry, checked_type: str, iac: str):
+        nonlocal printable_checks_list
+        for entity, check in registry.all_checks():
+            printable_checks_list.append([check.id, checked_type, entity, check.name, iac])
+
     if framework == "terraform" or framework == "all":
-        for key in resource_registry.checks.keys():
-            for check in resource_registry.checks[key]:
-                printable_checks_list.append([check.id, "resource", key, check.name, "Terraform"])
-        for key in data_registry.checks.keys():
-            for check in data_registry.checks[key]:
-                printable_checks_list.append([check.id, "data", key, check.name, "Terraform"])
-        for key in provider_registry.checks.keys():
-            for check in provider_registry.checks[key]:
-                printable_checks_list.append([check.id, "provider", key, check.name, "Terraform"])
+        add_from_repository(resource_registry, "resource", "Terraform")
+        add_from_repository(data_registry, "data", "Terraform")
+        add_from_repository(provider_registry, "provider", "Terraform")
+        # TODO add also module_registry
     if framework == "cloudformation" or framework == "all":
-        for key in cfn_registry.checks.keys():
-            for check in cfn_registry.checks[key]:
-                printable_checks_list.append([check.id, "resource", key, check.name, "Cloudformation"])
+        add_from_repository(cfn_registry, "resource", "Cloudformation")
     if framework == "kubernetes" or framework == "all":
-        for key in k8_registry.checks.keys():
-            for check in k8_registry.checks[key]:
-                printable_checks_list.append([check.id, "PodSecurityPolicy", key, check.name, "Kubernetes"])
+        add_from_repository(k8_registry, "PodSecurityPolicy", "Kubernetes")
     if framework == "serverless" or framework == "all":
-        for key in sls_registry.checks.keys():
-            for check in sls_registry.checks[key]:
-                printable_checks_list.append([check.id, "resource", key, check.name, "serverless"])
+        add_from_repository(sls_registry, "resource", "serverless")
     if framework == "arm" or framework == "all":
-        for key in arm_registry.checks.keys():
-            for check in arm_registry.checks[key]:
-                printable_checks_list.append([check.id, "resource", key, check.name, "arm"])
+        add_from_repository(arm_registry, "resource", "arm")
     return sorted(printable_checks_list, key=get_compare_key)
 
 

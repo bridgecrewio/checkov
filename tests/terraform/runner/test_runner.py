@@ -15,7 +15,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/example"
         runner = Runner()
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
-        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
         report_json = report.get_json()
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
@@ -159,7 +160,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/many_providers"
         tf_file = f"{valid_dir_path}/main.tf"
         runner = Runner()
-        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(checks='CKV_AWS_41'))
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(checks='CKV_AWS_41'))
         self.assertEqual(len(result.passed_checks), 16)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
 
@@ -179,7 +181,7 @@ class TestRunnerValid(unittest.TestCase):
                 categories = []
                 super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-            def scan_resource_conf(self, conf):
+            def scan_module_conf(self, conf):
                 return CheckResult.PASSED
 
         check = ModuleCheck()
@@ -196,6 +198,50 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+
+    def test_typed_terraform_resource_checks_are_performed(self):
+        test_self = self
+        check_name = "TF_M_2"
+        test_dir = "resources/valid_tf_only_resource_usage"
+
+        from checkov.common.models.enums import CheckResult
+        from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+        from checkov.terraform.checks.resource.registry import resource_registry
+
+        class ResourceCheck(BaseResourceCheck):
+
+            def __init__(self):
+                name = "Test check"
+                id = check_name
+                supported_resources = ['*']
+                categories = []
+                super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+            def scan_resource_conf(self, conf, entity_type):
+                if entity_type == 'type_1':
+                    test_self.assertIn('a', conf)
+                    test_self.assertEquals([1], conf['a'])
+                elif entity_type == 'type_2':
+                    test_self.assertIn('b', conf)
+                    test_self.assertEquals([2], conf['b'])
+                else:
+                    test_self.fail(f'Unexpected entity_type: {entity_type}. Expected type_1 or type_2, because no '
+                                   f'other resources are defined in the files inside of {test_dir}.')
+                return CheckResult.PASSED
+
+        check = ResourceCheck()
+
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, test_dir)
+        runner = Runner()
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(checks=check_name))
+
+        # unregister check
+        for resource in check.supported_resources:
+            resource_registry.wildcard_checks[resource].remove(check)
+
+        self.assertEqual(len(result.passed_checks), 2)
 
     def tearDown(self):
         parser_registry.definitions_context = {}
