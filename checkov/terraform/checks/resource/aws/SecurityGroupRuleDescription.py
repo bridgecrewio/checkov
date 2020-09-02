@@ -6,8 +6,13 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
     def __init__(self):
         name = "Ensure every security groups rule has a description"
         id = "CKV_AWS_23"
-        supported_resource = ['aws_security_group', 'aws_security_group_rule', 'aws_db_security_group',
-                              'aws_elasticache_security_group', 'aws_redshift_security_group']
+        supported_resource = [
+            'aws_security_group',
+            'aws_security_group_rule',
+            'aws_db_security_group',
+            'aws_elasticache_security_group',
+            'aws_redshift_security_group',
+        ]
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
 

@@ -29,7 +29,11 @@ class RunnerRegistry(object):
         return self.scan_reports
 
     def print_reports(self, scan_reports, args):
-        if args.output != "json" and args.output != "junitxml" and args.output != "github_failed_only":
+        if args.output not in (
+            "github_failed_only",
+            "json",
+            "junitxml",
+        ):
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
