@@ -78,6 +78,24 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)    
 
+    def test_success_with_snapshot_id(self):
+        hcl_res = hcl2.loads("""
+                        resource "aws_instance" "test" {
+                              ami                  = var.ami_id
+                              instance_type        = var.instance_type
+                              key_name             = var.key_name
+
+                              root_block_device {
+                                volume_type = "gp2"
+                                volume_size = var.root_volume_size
+                                snapshot_id = "snap-1234"
+                              }
+                            }
+                        """)
+        resource_conf = hcl_res['resource'][0]['aws_instance']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_success(self):
         hcl_res = hcl2.loads("""
                         resource "aws_instance" "test" {
