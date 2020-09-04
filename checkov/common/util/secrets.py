@@ -56,6 +56,20 @@ _patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
 
 
 def string_has_secrets(s: str, *categories) -> bool:
+    """
+    Check whether the specified string has any matches for the regexes in the specified category(ies).
+
+    If categories is blank, then this method changes all categories. It is recommended to use the category constants
+    provided.
+
+    Examples:
+    string_has_secrets(some_string) -> checks all regexes
+    string_has_secrets(some_string, AWS, GENERAL) -> checks only AWS and general regexes.
+
+    :param s: 
+    :param categories:
+    :return:
+    """
 
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
