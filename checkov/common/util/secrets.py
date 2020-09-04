@@ -66,7 +66,7 @@ def string_has_secrets(s: str, *categories) -> bool:
     string_has_secrets(some_string) -> checks all regexes
     string_has_secrets(some_string, AWS, GENERAL) -> checks only AWS and general regexes.
 
-    :param s: 
+    :param s:
     :param categories:
     :return:
     """
