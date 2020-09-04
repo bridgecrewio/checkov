@@ -59,7 +59,7 @@ def string_has_secrets(s: str, *categories) -> bool:
     """
     Check whether the specified string has any matches for the regexes in the specified category(ies).
 
-    If categories is blank, then this method changes all categories. It is recommended to use the category constants
+    If categories is blank, then this method checks all categories. It is recommended to use the category constants
     provided.
 
     Examples:
