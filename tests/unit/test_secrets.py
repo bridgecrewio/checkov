@@ -18,13 +18,13 @@ class TestSecrets(unittest.TestCase):
         self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s)))
 
         # check one category
-        self.assertEqual(2, sum(1 for s in test_strings if string_has_secrets(s, 'aws')))
+        self.assertEqual(2, sum(1 for s in test_strings if string_has_secrets(s, AWS)))
 
         # check two categories
-        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, 'aws', 'general')))
+        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, AWS, GENERAL)))
 
         # check explicit all
-        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, 'all')))
+        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, ALL)))
 
         # check explicit all plus another category
-        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, 'all', 'aws')))
+        self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, ALL, AWS)))
