@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.secrets import string_has_secrets
+from checkov.common.util.secrets import string_has_secrets, AWS
 
 
 class EC2Credentials(BaseResourceCheck):
@@ -16,7 +16,7 @@ class EC2Credentials(BaseResourceCheck):
         if 'user_data' in conf.keys():
             user_data = conf['user_data'][0]
             if isinstance(user_data, str):
-                if string_has_secrets(user_data):
+                if string_has_secrets(user_data, AWS):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
