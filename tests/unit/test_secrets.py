@@ -8,8 +8,8 @@ class TestSecrets(unittest.TestCase):
 
     def test_secrets(self):
         test_strings = [
-            'AKIAABCDRTMIMDFABCDE',
-            'ABCD+123/I8XNMCkGT1xZZZ5DyxkwZBnvpE1vXYZ',
+            'AKIAIOSFODNN7EXAMPLE',
+            'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
             '-----BEGIN RSA PRIVATE KEY-----\n',
             'Hello from Bridgecrew'
         ]
