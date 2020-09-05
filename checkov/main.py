@@ -10,7 +10,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -20,7 +20,10 @@ from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
 
+outer_registry = None
+
 logging_init()
+
 
 
 def run(banner=checkov_banner):
@@ -29,8 +32,12 @@ def run(banner=checkov_banner):
     args = parser.parse_args()
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
-    runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                     arm_runner())
+    if outer_registry:
+        runner_registry = outer_registry
+        runner_registry.runner_filter = runner_filter
+    else:
+        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
+                                         arm_runner())
     if args.version:
         print(version)
         return
@@ -39,7 +46,7 @@ def run(banner=checkov_banner):
             parser.error("--repo-id argument is required when using --bc-api-key")
         if len(args.repo_id.split('/')) != 2:
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
-                             "bridgecrewio/checkov")
+                         "bridgecrewio/checkov")
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
 
     guidelines = {}
@@ -90,7 +97,7 @@ def add_parser_args(parser):
                         help='Github url of external checks to be added. \n you can specify a subdirectory after a '
                              'double-slash //. \n cannot be used together with --external-checks-dir')
     parser.add_argument('-l', '--list', help='List checks', action='store_true')
-    parser.add_argument('-o', '--output', nargs='?', choices=['cli', 'json', 'junitxml', 'github_failed_only'],
+    parser.add_argument('-o', '--output', nargs='?', choices=OUTPUT_CHOICES,
                         default='cli',
                         help='Report output format')
     parser.add_argument('--no-guide', action='store_true',
@@ -123,7 +130,7 @@ def get_external_checks_dir(args):
     if args.external_checks_git:
         git_getter = GitGetter(args.external_checks_git[0])
         external_checks_dir = [git_getter.get()]
-        atexit.register(shutil.rmtree,str(Path(external_checks_dir[0]).parent))
+        atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
     return external_checks_dir
 
 
