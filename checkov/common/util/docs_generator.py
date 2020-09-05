@@ -5,14 +5,12 @@ import re
 from tabulate import tabulate
 
 from checkov.arm.registry import arm_registry
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.terraform.checks.data.registry import data_registry
-from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.kubernetes.registry import registry as k8_registry
 from checkov.serverless.registry import sls_registry
 from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 
@@ -50,7 +48,7 @@ def get_checks(framework="all"):
         add_from_repository(resource_registry, "resource", "Terraform")
         add_from_repository(data_registry, "data", "Terraform")
         add_from_repository(provider_registry, "provider", "Terraform")
-        # TODO add also module_registry
+        add_from_repository(module_registry, "module", "Terraform")
     if framework == "cloudformation" or framework == "all":
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if framework == "kubernetes" or framework == "all":
