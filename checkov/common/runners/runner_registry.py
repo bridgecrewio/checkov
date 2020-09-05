@@ -2,6 +2,8 @@ import json
 import logging
 from abc import abstractmethod
 
+OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
+
 
 class RunnerRegistry(object):
     runners = []
@@ -29,11 +31,7 @@ class RunnerRegistry(object):
         return self.scan_reports
 
     def print_reports(self, scan_reports, args):
-        if args.output not in (
-            "github_failed_only",
-            "json",
-            "junitxml",
-        ):
+        if args.output not in OUTPUT_CHOICES:
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
