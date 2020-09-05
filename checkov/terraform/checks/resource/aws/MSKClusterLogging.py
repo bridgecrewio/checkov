@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class MSKBrokerLogging(BaseResourceCheck):
+class MSKClusterLogging(BaseResourceCheck):
     def __init__(self):
         name = "Ensure MSK Broker logging is enabled"
         id = "CKV_AWS_80"
@@ -20,4 +20,4 @@ class MSKBrokerLogging(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = MSKBrokerLogging()
+check = MSKClusterLogging()
