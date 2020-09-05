@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class MSKClusterLogging(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure MSK Broker logging is enabled"
+        name = "Ensure MSK Cluster logging is enabled"
         id = "CKV_AWS_80"
         supported_resources = ['aws_msk_cluster']
         categories = [CheckCategories.LOGGING]
