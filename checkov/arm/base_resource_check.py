@@ -15,8 +15,8 @@ class BaseResourceCheck(BaseCheck):
     def scan_entity_conf(self, conf, entity_type):
         return self.scan_resource_conf(conf, entity_type)
 
-    @abstractmethod
     @multi_signature()
+    @abstractmethod
     def scan_resource_conf(self, conf, entity_type):
         raise NotImplementedError()
 

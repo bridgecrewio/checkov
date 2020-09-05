@@ -58,8 +58,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 raise e
         return check_result
 
-    @abstractmethod
     @multi_signature()
+    @abstractmethod
     def scan_entity_conf(self, conf, entity_type):
         raise NotImplementedError()
 

@@ -15,8 +15,8 @@ class BaseFunctionCheck(BaseCheck):
     def scan_entity_conf(self, conf, entity_type):
         return self.scan_function_conf(conf, entity_type)
 
-    @abstractmethod
     @multi_signature()
+    @abstractmethod
     def scan_function_conf(self, conf, entity_type):
         raise NotImplementedError()
 
