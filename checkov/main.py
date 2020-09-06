@@ -101,10 +101,10 @@ def add_parser_args(parser):
     parser.add_argument('-o', '--output', nargs='?', choices=OUTPUT_CHOICES,
                         # Default value is implemented in config.CheckovConfig.output
                         help='Report output format')
-    parser.add_argument('--no-guide', action='store_true',
+    parser.add_argument('--no-guide', action='store_true', default=None,
                         # Default value is implemented in config.CheckovConfig.no_guide
                         help='do not fetch bridgecrew guide in checkov output report')
-    parser.add_argument('--quiet', action='store_true',
+    parser.add_argument('--quiet', action='store_true', default=None,
                         # Default value is implemented in config.CheckovConfig.quiet
                         help='in case of CLI output, display only failed checks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
@@ -116,7 +116,7 @@ def add_parser_args(parser):
     parser.add_argument('--skip-check',
                         help='filter scan to run on all check but a specific check identifier(denylist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
-    parser.add_argument('-s', '--soft-fail',
+    parser.add_argument('-s', '--soft-fail', default=None,
                         # Default value is implemented in config.CheckovConfig.soft_fail
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')

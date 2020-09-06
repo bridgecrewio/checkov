@@ -1,3 +1,6 @@
+from typing import FrozenSet, Optional
+
+
 class CheckovConfig:
 
     def __init__(self, *, args=None, file=None):
@@ -14,6 +17,9 @@ class CheckovConfig:
             self._no_guide: Optional[bool] = args.no_guide
             self._quiet: Optional[bool] = args.quiet
             self._framework: Optional[str] = args.framework
+            # TODO there should be a way to clear this from a parent
+            # Currently if a parent set this, there is no way for the cli to override that in a way, that every check
+            # runs
             self.check: Optional[str] = args.check
             self.skip_check: Optional[str] = args.skip_check
             self._soft_fail: Optional[bool] = args.soft_fail
@@ -40,23 +46,23 @@ class CheckovConfig:
         pass
 
     @property
-    def output(self):
+    def output(self) -> str:
         return self._output or 'cli'
 
     @property
-    def no_guide(self):
+    def no_guide(self) -> bool:
         return self._no_guide if self._no_guide is not None else False
 
     @property
-    def quiet(self):
+    def quiet(self) -> bool:
         return self._quiet if self._quiet is not None else False
 
     @property
-    def framework(self):
+    def framework(self) -> str:
         return self._framework or 'all'
 
     @property
-    def soft_fail(self):
+    def soft_fail(self) -> bool:
         return self._soft_fail if self._soft_fail is not None else False
 
     @property
