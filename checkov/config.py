@@ -1,35 +1,55 @@
-from typing import FrozenSet, Optional
+import argparse
+
+from typing import FrozenSet, Optional, Iterable
 
 
 class CheckovConfig:
 
-    def __init__(self, *, args=None, file=None):
-        if (args is None) == (file is None):
-            raise ValueError(f'You have to specify either args or file.')
+    def __init__(self, source: str, *, directory: Optional[Iterable[str]] = None, file: Optional[Iterable[str]] = None,
+                 external_checks_dir: Optional[Iterable[str]] = None,
+                 external_checks_git: Optional[Iterable[str]] = None, output: Optional[str] = None,
+                 no_guide: Optional[bool] = None, quiet: Optional[bool] = None, framework: Optional[str] = None,
+                 check: Optional[str] = None, skip_check: Optional[str] = None, soft_fail: Optional[bool] = None,
+                 repo_id: Optional[str] = None, branch: Optional[str] = None):
+        self.source = source
+        self.directory: FrozenSet = frozenset(directory or {})
+        self.file: FrozenSet = frozenset(file or {})
+        self.external_checks_dir: FrozenSet = frozenset(external_checks_dir or {})
+        self.external_checks_git: FrozenSet = frozenset(external_checks_git or {})
+        self._output = output
+        self._no_guide = no_guide
+        self._quiet = quiet
+        self._framework = framework
+        self.check = check
+        self.skip_check = skip_check
+        self._soft_fail = soft_fail
+        self.repo_id = repo_id
+        self._branch = branch
 
-        if args:
-            self.type = 'args'
-            self.directory: FrozenSet = frozenset(args.directory or {})
-            self.file: FrozenSet = frozenset(args.file or {})
-            self.external_checks_dir: FrozenSet = frozenset(args.external_checks_dir or {})
-            self.external_checks_git: FrozenSet = frozenset(args.external_checks_git or {})
-            self._output: Optional[str] = args.output
-            self._no_guide: Optional[bool] = args.no_guide
-            self._quiet: Optional[bool] = args.quiet
-            self._framework: Optional[str] = args.framework
-            # TODO there should be a way to clear this from a parent
-            # Currently if a parent set this, there is no way for the cli to override that in a way, that every check
-            # runs
-            self.check: Optional[str] = args.check
-            self.skip_check: Optional[str] = args.skip_check
-            self._soft_fail: Optional[bool] = args.soft_fail
-            self.repo_id: Optional[str] = args.repo_id
-            self._branch: Optional[str] = args.branch
-        else:
-            self._init_from_file(file)
+    @staticmethod
+    def from_args(args: argparse.Namespace):
+        # TODO there should be a way to clear this from a parent
+        # Currently if a parent set this, there is no way for the cli to override that in a way, that every check
+        # runs
+        return CheckovConfig(
+            source='args',
+            directory=args.directory,
+            file=args.file,
+            external_checks_dir=args.external_checks_dir,
+            external_checks_git=args.external_checks_git,
+            output=args.output,
+            no_guide=args.no_guide,
+            quiet=args.quiet,
+            framework=args.framework,
+            check=args.check,
+            skip_check=args.skip_check,
+            soft_fail=args.soft_fail,
+            repo_id=args.repo_id,
+            branch=args.branch,
+        )
 
     def _init_from_file(self, file):
-        self.type = 'file'
+        self.source = 'file'
         # self.directory = args.directory
         # self.file = args.file
         # self.external_checks_dir = args.external_checks_dir

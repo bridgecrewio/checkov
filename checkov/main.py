@@ -30,7 +30,7 @@ def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args()
-    config = CheckovConfig(args=args)
+    config = CheckovConfig.from_args(args)
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=config.framework, checks=config.check, skip_checks=config.skip_check)
     if outer_registry:

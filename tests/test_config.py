@@ -10,6 +10,8 @@ class TestRunnerFilter(unittest.TestCase):
     def assertConfig(self, expected: dict, config: CheckovConfig, message_prefix=''):
         if message_prefix:
             message_prefix = message_prefix + ': '
+        self.assertEqual(expected['source'], config.source,
+                         f'{message_prefix}Expect source to be {expected["source"]} but got {config.source}')
         self.assertIsInstance(config.directory, frozenset,
                               f'{message_prefix}Expect directory to be a set but got {type(config.directory)}')
         self.assertSetEqual(expected['directory'], config.directory,
@@ -70,8 +72,9 @@ class TestRunnerFilter(unittest.TestCase):
         parser = argparse.ArgumentParser()
         add_parser_args(parser)
         args = parser.parse_args([])
-        config = CheckovConfig(args=args)
+        config = CheckovConfig.from_args(args)
         self.assertConfig({
+            'source': 'args',
             'directory': set(),
             'file': set(),
             'external_checks_dir': set(),
@@ -125,8 +128,9 @@ class TestRunnerFilter(unittest.TestCase):
             '--repo-id', 'abc',
             '-b', 'b/123',
         ])
-        config = CheckovConfig(args=args)
+        config = CheckovConfig.from_args(args)
         self.assertConfig({
+            'source': 'args',
             'directory': {'/a1', '/b1', '/a2', '/b2'},
             'file': {'/a3', '/b3', '/a4', '/b4'},
             'external_checks_dir': {'/a5', '/b5'},
@@ -157,8 +161,9 @@ class TestRunnerFilter(unittest.TestCase):
             '--soft-fail',
             '--branch', 'b/123',
         ])
-        config = CheckovConfig(args=args)
+        config = CheckovConfig.from_args(args)
         self.assertConfig({
+            'source': 'args',
             'directory': set(),
             'file': set(),
             'external_checks_dir': set(),
