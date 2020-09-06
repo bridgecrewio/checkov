@@ -88,3 +88,36 @@ class CheckovConfig:
     @property
     def branch(self):
         return self._branch or 'master'
+
+    def extend(self, parent: 'CheckovConfig'):
+        self.directory = self.directory.union(parent.directory)
+        self.file = self.file.union(parent.file)
+        self.external_checks_dir = self.external_checks_dir.union(parent.external_checks_dir)
+        self.external_checks_git = self.external_checks_git.union(parent.external_checks_git)
+        # _output is never ''
+        self._output = self._output or parent._output
+        if self._no_guide is None:
+            self._no_guide = parent._no_guide
+        if self._quiet is None:
+            self._quiet = parent._quiet
+        # _framework is never ''
+        self._framework = self._framework or parent._framework
+        if self._soft_fail is None:
+            self._soft_fail = parent._soft_fail
+        # repo_id is never ''
+        self.repo_id = self.repo_id or parent.repo_id
+        # repo_id is never ''
+        self._branch = self._branch or parent._branch
+
+        if not self.check and not self.skip_check:
+            # if nothing is set, copy from parent
+            self.check = parent.check
+            self.skip_check = parent.skip_check
+        else:
+            # At least one is set. Update the once, that are set. If it are both, it was invalid and will be invalid.
+            if self.check and parent.check:
+                # parent.check is a string but not an empty one
+                self.check = f'{self.check},{parent.check}'
+            if self.skip_check and parent.skip_check:
+                # parent.skip_check is a string but not an empty one
+                self.skip_check = f'{self.skip_check},{parent.skip_check}'
