@@ -2,7 +2,7 @@ class CheckovConfig:
 
     def __init__(self, *, args=None, file=None):
         if (args is None) ^ (file is None):
-            raise ValueError('You have to specify either args or file.')
+            raise ValueError(f'You have to specify either args or file. args: {args}; file: {file}')
 
         if args:
             self._init_from_args(args)
