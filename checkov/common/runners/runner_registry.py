@@ -15,8 +15,8 @@ class RunnerRegistry(object):
         self.runner_filter = runner_filter
         self.runners = runners
         self.banner = banner
-        self.filter_runner_framework()
         self.scan_reports = []
+        self.filter_runner_framework()
 
     @abstractmethod
     def extract_entity_details(self, entity):
@@ -55,6 +55,8 @@ class RunnerRegistry(object):
         exit(exit_code)
 
     def filter_runner_framework(self):
+        if not self.runner_filter:
+            return
         if self.runner_filter.framework == 'all':
             return
         for runner in self.runners:
