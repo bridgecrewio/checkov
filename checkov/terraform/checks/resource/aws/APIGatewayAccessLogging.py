@@ -8,7 +8,7 @@ class APIGatewayAccessLogging(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure API Gateway has Access Logging enabled"
         id = "CKV_AWS_76"
-        supported_resources = ['aws_api_gateway_stage']
+        supported_resources = ['aws_api_gateway_stage', 'aws_apigatewayv2_stage']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
