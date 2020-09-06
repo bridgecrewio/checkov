@@ -2,6 +2,8 @@ import json
 import logging
 from abc import abstractmethod
 
+from checkov.config import CheckovConfig
+
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
 
@@ -30,23 +32,23 @@ class RunnerRegistry(object):
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, args):
-        if args.output not in OUTPUT_CHOICES:
+    def print_reports(self, scan_reports, config: CheckovConfig):
+        if config.output not in OUTPUT_CHOICES:
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
         for report in scan_reports:
             if not report.is_empty():
-                if args.output == "json":
+                if config.output == "json":
                     report_jsons.append(report.get_dict())
-                elif args.output == "junitxml":
+                elif config.output == "junitxml":
                     report.print_junit_xml()
-                elif args.output == 'github_failed_only':
+                elif config.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=args.quiet)
-            exit_codes.append(report.get_exit_code(args.soft_fail))
-        if args.output == "json":
+                    report.print_console(is_quiet=config.quiet)
+            exit_codes.append(report.get_exit_code(config.soft_fail))
+        if config.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))
             else:
