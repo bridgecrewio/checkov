@@ -42,6 +42,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:
+            # Inspected key exists
             if ANY_VALUE in expected_values:
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
@@ -53,6 +54,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 return CheckResult.PASSED
             if value in expected_values:
                 return CheckResult.PASSED
+            return CheckResult.FAILED
         else:
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
