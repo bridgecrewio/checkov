@@ -5,25 +5,22 @@ class CheckovConfig:
             raise ValueError(f'You have to specify either args or file.')
 
         if args:
-            self._init_from_args(args)
+            self.type = 'args'
+            self.directory: FrozenSet = frozenset(args.directory or {})
+            self.file: FrozenSet = frozenset(args.file or {})
+            self.external_checks_dir: FrozenSet = frozenset(args.external_checks_dir or {})
+            self.external_checks_git: FrozenSet = frozenset(args.external_checks_git or {})
+            self._output: Optional[str] = args.output
+            self._no_guide: Optional[bool] = args.no_guide
+            self._quiet: Optional[bool] = args.quiet
+            self._framework: Optional[str] = args.framework
+            self.check: Optional[str] = args.check
+            self.skip_check: Optional[str] = args.skip_check
+            self._soft_fail: Optional[bool] = args.soft_fail
+            self.repo_id: Optional[str] = args.repo_id
+            self._branch: Optional[str] = args.branch
         else:
             self._init_from_file(file)
-
-    def _init_from_args(self, args):
-        self.type = 'args'
-        self.directory = args.directory
-        self.file = args.file
-        self.external_checks_dir = args.external_checks_dir
-        self.external_checks_git = args.external_checks_git
-        self._output = args.output
-        self._no_guide = args.no_guide
-        self._quiet = args.quiet
-        self._framework = args.framework
-        self.check = args.check
-        self.skip_check = args.skip_check
-        self._soft_fail = args.soft_fail
-        self.repo_id = args.repo_id
-        self._branch = args.branch
 
     def _init_from_file(self, file):
         self.type = 'file'
