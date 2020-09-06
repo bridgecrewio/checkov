@@ -7,7 +7,7 @@ from checkov.config import CheckovConfig
 from checkov.main import add_parser_args
 
 
-class TestRunnerFilter(unittest.TestCase):
+class TestCheckovConfig(unittest.TestCase):
     def assertCheckSkipCheckIsValid(self, config: CheckovConfig, msg=None):
         if msg:
             msg = msg + ': '
