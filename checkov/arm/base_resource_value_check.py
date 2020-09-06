@@ -9,8 +9,9 @@ VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources):
+    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        self.missing_block_result = missing_block_result
 
     @staticmethod
     def _filter_key_path(path):
@@ -67,7 +68,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                             # If the tested attribute is variable-dependant, then result is PASSED
                             return CheckResult.PASSED
 
-        return CheckResult.FAILED
+        return self.missing_block_result
 
     @abstractmethod
     def get_inspected_key(self):
