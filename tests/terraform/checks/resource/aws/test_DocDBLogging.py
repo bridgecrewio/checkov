@@ -13,15 +13,23 @@ class TestDocDBLogging(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_failure_partial(self):
         resource_conf = {
             "cluster_identifier": "my-docdb-cluster",
             "enabled_cloudwatch_logs_exports": ["audit"],
         }
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_success(self):
+        resource_conf = {
+            "cluster_identifier": "my-docdb-cluster",
+            "enabled_cloudwatch_logs_exports": ["audit", "profiler"],
+        }
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
