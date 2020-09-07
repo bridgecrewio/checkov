@@ -5,6 +5,7 @@ from abc import abstractmethod
 from checkov.config import CheckovConfig
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
+FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
 
 
 class RunnerRegistry(object):

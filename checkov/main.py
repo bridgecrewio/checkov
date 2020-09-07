@@ -10,7 +10,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.runners.runner_registry import RunnerRegistry, FRAMEWORK_CHOICES, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
 from checkov.config import CheckovConfig
@@ -109,7 +109,7 @@ def add_parser_args(parser):
                         help='in case of CLI output, display only failed checks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         # Default value is implemented in config.CheckovConfig.framework
-                        choices=['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all'])
+                        choices=FRAMEWORK_CHOICES)
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
