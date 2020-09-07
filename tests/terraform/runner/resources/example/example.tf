@@ -1646,3 +1646,187 @@ resource aws_s3_bucket "other-provider-bucket" {
 module "some-module" {
   source = "git::ssh://github.com/example/module//s3/s3-logging?ref=tags/1.0.0"
 }
+
+
+resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+  database_version = "MYSQL_8_0"
+  name             = "gilad-mysql81"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+
+    backup_configuration {
+      binary_log_enabled             = "true"
+      enabled                        = "true"
+      location                       = "us"
+      point_in_time_recovery_enabled = "false"
+      start_time                     = "18:00"
+    }
+
+    crash_safe_replication = "false"
+
+    database_flags {
+      name  = "local_infile"
+      value = "off"
+    }
+
+    disk_autoresize = "true"
+    disk_size       = "10"
+    disk_type       = "PD_SSD"
+
+    ip_configuration {
+      ipv4_enabled = "true"
+      require_ssl  = "false"
+    }
+
+    location_preference {
+      zone = "us-central1-a"
+    }
+
+    maintenance_window {
+      day  = "0"
+      hour = "0"
+    }
+
+    pricing_plan     = "PER_USE"
+    replication_type = "SYNCHRONOUS"
+    tier             = "db-n1-standard-1"
+  }
+}
+
+resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+  database_version = "POSTGRES_12"
+  name             = "gilad-pos121"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+
+    backup_configuration {
+      binary_log_enabled             = "false"
+      enabled                        = "true"
+      location                       = "us"
+      point_in_time_recovery_enabled = "true"
+      start_time                     = "18:00"
+    }
+
+    crash_safe_replication = "false"
+
+    database_flags {
+      name  = "log_checkpoints"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_min_messages"
+      value = "debug5"
+    }
+
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_temp_files"
+      value = "0"
+    }
+
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = "-1"
+    }
+
+    disk_autoresize = "true"
+    disk_size       = "10"
+    disk_type       = "PD_SSD"
+
+    ip_configuration {
+      ipv4_enabled = "true"
+      require_ssl  = "false"
+    }
+
+    location_preference {
+      zone = "us-central1-a"
+    }
+
+    maintenance_window {
+      day  = "0"
+      hour = "0"
+    }
+
+    pricing_plan     = "PER_USE"
+    replication_type = "SYNCHRONOUS"
+    tier             = "db-custom-1-3840"
+  }
+}
+
+resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+  database_version = "SQLSERVER_2017_STANDARD"
+  name             = "gilad-sqlserver12"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+
+    backup_configuration {
+      binary_log_enabled             = "false"
+      enabled                        = "true"
+      location                       = "us"
+      point_in_time_recovery_enabled = "false"
+      start_time                     = "00:00"
+    }
+
+    crash_safe_replication = "false"
+
+    database_flags {
+      name  = "cross db ownership chaining"
+      value = "off"
+    }
+
+    database_flags {
+      name  = "contained database authentication"
+      value = "off"
+    }
+
+    disk_autoresize = "true"
+    disk_size       = "20"
+    disk_type       = "PD_SSD"
+
+    ip_configuration {
+      ipv4_enabled    = "false"
+      private_network = "projects/gcp-bridgecrew-deployment/global/networks/default"
+      require_ssl     = "false"
+    }
+
+    location_preference {
+      zone = "us-central1-a"
+    }
+
+    maintenance_window {
+      day  = "0"
+      hour = "0"
+    }
+
+    pricing_plan     = "PER_USE"
+    replication_type = "SYNCHRONOUS"
+    tier             = "db-custom-1-4096"
+  }
+}
