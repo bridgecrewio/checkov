@@ -2,10 +2,7 @@ import json
 import logging
 from abc import abstractmethod
 
-from checkov.config import CheckovConfig
-
-OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
-FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
+from checkov.config import OUTPUT_CHOICES, CheckovConfig
 
 
 class RunnerRegistry(object):

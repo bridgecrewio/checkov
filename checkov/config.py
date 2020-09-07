@@ -1,6 +1,7 @@
 import argparse
 
-from typing import FrozenSet, Optional, Iterable
+OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
+FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
 
 
 class CheckovConfig:

@@ -10,10 +10,10 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.runners.runner_registry import RunnerRegistry, FRAMEWORK_CHOICES, OUTPUT_CHOICES
+from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
-from checkov.config import CheckovConfig
+from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
