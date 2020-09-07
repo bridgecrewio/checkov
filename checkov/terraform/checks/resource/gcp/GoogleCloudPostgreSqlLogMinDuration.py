@@ -34,6 +34,6 @@ class GoogleCloudPostgreSqlLogMinDuration(BaseResourceValueCheck):
 
     def get_expected_value(self):
         return "-1"
-
+#check
 
 check = GoogleCloudPostgreSqlLogMinDuration()
