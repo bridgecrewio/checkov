@@ -1,0 +1,31 @@
+---
+
+directories:
+  - /a
+  - /b
+  - c
+  - "1"
+files:
+  - /a/m.tf
+  - d.tf
+external_checks_dirs:
+  - /x
+  - y
+external_checks_gits:
+  - a/b
+  - c/d
+output: json
+no_guide: true
+quiet: False
+framework: kubernetes
+checks:
+  - !!str 1
+  - " a "
+  - d
+skip_checks:
+  - "2"
+  - " b "
+  - "d"
+soft_fail: TRUE
+repo_id: 1 2
+branch: feature/abc

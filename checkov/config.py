@@ -1,7 +1,14 @@
 import argparse
+import yaml
+from typing import FrozenSet, Optional, Iterable, TextIO, Union, Any
+from yaml import YAMLError
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
+
+
+class CheckovConfigError(Exception):
+    pass
 
 
 class CheckovConfig:
@@ -28,7 +35,7 @@ class CheckovConfig:
         self._branch = branch
 
     @staticmethod
-    def from_args(args: argparse.Namespace):
+    def from_args(args: argparse.Namespace) -> 'CheckovConfig':
         # TODO there should be a way to clear this from a parent
         # Currently if a parent set this, there is no way for the cli to override that in a way, that every check
         # runs
@@ -49,22 +56,113 @@ class CheckovConfig:
             branch=args.branch,
         )
 
-    def _init_from_file(self, file):
-        self.source = 'file'
-        # self.directory = args.directory
-        # self.file = args.file
-        # self.external_checks_dir = args.external_checks_dir
-        # self.external_checks_git = args.external_checks_git
-        # self._output = args.output
-        # self._no_guide = args.no_guide
-        # self._quiet = args.quiet
-        # self.framework = args.framework
-        # self.check = args.check
-        # self.skip_check = args.skip_check
-        # self._soft_fail = args.soft_fail
-        # self.repo_id = args.repo_id
-        # self._branch = args.branch
-        pass
+    @staticmethod
+    def from_file(file: Union[TextIO, str]) -> 'CheckovConfig':
+        if isinstance(file, str):
+            with open(file, 'r') as stream:
+                return CheckovConfig._from_file(stream)
+        else:
+            return CheckovConfig._from_file(file)
+
+    @staticmethod
+    def _from_file(stream: TextIO) -> 'CheckovConfig':
+        kwargs = {}
+        try:
+            content = yaml.safe_load(stream)
+        except YAMLError as e:
+            raise CheckovConfigError('Failed to parse YAML') from e
+        else:
+            if content is not None:
+                def get_error(message: str, value: Any) -> CheckovConfigError:
+                    if isinstance(value, (bool, int, float)):
+                        message += f' You may just want to quote the value like this: "{value}"'
+                    return CheckovConfigError(message)
+
+                def handle_set(src: str, dest: str):
+                    if src not in content:
+                        return
+                    values = content[src]
+                    if isinstance(values, str):
+                        values = [values]
+                    elif not isinstance(values, list):
+                        raise get_error(f'{src} has to be a list or if you use the short hand version for a single '
+                                        f'value, just a str.', values)
+                    for value in values:
+                        if not isinstance(value, str):
+                            raise get_error(f'Elements of {src} have to be str.', value)
+                    kwargs[dest] = values
+                    del content[src]
+
+                def handle_choice(src: str, dest: str, choices: Iterable[str]):
+                    if src not in content:
+                        return
+                    value = content[src]
+                    if not isinstance(value, str):
+                        message = f'{src} has to be a str.'
+                        raise get_error(message, value)
+                    if value not in choices:
+                        choices_str = ', '.join(map(lambda c: f'"{c}"', choices))
+                        message = f'{src} was "{value}" but has to be one of: {choices_str}'
+                        value_caseless = value.casefold()
+                        # I didn't know how hard string comparison could be. This is enough for case insensitive but
+                        # if you are interested in a deep dive:
+                        # https://stackoverflow.com/questions/319426/how-do-i-do-a-case-insensitive-string-comparison
+                        possible_choices = [f'"{choice}"' for choice in choices if value_caseless == choice.casefold()]
+                        if possible_choices:
+                            possible_choices = ', '.join(sorted(possible_choices))
+                            if len(possible_choices) == 1:
+                                message = f'{message} You may want to use this value instead: {possible_choices}'
+                            else:
+                                message = f'{message} You may want to use one of this values instead: {possible_choices}'
+                        raise CheckovConfigError(message)
+                    kwargs[dest] = value
+                    del content[src]
+
+                def handle_type(src: str, dest: str, t: type):
+                    if src not in content:
+                        return
+                    value = content[src]
+                    if not isinstance(value, t):
+                        message = f'{src} has to be a {t.__name__}.'
+                        if t == str:
+                            raise get_error(message, value)
+                        raise CheckovConfigError(message)
+                    kwargs[dest] = value
+                    del content[src]
+
+                def handle_check(src: str, dest: str):
+                    if src not in content:
+                        return
+                    values = content[src]
+
+                    if isinstance(values, list):
+                        for value in values:
+                            if not isinstance(value, str):
+                                raise get_error(f'Elements of {src} have to be str.', values)
+                        values = ','.join(values)
+                    elif not isinstance(values, str):
+                        raise get_error(f'{src} has to be a string or a list of strings', values)
+                    kwargs[dest] = values
+                    del content[src]
+
+                handle_set('directories', 'directory')
+                handle_set('files', 'file')
+                handle_set('external_checks_dirs', 'external_checks_dir')
+                handle_set('external_checks_gits', 'external_checks_git')
+                handle_choice('output', 'output', OUTPUT_CHOICES)
+                handle_type('no_guide', 'no_guide', bool)
+                handle_type('quiet', 'quiet', bool)
+                handle_choice('framework', 'framework', FRAMEWORK_CHOICES)
+                handle_check('checks', 'check')
+                handle_check('skip_checks', 'skip_check')
+                handle_type('soft_fail', 'soft_fail', bool)
+                handle_type('repo_id', 'repo_id', str)
+                handle_type('branch', 'branch', str)
+                if content:
+                    keys = map(lambda v: f'"{v}"', sorted(content))
+                    raise CheckovConfigError(f'File contained unexpected keys: {", ".join(keys)}')
+
+        return CheckovConfig('file', **kwargs)
 
     @property
     def output(self) -> str:

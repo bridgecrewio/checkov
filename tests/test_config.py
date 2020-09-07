@@ -1,13 +1,20 @@
+import os
 import unittest
 
 import argparse
+import io
 from typing import Union
 
-from checkov.config import CheckovConfig
+from checkov.config import CheckovConfig, CheckovConfigError, OUTPUT_CHOICES, FRAMEWORK_CHOICES
 from checkov.main import add_parser_args
 
 
 class TestCheckovConfig(unittest.TestCase):
+    @staticmethod
+    def get_config_file(filename):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(test_dir, 'configs', filename)
+
     def assertCheckSkipCheckIsValid(self, config: CheckovConfig, msg=None):
         if msg:
             msg = msg + ': '
@@ -313,3 +320,89 @@ class TestCheckovConfig(unittest.TestCase):
         child.extend(parent)
         expected = CheckovConfig('t1', check='1', skip_check='2')
         self.assertConfig(expected, child)
+
+    def test_yaml_load_empty_file_by_path(self):
+        config = CheckovConfig.from_file(self.get_config_file('empty.yaml'))
+        self.assertConfig(CheckovConfig('file'), config)
+
+    def test_yaml_full_empty_file_by_path(self):
+        config = CheckovConfig.from_file(self.get_config_file('full.yaml'))
+        expected = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
+                                 external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
+                                 no_guide=True, quiet=False, framework='kubernetes', check='1, a ,d',
+                                 skip_check='2, b ,d', soft_fail=True, repo_id='1 2', branch='feature/abc')
+        self.assertConfig(expected, config)
+
+    def test_yaml_file_with_additional_keys_by_path(self):
+        with self.assertRaises(CheckovConfigError) as context:
+            CheckovConfig.from_file(self.get_config_file('additional_keys.yaml'))
+        self.assertIn('something', str(context.exception))
+        self.assertIn('other', str(context.exception))
+        self.assertIn('mm', str(context.exception))
+        self.assertNotIn('asd', str(context.exception))
+        self.assertNotIn('not_in_list', str(context.exception))
+
+    def test_yaml_file_with_invalid_syntax_by_path(self):
+        self.assertRaises(CheckovConfigError, CheckovConfig.from_file, self.get_config_file('invalid_syntax.yaml'))
+
+    def test_yaml_file_checks_string_by_io(self):
+        buffer = io.StringIO("""
+checks: 1,2,3
+skip_checks: "1"
+""")
+        config = CheckovConfig.from_file(buffer)
+        self.assertConfig(CheckovConfig('file', check='1,2,3', skip_check='1'), config)
+
+    def test_yaml_file_invalid_output_is_detected_by_io(self):
+        buffer = io.StringIO("""
+output: lorem123
+""")
+        with self.assertRaises(CheckovConfigError) as context:
+            CheckovConfig.from_file(buffer)
+        self.assertIn('output', str(context.exception), 'Error should contain the key whose choice was invalid.')
+        self.assertIn('lorem123', str(context.exception), 'Error should echo the incorrect value.')
+        for choice in map(lambda c: f'"{c}"', OUTPUT_CHOICES):
+            self.assertIn(choice, str(context.exception), 'Error should contain all valid choices.')
+
+    def test_yaml_file_invalid_framework_is_detected_by_io(self):
+        buffer = io.StringIO("""
+framework: abc123
+""")
+        with self.assertRaises(CheckovConfigError) as context:
+            CheckovConfig.from_file(buffer)
+        self.assertIn('framework', str(context.exception), 'Error should contain the key whose choice was invalid.')
+        self.assertIn('abc123', str(context.exception), 'Error should echo the incorrect value.')
+        for choice in map(lambda c: f'"{c}"', FRAMEWORK_CHOICES):
+            self.assertIn(choice, str(context.exception), 'Error should contain all valid choices.')
+
+    def test_yaml_file_wrong_case_error_in_output_is_detected_by_io(self):
+        buffer = io.StringIO("""
+output: JSON
+""")
+        with self.assertRaises(CheckovConfigError) as context:
+            CheckovConfig.from_file(buffer)
+        self.assertIn('output', str(context.exception), 'Error should contain the key whose choice was invalid.')
+        self.assertIn('json', str(context.exception), 'Error should echo the correct value.')
+
+    def test_yaml_file_wrong_case_error_in_framework_is_detected_by_io(self):
+        buffer = io.StringIO("""
+framework: TERRafORM
+""")
+        with self.assertRaises(CheckovConfigError) as context:
+            CheckovConfig.from_file(buffer)
+        self.assertIn('framework', str(context.exception), 'Error should contain the key whose choice was invalid.')
+        self.assertIn('terraform', str(context.exception), 'Error should echo the correct value.')
+
+    def test_yaml_file_set_can_be_set_to_single_value_by_string_by_io(self):
+        buffer = io.StringIO("""
+---
+
+directories: a
+files: b
+external_checks_dirs: c
+external_checks_gits: d
+""")
+        config = CheckovConfig.from_file(buffer)
+        self.assertConfig(
+            CheckovConfig('file', directory={'a'}, file={'b'}, external_checks_dir={'c'}, external_checks_git={'d'}),
+            config)

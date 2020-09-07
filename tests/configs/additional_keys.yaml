@@ -1,0 +1,9 @@
+something: 1
+other: >
+  asd
+  asd
+  fgd
+mm:
+  not_in_list: 1
+  k:
+    - 2
