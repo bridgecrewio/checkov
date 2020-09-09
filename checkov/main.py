@@ -88,7 +88,7 @@ def add_parser_args(parser):
     parser.add_argument('-v', '--version',
                         help='version', action='store_true')
     parser.add_argument('-d', '--directory', action='append',
-                        help='IaC root directory (can not be used together with --file). Can be repeated')
+                        help='IaC root directory (can not be used together with --file).')
     parser.add_argument('-f', '--file', action='append',
                         help='IaC file(can not be used together with --directory)')
     parser.add_argument('--external-checks-dir', action='append',
