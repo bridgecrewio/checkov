@@ -37,7 +37,7 @@ class TestBaseCheck(unittest.TestCase):
         # noinspection PyArgumentList
         scan_result = check.scan_entity_conf({}, "Some name")
         self.assertEqual(CheckResult.PASSED, scan_result)
-        self.assertEquals(check.scan_entity_conf.__doc__, """
+        self.assertEqual(check.scan_entity_conf.__doc__, """
         My documentation
         :param conf:
         :return:

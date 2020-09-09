@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.multi_signature import multi_signature
-from checkov.serverless.registry import sls_registry
+from checkov.serverless.checks.function.registry import function_registry
 
 
 class BaseFunctionCheck(BaseCheck):
@@ -10,7 +10,7 @@ class BaseFunctionCheck(BaseCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
                          block_type="serverless")
         self.supported_entities = supported_entities
-        sls_registry.register(self)
+        function_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):
         return self.scan_function_conf(conf, entity_type)

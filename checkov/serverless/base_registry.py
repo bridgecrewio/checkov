@@ -1,14 +1,15 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
-class Registry(BaseCheckRegistry):
+class BaseServerlessRegistry(BaseCheckRegistry):
 
-    def __init__(self):
+    def __init__(self, conf_key_name):
         super().__init__()
+        self.conf_key_name = conf_key_name
 
     def extract_entity_details(self, entity):
         function_type = f"serverless_{entity['provider_type']}"
-        conf = entity["function"]
+        conf = entity[self.conf_key_name]
         return function_type, conf
 
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
