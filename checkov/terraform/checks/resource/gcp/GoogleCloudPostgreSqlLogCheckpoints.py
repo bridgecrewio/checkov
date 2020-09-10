@@ -23,16 +23,11 @@ class GoogleCloudPostgreSqlLogCheckpoints(BaseResourceCheck):
             if 'POSTGRES' in key:
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
-                        if attribute=='database_flags':
+                        if attribute == 'database_flags':
                             for flag in conf['settings'][0]['database_flags']:
-                                if (flag['name'][0]=='log_checkpoints') and (flag['value'][0]=='off'):
+                                if (flag['name'][0] == 'log_checkpoints') and (flag['value'][0] == 'off'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/log_checkpoints'
 
-    def get_expected_value(self):
-        return "on"
-'''
+
 check = GoogleCloudPostgreSqlLogCheckpoints()

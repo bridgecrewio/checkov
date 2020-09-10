@@ -104,7 +104,6 @@ class TestCloudPostgreSQLLogLockWaits(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-
     def test_success_3(self):
         hcl_res = hcl2.loads("""
                                     resource "google_sql_database_instance" "tfer--general-002D-pos121" {

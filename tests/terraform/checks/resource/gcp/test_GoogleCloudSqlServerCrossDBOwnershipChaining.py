@@ -131,7 +131,6 @@ class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-
     def test_success_2(self):
         hcl_res = hcl2.loads("""
              resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
@@ -194,7 +193,7 @@ class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
             region           = "us-central1"           
             }
                         """)
-        resource_conf =hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

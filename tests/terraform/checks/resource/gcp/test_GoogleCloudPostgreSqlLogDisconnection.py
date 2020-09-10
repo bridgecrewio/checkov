@@ -184,7 +184,7 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
               }
             }
                         """)
-        resource_conf =hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

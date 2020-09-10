@@ -27,12 +27,6 @@ class GoogleCloudSqlServerNoPublicIP(BaseResourceCheck):
                             if conf['settings'][0]['ip_configuration'][0]['ipv4_enabled'][0] != 'false':
                                 return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/ip_configuration/[0]/ipv4_enabled'
 
-    def get_expected_value(self):
-        return "false"
-'''
 
-check=GoogleCloudSqlServerNoPublicIP()
+check = GoogleCloudSqlServerNoPublicIP()

@@ -29,11 +29,5 @@ class GoogleCloudPostgreSqlLogTemp(BaseResourceCheck):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
 
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/log_temp_files'
 
-    def get_expected_value(self):
-        return "0"
-'''
 check = GoogleCloudPostgreSqlLogTemp()

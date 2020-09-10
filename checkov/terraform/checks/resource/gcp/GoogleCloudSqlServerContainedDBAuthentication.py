@@ -25,14 +25,10 @@ class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceCheck):
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
                             for flag in conf['settings'][0]['database_flags']:
-                                if (flag['name'][0] == 'contained database authentication') and (flag['value'][0] == 'on'):
+                                if (flag['name'][0] == 'contained database authentication') and (
+                                        flag['value'][0] == 'on'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/contained database authentication'
 
-    def get_expected_value(self):
-        return "off"
-'''
+
 check = GoogleCloudSqlServerContainedDBAuthentication()

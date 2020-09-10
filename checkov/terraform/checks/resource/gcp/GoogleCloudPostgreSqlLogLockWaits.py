@@ -28,11 +28,6 @@ class GoogleCloudPostgreSqlLogLockWaits(BaseResourceCheck):
                                 if (flag['name'][0] == 'log_lock_waits') and (flag['value'][0] == 'off'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/log_lock_waits'
 
-    def get_expected_value(self):
-        return "on"
-'''
+
 check = GoogleCloudPostgreSqlLogLockWaits()

@@ -28,11 +28,6 @@ class GoogleCloudSqlServerCrossDBOwnershipChaining(BaseResourceCheck):
                                 if (flag['name'][0] == 'cross db ownership chaining') and (flag['value'][0] == 'on'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/cross db ownership chaining'
 
-    def get_expected_value(self):
-        return "off"
-'''
-check=GoogleCloudSqlServerCrossDBOwnershipChaining()
+
+check = GoogleCloudSqlServerCrossDBOwnershipChaining()

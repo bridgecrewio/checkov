@@ -253,6 +253,5 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-
 if __name__ == '__main__':
     unittest.main()

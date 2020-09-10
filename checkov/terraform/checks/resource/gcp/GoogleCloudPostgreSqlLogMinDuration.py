@@ -28,12 +28,6 @@ class GoogleCloudPostgreSqlLogMinDuration(BaseResourceCheck):
                                 if (flag['name'][0] == 'log_min_duration_statement') and (flag['value'][0] != '-1'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-'''
-    def get_inspected_key(self):
-        return 'settings/[0]/database_flags/[0]/log_min_duration_statement'
 
-    def get_expected_value(self):
-        return "-1"
-'''
 
 check = GoogleCloudPostgreSqlLogMinDuration()

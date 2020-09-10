@@ -52,7 +52,7 @@ class TestCloudPostgreSQLLogConnection(unittest.TestCase):
               }
             }
                 """)
-        resource_conf =hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
@@ -103,7 +103,6 @@ class TestCloudPostgreSQLLogConnection(unittest.TestCase):
         resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
-
 
     def test_success_2(self):
         hcl_res = hcl2.loads("""
