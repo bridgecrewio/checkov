@@ -1,3 +1,5 @@
+import os
+
 import argparse
 import yaml
 from typing import FrozenSet, Optional, Iterable, TextIO, Union, Any
@@ -57,8 +59,8 @@ class CheckovConfig:
         )
 
     @staticmethod
-    def from_file(file: Union[TextIO, str]) -> 'CheckovConfig':
-        if isinstance(file, str):
+    def from_file(file: Union[TextIO, str, os.PathLike]) -> 'CheckovConfig':
+        if isinstance(file, (str, os.PathLike)):
             with open(file, 'r') as stream:
                 return CheckovConfig._from_file(stream)
         else:
@@ -66,6 +68,20 @@ class CheckovConfig:
 
     @staticmethod
     def _from_file(stream: TextIO) -> 'CheckovConfig':
+        parsers = [
+            CheckovConfig._from_yaml_file,
+        ]
+        errors = []
+        for parser in parsers:
+            try:
+                return parser(stream)
+            except CheckovConfigError as e:
+                errors.append(e)
+                stream.seek(0)
+        raise CheckovConfigError(errors)
+
+    @staticmethod
+    def _from_yaml_file(stream: TextIO) -> 'CheckovConfig':
         kwargs = {}
         try:
             content = yaml.safe_load(stream)
