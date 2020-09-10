@@ -1644,13 +1644,13 @@ resource aws_s3_bucket "other-provider-bucket" {
 }
 
 module "some-module" {
-  source = "git::ssh://github.com/example/module//s3/s3-logging?ref=tags/1.0.0"
+  source = "git::ssh://github.com/example/module//s3/s3-loggref=tags/1.0.0"
 }
 
 
-resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
   database_version = "MYSQL_8_0"
-  name             = "gilad-mysql81"
+  name             = "general-mysql81"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
 
@@ -1697,9 +1697,9 @@ resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
   }
 }
 
-resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+resource "google_sql_database_instance" "tfer--general-002D-pos121" {
   database_version = "POSTGRES_12"
-  name             = "gilad-pos121"
+  name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
 
@@ -1776,9 +1776,9 @@ resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
   }
 }
 
-resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
   database_version = "SQLSERVER_2017_STANDARD"
-  name             = "gilad-sqlserver12"
+  name             = "general-sqlserver12"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
 

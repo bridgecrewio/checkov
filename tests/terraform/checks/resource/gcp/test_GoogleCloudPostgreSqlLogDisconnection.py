@@ -10,9 +10,9 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""    
-            resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
               database_version = "POSTGRES_12"
-              name             = "gilad-pos121"
+              name             = "general-pos121"
               project          = "gcp-bridgecrew-deployment"
               region           = "us-central1"
               settings {
@@ -52,15 +52,15 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
               }
             }
                 """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-pos121']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_12"
-            name             = "gilad-pos121"
+            name             = "general-pos121"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
             settings {
@@ -100,15 +100,15 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
               }
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-pos121']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
         hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_14"
-            name             = "gilad-pos121"
+            name             = "general-pos121"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
             settings {
@@ -148,15 +148,15 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
               }
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-pos121']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_3(self):
         hcl_res = hcl2.loads("""
-                                    resource "google_sql_database_instance" "tfer--gilad-002D-pos121" {
+                                    resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_12"
-            name             = "gilad-pos121"
+            name             = "general-pos121"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
             settings {
@@ -184,7 +184,7 @@ class TestCloudPostgreSQLLogDisconnection(unittest.TestCase):
               }
             }
                         """)
-        resource_conf =hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-pos121']
+        resource_conf =hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class GoogleCloudPostgreSqlLogTemp(BaseResourceValueCheck):
+class GoogleCloudPostgreSqlLogTemp(BaseResourceCheck):
     def __init__(self):
         name = "Ensure PostgreSQL database 'log_temp_files flag is set to '0'"
         check_id = "CKV_GCP_56"
@@ -20,7 +20,7 @@ class GoogleCloudPostgreSqlLogTemp(BaseResourceValueCheck):
         """
         if 'database_version' in conf.keys():
             key = conf['database_version'][0]
-            if key == 'POSTGRES_9_6' or key == 'POSTGRES_10' or key == 'POSTGRES_11' or key == 'POSTGRES_12':
+            if 'POSTGRES' in key:
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
@@ -29,11 +29,11 @@ class GoogleCloudPostgreSqlLogTemp(BaseResourceValueCheck):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
 
-
+'''
     def get_inspected_key(self):
         return 'settings/[0]/database_flags/[0]/log_temp_files'
 
     def get_expected_value(self):
         return "0"
-
+'''
 check = GoogleCloudPostgreSqlLogTemp()

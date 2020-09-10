@@ -10,9 +10,9 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""    
-            resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+            resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
-            name             = "gilad-sqlserver12"
+            name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
 
@@ -66,15 +66,15 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
             }
 
                 """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+            resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
-            name             = "gilad-sqlserver12"
+            name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
             settings {
@@ -126,15 +126,15 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
               }
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
         hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+            resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD122"
-            name             = "gilad-sqlserver12"
+            name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"
 
@@ -187,15 +187,15 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
               }
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_3(self):
         hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+            resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
-            name             = "gilad-sqlserver12"
+            name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"           
             settings {
@@ -235,20 +235,20 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
               }
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_4(self):
         hcl_res = hcl2.loads("""
-             resource "google_sql_database_instance" "tfer--gilad-002D-sqlserver12" {
+             resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
-            name             = "gilad-sqlserver12"
+            name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
             region           = "us-central1"           
             }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-sqlserver12']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

@@ -19,15 +19,16 @@ class GoogleCloudPostgreSqlLogMinMessage(BaseResourceCheck):
                 """
                 if 'database_version' in conf.keys():
                     key = conf['database_version'][0]
-                    if key == 'POSTGRES_9_6' or key == 'POSTGRES_10' or key == 'POSTGRES_11' or key == 'POSTGRES_12':
+                    if 'POSTGRES' in key:
                         if 'settings' in conf.keys():
                             for attribute in conf['settings'][0]:
                                 if attribute == 'database_flags':
                                     for flag in conf['settings'][0]['database_flags']:
                                         if (flag['name'][0] == 'log_min_messages'):
                                             key_logmin=flag['value'][0]
-                                            if (key_logmin != 'fatal' and key_logmin != 'panic' and key_logmin != 'log' and key_logmin != 'error' and key_logmin != 'warning' and key_logmin != 'notice'
-                                                    and key_logmin != 'info' and key_logmin != 'debug1' and key_logmin != 'debug2' and key_logmin != 'debug3' and key_logmin != 'debug4' and key_logmin != 'debug5'):
+                                            logmin_list = ['fatal', 'panic', 'log', 'error', 'warning', 'notice',
+                                                           'info', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5']
+                                            if key_logmin not in logmin_list:
                                                 return CheckResult.FAILED
                 return CheckResult.PASSED
 

@@ -10,9 +10,9 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
-                resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                   database_version = "MYSQL_8_0"
-                  name             = "gilad-mysql81"
+                  name             = "mysql81"
                   project          = "gcp-bridgecrew-deployment"
                   region           = "us-central1"
                   settings {
@@ -29,15 +29,15 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                   }
                 }
                 """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                           database_version = "MYSQL_8_0"
-                          name             = "gilad-mysql81"
+                          name             = "general-mysql81"
                           project          = "gcp-bridgecrew-deployment"
                           region           = "us-central1"
                           settings {
@@ -53,15 +53,15 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                           }
                         }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
         hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                           database_version = "MYSQL_5_6"
-                          name             = "gilad-mysql81"
+                          name             = "general-mysql81"
                           project          = "gcp-bridgecrew-deployment"
                           region           = "us-central1"
 
@@ -79,15 +79,15 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                           }
                         }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_3(self):
         hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                           database_version = "POSTGRES_12"
-                          name             = "gilad-mysql81"
+                          name             = "general-mysql81"
                           project          = "gcp-bridgecrew-deployment"
                           region           = "us-central1"
 
@@ -108,15 +108,15 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                           }
                         }
                         """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_4(self):
         hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                               database_version = "MYSQL_8_0"
-                              name             = "gilad-mysql81"
+                              name             = "general-mysql81"
                               project          = "gcp-bridgecrew-deployment"
                               region           = "us-central1"
 
@@ -129,29 +129,29 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                               }
                             }
                             """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
     def test_success_5(self):
         hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
+                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
                               database_version = "POSTGRES_12"
-                              name             = "gilad-mysql81"
+                              name             = "general-mysql81"
                               project          = "gcp-bridgecrew-deployment"
                               region           = "us-central1"
                             }
                             """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
     def test_success_6(self):
         hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--gilad-002D-mysql81" {
-                              name             = "gilad-mysql81"
+                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
+                              name             = "general-mysql81"
                               project          = "gcp-bridgecrew-deployment"
                               region           = "us-central1"
 
@@ -164,7 +164,7 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                               }
                             }
                             """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--gilad-002D-mysql81']
+        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

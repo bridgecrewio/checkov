@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceValueCheck):
+class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceCheck):
     def __init__(self):
         name = "Ensure SQL database 'contained database authentication' flag is set to 'off'"
         check_id = "CKV_GCP_59"
@@ -20,7 +20,7 @@ class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceValueCheck):
         """
         if 'database_version' in conf.keys():
             key = conf['database_version'][0]
-            if key == 'SQLSERVER_2017_STANDARD' or key == 'SQLSERVER_2017_ENTERPRISE' or key == 'SQLSERVER_2017_EXPRESS' or key == 'SQLSERVER_2017_WEB':
+            if 'SQLSERVER' in key:
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
@@ -28,11 +28,11 @@ class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceValueCheck):
                                 if (flag['name'][0] == 'contained database authentication') and (flag['value'][0] == 'on'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
-
+'''
     def get_inspected_key(self):
         return 'settings/[0]/database_flags/[0]/contained database authentication'
 
     def get_expected_value(self):
         return "off"
-
+'''
 check = GoogleCloudSqlServerContainedDBAuthentication()
