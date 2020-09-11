@@ -25,7 +25,7 @@ checkov -d /user/tf
   -v, --version         version
   -d DIRECTORY, --directory DIRECTORY
                         IaC root directory (can not be used together with
-                        --file). Can be repeated
+                        --file).
   -f FILE, --file FILE  IaC file(can not be used together with --directory)
   --external-checks-dir EXTERNAL_CHECKS_DIR
                         Directory for custom checks to be loaded. Can be
