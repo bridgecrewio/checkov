@@ -162,7 +162,7 @@ module "eks" {
 }
 ```
 
-To ensure coverage of objects within these modules, you can instruct checkov to scan the `.terraform` directory, after a `terraform init`, which will have retreived the third party modules and any associated `.tf` files.
+To ensure coverage of objects within these modules, you can instruct checkov to scan the `.terraform` directory, after a `terraform init`, which will have retrieved the third party modules and any associated `.tf` files.
 
 ```sh
 terraform init
