@@ -1,0 +1,14 @@
+[main]
+xxx123 = 1
+
+[DEFAULT]
+abc123 = 2
+
+[checkov]
+something = 1
+other: =
+  asd
+  asd
+  fgd
+mm =
+  not_in_list
