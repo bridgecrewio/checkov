@@ -84,6 +84,7 @@ class RunnerRegistry(object):
                                 #TODO: The multi-directory (multiple -d's permitted) of Checkov doesn't really tie with the platform logic of needing a --repo-id. 
                                 # We could either check that args.directory contains one and otherwise not show this upload/signup PoC
                                 # Or, we could support "visualization only" uploads in the platform which arent linked to a specific repo?
+                                # NOT AN ISSUE. Multiple -d's has been depreciated in Checkov as it was messing up formatting outputs.
                                 try:
                                     repo = Repo(dir)
                                     git_remote_uri = repo.remotes.origin.url
