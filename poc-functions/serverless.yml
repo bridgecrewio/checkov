@@ -1,0 +1,54 @@
+service: checkov-platform-poc
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  version: 1
+  region: eu-west-2
+  memorySize: 128
+  custom:
+    IAM_COGNITO_ACCESS_KEY: ${file(./cognito_access_role.yml):IAM_COGNITO_ACCESS_KEY}
+    IAM_COGNITO_SECRET_KEY: ${file(./cognito_access_role.yml):IAM_COGNITO_SECRET_KEY}
+    BC_USER_POOL: ${file(./cognito_access_role.yml):BC_USER_POOL}
+    BC_USER_POOL_CLIENT_ID: ${file(./cognito_access_role.yml):BC_USER_POOL_CLIENT_ID}
+    BC_DASHBOARD_URL: ${file(./cognito_access_role.yml):BC_DASHBOARD_URL}
+    BC_API_URL:  ${file(./cognito_access_role.yml):BC_API_URL}
+
+
+plugins:
+  - serverless-python-requirements
+package:
+  exclude:
+    - ./cognito_access_role.yml
+
+
+functions:
+  checkovUser:
+    timeout: 30
+    handler: signup.signup
+    environment:
+      Z_AWS_SECRET_ACCESS_KEY: ${self:provider.custom.IAM_COGNITO_SECRET_KEY}
+      Z_AWS_ACCESS_KEY_ID: ${self:provider.custom.IAM_COGNITO_ACCESS_KEY}
+      BC_API_URL: ${self:provider.custom.BC_API_URL}
+      BC_USER_POOL: ${self:provider.custom.BC_USER_POOL} 
+      BC_USER_POOL_CLIENT_ID: ${self:provider.custom.BC_USER_POOL_CLIENT_ID}
+      BC_DASHBOARD_URL: ${self:provider.custom.BC_DASHBOARD_URL}
+    events:
+      - http:
+          path: checkovUser
+          method: post
+          cors:
+            origin: '*'
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+  
+
