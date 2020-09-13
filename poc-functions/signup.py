@@ -98,7 +98,7 @@ def signup(event, context):
             "dashboardURL": bc_dashboard_url
         }
 
-        print(json.dumps(returnUserDetails))
+        print(json.dumps(returnUserDetails)):
 
         response = {
             "statusCode": 200,
