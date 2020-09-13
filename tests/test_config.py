@@ -5,7 +5,8 @@ import argparse
 import io
 from typing import Union
 
-from checkov.config import CheckovConfig, CheckovConfigError, OUTPUT_CHOICES, FRAMEWORK_CHOICES
+from checkov.config import CheckovConfig, CheckovConfigError, OUTPUT_CHOICES, FRAMEWORK_CHOICES, \
+    MERGING_BEHAVIOR_CHOICES
 from checkov.main import add_parser_args
 
 
@@ -68,6 +69,9 @@ class TestCheckovConfig(unittest.TestCase):
                          f'{msg_prefix}Expect _output to be "{expected["_output"]}" but got "{config._output}"')
         self.assertEqual(expected['output'], config.output,
                          f'{msg_prefix}Expect output to be "{expected["output"]}" but got "{config.output}"')
+        self.assertIn(config.output, OUTPUT_CHOICES,
+                      f'{msg_prefix}Expect output to be one of "{",".join(OUTPUT_CHOICES)}" but '
+                      f'got "{config.output}"')
         self.assertEqual(expected['_no_guide'], config._no_guide,
                          f'{msg_prefix}Expect _no_guide to be "{expected["_no_guide"]}" but got "{config._no_guide}"')
         self.assertEqual(expected['no_guide'], config.no_guide,
@@ -81,8 +85,17 @@ class TestCheckovConfig(unittest.TestCase):
                          f'"{config._framework}"')
         self.assertEqual(expected['framework'], config.framework,
                          f'{msg_prefix}Expect framework to be "{expected["framework"]}" but got "{config.framework}"')
+        self.assertIn(config.framework, FRAMEWORK_CHOICES,
+                      f'{msg_prefix}Expect framework to be one of "{",".join(FRAMEWORK_CHOICES)}" but '
+                      f'got "{config.framework}"')
         self.assertEqual(expected['check'], config.check,
                          f'{msg_prefix}Expect check to be "{expected["check"]}" but got "{config.check}"')
+        self.assertEqual(expected['merging_behavior'], config.merging_behavior,
+                         f'{msg_prefix}Expect merging_behavior to be "{expected["merging_behavior"]}" but got '
+                         f'"{config.merging_behavior}"')
+        self.assertIn(config.merging_behavior, MERGING_BEHAVIOR_CHOICES,
+                      f'{msg_prefix}Expect merging_behavior to be one of "{",".join(MERGING_BEHAVIOR_CHOICES)}" but '
+                      f'got "{config.merging_behavior}"')
         self.assertEqual(expected['skip_check'], config.skip_check,
                          f'{msg_prefix}Expect skip_check to be "{expected["skip_check"]}" but got '
                          f'"{config.skip_check}"')
@@ -99,6 +112,33 @@ class TestCheckovConfig(unittest.TestCase):
                          f'{msg_prefix}Expect branch to be "{expected["branch"]}" but got "{config.branch}"')
 
     # TODO add a test that checks if cli can override --check and --skip-check
+    def test_config_creation_constructor(self):
+        config = CheckovConfig('test')
+        self.assertConfig({
+            'source': 'test',
+            'directory': set(),
+            'file': set(),
+            'external_checks_dir': set(),
+            'external_checks_git': set(),
+            '_output': None,
+            'output': 'cli',
+            '_no_guide': None,
+            'no_guide': False,
+            '_quiet': None,
+            'quiet': False,
+            '_framework': None,
+            'framework': 'all',
+            '_merging_behavior': 'union',
+            'merging_behavior': 'union',
+            'check': None,
+            'skip_check': None,
+            '_soft_fail': None,
+            'soft_fail': False,
+            'repo_id': None,
+            '_branch': None,
+            'branch': 'master',
+        }, config)
+
     def test_config_creation_no_args(self):
         parser = argparse.ArgumentParser()
         add_parser_args(parser)
@@ -118,6 +158,8 @@ class TestCheckovConfig(unittest.TestCase):
             'quiet': False,
             '_framework': None,
             'framework': 'all',
+            '_merging_behavior': 'override_if_present',
+            'merging_behavior': 'override_if_present',
             'check': None,
             'skip_check': None,
             '_soft_fail': None,
@@ -153,6 +195,7 @@ class TestCheckovConfig(unittest.TestCase):
             '--no-guide',
             '--quiet',
             '--framework', 'kubernetes',
+            '--merging-behavior', 'override',
             '-c', 'CKV_AWS_1,CKV_AWS_3',
             '--skip-check', 'CKV_AWS_2,CKV_AWS_4',
             '-s',
@@ -174,6 +217,8 @@ class TestCheckovConfig(unittest.TestCase):
             'quiet': True,
             '_framework': 'kubernetes',
             'framework': 'kubernetes',
+            '_merging_behavior': 'override',
+            'merging_behavior': 'override',
             'check': 'CKV_AWS_1,CKV_AWS_3',
             'skip_check': 'CKV_AWS_2,CKV_AWS_4',
             '_soft_fail': True,
@@ -207,6 +252,8 @@ class TestCheckovConfig(unittest.TestCase):
             'quiet': False,
             '_framework': None,
             'framework': 'all',
+            '_merging_behavior': 'override_if_present',
+            'merging_behavior': 'override_if_present',
             'check': 'CKV_AWS_1,CKV_AWS_3',
             'skip_check': None,
             '_soft_fail': True,
@@ -321,6 +368,90 @@ class TestCheckovConfig(unittest.TestCase):
         expected = CheckovConfig('t1', check='1', skip_check='2')
         self.assertConfig(expected, child)
 
+    def test_merge_union_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', check='1', merging_behavior='union')
+            child2 = CheckovConfig('t2', merging_behavior='union')
+            parent = CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', check='1,2', merging_behavior='union'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', check='2', merging_behavior='union'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_union_skip_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', skip_check='1', merging_behavior='union')
+            child2 = CheckovConfig('t2', merging_behavior='union')
+            parent = CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', skip_check='1,2', merging_behavior='union'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', skip_check='2', merging_behavior='union'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_override_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', check='1', merging_behavior='override')
+            child2 = CheckovConfig('t2', merging_behavior='override')
+            parent = CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', check='1', merging_behavior='override'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', check=None, merging_behavior='override'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_override_skip_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', skip_check='1', merging_behavior='override')
+            child2 = CheckovConfig('t2', merging_behavior='override')
+            parent = CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', skip_check='1', merging_behavior='override'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', skip_check=None, merging_behavior='override'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_override_if_present_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', check='1', merging_behavior='override_if_present')
+            child2 = CheckovConfig('t2', merging_behavior='override_if_present')
+            parent = CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', check='1', merging_behavior='override_if_present'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', check='2', merging_behavior='override_if_present'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_override_if_present_skip_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', skip_check='1', merging_behavior='override_if_present')
+            child2 = CheckovConfig('t2', merging_behavior='override_if_present')
+            parent = CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', skip_check='1', merging_behavior='override_if_present'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t2', skip_check='2', merging_behavior='override_if_present'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+            self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
     def test_yaml_load_empty_file_by_path(self):
         config = CheckovConfig.from_file(self.get_config_file('empty.yaml'))
         self.assertConfig(CheckovConfig('file'), config)
@@ -329,8 +460,9 @@ class TestCheckovConfig(unittest.TestCase):
         config = CheckovConfig.from_file(self.get_config_file('full.yaml'))
         expected = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
                                  external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
-                                 no_guide=True, quiet=False, framework='kubernetes', check='1, a ,d',
-                                 skip_check='2, b ,d', soft_fail=True, repo_id='1 2', branch='feature/abc')
+                                 no_guide=True, quiet=False, framework='kubernetes', merging_behavior='union',
+                                 check='1, a ,d', skip_check='2, b ,d', soft_fail=True, repo_id='1 2',
+                                 branch='feature/abc')
         self.assertConfig(expected, config)
 
     def test_yaml_file_with_additional_keys_by_path(self):
@@ -415,8 +547,9 @@ external_checks_gits: d
         config = CheckovConfig.from_file(self.get_config_file('full'))
         expected = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
                                  external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
-                                 no_guide=True, quiet=False, framework='kubernetes', check='1, a ,d',
-                                 skip_check='2, b ,d', soft_fail=True, repo_id='1 2', branch='feature/abc')
+                                 no_guide=True, quiet=False, framework='kubernetes', merging_behavior='union',
+                                 check='1, a ,d', skip_check='2, b ,d', soft_fail=True, repo_id='1 2',
+                                 branch='feature/abc')
         self.assertConfig(expected, config)
 
     def test_config_file_with_additional_keys_by_path(self):

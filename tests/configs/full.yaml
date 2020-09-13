@@ -18,6 +18,7 @@ output: json
 no_guide: true
 quiet: False
 framework: kubernetes
+merging_behavior: union
 checks:
   - !!str 1
   - " a "

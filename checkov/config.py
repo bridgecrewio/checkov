@@ -10,6 +10,7 @@ from yaml import YAMLError
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
+MERGING_BEHAVIOR_CHOICES = ['union', 'override', 'override_if_present']
 
 PROGRAM_NAME = 'checkov'
 
@@ -24,8 +25,8 @@ class CheckovConfig:
                  external_checks_dir: Optional[Iterable[str]] = None,
                  external_checks_git: Optional[Iterable[str]] = None, output: Optional[str] = None,
                  no_guide: Optional[bool] = None, quiet: Optional[bool] = None, framework: Optional[str] = None,
-                 check: Optional[str] = None, skip_check: Optional[str] = None, soft_fail: Optional[bool] = None,
-                 repo_id: Optional[str] = None, branch: Optional[str] = None):
+                 merging_behavior: Optional[str] = None, check: Optional[str] = None, skip_check: Optional[str] = None,
+                 soft_fail: Optional[bool] = None, repo_id: Optional[str] = None, branch: Optional[str] = None):
         self.source = source
         self.directory: FrozenSet = frozenset(directory or {})
         self.file: FrozenSet = frozenset(file or {})
@@ -35,6 +36,7 @@ class CheckovConfig:
         self._no_guide = no_guide
         self._quiet = quiet
         self._framework = framework
+        self._merging_behavior = merging_behavior
         self.check = check
         self.skip_check = skip_check
         self._soft_fail = soft_fail
@@ -56,6 +58,7 @@ class CheckovConfig:
             no_guide=args.no_guide,
             quiet=args.quiet,
             framework=args.framework,
+            merging_behavior=args.merging_behavior or 'override_if_present',
             check=args.check,
             skip_check=args.skip_check,
             soft_fail=args.soft_fail,
@@ -105,6 +108,10 @@ class CheckovConfig:
         return self._framework or 'all'
 
     @property
+    def merging_behavior(self) -> str:
+        return self._merging_behavior or 'union'
+
+    @property
     def soft_fail(self) -> bool:
         return self._soft_fail if self._soft_fail is not None else False
 
@@ -132,18 +139,25 @@ class CheckovConfig:
         # repo_id is never ''
         self._branch = self._branch or parent._branch
 
-        if not self.check and not self.skip_check:
-            # if nothing is set, copy from parent
-            self.check = parent.check
-            self.skip_check = parent.skip_check
-        else:
-            # At least one is set. Update the once, that are set. If it are both, it was invalid and will be invalid.
-            if self.check and parent.check:
-                # parent.check is a string but not an empty one
-                self.check = f'{self.check},{parent.check}'
-            if self.skip_check and parent.skip_check:
-                # parent.skip_check is a string but not an empty one
-                self.skip_check = f'{self.skip_check},{parent.skip_check}'
+        # handling check and skip_check
+        if (
+                self.merging_behavior == 'override_if_present' and not self.check and not self.skip_check
+                # We only update valid configs. We than only copy the parent, if nothing is set. Otherwise, we do not
+                # change the config, to override anything specified in the parent
+        ) or self.merging_behavior == 'union':
+            if not self.check and not self.skip_check:
+                # if nothing is set, copy from parent
+                self.check = parent.check
+                self.skip_check = parent.skip_check
+            else:
+                # At least one is set. Update the once, that are set. If it are both, it was invalid and will be
+                # invalid.
+                if self.check and parent.check:
+                    # parent.check is a string but not an empty one
+                    self.check = f'{self.check},{parent.check}'
+                if self.skip_check and parent.skip_check:
+                    # parent.skip_check is a string but not an empty one
+                    self.skip_check = f'{self.skip_check},{parent.skip_check}'
 
 
 class _Parser(ABC):
@@ -186,6 +200,7 @@ class _Parser(ABC):
             self.handle_type('no_guide', 'no_guide', bool)
             self.handle_type('quiet', 'quiet', bool)
             self.handle_choice('framework', 'framework', FRAMEWORK_CHOICES)
+            self.handle_choice('merging_behavior', 'merging_behavior', MERGING_BEHAVIOR_CHOICES)
             self.handle_check('checks', 'check')
             self.handle_check('skip_checks', 'skip_check')
             self.handle_type('soft_fail', 'soft_fail', bool)

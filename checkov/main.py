@@ -13,7 +13,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
-from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES
+from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES, MERGING_BEHAVIOR_CHOICES
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
@@ -110,12 +110,23 @@ def add_parser_args(parser):
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         # Default value is implemented in config.CheckovConfig.framework
                         choices=FRAMEWORK_CHOICES)
+    parser.add_argument('--merging-behavior',
+                        help='Change the behavior how --check and --skip-check are merged with existing definitions '
+                             'inside a configuration file. By default "override_if_present" is used, which will ignore '
+                             'configuration files if you specify --check or --skip-check. "override" will completely '
+                             'ignore configuration files for --check and --skip-check. This can be used to clear the '
+                             'selection from existing configuration files. "union" will keep the checks from the '
+                             'command line and the one defined in configuration files.',
+                        # Default value is implemented in config.CheckovConfig.merging_behavior
+                        choices=MERGING_BEHAVIOR_CHOICES)
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
-                             'specify multiple checks separated by comma delimiter', default=None)
+                             'specify multiple checks separated by comma delimiter. E.g.: CKV_AWS_1,CKV_AWS_3 '
+                             'You may want to specify a different --merging-behavior.', default=None)
     parser.add_argument('--skip-check',
                         help='filter scan to run on all check but a specific check identifier(denylist), You can '
-                             'specify multiple checks separated by comma delimiter', default=None)
+                             'specify multiple checks separated by comma delimiter. E.g.: CKV_AWS_1,CKV_AWS_3 '
+                             'You may want to specify a different --merging-behavior.', default=None)
     parser.add_argument('-s', '--soft-fail', default=None,
                         # Default value is implemented in config.CheckovConfig.soft_fail
                         help='Runs checks but suppresses error code', action='store_true')
