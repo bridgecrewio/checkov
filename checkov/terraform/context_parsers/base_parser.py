@@ -103,7 +103,7 @@ class BaseContextParser(ABC):
                     break
         return end_line_num
 
-    def run(self, tf_file, definition_blocks, collect_skip_comments):
+    def run(self, tf_file, definition_blocks, collect_skip_comments=True):
         self.tf_file = tf_file
         self.context = {}
         self.file_lines = self._read_file_lines()

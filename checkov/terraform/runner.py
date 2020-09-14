@@ -77,7 +77,7 @@ class Runner(BaseRunner):
                 if not var_path.endswith('alias/0'):
                     dpath.set(self.tf_definitions[tf_file], var_path, False)
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments):
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         definitions_context = {}
         parser_registry.reset_definitions_context()
         for definition in self.tf_definitions.items():
