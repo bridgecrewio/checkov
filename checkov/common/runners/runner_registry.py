@@ -120,7 +120,7 @@ class RunnerRegistry(object):
                                         pass
                                 if valid_repos == 0:
                                     #No pushed repo (so no org/repo path)
-                                    repo_id = "bridgecrewuserrepo/" + path.basename(args.directory[0])
+                                    repo_id = "checkovuserrepo/" + path.basename(args.directory[0])
                                     print(repo_id)
 
                             
