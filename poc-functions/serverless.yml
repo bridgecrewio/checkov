@@ -21,7 +21,10 @@ plugins:
 package:
   exclude:
     - ./cognito_access_role.yml
-
+    - ./node_modules
+    - ./.serverless
+    - ./package.json
+    - ./package-lock.json
 
 functions:
   checkovUser:
