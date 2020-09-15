@@ -1,4 +1,4 @@
-from checkov.serverless.checks.base_function_check import BaseFunctionCheck
+from checkov.serverless.checks.function.base_function_check import BaseFunctionCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.serverless.parsers.parser import IAM_ROLE_STATEMENTS_TOKEN
 

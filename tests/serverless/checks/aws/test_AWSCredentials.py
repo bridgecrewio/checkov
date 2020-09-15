@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.serverless.checks.aws.AWSCredentials import check
+from checkov.serverless.checks.function.aws.AWSCredentials import check
 from checkov.serverless.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

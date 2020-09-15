@@ -1,15 +1,19 @@
+from collections import Mapping
+from dataclasses import dataclass
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
-class Registry(BaseCheckRegistry):
+@dataclass
+class EntityDetails:
+    provider_type: str
+    data: Mapping
 
-    def __init__(self):
-        super().__init__()
 
-    def extract_entity_details(self, entity):
-        function_type = f"serverless_{entity['provider_type']}"
-        conf = entity["function"]
-        return function_type, conf
+class ServerlessRegistry(BaseCheckRegistry):
+
+    def extract_entity_details(self, entity: EntityDetails):
+        return f"serverless_{entity.provider_type}", entity.data
 
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
         entity_type, entity_configuration = self.extract_entity_details(entity)
