@@ -149,7 +149,6 @@ class BaseCheckRegistry(object):
                         # Filter is set while loading external checks so the filter can be informed
                         # of the checks, which need to be handled specially.
                         try:
-                            print(f"Enter load_external_checks")
                             BaseCheckRegistry.__loading_external_checks = True
                             self.logger.debug("Importing external check '{}'".format(check_name))
                             importlib.import_module(check_name)
