@@ -22,7 +22,7 @@ class RunnerFilter(object):
         self.framework = framework
 
     def should_run_check(self, check_id):
-        if check_id in RunnerFilter.__EXTERNAL_CHECK_IDS:
+        if RunnerFilter.is_external_check(check_id):
             pass        # enabled unless skipped
         elif self.checks:
             if check_id in self.checks:
@@ -33,5 +33,10 @@ class RunnerFilter(object):
             return False
         return True
 
+    @staticmethod
     def notify_external_check(check_id):
         RunnerFilter.__EXTERNAL_CHECK_IDS.add(check_id)
+
+    @staticmethod
+    def is_external_check(check_id):
+        return check_id in RunnerFilter.__EXTERNAL_CHECK_IDS
