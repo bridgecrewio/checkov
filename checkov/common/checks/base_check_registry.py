@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 from abc import abstractmethod
-from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple
 
@@ -12,12 +11,13 @@ from checkov.common.checks.base_check import BaseCheck
 
 from collections import defaultdict
 
+from checkov.runner_filter import RunnerFilter
+
 
 class BaseCheckRegistry(object):
-    # TODO why do we had static elements in the first place?
-    # checks = defaultdict(list)
-    # wildcard_checks = defaultdict(list)
-    # check_id_allowlist = None
+    # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
+    #       checks aren't registered. (This happens with Serverless, for example.)
+    __loading_external_checks = False
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -28,7 +28,6 @@ class BaseCheckRegistry(object):
         #                      reason to use a dict for this too.
         self.wildcard_checks = defaultdict(list)
         self.check_id_allowlist = None
-        self.external_checks_runner_filter = None
 
     def register(self, check):
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
@@ -38,8 +37,8 @@ class BaseCheckRegistry(object):
         #                      RunnerFilters during load_external_checks.
         #                      Built-in checks are registered immediately at script start, before
         #                      external checks.
-        if self.external_checks_runner_filter:
-            self.external_checks_runner_filter.notify_external_check(check.id)
+        if BaseCheckRegistry.__loading_external_checks:
+            RunnerFilter.notify_external_check(check.id)
 
         for entity in check.supported_entities:
             checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
@@ -149,9 +148,9 @@ class BaseCheckRegistry(object):
 
                         # Filter is set while loading external checks so the filter can be informed
                         # of the checks, which need to be handled specially.
-                        prior_external_checks_runner_filter = self.external_checks_runner_filter
                         try:
-                            self.external_checks_runner_filter = runner_filter
+                            print(f"Enter load_external_checks")
+                            BaseCheckRegistry.__loading_external_checks = True
                             self.logger.debug("Importing external check '{}'".format(check_name))
                             importlib.import_module(check_name)
                         except SyntaxError as e:
@@ -167,4 +166,4 @@ class BaseCheckRegistry(object):
                                 )
                             )
                         finally:
-                            self.external_checks_runner_filter = prior_external_checks_runner_filter
+                            BaseCheckRegistry.__loading_external_checks = False

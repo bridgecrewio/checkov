@@ -1,8 +1,9 @@
+
 class RunnerFilter(object):
-    framework = 'all'
-    checks = []
-    skip_checks = []
-    external_check_ids = set()
+    # NOTE: This needs to be static because different filters may be used at load time versus runtime
+    #       (see note in BaseCheckRegistery.register). The concept of which checks are external is
+    #       logically a "static" concept anyway, so this makes logical sense.
+    __EXTERNAL_CHECK_IDS = set()
 
     def __init__(self, framework='all', checks=None, skip_checks=None):
         if checks is None:
@@ -20,11 +21,8 @@ class RunnerFilter(object):
             self.skip_checks = skip_checks
         self.framework = framework
 
-    def notify_external_check(self, check_id):
-        self.external_check_ids.add(check_id)
-
     def should_run_check(self, check_id):
-        if check_id in self.external_check_ids:
+        if check_id in RunnerFilter.__EXTERNAL_CHECK_IDS:
             pass        # enabled unless skipped
         elif self.checks:
             if check_id in self.checks:
@@ -34,3 +32,6 @@ class RunnerFilter(object):
         if self.skip_checks and check_id in self.skip_checks:
             return False
         return True
+
+    def notify_external_check(check_id):
+        RunnerFilter.__EXTERNAL_CHECK_IDS.add(check_id)
