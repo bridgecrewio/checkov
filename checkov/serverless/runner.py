@@ -115,7 +115,7 @@ class Runner(BaseRunner):
             # Sub-sections that have multiple items under them
             for token, registry in MULTI_ITEM_SECTIONS:
                 template_items = sls_file_data.get(token)
-                if not template_items:
+                if not template_items or not isinstance(template_items, dict):
                     continue
                 for item_name, item_content in template_items.items():
                     if not isinstance(item_content, dict_node):
