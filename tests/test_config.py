@@ -570,9 +570,8 @@ external_checks_gits: d
         self.assertNotIn('xxx123', str(context.exception))
         self.assertNotIn('abc123', str(context.exception))
 
-    def test_yaml_file_with_invalid_syntax_by_path(self):
-        # TODO
-        self.assertRaises(CheckovConfigError, CheckovConfig.from_file, self.get_config_file('invalid_syntax.yaml'))
+    def test_config_file_with_invalid_syntax_by_path(self):
+        self.assertRaises(CheckovConfigError, CheckovConfig.from_file, self.get_config_file('invalid_syntax'))
 
     def test_config_file_checks_string_by_io(self):
         buffer = io.StringIO("""
