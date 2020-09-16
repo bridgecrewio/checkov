@@ -263,6 +263,13 @@ class TestCheckovConfig(unittest.TestCase):
             'branch': 'b/123',
         }, config)
 
+    def test_merge_with_none(self):
+        config = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)
+        expected = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True,
+                                 quiet=False)
+        config.extend(None)
+        self.assertConfig(expected, config)
+
     def test_merge_config_no_override_if_defined(self):
         config1 = CheckovConfig('test')
         parent1 = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)

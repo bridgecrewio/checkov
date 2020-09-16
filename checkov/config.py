@@ -119,7 +119,9 @@ class CheckovConfig:
     def branch(self):
         return self._branch or 'master'
 
-    def extend(self, parent: 'CheckovConfig'):
+    def extend(self, parent: Optional['CheckovConfig']):
+        if parent is None:
+            return
         self.directory = self.directory.union(parent.directory)
         self.file = self.file.union(parent.file)
         self.external_checks_dir = self.external_checks_dir.union(parent.external_checks_dir)
