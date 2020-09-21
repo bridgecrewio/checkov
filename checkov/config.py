@@ -119,6 +119,10 @@ class CheckovConfig:
     def branch(self):
         return self._branch or 'master'
 
+    @property
+    def is_check_selection_valid(self):
+        return not self.check or not self.skip_check
+
     def extend(self, parent: Optional['CheckovConfig']):
         if parent is None:
             return

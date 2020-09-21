@@ -53,7 +53,7 @@ def run(banner=checkov_banner):
     guidelines = {}
     if not config.no_guide:
         guidelines = bc_integration.get_guidelines()
-    if config.check and config.skip_check:
+    if not config.is_check_selection_valid:
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
     if args.list:

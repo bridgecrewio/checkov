@@ -639,3 +639,9 @@ external_checks_gits = d
         self.assertConfig(
             CheckovConfig('file', directory={'a'}, file={'b'}, external_checks_dir={'c'}, external_checks_git={'d'}),
             config)
+
+    def test_is_check_selection_valid(self):
+        self.assertTrue(CheckovConfig('test1').is_check_selection_valid)
+        self.assertTrue(CheckovConfig('test2', check='1').is_check_selection_valid)
+        self.assertTrue(CheckovConfig('test3', skip_check='1').is_check_selection_valid)
+        self.assertFalse(CheckovConfig('test4', check='1', skip_check='1').is_check_selection_valid)
