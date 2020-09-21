@@ -1,4 +1,5 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
@@ -50,7 +51,7 @@ class Registry(BaseCheckRegistry):
                     if "default" in allowed_namespaces:
                         run_check = True
             else:
-                if check_id in check_id_allowlist or check_id in runner_filter.external_check_ids:
+                if check_id in check_id_allowlist or RunnerFilter.is_external_check(check_id):
                     if allowed_namespaces:
                         # Check if namespace in allowed namespaces
                         if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:
