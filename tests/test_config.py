@@ -375,6 +375,18 @@ class TestCheckovConfig(unittest.TestCase):
         expected = CheckovConfig('t1', check='1', skip_check='2')
         self.assertConfig(expected, child)
 
+    def test_merge_union(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            config = CheckovConfig('test1', merging_behavior='union', no_guide=False, framework='all', check='1,2')
+            parent = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
+                                   framework='terraform', repo_id='123', branch='456', check='3,4')
+            expected = CheckovConfig('test1', merging_behavior='union', no_guide=False, framework='all',
+                                     check='1,2,3,4',
+                                     repo_id='123', branch='456')
+            config.extend(parent)
+            self.assertConfig(expected, config,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+
     def test_merge_union_check(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
             child1 = CheckovConfig('t1', check='1', merging_behavior='union')
@@ -403,6 +415,16 @@ class TestCheckovConfig(unittest.TestCase):
             self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
 
+    def test_merge_override(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            config = CheckovConfig('test1', merging_behavior='override', no_guide=False, framework='all', check='1,2')
+            parent = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
+                                   framework='terraform', repo_id='123', branch='456', check='3,4')
+            expected = CheckovConfig('test1', merging_behavior='override', no_guide=False, framework='all', check='1,2')
+            config.extend(parent)
+            self.assertConfig(expected, config,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+
     def test_merge_override_check(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
             child1 = CheckovConfig('t1', check='1', merging_behavior='override')
@@ -411,9 +433,9 @@ class TestCheckovConfig(unittest.TestCase):
             child1.extend(parent)
             child2.extend(parent)
             self.assertConfig(CheckovConfig('t1', check='1', merging_behavior='override'), child1,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with override')
             self.assertConfig(CheckovConfig('t2', check=None, merging_behavior='override'), child2,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with override')
             self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
 
@@ -425,11 +447,37 @@ class TestCheckovConfig(unittest.TestCase):
             child1.extend(parent)
             child2.extend(parent)
             self.assertConfig(CheckovConfig('t1', skip_check='1', merging_behavior='override'), child1,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with override')
             self.assertConfig(CheckovConfig('t2', skip_check=None, merging_behavior='override'), child2,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with override')
             self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
+
+    def test_merge_override_if_present(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            config1 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
+                                    check='1,2', directory={'a', 'b'})
+            parent1 = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
+                                    framework='terraform', repo_id='123', branch='456', check='3,4',
+                                    directory={'c', 'd'}, external_checks_dir={'x'})
+            expected1 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
+                                      check='1,2', directory={'a', 'b'}, external_checks_dir={'x'}, repo_id='123',
+                                      branch='456')
+            config1.extend(parent1)
+            self.assertConfig(expected1, config1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+
+            config2 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
+                                    check='1,2', directory={'a', 'b'}, external_checks_dir={'a'})
+            parent2 = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
+                                    framework='terraform', repo_id='123', branch='456', check='3,4',
+                                    directory={'c', 'd'}, external_checks_dir={'x'})
+            expected2 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
+                                      check='1,2', directory={'a', 'b'}, external_checks_dir={'a'}, repo_id='123',
+                                      branch='456')
+            config2.extend(parent2)
+            self.assertConfig(expected2, config2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
 
     def test_merge_override_if_present_check(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
@@ -439,9 +487,11 @@ class TestCheckovConfig(unittest.TestCase):
             child1.extend(parent)
             child2.extend(parent)
             self.assertConfig(CheckovConfig('t1', check='1', merging_behavior='override_if_present'), child1,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with '
+                              f'override_if_present')
             self.assertConfig(CheckovConfig('t2', check='2', merging_behavior='override_if_present'), child2,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with '
+                              f'override_if_present')
             self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
 
@@ -453,9 +503,53 @@ class TestCheckovConfig(unittest.TestCase):
             child1.extend(parent)
             child2.extend(parent)
             self.assertConfig(CheckovConfig('t1', skip_check='1', merging_behavior='override_if_present'), child1,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with '
+                              f'override_if_present')
             self.assertConfig(CheckovConfig('t2', skip_check='2', merging_behavior='override_if_present'), child2,
-                              f'Test that parent having the {parent_merging_behavior} behavior works with union')
+                              f'Test that parent having the {parent_merging_behavior} behavior works with '
+                              f'override_if_present')
+            self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_copy_parent(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            config = CheckovConfig('test1', merging_behavior='copy_parent', no_guide=False, framework='all',
+                                   check='1,2', directory={'a', 'b'})
+            parent = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
+                                   framework='terraform', repo_id='123', branch='456', check='3,4',
+                                   directory={'c', 'd'}, external_checks_dir={'x'})
+            expected = CheckovConfig('test1', merging_behavior='copy_parent', no_guide=True, framework='terraform',
+                                     repo_id='123', branch='456', check='3,4', directory={'c', 'd'},
+                                     external_checks_dir={'x'})
+            config.extend(parent)
+            self.assertConfig(expected, config,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+
+    def test_merge_copy_parent_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', check='1', merging_behavior='copy_parent')
+            child2 = CheckovConfig('t2', merging_behavior='copy_parent')
+            parent = CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', check='2', merging_behavior='copy_parent'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+            self.assertConfig(CheckovConfig('t2', check='2', merging_behavior='copy_parent'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+            self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
+                              parent, 'Test that parent did not change')
+
+    def test_merge_override_if_present_skip_check(self):
+        for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
+            child1 = CheckovConfig('t1', skip_check='1', merging_behavior='copy_parent')
+            child2 = CheckovConfig('t2', merging_behavior='copy_parent')
+            parent = CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior)
+            child1.extend(parent)
+            child2.extend(parent)
+            self.assertConfig(CheckovConfig('t1', skip_check='2', merging_behavior='copy_parent'), child1,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
+            self.assertConfig(CheckovConfig('t2', skip_check='2', merging_behavior='copy_parent'), child2,
+                              f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
             self.assertConfig(CheckovConfig('t0', skip_check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
 

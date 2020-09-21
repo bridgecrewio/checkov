@@ -10,7 +10,12 @@ from yaml import YAMLError
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
-MERGING_BEHAVIOR_CHOICES = ['union', 'override', 'override_if_present']
+MERGING_BEHAVIOR_CHOICES = [
+    'union',  # merge current with parent
+    'override',  # ignore the parent
+    'override_if_present',  # ignore the parent only when the child has a specific value set
+    'copy_parent',  # copy parent so the child config is discarded
+]
 
 PROGRAM_NAME = 'checkov'
 
@@ -126,10 +131,59 @@ class CheckovConfig:
     def extend(self, parent: Optional['CheckovConfig']):
         if parent is None:
             return
+        merging_behavior = self.merging_behavior
+        if merging_behavior == 'union':
+            self._merge_union(parent)
+        elif merging_behavior == 'override':
+            # ignore parent
+            pass
+        elif merging_behavior == 'override_if_present':
+            self._merge_override_if_present(parent)
+        elif merging_behavior == 'copy_parent':
+            self._merge_copy_parent(parent)
+        else:
+            raise CheckovConfigError(
+                f'Unknown merging behavior "{merging_behavior}". Must be one of '
+                f'{", ".join(MERGING_BEHAVIOR_CHOICES)}.')
+
+    def _merge_union(self, parent: 'CheckovConfig'):
         self.directory = self.directory.union(parent.directory)
         self.file = self.file.union(parent.file)
         self.external_checks_dir = self.external_checks_dir.union(parent.external_checks_dir)
         self.external_checks_git = self.external_checks_git.union(parent.external_checks_git)
+
+        # Use override_if_present for strings and booleans
+        self.__merge_override_if_present_strings_and_booleans(parent)
+
+        # handling check and skip_check
+        if not self.check and not self.skip_check:
+            # if nothing is set, copy from parent
+            self.check = parent.check
+            self.skip_check = parent.skip_check
+        else:
+            # At least one is set. Update the once, that are set. If it are both, it was invalid and will be
+            # invalid.
+            if self.check and parent.check:
+                # parent.check is a string but not an empty one
+                self.check = f'{self.check},{parent.check}'
+            if self.skip_check and parent.skip_check:
+                # parent.skip_check is a string but not an empty one
+                self.skip_check = f'{self.skip_check},{parent.skip_check}'
+
+    def _merge_override_if_present(self, parent: 'CheckovConfig'):
+        self.directory = self.directory or parent.directory
+        self.file = self.file or parent.file
+        self.external_checks_dir = self.external_checks_dir or parent.external_checks_dir
+        self.external_checks_git = self.external_checks_git or parent.external_checks_git
+
+        self.__merge_override_if_present_strings_and_booleans(parent)
+
+        # handling check and skip_check
+        if not self.check and not self.skip_check:
+            self.check = parent.check
+            self.skip_check = parent.skip_check
+
+    def __merge_override_if_present_strings_and_booleans(self, parent: 'CheckovConfig'):
         # _output is never ''
         self._output = self._output or parent._output
         if self._no_guide is None:
@@ -145,25 +199,22 @@ class CheckovConfig:
         # repo_id is never ''
         self._branch = self._branch or parent._branch
 
-        # handling check and skip_check
-        if (
-                self.merging_behavior == 'override_if_present' and not self.check and not self.skip_check
-                # We only update valid configs. We than only copy the parent, if nothing is set. Otherwise, we do not
-                # change the config, to override anything specified in the parent
-        ) or self.merging_behavior == 'union':
-            if not self.check and not self.skip_check:
-                # if nothing is set, copy from parent
-                self.check = parent.check
-                self.skip_check = parent.skip_check
-            else:
-                # At least one is set. Update the once, that are set. If it are both, it was invalid and will be
-                # invalid.
-                if self.check and parent.check:
-                    # parent.check is a string but not an empty one
-                    self.check = f'{self.check},{parent.check}'
-                if self.skip_check and parent.skip_check:
-                    # parent.skip_check is a string but not an empty one
-                    self.skip_check = f'{self.skip_check},{parent.skip_check}'
+    def _merge_copy_parent(self, parent: 'CheckovConfig'):
+        self.directory = parent.directory
+        self.file = parent.file
+        self.external_checks_dir = parent.external_checks_dir
+        self.external_checks_git = parent.external_checks_git
+
+        self._output = parent._output
+        self._no_guide = parent._no_guide
+        self._quiet = parent._quiet
+        self._framework = parent._framework
+        self._soft_fail = parent._soft_fail
+        self.repo_id = parent.repo_id
+        self._branch = parent._branch
+
+        self.check = parent.check
+        self.skip_check = parent.skip_check
 
 
 class _Parser(ABC):

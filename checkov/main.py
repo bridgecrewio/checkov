@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import atexit
 import os
+from os import name as os_name
 
 import argparse
+import functools
 import shutil
 from pathlib import Path
+from typing import Optional, Iterator
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -13,7 +16,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
-from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES, MERGING_BEHAVIOR_CHOICES
+from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES, MERGING_BEHAVIOR_CHOICES, PROGRAM_NAME
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
@@ -116,7 +119,9 @@ def add_parser_args(parser):
                              'configuration files if you specify --check or --skip-check. "override" will completely '
                              'ignore configuration files for --check and --skip-check. This can be used to clear the '
                              'selection from existing configuration files. "union" will keep the checks from the '
-                             'command line and the one defined in configuration files.',
+                             'command line and the one defined in configuration files. "copy_parent" ignore the '
+                             'current configuration and use the parent instead. This is not useful for command line '
+                             'but for disabling a configuration permanently.',
                         # Default value is implemented in config.CheckovConfig.merging_behavior
                         choices=MERGING_BEHAVIOR_CHOICES)
     parser.add_argument('-c', '--check',
