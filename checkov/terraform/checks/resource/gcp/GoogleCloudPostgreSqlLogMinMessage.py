@@ -24,13 +24,24 @@ class GoogleCloudPostgreSqlLogMinMessage(BaseResourceCheck):
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
-                            for flag in conf['settings'][0]['database_flags']:
-                                if (flag['name'][0] == 'log_min_messages'):
-                                    key_logmin = flag['value'][0]
-                                    logmin_list = ['fatal', 'panic', 'log', 'error', 'warning', 'notice',
-                                                   'info', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5']
-                                    if key_logmin not in logmin_list:
-                                        return CheckResult.FAILED
+                            flags = conf['settings'][0]['database_flags']
+                            if isinstance(flags[0], list): #treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
+                                flags = conf['settings'][0]['database_flags'][0]
+                                for flag in flags:
+                                    if (flag['name'] == 'log_min_messages'):
+                                        key_logmin = flag['value']
+                                        logmin_list = ['fatal', 'panic', 'log', 'error', 'warning', 'notice',
+                                                       'info', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5']
+                                        if key_logmin not in logmin_list:
+                                            return CheckResult.FAILED
+                            else: #treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
+                                for flag in flags:
+                                    if (flag['name'][0] == 'log_min_messages'):
+                                        key_logmin = flag['value'][0]
+                                        logmin_list = ['fatal', 'panic', 'log', 'error', 'warning', 'notice',
+                                                       'info', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5']
+                                        if key_logmin not in logmin_list:
+                                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 

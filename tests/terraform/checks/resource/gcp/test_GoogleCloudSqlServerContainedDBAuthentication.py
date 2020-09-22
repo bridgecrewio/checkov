@@ -30,15 +30,13 @@ class TestCloudSQLServerContainedDBAuthentication(unittest.TestCase):
 
                 crash_safe_replication = "false"
 
-                database_flags {
+                database_flags =[{
                   name  = "cross db ownership chaining"
                   value = "on"
-                }
-
-                database_flags {
+                }, {
                   name  = "contained database authentication"
                   value = "on"
-                }
+                }]
 
                 disk_autoresize = "true"
                 disk_size       = "20"

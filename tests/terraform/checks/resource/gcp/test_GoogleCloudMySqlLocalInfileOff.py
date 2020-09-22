@@ -43,10 +43,15 @@ class TestCloudMySqlLocalInfileOff(unittest.TestCase):
                           settings {
                             activation_policy = "ALWAYS"
                             availability_type = "ZONAL"
-                            database_flags {
-                              name  = "local_infile"
-                              value = "off"
-                            }
+                            database_flags = [
+                                {
+                                name = "max_allowed_packet",
+                                value = "536870912"
+                                },
+                                {
+                                name  = "local_infile"
+                                value = "off"
+                                }]
                             pricing_plan     = "PER_USE"
                             replication_type = "SYNCHRONOUS"
                             tier             = "db-n1-standard-1"

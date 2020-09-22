@@ -24,9 +24,16 @@ class GoogleCloudMySqlLocalInfileOff(BaseResourceCheck):
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
-                            for flag in conf['settings'][0]['database_flags']:
-                                if (flag['name'][0] == 'local_infile') and (flag['value'][0] == 'on'):
-                                    return CheckResult.FAILED
+                            flags = conf['settings'][0]['database_flags']
+                            if isinstance(flags[0], list): #treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
+                                flags = conf['settings'][0]['database_flags'][0]
+                                for flag in flags:
+                                    if (flag['name'] == 'local_infile') and (flag['value'] == 'on'):
+                                        return CheckResult.FAILED
+                            else: #treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
+                                for flag in flags:
+                                    if (flag['name'][0] == 'local_infile') and (flag['value'][0] == 'on'):
+                                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 
