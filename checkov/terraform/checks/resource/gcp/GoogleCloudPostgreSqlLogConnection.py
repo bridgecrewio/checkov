@@ -24,9 +24,16 @@ class GoogleCloudPostgreSqlLogConnection(BaseResourceCheck):
                 if 'settings' in conf.keys():
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
-                            for flag in conf['settings'][0]['database_flags']:
-                                if (flag['name'][0] == 'log_connections') and (flag['value'][0] == 'off'):
-                                    return CheckResult.FAILED
+                            flags = conf['settings'][0]['database_flags']
+                            if isinstance(flags[0], list):
+                                flags = conf['settings'][0]['database_flags'][0]
+                                for flag in flags:
+                                    if (flag['name'] == 'log_connections') and (flag['value'] == 'off'):
+                                        return CheckResult.FAILED
+                            else:
+                                for flag in flags:
+                                    if (flag['name'][0] == 'log_connections') and (flag['value'][0] == 'off'):
+                                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 
