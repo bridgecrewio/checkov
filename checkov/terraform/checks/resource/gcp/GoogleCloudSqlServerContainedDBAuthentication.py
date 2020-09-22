@@ -25,13 +25,13 @@ class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceCheck):
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
                             flags = conf['settings'][0]['database_flags']
-                            if isinstance(flags[0], list):
+                            if isinstance(flags[0], list): #treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
                                 flags = conf['settings'][0]['database_flags'][0]
                                 for flag in flags:
                                     if (flag['name'] == 'contained database authentication') and (
                                             flag['value'] == 'on'):
                                         return CheckResult.FAILED
-                            else:
+                            else: #treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
                                 for flag in flags:
                                     if (flag['name'][0] == 'contained database authentication') and (
                                             flag['value'][0] == 'on'):

@@ -25,12 +25,12 @@ class GoogleCloudPostgreSqlLogMinDuration(BaseResourceCheck):
                     for attribute in conf['settings'][0]:
                         if attribute == 'database_flags':
                             flags = conf['settings'][0]['database_flags']
-                            if isinstance(flags[0], list):
+                            if isinstance(flags[0], list): #treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
                                 flags = conf['settings'][0]['database_flags'][0]
                                 for flag in flags:
                                     if (flag['name'] == 'log_min_duration_statement') and (flag['value'] != '-1'):
                                         return CheckResult.FAILED
-                            else:
+                            else: #treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
                                 for flag in flags:
                                     if (flag['name'][0] == 'log_min_duration_statement') and (flag['value'][0] != '-1'):
                                         return CheckResult.FAILED
