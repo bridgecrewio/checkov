@@ -4,6 +4,7 @@ import os
 from abc import ABC, abstractmethod
 
 import argparse
+import itertools
 import yaml
 from typing import FrozenSet, Optional, Iterable, TextIO, Union, Any, List
 from yaml import YAMLError
@@ -215,6 +216,39 @@ class CheckovConfig:
 
         self.check = parent.check
         self.skip_check = parent.skip_check
+
+    def __repr__(self):
+        def set_filter(p):
+            return getattr(self, p) != frozenset()
+
+        def set_getter(p):
+            return set(getattr(self, p))
+
+        def default_filter(p):
+            return getattr(self, p) is not None
+
+        def default_getter(p):
+            return getattr(self, p)
+
+        kwargs = [
+            ('directory', 'directory', set_filter, set_getter),
+            ('file', 'file', set_filter, set_getter),
+            ('external_checks_dir', 'external_checks_dir', set_filter, set_getter),
+            ('external_checks_git', 'external_checks_git', set_filter, set_getter),
+            ('output', '_output', default_filter, default_getter),
+            ('no_guide', '_no_guide', default_filter, default_getter),
+            ('quiet', '_quiet', default_filter, default_getter),
+            ('framework', '_framework', default_filter, default_getter),
+            ('merging_behavior', '_merging_behavior', default_filter, default_getter),
+            ('check', 'check', default_filter, default_getter),
+            ('skip_check', 'skip_check', default_filter, default_getter),
+            ('soft_fail', '_soft_fail', default_filter, default_getter),
+            ('repo_id', 'repo_id', default_filter, default_getter),
+            ('branch', '_branch', default_filter, default_getter),
+        ]
+        filtered = (f'{l}={repr(g(p))}' for l, p, f, g in kwargs if f(p))
+        kwargs = ', '.join(itertools.chain((repr(self.source),), filtered))
+        return f'{self.__class__.__name__}({kwargs})'
 
 
 class _Parser(ABC):

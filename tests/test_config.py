@@ -10,7 +10,8 @@ from checkov.config import CheckovConfig, CheckovConfigError, OUTPUT_CHOICES, FR
 from checkov.main import add_parser_args
 
 
-class TestCheckovConfig(unittest.TestCase):
+class ConfigTestCase(unittest.TestCase):
+
     @staticmethod
     def get_config_file(filename):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -110,6 +111,64 @@ class TestCheckovConfig(unittest.TestCase):
                          f'{msg_prefix}Expect _branch to be "{expected["_branch"]}" but got "{config._branch}"')
         self.assertEqual(expected['branch'], config.branch,
                          f'{msg_prefix}Expect branch to be "{expected["branch"]}" but got "{config.branch}"')
+
+
+# noinspection DuplicatedCode
+class TestCheckovConfig(ConfigTestCase):
+
+    def test_repr_configured(self):
+        kwargs = {
+            'directory': {'/1/2', '/a/b'},
+            'file': {'/1/2', '/a/b'},
+            'external_checks_dir': {'/1/2', '/a/b'},
+            'external_checks_git': {'/1/2', '/a/b'},
+            'output': 'json',
+            'no_guide': True,
+            'quiet': True,
+            'framework': 'all',
+            'merging_behavior': 'union',
+            'check': 'V_1',
+            'soft_fail': False,
+            'repo_id': 'ab/d',
+            'branch': 'master'
+        }
+
+        config = CheckovConfig('name123', skip_check=None, **kwargs)
+        config_repr = repr(config)
+
+        self.assertIn(repr('name123'), config_repr, 'source should be in the representation')
+        for k, v in kwargs.items():
+            expected = f'{k}={repr(v)}'
+            self.assertIn(expected, config_repr,
+                          f'Expected "{expected}" to be present, because it is not the default value')
+        self.assertNotIn('skip_check', config_repr,
+                         'Expect "skip_check" to be absent, because it has its default value')
+
+    def test_repr_empty(self):
+        arguments = {
+            'directory',
+            'file',
+            'external_checks_dir',
+            'external_checks_git',
+            'output',
+            'no_guide',
+            'quiet',
+            'framework',
+            'merging_behavior',
+            'check',
+            'skip_check',
+            'soft_fail',
+            'repo_id',
+            'branch',
+        }
+
+        config = CheckovConfig('name123')
+        config_repr = repr(config)
+
+        self.assertIn(repr('name123'), config_repr, 'source should always be in the representation')
+        for k in arguments:
+            self.assertNotIn(k, config_repr,
+                             'Expect "{k}" to be absent, because it has its default value')
 
     # TODO add a test that checks if cli can override --check and --skip-check
     def test_config_creation_constructor(self):
