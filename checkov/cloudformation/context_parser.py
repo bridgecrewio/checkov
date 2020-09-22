@@ -2,8 +2,8 @@ import logging
 import operator
 from functools import reduce
 import re
+from checkov.common.comment.enum import COMMENT_REGEX
 
-COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class ContextParser(object):

@@ -5,10 +5,9 @@ from abc import ABC, abstractmethod
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.common.models.enums import ContextCategories
 from itertools import islice
-
+from checkov.common.comment.enum import COMMENT_REGEX
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
-COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class BaseContextParser(ABC):
