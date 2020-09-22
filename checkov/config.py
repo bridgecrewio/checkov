@@ -74,6 +74,18 @@ class CheckovConfig:
 
     @staticmethod
     def from_file(file: Union[TextIO, str, os.PathLike]) -> 'CheckovConfig':
+        """
+        Try to read a checkov config from its argument. If the argument is a `os.PathLike` or a `str`, the file at this
+        location is opened and processed. Otherwise it is TextIO and has to be seekable. Calling stream.seek(0) must
+        seek to the begin of the stream.
+
+        :param file: A path to a file that should be read or a file already load into memory.
+        :return: The configuration read from the stream if one parser was able to read it. Otherwise this function
+            raises an exception.
+        :raise CheckovConfigError: Is raised when all parsers failed to parse the file. It contains each error from the
+            parsers.
+        :raise OSError: If the file was read and some error occurs, the error is not handled. See `open(file, 'r')`.
+        """
         if isinstance(file, (str, os.PathLike)):
             with open(file, 'r') as stream:
                 return CheckovConfig._from_file(stream)
@@ -82,6 +94,16 @@ class CheckovConfig:
 
     @staticmethod
     def _from_file(stream: TextIO) -> 'CheckovConfig':
+        """
+        Try to read a checkov config from the stream. Several parsers are tried. Therefore the stream must be seekable.
+        Calling stream.seek(0) must seek to the begin of the stream.
+
+        :param stream: the stream to read as a config.
+        :return: The configuration read from the stream if one parser was able to read it. Otherwise this function
+            raises an exception.
+        :raise CheckovConfigError: Is raised when all parsers failed to parse the file. It contains each error from the
+            parsers.
+        """
         # TODO accept file name
         parsers = [
             _YAMLParser,
