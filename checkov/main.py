@@ -16,7 +16,8 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.docs_generator import print_checks
-from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES, MERGING_BEHAVIOR_CHOICES, PROGRAM_NAME
+from checkov.config import CheckovConfig, OUTPUT_CHOICES, FRAMEWORK_CHOICES, MERGING_BEHAVIOR_CHOICES, PROGRAM_NAME, \
+    CheckovConfigError
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
@@ -123,6 +124,9 @@ def get_configuration_from_global_files() -> Optional[CheckovConfig]:
     try:
         user_config = CheckovConfig.from_file(user_config_file)
         return user_config
+    except CheckovConfigError:
+        logger.exception(f'Failed to parse the config file from {user_config_file}')
+        return None
     except FileNotFoundError:
         logger.debug(f'Config file at {user_config_file} not found')
         return None
@@ -138,12 +142,12 @@ def get_configuration_from_local_files() -> Iterator[CheckovConfig]:
 
     :return:
     """
-    # Test that is works
-    # Test error
-    # Mock CheckovConfig.from_file
     for file in ORDERED_CONFIG_FILES:
         try:
             yield CheckovConfig.from_file(file)
+        except CheckovConfigError:
+            logger.exception(f'Failed to parse the config file from {file}')
+            continue
         except FileNotFoundError:
             logger.debug(f'Config file at {file} not found')
             continue
