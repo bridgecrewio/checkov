@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import atexit
+import logging
 import os
 from os import name as os_name
 
 import argparse
-import functools
 import shutil
 from pathlib import Path
 from typing import Optional, Iterator
@@ -26,7 +26,18 @@ from checkov.version import version
 
 outer_registry = None
 
+ORDERED_CONFIG_FILES = [
+    'tox.ini',
+    'setup.cfg',
+    f'.{PROGRAM_NAME}.yml',
+    f'.{PROGRAM_NAME}.yaml',
+    f'.{PROGRAM_NAME}',
+]
+'''Ordered file names of local config starting with the lowest priority.'''
+
 logging_init()
+
+logger = logging.getLogger(__name__)
 
 
 def run(banner=checkov_banner):
@@ -34,6 +45,7 @@ def run(banner=checkov_banner):
     add_parser_args(parser)
     args = parser.parse_args()
     config = CheckovConfig.from_args(args)
+    config.extend(get_configuration_from_files())
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=config.framework, checks=config.check, skip_checks=config.skip_check)
     if outer_registry:
@@ -86,6 +98,58 @@ def run(banner=checkov_banner):
         runner_registry.print_reports(scan_reports, config)
     else:
         print("No argument given. Try ` --help` for further information")
+
+
+def get_configuration_from_files() -> CheckovConfig:
+    # user level - may be used for referring to costume check locations
+    config = get_configuration_from_global_files()
+    for local_config in get_configuration_from_local_files():
+        local_config.extend(config)
+        config = local_config
+    return config
+
+
+def get_configuration_from_global_files() -> Optional[CheckovConfig]:
+    if os_name == 'nt':
+        user_config_file = os.path.expanduser(f'~/.{PROGRAM_NAME}/config')
+    else:
+        xdg_config_home = os.environ.get('XDG_CONFIG_HOME')
+        if xdg_config_home:
+            # XDG_CONFIG_HOME defaults to $HOME/.config
+            user_config_file = os.path.join(xdg_config_home, PROGRAM_NAME, 'config')
+        else:
+            # if it is not set, we search in the users home
+            user_config_file = os.path.expanduser(f'~/.config/{PROGRAM_NAME}/config')
+    try:
+        user_config = CheckovConfig.from_file(user_config_file)
+        return user_config
+    except FileNotFoundError:
+        logger.debug(f'Config file at {user_config_file} not found')
+        return None
+    except OSError:
+        logger.exception(f'Failed to read config file from {user_config_file}')
+        return None
+
+
+def get_configuration_from_local_files() -> Iterator[CheckovConfig]:
+    """
+    Create an iterator over each config file present in the local directory. The items in the iterator are sorted by
+    priority, starting with the lowest priority.
+
+    :return:
+    """
+    # Test that is works
+    # Test error
+    # Mock CheckovConfig.from_file
+    for file in ORDERED_CONFIG_FILES:
+        try:
+            yield CheckovConfig.from_file(file)
+        except FileNotFoundError:
+            logger.debug(f'Config file at {file} not found')
+            continue
+        except OSError:
+            logger.exception(f'Failed to read config file from {file}')
+            continue
 
 
 def add_parser_args(parser):
