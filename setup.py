@@ -67,6 +67,7 @@ setup(
         ]
     },
     install_requires=[
+        "tqdm==4.49.0",
         "boto3==1.12.43",
         "chardet==3.0.4",
         "colorama==0.4.3",

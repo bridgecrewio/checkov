@@ -25,6 +25,7 @@ boto3 = "*"
 GitPython = "*"
 six = "==1.15.0"
 jmespath = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.7"

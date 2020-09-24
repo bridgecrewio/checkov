@@ -1,22 +1,40 @@
-import json
-import logging
-import os
-from json import JSONDecodeError
+import sys
 from time import sleep
 
 import boto3
 import dpath.util
+import json
+import logging
+import os
+import re
+import requests
 import urllib3
 from botocore.exceptions import ClientError
+from colorama import Style
+from git import Repo
+from json import JSONDecodeError
+from os import path
+from termcolor import colored
+from tqdm import trange
 from urllib3.exceptions import HTTPError
 
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
 
+ACCOUNT_CREATION_TIME = 180  # in seconds
+
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
 DEFAULT_REGION = "us-west-2"
+
+ONBOARDING_SOURCE = "checkov"
+
+signupHeaders = {
+    'Accept': 'application/json',
+    'User-Agent': 'Mozilla/5.0 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36',
+    'Content-Type': 'application/json;charset=UTF-8'
+}
 
 try:
     http = urllib3.ProxyManager(os.environ['https_proxy'])
@@ -38,6 +56,7 @@ class BcPlatformIntegration(object):
         self.bc_source = os.getenv('BC_SOURCE', "cli")
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
+        self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -149,7 +168,8 @@ class BcPlatformIntegration(object):
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
                 raise e
         if curr_try == tries:
-            logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
+            logging.error(
+                f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_guidelines(self) -> dict:
         try:
@@ -161,3 +181,86 @@ class BcPlatformIntegration(object):
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
+
+    def onboarding(self, args, scan_reports):
+        if os.isatty(sys.stdout.fileno()):
+            print(Style.BRIGHT + colored("Visualize and collaborate on these issues with Bridgecrew! \n", 'blue',
+                                         attrs=['bold']) + colored(
+                "Bridgecrew's dashboard for Checkov allows automation of future checks, Pull Request scanning and "
+                "auto-comments, automatic remidiation PR's and more! Plus it's free for 100 Terraform objects and a "
+                "great way to visualize and collaborate on these Checkov results. To instantly see this scan in the "
+                "platform, Press y! \n ",
+                'yellow') + Style.RESET_ALL)
+            reply = str(input('Visualize results? (y/n): ')).lower().strip()
+            if reply[:1] == 'y':
+                print(Style.BRIGHT + colored("\nEmail Address? \n", 'blue', attrs=['bold']) + colored(
+                    "Last prompt, promise, well automate the rest, and redirect you to your visualizations! ",
+                    'yellow') + Style.RESET_ALL)
+                reply = str(input('E-Mail:')).lower().strip()
+                response = self._create_bridgecrew_account(reply)
+
+                # DONE: Integrate with lambda for user creation
+                if response.status_code == 200:
+
+                    bc_api_token = response.json()["userApiToken"]
+                    print(Style.BRIGHT + colored("Account Created! \n", 'green', attrs=['bold']) + Style.RESET_ALL)
+                    print(Style.BRIGHT + colored("Using API Token: {} \n".format(bc_api_token), 'green',
+                                                 attrs=['bold']) + Style.RESET_ALL)
+
+                    if args.directory:
+                        valid_repos = 0
+                        # Work out git repo name for BC --repo-id from root_folder
+                        for dir in args.directory:
+                            try:
+                                repo = Repo(dir)
+                                git_remote_uri = repo.remotes.origin.url
+                                git_repo_dict = re.match(r'(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+).git',
+                                                         git_remote_uri).group(4, 5)
+                                repo_id = git_repo_dict[0] + "/" + git_repo_dict[1]
+                                valid_repos += 1
+                            except:
+                                pass
+                        if valid_repos == 0:
+                            repo_id = "cli_repo/" + path.basename(args.directory[0])
+
+                    self.setup_bridgecrew_credentials(bc_api_key=bc_api_token, repo_id=repo_id)
+                    if self.is_integration_configured():
+                        self._upload_run(args, response, scan_reports)
+
+                else:
+                    print(Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
+                                                 'red', attrs=['bold']) + Style.RESET_ALL)
+
+    def _upload_run(self, args, response, scan_reports):
+        print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
+                                     attrs=['bold']) + Style.RESET_ALL)
+        self.persist_repository(args.directory[0])
+        print(Style.BRIGHT + colored("Metadata upload complete", 'green',
+                                     attrs=['bold']) + Style.RESET_ALL)
+        self.persist_scan_results(scan_reports)
+        print(Style.BRIGHT + colored("Checkov report upload complete", 'green',
+                                     attrs=['bold']) + Style.RESET_ALL)
+        self.commit_repository(args.branch)
+        print(Style.BRIGHT + colored(
+            "COMPLETE! Your Bridgecrew dashboard is available here: \n {} \n Username: {} \n Pasword: {}".format(
+                response.json()["dashboardURL"], response.json()["userEmail"],
+                response.json()["userPassword"]), 'blue', attrs=['bold']) + Style.RESET_ALL)
+
+    def _create_bridgecrew_account(self, email):
+        """
+        Create new bridgecrew account
+        :param email: email of account owner
+        :return: account creation response
+        """
+        payload = {
+            "email": email,
+            "source": ONBOARDING_SOURCE
+        }
+        response = requests.request("POST", self.onboarding_url, headers=signupHeaders, json=payload)
+        with trange(ACCOUNT_CREATION_TIME) as t:
+            for _ in t:
+                t.set_description('Creating Bridgecrew account & configuring Checkov')
+                t.set_postfix(refresh=False)
+                sleep(0.1)
+
+        return response
