@@ -89,7 +89,8 @@ branch: feature/abc
     @patch.dict(os.environ, {'HOME': '/home/use_1'})
     @patch('checkov.main.os_name', 'posix')
     def test_global_config_file_read_posix_if_home_is_set(self):
-        del os.environ['XDG_CONFIG_HOME']
+        if 'XDG_CONFIG_HOME' in os.environ:
+            del os.environ['XDG_CONFIG_HOME']
         with patch('builtins.open', mock_open(read_data=self.full_file)) as mock_file:
             config = get_configuration_from_global_files()
             self.assertConfig(self.full_config, config)
@@ -99,7 +100,8 @@ branch: feature/abc
     @patch('checkov.main.os_name', 'posix')
     @patch('builtins.open')
     def test_global_config_file_read_posix_if_home_is_set_error(self, mock_file):
-        del os.environ['XDG_CONFIG_HOME']
+        if 'XDG_CONFIG_HOME' in os.environ:
+            del os.environ['XDG_CONFIG_HOME']
         mock_file.side_effect = OSError
         config = get_configuration_from_global_files()
         self.assertIsNone(config)
@@ -118,7 +120,8 @@ branch: feature/abc
     @patch('builtins.open')
     def test_global_config_file_read_nt_if_home_is_set_error(self, mock_file):
         mock_file.side_effect = OSError
-        del os.environ['XDG_CONFIG_HOME']
+        if 'XDG_CONFIG_HOME' in os.environ:
+            del os.environ['XDG_CONFIG_HOME']
         config = get_configuration_from_global_files()
         self.assertIsNone(config)
         mock_file.assert_called_once_with(os.path.expanduser('~/.checkov/config'), 'r')
