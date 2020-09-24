@@ -45,8 +45,7 @@ def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args()
-    config = CheckovConfig.from_args(args)
-    config.extend(get_configuration_from_files())
+    config = get_configuration(args)
     bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=config.framework, checks=config.check, skip_checks=config.skip_check)
     if outer_registry:
@@ -99,6 +98,12 @@ def run(banner=checkov_banner):
         runner_registry.print_reports(scan_reports, config)
     else:
         print("No argument given. Try ` --help` for further information")
+
+
+def get_configuration(args):
+    config = CheckovConfig.from_args(args)
+    config.extend(get_configuration_from_files())
+    return config
 
 
 def get_configuration_from_files() -> CheckovConfig:

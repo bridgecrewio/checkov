@@ -1,10 +1,11 @@
 import os
 
+import argparse
 from unittest.mock import patch, call
 
 from checkov.config import CheckovConfig, CheckovConfigError
 from checkov.main import get_configuration_from_global_files, get_configuration_from_local_files, \
-    get_configuration_from_files
+    get_configuration_from_files, add_parser_args, get_configuration
 from tests.test_config import ConfigTestCase
 
 
@@ -216,3 +217,17 @@ branch: feature/abc
         self.assertConfig(expected, config)
         global_mock.assert_called_once_with()
         local_mock.assert_called_once_with()
+
+    @patch('checkov.main.get_configuration_from_files')
+    def test_get_configuration(self, get_configuration_from_files_mock):
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--merging-behavior',
+            'override',
+        ])
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+
+        config = get_configuration(args)
+        expected = CheckovConfig('args', merging_behavior='override')
+        self.assertConfig(expected, config)

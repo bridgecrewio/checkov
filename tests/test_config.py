@@ -170,7 +170,6 @@ class TestCheckovConfig(ConfigTestCase):
             self.assertNotIn(k, config_repr,
                              'Expect "{k}" to be absent, because it has its default value')
 
-    # TODO add a test that checks if cli can override --check and --skip-check
     def test_config_creation_constructor(self):
         config = CheckovConfig('test')
         self.assertConfig({
