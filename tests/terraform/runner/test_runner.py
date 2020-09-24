@@ -256,10 +256,10 @@ class TestRunnerValid(unittest.TestCase):
             def scan_resource_conf(self, conf, entity_type):
                 if entity_type == 'type_1':
                     test_self.assertIn('a', conf)
-                    test_self.assertEquals([1], conf['a'])
+                    test_self.assertEqual([1], conf['a'])
                 elif entity_type == 'type_2':
                     test_self.assertIn('b', conf)
-                    test_self.assertEquals([2], conf['b'])
+                    test_self.assertEqual([2], conf['b'])
                 else:
                     test_self.fail(f'Unexpected entity_type: {entity_type}. Expected type_1 or type_2, because no '
                                    f'other resources are defined in the files inside of {test_dir}.')
