@@ -27,7 +27,7 @@ package:
     - ./package-lock.json
 
 functions:
-  checkovUser:
+  checkovSignup:
     timeout: 30
     handler: signup.signup
     environment:
@@ -53,5 +53,13 @@ functions:
               - Access-Control-Allow-Headers
               - Access-Control-Allow-Credentials
             allowCredentials: false
-  
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "cognito-idp:AdminInitiateAuth"
+          - "cognito-idp:AdminSetUserPassword"
+        Resource:
+            - "arn:aws:cognito-idp:#{AWS::Region}:#{AWS::AccountId}:userpool/${self:provider.custom.BC_USER_POOL} "
+    iamRoleStatementsName: ${self:custom.moduleName}-api-role-${self:provider.tag}
+    iamRoleStatementsInherit: true
 

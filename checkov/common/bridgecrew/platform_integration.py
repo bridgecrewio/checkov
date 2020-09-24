@@ -196,8 +196,11 @@ class BcPlatformIntegration(object):
                 print(Style.BRIGHT + colored("\nEmail Address? \n", 'blue', attrs=['bold']) + colored(
                     "Last prompt, promise, well automate the rest, and redirect you to your visualizations! ",
                     'yellow') + Style.RESET_ALL)
-                reply = str(input('E-Mail:')).lower().strip()
-                response = self._create_bridgecrew_account(reply)
+                email = str(input('E-Mail:')).lower().strip()
+                org = str(
+                    input('Organization name (this will create an account with matching identifier): ')).lower().strip()
+
+                response = self._create_bridgecrew_account(email, org)
 
                 # DONE: Integrate with lambda for user creation
                 if response.status_code == 200:
@@ -246,7 +249,7 @@ class BcPlatformIntegration(object):
                 response.json()["dashboardURL"], response.json()["userEmail"],
                 response.json()["userPassword"]), 'blue', attrs=['bold']) + Style.RESET_ALL)
 
-    def _create_bridgecrew_account(self, email):
+    def _create_bridgecrew_account(self, email, org):
         """
         Create new bridgecrew account
         :param email: email of account owner
@@ -254,6 +257,7 @@ class BcPlatformIntegration(object):
         """
         payload = {
             "email": email,
+            "org": org,
             "source": ONBOARDING_SOURCE
         }
         response = requests.request("POST", self.onboarding_url, headers=signupHeaders, json=payload)
