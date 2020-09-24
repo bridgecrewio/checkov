@@ -4,8 +4,6 @@ from abc import abstractmethod
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
-## Visualization PoC Imports. 
-## TODO: Move to own class in bridgecrew>platformintegration.
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 

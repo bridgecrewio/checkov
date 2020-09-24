@@ -123,8 +123,6 @@ def add_parser_args(parser):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
-    parser.add_argument('-p', '--poc',
-                        help='Enable visualization PoC for platform integration', action='store_true')
 
 
 def get_external_checks_dir(args):
