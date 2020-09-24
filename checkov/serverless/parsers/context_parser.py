@@ -13,7 +13,10 @@ class ContextParser(object):
     ENRICHED_ATTRIBUTES = [
         (IAM_ROLE_STATEMENTS_TOKEN, IAM_ROLE_STATEMENTS_TOKEN),
         (ENVIRONMENT_TOKEN, ENVIRONMENT_TOKEN),
-        (STACK_TAGS_TOKEN, TAGS_TOKEN)
+        (STACK_TAGS_TOKEN, TAGS_TOKEN),
+        ("runtime", "runtime"),
+        ("timeout", "timeout"),
+        ("memorySize", "memorySize")
     ]
 
     def __init__(self, sls_file, sls_template, sls_template_lines):
