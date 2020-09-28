@@ -107,10 +107,12 @@ def get_configuration(args):
     return config
 
 
+def get_configuration_files(additional_files: Iterable[str] = ()) -> Iterable[str]:
+    return itertools.chain(get_global_configuration_files(), get_local_configuration_files(), additional_files)
+
+
 def get_configuration_from_files(additional_files: Iterable[str] = ()) -> Optional[CheckovConfig]:
-    # user level - may be used for referring to costume check locations
-    files = itertools.chain(get_global_configuration_files(), get_local_configuration_files(), additional_files)
-    return read_files_into_one_config(files)
+    return read_files_into_one_config(get_configuration_files(additional_files))
 
 
 def read_files_into_one_config(files: Iterable[str]) -> Optional[CheckovConfig]:
@@ -221,6 +223,11 @@ def add_parser_args(parser):
                         help='A list of additional configuration files. The files are listed in increasing priority. '
                              'Configuration files automatically detected have lower priority, but can be added here '
                              'again. The arguments specified in the command line still have higher priority.')
+    parser.add_argument('--ignore-config-files', nargs=argparse.ZERO_OR_MORE,
+                        help='Ignore some or all default configuration files. If you just this option without '
+                             'additional arguments, all default configuration files are ignored. If you pass '
+                             'arguments, these are interpreted as the file names of those files that should be '
+                             'ignored.')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter. E.g.: CKV_AWS_1,CKV_AWS_3 '
