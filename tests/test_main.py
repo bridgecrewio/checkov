@@ -6,7 +6,7 @@ from unittest.mock import patch, call
 
 from checkov.config import CheckovConfig
 from checkov.main import get_configuration_from_files, add_parser_args, get_configuration, \
-    get_global_configuration_files, get_local_configuration_files
+    get_global_configuration_files, get_local_configuration_files, get_configuration_files
 from tests.test_config import ConfigTestCase
 
 
@@ -174,7 +174,7 @@ branch: feature/abc
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
         self.assertConfig(expected, config)
-        get_configuration_from_files_mock.assert_called_once_with([])
+        get_configuration_from_files_mock.assert_called_once_with([], None)
 
     @patch('checkov.main.get_configuration_from_files')
     def test_get_configuration_with_additional_files(self, get_configuration_from_files_mock):
@@ -192,4 +192,115 @@ branch: feature/abc
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
         self.assertConfig(expected, config)
-        get_configuration_from_files_mock.assert_called_once_with(['a', 'b'])
+        get_configuration_from_files_mock.assert_called_once_with(['a', 'b'], None)
+
+    @patch('checkov.main.get_configuration_from_files')
+    def test_get_configuration_with_additional_files_ignore_all(self, get_configuration_from_files_mock):
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--merging-behavior',
+            'override',
+            '--config-files',
+            'a',
+            'b',
+            '--ignore-config-files',
+        ])
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+
+        config = get_configuration(args)
+        expected = CheckovConfig('args', merging_behavior='override')
+        self.assertConfig(expected, config)
+        get_configuration_from_files_mock.assert_called_once_with(['a', 'b'], [])
+
+    @patch('checkov.main.get_configuration_from_files')
+    def test_get_configuration_with_additional_files_ignore_some(self, get_configuration_from_files_mock):
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--merging-behavior',
+            'override',
+            '--config-files',
+            'a',
+            'b',
+            '--ignore-config-files',
+            'a',
+        ])
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+
+        config = get_configuration(args)
+        expected = CheckovConfig('args', merging_behavior='override')
+        self.assertConfig(expected, config)
+        get_configuration_from_files_mock.assert_called_once_with(['a', 'b'], ['a'])
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_no_args(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files())
+
+        self.assertSequenceEqual(['g1', 'g2', 'l1', 'l2'], files)
+        global_mock.assert_called_once_with()
+        local_mock.assert_called_once_with()
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_additional_files(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files(['a1', 'a2']))
+
+        self.assertSequenceEqual(['g1', 'g2', 'l1', 'l2', 'a1', 'a2'], files)
+        global_mock.assert_called_once_with()
+        local_mock.assert_called_once_with()
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_filtered(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files(files_to_ignore=['g1', 'l1', 'a2']))
+
+        self.assertSequenceEqual(['g2', 'l2'], files)
+        global_mock.assert_called_once_with()
+        local_mock.assert_called_once_with()
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_filtered_all_default(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files(files_to_ignore=[]))
+
+        self.assertSequenceEqual([], files)
+        self.assertEqual(0, global_mock.call_count)
+        self.assertEqual(0, local_mock.call_count)
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_additional_files_and_filtered(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files(['a1', 'a2'], ['g1', 'l1', 'a2']))
+
+        self.assertSequenceEqual(['g2', 'l2', 'a1'], files)
+        global_mock.assert_called_once_with()
+        local_mock.assert_called_once_with()
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    def test_get_configuration_files_additional_files_and_filtered_all_defaults(self, global_mock, local_mock):
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        files = list(get_configuration_files(['a1', 'a2'], []))
+
+        self.assertSequenceEqual(['a1', 'a2'], files)
+        self.assertEqual(0, global_mock.call_count)
+        self.assertEqual(0, local_mock.call_count)

@@ -8,7 +8,7 @@ import argparse
 import itertools
 import shutil
 from pathlib import Path
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Iterator
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -103,16 +103,36 @@ def run(banner=checkov_banner):
 
 def get_configuration(args):
     config = CheckovConfig.from_args(args)
-    config.extend(get_configuration_from_files(args.config_files))
+    config.extend(get_configuration_from_files(args.config_files, args.ignore_config_files))
     return config
 
 
-def get_configuration_files(additional_files: Iterable[str] = ()) -> Iterable[str]:
-    return itertools.chain(get_global_configuration_files(), get_local_configuration_files(), additional_files)
+def get_configuration_files(additional_files: Iterable[str] = (), files_to_ignore: Optional[Iterable[str]] = None) \
+        -> Iterator[str]:
+    if files_to_ignore is None:
+        predicate = None
+        # ensure that is is not interpreted as an empty collection
+        files_to_ignore = True
+    else:
+        def predicate(file):
+            return file not in files_to_ignore
+
+        files_to_ignore = set(files_to_ignore)
+
+    if files_to_ignore:
+        # use all files
+        all_files = itertools.chain(get_global_configuration_files(), get_local_configuration_files(), additional_files)
+    else:
+        # if it evaluated to false, it was not None but empty. This indicates that no default files should be returned
+        all_files = additional_files
+    return filter(predicate, all_files)
 
 
-def get_configuration_from_files(additional_files: Iterable[str] = ()) -> Optional[CheckovConfig]:
-    return read_files_into_one_config(get_configuration_files(additional_files))
+def get_configuration_from_files(
+        additional_files: Iterable[str] = (),
+        files_to_ignore: Optional[Iterable[str]] = None
+) -> Optional[CheckovConfig]:
+    return read_files_into_one_config(get_configuration_files(additional_files, files_to_ignore))
 
 
 def read_files_into_one_config(files: Iterable[str]) -> Optional[CheckovConfig]:
