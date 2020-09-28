@@ -103,7 +103,7 @@ def run(banner=checkov_banner):
 
 def get_configuration(args):
     config = CheckovConfig.from_args(args)
-    config.extend(get_configuration_from_files())
+    config.extend(get_configuration_from_files(args.config_files))
     return config
 
 
@@ -217,6 +217,10 @@ def add_parser_args(parser):
                              'but for disabling a configuration permanently.',
                         # Default value is implemented in config.CheckovConfig.merging_behavior
                         choices=MERGING_BEHAVIOR_CHOICES)
+    parser.add_argument('--config-files', nargs=argparse.ONE_OR_MORE, default=[],
+                        help='A list of additional configuration files. The files are listed in increasing priority. '
+                             'Configuration files automatically detected have lower priority, but can be added here '
+                             'again. The arguments specified in the command line still have higher priority.')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter. E.g.: CKV_AWS_1,CKV_AWS_3 '

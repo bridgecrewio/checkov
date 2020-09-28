@@ -174,3 +174,22 @@ branch: feature/abc
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
         self.assertConfig(expected, config)
+        get_configuration_from_files_mock.assert_called_once_with([])
+
+    @patch('checkov.main.get_configuration_from_files')
+    def test_get_configuration_with_additional_files(self, get_configuration_from_files_mock):
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--merging-behavior',
+            'override',
+            '--config-files',
+            'a',
+            'b',
+        ])
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+
+        config = get_configuration(args)
+        expected = CheckovConfig('args', merging_behavior='override')
+        self.assertConfig(expected, config)
+        get_configuration_from_files_mock.assert_called_once_with(['a', 'b'])
