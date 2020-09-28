@@ -107,9 +107,9 @@ def get_configuration(args):
     return config
 
 
-def get_configuration_from_files() -> Optional[CheckovConfig]:
+def get_configuration_from_files(additional_files: Iterable[str] = ()) -> Optional[CheckovConfig]:
     # user level - may be used for referring to costume check locations
-    files = itertools.chain(get_global_configuration_files(), get_local_configuration_files())
+    files = itertools.chain(get_global_configuration_files(), get_local_configuration_files(), additional_files)
     return read_files_into_one_config(files)
 
 

@@ -109,9 +109,9 @@ branch: feature/abc
             'local_.checkov.yaml': CheckovConfig('local_.checkov.yaml', merging_behavior='union', file={'d'},
                                                  branch='a'),
             'local_.checkov': CheckovConfig('local_.checkov', external_checks_dir={'a'}),
+            'abc': CheckovConfig('abc', merging_behavior='union', external_checks_dir=['x']),
+            'efg': CheckovConfig('efg', merging_behavior='override_if_present', file={'x'}),
         }
-        # Assert that the test is up to date
-        self.assertEqual(len(self.local_paths), len(reed_files), 'Update this test. The amount of checks is not valid')
         default_reed_file = CheckovConfig('global', file={'a'}, framework='all', external_checks_dir={'tests'})
 
         def from_file_mock_impl(file):
@@ -139,6 +139,24 @@ branch: feature/abc
         from_file_calls = [
             call(path)
             for path in itertools.chain(global_mock_return_value, local_mock_return_value)
+        ]
+        from_file_mock.assert_has_calls(from_file_calls)
+        self.assertEqual(from_file_mock.call_count, len(from_file_calls))
+
+        from_file_mock.reset_mock()
+        global_mock.reset_mock()
+        local_mock.reset_mock()
+
+        expected = CheckovConfig('efg', merging_behavior='override_if_present', file={'x'}, framework='terraform',
+                                 external_checks_dir={'tests', 'a', 'x'}, branch='a')
+        config = get_configuration_from_files(['abc', 'efg'])
+
+        self.assertConfig(expected, config)
+        local_mock.assert_called_once_with()
+        global_mock.assert_called_once_with()
+        from_file_calls = [
+            call(path)
+            for path in itertools.chain(global_mock_return_value, local_mock_return_value, ['abc', 'efg'])
         ]
         from_file_mock.assert_has_calls(from_file_calls)
         self.assertEqual(from_file_mock.call_count, len(from_file_calls))
