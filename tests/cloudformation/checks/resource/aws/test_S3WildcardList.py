@@ -1,12 +1,12 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.S3DeleteWildcard import check
+from checkov.cloudformation.checks.resource.aws.S3ListWildcard import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestS3DeleteWildcard(unittest.TestCase):
+class TestS3ListWildcard(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
