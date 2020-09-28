@@ -1,11 +1,12 @@
 import os
 
 import argparse
+import itertools
 from unittest.mock import patch, call
 
-from checkov.config import CheckovConfig, CheckovConfigError
-from checkov.main import get_configuration_from_global_files, get_configuration_from_local_files, \
-    get_configuration_from_files, add_parser_args, get_configuration
+from checkov.config import CheckovConfig
+from checkov.main import get_configuration_from_files, add_parser_args, get_configuration, \
+    get_global_configuration_files, get_local_configuration_files
 from tests.test_config import ConfigTestCase
 
 
@@ -69,154 +70,78 @@ branch: feature/abc
 
     @patch.dict(os.environ, {'XDG_CONFIG_HOME': '/home/test_user/.config'})
     @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_xdg_config_home_is_set(self, from_file_mock):
-        from_file_mock.return_value = self.full_config
-        config = get_configuration_from_global_files()
-        self.assertConfig(self.full_config, config)
+    def test_global_config_file_read_posix_if_xdg_config_home_is_set(self):
+        files = get_global_configuration_files()
         # we set CDG_CONFIG_HOME to that value regardless if this is correct for the system. os.path.join will not
         # fix that. Therefore we use the same string here.
-        from_file_mock.assert_called_once_with(os.path.join('/home/test_user/.config', 'checkov', 'config'))
-
-    @patch.dict(os.environ, {'XDG_CONFIG_HOME': '/home/test_user/.config'})
-    @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_xdg_config_home_is_set_os_error(self, from_file_mock):
-        from_file_mock.side_effect = OSError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        # we set CDG_CONFIG_HOME to that value regardless if this is correct for the system. os.path.join will not
-        # fix that. Therefore we use the same string here.
-        from_file_mock.assert_called_once_with(os.path.join('/home/test_user/.config', 'checkov', 'config'))
-
-    @patch.dict(os.environ, {'XDG_CONFIG_HOME': '/home/test_user/.config'})
-    @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_xdg_config_home_is_set_checkov_config_error(self, from_file_mock):
-        from_file_mock.side_effect = CheckovConfigError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        # we set CDG_CONFIG_HOME to that value regardless if this is correct for the system. os.path.join will not
-        # fix that. Therefore we use the same string here.
-        from_file_mock.assert_called_once_with(os.path.join('/home/test_user/.config', 'checkov', 'config'))
+        expected = [os.path.join('/home/test_user/.config', 'checkov', 'config')]
+        self.assertSequenceEqual(expected, list(files))
 
     @patch.dict(os.environ, {'HOME': '/home/use_1'})
     @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_home_is_set(self, from_file_mock):
+    def test_global_config_file_read_posix_if_home_is_set(self):
         if 'XDG_CONFIG_HOME' in os.environ:
             del os.environ['XDG_CONFIG_HOME']
-        from_file_mock.return_value = self.full_config
-        config = get_configuration_from_global_files()
-        self.assertConfig(self.full_config, config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.config/checkov/config'))
-
-    @patch.dict(os.environ, {'HOME': '/home/use_1'})
-    @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_home_is_set_os_error(self, from_file_mock):
-        if 'XDG_CONFIG_HOME' in os.environ:
-            del os.environ['XDG_CONFIG_HOME']
-        from_file_mock.side_effect = OSError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.config/checkov/config'))
-
-    @patch.dict(os.environ, {'HOME': '/home/use_1'})
-    @patch('checkov.main.os_name', 'posix')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_posix_if_home_is_set_checkov_config_error(self, from_file_mock):
-        if 'XDG_CONFIG_HOME' in os.environ:
-            del os.environ['XDG_CONFIG_HOME']
-        from_file_mock.side_effect = CheckovConfigError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.config/checkov/config'))
+        files = get_global_configuration_files()
+        expected = [os.path.expanduser('~/.config/checkov/config')]
+        self.assertSequenceEqual(expected, list(files))
 
     @patch.dict(os.environ, {'HOME': '/home/use_1'})
     @patch('checkov.main.os_name', 'nt')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_nt_if_home_is_set(self, from_file_mock):
-        from_file_mock.return_value = self.full_config
-        config = get_configuration_from_global_files()
-        self.assertConfig(self.full_config, config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.checkov/config'))
+    def test_global_config_file_read_nt_if_home_is_set(self):
+        files = get_global_configuration_files()
+        expected = [os.path.expanduser('~/.checkov/config')]
+        self.assertSequenceEqual(expected, list(files))
 
-    @patch.dict(os.environ, {'HOME': '/home/use_1'})
-    @patch('checkov.main.os_name', 'nt')
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_nt_if_home_is_set_os_error(self, from_file_mock):
-        if 'XDG_CONFIG_HOME' in os.environ:
-            del os.environ['XDG_CONFIG_HOME']
-        from_file_mock.side_effect = OSError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.checkov/config'))
+    def test_local_config_file_read(self):
+        files = get_local_configuration_files()
+        self.assertSequenceEqual(self.local_paths, list(files))
 
-    @patch.dict(os.environ, {'HOME': '/home/use_1'})
-    @patch('checkov.main.os_name', 'nt')
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
     @patch('checkov.config.CheckovConfig.from_file')
-    def test_global_config_file_read_nt_if_home_is_set_checkov_config_error(self, from_file_mock):
-        if 'XDG_CONFIG_HOME' in os.environ:
-            del os.environ['XDG_CONFIG_HOME']
-        from_file_mock.side_effect = CheckovConfigError
-        config = get_configuration_from_global_files()
-        self.assertIsNone(config)
-        from_file_mock.assert_called_once_with(os.path.expanduser('~/.checkov/config'))
+    def test_get_configuration_from_files(self, from_file_mock, global_mock, local_mock):
+        reed_files = {
+            'local_tox.ini': CheckovConfig('local_tox.ini', merging_behavior='union', file={'b'},
+                                           framework='terraform'),
+            'local_setup.cfg': CheckovConfig('local_setup.cfg', merging_behavior='override_if_present', file={'c'}),
+            'local_.checkov.yml': CheckovConfig('local_.checkov.yml', merging_behavior='copy_parent'),
+            'local_.checkov.yaml': CheckovConfig('local_.checkov.yaml', merging_behavior='union', file={'d'},
+                                                 branch='a'),
+            'local_.checkov': CheckovConfig('local_.checkov', external_checks_dir={'a'}),
+        }
+        # Assert that the test is up to date
+        self.assertEqual(len(self.local_paths), len(reed_files), 'Update this test. The amount of checks is not valid')
+        default_reed_file = CheckovConfig('global', file={'a'}, framework='all', external_checks_dir={'tests'})
 
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_local_config_file_read(self, from_file_mock):
-        from_file_mock.return_value = self.full_config
-        configs = get_configuration_from_local_files()
-        for path, config in zip(self.local_paths, configs):
-            self.assertConfig(self.full_config, config)
-            from_file_mock.assert_called_with(path)
-        with self.assertRaises(StopIteration, msg='Got more config files then expected'):
-            next(configs)
-        self.assertEqual(len(self.local_paths), from_file_mock.call_count,
-                         f'Got fewer ({from_file_mock.call_count}) files then expected ({len(self.local_paths)})')
+        def from_file_mock_impl(file):
+            # Fall back to global config so the function will return a CheckovConfig. If the argument was wrong, this is
+            # found later
+            return reed_files.get(file, default_reed_file)
 
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_local_config_file_read_os_error(self, from_file_mock):
-        from_file_mock.side_effect = OSError
-        configs = get_configuration_from_local_files()
-        with self.assertRaises(StopIteration, msg='No config could be read so the iterator is empty'):
-            next(configs)
-        from_file_mock.assert_has_calls([call(path) for path in self.local_paths])
-        self.assertEqual(len(self.local_paths), from_file_mock.call_count,
-                         f'Got fewer ({from_file_mock.call_count}) files then expected ({len(self.local_paths)})')
-
-    @patch('checkov.config.CheckovConfig.from_file')
-    def test_local_config_file_read_checkov_config_error(self, from_file_mock):
-        from_file_mock.side_effect = CheckovConfigError
-        configs = get_configuration_from_local_files()
-        with self.assertRaises(StopIteration, msg='No config could be read so the iterator is empty'):
-            next(configs)
-        from_file_mock.assert_has_calls([call(path) for path in self.local_paths])
-        self.assertEqual(len(self.local_paths), from_file_mock.call_count,
-                         f'Got fewer ({from_file_mock.call_count}) files then expected ({len(self.local_paths)})')
-
-    @patch('checkov.main.get_configuration_from_local_files')
-    @patch('checkov.main.get_configuration_from_global_files')
-    def test_get_configuration_from_files(self, global_mock, local_mock):
-        global_mock.return_value = CheckovConfig('global', file={'a'}, framework='all', external_checks_dir={'tests'})
-        local_configs = [
-            CheckovConfig('local_tox.ini', merging_behavior='union', file={'b'}, framework='terraform'),
-            CheckovConfig('local_setup.cfg', merging_behavior='override_if_present', file={'c'}),
-            CheckovConfig('local_.checkov.yml', merging_behavior='copy_parent'),
-            CheckovConfig('local_.checkov.yaml', merging_behavior='union', file={'d'}, branch='a'),
-            CheckovConfig('local_.checkov', external_checks_dir={'a'}),
+        from_file_mock.side_effect = from_file_mock_impl
+        global_mock.return_value = global_mock_return_value = ['local_file.yaml']
+        local_mock.return_value = local_mock_return_value = [
+            'local_tox.ini',
+            'local_setup.cfg',
+            'local_.checkov.yml',
+            'local_.checkov.yaml',
+            'local_.checkov',
         ]
 
         expected = CheckovConfig('local_.checkov', file={'c', 'd'}, framework='terraform',
                                  external_checks_dir={'tests', 'a'}, branch='a')
-        self.assertEqual(len(self.local_paths), len(local_configs),
-                         'Update this test. The amount of checks is not valid')
-        local_mock.return_value = local_configs
         config = get_configuration_from_files()
+
         self.assertConfig(expected, config)
-        global_mock.assert_called_once_with()
         local_mock.assert_called_once_with()
+        global_mock.assert_called_once_with()
+        from_file_calls = [
+            call(path)
+            for path in itertools.chain(global_mock_return_value, local_mock_return_value)
+        ]
+        from_file_mock.assert_has_calls(from_file_calls)
+        self.assertEqual(from_file_mock.call_count, len(from_file_calls))
 
     @patch('checkov.main.get_configuration_from_files')
     def test_get_configuration(self, get_configuration_from_files_mock):

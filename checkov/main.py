@@ -5,9 +5,10 @@ import os
 from os import name as os_name
 
 import argparse
+import itertools
 import shutil
 from pathlib import Path
-from typing import Optional, Iterator
+from typing import Optional, Iterable
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -106,16 +107,56 @@ def get_configuration(args):
     return config
 
 
-def get_configuration_from_files() -> CheckovConfig:
+def get_configuration_from_files() -> Optional[CheckovConfig]:
     # user level - may be used for referring to costume check locations
-    config = get_configuration_from_global_files()
-    for local_config in get_configuration_from_local_files():
-        local_config.extend(config)
-        config = local_config
-    return config
+    files = itertools.chain(get_global_configuration_files(), get_local_configuration_files())
+    return read_files_into_one_config(files)
 
 
-def get_configuration_from_global_files() -> Optional[CheckovConfig]:
+def read_files_into_one_config(files: Iterable[str]) -> Optional[CheckovConfig]:
+    """
+    Read the configurations form the files and merge them. The iterator should return the files in ascending priority
+    (parents first). If a file does not exist, it is ignored. If some configurations could not be parsed (causing an
+    :class:`CheckovConfigError`) these errors are collected and wrapped into a single :class:`CheckovConfigError` that
+    is raised after every config was processed.
+
+    OSErrors are logged but not handled.
+
+    :param files: An iterator over all files to load.
+    :return:
+    """
+    exceptions = []
+    parent = None
+    for file in files:
+        try:
+            local_config = CheckovConfig.from_file(file)
+        except CheckovConfigError as e:
+            logger.exception(f'Failed to parse the config file from "{file}"')
+            exceptions.append(e)
+        except FileNotFoundError:
+            logger.debug(f'Config file at "{file}" not found')
+        except OSError:
+            logger.exception(f'Failed to read config file from "{file}"')
+            raise
+        else:
+            if parent is not None:
+                local_config.extend(parent)
+                parent = local_config
+            else:
+                parent = local_config
+    if exceptions:
+        raise CheckovConfigError(exceptions)
+    return parent
+
+
+def get_global_configuration_files() -> Iterable[str]:
+    """
+    Create an iterator over all the file names of global configuration files. The file may not exist at that location.
+    The files are ordered starting with the lowest priority. This means that the first one is the parent of the second
+    one and so on.
+
+    :return: an iterable over each possible file.
+    """
     if os_name == 'nt':
         user_config_file = os.path.expanduser(f'~/.{PROGRAM_NAME}/config')
     else:
@@ -126,39 +167,18 @@ def get_configuration_from_global_files() -> Optional[CheckovConfig]:
         else:
             # if it is not set, we search in the users home
             user_config_file = os.path.expanduser(f'~/.config/{PROGRAM_NAME}/config')
-    try:
-        user_config = CheckovConfig.from_file(user_config_file)
-        return user_config
-    except CheckovConfigError:
-        logger.exception(f'Failed to parse the config file from {user_config_file}')
-        return None
-    except FileNotFoundError:
-        logger.debug(f'Config file at {user_config_file} not found')
-        return None
-    except OSError:
-        logger.exception(f'Failed to read config file from {user_config_file}')
-        return None
+    return [user_config_file]
 
 
-def get_configuration_from_local_files() -> Iterator[CheckovConfig]:
+def get_local_configuration_files() -> Iterable[str]:
     """
-    Create an iterator over each config file present in the local directory. The items in the iterator are sorted by
-    priority, starting with the lowest priority.
+    Create an iterator over all the file names of local configuration files. The file may not exist at that location.
+    The files are ordered starting with the lowest priority. This means that the first one is the parent of the second
+    one and so on.
 
-    :return:
+    :return: an iterable over each possible file.
     """
-    for file in ORDERED_CONFIG_FILES:
-        try:
-            yield CheckovConfig.from_file(file)
-        except CheckovConfigError:
-            logger.exception(f'Failed to parse the config file from {file}')
-            continue
-        except FileNotFoundError:
-            logger.debug(f'Config file at {file} not found')
-            continue
-        except OSError:
-            logger.exception(f'Failed to read config file from {file}')
-            continue
+    return ORDERED_CONFIG_FILES
 
 
 def add_parser_args(parser):
