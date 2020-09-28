@@ -21,7 +21,10 @@ class S3ListWildcard(BaseFunctionCheck):
         key = IAM_ROLE_STATEMENTS_TOKEN
         if key in conf.keys():
             for statement in conf[key]:
-                if 'Action' in statement and 's3:List*' in statement['Action'] and statement.get('Effect') == 'Allow':
+                if 'Action' in statement and 's3:List*' in statement['Action'] and statement.get('Effect') != 'Deny':
+                    return CheckResult.FAILED
+                if 'NotAction' in statement and 's3:List*' in statement['Action'] and \
+                        statement.get('Effect') != 'Deny':
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
