@@ -1,3 +1,4 @@
+import logging
 import re
 
 from checkov.common.models.consts import DOCKER_IMAGE_REGEX
@@ -29,8 +30,8 @@ class ImagePullPolicyAlways(BaseK8Check):
         if "image" in conf:
             # Remove the digest, if present
             image_val = conf["image"]
-            if not isinstance(image_val, str):
-                return CheckResult.FAILED
+            if not isinstance(image_val, str) or image_val.strip() == '':
+                return CheckResult.UNKNOWN
             if '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 
