@@ -75,6 +75,9 @@ def run(banner=checkov_banner):
     if args.list:
         print_checks(framework=config.framework)
         return
+    if args.list_considered_config_files:
+        print_considered_config_files(args)
+        return
     external_checks_dir = get_external_checks_dir(config)
     if config.directory:
         for root_folder in config.directory:
@@ -99,6 +102,66 @@ def run(banner=checkov_banner):
         runner_registry.print_reports(scan_reports, config)
     else:
         print("No argument given. Try ` --help` for further information")
+
+
+def print_considered_config_files(args):
+    def print_file(file):
+        try:
+            CheckovConfig.from_file(file)
+        except CheckovConfigError as e:
+            status = 'invalid'
+        except FileNotFoundError:
+            status = 'does not exist'
+        except OSError:
+            status = 'something went wrong'
+        else:
+            status = 'valid'
+        normalised_path = os.path.normpath(os.path.abspath(file))
+        if ' ' in normalised_path:
+            normalised_path = '"' + normalised_path + '"'
+        print(f'{normalised_path} ({status})')
+
+    not_considered_message = '<no files considered>'
+    not_specified_message = '<no files specified>'
+
+    if args.ignore_config_files is None:
+        # all possible files
+        predicate = None
+    else:
+        def predicate(file):
+            return file not in args.ignore_config_files
+
+    files_to_ignore = args.ignore_config_files
+
+    show_default_files = files_to_ignore is None or files_to_ignore
+    global_files = list(filter(predicate, get_global_configuration_files())) if show_default_files else []
+    local_files = list(filter(predicate, get_local_configuration_files())) if show_default_files else []
+    costume_files = list(filter(predicate, args.config_files))
+
+    print(f'The call to {PROGRAM_NAME} will consider files at the following locations in ascending priority:')
+    print()
+    print('Global configuration files:')
+    if global_files:
+        for f in global_files:
+            print_file(f)
+    else:
+        print(not_considered_message)
+    print()
+    print('Local configuration files:')
+    if local_files:
+        for f in local_files:
+            print_file(f)
+    else:
+        print(not_considered_message)
+    print()
+    print('Costume configuration files:')
+    if not args.config_files:
+        print(not_specified_message)
+    elif costume_files:
+        for f in costume_files:
+            print_file(f)
+    else:
+        print(not_considered_message)
 
 
 def get_configuration(args):
@@ -248,6 +311,11 @@ def add_parser_args(parser):
                              'additional arguments, all default configuration files are ignored. If you pass '
                              'arguments, these are interpreted as the file names of those files that should be '
                              'ignored.')
+    parser.add_argument('--list-considered-config-files', action='store_true',
+                        help='If set, checkov will only show the locations of config fies that it will consider. It '
+                             'list all the locations that will be considered and the status of the file at this '
+                             'location (valid, invalid, not present or some other error). This will also consider '
+                             '--config-files and --ignore-config-files.')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter. E.g.: CKV_AWS_1,CKV_AWS_3 '

@@ -2,11 +2,14 @@ import os
 
 import argparse
 import itertools
+import re
+from io import StringIO
 from unittest.mock import patch, call
 
-from checkov.config import CheckovConfig
+from checkov.config import CheckovConfig, CheckovConfigError
 from checkov.main import get_configuration_from_files, add_parser_args, get_configuration, \
-    get_global_configuration_files, get_local_configuration_files, get_configuration_files
+    get_global_configuration_files, get_local_configuration_files, get_configuration_files, \
+    print_considered_config_files
 from tests.test_config import ConfigTestCase
 
 
@@ -304,3 +307,136 @@ branch: feature/abc
         self.assertSequenceEqual(['a1', 'a2'], files)
         self.assertEqual(0, global_mock.call_count)
         self.assertEqual(0, local_mock.call_count)
+
+    @staticmethod
+    def get_from_file_mock_impl(file):
+        values = {
+            'g1': FileNotFoundError,
+            'g2': OSError,
+            'l1': CheckovConfigError,
+            'l2': CheckovConfig('1'),
+            'c1': CheckovConfigError,
+            'c2': FileNotFoundError,
+        }
+        r = values.get(file, OSError)
+        if isinstance(r, type) and issubclass(r, Exception):
+            raise r
+        else:
+            return r
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    @patch('checkov.config.CheckovConfig.from_file')
+    def test_list_considered_config_files_ignore_specific(self, from_file_mock, global_mock, local_mock):
+        from_file_mock.side_effect = self.get_from_file_mock_impl
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--config-files',
+            'c1',
+            'c2',
+            '--ignore-config-files',
+            'c1',
+            '--list-considered-config-files',
+        ])
+        with patch('sys.stdout', new=StringIO()) as out_mock:
+            print_considered_config_files(args)
+            output = out_mock.getvalue()
+        self.assertRegex(output, re.compile(
+            r'.*will consider files at the following locations in ascending priority:\n\n.*Global configuration files:'
+            r'.*g1 \(does not exist\).*g2 \(something went wrong\).*\n\nLocal configuration files:.*l1 \(invalid\).*l2 '
+            r'\(valid\).*\n\nCostume configuration files:.*c2 \(does not exist\).*',
+            re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*c1.*', re.DOTALL))
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    @patch('checkov.config.CheckovConfig.from_file')
+    def test_list_considered_config_files_ignore_all(self, from_file_mock, global_mock, local_mock):
+        from_file_mock.side_effect = self.get_from_file_mock_impl
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--config-files',
+            'c1',
+            'c2',
+            '--ignore-config-files',
+            'g1',
+            'g2',
+            'l1',
+            'l2',
+            'c1',
+            'c2',
+            '--list-considered-config-files',
+        ])
+        with patch('sys.stdout', new=StringIO()) as out_mock:
+            print_considered_config_files(args)
+            output = out_mock.getvalue()
+        self.assertRegex(output, re.compile(
+            r'.*will consider files at the following locations in ascending priority:\n\n.*Global configuration files:'
+            r'.*<no files considered>.*\n\nLocal configuration files:.*<no files considered>.*\n\nCostume '
+            r'configuration files:.*<no files considered>.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*g1.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*g2.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*l1.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*l2.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*c1.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*c2.*', re.DOTALL))
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    @patch('checkov.config.CheckovConfig.from_file')
+    def test_list_considered_config_files_ignore_default(self, from_file_mock, global_mock, local_mock):
+        from_file_mock.side_effect = self.get_from_file_mock_impl
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--config-files',
+            'c1',
+            'c2',
+            '--ignore-config-files',
+            '--list-considered-config-files',
+        ])
+        with patch('sys.stdout', new=StringIO()) as out_mock:
+            print_considered_config_files(args)
+            output = out_mock.getvalue()
+        self.assertRegex(output, re.compile(
+            r'.*will consider files at the following locations in ascending priority:\n\n.*Global configuration files:'
+            r'.*<no files considered>.*\n\nLocal configuration files:.*<no files considered>.*\n\nCostume '
+            r'configuration files:.*c1 \(invalid\).*c2 \(does not exist\).*',
+            re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*g1.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*g2.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*l1.*', re.DOTALL))
+        self.assertNotRegex(output, re.compile(r'.*l2.*', re.DOTALL))
+
+    @patch('checkov.main.get_local_configuration_files')
+    @patch('checkov.main.get_global_configuration_files')
+    @patch('checkov.config.CheckovConfig.from_file')
+    def test_list_considered_config_files(self, from_file_mock, global_mock, local_mock):
+        from_file_mock.side_effect = self.get_from_file_mock_impl
+        global_mock.return_value = ['g1', 'g2']
+        local_mock.return_value = ['l1', 'l2']
+
+        parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
+        add_parser_args(parser)
+        args = parser.parse_args([
+            '--list-considered-config-files',
+        ])
+        with patch('sys.stdout', new=StringIO()) as out_mock:
+            print_considered_config_files(args)
+            output = out_mock.getvalue()
+        self.assertRegex(output, re.compile(
+            r'.*will consider files at the following locations in ascending priority:\n\n.*Global configuration files:'
+            r'.*g1 \(does not exist\).*g2 \(something went wrong\).*\n\nLocal configuration files:.*l1 \(invalid\).*l2 '
+            r'\(valid\).*\n\nCostume configuration files:.*<no files specified>.*',
+            re.DOTALL))
