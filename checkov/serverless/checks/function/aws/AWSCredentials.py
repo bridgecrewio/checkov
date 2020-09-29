@@ -1,6 +1,6 @@
 import re
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.serverless.checks.base_function_check import BaseFunctionCheck
+from checkov.serverless.checks.function.base_function_check import BaseFunctionCheck
 from checkov.common.models.consts import access_key_pattern, secret_key_pattern
 from checkov.serverless.parsers.parser import ENVIRONMENT_TOKEN
 

@@ -1,10 +1,9 @@
 import os
 import unittest
 
-from checkov.serverless.checks.aws.AdminPolicyDocument import check
+from checkov.serverless.checks.function.aws.AdminPolicyDocument import check
 from checkov.serverless.runner import Runner
 from checkov.runner_filter import RunnerFilter
-
 
 class TestAdminPolicyDocument(unittest.TestCase):
 

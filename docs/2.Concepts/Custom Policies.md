@@ -123,3 +123,5 @@ Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci 
 		89 | }
 		90 | }
 ```
+
+Attention: Policies can not share the same file name (whichever is loaded first) will be loaded.

@@ -5,10 +5,9 @@ from abc import ABC, abstractmethod
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.common.models.enums import ContextCategories
 from itertools import islice
-
+from checkov.common.comment.enum import COMMENT_REGEX
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
-COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 
 
 class BaseContextParser(ABC):
@@ -103,12 +102,13 @@ class BaseContextParser(ABC):
                     break
         return end_line_num
 
-    def run(self, tf_file, definition_blocks):
+    def run(self, tf_file, definition_blocks, collect_skip_comments=True):
         self.tf_file = tf_file
         self.context = {}
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)
-        self.context = self._collect_skip_comments(definition_blocks)
+        if collect_skip_comments:
+            self.context = self._collect_skip_comments(definition_blocks)
         return self.context
 
     def get_block_type(self):

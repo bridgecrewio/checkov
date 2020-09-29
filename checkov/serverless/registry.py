@@ -1,3 +1,4 @@
-from checkov.serverless.base_registry import Registry
+from checkov.serverless.checks.function.registry import function_registry
 
-sls_registry = Registry()
+# Leaving this around for backwards compatibility
+sls_registry = function_registry

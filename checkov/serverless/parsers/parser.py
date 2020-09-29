@@ -20,6 +20,8 @@ CFN_RESOURCES_TOKEN = 'resources'
 PROVIDER_TOKEN = 'provider'
 FUNCTIONS_TOKEN = 'functions'
 ENVIRONMENT_TOKEN = 'environment'
+STACK_TAGS_TOKEN = 'stackTags'
+TAGS_TOKEN = 'tags'
 SUPPORTED_PROVIDERS = ['aws']
 
 DEFAULT_VAR_PATTERN = "\\${([^{}]+?)}"
@@ -67,8 +69,7 @@ def is_checked_sls_template(template):
         if isinstance(template['provider'], str_node):
             if template['provider'] not in SUPPORTED_PROVIDERS:
                 return False
-        if template_contains_cfn_resources(template) or template_contains_key(template, FUNCTIONS_TOKEN):
-            return True
+        return True
     return False
 
 

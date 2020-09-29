@@ -16,7 +16,7 @@ CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 class Runner(BaseRunner):
     check_type = "cloudformation"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}

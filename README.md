@@ -1,20 +1,22 @@
 [![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/web/images/checkov_by_bridgecrew.png)](#)
-    
-  
+       
+     
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild) 
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity) 
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/documentation?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
-[![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
+[![Python Version](https://img.shields.io/github/pipenv/locked/python-version/bridgecrewio/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
+[![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
+
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
 It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Cloudformation](https://aws.amazon.com/cloudformation/), [Kubernetes](https://kubernetes.io/), [Serverless](https://www.serverless.com/) or [ARM Templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) and detects security and compliance misconfigurations.
-
+ 
 
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
@@ -43,7 +45,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Concepts/Evaluations.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
-* [Output](docs/1.Introduction/Results.md) currently available as CLI, JSON or JUnit XML and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+* [Output](docs/1.Introduction/Results.md) currently available as CLI, JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 
