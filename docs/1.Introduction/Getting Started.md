@@ -21,7 +21,7 @@ checkov -d /user/tf
 
 ## CLI Options
 ```bash
-  -h, --help            show this help message and exit
+-h, --help            show this help message and exit
   -v, --version         version
   -d DIRECTORY, --directory DIRECTORY
                         IaC root directory (can not be used together with
@@ -30,21 +30,63 @@ checkov -d /user/tf
   --external-checks-dir EXTERNAL_CHECKS_DIR
                         Directory for custom checks to be loaded. Can be
                         repeated
+  --external-checks-git EXTERNAL_CHECKS_GIT
+                        Github url of external checks to be added. you can
+                        specify a subdirectory after a double-slash //. cannot
+                        be used together with --external-checks-dir
   -l, --list            List checks
   -o [{cli,json,junitxml,github_failed_only}], --output [{cli,json,junitxml,github_failed_only}]
                         Report output format
+  --no-guide            do not fetch bridgecrew guide in checkov output report
   --quiet               in case of CLI output, display only failed checks
-  --framework {cloudformation,terraform,kubernetes,all}
+  --framework {cloudformation,terraform,kubernetes,serverless,arm,all}
                         filter scan to run only on a specific infrastructure
                         code frameworks
+  --merging-behavior {union,override,override_if_present,copy_parent}
+                        Change the behavior how --check and --skip-check are
+                        merged with existing definitions inside a
+                        configuration file. By default "override_if_present"
+                        is used, which will ignore configuration files if you
+                        specify --check or --skip-check. "override" will
+                        completely ignore configuration files for --check and
+                        --skip-check. This can be used to clear the selection
+                        from existing configuration files. "union" will keep
+                        the checks from the command line and the one defined
+                        in configuration files. "copy_parent" ignore the
+                        current configuration and use the parent instead. This
+                        is not useful for command line but for disabling a
+                        configuration permanently.
+  --config-files CONFIG_FILES [CONFIG_FILES ...]
+                        A list of additional configuration files. The files
+                        are listed in increasing priority. Configuration files
+                        automatically detected have lower priority, but can be
+                        added here again. The arguments specified in the
+                        command line still have higher priority.
+  --ignore-config-files [IGNORE_CONFIG_FILES [IGNORE_CONFIG_FILES ...]]
+                        Ignore some or all default configuration files. If you
+                        just this option without additional arguments, all
+                        default configuration files are ignored. If you pass
+                        arguments, these are interpreted as the file names of
+                        those files that should be ignored.
+  --list-considered-config-files
+                        If set, checkov will only show the locations of config
+                        fies that it will consider. It list all the locations
+                        that will be considered and the status of the file at
+                        this location (valid, invalid, not present or some
+                        other error). This will also consider --config-files
+                        and --ignore-config-files.
   -c CHECK, --check CHECK
                         filter scan to run only on a specific check
                         identifier(allowlist), You can specify multiple checks
-                        separated by comma delimiter
+                        separated by comma delimiter. E.g.:
+                        CKV_AWS_1,CKV_AWS_3 You may want to specify a
+                        different --merging-behavior.
   --skip-check SKIP_CHECK
                         filter scan to run on all check but a specific check
                         identifier(denylist), You can specify multiple checks
-                        separated by comma delimiter
+                        separated by comma delimiter. E.g.:
+                        CKV_AWS_1,CKV_AWS_3 You may want to specify a
+                        different --merging-behavior.
   -s, --soft-fail       Runs checks but suppresses error code
   --bc-api-key BC_API_KEY
                         Bridgecrew API key
@@ -52,7 +94,8 @@ checkov -d /user/tf
                         <repo_owner>/<repo_name>
   -b BRANCH, --branch BRANCH
                         Selected branch of the persisted repository. Only has
-                        effect when using the --bc-api-key flag
+                        effect when using the --bc-api-key flag. Defaults to
+                        "master"
 
 ```
 
