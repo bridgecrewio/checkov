@@ -32,6 +32,18 @@ resource "aws_s3_bucket" "foo-bucket" {
     )
   }"
 }
+
+resource "null_resource" "example" {
+  tags = "${merge
+(
+var.common_tags,
+map(
+"name", "VM Base Post Provisioning Library",
+"group", "aut",
+"dependency", "${var.input_dependency_value}")
+)
+}"
+}
 data "aws_caller_identity" "current" {}
 
 provider "kubernetes" {
