@@ -20,19 +20,33 @@ class TestGoogleStorageBucketUniformAccess(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_success_bucket_policy(self):
         hcl_res = hcl2.loads("""
                         resource "google_storage_bucket" "static-site" {
                           name          = "image-store.com"
                           location      = "EU"
                           force_destroy = true
-                          
+
                           bucket_policy_only = true
                         }
                         """)
         resource_conf = hcl_res['resource'][0]['google_storage_bucket']['static-site']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_bucket_uniform(self):
+         hcl_res = hcl2.loads("""
+                         resource "google_storage_bucket" "static-site" {
+                           name          = "image-store.com"
+                           location      = "EU"
+                           force_destroy = true
+
+                           uniform_bucket_level_access = true
+                         }
+                         """)
+         resource_conf = hcl_res['resource'][0]['google_storage_bucket']['static-site']
+         scan_result = check.scan_resource_conf(conf=resource_conf)
+         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':
