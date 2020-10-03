@@ -37,15 +37,13 @@ class IMDSv1Disabled(BaseResourceCheck):
             return CheckResult.FAILED
 
         metadata_options = conf['metadata_options'][0]
-        return (
-            CheckResult.PASSED if
-            (
-                metadata_options.get("http_tokens") == ["required"]
-                or
-                metadata_options.get("http_endpoint") == ["disabled"]
-            )
-            else CheckResult.FAILED
-        )
+        if (
+            metadata_options.get("http_tokens") == ["required"]
+            or
+            metadata_options.get("http_endpoint") == ["disabled"]
+        ):
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = IMDSv1Disabled()
