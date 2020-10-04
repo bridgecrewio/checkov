@@ -77,11 +77,14 @@ class Runner(BaseRunner):
                 if not var_path.endswith('alias/0'):
                     dpath.set(self.tf_definitions[tf_file], var_path, False)
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
-        definitions_context = {}
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
         parser_registry.reset_definitions_context()
-        for definition in self.tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
+        if external_definitions_context:
+            definitions_context = external_definitions_context
+        else:
+            definitions_context = {}
+            for definition in self.tf_definitions.items():
+                definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
         self.evaluate_string_booleans()
         variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
         variable_evaluator.evaluate_variables()
