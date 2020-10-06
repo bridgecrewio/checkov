@@ -16,6 +16,16 @@ class TestS3PublicACL(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_auth_read(self):
+        resource_conf = {"region": ["us-west-2"],
+                         "bucket": ["my_bucket"],
+                         "acl": ["authenticated-read"],
+                         "force_destroy": [True],
+                         "tags": [{"Name": "my-bucket"}],
+                         }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         resource_conf = {"region": ["us-west-2"],
                          "bucket": ["my_bucket"],
