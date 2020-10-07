@@ -59,7 +59,7 @@ setup(
             "sphinxcontrib-jsmath==1.0.1",
             "sphinxcontrib-qthelp==1.0.2",
             "sphinxcontrib-serializinghtml==1.1.3",
-            "urllib3==1.25.7",
+            "urllib3==1.25.10",
             "wcwidth==0.1.7",
             "zipp==0.6.0",
             "GitPython==3.1.7",
@@ -81,7 +81,7 @@ setup(
         "six==1.15.0",
         "tabulate==0.8.6",
         "termcolor==1.1.0",
-        "urllib3==1.25.7",
+        "urllib3==1.25.10",
         "dpath==1.5.0",
         "GitPython==3.1.7",
         "gitdb==4.0.5"
