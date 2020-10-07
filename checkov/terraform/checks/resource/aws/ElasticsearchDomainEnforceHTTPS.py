@@ -7,7 +7,7 @@ class ElasticsearchDomainEnforceHTTPS(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Elasticsearch Domain enforces HTTPS"
         id = "CKV_AWS_83"
-        supported_resources = ['elasticsearch_domain']
+        supported_resources = ['aws_elasticsearch_domain']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
