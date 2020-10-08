@@ -9,7 +9,7 @@ PORT_RANGE = re.compile('\d+-\d+')
 
 class NSGRulePortAccessRestricted(BaseResourceCheck):
     def __init__(self, name, check_id, port):
-        supported_resources = ['azure_security_group_rule', 'azurerm_network_security_rule', 'azurerm_network_security_group']
+        supported_resources = ['azurerm_security_group_rule', 'azurerm_network_security_rule', 'azurerm_network_security_group']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
         self.port = port
