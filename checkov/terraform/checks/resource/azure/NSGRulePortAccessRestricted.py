@@ -36,7 +36,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
         for rule_conf in rule_confs:
             if 'access' in rule_conf and rule_conf['access'][0] == "Allow":
                 if 'direction' in rule_conf and rule_conf['direction'][0] == "Inbound":
-                    if 'protocol' in rule_conf and rule_conf['protocol'][0] == 'TCP':
+                    if 'protocol' in rule_conf and rule_conf['protocol'][0].upper() == 'TCP':
                         if 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf):
                             if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0] in INTERNET_ADDRESSES:
                                 return CheckResult.FAILED
