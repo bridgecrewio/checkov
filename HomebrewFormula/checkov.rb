@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/73/00/932058377f125775c238c4d0f49fecc9127e30f5d9c99c8c91368c83632c/checkov-1.0.567.tar.gz"
-  sha256 "e204551e35121be017c7e8fd54494c254dfdd8fd6469df3f10f84924441da376"
+  url "https://files.pythonhosted.org/packages/29/3c/b84dddf7ab13ea2d4d615ed7098266b2795c10c001c9dba25fc56783e95e/checkov-1.0.568.tar.gz"
+  sha256 "54c9ebb0dedaae9d5482457496cc4982e3508f038897e474fa7126b13f538902"
 
   depends_on "python3"
 
@@ -124,8 +124,8 @@ class Checkov < Formula
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/ad/fc/54d62fa4fc6e675678f9519e677dfc29b8964278d75333cf142892caf015/urllib3-1.25.7.tar.gz"
-    sha256 "f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
+    url "https://files.pythonhosted.org/packages/81/f4/87467aeb3afc4a6056e1fe86626d259ab97e1213b1dfec14c7cb5f538bf0/urllib3-1.25.10.tar.gz"
+    sha256 "91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"
   end
 
   def install
