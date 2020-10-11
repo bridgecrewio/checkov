@@ -1,6 +1,0 @@
-IAM_COGNITO_ACCESS_KEY: "" #IAM Credentials with access to admin-auth to Cognito userpool below
-IAM_COGNITO_SECRET_KEY: "" #IAM Credentials with access to admin-auth to Cognito userpool below
-BC_API_URL: "<Platform-API-base-URI>/v1/api/v1" #Platform API base URI.
-BC_USER_POOL: "" # Cognito Userpool ID
-BC_USER_POOL_CLIENT_ID: "" # Cognito Userpool App Client ID
-BC_DASHBOARD_URL: "" #Dashboard URI from the same platform instance as BC_API_URL environment
