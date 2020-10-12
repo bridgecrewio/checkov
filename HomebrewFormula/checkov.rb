@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/b1/1c/799d8fbe6f3f29c3f1f342018e875938f11b7ee85862fe76117374a619de/checkov-1.0.575.tar.gz"
-  sha256 "c6cf874bc87aac570b76df43a9205f6ea4ce9d4f3e2e0d2f553c51a841f40e5e"
+  url "https://files.pythonhosted.org/packages/d6/53/72ed66d10cbb3b12efe768dc22402cff9bc74571d3c1bffe176acee40ed1/checkov-1.0.576.tar.gz"
+  sha256 "5d12168e4e87bab8c92eb71ce986d757dcea34aa0201a227d33ed6ecf53fe169"
 
   depends_on "python3"
 
@@ -121,6 +121,11 @@ class Checkov < Formula
   resource "termcolor" do
     url "https://files.pythonhosted.org/packages/8a/48/a76be51647d0eb9f10e2a4511bf3ffb8cc1e6b14e9e4fab46173aa79f981/termcolor-1.1.0.tar.gz"
     sha256 "1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"
+  end
+
+  resource "tqdm" do
+    url "https://files.pythonhosted.org/packages/bc/03/2bc607a15e201058cb6b19784b9c217d7ff37a686ce4a2d8a37a638f3ba5/tqdm-4.49.0.tar.gz"
+    sha256 "faf9c671bd3fad5ebaeee366949d969dca2b2be32c872a7092a1e1a9048d105b"
   end
 
   resource "urllib3" do
