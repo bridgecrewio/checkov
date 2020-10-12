@@ -198,7 +198,8 @@ class BcPlatformIntegration(object):
             return {}
 
     def onboarding(self, args, scan_reports):
-
+        return
+        # the following is temporal
         if os.isatty(sys.stdout.fileno()) or True:
             print(Style.BRIGHT + colored("Visualize and collaborate on these issues with Bridgecrew! \n", 'blue',
                                          attrs=['bold']) + colored(
