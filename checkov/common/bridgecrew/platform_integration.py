@@ -226,7 +226,7 @@ class BcPlatformIntegration(object):
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
                                                    'red', attrs=['bold']) + Style.RESET_ALL)
                 if self.bc_api_key:
-                    webbrowser.open("https://bridgecrew.cloud")
+                    webbrowser.open("https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
 
                     if args.directory:
                         repo_id = self.get_repository(args)
