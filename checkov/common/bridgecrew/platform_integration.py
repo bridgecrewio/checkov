@@ -12,7 +12,7 @@ import urllib3
 import webbrowser
 from botocore.exceptions import ClientError
 from colorama import Style
-from git import Repo
+# from git import Repo
 from json import JSONDecodeError
 from os import path
 from termcolor import colored
@@ -197,8 +197,7 @@ class BcPlatformIntegration(object):
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
 
-    def onboarding(self, args, scan_reports):
-        return
+    def onboarding(self):
         # the following is temporal
         if os.isatty(sys.stdout.fileno()) or True:
             print(Style.BRIGHT + colored("Visualize and collaborate on these issues with Bridgecrew! \n", 'blue',
@@ -215,58 +214,46 @@ class BcPlatformIntegration(object):
                     email = self._input_email()
                     org = self._input_orgname()
 
-                    bc_jwt_token, response = self.get_jwt_token(email, org)
+                    self.bc_api_token, response = self.get_api_token(email, org)
 
                     if response.status_code == 200:
-                        self.bc_api_key = self.get_api_token(bc_jwt_token)
                         print('\n Saving API key to {}'.format(bridgecrew_file))
                         persist_key(self.bc_api_key)
-
                     else:
                         print(
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
                                                    'red', attrs=['bold']) + Style.RESET_ALL)
-                if self.bc_api_key:
                     webbrowser.open("https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
 
-                    if args.directory:
-                        repo_id = self.get_repository(args)
-                        self.setup_bridgecrew_credentials(bc_api_key=self.bc_api_key, repo_id=repo_id)
-                    if self.is_integration_configured():
-                        self._upload_run(args, scan_reports)
+    def get_report_to_platform(self, args, scan_reports):
+        if self.bc_api_key:
+
+            if args.directory:
+                repo_id = self.get_repository(args)
+                self.setup_bridgecrew_credentials(bc_api_key=self.bc_api_key, repo_id=repo_id)
+            if self.is_integration_configured():
+                self._upload_run(args, scan_reports)
 
     def get_repository(self, args):
         repo_id = "cli_repo/" + path.basename(args.directory[0])
         valid_repos = 0
         # Work out git repo name for BC --repo-id from root_folder
-        for dir in args.directory:
-            try:
-                repo = Repo(dir)
-                git_remote_uri = repo.remotes.origin.url
-                git_repo_dict = re.match(r'(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+).git',
-                                         git_remote_uri).group(4, 5)
-                repo_id = git_repo_dict[0] + "/" + git_repo_dict[1]
-                valid_repos += 1
-            except:  # nosec
-                pass
+        # for dir in args.directory:
+        #     try:
+        #         repo = Repo(dir)
+        #         git_remote_uri = repo.remotes.origin.url
+        #         git_repo_dict = re.match(r'(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+).git',
+        #                                  git_remote_uri).group(4, 5)
+        #         repo_id = git_repo_dict[0] + "/" + git_repo_dict[1]
+        #         valid_repos += 1
+        #     except:  # nosec
+        #         pass
         return repo_id
 
-    def get_jwt_token(self, email, org):
+    def get_api_token(self, email, org):
         response = self._create_bridgecrew_account(email, org)
-        bc_jwt_token = response.json()["checkovSignup"]["AuthenticationResult"]['IdToken']
-        return bc_jwt_token, response
-
-    def get_api_token(self, bc_jwt_token):
-        api_token_payload = {}
-        api_token_headers = {
-            'Accept': 'application/json',
-            'Authorization': "{}".format(bc_jwt_token),
-            'User-Agent': 'Mozilla/5.0 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'
-        }
-        api_token_response = requests.request("GET", self.api_token_url, headers=api_token_headers,
-                                              data=api_token_payload)
-        bc_api_token = api_token_response.json()["data"]
-        return bc_api_token
+        bc_api_token = response.json()["checkovSignup"]
+        return bc_api_token, response
 
     def _upload_run(self, args, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
@@ -296,13 +283,10 @@ class BcPlatformIntegration(object):
         }
         response = requests.request("POST", self.onboarding_url, headers=SIGNUP_HEADER, json=payload)
         if response.status_code == 200:
-            msg = 'Creating Bridgecrew account'
-
-            self.loading_output(msg)
+            return response
         else:
             raise Exception("failed to create a bridgecrew account. An organization with this name might already "
                             "exist with this email address. Please login bridgecrew.cloud to retrieve access key");
-        return response
 
     def _input_orgname(self):
         valid = False
