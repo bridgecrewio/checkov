@@ -207,28 +207,18 @@ class BcPlatformIntegration(object):
                 "great way to visualize and collaborate on these results. To instantly see this scan in the "
                 "platform, Press y! \n ",
                 'yellow') + Style.RESET_ALL)
-            reply = str(input('Visualize results? (y/n): ')).lower().strip()
+            reply = self._input_visualize_results()
             if reply[:1] == 'y':
-                print(Style.BRIGHT + colored("\nEmail Address? \n", 'blue', attrs=['bold']) + colored(
-                    "Last prompt, promise, well automate the rest, and redirect you to your visualizations! ",
-                    'yellow') + Style.RESET_ALL)
+                print(Style.BRIGHT + colored("\nEmail Address? \n", 'blue', attrs=['bold']))
                 if not self.bc_api_key:
-                    valid_email = False
-                    while not valid_email:
-                        email = str(input('E-Mail:')).lower().strip()
-                        if re.search(EMAIL_PATTERN, email):
-                            valid_email = True
-                        else:
-                            print("email should match the following pattern: {}".format(EMAIL_PATTERN))
-                    org = str(
-                        input(
-                            'Organization name (this will create an account with matching identifier): ')).lower().strip()
+                    email = self._input_email()
+                    org = self._input_orgname()
 
                     bc_jwt_token, response = self.get_jwt_token(email, org)
 
-                    if response.status_code == 200 :
+                    if response.status_code == 200:
                         self.bc_api_key = self.get_api_token(bc_jwt_token)
-                        print ('\n Saving API key to {}'.format(bridgecrew_file))
+                        print('\n Saving API key to {}'.format(bridgecrew_file))
                         persist_key(self.bc_api_key)
 
                     else:
@@ -242,9 +232,7 @@ class BcPlatformIntegration(object):
                         repo_id = self.get_repository(args)
                         self.setup_bridgecrew_credentials(bc_api_key=self.bc_api_key, repo_id=repo_id)
                     if self.is_integration_configured():
-                        self._upload_run(args, response, scan_reports, email)
-
-
+                        self._upload_run(args, scan_reports)
 
     def get_repository(self, args):
         repo_id = "cli_repo/" + path.basename(args.directory[0])
@@ -279,7 +267,7 @@ class BcPlatformIntegration(object):
         bc_api_token = api_token_response.json()["data"]
         return bc_api_token
 
-    def _upload_run(self, args, response, scan_reports, email):
+    def _upload_run(self, args, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
@@ -290,8 +278,8 @@ class BcPlatformIntegration(object):
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! Your Bridgecrew dashboard is available here: https://bridgecrew.cloud \nUsername: {} \n"
-            "Password should be in your email inbox".format(email), 'green', attrs=['bold']) + Style.RESET_ALL)
+            "COMPLETE! Your Bridgecrew dashboard is available here: https://bridgecrew.cloud \n"
+            "Login information should be in your email inbox", 'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _create_bridgecrew_account(self, email, org):
         """
@@ -315,7 +303,37 @@ class BcPlatformIntegration(object):
                             "exist with this email address. Please login bridgecrew.cloud to retrieve access key");
         return response
 
-    def loading_output(self, msg):
+    def _input_orgname(self):
+        valid = False
+        result = None
+        while not valid:
+            result = str(
+                input('Organization name (this will create an account with matching identifier): ')).lower().strip()
+            if result:
+                valid = True
+        return result
+
+    def _input_visualize_results(self):
+        valid = False
+        result = None
+        while not valid:
+            result = str(input('Visualize results? (y/n): ')).lower().strip()
+            if result[:1] in ["y", "n"]:
+                valid = True
+        return result
+
+    def _input_email(self):
+        valid_email = False
+        while not valid_email:
+            email = str(input('E-Mail:')).lower().strip()
+            if re.search(EMAIL_PATTERN, email):
+                valid_email = True
+            else:
+                print("email should match the following pattern: {}".format(EMAIL_PATTERN))
+        return email
+
+    @staticmethod
+    def loading_output(msg):
         with trange(ACCOUNT_CREATION_TIME) as t:
             for _ in t:
                 t.set_description(msg)
