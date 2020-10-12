@@ -4,6 +4,8 @@ from abc import abstractmethod
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+
 
 class RunnerRegistry(object):
     runners = []
@@ -17,6 +19,7 @@ class RunnerRegistry(object):
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
+        self.bc_platform = BcPlatformIntegration()
 
     @abstractmethod
     def extract_entity_details(self, entity):
@@ -51,6 +54,9 @@ class RunnerRegistry(object):
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
+        if args.output == "cli":
+            self.bc_platform.onboarding(args,scan_reports)
+
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
 

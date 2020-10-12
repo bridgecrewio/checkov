@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "adac6f54e7e0b4fc939538271fa97d805f4068a3d03c58be1c153cf577a8049e"
+            "sha256": "ccccceefce0edeffa9e4988fb05c981f71dd2352843b3eb33b138841ef29a5e9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -37,6 +37,7 @@
                 "sha256:90e76683807896a28bbefd6e9bc3a2dc44ecd88fc6f6737fa0e3b20d5b7223ea"
             ],
             "version": "==1.18.13"
+
         },
         "colorama": {
             "hashes": [
@@ -153,6 +154,14 @@
             "index": "pypi",
             "version": "==1.1.0"
         },
+        "tqdm": {
+            "hashes": [
+                "sha256:8f3c5815e3b5e20bc40463fa6b42a352178859692a68ffaa469706e6d38342a5",
+                "sha256:faf9c671bd3fad5ebaeee366949d969dca2b2be32c872a7092a1e1a9048d105b"
+            ],
+            "index": "pypi",
+            "version": "==4.49.0"
+        },
         "urllib3": {
             "hashes": [
                 "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a",
@@ -193,6 +202,7 @@
             ],
             "index": "pypi",
             "version": "==0.3.11"
+
         },
         "black": {
             "hashes": [
@@ -345,6 +355,15 @@
             ],
             "version": "==0.7.8"
         },
+
+        "more-itertools": {
+            "hashes": [
+                "sha256:6f83822ae94818eae2612063a5101a7311e68ae8002005b5e05f03fd74a86a20",
+                "sha256:9b30f12df9393f0d28af9210ff8efe48d10c94f73e5daf886f10c4b0b0b4f03c"
+            ],
+            "markers": "python_version >= '3.5'",
+            "version": "==8.5.0"
+        },
         "orderedmultidict": {
             "hashes": [
                 "sha256:04070bbb5e87291cc9bfa51df413677faf2141c73c61d2a5f7b26bea3cd882ad",
@@ -446,6 +465,7 @@
             ],
             "index": "pypi",
             "version": "==6.1.1"
+
         },
         "python-dateutil": {
             "hashes": [
