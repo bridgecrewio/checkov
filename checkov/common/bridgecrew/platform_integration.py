@@ -246,7 +246,7 @@ class BcPlatformIntegration(object):
                                          git_remote_uri).group(4, 5)
                 repo_id = git_repo_dict[0] + "/" + git_repo_dict[1]
                 valid_repos += 1
-            except:
+            except:  # nosec
                 pass
         return repo_id
 
@@ -308,7 +308,7 @@ class BcPlatformIntegration(object):
         result = None
         while not valid:
             result = str(
-                input('Organization name (this will create an account with matching identifier): ')).lower().strip()
+                input('Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
             if result:
                 valid = True
         return result
@@ -317,7 +317,7 @@ class BcPlatformIntegration(object):
         valid = False
         result = None
         while not valid:
-            result = str(input('Visualize results? (y/n): ')).lower().strip()
+            result = str(input('Visualize results? (y/n): ')).lower().strip()  # nosec
             if result[:1] in ["y", "n"]:
                 valid = True
         return result
@@ -325,7 +325,7 @@ class BcPlatformIntegration(object):
     def _input_email(self):
         valid_email = False
         while not valid_email:
-            email = str(input('E-Mail:')).lower().strip()
+            email = str(input('E-Mail:')).lower().strip()  # nosec
             if re.search(EMAIL_PATTERN, email):
                 valid_email = True
             else:
