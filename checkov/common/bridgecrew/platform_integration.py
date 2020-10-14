@@ -1,4 +1,3 @@
-import sys
 from time import sleep
 
 import boto3
@@ -198,8 +197,7 @@ class BcPlatformIntegration(object):
             return {}
 
     def onboarding(self):
-        # the following is temporal
-        if os.isatty(sys.stdout.fileno()) or True:
+        if not self.bc_api_key:
             print(Style.BRIGHT + colored("Visualize and collaborate on these issues with Bridgecrew! \n", 'blue',
                                          attrs=['bold']) + colored(
                 "Bridgecrew's dashboard allows automation of future checks, Pull Request scanning and "
@@ -214,8 +212,8 @@ class BcPlatformIntegration(object):
                     email = self._input_email()
                     org = self._input_orgname()
 
-                    self.bc_api_token, response = self.get_api_token(email, org)
-
+                    bc_api_token, response = self.get_api_token(email, org)
+                    self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print('\n Saving API key to {}'.format(bridgecrew_file))
                         persist_key(self.bc_api_key)
@@ -224,6 +222,8 @@ class BcPlatformIntegration(object):
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
                                                    'red', attrs=['bold']) + Style.RESET_ALL)
                     webbrowser.open("https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
+        else:
+            print("No argument given. Try ` --help` for further information")
 
     def get_report_to_platform(self, args, scan_reports):
         if self.bc_api_key:

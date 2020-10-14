@@ -26,6 +26,7 @@ GitPython = "*"
 six = "==1.15.0"
 jmespath = "*"
 tqdm = "*"
+update_checker = "*"
 
 [requires]
 python_version = "3.7"
