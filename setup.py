@@ -67,6 +67,7 @@ setup(
         ]
     },
     install_requires=[
+        "update-checker==0.18.0"
         "tqdm==4.49.0",
         "boto3==1.12.43",
         "chardet==3.0.4",
