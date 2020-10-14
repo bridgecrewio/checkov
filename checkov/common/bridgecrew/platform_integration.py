@@ -293,7 +293,8 @@ class BcPlatformIntegration(object):
         result = None
         while not valid:
             result = str(
-                input('Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
+                input(
+                    'Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
             if result:
                 valid = True
         return result
