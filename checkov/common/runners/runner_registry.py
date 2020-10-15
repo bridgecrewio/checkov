@@ -34,7 +34,7 @@ class RunnerRegistry(object):
         return self.scan_reports
 
     def print_reports(self, scan_reports, args):
-        if args.output not in OUTPUT_CHOICES:
+        if args.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
