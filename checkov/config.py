@@ -1,11 +1,11 @@
+import argparse
 import configparser
 import csv
-import os
-from abc import ABC, abstractmethod
-
-import argparse
 import itertools
+import os
 import yaml
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from typing import FrozenSet, Optional, Iterable, TextIO, Union, Any, List
 from yaml import YAMLError
 
@@ -23,6 +23,38 @@ PROGRAM_NAME = 'checkov'
 
 class CheckovConfigError(Exception):
     pass
+
+
+class FrozenUniqueList(Sequence):
+    __slots__ = [
+        '__data'
+    ]
+
+    def __init__(self, data: Iterable):
+        self.__data = []
+        for value in data:
+            if value not in self.__data:
+                self.__data.append(value)
+
+    def __getitem__(self, s: Union[int, slice]):
+        return self.__data.__getitem__(s)
+
+    def __len__(self) -> int:
+        return self.__data.__len__()
+
+    def __iter__(self):
+        return self.__data.__iter__()
+
+    def __eq__(self, other):
+        if not isinstance(other, FrozenUniqueList):
+            return False
+        return self.__data == other.__data
+
+    def __repr__(self):
+        return f'FrozenUniqueList({repr(self.__data)})'
+
+    def __add__(self, other: Iterable):
+        return FrozenUniqueList(itertools.chain(self, other))
 
 
 class CheckovConfig:

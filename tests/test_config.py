@@ -1,12 +1,11 @@
-import os
-import unittest
-
 import argparse
 import io
+import os
+import unittest
 from typing import Union
 
 from checkov.config import CheckovConfig, CheckovConfigError, OUTPUT_CHOICES, FRAMEWORK_CHOICES, \
-    MERGING_BEHAVIOR_CHOICES
+    MERGING_BEHAVIOR_CHOICES, FrozenUniqueList
 from checkov.main import add_parser_args
 
 
@@ -797,3 +796,32 @@ external_checks_gits = d
         self.assertTrue(CheckovConfig('test2', check='1').is_check_selection_valid)
         self.assertTrue(CheckovConfig('test3', skip_check='1').is_check_selection_valid)
         self.assertFalse(CheckovConfig('test4', check='1', skip_check='1').is_check_selection_valid)
+
+
+class FrozenUniqueListTestCase(unittest.TestCase):
+    def test_frozen_unique_list_constructor(self):
+        unique_list = FrozenUniqueList([1, 2, 3, 1])
+        self.assertEqual([1, 2, 3], list(unique_list))
+
+    def test_frozen_unique_list_length(self):
+        self.assertEqual(3, len(FrozenUniqueList([1, 2, 3])))
+        self.assertEqual(0, len(FrozenUniqueList([])))
+        self.assertEqual(5, len(FrozenUniqueList([1, 1, 2, 3, 3, 4, 5, 5, 3, 1, 3, 1])))
+
+    def test_frozen_unique_list_get(self):
+        unique_list = FrozenUniqueList([1, 2, 3, 1])
+        self.assertEqual(1, unique_list[0])
+        self.assertEqual(2, unique_list[1])
+        self.assertEqual(3, unique_list[2])
+
+    def test_frozen_unique_list_add(self):
+        unique_list = FrozenUniqueList([1, 2, 3, 1]) + FrozenUniqueList([1, 2, 5, 3, 4])
+        self.assertEqual([1, 2, 3, 5, 4], list(unique_list))
+
+        unique_list = FrozenUniqueList([1, 2, 3, 1]) + [1, 2, 5, 3, 4]
+        self.assertEqual([1, 2, 3, 5, 4], list(unique_list))
+
+    def test_frozen_unique_list_equal(self):
+        self.assertEqual(FrozenUniqueList([]), FrozenUniqueList([]))
+        self.assertEqual(FrozenUniqueList([1, 2, 1]), FrozenUniqueList([1, 2]))
+        self.assertEqual(FrozenUniqueList([1, 2, 3, 1]), FrozenUniqueList([1, 2, 3, 1]))
