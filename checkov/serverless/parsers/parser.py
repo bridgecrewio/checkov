@@ -154,11 +154,14 @@ Generic processing loop for variables.
                     # If we can't find a value, skip it
                     if source_value is None:
                         continue
+                    try:
+                        if altered_value == match[0]:           # complete replacement
+                            altered_value = source_value
+                        else:                                   # partial replacement
 
-                    if altered_value == match[0]:           # complete replacement
-                        altered_value = source_value
-                    else:                                   # partial replacement
-                        altered_value = altered_value.replace(match[0], source_value)
+                            altered_value = altered_value.replace(match[0], source_value)
+                    except TypeError:
+                        pass
                 if value != altered_value:
                     data_map[key] = altered_value
                     made_change = True

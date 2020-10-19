@@ -15,6 +15,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
 from checkov.terraform.parser import Parser
+
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
@@ -66,26 +67,26 @@ class Runner(BaseRunner):
     def evaluate_string_booleans(self):
         # Support HCL 0.11 optional boolean syntax - evaluate "true" and "1" to true, "false" and "0" to false
         for tf_file in self.tf_definitions.keys():
-            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
-                                                         afilter=lambda x: x == TRUE_STRING or x == ONE_STRING,
-                                                         yielded=True):
+            values_to_replace = dpath.util.search(self.tf_definitions[tf_file], "**",
+                                                  afilter=lambda x: x in (TRUE_STRING, ONE_STRING, FALSE_STRING, ZERO_STRING),
+                                                  yielded=True)
+            for var_path, var_value in values_to_replace:
                 if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, True)
-            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
-                                                         afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
-                                                         yielded=True):
-                if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, False)
+                    dpath.set(self.tf_definitions[tf_file], var_path, True if var_value in (TRUE_STRING, ONE_STRING) else False)
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
-        definitions_context = {}
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
         parser_registry.reset_definitions_context()
-        for definition in self.tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
         self.evaluate_string_booleans()
-        variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
-        variable_evaluator.evaluate_variables()
-        self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+        if external_definitions_context:
+            definitions_context = external_definitions_context
+        else:
+            definitions_context = {}
+            for definition in self.tf_definitions.items():
+                definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
+            variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
+            variable_evaluator.evaluate_variables()
+            self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+
         for full_file_path, definition in self.tf_definitions.items():
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")

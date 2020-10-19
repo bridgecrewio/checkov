@@ -101,7 +101,9 @@ def run(banner=checkov_banner):
             bc_integration.commit_repository(config.branch)
         runner_registry.print_reports(scan_reports, config)
     else:
-        print("No argument given. Try ` --help` for further information")
+        print(f"{banner}")
+
+        bc_integration.onboarding()
 
 
 def print_considered_config_files(args):

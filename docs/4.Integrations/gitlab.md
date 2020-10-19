@@ -56,7 +56,8 @@ checkov:
   stage: validate
   script:
     # Use `script` to emulate `tty` for colored output.
-    - script -q -c 'checkov -d .'
+    - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
+    - exit $(cat CKVEXIT)
 ```
 
 ## Further Reading

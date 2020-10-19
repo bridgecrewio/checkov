@@ -8,7 +8,7 @@ class ElasticsearchDomainLogging(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Elasticsearch Domain Logging is enabled"
         id = "CKV_AWS_84"
-        supported_resources = ['elasticsearch_domain']
+        supported_resources = ['aws_elasticsearch_domain']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

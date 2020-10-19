@@ -2,7 +2,8 @@ import json
 import logging
 from abc import abstractmethod
 
-from checkov.config import OUTPUT_CHOICES, CheckovConfig
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.config import CheckovConfig
 
 
 class RunnerRegistry(object):
@@ -17,6 +18,7 @@ class RunnerRegistry(object):
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
+        self.bc_platform = BcPlatformIntegration()
 
     @abstractmethod
     def extract_entity_details(self, entity):
@@ -31,7 +33,7 @@ class RunnerRegistry(object):
         return self.scan_reports
 
     def print_reports(self, scan_reports, config: CheckovConfig):
-        if config.output not in OUTPUT_CHOICES:
+        if config.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
@@ -51,6 +53,9 @@ class RunnerRegistry(object):
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
+        if config.output == "cli":
+            self.bc_platform.get_report_to_platform(config, scan_reports)
+
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
 

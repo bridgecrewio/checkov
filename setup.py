@@ -59,7 +59,7 @@ setup(
             "sphinxcontrib-jsmath==1.0.1",
             "sphinxcontrib-qthelp==1.0.2",
             "sphinxcontrib-serializinghtml==1.1.3",
-            "urllib3==1.25.7",
+            "urllib3==1.25.10",
             "wcwidth==0.1.7",
             "zipp==0.6.0",
             "GitPython==3.1.7",
@@ -67,6 +67,8 @@ setup(
         ]
     },
     install_requires=[
+        "update-checker==0.18.0",
+        "tqdm==4.49.0",
         "boto3==1.12.43",
         "chardet==3.0.4",
         "colorama==0.4.3",
@@ -75,13 +77,13 @@ setup(
         "jmespath==0.10.0",
         "junit-xml==1.8",
         "lark-parser==0.7.8",
-        "bc-python-hcl2>=0.3.10",
+        "bc-python-hcl2>=0.3.11",
         "pyyaml==5.3.1",
         "requests==2.22.0",
         "six==1.15.0",
         "tabulate==0.8.6",
         "termcolor==1.1.0",
-        "urllib3==1.25.7",
+        "urllib3==1.25.10",
         "dpath==1.5.0",
         "GitPython==3.1.7",
         "gitdb==4.0.5"
