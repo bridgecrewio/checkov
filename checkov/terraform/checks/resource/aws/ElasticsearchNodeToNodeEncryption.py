@@ -22,10 +22,10 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
             if isinstance(cluster_config, dict):
                 if "instance_count" not in cluster_config:
                     return CheckResult.PASSED
-                instance_count = cluster_config["instance_count"][0]
+                instance_count = cluster_config["instance_count"]
                 if isinstance(instance_count, int):
                     if instance_count > 1:
-                        if "node_to_node_encryption" in conf.keys() and conf["node_to_node_encryption"][0]["enabled"][0]:
+                        if "node_to_node_encryption" in conf.keys() and conf["node_to_node_encryption"][0]["enabled"]:
                                 return CheckResult.PASSED
                         else:
                             return CheckResult.FAILED
