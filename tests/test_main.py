@@ -103,23 +103,23 @@ branch: feature/abc
     @patch('checkov.main.get_global_configuration_files')
     @patch('checkov.config.CheckovConfig.from_file')
     def test_get_configuration_from_files(self, from_file_mock, global_mock, local_mock):
-        reed_files = {
-            'local_tox.ini': CheckovConfig('local_tox.ini', merging_behavior='union', file={'b'},
+        read_files = {
+            'local_tox.ini': CheckovConfig('local_tox.ini', merging_behavior='union', file=['b'],
                                            framework='terraform'),
-            'local_setup.cfg': CheckovConfig('local_setup.cfg', merging_behavior='override_if_present', file={'c'}),
+            'local_setup.cfg': CheckovConfig('local_setup.cfg', merging_behavior='override_if_present', file=['c']),
             'local_.checkov.yml': CheckovConfig('local_.checkov.yml', merging_behavior='copy_parent'),
-            'local_.checkov.yaml': CheckovConfig('local_.checkov.yaml', merging_behavior='union', file={'d'},
+            'local_.checkov.yaml': CheckovConfig('local_.checkov.yaml', merging_behavior='union', file=['d'],
                                                  branch='a'),
-            'local_.checkov': CheckovConfig('local_.checkov', external_checks_dir={'a'}),
+            'local_.checkov': CheckovConfig('local_.checkov', external_checks_dir=['a']),
             'abc': CheckovConfig('abc', merging_behavior='union', external_checks_dir=['x']),
-            'efg': CheckovConfig('efg', merging_behavior='override_if_present', file={'x'}),
+            'efg': CheckovConfig('efg', merging_behavior='override_if_present', file=['x']),
         }
-        default_reed_file = CheckovConfig('global', file={'a'}, framework='all', external_checks_dir={'tests'})
+        default_reed_file = CheckovConfig('global', file=['a'], framework='all', external_checks_dir=['tests'])
 
         def from_file_mock_impl(file):
             # Fall back to global config so the function will return a CheckovConfig. If the argument was wrong, this is
             # found later
-            return reed_files.get(file, default_reed_file)
+            return read_files.get(file, default_reed_file)
 
         from_file_mock.side_effect = from_file_mock_impl
         global_mock.return_value = global_mock_return_value = ['local_file.yaml']
@@ -131,8 +131,8 @@ branch: feature/abc
             'local_.checkov',
         ]
 
-        expected = CheckovConfig('local_.checkov', file={'c', 'd'}, framework='terraform',
-                                 external_checks_dir={'tests', 'a'}, branch='a')
+        expected = CheckovConfig('local_.checkov', file=['d', 'c'], framework='terraform',
+                                 external_checks_dir=['a', 'tests'], branch='a')
         config = get_configuration_from_files()
 
         self.assertConfig(expected, config)
@@ -149,8 +149,8 @@ branch: feature/abc
         global_mock.reset_mock()
         local_mock.reset_mock()
 
-        expected = CheckovConfig('efg', merging_behavior='override_if_present', file={'x'}, framework='terraform',
-                                 external_checks_dir={'tests', 'a', 'x'}, branch='a')
+        expected = CheckovConfig('efg', merging_behavior='override_if_present', file=['x'], framework='terraform',
+                                 external_checks_dir=['x', 'a', 'tests'], branch='a')
         config = get_configuration_from_files(['abc', 'efg'])
 
         self.assertConfig(expected, config)
@@ -171,7 +171,7 @@ branch: feature/abc
             '--merging-behavior',
             'override',
         ])
-        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file=['b'], skip_check='')
 
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
@@ -189,7 +189,7 @@ branch: feature/abc
             'a',
             'b',
         ])
-        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file=['b'], skip_check='')
 
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
@@ -208,7 +208,7 @@ branch: feature/abc
             'b',
             '--ignore-config-files',
         ])
-        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file=['b'], skip_check='')
 
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
@@ -228,7 +228,7 @@ branch: feature/abc
             '--ignore-config-files',
             'a',
         ])
-        get_configuration_from_files_mock.return_value = CheckovConfig('file', file={'b'}, skip_check='')
+        get_configuration_from_files_mock.return_value = CheckovConfig('file', file=['b'], skip_check='')
 
         config = get_configuration(args)
         expected = CheckovConfig('args', merging_behavior='override')
