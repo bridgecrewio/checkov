@@ -236,9 +236,7 @@ class BcPlatformIntegration(object):
                 self._upload_run(config, scan_reports)
 
     def get_repository(self, config: CheckovConfig):
-        # TODO directory must be a list
-        # repo_id = "cli_repo/" + path.basename(config.directory[0])
-        repo_id = "cli_repo/" + path.basename(next(iter(config.directory)))
+        repo_id = "cli_repo/" + path.basename(config.directory[0])
         valid_repos = 0
         # Work out git repo name for BC --repo-id from root_folder
         # for dir in args.directory:
@@ -261,8 +259,7 @@ class BcPlatformIntegration(object):
     def _upload_run(self, config: CheckovConfig, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
-        # TODO directory must be a list
-        self.persist_repository(next(iter(config.directory)))
+        self.persist_repository(config.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
