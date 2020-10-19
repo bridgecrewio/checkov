@@ -67,19 +67,9 @@ class CheckovConfig:
                  soft_fail: Optional[bool] = None, repo_id: Optional[str] = None, branch: Optional[str] = None):
         self.source = source
         self.directory: FrozenUniqueList = FrozenUniqueList(directory)
-        if directory is not None and not isinstance(directory, list) and not isinstance(directory, FrozenUniqueList):
-            raise Exception
         self.file: FrozenUniqueList = FrozenUniqueList(file)
-        if file is not None and not isinstance(file, list) and not isinstance(file, FrozenUniqueList):
-            raise Exception
         self.external_checks_dir: FrozenUniqueList = FrozenUniqueList(external_checks_dir)
-        if external_checks_dir is not None and not isinstance(external_checks_dir, list) and not isinstance(
-                external_checks_dir, FrozenUniqueList):
-            raise Exception
         self.external_checks_git: FrozenUniqueList = FrozenUniqueList(external_checks_git)
-        if external_checks_git is not None and not isinstance(external_checks_git, list) and not isinstance(
-                external_checks_git, FrozenUniqueList):
-            raise Exception
         self._output = output
         self._no_guide = no_guide
         self._quiet = quiet
