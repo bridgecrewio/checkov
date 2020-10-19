@@ -5,8 +5,7 @@ import itertools
 import os
 import yaml
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Optional, Iterable, TextIO, Union, Any, List
+from typing import Optional, Iterable, TextIO, Union, Any, List, Sequence
 from yaml import YAMLError
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
