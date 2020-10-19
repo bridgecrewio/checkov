@@ -6,7 +6,7 @@ import os
 import yaml
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import FrozenSet, Optional, Iterable, TextIO, Union, Any, List
+from typing import Optional, Iterable, TextIO, Union, Any, List
 from yaml import YAMLError
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
@@ -30,11 +30,12 @@ class FrozenUniqueList(Sequence):
         '__data'
     ]
 
-    def __init__(self, data: Iterable):
+    def __init__(self, data: Optional[Iterable] = None):
         self.__data = []
-        for value in data:
-            if value not in self.__data:
-                self.__data.append(value)
+        if data:
+            for value in data:
+                if value not in self.__data:
+                    self.__data.append(value)
 
     def __getitem__(self, s: Union[int, slice]):
         return self.__data.__getitem__(s)
@@ -59,17 +60,27 @@ class FrozenUniqueList(Sequence):
 
 class CheckovConfig:
 
-    def __init__(self, source: str, *, directory: Optional[Iterable[str]] = None, file: Optional[Iterable[str]] = None,
-                 external_checks_dir: Optional[Iterable[str]] = None,
-                 external_checks_git: Optional[Iterable[str]] = None, output: Optional[str] = None,
+    def __init__(self, source: str, *, directory: Optional[Sequence[str]] = None, file: Optional[Sequence[str]] = None,
+                 external_checks_dir: Optional[Sequence[str]] = None,
+                 external_checks_git: Optional[Sequence[str]] = None, output: Optional[str] = None,
                  no_guide: Optional[bool] = None, quiet: Optional[bool] = None, framework: Optional[str] = None,
                  merging_behavior: Optional[str] = None, check: Optional[str] = None, skip_check: Optional[str] = None,
                  soft_fail: Optional[bool] = None, repo_id: Optional[str] = None, branch: Optional[str] = None):
         self.source = source
-        self.directory: FrozenSet = frozenset(directory or {})
-        self.file: FrozenSet = frozenset(file or {})
-        self.external_checks_dir: FrozenSet = frozenset(external_checks_dir or {})
-        self.external_checks_git: FrozenSet = frozenset(external_checks_git or {})
+        self.directory: FrozenUniqueList = FrozenUniqueList(directory)
+        if directory is not None and not isinstance(directory, list) and not isinstance(directory, FrozenUniqueList):
+            raise Exception
+        self.file: FrozenUniqueList = FrozenUniqueList(file)
+        if file is not None and not isinstance(file, list) and not isinstance(file, FrozenUniqueList):
+            raise Exception
+        self.external_checks_dir: FrozenUniqueList = FrozenUniqueList(external_checks_dir)
+        if external_checks_dir is not None and not isinstance(external_checks_dir, list) and not isinstance(
+                external_checks_dir, FrozenUniqueList):
+            raise Exception
+        self.external_checks_git: FrozenUniqueList = FrozenUniqueList(external_checks_git)
+        if external_checks_git is not None and not isinstance(external_checks_git, list) and not isinstance(
+                external_checks_git, FrozenUniqueList):
+            raise Exception
         self._output = output
         self._no_guide = no_guide
         self._quiet = quiet
@@ -202,10 +213,10 @@ class CheckovConfig:
                 f'{", ".join(MERGING_BEHAVIOR_CHOICES)}.')
 
     def _merge_union(self, parent: 'CheckovConfig'):
-        self.directory = self.directory.union(parent.directory)
-        self.file = self.file.union(parent.file)
-        self.external_checks_dir = self.external_checks_dir.union(parent.external_checks_dir)
-        self.external_checks_git = self.external_checks_git.union(parent.external_checks_git)
+        self.directory = self.directory + parent.directory
+        self.file = self.file + parent.file
+        self.external_checks_dir = self.external_checks_dir + parent.external_checks_dir
+        self.external_checks_git = self.external_checks_git + parent.external_checks_git
 
         # Use override_if_present for strings and booleans
         self.__merge_override_if_present_strings_and_booleans(parent)
@@ -272,11 +283,11 @@ class CheckovConfig:
         self.skip_check = parent.skip_check
 
     def __repr__(self):
-        def set_filter(p):
-            return getattr(self, p) != frozenset()
+        def list_filter(p):
+            return getattr(self, p) != FrozenUniqueList()
 
-        def set_getter(p):
-            return set(getattr(self, p))
+        def list_getter(p):
+            return list(getattr(self, p))
 
         def default_filter(p):
             return getattr(self, p) is not None
@@ -285,10 +296,10 @@ class CheckovConfig:
             return getattr(self, p)
 
         kwargs = [
-            ('directory', 'directory', set_filter, set_getter),
-            ('file', 'file', set_filter, set_getter),
-            ('external_checks_dir', 'external_checks_dir', set_filter, set_getter),
-            ('external_checks_git', 'external_checks_git', set_filter, set_getter),
+            ('directory', 'directory', list_filter, list_getter),
+            ('file', 'file', list_filter, list_getter),
+            ('external_checks_dir', 'external_checks_dir', list_filter, list_getter),
+            ('external_checks_git', 'external_checks_git', list_filter, list_getter),
             ('output', '_output', default_filter, default_getter),
             ('no_guide', '_no_guide', default_filter, default_getter),
             ('quiet', '_quiet', default_filter, default_getter),
@@ -337,10 +348,10 @@ class _Parser(ABC):
 
     def parse(self):
         if self.has_content():
-            self.handle_set('directories', 'directory')
-            self.handle_set('files', 'file')
-            self.handle_set('external_checks_dirs', 'external_checks_dir')
-            self.handle_set('external_checks_gits', 'external_checks_git')
+            self.handle_unique_list('directories', 'directory')
+            self.handle_unique_list('files', 'file')
+            self.handle_unique_list('external_checks_dirs', 'external_checks_dir')
+            self.handle_unique_list('external_checks_gits', 'external_checks_git')
             self.handle_choice('output', 'output', OUTPUT_CHOICES)
             self.handle_type('no_guide', 'no_guide', bool)
             self.handle_type('quiet', 'quiet', bool)
@@ -360,7 +371,7 @@ class _Parser(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def handle_set(self, src: str, dest: str):
+    def handle_unique_list(self, src: str, dest: str):
         raise NotImplementedError
 
     @abstractmethod
@@ -391,7 +402,7 @@ class _YAMLParser(_Parser):
     def has_content(self) -> bool:
         return self.content is not None
 
-    def handle_set(self, src: str, dest: str):
+    def handle_unique_list(self, src: str, dest: str):
         if src not in self.content:
             return
         values = self.content[src]
@@ -470,7 +481,7 @@ class _ConfigParser(_Parser):
         value = self.content.get(PROGRAM_NAME, src).replace('\n', '')
         return next(csv.reader([value], delimiter=',', quotechar='"'))
 
-    def handle_set(self, src: str, dest: str):
+    def handle_unique_list(self, src: str, dest: str):
         if src not in self.section:
             return
         values = self.parse_list(src)

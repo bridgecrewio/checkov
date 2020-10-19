@@ -43,10 +43,10 @@ They are listed in the following table.
 
 | cli option | name of the property | format | comment |
 | ---------- | -------------------- | ------ | ------- |
-| `--directory` | `directories` | list of strings or a string | The list is converted into a set. |
-| `--file` | `files` | list of strings or a string | The list is converted into a set. |
-| `--external-checks-dir` | `external_checks_dirs` | list of strings or a string | The list is converted into a set. |
-| `--external-checks-git` | `external_checks_gits` | list of strings or a string | The list is converted into a set. |
+| `--directory` | `directories` | list of strings or a string | The list is converted into a list with unique elements. Only the first occurence is preserved. |
+| `--file` | `files` | list of strings or a string | The list is converted into a list with unique elements. Only the first occurence is preserved. |
+| `--external-checks-dir` | `external_checks_dirs` | list of strings or a string | The list is converted into a list with unique elements. Only the first occurence is preserved. |
+| `--external-checks-git` | `external_checks_gits` | list of strings or a string | The list is converted into a list with unique elements. Only the first occurence is preserved. |
 | `--output` | `output` | string | See `checkov --help` for available options. |
 | `--no-guide` | `no_guide` | boolean ||
 | `--quiet` | `quiet` | boolean ||
@@ -109,7 +109,7 @@ They do not change when something is merged into it.
 ### Strategy: "union"
 
 Keeps every single value options but creates a union of all those who support multiple values like `directories` or `checks`.
-For those who are a set, the set union is calculated.
+For those who are a list with unique elements, the parent values that do not occur in the child are appended.
 
 The special case are `checks` and `skip_checks`.
 A config containing both is invalid.

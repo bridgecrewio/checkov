@@ -44,27 +44,27 @@ class ConfigTestCase(unittest.TestCase):
             msg_prefix = msg_prefix + ': '
         self.assertEqual(expected['source'], config.source,
                          f'{msg_prefix}Expect source to be "{expected["source"]}" but got "{config.source}"')
-        self.assertIsInstance(config.directory, frozenset,
-                              f'{msg_prefix}Expect directory to be a set but got "{type(config.directory)}"')
-        self.assertSetEqual(expected['directory'], config.directory,
-                            f'{msg_prefix}Expect directory to be "{expected["directory"]}" but got '
-                            f'"{config.directory}"')
-        self.assertIsInstance(config.file, frozenset,
-                              f'{msg_prefix}Expect file to be a set but got "{type(config.file)}"')
-        self.assertSetEqual(expected['file'], config.file,
-                            f'{msg_prefix}Expect file to be "{expected["file"]}" but got "{config.file}"')
-        self.assertIsInstance(config.external_checks_dir, frozenset,
-                              f'{msg_prefix}Expect external_checks_dir to be a set but got '
+        self.assertIsInstance(config.directory, FrozenUniqueList,
+                              f'{msg_prefix}Expect directory to be a FrozenUniqueList but got "{type(config.directory)}"')
+        self.assertEqual(FrozenUniqueList(expected['directory']), config.directory,
+                         f'{msg_prefix}Expect directory to be "{expected["directory"]}" but got '
+                         f'"{config.directory}"')
+        self.assertIsInstance(config.file, FrozenUniqueList,
+                              f'{msg_prefix}Expect file to be a FrozenUniqueList but got "{type(config.file)}"')
+        self.assertEqual(FrozenUniqueList(expected['file']), config.file,
+                         f'{msg_prefix}Expect file to be "{expected["file"]}" but got "{config.file}"')
+        self.assertIsInstance(config.external_checks_dir, FrozenUniqueList,
+                              f'{msg_prefix}Expect external_checks_dir to be a FrozenUniqueList but got '
                               f'"{type(config.external_checks_dir)}"')
-        self.assertSetEqual(expected['external_checks_dir'], config.external_checks_dir,
-                            f'{msg_prefix}Expect external_checks_dir to be "{expected["external_checks_dir"]}" but '
-                            f'got "{config.external_checks_dir}"')
-        self.assertIsInstance(config.external_checks_git, frozenset,
-                              f'{msg_prefix}Expect external_checks_git to be a set but got '
+        self.assertEqual(FrozenUniqueList(expected['external_checks_dir']), config.external_checks_dir,
+                         f'{msg_prefix}Expect external_checks_dir to be "{expected["external_checks_dir"]}" but '
+                         f'got "{config.external_checks_dir}"')
+        self.assertIsInstance(config.external_checks_git, FrozenUniqueList,
+                              f'{msg_prefix}Expect external_checks_git to be a FrozenUniqueList but got '
                               f'"{type(config.external_checks_git)}"')
-        self.assertSetEqual(expected['external_checks_git'], config.external_checks_git,
-                            f'{msg_prefix}Expect external_checks_git to be "{expected["external_checks_git"]}" but '
-                            f'got "{config.external_checks_git}"')
+        self.assertEqual(FrozenUniqueList(expected['external_checks_git']), config.external_checks_git,
+                         f'{msg_prefix}Expect external_checks_git to be "{expected["external_checks_git"]}" but '
+                         f'got "{config.external_checks_git}"')
         self.assertEqual(expected['_output'], config._output,
                          f'{msg_prefix}Expect _output to be "{expected["_output"]}" but got "{config._output}"')
         self.assertEqual(expected['output'], config.output,
@@ -117,10 +117,10 @@ class TestCheckovConfig(ConfigTestCase):
 
     def test_repr_configured(self):
         kwargs = {
-            'directory': {'/1/2', '/a/b'},
-            'file': {'/1/2', '/a/b'},
-            'external_checks_dir': {'/1/2', '/a/b'},
-            'external_checks_git': {'/1/2', '/a/b'},
+            'directory': ['/1/2', '/a/b'],
+            'file': ['/1/2', '/a/b'],
+            'external_checks_dir': ['/1/2', '/a/b'],
+            'external_checks_git': ['/1/2', '/a/b'],
             'output': 'json',
             'no_guide': True,
             'quiet': True,
@@ -173,10 +173,10 @@ class TestCheckovConfig(ConfigTestCase):
         config = CheckovConfig('test')
         self.assertConfig({
             'source': 'test',
-            'directory': set(),
-            'file': set(),
-            'external_checks_dir': set(),
-            'external_checks_git': set(),
+            'directory': FrozenUniqueList(),
+            'file': FrozenUniqueList(),
+            'external_checks_dir': FrozenUniqueList(),
+            'external_checks_git': FrozenUniqueList(),
             '_output': None,
             'output': 'cli',
             '_no_guide': None,
@@ -203,10 +203,10 @@ class TestCheckovConfig(ConfigTestCase):
         config = CheckovConfig.from_args(args)
         self.assertConfig({
             'source': 'args',
-            'directory': set(),
-            'file': set(),
-            'external_checks_dir': set(),
-            'external_checks_git': set(),
+            'directory': FrozenUniqueList(),
+            'file': FrozenUniqueList(),
+            'external_checks_dir': FrozenUniqueList(),
+            'external_checks_git': FrozenUniqueList(),
             '_output': None,
             'output': 'cli',
             '_no_guide': None,
@@ -262,10 +262,10 @@ class TestCheckovConfig(ConfigTestCase):
         config = CheckovConfig.from_args(args)
         self.assertConfig({
             'source': 'args',
-            'directory': {'/a1', '/b1', '/a2', '/b2'},
-            'file': {'/a3', '/b3', '/a4', '/b4'},
-            'external_checks_dir': {'/a5', '/b5'},
-            'external_checks_git': {'/a6', '/b6'},
+            'directory': ['/a1', '/b1', '/a2', '/b2'],
+            'file': ['/a3', '/b3', '/a4', '/b4'],
+            'external_checks_dir': ['/a5', '/b5'],
+            'external_checks_git': ['/a6', '/b6'],
             '_output': 'json',
             'output': 'json',
             '_no_guide': True,
@@ -297,10 +297,10 @@ class TestCheckovConfig(ConfigTestCase):
         config = CheckovConfig.from_args(args)
         self.assertConfig({
             'source': 'args',
-            'directory': set(),
-            'file': set(),
-            'external_checks_dir': set(),
-            'external_checks_git': set(),
+            'directory': FrozenUniqueList(),
+            'file': FrozenUniqueList(),
+            'external_checks_dir': FrozenUniqueList(),
+            'external_checks_git': FrozenUniqueList(),
             '_output': 'json',
             'output': 'json',
             '_no_guide': None,
@@ -321,15 +321,15 @@ class TestCheckovConfig(ConfigTestCase):
         }, config)
 
     def test_merge_with_none(self):
-        config = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)
-        expected = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True,
+        config = CheckovConfig('test', directory=['1', '2'], check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)
+        expected = CheckovConfig('test', directory=['1', '2'], check='CKV_AWS_1,CKV_AWS_10', soft_fail=True,
                                  quiet=False)
         config.extend(None)
         self.assertConfig(expected, config)
 
     def test_merge_config_no_override_if_defined(self):
         config1 = CheckovConfig('test')
-        parent1 = CheckovConfig('test', directory={'1', '2'}, check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)
+        parent1 = CheckovConfig('test', directory=['1', '2'], check='CKV_AWS_1,CKV_AWS_10', soft_fail=True, quiet=False)
         config1.extend(parent1)
         self.assertConfig(parent1, config1)
 
@@ -347,13 +347,13 @@ class TestCheckovConfig(ConfigTestCase):
         self.assertConfig(parent_clone, parent, 'Parent should not be modified')
 
     def test_merge_sets_are_combined(self):
-        child = CheckovConfig('test_child', directory={'a', 'b', 'c'}, file={'g', 'h', 'i'},
-                              external_checks_dir={'m', 'n', 'o'}, external_checks_git={'s', 't', 'u'})
-        parent = CheckovConfig('test_parent', directory={'c', 'd', 'e'}, file={'i', 'j', 'k'},
-                               external_checks_dir={'o', 'p', 'q'}, external_checks_git={'u', 'v', 'w'})
-        expected = CheckovConfig('test_child', directory={'a', 'b', 'c', 'd', 'e'}, file={'g', 'h', 'i', 'j', 'k'},
-                                 external_checks_dir={'m', 'n', 'o', 'p', 'q'},
-                                 external_checks_git={'s', 't', 'u', 'v', 'w'})
+        child = CheckovConfig('test_child', directory=['a', 'b', 'c'], file=['g', 'h', 'i'],
+                              external_checks_dir=['m', 'n', 'o'], external_checks_git=['s', 't', 'u'])
+        parent = CheckovConfig('test_parent', directory=['c', 'd', 'e'], file=['i', 'j', 'k'],
+                               external_checks_dir=['o', 'p', 'q'], external_checks_git=['u', 'v', 'w'])
+        expected = CheckovConfig('test_child', directory=['a', 'b', 'c', 'd', 'e'], file=['g', 'h', 'i', 'j', 'k'],
+                                 external_checks_dir=['m', 'n', 'o', 'p', 'q'],
+                                 external_checks_git=['s', 't', 'u', 'v', 'w'])
         child.extend(parent)
         self.assertConfig(expected, child)
 
@@ -513,24 +513,24 @@ class TestCheckovConfig(ConfigTestCase):
     def test_merge_override_if_present(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
             config1 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
-                                    check='1,2', directory={'a', 'b'})
+                                    check='1,2', directory=['a', 'b'])
             parent1 = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
                                     framework='terraform', repo_id='123', branch='456', check='3,4',
-                                    directory={'c', 'd'}, external_checks_dir={'x'})
+                                    directory=['c', 'd'], external_checks_dir=['x'])
             expected1 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
-                                      check='1,2', directory={'a', 'b'}, external_checks_dir={'x'}, repo_id='123',
+                                      check='1,2', directory=['a', 'b'], external_checks_dir=['x'], repo_id='123',
                                       branch='456')
             config1.extend(parent1)
             self.assertConfig(expected1, config1,
                               f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
 
             config2 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
-                                    check='1,2', directory={'a', 'b'}, external_checks_dir={'a'})
+                                    check='1,2', directory=['a', 'b'], external_checks_dir=['a'])
             parent2 = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
                                     framework='terraform', repo_id='123', branch='456', check='3,4',
-                                    directory={'c', 'd'}, external_checks_dir={'x'})
+                                    directory=['c', 'd'], external_checks_dir=['x'])
             expected2 = CheckovConfig('test1', merging_behavior='override_if_present', no_guide=False, framework='all',
-                                      check='1,2', directory={'a', 'b'}, external_checks_dir={'a'}, repo_id='123',
+                                      check='1,2', directory=['a', 'b'], external_checks_dir=['a'], repo_id='123',
                                       branch='456')
             config2.extend(parent2)
             self.assertConfig(expected2, config2,
@@ -571,13 +571,13 @@ class TestCheckovConfig(ConfigTestCase):
     def test_merge_copy_parent(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
             config = CheckovConfig('test1', merging_behavior='copy_parent', no_guide=False, framework='all',
-                                   check='1,2', directory={'a', 'b'})
+                                   check='1,2', directory=['a', 'b'])
             parent = CheckovConfig('test2', merging_behavior=parent_merging_behavior, no_guide=True,
                                    framework='terraform', repo_id='123', branch='456', check='3,4',
-                                   directory={'c', 'd'}, external_checks_dir={'x'})
+                                   directory=['c', 'd'], external_checks_dir=['x'])
             expected = CheckovConfig('test1', merging_behavior='copy_parent', no_guide=True, framework='terraform',
-                                     repo_id='123', branch='456', check='3,4', directory={'c', 'd'},
-                                     external_checks_dir={'x'})
+                                     repo_id='123', branch='456', check='3,4', directory=['c', 'd'],
+                                     external_checks_dir=['x'])
             config.extend(parent)
             self.assertConfig(expected, config,
                               f'Test that parent having the {parent_merging_behavior} behavior works with copy_parent')
@@ -616,8 +616,8 @@ class TestCheckovConfig(ConfigTestCase):
 
     def test_yaml_full_empty_file_by_path(self):
         config = CheckovConfig.from_file(self.get_config_file('full.yaml'))
-        expected = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
-                                 external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
+        expected = CheckovConfig('file', directory=['/a', '/b', 'c', '1'], file=['/a/m.tf', 'd.tf'],
+                                 external_checks_dir=['/x', 'y'], external_checks_git=['a/b', 'c/d'], output='json',
                                  no_guide=True, quiet=False, framework='kubernetes', merging_behavior='union',
                                  check='1, a ,d', skip_check='2, b ,d', soft_fail=True, repo_id='1 2',
                                  branch='feature/abc')
@@ -694,7 +694,7 @@ external_checks_gits: d
 """)
         config = CheckovConfig.from_file(buffer)
         self.assertConfig(
-            CheckovConfig('file', directory={'a'}, file={'b'}, external_checks_dir={'c'}, external_checks_git={'d'}),
+            CheckovConfig('file', directory=['a'], file=['b'], external_checks_dir=['c'], external_checks_git=['d']),
             config)
 
     def test_config_load_empty_file_by_path(self):
@@ -703,8 +703,8 @@ external_checks_gits: d
 
     def test_config_full_empty_file_by_path(self):
         config = CheckovConfig.from_file(self.get_config_file('full'))
-        expected = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
-                                 external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
+        expected = CheckovConfig('file', directory=['/a', '/b', 'c', '1'], file=['/a/m.tf', 'd.tf'],
+                                 external_checks_dir=['/x', 'y'], external_checks_git=['a/b', 'c/d'], output='json',
                                  no_guide=True, quiet=False, framework='kubernetes', merging_behavior='union',
                                  check='1, a ,d', skip_check='2, b ,d', soft_fail=True, repo_id='1 2',
                                  branch='feature/abc')
@@ -788,7 +788,7 @@ external_checks_gits = d
 """)
         config = CheckovConfig.from_file(buffer)
         self.assertConfig(
-            CheckovConfig('file', directory={'a'}, file={'b'}, external_checks_dir={'c'}, external_checks_git={'d'}),
+            CheckovConfig('file', directory=['a'], file=['b'], external_checks_dir=['c'], external_checks_git=['d']),
             config)
 
     def test_is_check_selection_valid(self):
@@ -800,6 +800,10 @@ external_checks_gits = d
 
 class FrozenUniqueListTestCase(unittest.TestCase):
     def test_frozen_unique_list_constructor(self):
+        unique_list = FrozenUniqueList()
+        self.assertEqual([], list(unique_list))
+        unique_list = FrozenUniqueList([])
+        self.assertEqual([], list(unique_list))
         unique_list = FrozenUniqueList([1, 2, 3, 1])
         self.assertEqual([1, 2, 3], list(unique_list))
 

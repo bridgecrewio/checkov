@@ -1,7 +1,6 @@
-import os
-
 import argparse
 import itertools
+import os
 import re
 from io import StringIO
 from unittest.mock import patch, call
@@ -65,8 +64,8 @@ repo_id: 1 2
 branch: feature/abc
 
 '''
-    full_config = CheckovConfig('file', directory={'/a', '/b', 'c', '1'}, file={'/a/m.tf', 'd.tf'},
-                                external_checks_dir={'/x', 'y'}, external_checks_git={'a/b', 'c/d'}, output='json',
+    full_config = CheckovConfig('file', directory=['/a', '/b', 'c', '1'], file=['/a/m.tf', 'd.tf'],
+                                external_checks_dir=['/x', 'y'], external_checks_git=['a/b', 'c/d'], output='json',
                                 no_guide=True, quiet=False, framework='kubernetes', merging_behavior='override',
                                 check='1, a ,d', skip_check='2, b ,d', soft_fail=True, repo_id='1 2',
                                 branch='feature/abc')
