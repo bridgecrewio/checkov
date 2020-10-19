@@ -2,6 +2,7 @@ import argparse
 import itertools
 import os
 import re
+import unittest
 from io import StringIO
 from unittest.mock import patch, call
 
@@ -9,6 +10,7 @@ from checkov.config import CheckovConfig, CheckovConfigError
 from checkov.main import get_configuration_from_files, add_parser_args, get_configuration, \
     get_global_configuration_files, get_local_configuration_files, get_configuration_files, \
     print_considered_config_files
+from checkov.main import run as main_run
 from tests.test_config import ConfigTestCase
 
 
@@ -439,3 +441,17 @@ branch: feature/abc
             r'.*g1 \(does not exist\).*g2 \(something went wrong\).*\n\nLocal configuration files:.*l1 \(invalid\).*l2 '
             r'\(valid\).*\n\nCostume configuration files:.*<no files specified>.*',
             re.DOTALL))
+
+
+class MainTestCases(unittest.TestCase):
+
+    @patch('argparse._sys.argv', ['main.py', '--check', 'A', '--skip-check', 'A'])
+    @patch('checkov.main.get_configuration')
+    def test_main_uses(self, get_configuration_mock):
+        test_exception = ValueError()
+        get_configuration_mock.side_effect = test_exception
+        try:
+            main_run("banner")
+            self.fail("Expected the mock to be called.")
+        except ValueError as e:
+            self.assertIs(test_exception, e)
