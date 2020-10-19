@@ -1,5 +1,5 @@
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class GKEBasicAuth(BaseResourceCheck):
@@ -18,7 +18,13 @@ class GKEBasicAuth(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'master_auth' in conf.keys():
-            if conf['master_auth'][0].get('username') or conf['master_auth'][0].get('password'):
+            username = conf['master_auth'][0].get('username')
+            password = conf['master_auth'][0].get('password')
+            if username or password:
+                # only if both are set to the empty string it is fine
+                # https://www.terraform.io/docs/providers/google/r/container_cluster.html
+                if len(username) == 1 and len(password) == 1 and username[0] == '' and password[0] == '':
+                    return CheckResult.PASSED
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
