@@ -294,6 +294,8 @@ class BcPlatformIntegration(object):
         while not valid:
             result = str(
                 input('Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
+            # remove spaces and special characters
+            result = ''.join(e for e in result if e.isalnum())
             if result:
                 valid = True
         return result
