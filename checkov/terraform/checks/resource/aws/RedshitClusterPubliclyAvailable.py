@@ -7,7 +7,7 @@ class RedshiftClusterPubliclyAccessible(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Redshift cluster should not be publicly accessible"
         id = "CKV_AWS_87"
-        supported_resources = ['redshift_cluster']
+        supported_resources = ['aws_redshift_cluster']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

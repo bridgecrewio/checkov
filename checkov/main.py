@@ -81,7 +81,9 @@ def run(banner=checkov_banner):
             bc_integration.commit_repository(args.branch)
         runner_registry.print_reports(scan_reports, args)
     else:
-        print("No argument given. Try ` --help` for further information")
+        print(f"{banner}")
+
+        bc_integration.onboarding()
 
 
 def add_parser_args(parser):

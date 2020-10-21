@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/a9/ea/ca880cd611b857a46321ddecbe51472bc443aba16e52d28f30da1d92dfc4/checkov-1.0.565.tar.gz"
-  sha256 "95114d72df5f1800513fcc9efbabd0e30a3a17c5c54dc93c90d4aa553dfadbc3"
+  url "https://files.pythonhosted.org/packages/0e/5b/181fb638f8fe2f055cb270a940439a31daae75c66450e3464570ef49eeae/checkov-1.0.590.tar.gz"
+  sha256 "8cdbc3d72ad4983deba154dccca406a4313ce81970ad0d56f72b587cfefe9593"
 
   depends_on "python3"
 
@@ -123,9 +123,19 @@ class Checkov < Formula
     sha256 "1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"
   end
 
+  resource "tqdm" do
+    url "https://files.pythonhosted.org/packages/bc/03/2bc607a15e201058cb6b19784b9c217d7ff37a686ce4a2d8a37a638f3ba5/tqdm-4.49.0.tar.gz"
+    sha256 "faf9c671bd3fad5ebaeee366949d969dca2b2be32c872a7092a1e1a9048d105b"
+  end
+
+  resource "update-checker" do
+    url "https://files.pythonhosted.org/packages/5c/0b/1bec4a6cc60d33ce93d11a7bcf1aeffc7ad0aa114986073411be31395c6f/update_checker-0.18.0.tar.gz"
+    sha256 "6a2d45bb4ac585884a6b03f9eade9161cedd9e8111545141e9aa9058932acb13"
+  end
+
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/ad/fc/54d62fa4fc6e675678f9519e677dfc29b8964278d75333cf142892caf015/urllib3-1.25.7.tar.gz"
-    sha256 "f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
+    url "https://files.pythonhosted.org/packages/81/f4/87467aeb3afc4a6056e1fe86626d259ab97e1213b1dfec14c7cb5f538bf0/urllib3-1.25.10.tar.gz"
+    sha256 "91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"
   end
 
   def install

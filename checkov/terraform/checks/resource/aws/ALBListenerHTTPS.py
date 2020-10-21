@@ -6,7 +6,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
     def __init__(self):
         name = "Ensure ALB protocol is HTTPS"
         id = "CKV_AWS_2"
-        supported_resources = ['aws_alb_listener','aws_lb_listener']
+        supported_resources = ['aws_lb_listener']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

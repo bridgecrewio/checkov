@@ -9,7 +9,7 @@ PORT_RANGE = re.compile('\d+-\d+')
 
 class NSGRulePortAccessRestricted(BaseResourceCheck):
     def __init__(self, name, check_id, port):
-        supported_resources = ['azure_security_group_rule', 'azurerm_network_security_rule', 'azurerm_network_security_group']
+        supported_resources = ['azurerm_network_security_rule', 'azurerm_network_security_group']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
         self.port = port
@@ -34,9 +34,11 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
             rule_confs = conf['security_rule']
 
         for rule_conf in rule_confs:
+            if not isinstance(rule_conf, dict):
+                return CheckResult.UNKNOWN
             if 'access' in rule_conf and rule_conf['access'][0] == "Allow":
                 if 'direction' in rule_conf and rule_conf['direction'][0] == "Inbound":
-                    if 'protocol' in rule_conf and rule_conf['protocol'][0] == 'TCP':
+                    if 'protocol' in rule_conf and rule_conf['protocol'][0].upper() == 'TCP':
                         if 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf):
                             if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0] in INTERNET_ADDRESSES:
                                 return CheckResult.FAILED
