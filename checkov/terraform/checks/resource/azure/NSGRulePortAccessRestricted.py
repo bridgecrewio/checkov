@@ -34,6 +34,8 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
             rule_confs = conf['security_rule']
 
         for rule_conf in rule_confs:
+            if not isinstance(rule_conf, dict):
+                return CheckResult.UNKNOWN
             if 'access' in rule_conf and rule_conf['access'][0] == "Allow":
                 if 'direction' in rule_conf and rule_conf['direction'][0] == "Inbound":
                     if 'protocol' in rule_conf and rule_conf['protocol'][0].upper() == 'TCP':
