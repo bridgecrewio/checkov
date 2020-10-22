@@ -1,26 +1,21 @@
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class RDSPubliclyAccessible(BaseResourceCheck):
+class RDSPubliclyAccessible(BaseResourceValueCheck):
+    def get_expected_value(self):
+        return False
+
+    def get_inspected_key(self):
+        return 'Properties/PubliclyAccessible'
+
     def __init__(self):
         name = "Ensure all data stored in the RDS bucket is not public accessible"
         id = "CKV_AWS_17"
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.NETWORKING]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_block_result=CheckResult.PASSED)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for publicy accessible configuration on RDS instance:
-            https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html
-        :param conf: AWS::RDS::DBInstance configuration
-        :return: <CheckResult>
-        """
-        if 'Properties' in conf.keys():
-            if 'PubliclyAccessible' in conf['Properties'].keys():
-                if conf['Properties']['PubliclyAccessible'] == True:
-                    return CheckResult.FAILED
-        return CheckResult.PASSED
 
 check = RDSPubliclyAccessible()
