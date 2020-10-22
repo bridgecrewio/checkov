@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class RDSEncryption(BaseResourceCheck):
+class RDSEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
         id = "CKV_AWS_16"
@@ -10,17 +10,7 @@ class RDSEncryption(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration on RDS instance:
-            https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html
-        :param conf: AWS::RDS::DBInstance configuration
-        :return: <CheckResult>
-        """
-        if 'Properties' in conf.keys():
-            if 'StorageEncrypted' in conf['Properties'].keys():
-                if conf['Properties']['StorageEncrypted'] == True:
-                    return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'Properties/StorageEncrypted'
 
 check = RDSEncryption()
