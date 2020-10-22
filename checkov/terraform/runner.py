@@ -105,7 +105,8 @@ class Runner(BaseRunner):
                 definition_path = context_parser.get_entity_context_path(entity)
                 entity_id = ".".join(definition_path)
                 entity_context_path = [block_type] + definition_path
-                for _, entity_context in dpath.search(definition_context[full_file_path], entity_context_path, yielded=True):
+                entity_context_dict = dpath.search(definition_context[full_file_path], entity_context_path, yielded=True)
+                for _, entity_context in entity_context_dict:
                     entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                     entity_code_lines = entity_context.get('code_lines')
                     skipped_checks = entity_context.get('skipped_checks')
