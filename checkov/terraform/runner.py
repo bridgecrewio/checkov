@@ -76,16 +76,20 @@ class Runner(BaseRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
         parser_registry.reset_definitions_context()
+        logging.debug('Evaluating string booleans')
         self.evaluate_string_booleans()
+        logging.debug('Evaluated string booleans')
         if external_definitions_context:
             definitions_context = external_definitions_context
         else:
+            logging.debug('Creating definitions context')
             definitions_context = {}
             for definition in self.tf_definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
             variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
             variable_evaluator.evaluate_variables()
             self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+            logging.debug('Created definitions context')
 
         for full_file_path, definition in self.tf_definitions.items():
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
