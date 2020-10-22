@@ -1,12 +1,12 @@
-from abc import abstractmethod
-import dpath.util
 import re
+from abc import abstractmethod
+
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.common.models.enums import CheckResult
 from checkov.common.models.consts import ANY_VALUE
+from checkov.common.models.enums import CheckResult
 
-VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
+VARIABLE_DEPENDANT_REGEX = r'(?:Ref)\.[^\s]+'
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
