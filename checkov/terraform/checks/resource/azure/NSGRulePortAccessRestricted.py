@@ -17,11 +17,12 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
     def is_port_in_range(self, conf):
         ports = force_list(conf['destination_port_range'][0])
         for range in ports:
-            if re.match(PORT_RANGE, range):
+            str_range = str(range)
+            if re.match(PORT_RANGE, str_range):
                 start, end = int(range.split('-')[0]), int(range.split('-')[1])
                 if start <= self.port <= end:
                     return True
-            if range in [str(self.port), '*']:
+            if str_range in [str(self.port), '*']:
                 return True
         return False
 
