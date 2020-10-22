@@ -23,7 +23,8 @@ TRUE_STRING = "true"
 ONE_STRING = "1"
 FALSE_STRING = "false"
 ZERO_STRING = "0"
-
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
+logging.basicConfig(level=LOG_LEVEL)
 
 class Runner(BaseRunner):
     check_type = "terraform"
