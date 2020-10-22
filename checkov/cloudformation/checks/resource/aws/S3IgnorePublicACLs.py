@@ -3,8 +3,6 @@ from checkov.common.models.enums import CheckCategories
 
 
 class S3IgnorePublicACLs(BaseResourceValueCheck):
-    def get_inspected_key(self):
-        return 'Properties/PublicAccessBlockConfiguration/IgnorePublicAcls'
 
     def __init__(self):
         name = "Ensure S3 bucket has ignore public ACLs enabled"
@@ -12,6 +10,10 @@ class S3IgnorePublicACLs(BaseResourceValueCheck):
         supported_resources = ['AWS::S3::Bucket']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+
+    def get_inspected_key(self):
+        return 'Properties/PublicAccessBlockConfiguration/IgnorePublicAcls'
 
 
 check = S3IgnorePublicACLs()

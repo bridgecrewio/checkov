@@ -3,11 +3,6 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class RDSPubliclyAccessible(BaseResourceValueCheck):
-    def get_expected_value(self):
-        return False
-
-    def get_inspected_key(self):
-        return 'Properties/PubliclyAccessible'
 
     def __init__(self):
         name = "Ensure all data stored in the RDS bucket is not public accessible"
@@ -16,6 +11,12 @@ class RDSPubliclyAccessible(BaseResourceValueCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.PASSED)
+
+    def get_expected_value(self):
+        return False
+
+    def get_inspected_key(self):
+        return 'Properties/PubliclyAccessible'
 
 
 check = RDSPubliclyAccessible()

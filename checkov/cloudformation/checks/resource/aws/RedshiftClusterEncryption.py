@@ -3,8 +3,6 @@ from checkov.common.models.enums import CheckCategories
 
 
 class RedshiftClusterEncryption(BaseResourceValueCheck):
-    def get_inspected_key(self):
-        return 'Properties/Encrypted'
 
     def __init__(self):
         name = "Ensure all data stored in the Redshift cluster is securely encrypted at rest"
@@ -12,6 +10,9 @@ class RedshiftClusterEncryption(BaseResourceValueCheck):
         supported_resources = ['AWS::Redshift::Cluster']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def get_inspected_key(self):
+        return 'Properties/Encrypted'
 
 
 check = RedshiftClusterEncryption()
