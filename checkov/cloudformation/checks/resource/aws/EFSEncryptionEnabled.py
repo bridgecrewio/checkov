@@ -14,17 +14,5 @@ class EFSEncryption(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'Properties/Encrypted'
 
-    # def scan_resource_conf(self, conf):
-    #     """
-    #     Looks for encryption configuration at aws_efs_filesystem:
-    #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-efs-filesystem.html
-    #     :param conf: aws_efs_filesystem configuration
-    #     :return: <CheckResult>
-    #     """
-    #     if conf.get('Properties'):
-    #         if conf['Properties'].get('Encrypted'):
-    #             return CheckResult.PASSED
-    #     return CheckResult.FAILED
-
 
 check = EFSEncryption()
