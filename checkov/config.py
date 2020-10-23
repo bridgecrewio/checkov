@@ -300,7 +300,7 @@ class CheckovConfig:
             ('repo_id', 'repo_id', default_filter, default_getter),
             ('branch', '_branch', default_filter, default_getter),
         ]
-        filtered = (f'{l}={repr(g(p))}' for l, p, f, g in kwargs if f(p))
+        filtered = (f'{label}={repr(g(p))}' for label, p, f, g in kwargs if f(p))
         kwargs = ', '.join(itertools.chain((repr(self.source),), filtered))
         return f'{self.__class__.__name__}({kwargs})'
 

@@ -45,7 +45,8 @@ class ConfigTestCase(unittest.TestCase):
         self.assertEqual(expected['source'], config.source,
                          f'{msg_prefix}Expect source to be "{expected["source"]}" but got "{config.source}"')
         self.assertIsInstance(config.directory, FrozenUniqueList,
-                              f'{msg_prefix}Expect directory to be a FrozenUniqueList but got "{type(config.directory)}"')
+                              f'{msg_prefix}Expect directory to be a FrozenUniqueList but got '
+                              f'"{type(config.directory)}"')
         self.assertEqual(FrozenUniqueList(expected['directory']), config.directory,
                          f'{msg_prefix}Expect directory to be "{expected["directory"]}" but got '
                          f'"{config.directory}"')
@@ -596,7 +597,7 @@ class TestCheckovConfig(ConfigTestCase):
             self.assertConfig(CheckovConfig('t0', check='2', merging_behavior=parent_merging_behavior),
                               parent, 'Test that parent did not change')
 
-    def test_merge_override_if_present_skip_check(self):
+    def test_merge_copy_if_present_skip_check(self):
         for parent_merging_behavior in MERGING_BEHAVIOR_CHOICES:
             child1 = CheckovConfig('t1', skip_check='1', merging_behavior='copy_parent')
             child2 = CheckovConfig('t2', merging_behavior='copy_parent')
