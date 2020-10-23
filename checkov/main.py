@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import atexit
-import logging
-import os
 from os import name as os_name
 
 import argparse
 import itertools
+import logging
+import os
 import shutil
 from pathlib import Path
 from typing import Optional, Iterable, Iterator

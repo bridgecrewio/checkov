@@ -21,8 +21,8 @@ from urllib3.exceptions import HTTPError
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from checkov.config import CheckovConfig
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-from ...config import CheckovConfig
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -287,7 +287,7 @@ class BcPlatformIntegration(object):
             return response
         else:
             raise Exception("failed to create a bridgecrew account. An organization with this name might already "
-                            "exist with this email address. Please login bridgecrew.cloud to retrieve access key");
+                            "exist with this email address. Please login bridgecrew.cloud to retrieve access key")
 
     def _input_orgname(self):
         valid = False
