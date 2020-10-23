@@ -1,8 +1,9 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.consts import ANY_VALUE
 
 
-class CloudtrailEncryption(BaseResourceCheck):
+class CloudtrailEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure CloudTrail logs are encrypted at rest using KMS CMKs"
         id = "CKV_AWS_35"
@@ -10,16 +11,10 @@ class CloudtrailEncryption(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration at cloudtrail:
-            https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudtrail-trail.html
-        :param conf: cloudtrail configuration
-        :return: <CheckResult>
-        """
-        if 'Properties' in conf.keys():
-            if 'KMSKeyId' in conf['Properties'].keys():
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'Properties/KMSKeyId'
+
+    def get_expected_value(self):
+        return ANY_VALUE
 
 check = CloudtrailEncryption()
