@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class ELBAccessLogs(BaseResourceCheck):
     def __init__(self):
         name = "Ensure the ELB has access logging enabled"
-        id = "CKV_AWS_90"
+        id = "CKV_AWS_92"
         supported_resources = ['aws_elb']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
