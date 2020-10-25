@@ -22,6 +22,15 @@ Resources:
             }
           ]
         }
+      ManagedPolicyArns: !Split
+        - ","
+        - !Join
+          - ","
+          - - !Ref ManagedPolicyArns
+            - !Ref QueueProcessorPolicy
+        MaxSessionDuration: 3600
+        Path: /
+        RoleName: role
 
   ExecutionRole:
       Type: AWS::IAM::Role
