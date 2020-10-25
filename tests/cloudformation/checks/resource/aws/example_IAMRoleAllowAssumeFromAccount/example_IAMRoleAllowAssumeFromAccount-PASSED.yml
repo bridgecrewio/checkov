@@ -9,6 +9,7 @@ Resources:
           Statement:
           - Effect: "Allow"
             Principal:
-                AWS: "arn:aws:iam::123456789101:example_user"
+              Service:
+              - ec2.amazonaws.com
             Action:
-            - "sts:AssumeRole"
+              - 'sts:AssumeRole'
