@@ -30,7 +30,7 @@ Resources:
             - !Ref QueueProcessorPolicy
       MaxSessionDuration: 3600
       Path: /
-      RoleName: role
+      RoleName: "role"
 
   ExecutionRole:
       Type: AWS::IAM::Role
