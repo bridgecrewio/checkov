@@ -16,14 +16,20 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         if 'AssumeRolePolicyDocument' in conf['Properties']:
             if 'Fn::Sub' in conf['Properties']['AssumeRolePolicyDocument'].keys():
                 assume_role_block = json.loads(conf['Properties']['AssumeRolePolicyDocument']['Fn::Sub'])
+                if 'Statement' in assume_role_block.keys():
+                    if 'Principal' in assume_role_block['Statement'][0]:
+                        if 'AWS' in assume_role_block['Statement'][0]['Principal']:
+                            account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
+                            if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS']):
+                                return CheckResult.FAILED
             else:
                 assume_role_block = conf['Properties']['AssumeRolePolicyDocument']
-            if 'Statement' in assume_role_block.keys():
-                if 'Principal' in assume_role_block['Statement'][0]:
-                    if 'AWS' in assume_role_block['Statement'][0]['Principal']:
-                        account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
-                        if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS']):
-                            return CheckResult.FAILED
+                if 'Statement' in assume_role_block.keys():
+                    if 'Principal' in assume_role_block['Statement'][0]:
+                        if 'AWS' in assume_role_block['Statement'][0]['Principal']:
+                            account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
+                            if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS'][0]):
+                                return CheckResult.FAILED
 
             return CheckResult.PASSED
 
