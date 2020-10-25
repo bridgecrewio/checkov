@@ -46,7 +46,7 @@ class DockerSocketVolume(BaseK8Check):
 
         # Evaluate volumes
         if spec:
-            if "volumes" in spec:
+            if "volumes" in spec and spec.get("volumes"):
                 for v in spec["volumes"]:
                     if "hostPath" in v:
                         if "path" in v["hostPath"]:
