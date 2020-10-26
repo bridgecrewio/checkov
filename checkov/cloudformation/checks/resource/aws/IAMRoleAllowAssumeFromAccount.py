@@ -18,7 +18,8 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
             if 'Fn::Sub' in conf['Properties']['AssumeRolePolicyDocument'].keys():
                 assume_role_block = json.loads(conf['Properties']['AssumeRolePolicyDocument']['Fn::Sub'])
                 if 'Statement' in assume_role_block.keys():
-                    if 'Principal' in assume_role_block['Statement'][0]:
+                    if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
+                            assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
                             account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
                             if 'AWS' in assume_role_block['Statement'][0]['Principal']:
@@ -31,7 +32,8 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
             else:
                 assume_role_block = conf['Properties']['AssumeRolePolicyDocument']
                 if 'Statement' in assume_role_block.keys():
-                    if 'Principal' in assume_role_block['Statement'][0]:
+                    if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
+                            assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
                             account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
                             if 'AWS' in assume_role_block['Statement'][0]['Principal']:
