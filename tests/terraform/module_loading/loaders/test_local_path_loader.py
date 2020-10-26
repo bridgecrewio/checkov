@@ -12,5 +12,10 @@ class TestLocalPathLoader(unittest.TestCase):
             assert content.path() == os.path.join(current_dir, "resources")
 
     def test_unhandled_source(self):
-        with loader.load("doesnt_exist", "something that doesn't exist", None) as content:
+        with loader.load("current_dir", "hashicorp/consul/aws", None) as content:
             assert not content.loaded()
+
+    def test_bad_source(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        with self.assertRaises(FileNotFoundError):
+            loader.load(current_dir, "./path_that_doesnt_exist", None)

@@ -60,7 +60,6 @@ There are three resulting states that can occur when calling this function:
                        "hashicorp/consul/aws" or "git::https://example.com/vpc.git?ref=v1.2.0")
         :param source_version: contains content from the module's `version` attribute, if provided
 
-        :return: None if the loader does not handle the given source type or a ModuleContent object
-                 if it does and the content could be loaded.
+        :return: A ModuleContent object which may or may not being loaded.
         """
         raise NotImplementedError()

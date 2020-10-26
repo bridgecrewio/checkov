@@ -10,19 +10,36 @@ class ModuleLoaderRegistry:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> Optional[ModuleContent]:
+    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
         """
+        last_exception = None
         for loader in self.loaders:
-            content = loader.load(current_dir, source, source_version)
-            if content is not None:
+            try:
+                content = loader.load(current_dir, source, source_version)
+            except Exception as e:
+                last_exception = e
+                continue
+
+            if content is None:
+                continue
+            elif not content.loaded():
+                content.cleanup()
+                continue
+            else:
                 return content
-        return None
+
+        if last_exception is not None:
+            raise last_exception
+        return ModuleContent(None)
 
     def register(self, loader: ModuleLoader):
         self.loaders.append(loader)
+
+    def clear_all_loaders(self):
+        self.loaders.clear()
 
 
 module_loader_registry = ModuleLoaderRegistry()
