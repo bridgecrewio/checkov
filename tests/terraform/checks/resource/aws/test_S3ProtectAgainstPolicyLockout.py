@@ -90,6 +90,65 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_skip_noeffect(self):
+        hcl_res = hcl2.loads("""
+        resource "aws_s3_bucket_policy" "s3" {
+        bucket = "bucket"
+
+        policy = <<POLICY
+        {
+            "Id": "Policy1597273448050",
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "Stmt1597273446725",
+                    "Action": [
+                        "s3:GetObject"
+                    ],
+                    "Resource": "arn:aws:s3:::bucket/*",
+                    "Principal": {
+                        "AWS": "some_arn"
+                    }
+                }
+            ]
+        }
+        POLICY
+        }        
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_skip_notaction(self):
+        hcl_res = hcl2.loads("""
+        resource "aws_s3_bucket_policy" "s3" {
+        bucket = "bucket"
+
+        policy = <<POLICY
+        {
+            "Id": "Policy1597273448050",
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "Stmt1597273446725",
+                    "NotAction": [
+                        "s3:GetObject"
+                    ],
+                    "Effect": "Deny",
+                    "Resource": "arn:aws:s3:::bucket/*",
+                    "Principal": {
+                        "AWS": "some_arn"
+                    }
+                }
+            ]
+        }
+        POLICY
+        }        
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_success_policyobj(self):
         hcl_res = hcl2.loads("""
         resource "aws_s3_bucket_policy" "s3" {
@@ -120,6 +179,33 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_statementnotlist(self):
+        hcl_res = hcl2.loads("""
+        resource "aws_s3_bucket_policy" "s3" {
+        bucket = "bucket"
+
+        policy = <<POLICY
+        {
+            "Id": "Policy1597273448050",
+            "Version": "2012-10-17",
+            "Statement": {
+                    "Sid": "Stmt1597273446725",
+                    "Action": [
+                        "s3:GetObject"
+                    ],
+                    "Effect": "Deny",
+                    "Resource": "arn:aws:s3:::bucket/*",
+                    "Principal": {
+                        "AWS": "some_arn"
+                    }
+                }
+        }
+        POLICY
+        }        
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
