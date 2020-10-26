@@ -1,8 +1,8 @@
-import hcl2
 import logging
 import os
 from os import path
 
+import hcl2
 from checkov.common.runners.base_runner import filter_ignored_directories
 
 
@@ -19,10 +19,18 @@ class Parser:
         return directory in self._parsed_directories
 
     @staticmethod
+    def clean_bad_definitions(tf_definition_list):
+        return {
+            block_type: list(filter(lambda definition_list: len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+            for block_type in tf_definition_list.keys()
+        }
+
+    @staticmethod
     def _parse_tf_definitions(tf_file):
         with(open(tf_file, 'r')) as file:
             file.seek(0)
-            tf_definition = hcl2.load(file)
+            raw_tf_definition = hcl2.load(file)
+            tf_definition = Parser.clean_bad_definitions(raw_tf_definition)
             for resource_type in tf_definition.get('resource', []):
                 for resource in resource_type.values():
                     for named_resource in resource.values():
