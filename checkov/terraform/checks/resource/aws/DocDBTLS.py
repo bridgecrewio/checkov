@@ -13,7 +13,7 @@ class DocDBTLS(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'parameter' in conf:
             for elem in conf["parameter"]:
-                if elem["name"][0] == "tls" and elem["value"][0] == "disabled":
+                if isinstance(elem, dict) and elem["name"][0] == "tls" and elem["value"][0] == "disabled":
                     return CheckResult.FAILED
         else:
             return CheckResult.PASSED
