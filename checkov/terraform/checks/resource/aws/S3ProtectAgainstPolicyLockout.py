@@ -27,13 +27,9 @@ class S3ProtectAgainstPolicyLockout(BaseResourceCheck):
                             if 'NotAction' in statement.keys():
                                 continue
 
-                            if 'Effect' not in statement.keys():
-                                # Defaults to allow if doesn't exist.
+                            if statement.get('Effect') != 'Deny':
                                 continue
-
-                            if statement['Effect'] == 'Allow':
-                                continue
-
+                                
                             principal = statement['Principal']
 
                             if principal == '*':
