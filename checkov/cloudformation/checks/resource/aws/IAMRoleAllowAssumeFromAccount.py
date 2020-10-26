@@ -1,7 +1,8 @@
-import re
 import json
-from checkov.common.models.enums import CheckResult, CheckCategories
+import re
+
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
@@ -20,16 +21,26 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                     if 'Principal' in assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
                             account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
-                            if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS']):
-                                return CheckResult.FAILED
+                            if 'AWS' in assume_role_block['Statement'][0]['Principal']:
+                                if isinstance(assume_role_block['Statement'][0]['Principal']['AWS'],
+                                              list) and isinstance(
+                                    assume_role_block['Statement'][0]['Principal']['AWS'][0], str):
+                                    if re.match(account_access,
+                                                assume_role_block['Statement'][0]['Principal']['AWS'][0]):
+                                        return CheckResult.FAILED
             else:
                 assume_role_block = conf['Properties']['AssumeRolePolicyDocument']
                 if 'Statement' in assume_role_block.keys():
                     if 'Principal' in assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
                             account_access = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
-                            if re.match(account_access, assume_role_block['Statement'][0]['Principal']['AWS'][0]):
-                                return CheckResult.FAILED
+                            if 'AWS' in assume_role_block['Statement'][0]['Principal']:
+                                if isinstance(assume_role_block['Statement'][0]['Principal']['AWS'],
+                                              list) and isinstance(
+                                    assume_role_block['Statement'][0]['Principal']['AWS'][0], str):
+                                    if re.match(account_access,
+                                                assume_role_block['Statement'][0]['Principal']['AWS'][0]):
+                                        return CheckResult.FAILED
 
             return CheckResult.PASSED
 
