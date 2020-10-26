@@ -1,7 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
-class ELBv2AccessLogs(BaseResourceCheck):
+
+class ELBv2AccessLogs(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure the ELBv2 (Application/Network) has access logging enabled"
         id = "CKV_AWS_91"
@@ -9,9 +10,8 @@ class ELBv2AccessLogs(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if ('access_logs' in conf) and ('enabled' in conf['access_logs'][0]) and (conf['access_logs'][0]['enabled'] == [True]):
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'access_logs/0/enabled/0'
+
 
 check = ELBv2AccessLogs()
