@@ -26,6 +26,13 @@ class Parser:
         }
 
     @staticmethod
+    def clean_bad_definitions(tf_definition_list):
+        return {
+            block_type: list(filter(lambda definition_list: block_type == 'locals' or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+            for block_type in tf_definition_list.keys()
+        }
+
+    @staticmethod
     def _parse_tf_definitions(tf_file):
         with(open(tf_file, 'r')) as file:
             file.seek(0)
