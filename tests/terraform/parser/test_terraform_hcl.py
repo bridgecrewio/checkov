@@ -31,7 +31,7 @@ class TestTerraformHcl(unittest.TestCase):
 
         with open(f'{current_dir}/{test_expected_file}', 'r') as f:
             expected_result = json.load(f)
-
+        self.assertEqual(len(parse_errors.keys()), 0)
         self.assertEqual(json.dumps(expected_result), json.dumps(result))
 
 

@@ -77,5 +77,5 @@ class Parser:
             try:
                 return self._parse_tf_definitions(file)
             except Exception as e:
-                self.logger.debug(f'failed while parsing file {file}', exc_info=e)
+                self.logger.warning(f'failed while parsing file {file}', exc_info=e)
                 parsing_errors[file] = e
