@@ -1,6 +1,7 @@
 variable "okay" {
 }
 
+// Variable is missing a name, not valid terraform syntex
 variable {
   name    = "test"
   default = "test_value"
@@ -17,6 +18,7 @@ module "okay" {
   source = "baz2"
 }
 
+// Module is missing a name, can't be referenced or deployed
 module {
   source = "./not-okay"
   memory = "far"
