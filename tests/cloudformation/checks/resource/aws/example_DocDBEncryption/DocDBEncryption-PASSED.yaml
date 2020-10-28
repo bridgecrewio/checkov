@@ -3,4 +3,6 @@ Resources:
   MyDocDB:
     Type: AWS::DocDB::DBCluster
     Properties:
+      MasterUsername: name
+      MasterUserPassword: password
       StorageEncrypted: true
