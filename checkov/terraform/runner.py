@@ -5,6 +5,7 @@ import dpath.util
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.util import dict_utils
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -23,7 +24,8 @@ TRUE_STRING = "true"
 ONE_STRING = "1"
 FALSE_STRING = "false"
 ZERO_STRING = "0"
-
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
+logging.basicConfig(level=LOG_LEVEL)
 
 class Runner(BaseRunner):
     check_type = "terraform"
@@ -76,16 +78,20 @@ class Runner(BaseRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
         parser_registry.reset_definitions_context()
+        logging.debug('Evaluating string booleans')
         self.evaluate_string_booleans()
+        logging.debug('Evaluated string booleans')
         if external_definitions_context:
             definitions_context = external_definitions_context
         else:
+            logging.debug('Creating definitions context')
             definitions_context = {}
             for definition in self.tf_definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
             variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
             variable_evaluator.evaluate_variables()
             self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+            logging.debug('Created definitions context')
 
         for full_file_path, definition in self.tf_definitions.items():
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
@@ -105,19 +111,20 @@ class Runner(BaseRunner):
                 definition_path = context_parser.get_entity_context_path(entity)
                 entity_id = ".".join(definition_path)
                 entity_context_path = [block_type] + definition_path
-                for _, entity_context in dpath.search(definition_context[full_file_path], entity_context_path, yielded=True):
-                    entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
-                    entity_code_lines = entity_context.get('code_lines')
-                    skipped_checks = entity_context.get('skipped_checks')
-                    variables_evaluations = definition_context[full_file_path].get('evaluations')
-                    if variables_evaluations:
-                        entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
-                                                                                              entity_context_path)
-                    results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
-                    for check, check_result in results.items():
-                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                        code_block=entity_code_lines, file_path=scanned_file,
-                                        file_line_range=entity_lines_range,
-                                        resource=entity_id, evaluations=entity_evaluations,
-                                        check_class=check.__class__.__module__)
-                        report.add_record(record=record)
+                # Entity can exist only once per dir, for file as well
+                entity_context = dict_utils.getInnerDict(definition_context[full_file_path], entity_context_path)
+                entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
+                entity_code_lines = entity_context.get('code_lines')
+                skipped_checks = entity_context.get('skipped_checks')
+                variables_evaluations = definition_context[full_file_path].get('evaluations')
+                if variables_evaluations:
+                    entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
+                                                                                          entity_context_path)
+                results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
+                for check, check_result in results.items():
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                    code_block=entity_code_lines, file_path=scanned_file,
+                                    file_line_range=entity_lines_range,
+                                    resource=entity_id, evaluations=entity_evaluations,
+                                    check_class=check.__class__.__module__)
+                    report.add_record(record=record)

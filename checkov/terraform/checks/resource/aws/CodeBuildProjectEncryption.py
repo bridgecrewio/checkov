@@ -13,7 +13,7 @@ class APIGatewayAuthorization(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         artifact = conf['artifacts'][0]
-        if artifact['type'] != "NO_ARTIFACTS" and 'encryption_disabled' in artifact and artifact['encryption_disabled']:
+        if isinstance(artifact, dict) and artifact['type'] != "NO_ARTIFACTS" and 'encryption_disabled' in artifact and artifact['encryption_disabled']:
             return CheckResult.FAILED
         return CheckResult.PASSED
 

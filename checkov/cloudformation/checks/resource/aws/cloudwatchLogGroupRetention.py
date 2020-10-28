@@ -1,7 +1,9 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.consts import ANY_VALUE
 
-class cloudwatchLogGroupRetention(BaseResourceCheck):
+
+class cloudwatchLogGroupRetention(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure cloudwatch log groups specify retention days"
         id = "CKV_AWS_66"
@@ -9,18 +11,11 @@ class cloudwatchLogGroupRetention(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for retention days in cloudwatch log group :
-            https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-logs-loggroup.html#cfn-cwl-loggroup-retentionindays
-        :param conf: AWS::Logs::LogGroup configuration
-        :return: <CheckResult>
-        """
+    def get_inspected_key(self):
+        return 'Properties/RetentionInDays'
 
-        if 'Properties' in conf.keys():
-            if 'RetentionInDays' in conf['Properties'].keys():
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_expected_value(self):
+        return ANY_VALUE
 
 
 check = cloudwatchLogGroupRetention()

@@ -1,10 +1,12 @@
-import unittest
-from checkov.terraform.parser import Parser
-from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
-from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
-from checkov.terraform.context_parsers.registry import parser_registry
-import dpath.util
 import os
+import unittest
+
+import dpath.util
+
+from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
+from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
+from checkov.terraform.parser import Parser
 
 
 class TestBaseVariableEvaluation(unittest.TestCase):
