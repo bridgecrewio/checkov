@@ -8,6 +8,7 @@ from itertools import islice
 from checkov.common.comment.enum import COMMENT_REGEX
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
+TERRAFORM_OBJ_BLOCK_TYPES = ['module', 'resource', 'data']
 
 
 class BaseContextParser(ABC):
@@ -121,15 +122,20 @@ class BaseContextParser(ABC):
         :return: Enriched block context
         """
         parsed_file_lines = self._filter_file_lines()
+        potential_block_start_lines = [(ind, line) for (ind, line) in parsed_file_lines
+                                       if any(block_type for block_type in TERRAFORM_OBJ_BLOCK_TYPES if line.startswith(block_type))]
         for i, entity_block in enumerate(definition_blocks):
             entity_context_path = self.get_entity_context_path(entity_block)
-            for line_num, line in parsed_file_lines:
+            for line_num, line in potential_block_start_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
+                    print(f'created context for {" ".join(entity_context_path)}')
                     start_line = line_num
                     end_line = self._compute_definition_end_line(line_num)
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
                     dpath.new(self.context, entity_context_path + ["end_line"], end_line)
                     dpath.new(self.context, entity_context_path + ["code_lines"],
                               self.file_lines[start_line - 1: end_line])
+                    potential_block_start_lines.remove((line_num, line))
+                    break
         return self.context
