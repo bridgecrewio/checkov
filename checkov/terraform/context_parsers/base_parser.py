@@ -130,7 +130,7 @@ class BaseContextParser(ABC):
             for line_num, line in potential_block_start_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
-                    print(f'created context for {" ".join(entity_context_path)}')
+                    logging.debug(f'created context for {" ".join(entity_context_path)}')
                     start_line = line_num
                     end_line = self._compute_definition_end_line(line_num)
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
