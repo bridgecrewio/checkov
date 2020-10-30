@@ -1,14 +1,16 @@
 import logging
 import re
-import dpath.util
 from abc import ABC, abstractmethod
-from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.common.models.enums import ContextCategories
 from itertools import islice
+
+import dpath.util
+
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.models.enums import ContextCategories
+from checkov.terraform.context_parsers.registry import parser_registry
+
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
-TERRAFORM_OBJ_BLOCK_TYPES = ['module', 'resource', 'data']
 
 
 class BaseContextParser(ABC):
@@ -122,8 +124,7 @@ class BaseContextParser(ABC):
         :return: Enriched block context
         """
         parsed_file_lines = self._filter_file_lines()
-        potential_block_start_lines = [(ind, line) for (ind, line) in parsed_file_lines
-                                       if any(block_type for block_type in TERRAFORM_OBJ_BLOCK_TYPES if line.startswith(block_type))]
+        potential_block_start_lines = [(ind, line) for (ind, line) in parsed_file_lines if line.startswith(self.get_block_type())]
         for i, entity_block in enumerate(definition_blocks):
             entity_context_path = self.get_entity_context_path(entity_block)
             for line_num, line in potential_block_start_lines:
