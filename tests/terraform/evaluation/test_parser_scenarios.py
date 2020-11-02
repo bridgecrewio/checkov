@@ -2,32 +2,86 @@ import json
 import os
 import unittest
 
+from deepdiff import DeepDiff
+
 from checkov.terraform import parser2
+
+
+def json_encoder(val):
+    if isinstance(val, set):
+        return list(sorted(["__this_is_a_set__"] + list(val)))
+    return val
 
 
 class TestParserScenarios(unittest.TestCase):
 
-    def test_scenarios(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        for entry in os.scandir(os.path.join(current_dir, "resources/parser_scenarios")):
-            if not entry.is_dir():
-                continue
+    def test_empty_file(self):
+        self.go("empty_file")
 
-            with self.subTest(entry.name):
-                expected_data = TestParserScenarios.load_expected_data(entry)
+    def test_simple_bucket_single_file(self):
+        self.go("simple_bucket_single_file")
 
-                tf_definitions = {}
-                errors = {}
-                parser2.parse_directory(entry.path, tf_definitions, {}, {}, errors)
-                assert not errors, f"{entry.name}: Unexpected errors: {errors}"
-                assert tf_definitions == expected_data, f"{entry.name}: Data mismatch:\n" \
-                                                        f"  Expected: \n{expected_data}\n\n" \
-                                                        f"  Actual: \n{tf_definitions}"
+    def test_variable_defaults(self):
+        self.go("variable_defaults")
+
+    def test_local_block(self):
+        self.go("local_block")
+
+    def test_compound_local(self):
+        self.go("compound_local")
+
+    def test_tobool_function(self):
+        self.go("tobool_function")
+
+    def test_tolist_function(self):
+        self.go("tolist_function")
+
+    def test_tomap_function(self):
+        self.go("tomap_function")
+
+    def test_tonumber_function(self):
+        self.go("tonumber_function")
+
+    def test_toset_function(self):
+        self.go("toset_function")
+
+    def test_tostring_function(self):
+        self.go("tostring_function")
+
+    def test_module_simple(self):
+        self.go("module_simple")
+
+    # TODO: Ignoring for_each for now... how much do we care?
+    # def test_module_for_each(self):
+    #     self.go("module_for_each")
+
+    # TODO: not working yet
+    # def test_maze_of_variables(self):
+    #     self.go("maze_of_variables")
+
+
+    def go(self, dir_name):
+        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                f"resources/parser_scenarios/{dir_name}")
+        assert os.path.exists(dir_path)
+
+        expected_data = TestParserScenarios.load_expected_data(dir_path, dir_name)
+
+        tf_definitions = {}
+        errors = {}
+        parser2.parse_directory(dir_path, tf_definitions, {}, {}, errors)
+        assert not errors, f"{dir_name}: Unexpected errors: {errors}"
+        definition_string = json.dumps(tf_definitions, indent=2, default=json_encoder)
+        definition_encoded = json.loads(definition_string)
+        assert definition_encoded == expected_data, \
+            f"{dir_name}: Data mismatch:\n" \
+            f"  Expected: \n{json.dumps(expected_data, indent=2, default=json_encoder)}\n\n" \
+            f"  Actual: \n{definition_string}"
 
     @staticmethod
-    def load_expected_data(dir_entry):
-        expected_path = os.path.join(dir_entry.path, "expected.json")
-        assert os.path.exists(expected_path), f"{dir_entry.name}: expected.json file not found"
+    def load_expected_data(dir_path, dir_name):
+        expected_path = os.path.join(dir_path, "expected.json")
+        assert os.path.exists(expected_path), f"{dir_name}: expected.json file not found"
 
         with open(expected_path, "r") as f:
             expected_data = json.load(f)
@@ -38,7 +92,7 @@ class TestParserScenarios(unittest.TestCase):
         for key in keys:
             if os.path.isabs(key):
                 continue
-            expected_data[os.path.join(dir_entry.path, key)] = expected_data[key]
+            expected_data[os.path.join(dir_path, key)] = expected_data[key]
             del expected_data[key]
 
         return expected_data

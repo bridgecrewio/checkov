@@ -1,0 +1,13 @@
+{
+  "checkov.tf": {
+    "locals": [
+      {
+        "FIVE": ["five"],
+        "NINE": ["nine"],
+        "TWO": ["two"],
+        "VICTOR": ["wictor"],
+        "AUTHORIZATION_CODE": ["nine-five-wictor-wictor-two"]
+      }
+    ]
+  }
+}

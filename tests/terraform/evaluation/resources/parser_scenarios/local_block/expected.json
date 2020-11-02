@@ -3,20 +3,17 @@
     "resource": [
       {
         "aws_s3_bucket": {
-          "test": {
+          "test_with_locals": {
             "bucket": [
-              "this-is-my-default"
+              "my-bucket-name"
             ]
           }
         }
       }
     ],
-    "variable": [
+    "locals": [
       {
-        "BUCKET_NAME": {
-          "type": ["string"],
-          "default": ["this-is-my-default"]
-        }
+        "BUCKET_NAME": ["my-bucket-name"]
       }
     ]
   }

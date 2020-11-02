@@ -1,0 +1,45 @@
+{
+  "buckets.tf": {
+    "module": [
+      {
+        "bucket[asserts]": {
+          "source": "./publish_bucket",
+          "name": "asserts_bucket"
+        }
+      },
+      {
+        "bucket[media]": {
+          "source": "./publish_bucket",
+          "name": "media_bucket"
+        }
+      }
+    ],
+  "publish_bucket/bucket.tf": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example[assets]": {
+            "bucket": [
+              "assets_bucket"
+            ]
+          }
+        }
+      },
+      {
+        "aws_s3_bucket": {
+          "example[media]": {
+            "bucket": [
+              "media_bucket"
+            ]
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "name": {}
+      }
+    ]
+  }
+  }
+}

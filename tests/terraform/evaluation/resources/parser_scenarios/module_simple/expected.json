@@ -1,0 +1,30 @@
+{
+  "buckets.tf": {
+    "module": [
+      {
+        "bucket": {
+          "source": ["./bucket"],
+          "name": ["module_bucket"]
+        }
+      }
+    ]
+  },
+  "bucket/bucket.tf": {
+    "variable": [
+      {
+        "name": {}
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example": {
+            "bucket": [
+              "module_bucket"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
