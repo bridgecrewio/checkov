@@ -12,7 +12,7 @@ class S3Encryption(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'Properties/BucketEncryption/ServerSideEncryptionConfiguration/0/ServerSideEncryptionByDefault/SSEAlgorithm'
+        return 'Properties/BucketEncryption/ServerSideEncryptionConfiguration/[0]/ServerSideEncryptionByDefault/SSEAlgorithm'
 
     def get_expected_value(self):
         return 'AES256'
