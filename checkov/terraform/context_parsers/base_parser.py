@@ -8,6 +8,7 @@ import dpath.util
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.common.bridgecrew.platform_integration import bc_integration
 
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
@@ -69,6 +70,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with with skipped checks per skipped entity
         """
+        bc_id_mapping = bc_integration.get_id_mapping()
         parsed_file_lines = self.filtered_lines
         comments = [(line_num, {"id": re.search(COMMENT_REGEX, x).group(2),
                                 "suppress_comment": re.search(COMMENT_REGEX, x).group(3)[1:] if re.search(COMMENT_REGEX,
@@ -82,6 +84,8 @@ class BaseContextParser(ABC):
             for _, entity_context in context_search:
                 for (skip_check_line_num, skip_check) in comments:
                     if entity_context['start_line'] < skip_check_line_num < entity_context['end_line']:
+                        if skip_check['id'] in bc_id_mapping:
+                            skip_check['id'] = bc_id_mapping[skip_check['id']]
                         skipped_checks.append(skip_check)
             dpath.new(self.context, entity_context_path + ['skipped_checks'], skipped_checks)
         return self.context

@@ -25,11 +25,12 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines={}, collect_skip_comments=True):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True):
         for runner in self.runners:
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                      runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
+            if guidelines:
+                RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
