@@ -8,7 +8,7 @@ from pathlib import Path
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -25,12 +25,10 @@ outer_registry = None
 logging_init()
 
 
-
 def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args()
-    bc_integration = BcPlatformIntegration()
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
     if outer_registry:
         runner_registry = outer_registry
