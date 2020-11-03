@@ -32,6 +32,12 @@ class TestALBListenerHTTPS(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_nlb_tcp_udp_success(self):
+        resource_conf = {'load_balancer_arn': ['${aws_lb.front_end.arn}'], 'port': ['53'], 'protocol': ['TCP_UDP']}
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_failure(self):
         resource_conf = {'load_balancer_arn': ['${aws_lb.front_end.arn}'], 'port': ['80'], 'protocol': ['HTTP']}
         scan_result = check.scan_resource_conf(conf=resource_conf)
