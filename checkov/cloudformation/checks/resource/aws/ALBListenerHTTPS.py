@@ -20,7 +20,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
 
         if 'Properties' in conf.keys():
             if 'Protocol' in conf['Properties'].keys():
-                if conf['Properties']['Protocol'] in ('HTTPS', 'TLS'):
+                if conf['Properties']['Protocol'] in ('HTTPS', 'TLS', 'TCP', 'UDP'):
                     return CheckResult.PASSED
                 else:
                     if (

@@ -23,6 +23,10 @@ class ALBListenerHTTPS(BaseResourceCheck):
                 conf[key] == ["HTTPS"]
                 or
                 conf[key] == ["TLS"]
+                or
+                conf[key] == ["TCP"]
+                or
+                conf[key] == ["UDP"]
             ):
                 return CheckResult.PASSED
             elif conf[key] == ["HTTP"]:
