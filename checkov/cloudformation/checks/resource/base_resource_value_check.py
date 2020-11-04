@@ -46,6 +46,13 @@ class BaseResourceValueCheck(BaseResourceCheck):
         matches = ContextParser.search_deep_keys(path_elements[-1], conf, [])
         if len(matches) > 0:
             for match in matches:
+                # CFN files are parsed differently from terraform, which causes the path search above to behave differently.
+                # The tesult is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
+                # those, allowing inspected_keys in checks to use the same syntax.
+                for i in range(0, len(match)):
+                    if type(match[i]) == int:
+                        match[i] = f'[{match[i]}]'
+
                 if match[:-1] == path_elements:
                     # Inspected key exists
                     if ANY_VALUE in expected_values:
