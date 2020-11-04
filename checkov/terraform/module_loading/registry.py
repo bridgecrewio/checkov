@@ -1,11 +1,11 @@
 import logging
 from typing import Optional, List
 
-from checkov.terraform.module_loading.loader import ModuleContent, ModuleLoader
+from checkov.terraform.module_loading.content import ModuleContent
 
 
 class ModuleLoaderRegistry:
-    loaders: List[ModuleLoader] = []
+    loaders: List = []      # List[ModuleLoader]
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ information, see `loader.ModuleLoader.load`.
             raise last_exception
         return ModuleContent(None)
 
-    def register(self, loader: ModuleLoader):
+    def register(self, loader):
         self.loaders.append(loader)
 
     def clear_all_loaders(self):

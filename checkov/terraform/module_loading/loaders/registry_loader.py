@@ -5,7 +5,8 @@ import requests
 import semantic_version
 from typing import Optional
 
-from checkov.terraform.module_loading.loader import ModuleLoader, ModuleContent
+from checkov.terraform.module_loading.loader import ModuleLoader
+from checkov.terraform.module_loading.content import ModuleContent
 
 
 class RegistryLoader(ModuleLoader):

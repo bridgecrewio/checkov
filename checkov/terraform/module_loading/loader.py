@@ -1,48 +1,20 @@
-import tempfile
 from abc import ABC, abstractmethod
-from typing import Union, Optional
+from typing import Optional
+
+from checkov.terraform.module_loading.content import ModuleContent
+from checkov.terraform.module_loading.registry import module_loader_registry
 
 
 # ModuleContent allows access to a directory containing module file via the `path()`
 # function. Instances may be used in a `with` context to ensure temporary directories
 # are removed, if applicable.
-class ModuleContent(object):
-    def __init__(self, dir: Optional[Union[tempfile.TemporaryDirectory, str]]) -> None:
-        self.dir = dir
-
-    def loaded(self) -> bool:
-        """
-Indicates whether or not the module content could be loaded. If False is returned, `path()` will return None.
-        """
-        return self.dir is not None
-
-    def path(self) -> Optional[str]:
-        """
-Returns the directory path containing module resources.
-        """
-        if isinstance(self.dir, tempfile.TemporaryDirectory):
-            return self.dir.name
-        else:
-            return self.dir
-
-    def cleanup(self):
-        """
-Clean up any temporary resources, if applicable.
-        """
-        if isinstance(self.dir, tempfile.TemporaryDirectory):
-            self.dir.cleanup()
-
-    def __repr__(self) -> str:
-        return self.path()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc, value, tb):
-        self.cleanup()
 
 
 class ModuleLoader(ABC):
+    def __init__(self) -> None:
+        module_loader_registry.register(self)
+
+
     @abstractmethod
     def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
