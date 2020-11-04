@@ -84,7 +84,7 @@ class BaseContextParser(ABC):
             for _, entity_context in context_search:
                 for (skip_check_line_num, skip_check) in comments:
                     if entity_context['start_line'] < skip_check_line_num < entity_context['end_line']:
-                        if skip_check['id'] in bc_id_mapping:
+                        if bc_id_mapping and skip_check['id'] in bc_id_mapping:
                             skip_check['id'] = bc_id_mapping[skip_check['id']]
                         skipped_checks.append(skip_check)
             dpath.new(self.context, entity_context_path + ['skipped_checks'], skipped_checks)
