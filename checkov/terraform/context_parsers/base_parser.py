@@ -1,11 +1,15 @@
 import logging
 import re
-import dpath.util
 from abc import ABC, abstractmethod
-from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.common.models.enums import ContextCategories
 from itertools import islice
+
+import dpath.util
+
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.models.enums import ContextCategories
+from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.common.bridgecrew.platform_integration import bc_integration
+
 OPEN_CURLY = '{'
 CLOSE_CURLY = '}'
 
@@ -66,6 +70,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with with skipped checks per skipped entity
         """
+        bc_id_mapping = bc_integration.get_id_mapping()
         parsed_file_lines = self.filtered_lines
         comments = [(line_num, {"id": re.search(COMMENT_REGEX, x).group(2),
                                 "suppress_comment": re.search(COMMENT_REGEX, x).group(3)[1:] if re.search(COMMENT_REGEX,
@@ -79,6 +84,8 @@ class BaseContextParser(ABC):
             for _, entity_context in context_search:
                 for (skip_check_line_num, skip_check) in comments:
                     if entity_context['start_line'] < skip_check_line_num < entity_context['end_line']:
+                        if bc_id_mapping and skip_check['id'] in bc_id_mapping:
+                            skip_check['id'] = bc_id_mapping[skip_check['id']]
                         skipped_checks.append(skip_check)
             dpath.new(self.context, entity_context_path + ['skipped_checks'], skipped_checks)
         return self.context
@@ -121,15 +128,19 @@ class BaseContextParser(ABC):
         :return: Enriched block context
         """
         parsed_file_lines = self._filter_file_lines()
+        potential_block_start_lines = [(ind, line) for (ind, line) in parsed_file_lines if line.startswith(self.get_block_type())]
         for i, entity_block in enumerate(definition_blocks):
             entity_context_path = self.get_entity_context_path(entity_block)
-            for line_num, line in parsed_file_lines:
+            for line_num, line in potential_block_start_lines:
                 line_tokens = [x.replace('"', "") for x in line.split()]
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
+                    logging.debug(f'created context for {" ".join(entity_context_path)}')
                     start_line = line_num
                     end_line = self._compute_definition_end_line(line_num)
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
                     dpath.new(self.context, entity_context_path + ["end_line"], end_line)
                     dpath.new(self.context, entity_context_path + ["code_lines"],
                               self.file_lines[start_line - 1: end_line])
+                    potential_block_start_lines.remove((line_num, line))
+                    break
         return self.context
