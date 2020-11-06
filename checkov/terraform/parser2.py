@@ -2,12 +2,14 @@ import json
 import logging
 import os
 import re
-from typing import Mapping, Optional, Dict, Any, List
+from pathlib import Path
+from typing import Mapping, Optional, Dict, Any, List, Callable
 
 import deep_merge
 import hcl2
 
-from checkov.common.variables.context import EvaluationContext
+from checkov.common.runners.base_runner import filter_ignored_directories
+from checkov.common.variables.context import EvaluationContext, VarReference
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry
 
@@ -18,10 +20,44 @@ _VAR_PATTERN = re.compile(r'\${([^{}]+?)}')
 _SIMPLE_TYPES = frozenset(["string", "number", "bool"])
 
 
-def parse_directory(directory: str, out_definitions: Dict, out_definitions_context: Dict,
-                    out_evaluations_context: Dict[str, EvaluationContext],
+class Parser2:
+    def __init__(self):
+        self._parsed_directories = set()
+
+    def _check_process_dir(self, directory):
+        if directory not in self._parsed_directories:
+            self._parsed_directories.add(directory)
+            return True
+        else:
+            return False
+
+    # TODO: Backwards compatibility with original parser, remove when no longer needed
+    def hcl2(self, directory, tf_definitions: Optional[Dict] = None,
+             parsing_errors: Dict[str, Exception] = None):
+        parse_directory(directory, True, tf_definitions, {}, parsing_errors)
+
+    def parse_directory(self, directory: str, out_definitions: Optional[Dict],
+                        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
+                        out_parsing_errors: Dict[str, Exception] = None,
+                        env_vars: Mapping[str, str] = None):
+
+        self._parsed_directories.clear()
+        parse_directory(directory, True, out_definitions, out_evaluations_context,
+                        out_parsing_errors, env_vars,
+                        dir_filter=lambda d: self._check_process_dir(d))
+
+    @staticmethod
+    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
+        if not file.endswith(".tf") and not file.endswith(".tf.json"):
+            return None
+        return _load_or_die_quietly(Path(file), parsing_errors)
+
+
+def parse_directory(directory: str, include_sub_dirs: bool, out_definitions: Dict,
+                    out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                     out_parsing_errors: Dict[str, Exception] = None, env_vars: Mapping[str, str] = None,
-                    module_loader_registry: ModuleLoaderRegistry = default_ml_registry):
+                    module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
+                    dir_filter: Callable[[str], bool] = lambda _: True):
     """
 Load and resolve configuration files starting in the given directory, merging the
 resulting data into `tf_definitions`. This loads data according to the Terraform Code Organization
@@ -29,38 +65,45 @@ specification (https://www.terraform.io/docs/configuration/index.html#code-organ
 in the given directory and possibly moving out from there.
 
     :param directory:                  Directory in which .tf and .tfvars files will be loaded.
+    :param include_sub_dirs:           If true, subdirectories will be walked.
     :param out_definitions:            Dict into which the "simple" TF data with variables resolved is put.
-    :param out_definitions_context:    Dict into which context about resource definitions is placed. The dict
-                                       is a tree structure where keys are strings of the entity path
-                                       ('resource', 'aws_s3_bucket', etc.) and the values are either another
-                                       dict with the same semantics (branches) or EntityContext objects.
-    :param out_evaluations_context:    Dict into which context about resource definitions is placed.
+    :param out_evaluations_context:    Dict into which context about resource definitions is placed. Outer
+                                       key is the file, inner key is a variable name.
     :param out_parsing_errors:         Dict into which parsing errors, keyed on file path, are placed.
     :param env_vars:                   Optional values to use for resolving environment variables in TF code.
                                        If nothing is specified, Checkov's local environment will be used.
     :param module_loader_registry:     Registry used for resolving modules. This allows customization of how
                                        much resolution is performed (and easier testing) by using a manually
                                        constructed registry rather than the default.
+    :param dir_filter:                 Determines whether or not a directory should be processed. Returning
+                                       True will allow processing. The argument will be the absolute path of
+                                       the directory.
     """
 
-    if not out_parsing_errors:
+    if out_parsing_errors is None:
         out_parsing_errors = {}
-    if not env_vars:
+    if env_vars is None:
         env_vars = dict(os.environ)
 
-    _internal_dir_load(directory, out_definitions, out_definitions_context, out_evaluations_context,
-                       out_parsing_errors, env_vars, None, module_loader_registry)
+    if include_sub_dirs:
+        for sub_dir, d_names, f_names in os.walk(directory):
+            filter_ignored_directories(d_names)
+            if dir_filter(os.path.abspath(sub_dir)):
+                _internal_dir_load(sub_dir, out_definitions,
+                                   out_evaluations_context, out_parsing_errors, env_vars, None,
+                                   module_loader_registry, dir_filter)
+    else:
+        _internal_dir_load(directory, out_definitions, out_evaluations_context,
+                           out_parsing_errors, env_vars, None, module_loader_registry, dir_filter)
 
-    # TODO!
-    pass
 
-
-def _internal_dir_load(directory: str, out_definitions: Dict, out_definitions_context: Dict,
-                       out_evaluations_context: Dict[str, EvaluationContext],
+def _internal_dir_load(directory: str, out_definitions: Dict,
+                       out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                        out_parsing_errors: Dict[str, Exception],
                        env_vars: Mapping[str, str],
                        specified_vars: Optional[Mapping[str, str]],
-                       module_loader_registry: ModuleLoaderRegistry):
+                       module_loader_registry: ModuleLoaderRegistry,
+                       dir_filter: Callable[[str], bool]):
     """
 See `parse_directory` docs.
     :param specified_vars:     Specifically defined variable values, overriding values from any other source.
@@ -68,8 +111,8 @@ See `parse_directory` docs.
 
     # Stage 1: Look for applicable files in the directory:
     #          https://www.terraform.io/docs/configuration/index.html#code-organization
-    #          Load the raw data for non-variable files, but perform no processing other than loading variable
-    #          default values.
+    #          Load the raw data for non-variable files, but perform no processing other than loading
+    #          variable default values.
     #          Variable files are also flagged for later processing.
     var_values: Dict[str, Any] = {}
     hcl_tfvars: Optional[os.DirEntry] = None
@@ -145,17 +188,20 @@ See `parse_directory` docs.
         var_values.update(specified_vars)
 
     # Stage 3: Variable resolution round 1 - no modules yet
-    _process_vars_and_locals(out_definitions, var_values)
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values)
 
     # Stage 4: Load modules
-    _load_modules(out_definitions, out_definitions_context, out_evaluations_context, out_parsing_errors,
-                  env_vars, directory, module_loader_registry)
+    _load_modules(out_definitions, out_evaluations_context, out_parsing_errors,
+                  env_vars, directory, module_loader_registry, dir_filter)
 
     # Stage 5: Variable resolution round 2 - now with modules
-    _process_vars_and_locals(out_definitions, var_values)
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values)
 
 
-def _process_vars_and_locals(out_definitions: Dict, var_values: Dict[str, Any]):
+def _process_vars_and_locals(out_definitions: Dict,
+                             evaluations_context: Dict[str, Dict[str, EvaluationContext]],
+                             directory: str,
+                             var_values: Dict[str, Any]):
     locals_values = {}
     for file_data in out_definitions.values():
         file_locals = file_data.get("locals")
@@ -172,39 +218,49 @@ def _process_vars_and_locals(out_definitions: Dict, var_values: Dict[str, Any]):
     loop_count = 0
     for i in range(0, 25):
         loop_count += 1
-        if not _process_vars_and_locals_loop(out_definitions, var_values, locals_values):
+
+        made_change = False
+        # Put out file layer here so the context works inside the loop
+        for file, file_data in out_definitions.items():
+            eval_context_dict = evaluations_context.get(file)
+            if eval_context_dict is None:
+                eval_context_dict = {}
+                evaluations_context[file] = eval_context_dict
+                # out_evaluations_context[os.path.join(directory, file)] = {
+                #     var_name: EvaluationContext(os.path.relpath(file.path, directory))
+                # }
+
+            made_change = _process_vars_and_locals_loop(file_data,
+                                                        eval_context_dict,
+                                                        os.path.relpath(file, directory),
+                                                        var_values, locals_values)
+
+            if len(eval_context_dict) == 0:
+                del evaluations_context[file]
+        if not made_change:
             break
+
     LOGGER.debug("Processing variables took %d loop iterations", loop_count)
 
 
-def _process_vars_and_locals_loop(out_definitions: Dict, var_values: Dict[str, Any],
-                                  locals_values: Dict[str, Any]) -> bool:
-    """
-Generic processing loop for variables.
-    :param template:                The dictionary currently being processed. This function will
-                                    be called recursively starting at dict provided.
-    :param var_pattern:             A compiled regex pattern which should name match groups
-                                    if they are needed for looking up the data source.
-    :param param_lookup_function:   A Callable taking four arguments:
-                                    1) the type (e.g., "self", "file(/path/to/file.yml)")
-                                    2) the location (e.g., "custom.my_property")
-                                    3) fallback var type (same as above plus None for static value)
-                                    4) fallback var location or value if type was None
-    """
-
-    # TODO: record var evaluations
+def _process_vars_and_locals_loop(out_definitions: Dict,
+                                  eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
+                                  var_values: Dict[str, Any], locals_values: Dict[str, Any],
+                                  outer_context: str = "") -> bool:
 
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
-    def process_items_helper(key_value_iterator, data_map):
+    def process_items_helper(key_value_iterator, data_map, context):
         made_change = False
         for key, value in key_value_iterator():
+            if len(context) == 0:
+                new_context = key
+            else:
+                new_context = f"{context}/{key}"
+
             if isinstance(value, str):
                 altered_value = value
 
                 had_pattern_match = False
-                # TODO ROB: This loop is off because it's overwriting the whole value with
-                #           a single match. Best to break all this into a separate method to
-                #           organize and deal with it.
                 for match in _VAR_PATTERN.finditer(value):
                     var_base = match[1]
 
@@ -216,7 +272,9 @@ Generic processing loop for variables.
                         altered_value = var_base
                         had_pattern_match = True
                     else:
-                        replaced = _handle_single_var_pattern(var_base, var_values, locals_values)
+                        replaced = _handle_single_var_pattern(var_base, var_values, locals_values,
+                                                              eval_map_by_var_name, relative_file_path,
+                                                              new_context, value)
                         if replaced != var_base:
                             if match[0] == value:
                                 altered_value = replaced
@@ -265,32 +323,31 @@ Generic processing loop for variables.
                         altered_value = value[12:-3]
 
                 if value != altered_value:
-                    print(f"Resolve: {value} --> {altered_value}")
+                    LOGGER.debug(f"Resolve: %s --> %s", value, altered_value)
                     data_map[key] = altered_value
                     made_change = True
             elif isinstance(value, dict):
-                if _process_vars_and_locals_loop(value, var_values, locals_values):
+                if _process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path, var_values,
+                                                 locals_values, new_context):
                     made_change = True
             elif isinstance(value, list):
-                if process_items_helper(lambda: enumerate(value), value):
+                if process_items_helper(lambda: enumerate(value), value, new_context):
                     made_change = True
         return made_change
 
-    return process_items_helper(out_definitions.items, out_definitions)
+    return process_items_helper(out_definitions.items, out_definitions, outer_context)
 
 
-def _load_modules(out_definitions: Dict, out_definitions_context: Dict,
-                  out_evaluations_context: Dict[str, EvaluationContext],
+def _load_modules(out_definitions: Dict,
+                  out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                   out_parsing_errors: Dict[str, Exception],
                   env_vars: Mapping[str, str],
-                  directory: str, module_loader_registry: ModuleLoaderRegistry):
+                  directory: str, module_loader_registry: ModuleLoaderRegistry,
+                  dir_filter: Callable[[str], bool]):
 
     all_module_definitions = {}
-    all_module_definitions_context = {}
     all_module_evaluations_context = {}
-    print(f"Load: {directory}")
     for file, file_data in out_definitions.items():
-        print(f"  {file}")
         module_calls = file_data.get("module")
         if not module_calls or not isinstance(module_calls, list):
             continue
@@ -306,6 +363,12 @@ def _load_modules(out_definitions: Dict, out_definitions_context: Dict,
                     continue
                 source = source[0]
 
+                # Special handling for local sources to make sure we aren't double-parsing
+                if source.startswith("./") or source.startswith("../"):
+                    module_path = os.path.normpath(os.path.join(directory, source))
+                    if not dir_filter(os.path.abspath(module_path)):
+                        continue
+
                 version = module_call_data.get("version")
                 if version and isinstance(version, list):
                     version = version[0]
@@ -317,23 +380,23 @@ def _load_modules(out_definitions: Dict, out_definitions_context: Dict,
                                           if k != "source" and k != "version"}
 
                         module_definitions = {}
-                        module_definitions_context = {}
                         module_evaluations_context = {}
-                        _internal_dir_load(content.path(), module_definitions, module_definitions_context,
+                        _internal_dir_load(content.path(), module_definitions,
                                            module_evaluations_context, out_parsing_errors, env_vars,
-                                           specified_vars, module_loader_registry)
+                                           specified_vars, module_loader_registry, dir_filter)
                         deep_merge.merge(all_module_definitions, module_definitions)
-                        deep_merge.merge(all_module_definitions_context, module_definitions_context)
                         deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
 
     if all_module_definitions:
         deep_merge.merge(out_definitions, all_module_definitions)
-        deep_merge.merge(out_definitions_context, all_module_definitions_context)
         deep_merge.merge(out_evaluations_context, all_module_evaluations_context)
 
 
 def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
-                               locals_values: Dict[str, Any]) -> Any:
+                               locals_values: Dict[str, Any],
+                               eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
+                               context,
+                               orig_variable_full) -> Any:
     if "${" in orig_variable:
         return orig_variable
 
@@ -346,7 +409,14 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
         var_name = orig_variable[4:]
         var_value = var_values.get(var_name)
         if var_value is not None:
-            # TODO record evaluation info
+            eval_context = eval_map_by_var_name.get(var_name)
+            if eval_context is None:
+                eval_map_by_var_name[var_name] = EvaluationContext(relative_file_path, var_value,
+                                                                   [VarReference(var_name,
+                                                                                 orig_variable_full,
+                                                                                 context)])
+            else:
+                eval_context.definitions.append(VarReference(var_name, orig_variable_full, context))
             return var_value
     elif orig_variable.startswith("local."):
         var_name = orig_variable[6:]
@@ -407,20 +477,24 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
     return orig_variable        # fall back to no change
 
 
-def _load_or_die_quietly(file: os.DirEntry, parsing_errors: Dict) -> Optional[Mapping]:
+def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict) -> Optional[Mapping]:
     """
 Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
     """
+
+    file_path = os.fspath(file)
+    file_name = os.path.basename(file_path)
+
     try:
         with open(file, "r") as f:
-            if file.name.endswith(".json"):
+            if file_name.endswith(".json"):
                 return json.load(f)
             else:
                 return hcl2.load(f)
     except Exception as e:
         LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
-        parsing_errors[file.path] = e
+        parsing_errors[file_path] = e
         return None
 
 

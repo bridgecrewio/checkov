@@ -1,5 +1,7 @@
+import dataclasses
 import logging
 import os
+from typing import Dict
 
 import dpath.util
 
@@ -7,6 +9,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.util import dict_utils
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -14,8 +17,7 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
-from checkov.terraform.evaluation.evaluation_methods.const_variable_evaluation import ConstVariableEvaluation
-from checkov.terraform.parser import Parser
+from checkov.terraform.parser2 import Parser2 as Parser
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -34,6 +36,7 @@ class Runner(BaseRunner):
         self.parser = parser
         self.tf_definitions = {}
         self.definitions_context = {}
+        self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
 
     block_type_registries = {
         'resource': resource_registry,
@@ -51,7 +54,11 @@ class Runner(BaseRunner):
                 resource_registry.load_external_checks(directory, runner_filter)
         if root_folder:
             root_folder = os.path.abspath(root_folder)
-            self.parser.hcl2(directory=root_folder, tf_definitions=self.tf_definitions, parsing_errors=parsing_errors)
+
+            self.parser.parse_directory(directory=root_folder,
+                                        out_definitions=self.tf_definitions,
+                                        out_evaluations_context=self.evaluations_context,
+                                        out_parsing_errors=parsing_errors)
             self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         if files:
@@ -88,9 +95,7 @@ class Runner(BaseRunner):
             definitions_context = {}
             for definition in self.tf_definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
-            variable_evaluator = ConstVariableEvaluation(root_folder, self.tf_definitions, definitions_context)
-            variable_evaluator.evaluate_variables()
-            self.tf_definitions, self.definitions_context = variable_evaluator.tf_definitions, variable_evaluator.definitions_context
+            self.definitions_context = definitions_context
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.tf_definitions.items():
@@ -98,11 +103,15 @@ class Runner(BaseRunner):
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in ['resource', 'data', 'provider', 'module']:
-                    self.run_block(definition[block_type], definitions_context, full_file_path, report, scanned_file,
-                                   block_type, runner_filter)
+                    self.run_block(definition[block_type], definitions_context,
+                                   full_file_path, report,
+                                   scanned_file, block_type, runner_filter)
 
-    def run_block(self, entities, definition_context, full_file_path, report, scanned_file, block_type,
-                  runner_filter=None):
+    def run_block(self, entities,
+                  definition_context,
+                  full_file_path, report, scanned_file,
+                  block_type, runner_filter=None):
+
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -116,8 +125,22 @@ class Runner(BaseRunner):
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
-                variables_evaluations = definition_context[full_file_path].get('evaluations')
-                if variables_evaluations:
+
+                if full_file_path in self.evaluations_context:
+                    # {
+                    #     'region': {
+                    #         'var_file': '/tf/example.tf',
+                    #         'value': 'us-east-1',
+                    #         'definitions': [{
+                    #             'definition_name': 'region',
+                    #             'definition_expression': '${var.region}',
+                    #             'definition_path': 'resource/0/aws_s3_bucket/foo-bucket/region/0'
+                    #         }]
+                    #     }
+                    # }
+                    variables_evaluations = {}
+                    for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
+                        variables_evaluations[var_name] = dataclasses.asdict(context_info)
                     entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                           entity_context_path)
                 results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)

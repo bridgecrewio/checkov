@@ -1,13 +1,17 @@
+import dataclasses
 import json
 import os
 import unittest
 
 from deepdiff import DeepDiff
 
+from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import parser2
 
 
 def json_encoder(val):
+    if dataclasses.is_dataclass(val):
+        return dataclasses.asdict(val)
     if isinstance(val, set):
         return list(sorted(["__this_is_a_set__"] + list(val)))
     return val
@@ -59,29 +63,43 @@ class TestParserScenarios(unittest.TestCase):
     # def test_maze_of_variables(self):
     #     self.go("maze_of_variables")
 
-
     def go(self, dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/parser_scenarios/{dir_name}")
         assert os.path.exists(dir_path)
 
-        expected_data = TestParserScenarios.load_expected_data(dir_path, dir_name)
+        expected_data = TestParserScenarios.load_expected_data("expected.json", dir_path, dir_name)
+        assert expected_data is not None, f"{dir_name}: expected.json file not found"
 
-        tf_definitions = {}
+        evaluation_data = TestParserScenarios.load_expected_data("eval.json", dir_path, dir_name)
+
+        actual_data = {}
+        actual_eval_data = {}
         errors = {}
-        parser2.parse_directory(dir_path, tf_definitions, {}, {}, errors)
+        parser2.parse_directory(dir_path, False, actual_data, actual_eval_data, errors)
         assert not errors, f"{dir_name}: Unexpected errors: {errors}"
-        definition_string = json.dumps(tf_definitions, indent=2, default=json_encoder)
+        definition_string = json.dumps(actual_data, indent=2, default=json_encoder)
         definition_encoded = json.loads(definition_string)
         assert definition_encoded == expected_data, \
             f"{dir_name}: Data mismatch:\n" \
             f"  Expected: \n{json.dumps(expected_data, indent=2, default=json_encoder)}\n\n" \
             f"  Actual: \n{definition_string}"
 
+        if evaluation_data is not None:
+            definition_string = json.dumps(actual_eval_data, indent=2, default=json_encoder)
+            definition_encoded = json.loads(definition_string)
+            assert definition_encoded == evaluation_data, \
+                f"{dir_name}: Evaluation data mismatch:\n" \
+                f"  Expected: \n{json.dumps(evaluation_data, indent=2, default=json_encoder)}\n\n" \
+                f"  Actual: \n{definition_string}"
+
+
+
     @staticmethod
-    def load_expected_data(dir_path, dir_name):
-        expected_path = os.path.join(dir_path, "expected.json")
-        assert os.path.exists(expected_path), f"{dir_name}: expected.json file not found"
+    def load_expected_data(source_file_name, dir_path, dir_name):
+        expected_path = os.path.join(dir_path, source_file_name)
+        if not os.path.exists(expected_path):
+            return None
 
         with open(expected_path, "r") as f:
             expected_data = json.load(f)
