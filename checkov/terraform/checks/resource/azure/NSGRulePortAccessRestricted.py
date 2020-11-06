@@ -38,7 +38,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
             if not isinstance(rule_conf, dict):
                 return CheckResult.UNKNOWN
             if 'access' in rule_conf and rule_conf['access'][0].lower() == "allow":
-                if 'direction' in rule_conf and rule_conf['direction'][0].lower() == "inbound":  # case sensitivy, protocol can be *
+                if 'direction' in rule_conf and rule_conf['direction'][0].lower() == "inbound":
                     if 'protocol' in rule_conf and rule_conf['protocol'][0].lower() in ['tcp', '*']:
                         if 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf):
                             if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
