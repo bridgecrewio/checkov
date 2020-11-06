@@ -36,24 +36,4 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-        # authorized_networks_count = 0
-        # authorized_networks_passed = 0
-        # if 'settings' in conf and 'ip_configuration' in conf['settings'][0]:
-        #     if 'authorized_networks' in conf['settings'][0]['ip_configuration'][0].keys():
-        #         authorized_networks_count = len(conf['settings'][0]['ip_configuration'][0]['authorized_networks'][0])
-        #         print(conf['settings'][0]['ip_configuration'][0]['authorized_networks'])
-        #         print(authorized_networks_count)
-        #         for authorized_network in conf['settings'][0]['ip_configuration'][0]['authorized_networks'][0]:
-        #             if isinstance(authorized_network, str):
-        #                 return CheckResult.UNKNOWN
-        #             if 'value' in authorized_network:
-        #                 if "/0" not in authorized_network['value'][0]:
-        #                     authorized_networks_passed += 1
-        #
-        # if authorized_networks_passed == authorized_networks_count:
-        #     return CheckResult.PASSED
-        # else:
-        #     return CheckResult.FAILED
-
-
 check = GoogleCloudSqlDatabasePublicallyAccessible()
