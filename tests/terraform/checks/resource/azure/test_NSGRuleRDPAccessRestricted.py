@@ -28,6 +28,26 @@ class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_case_insensitive(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_network_security_rule" "example" {
+              name                        = "test123"
+              priority                    = 100
+              direction                   = "inbound"
+              access                      = "allow"
+              protocol                    = "Tcp"
+              source_port_range           = "*"
+              destination_port_range      = ["3380-3390", "22"]
+              source_address_prefix       = "Internet"
+              destination_address_prefix  = "*"
+              resource_group_name         = azurerm_resource_group.example.name
+              network_security_group_name = azurerm_network_security_group.example.name
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         hcl_res = hcl2.loads("""
                     resource "azurerm_network_security_rule" "example" {
@@ -62,7 +82,7 @@ class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
             direction                  = "Inbound"
             name                       = "RDP"
             priority                   = "300"
-            protocol                   = "TCP"
+            protocol                   = "*"
             source_address_prefix      = "*"
             source_port_range          = "*"
           }
