@@ -20,9 +20,15 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
             ip_config = conf['settings'][0]['ip_configuration'][0]
             if 'authorized_networks' in ip_config:
                 auth_networks = ip_config['authorized_networks'][0]
+                if type(auth_networks) != list:  # handle possible legacy case
+                    auth_networks = [auth_networks]
                 for network in auth_networks:
-                    if 'value' in network and str(network['value']).endswith('/0'):
-                        return CheckResult.FAILED
+                    if 'value' in network:
+                        val = network['value']
+                        if type(val) == list:  # handle possible parsing discrepancies
+                            val = val[0]
+                        if val.endswith('/0'):
+                            return CheckResult.FAILED
             if 'dynamic' in ip_config:
                 dynamic = ip_config['dynamic']
                 for dynamic_block in dynamic:
