@@ -147,7 +147,6 @@ jobs:
         run: |
           sleep 2m
   homebrew:
-    needs: publish-package
     name: Bump Homebrew formula
     runs-on: ubuntu-latest
     steps:
