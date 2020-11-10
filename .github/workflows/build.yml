@@ -146,26 +146,17 @@ jobs:
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
-  update-brew:
+  homebrew:
     needs: publish-package
+    name: Bump Homebrew formula
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - uses: mislav/bump-homebrew-formula-action@v1
         with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-      - name: publish brew
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          pipenv run pip install homebrew-pypi-poet
-          pipenv run pip install checkov -U
-          git pull
-          pipenv run poet -f checkov > HomebrewFormula/checkov.rb
-          git commit --reuse-message=HEAD@{1} HomebrewFormula/checkov.rb || echo "No brew changes to commit"
-          git push origin
+          # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
+          formula-name: checkov
+        env:
+          COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
   update-bridgecrew-projects:
     needs: publish-package
     runs-on: ubuntu-latest
