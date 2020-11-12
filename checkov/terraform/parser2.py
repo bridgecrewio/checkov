@@ -473,6 +473,10 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
                         return str(int(altered_value))
                 except ValueError:
                     return orig_variable     # no change
+    # TODO ROB - format() support
+    # elif orig_variable.startswith("format(") and orig_variable.endswith(")"):
+    #     format_tokens = orig_variable[7:-1].split(",")
+    #     return format_tokens[0].format([_to_native_value(t) for t in format_tokens[1:]])
 
     return orig_variable        # fall back to no change
 
@@ -502,6 +506,13 @@ def _eval_string(value: str) -> Any:
     value_string = value.replace("'", '"')
     parsed = hcl2.loads(f'eval = {value_string}\n')      # NOTE: newline is needed
     return parsed["eval"][0]
+
+
+def _to_native_value(value: str) -> Any:
+    if value.startswith('"') or value.startswith("'"):
+        return value[1:-1]
+    else:
+        return _eval_string(value)
 
 
 def _tostring(value: Any) -> str:
