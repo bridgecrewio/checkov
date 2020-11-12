@@ -61,6 +61,8 @@ class BcPlatformIntegration(object):
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
+        self.guidelines = None
+        self.bc_id_mapping = None
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -186,12 +188,22 @@ class BcPlatformIntegration(object):
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_guidelines(self) -> dict:
+        if not self.guidelines:
+            self.get_checkov_mapping_metadata()
+        return self.guidelines
+
+    def get_id_mapping(self) -> dict:
+        if not self.bc_id_mapping:
+            self.get_checkov_mapping_metadata()
+        return self.bc_id_mapping
+
+    def get_checkov_mapping_metadata(self) -> dict:
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
-            guidelines_map = response["guidelines"]
-            logging.debug(f"Got guidelines form Bridgecrew BE")
-            return guidelines_map
+            self.guidelines = response["guidelines"]
+            self.bc_id_mapping = response.get("idMapping")
+            logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
@@ -326,3 +338,6 @@ class BcPlatformIntegration(object):
                 t.set_description(msg)
                 t.set_postfix(refresh=False)
                 sleep(1)
+
+
+bc_integration = BcPlatformIntegration()
