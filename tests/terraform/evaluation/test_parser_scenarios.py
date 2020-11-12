@@ -3,9 +3,6 @@ import json
 import os
 import unittest
 
-from deepdiff import DeepDiff
-
-from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import parser2
 
 
@@ -54,6 +51,9 @@ class TestParserScenarios(unittest.TestCase):
 
     def test_module_simple(self):
         self.go("module_simple")
+
+    def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
+        self.go("list_default_622")
 
     # TODO ROB - Implementation in progress
     # def test_formatting(self):
