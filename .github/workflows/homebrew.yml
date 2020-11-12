@@ -1,0 +1,17 @@
+name: homebrew
+
+on:
+  push:
+    tags: 'v*'
+
+jobs:
+  homebrew:
+    name: Bump Homebrew formula
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mislav/bump-homebrew-formula-action@v1
+        with:
+          # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
+          formula-name: checkov
+        env:
+          COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}

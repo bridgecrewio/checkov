@@ -20,7 +20,8 @@ class VariableContextParser(BaseContextParser):
                                 dpath.new(self.context, ['assignments', variable_name], value)
 
     def get_entity_context_path(self, entity_block):
-        return []
+        entity_name = next(iter(entity_block.keys()))
+        return [entity_name]
 
     def enrich_definition_block(self, definition_blocks):
         self.context = super().enrich_definition_block(definition_blocks)

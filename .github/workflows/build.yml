@@ -69,7 +69,7 @@ jobs:
         run: |
           pipenv run pytest integration_tests
   bump-version:
-    needs: integration-tests
+    needs: [integration-tests, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
