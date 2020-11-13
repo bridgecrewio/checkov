@@ -120,7 +120,11 @@ See `parse_directory` docs.
     auto_vars_files: Optional[List[os.DirEntry]] = None      # lazy creation
     for file in os.scandir(directory):
         # Ignore directories and hidden files
-        if not file.is_file() or file.name.startswith("."):
+        try:
+            if not file.is_file() or file.name.startswith("."):
+                continue
+        except OSError:
+            # Skip files that can't be accessed
             continue
 
         # Variable files
