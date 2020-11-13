@@ -31,6 +31,7 @@ setup(
             "chardet==3.0.4",
             "coverage==4.5.4",
             "coverage-badge==1.0.1",
+            "deep_merge==0.0.4",
             "docopt==0.6.2",
             "docutils==0.15.2",
             "idna==2.8",
