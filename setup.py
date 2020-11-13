@@ -82,6 +82,7 @@ setup(
         "pyyaml==5.3.1",
         "requests==2.22.0",
         "six==1.15.0",
+        "semantic_version==2.8.5",
         "tabulate==0.8.6",
         "termcolor==1.1.0",
         "urllib3==1.25.10",
