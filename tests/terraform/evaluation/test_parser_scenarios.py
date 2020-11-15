@@ -80,7 +80,7 @@ class TestParserScenarios(unittest.TestCase):
         actual_data = {}
         actual_eval_data = {}
         errors = {}
-        parser2.parse_directory(dir_path, False, actual_data, actual_eval_data, errors)
+        parser2._parse_directory(dir_path, False, actual_data, actual_eval_data, errors)
         assert not errors, f"{dir_name}: Unexpected errors: {errors}"
         definition_string = json.dumps(actual_data, indent=2, default=json_encoder)
         definition_encoded = json.loads(definition_string)

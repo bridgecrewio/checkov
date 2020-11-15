@@ -34,7 +34,7 @@ class Parser2:
     # TODO: Backwards compatibility with original parser, remove when no longer needed
     def hcl2(self, directory, tf_definitions: Optional[Dict] = None,
              parsing_errors: Dict[str, Exception] = None):
-        parse_directory(directory, True, tf_definitions, {}, parsing_errors)
+        _parse_directory(directory, True, tf_definitions, {}, parsing_errors)
 
     def parse_directory(self, directory: str, out_definitions: Optional[Dict],
                         out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -42,9 +42,9 @@ class Parser2:
                         env_vars: Mapping[str, str] = None):
 
         self._parsed_directories.clear()
-        parse_directory(directory, True, out_definitions, out_evaluations_context,
-                        out_parsing_errors, env_vars,
-                        dir_filter=lambda d: self._check_process_dir(d))
+        _parse_directory(directory, True, out_definitions, out_evaluations_context,
+                         out_parsing_errors, env_vars,
+                         dir_filter=lambda d: self._check_process_dir(d))
 
     @staticmethod
     def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
@@ -53,11 +53,11 @@ class Parser2:
         return _load_or_die_quietly(Path(file), parsing_errors)
 
 
-def parse_directory(directory: str, include_sub_dirs: bool, out_definitions: Dict,
-                    out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
-                    out_parsing_errors: Dict[str, Exception] = None, env_vars: Mapping[str, str] = None,
-                    module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
-                    dir_filter: Callable[[str], bool] = lambda _: True):
+def _parse_directory(directory: str, include_sub_dirs: bool, out_definitions: Dict,
+                     out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
+                     out_parsing_errors: Dict[str, Exception] = None, env_vars: Mapping[str, str] = None,
+                     module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
+                     dir_filter: Callable[[str], bool] = lambda _: True):
     """
 Load and resolve configuration files starting in the given directory, merging the
 resulting data into `tf_definitions`. This loads data according to the Terraform Code Organization
