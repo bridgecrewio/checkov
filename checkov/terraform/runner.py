@@ -126,17 +126,6 @@ class Runner(BaseRunner):
                 skipped_checks = entity_context.get('skipped_checks')
 
                 if full_file_path in self.evaluations_context:
-                    # {
-                    #     'region': {
-                    #         'var_file': '/tf/example.tf',
-                    #         'value': 'us-east-1',
-                    #         'definitions': [{
-                    #             'definition_name': 'region',
-                    #             'definition_expression': '${var.region}',
-                    #             'definition_path': 'resource/0/aws_s3_bucket/foo-bucket/region/0'
-                    #         }]
-                    #     }
-                    # }
                     variables_evaluations = {}
                     for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
                         variables_evaluations[var_name] = dataclasses.asdict(context_info)
