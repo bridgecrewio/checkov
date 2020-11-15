@@ -28,6 +28,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_local_block(self):
         self.go("local_block")
 
+    def test_local_bool_string_conversion(self):
+        self.go("local_bool_string_conversion")
+
     def test_compound_local(self):
         self.go("compound_local")
 

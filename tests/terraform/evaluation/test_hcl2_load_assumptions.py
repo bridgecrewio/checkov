@@ -53,6 +53,34 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         }
         self.go(tf, expect)
 
+    def test_raw_assignment_true_string(self):
+        tf = 'my_var = "true"\n'
+        expect = {
+            "my_var": ["true"]
+        }
+        self.go(tf, expect)
+
+    def test_raw_assignment_false_string(self):
+        tf = 'my_var = "false"\n'
+        expect = {
+            "my_var": ["false"]
+        }
+        self.go(tf, expect)
+
+    def test_raw_assignment_1_string(self):
+        tf = 'my_var = "1"\n'
+        expect = {
+            "my_var": ["1"]
+        }
+        self.go(tf, expect)
+
+    def test_raw_assignment_0_string(self):
+        tf = 'my_var = "0"\n'
+        expect = {
+            "my_var": ["0"]
+        }
+        self.go(tf, expect)
+
     def test_map_separators(self):
         tf = '''
         locals {

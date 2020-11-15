@@ -4,8 +4,6 @@
       {
         "NUM": ["1"],
         "STRING": ["a string"],
-        "TRUE": ["true"],
-        "FALSE": ["false"],
         "INVALID_ARRAY": ["${tostring([])}"],
         "INNER_CURLY": ["annoying {"]
       }

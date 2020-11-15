@@ -248,13 +248,10 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                                   outer_context: str = "") -> bool:
 
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
-    def process_items_helper(key_value_iterator, data_map, context):
+    def process_items_helper(key_value_iterator, data_map, context, allow_str_bool_translation: bool):
         made_change = False
         for key, value in key_value_iterator():
-            if len(context) == 0:
-                new_context = key
-            else:
-                new_context = f"{context}/{key}"
+            new_context = f"{context}/{key}" if len(context) != 0 else key
 
             if isinstance(value, str):
                 altered_value = value
@@ -321,6 +318,20 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                     elif value.startswith("${tostring(\"") and value.endswith("\")}"):
                         altered_value = value[12:-3]
 
+                    # Support HCL 0.11 optional boolean syntax - evaluate "true" to true and "false" to false
+                    # TODO: 1->true and 0->false was also supported... do we want that?
+                    #
+                    # `allow_str_bool_translation` exists because we want to prevent conversion in a dict
+                    # which is a direct value. See the "MIXED_BOOL" variable in the "tomap_function" parser
+                    # scenario for a situation which worked incorrectly without this.
+                    # NOTE: This is probably not a big deal to be removed if this causes problems in other
+                    #       places. The MIXED_BOOL test case is technically correct with the TF spec, but
+                    #       isn't essential operation for Checkov.
+                    elif allow_str_bool_translation and value == "true":
+                        altered_value = True
+                    elif allow_str_bool_translation and value == "false":
+                        altered_value = False
+
                 if value != altered_value:
                     LOGGER.debug(f"Resolve: %s --> %s", value, altered_value)
                     data_map[key] = altered_value
@@ -330,11 +341,12 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                                                  locals_values, new_context):
                     made_change = True
             elif isinstance(value, list):
-                if process_items_helper(lambda: enumerate(value), value, new_context):
+
+                if process_items_helper(lambda: enumerate(value), value, new_context, True):
                     made_change = True
         return made_change
 
-    return process_items_helper(out_definitions.items, out_definitions, outer_context)
+    return process_items_helper(out_definitions.items, out_definitions, outer_context, False)
 
 
 def _load_modules(out_definitions: Dict,
