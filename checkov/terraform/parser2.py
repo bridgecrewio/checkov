@@ -31,11 +31,6 @@ class Parser2:
         else:
             return False
 
-    # TODO: Backwards compatibility with original parser, remove when no longer needed
-    def hcl2(self, directory, tf_definitions: Optional[Dict] = None,
-             parsing_errors: Dict[str, Exception] = None):
-        _parse_directory(directory, True, tf_definitions, {}, parsing_errors)
-
     def parse_directory(self, directory: str, out_definitions: Optional[Dict],
                         out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                         out_parsing_errors: Dict[str, Exception] = None,
