@@ -54,7 +54,7 @@ class Runner(BaseRunner):
             scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
-                if block_type in ['resource']:
+                if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], full_file_path, report, scanned_file,
                                    block_type, runner_filter)
 
