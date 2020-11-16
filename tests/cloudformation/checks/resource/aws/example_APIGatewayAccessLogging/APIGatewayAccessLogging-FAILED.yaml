@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyStageV2:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId: !Ref MyDeployment
+      ApiId: !Ref CFNWebSocket
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        LoggingLevel: INFO
+        DataTraceEnabled: false
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 10
+  MyStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      RestApiId: !Ref MyRestApi
+      DeploymentId: !Ref TestDeployment
+      DocumentationVersion: !Ref MyDocumentationVersion
+      ClientCertificateId: !Ref ClientCertificate
+      Variables:
+        Stack: Prod
+      MethodSettings:
+        - ResourcePath: /
+          HttpMethod: GET
+          MetricsEnabled: 'true'
+          DataTraceEnabled: 'false'
+        - ResourcePath: /stack
+          HttpMethod: POST
+          MetricsEnabled: 'true'
+          DataTraceEnabled: 'false'
+          ThrottlingBurstLimit: '999'
+        - ResourcePath: /stack
+          HttpMethod: GET
+          MetricsEnabled: 'true'
+          DataTraceEnabled: 'false'
+          ThrottlingBurstLimit: '555'
