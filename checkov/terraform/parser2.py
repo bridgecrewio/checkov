@@ -319,7 +319,6 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                         altered_value = value[12:-3]
 
                     # Support HCL 0.11 optional boolean syntax - evaluate "true" to true and "false" to false
-                    # TODO: 1->true and 0->false was also supported... do we want that?
                     #
                     # `allow_str_bool_translation` exists because we want to prevent conversion in a dict
                     # which is a direct value. See the "MIXED_BOOL" variable in the "tomap_function" parser
@@ -356,7 +355,6 @@ def _load_modules(out_definitions: Dict,
                   directory: str, module_loader_registry: ModuleLoaderRegistry,
                   dir_filter: Callable[[str], bool]):
 
-    all_module_definitions = {}
     all_module_evaluations_context = {}
     for file, file_data in out_definitions.items():
         module_calls = file_data.get("module")
@@ -395,11 +393,21 @@ def _load_modules(out_definitions: Dict,
                         _internal_dir_load(content.path(), module_definitions,
                                            module_evaluations_context, out_parsing_errors, env_vars,
                                            specified_vars, module_loader_registry, dir_filter)
-                        deep_merge.merge(all_module_definitions, module_definitions)
-                        deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
 
-    if all_module_definitions:
-        deep_merge.merge(out_definitions, all_module_definitions)
+                        # NOTE: Where these resolved modules are placed is up for debate. This will put
+                        #       them in a "__resolved__" block under the "module" block. To run checks, this
+                        #       will need to be in-sync with where the runner expects them to be.
+                        #       The `module_definitions` dict mirrors the layout of the main definitions
+                        #       dict in that it starts with the "file path" (may not always be a real file
+                        #       or under the root dir).
+                        if module_definitions:
+                            module_call_data["__resolved__"] = module_definitions
+
+                            # TODO: Not sure what to do with variable evaluations
+                            # deep_merge.merge(all_module_definitions, module_definitions)
+                            # deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
+
+    if all_module_evaluations_context:
         deep_merge.merge(out_evaluations_context, all_module_evaluations_context)
 
 
@@ -433,7 +441,6 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
         var_name = orig_variable[6:]
         var_value = locals_values.get(var_name)
         if var_value is not None:
-            # TODO record evaluation info
             return var_value
     elif orig_variable.startswith("to") and orig_variable.endswith(")"):
         # https://www.terraform.io/docs/configuration/functions/tobool.html
@@ -484,7 +491,7 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
                         return str(int(altered_value))
                 except ValueError:
                     return orig_variable     # no change
-    # TODO ROB - format() support
+    # TODO - format() support, still in progress
     # elif orig_variable.startswith("format(") and orig_variable.endswith(")"):
     #     format_tokens = orig_variable[7:-1].split(",")
     #     return format_tokens[0].format([_to_native_value(t) for t in format_tokens[1:]])

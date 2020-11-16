@@ -3,6 +3,9 @@ import json
 import os
 import unittest
 
+import dpath
+import itertools
+
 from checkov.terraform import parser2
 
 
@@ -55,6 +58,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_simple(self):
         self.go("module_simple")
 
+    def test_module_matryoshka(self):
+        self.go("module_matryoshka")
+
     def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
         self.go("list_default_622")
 
@@ -100,8 +106,6 @@ class TestParserScenarios(unittest.TestCase):
                 f"  Expected: \n{json.dumps(evaluation_data, indent=2, default=json_encoder)}\n\n" \
                 f"  Actual: \n{definition_string}"
 
-
-
     @staticmethod
     def load_expected_data(source_file_name, dir_path, dir_name):
         expected_path = os.path.join(dir_path, source_file_name)
@@ -113,12 +117,16 @@ class TestParserScenarios(unittest.TestCase):
 
         # Expected files should have the filenames relative to their base directory, but the parser will
         # use the absolute path. This loop with replace relative filenames with absolute.
-        keys = list(expected_data.keys())
-        for key in keys:
-            if os.path.isabs(key):
-                continue
-            expected_data[os.path.join(dir_path, key)] = expected_data[key]
-            del expected_data[key]
+        top_level_tuple = None, expected_data
+        for _, data in itertools.chain([top_level_tuple],
+                                       dpath.search(expected_data, "**/__resolved__", yielded=True)):
+
+            keys = list(data.keys())
+            for key in keys:
+                if os.path.isabs(key):
+                    continue
+                data[os.path.join(dir_path, key)] = data[key]
+                del data[key]
 
         return expected_data
 

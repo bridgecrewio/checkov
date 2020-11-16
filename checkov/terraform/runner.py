@@ -22,12 +22,10 @@ from checkov.terraform.parser2 import Parser2 as Parser
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-TRUE_STRING = "true"
-ONE_STRING = "1"
-FALSE_STRING = "false"
-ZERO_STRING = "0"
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
 logging.basicConfig(level=LOG_LEVEL)
+
+CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 class Runner(BaseRunner):
     check_type = "terraform"
@@ -73,24 +71,11 @@ class Runner(BaseRunner):
 
         return report
 
-    def evaluate_string_booleans(self):
-        # Support HCL 0.11 optional boolean syntax - evaluate "true" and "1" to true, "false" and "0" to false
-        for tf_file in self.tf_definitions.keys():
-            values_to_replace = dpath.util.search(self.tf_definitions[tf_file], "**",
-                                                  afilter=lambda x: x in (TRUE_STRING, ONE_STRING, FALSE_STRING, ZERO_STRING),
-                                                  yielded=True)
-            for var_path, var_value in values_to_replace:
-                if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, True if var_value in (TRUE_STRING, ONE_STRING) else False)
-
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
         parser_registry.reset_definitions_context()
         if external_definitions_context:
             definitions_context = external_definitions_context
         else:
-            logging.debug('Evaluating string booleans')
-            self.evaluate_string_booleans()
-            logging.debug('Evaluated string booleans. Creating definitions context')
             definitions_context = {}
             for definition in self.tf_definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
@@ -100,42 +85,68 @@ class Runner(BaseRunner):
         for full_file_path, definition in self.tf_definitions.items():
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
-            for block_type in definition.keys():
-                if block_type in ['resource', 'data', 'provider', 'module']:
-                    self.run_block(definition[block_type], definitions_context,
-                                   full_file_path, report,
-                                   scanned_file, block_type, runner_filter)
+            self.run_all_blocks(definition, definitions_context, full_file_path, root_folder, report,
+                                scanned_file, runner_filter)
+
+    def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
+                       scanned_file, runner_filter):
+        for block_type in definition.keys():
+            if block_type in CHECK_BLOCK_TYPES:
+                self.run_block(definition[block_type], definitions_context,
+                               full_file_path, root_folder, report,
+                               scanned_file, block_type, runner_filter)
 
     def run_block(self, entities,
                   definition_context,
-                  full_file_path, report, scanned_file,
-                  block_type, runner_filter=None):
+                  full_file_path, root_folder, report, scanned_file,
+                  block_type, runner_filter=None, entity_context_path_header=None):
 
         registry = self.block_type_registries[block_type]
-        if registry:
-            for entity in entities:
-                entity_evaluations = None
-                context_parser = parser_registry.context_parsers[block_type]
-                definition_path = context_parser.get_entity_context_path(entity)
-                entity_id = ".".join(definition_path)
+        if not registry:
+            return
+
+        for entity in entities:
+            entity_evaluations = None
+            context_parser = parser_registry.context_parsers[block_type]
+            definition_path = context_parser.get_entity_context_path(entity)
+            entity_id = ".".join(definition_path)
+            if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path
-                # Entity can exist only once per dir, for file as well
+            else:
+                entity_context_path = entity_context_path_header + block_type + definition_path
+            # Entity can exist only once per dir, for file as well
+            try:
                 entity_context = dict_utils.getInnerDict(definition_context[full_file_path], entity_context_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
+            except KeyError:
+                # TODO: Context info isn't working for modules
+                entity_lines_range = None
+                entity_code_lines = None
+                skipped_checks = None
 
-                if full_file_path in self.evaluations_context:
-                    variables_evaluations = {}
-                    for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
-                        variables_evaluations[var_name] = dataclasses.asdict(context_info)
-                    entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
-                                                                                          entity_context_path)
-                results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
-                for check, check_result in results.items():
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=scanned_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=entity_id, evaluations=entity_evaluations,
-                                    check_class=check.__class__.__module__)
-                    report.add_record(record=record)
+            if full_file_path in self.evaluations_context:
+                variables_evaluations = {}
+                for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
+                    variables_evaluations[var_name] = dataclasses.asdict(context_info)
+                entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
+                                                                                      entity_context_path)
+            results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
+            for check, check_result in results.items():
+                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                code_block=entity_code_lines, file_path=scanned_file,
+                                file_line_range=entity_lines_range,
+                                resource=entity_id, evaluations=entity_evaluations,
+                                check_class=check.__class__.__module__)
+                report.add_record(record=record)
+
+            if block_type == "module":
+                for _, resolved_block in dpath.search(entity, "*/__resolved__", yielded=True):
+                    print("Break here")
+
+                    for module_file_path, module_definition in resolved_block.items():
+                        scanned_file = f"/{os.path.relpath(module_file_path, root_folder)}"
+                        logging.debug(f"Scanning file: {scanned_file}")
+                        self.run_all_blocks(module_definition, definition_context, full_file_path,
+                                            root_folder, report, scanned_file, runner_filter)
