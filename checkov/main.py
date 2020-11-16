@@ -17,6 +17,7 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
+from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
 
@@ -35,7 +36,7 @@ def run(banner=checkov_banner):
         runner_registry.runner_filter = runner_filter
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                         arm_runner())
+                                         arm_runner(), tf_plan_runner())
     if args.version:
         print(version)
         return
@@ -107,7 +108,8 @@ def add_parser_args(parser):
                         default=False,
                         help='in case of CLI output, display only failed checks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
-                        choices=['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all'],
+                        choices=['cloudformation', 'terraform', 'terraform_plan', 'kubernetes', 'serverless', 'arm',
+                                 'all'],
                         default='all')
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '

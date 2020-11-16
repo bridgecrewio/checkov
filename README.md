@@ -73,9 +73,13 @@ pip3 install checkov
 or using homebrew (MacOS only)
 
 ```sh
-brew tap bridgecrewio/checkov https://github.com/bridgecrewio/checkov
-brew update
 brew install checkov
+```
+
+or
+
+```sh
+brew upgrade checkov
 ```
 
 ### Configure an input folder
