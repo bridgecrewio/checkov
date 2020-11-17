@@ -72,9 +72,11 @@ class TestParserScenarios(unittest.TestCase):
     # def test_module_for_each(self):
     #     self.go("module_for_each")
 
-    # TODO: not working yet
-    # def test_maze_of_variables(self):
-    #     self.go("maze_of_variables")
+    def test_maze_of_variables(self):
+        self.go("maze_of_variables")
+
+    def test_module_reference(self):
+        self.go("module_reference")
 
     def go(self, dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),

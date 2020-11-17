@@ -34,7 +34,37 @@
       {
         "bucket": {
           "source": ["./bucket"],
-          "name": ["module-input"]
+          "name": ["module-input"],
+          "__resolved__": {
+            "bucket/bucket.tf": {
+              "variable": [
+                {
+                  "name": {}
+                }
+              ],
+              "locals": [
+                {
+                  "MODULE_TAIL": ["bucket"]
+                }
+              ],
+              "output": [
+                {
+                  "bucket_name": {
+                    "value": ["module-input-bucket"]
+                  }
+                }
+              ],
+              "resource": [
+                {
+                  "aws_s3_bucket": {
+                    "example": {
+                      "bucket": ["module-input-bucket"]
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       }
     ],
@@ -45,34 +75,6 @@
             "bucket": [
               "mapped-bucket-name-works-yay"
             ]
-          }
-        }
-      }
-    ]
-  },
-  "bucket/bucket.tf": {
-    "variable": [
-      {
-        "name": {}
-      }
-    ],
-    "locals": [
-      {
-        "MODULE_TAIL": ["bucket"]
-      }
-    ],
-    "output": [
-      {
-        "bucket_name": {
-          "value": ["module-input-bucket"]
-        }
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket": {
-          "example": {
-            "bucket": ["module-input-bucket"]
           }
         }
       }

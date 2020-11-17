@@ -7,6 +7,7 @@ from typing import Mapping, Optional, Dict, Any, List, Callable
 
 import deep_merge
 import hcl2
+import jmespath
 
 from checkov.common.runners.base_runner import filter_ignored_directories
 from checkov.common.variables.context import EvaluationContext, VarReference
@@ -18,6 +19,8 @@ LOGGER = logging.getLogger(__name__)
 
 _VAR_PATTERN = re.compile(r'\${([^{}]+?)}')
 _SIMPLE_TYPES = frozenset(["string", "number", "bool"])
+
+_RESOURCE_REF_PATTERN = re.compile(r'[\d\w]+(\.[\d\w]+)+')
 
 
 class Parser2:
@@ -232,7 +235,9 @@ def _process_vars_and_locals(out_definitions: Dict,
             made_change = _process_vars_and_locals_loop(file_data,
                                                         eval_context_dict,
                                                         os.path.relpath(file, directory),
-                                                        var_values, locals_values)
+                                                        var_values, locals_values,
+                                                        file_data.get("resource"),
+                                                        file_data.get("module"))
 
             if len(eval_context_dict) == 0:
                 del evaluations_context[file]
@@ -245,6 +250,8 @@ def _process_vars_and_locals(out_definitions: Dict,
 def _process_vars_and_locals_loop(out_definitions: Dict,
                                   eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
                                   var_values: Dict[str, Any], locals_values: Dict[str, Any],
+                                  resource_list: Optional[List[Dict[str, Any]]],
+                                  module_list: Optional[List[Dict[str, Any]]],
                                   outer_context: str = "") -> bool:
 
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
@@ -269,6 +276,7 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                         had_pattern_match = True
                     else:
                         replaced = _handle_single_var_pattern(var_base, var_values, locals_values,
+                                                              resource_list, module_list,
                                                               eval_map_by_var_name, relative_file_path,
                                                               new_context, value)
                         if replaced != var_base:
@@ -337,7 +345,7 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                     made_change = True
             elif isinstance(value, dict):
                 if _process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path, var_values,
-                                                 locals_values, new_context):
+                                                 locals_values, resource_list, module_list, new_context):
                     made_change = True
             elif isinstance(value, list):
 
@@ -413,11 +421,29 @@ def _load_modules(out_definitions: Dict,
 
 def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
                                locals_values: Dict[str, Any],
+                               resource_list: Optional[List[Dict[str, Any]]],
+                               module_list: Optional[List[Dict[str, Any]]],
                                eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
                                context,
                                orig_variable_full) -> Any:
     if "${" in orig_variable:
         return orig_variable
+
+    elif orig_variable.startswith("module."):
+        # Reference to module outputs, example: 'module.bucket.bucket_name'
+        # TODO: handle index into map/list
+        ref_tokens = orig_variable.split(".")
+        if len(ref_tokens) != 3:
+            return orig_variable        # fail safe, looking for something unexpected
+        try:
+            result = jmespath.search(f"[].{ref_tokens[1]}.__resolved__.*[].output[]."
+                                     f"{ref_tokens[2]}.value[] | [0]",
+                                     module_list)
+        except ValueError:
+            pass
+        else:
+            if result is not None:
+                return result
 
     elif orig_variable == "True":
         return True
@@ -426,7 +452,7 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
 
     elif orig_variable.startswith("var."):
         var_name = orig_variable[4:]
-        var_value = var_values.get(var_name)
+        var_value = _handle_indexing(var_name, lambda r: var_values.get(r))
         if var_value is not None:
             eval_context = eval_map_by_var_name.get(var_name)
             if eval_context is None:
@@ -438,8 +464,7 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
                 eval_context.definitions.append(VarReference(var_name, orig_variable_full, context))
             return var_value
     elif orig_variable.startswith("local."):
-        var_name = orig_variable[6:]
-        var_value = locals_values.get(var_name)
+        var_value = _handle_indexing(orig_variable[6:], lambda r: locals_values.get(r))
         if var_value is not None:
             return var_value
     elif orig_variable.startswith("to") and orig_variable.endswith(")"):
@@ -496,7 +521,30 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
     #     format_tokens = orig_variable[7:-1].split(",")
     #     return format_tokens[0].format([_to_native_value(t) for t in format_tokens[1:]])
 
+    elif _RESOURCE_REF_PATTERN.match(orig_variable):
+        # Reference to resources, example: 'aws_s3_bucket.example.bucket'
+        # TODO: handle index into map/list
+        try:
+            result = jmespath.search(f"[].{orig_variable}[] | [0]", resource_list)
+        except ValueError:
+            pass
+        else:
+            if result is not None:
+                return result
+
     return orig_variable        # fall back to no change
+
+
+def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]) -> Optional[Any]:
+    if reference.endswith("]") and "[" in reference:
+        base_ref = reference[:reference.rindex("[")]
+        value = data_source(base_ref)
+        if isinstance(value, dict):
+            return value.get(reference[reference.rindex("[")+1: -1])
+        elif isinstance(value, list):
+            return value[int(reference[reference.rindex("[")+1: -1])]
+    else:
+        return data_source(reference)
 
 
 def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict) -> Optional[Mapping]:
