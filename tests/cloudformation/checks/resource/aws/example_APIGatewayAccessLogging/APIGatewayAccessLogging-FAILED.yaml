@@ -5,8 +5,8 @@ Resources:
     Properties:
       StageName: Prod
       Description: Prod Stage
-      DeploymentId: !Ref MyDeployment
-      ApiId: !Ref CFNWebSocket
+      DeploymentId: MyDeployment
+      ApiId: CFNWebSocket
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
         LoggingLevel: INFO
@@ -18,24 +18,24 @@ Resources:
     Properties:
       StageName: Prod
       Description: Prod Stage
-      RestApiId: !Ref MyRestApi
-      DeploymentId: !Ref TestDeployment
-      DocumentationVersion: !Ref MyDocumentationVersion
-      ClientCertificateId: !Ref ClientCertificate
+      RestApiId: MyRestApi
+      DeploymentId: TestDeployment
+      DocumentationVersion: MyDocumentationVersion
+      ClientCertificateId: ClientCertificate
       Variables:
         Stack: Prod
       MethodSettings:
         - ResourcePath: /
           HttpMethod: GET
-          MetricsEnabled: 'true'
-          DataTraceEnabled: 'false'
+          MetricsEnabled: true
+          DataTraceEnabled: false
         - ResourcePath: /stack
           HttpMethod: POST
-          MetricsEnabled: 'true'
-          DataTraceEnabled: 'false'
-          ThrottlingBurstLimit: '999'
+          MetricsEnabled: true
+          DataTraceEnabled: false
+          ThrottlingBurstLimit: 999
         - ResourcePath: /stack
           HttpMethod: GET
-          MetricsEnabled: 'true'
-          DataTraceEnabled: 'false'
-          ThrottlingBurstLimit: '555'
+          MetricsEnabled: true
+          DataTraceEnabled: false
+          ThrottlingBurstLimit: 555
