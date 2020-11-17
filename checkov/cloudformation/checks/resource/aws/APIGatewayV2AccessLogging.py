@@ -5,8 +5,8 @@ from checkov.common.models.consts import ANY_VALUE
 
 class APIGatewayV2AccessLogging(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure API Gateway has Access Logging enabled"
-        id = "CKV_AWS_76"
+        name = "Ensure API Gateway V2 has Access Logging enabled"
+        id = "CKV_AWS_95"
         supported_resources = ['AWS::ApiGatewayV2::Stage']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
