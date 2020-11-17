@@ -6,9 +6,9 @@ order: 8
 ---
 # Evaluate Checkov policies on Terraform plan
 
-Checkov supports the evaluation of policies on resources declared in `.tf` files. And also evaluation of `terraform plan` json files. 
-Plan has more context and is more complete in resolved values and should can be a choice of usage. 
-Terraform plan files might contain arguments (like secrets) that are injected dynamically.
+Checkov supports the evaluation of policies on resources declared in `.tf` files. It can also be used to evaluate `terraform plan` expressed in a json file. 
+Plan evaluation provides Checkov additional dependencies and context that can result in a more complete scan result.
+Since Terraform plan files may contain arguments (like secrets) that are injected dynamically, it is advised to run a plan evaluation using Checkov in a secure CI/CD pipeline setting.
 
 ## Example
 
