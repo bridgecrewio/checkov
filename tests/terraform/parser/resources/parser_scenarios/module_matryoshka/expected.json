@@ -4,64 +4,7 @@
       {
         "bucket1": {
           "source": ["./bucket1"],
-          "__resolved__": {
-            "bucket1/bucket.tf": {
-              "module": [
-                {
-                  "bucket2": {
-                    "source": ["./bucket2"],
-                    "__resolved__": {
-                      "bucket1/bucket2/bucket.tf": {
-                        "module": [
-                          {
-                            "bucket3": {
-                              "source": ["./bucket3"],
-                              "__resolved__": {
-                                "bucket1/bucket2/bucket3/bucket.tf": {
-                                  "resource": [
-                                    {
-                                      "aws_s3_bucket": {
-                                        "example3": {
-                                          "bucket": ["bucket3"],
-                                          "acl": ["public-read"]
-                                        }
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        ],
-                        "resource": [
-                          {
-                            "aws_s3_bucket": {
-                              "example2": {
-                                "bucket": [
-                                  "bucket2"
-                                ]
-                              }
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              ],
-              "resource": [
-                {
-                  "aws_s3_bucket": {
-                    "example1": {
-                      "bucket": [
-                        "bucket1"
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
-          }
+          "__resolved__": ["bucket1/bucket.tf"]
         }
       }
     ],
@@ -70,6 +13,60 @@
         "aws_s3_bucket": {
           "example0": {
             "bucket": ["bucket0"]
+          }
+        }
+      }
+    ]
+  },
+  "bucket1/bucket.tf": {
+    "module": [
+      {
+        "bucket2": {
+          "source": ["./bucket2"],
+          "__resolved__": ["bucket1/bucket2/bucket.tf"]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example1": {
+            "bucket": [
+              "bucket1"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "bucket1/bucket2/bucket.tf": {
+    "module": [
+      {
+        "bucket3": {
+          "source": ["./bucket3"],
+          "__resolved__": ["bucket1/bucket2/bucket3/bucket.tf"]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example2": {
+            "bucket": [
+              "bucket2"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "bucket1/bucket2/bucket3/bucket.tf": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example3": {
+            "bucket": ["bucket3"],
+            "acl": ["public-read"]
           }
         }
       }

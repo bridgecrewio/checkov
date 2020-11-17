@@ -68,10 +68,6 @@ class TestParserScenarios(unittest.TestCase):
     # def test_formatting(self):
     #     self.go("formatting")
 
-    # TODO: Ignoring for_each for now... how much do we care?
-    # def test_module_for_each(self):
-    #     self.go("module_for_each")
-
     def test_maze_of_variables(self):
         self.go("maze_of_variables")
 
