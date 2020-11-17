@@ -3,19 +3,19 @@ from checkov.common.models.enums import CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 
 
-class APIGatewayAccessLogging(BaseResourceValueCheck):
+class APIGatewayV2AccessLogging(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure API Gateway has Access Logging enabled"
         id = "CKV_AWS_76"
-        supported_resources = ['AWS::ApiGateway::Stage']
+        supported_resources = ['AWS::ApiGatewayV2::Stage']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'Properties/AccessLogSetting/DestinationArn'
+        return 'Properties/AccessLogSettings/DestinationArn'
 
     def get_expected_value(self):
         return ANY_VALUE
 
 
-check = APIGatewayAccessLogging()
+check = APIGatewayV2AccessLogging()

@@ -1,18 +1,18 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.APIGatewayAccessLogging import check
+from checkov.cloudformation.checks.resource.aws.APIGatewayV2AccessLogging import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestAPIGatewayAccessLogging(unittest.TestCase):
+class TestAPIGatewayV2AccessLogging(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_APIGatewayAccessLogging"
+        test_files_dir = current_dir + "/example_APIGatewayV2AccessLogging"
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
