@@ -83,7 +83,7 @@ class Runner(BaseRunner):
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.tf_definitions.items():
-            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+            scanned_file = f"/{os.path.relpath(self._strip_module_referrer(full_file_path), root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, definitions_context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter)
@@ -140,3 +140,11 @@ class Runner(BaseRunner):
                                 resource=entity_id, evaluations=entity_evaluations,
                                 check_class=check.__class__.__module__)
                 report.add_record(record=record)
+
+    @staticmethod
+    def _strip_module_referrer(file_path:str) -> str:
+        if file_path.endswith("]") and "[" in file_path:
+            return file_path[:file_path.index("[")]
+        else:
+            return file_path
+

@@ -365,8 +365,14 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
+        self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
+        self.assertEqual(1, len(report.failed_checks))
+
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
+
 
     def tearDown(self):
         parser_registry.definitions_context = {}
