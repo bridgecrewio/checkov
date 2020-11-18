@@ -548,7 +548,6 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
         var_value_and_file = _handle_indexing(var_name, lambda r: var_value_and_file_map.get(r))
         if var_value_and_file is not None:
             var_value, var_file = var_value_and_file
-            assert isinstance(var_file, str), f"Bad type on var {var_name}: {type(var_file)}"
             eval_context = eval_map_by_var_name.get(var_name)
             if eval_context is None:
                 eval_map_by_var_name[var_name] = EvaluationContext(os.path.relpath(var_file, root_directory),
