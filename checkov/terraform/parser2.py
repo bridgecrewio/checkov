@@ -101,7 +101,8 @@ def _internal_dir_load(directory: str, out_definitions: Dict,
                        env_vars: Mapping[str, str],
                        specified_vars: Optional[Mapping[str, str]],
                        module_loader_registry: ModuleLoaderRegistry,
-                       dir_filter: Callable[[str], bool]):
+                       dir_filter: Callable[[str], bool],
+                       module_load_context: Optional[str] = None):
     """
 See `parse_directory` docs.
     :param specified_vars:     Specifically defined variable values, overriding values from any other source.
@@ -189,21 +190,31 @@ See `parse_directory` docs.
     if specified_vars:                                                  # specified
         var_values.update(specified_vars)
 
+    # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
+    #                      may be a little overboard, but I don't want to just pass the entire data map down
+    #                      because it break encapsulations and I don't want to cause confusion about what data
+    #                      set it being processed. To avoid this, here's a Callable that will get the data
+    #                      map for a particular module reference. (Might be OCD, but...)
+    module_data_retrieval = lambda module_ref: out_definitions.get(module_ref)
+
     # Stage 3: Variable resolution round 1 - no modules yet
-    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values)
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values,
+                             module_data_retrieval)
 
     # Stage 4: Load modules
     _load_modules(out_definitions, out_evaluations_context, out_parsing_errors,
-                  env_vars, directory, module_loader_registry, dir_filter)
+                  env_vars, directory, module_loader_registry, dir_filter, module_load_context)
 
     # Stage 5: Variable resolution round 2 - now with modules
-    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values)
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values,
+                             module_data_retrieval)
 
 
 def _process_vars_and_locals(out_definitions: Dict,
                              evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                              directory: str,
-                             var_values: Dict[str, Any]):
+                             var_values: Dict[str, Any],
+                             module_data_retrieval: Callable[[str], Dict[str, Any]]):
     locals_values = {}
     for file_data in out_definitions.values():
         file_locals = file_data.get("locals")
@@ -232,12 +243,14 @@ def _process_vars_and_locals(out_definitions: Dict,
                 #     var_name: EvaluationContext(os.path.relpath(file.path, directory))
                 # }
 
-            made_change = _process_vars_and_locals_loop(file_data,
-                                                        eval_context_dict,
-                                                        os.path.relpath(file, directory),
-                                                        var_values, locals_values,
-                                                        file_data.get("resource"),
-                                                        file_data.get("module"))
+            if _process_vars_and_locals_loop(file_data,
+                                             eval_context_dict,
+                                             os.path.relpath(file, directory),
+                                             var_values, locals_values,
+                                             file_data.get("resource"),
+                                             file_data.get("module"),
+                                             module_data_retrieval):
+                made_change = True
 
             if len(eval_context_dict) == 0:
                 del evaluations_context[file]
@@ -252,6 +265,7 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                                   var_values: Dict[str, Any], locals_values: Dict[str, Any],
                                   resource_list: Optional[List[Dict[str, Any]]],
                                   module_list: Optional[List[Dict[str, Any]]],
+                                  module_data_retrieval: Callable[[str], Dict[str, Any]],
                                   outer_context: str = "") -> bool:
 
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
@@ -276,7 +290,8 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                         had_pattern_match = True
                     else:
                         replaced = _handle_single_var_pattern(var_base, var_values, locals_values,
-                                                              resource_list, module_list,
+                                                              resource_list,
+                                                              module_list, module_data_retrieval,
                                                               eval_map_by_var_name, relative_file_path,
                                                               new_context, value)
                         if replaced != var_base:
@@ -345,10 +360,10 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                     made_change = True
             elif isinstance(value, dict):
                 if _process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path, var_values,
-                                                 locals_values, resource_list, module_list, new_context):
+                                                 locals_values, resource_list,
+                                                 module_list, module_data_retrieval, new_context):
                     made_change = True
             elif isinstance(value, list):
-
                 if process_items_helper(lambda: enumerate(value), value, new_context, True):
                     made_change = True
         return made_change
@@ -361,15 +376,17 @@ def _load_modules(out_definitions: Dict,
                   out_parsing_errors: Dict[str, Exception],
                   env_vars: Mapping[str, str],
                   directory: str, module_loader_registry: ModuleLoaderRegistry,
-                  dir_filter: Callable[[str], bool]):
+                  dir_filter: Callable[[str], bool],
+                  module_load_context: Optional[str]):
 
+    all_module_definitions = {}
     all_module_evaluations_context = {}
     for file, file_data in out_definitions.items():
         module_calls = file_data.get("module")
         if not module_calls or not isinstance(module_calls, list):
             continue
 
-        for module_call in module_calls:
+        for module_index, module_call in enumerate(module_calls):
             if not isinstance(module_call, dict):
                 continue
 
@@ -391,31 +408,60 @@ def _load_modules(out_definitions: Dict,
                     version = version[0]
 
                 with module_loader_registry.load(directory, source, version) as content:
-                    if content.loaded():
-                        # Variables being passed to module, "source" and "version" are reserved
-                        specified_vars = {k: v[0] for k, v in module_call_data.items()
-                                          if k != "source" and k != "version"}
+                    if not content.loaded():
+                        continue
 
-                        module_definitions = {}
-                        module_evaluations_context = {}
-                        _internal_dir_load(content.path(), module_definitions,
-                                           module_evaluations_context, out_parsing_errors, env_vars,
-                                           specified_vars, module_loader_registry, dir_filter)
+                    # Variables being passed to module, "source" and "version" are reserved
+                    specified_vars = {k: v[0] for k, v in module_call_data.items()
+                                      if k != "source" and k != "version"}
 
-                        # NOTE: Where these resolved modules are placed is up for debate. This will put
-                        #       them in a "__resolved__" block under the "module" block. To run checks, this
-                        #       will need to be in-sync with where the runner expects them to be.
-                        #       The `module_definitions` dict mirrors the layout of the main definitions
-                        #       dict in that it starts with the "file path" (may not always be a real file
-                        #       or under the root dir).
-                        if module_definitions:
-                            module_call_data["__resolved__"] = module_definitions
+                    module_definitions = {}
+                    module_evaluations_context = {}
+                    _internal_dir_load(content.path(), module_definitions,
+                                       module_evaluations_context, out_parsing_errors, env_vars,
+                                       specified_vars, module_loader_registry, dir_filter,
+                                       module_load_context)
 
-                            # TODO: Not sure what to do with variable evaluations
-                            # deep_merge.merge(all_module_definitions, module_definitions)
-                            # deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
+                    if not module_definitions:
+                        continue
 
-    if all_module_evaluations_context:
+                    # NOTE: Modules are put into the main TF definitions structure "as normal" with the
+                    #       notable exception of the file name. For loaded modules referrer information is
+                    #       appended to the file name to create this format:
+                    #         <file_name>[<referred_file>#<referrer_index>]
+                    #       For example:
+                    #         /the/path/module/my_module.tf[/the/path/main.tf#0]
+                    #       The referrer and index allow a module allow a module to be loaded multiple
+                    #       times with differing data.
+                    #
+                    #       In addition, the referring block will have a "__resolved__" key added with a
+                    #       list pointing to the location of the module data that was resolved. For example:
+                    #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
+
+                    resolved_loc_list = module_call_data.get("__resolved__")
+                    if resolved_loc_list is None:
+                        resolved_loc_list = []
+                        module_call_data["__resolved__"] = resolved_loc_list
+
+                    # NOTE: Modules can load other modules, so only append referrer information where it
+                    #       has not already been added.
+                    keys = list(module_definitions.keys())
+                    for key in keys:
+                        if key.endswith("]"):
+                            continue
+                        new_key = f"{key}[{file}#{module_index}]"
+                        module_definitions[new_key] = \
+                            module_definitions[key]
+                        del module_definitions[key]
+
+                        resolved_loc_list.append(new_key)
+
+                    deep_merge.merge(all_module_definitions, module_definitions)
+                    # TODO: Not sure what to do with variable evaluations
+                    deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
+
+    if all_module_definitions:
+        deep_merge.merge(out_definitions, all_module_definitions)
         deep_merge.merge(out_evaluations_context, all_module_evaluations_context)
 
 
@@ -423,6 +469,7 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
                                locals_values: Dict[str, Any],
                                resource_list: Optional[List[Dict[str, Any]]],
                                module_list: Optional[List[Dict[str, Any]]],
+                               module_data_retrieval: Callable[[str], Dict[str, Any]],
                                eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
                                context,
                                orig_variable_full) -> Any:
@@ -430,20 +477,35 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
         return orig_variable
 
     elif orig_variable.startswith("module."):
+        if not module_list:
+            return orig_variable
+
         # Reference to module outputs, example: 'module.bucket.bucket_name'
-        # TODO: handle index into map/list
         ref_tokens = orig_variable.split(".")
         if len(ref_tokens) != 3:
-            return orig_variable        # fail safe, looking for something unexpected
+            return orig_variable        # fail safe, can the length ever be something other than 3?
+
         try:
-            result = jmespath.search(f"[].{ref_tokens[1]}.__resolved__.*[].output[]."
-                                     f"{ref_tokens[2]}.value[] | [0]",
-                                     module_list)
+            ref_list = jmespath.search(f"[].{ref_tokens[1]}.__resolved__[]", module_list)
+            #                                ^^^^^^^^^^^^^ module name
+
+            if not ref_list or not isinstance(ref_list, list):
+                return orig_variable
+
+            for ref in ref_list:
+                module_data = module_data_retrieval(ref)
+                if not module_data:
+                    continue
+
+                result = _handle_indexing(ref_tokens[2],
+                                          lambda r: jmespath.search(f"output[].{ref_tokens[2]}.value[] | [0]",
+                                                                    module_data))
+                if result:
+                    logging.debug("Resolved module ref:  %s --> %s", orig_variable, result)
+                    return result
         except ValueError:
             pass
-        else:
-            if result is not None:
-                return result
+        return orig_variable
 
     elif orig_variable == "True":
         return True

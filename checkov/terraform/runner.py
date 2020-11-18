@@ -140,13 +140,3 @@ class Runner(BaseRunner):
                                 resource=entity_id, evaluations=entity_evaluations,
                                 check_class=check.__class__.__module__)
                 report.add_record(record=record)
-
-            if block_type == "module":
-                for _, resolved_block in dpath.search(entity, "*/__resolved__", yielded=True):
-                    print("Break here")
-
-                    for module_file_path, module_definition in resolved_block.items():
-                        scanned_file = f"/{os.path.relpath(module_file_path, root_folder)}"
-                        logging.debug(f"Scanning file: {scanned_file}")
-                        self.run_all_blocks(module_definition, definition_context, full_file_path,
-                                            root_folder, report, scanned_file, runner_filter)

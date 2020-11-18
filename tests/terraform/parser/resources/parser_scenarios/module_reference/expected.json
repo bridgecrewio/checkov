@@ -15,6 +15,13 @@
     ]
   },
   "bucket/bucket.tf[main.tf#0]": {
+    "output": [
+      {
+        "bucket_name": {
+          "value": ["my_bucket"]
+        }
+      }
+    ],
     "resource": [
       {
         "aws_s3_bucket": {
@@ -23,13 +30,6 @@
               "my_bucket"
             ]
           }
-        }
-      }
-    ],
-    "output": [
-      {
-        "bucket_name": {
-          "value": ["my_bucket"]
         }
       }
     ]

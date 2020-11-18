@@ -1,10 +1,10 @@
 import dataclasses
 import json
 import os
+import re
 import unittest
 
-import dpath
-import itertools
+import jmespath
 
 from checkov.terraform import parser2
 
@@ -74,15 +74,19 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_reference(self):
         self.go("module_reference")
 
-    def go(self, dir_name):
+    def test_bad_ref_fallbacks(self):
+        self.go("bad_ref_fallbacks")
+
+    @staticmethod
+    def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/parser_scenarios/{dir_name}")
         assert os.path.exists(dir_path)
 
-        expected_data = TestParserScenarios.load_expected_data("expected.json", dir_path, dir_name)
+        expected_data = TestParserScenarios.load_expected_data("expected.json", dir_path)
         assert expected_data is not None, f"{dir_name}: expected.json file not found"
 
-        evaluation_data = TestParserScenarios.load_expected_data("eval.json", dir_path, dir_name)
+        evaluation_data = TestParserScenarios.load_expected_data("eval.json", dir_path)
 
         actual_data = {}
         actual_eval_data = {}
@@ -105,7 +109,7 @@ class TestParserScenarios(unittest.TestCase):
                 f"  Actual: \n{definition_string}"
 
     @staticmethod
-    def load_expected_data(source_file_name, dir_path, dir_name):
+    def load_expected_data(source_file_name, dir_path):
         expected_path = os.path.join(dir_path, source_file_name)
         if not os.path.exists(expected_path):
             return None
@@ -113,20 +117,47 @@ class TestParserScenarios(unittest.TestCase):
         with open(expected_path, "r") as f:
             expected_data = json.load(f)
 
+        # Convert to absolute path:   "buckets/bucket.tf[main.tf#0]"
+        #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
+        #                                    HERE       & HERE
+        #
+        resolved_pattern = re.compile(r"(.+)\[(.+)#(\d+)]")   # groups:  location (1), referrer (2), index (3)
+
         # Expected files should have the filenames relative to their base directory, but the parser will
         # use the absolute path. This loop with replace relative filenames with absolute.
-        top_level_tuple = None, expected_data
-        for _, data in itertools.chain([top_level_tuple],
-                                       dpath.search(expected_data, "**/__resolved__", yielded=True)):
+        keys = list(expected_data.keys())
+        for key in keys:
+            # NOTE: Sometimes keys have module referrers, sometimes they don't
 
-            keys = list(data.keys())
-            for key in keys:
+            match = resolved_pattern.match(key)
+            if match:
+                new_key = _make_module_ref_absolute(match, dir_path)
+            else:
                 if os.path.isabs(key):
                     continue
-                data[os.path.join(dir_path, key)] = data[key]
-                del data[key]
+                new_key = os.path.join(dir_path, key)
+            expected_data[new_key] = expected_data[key]
+            del expected_data[key]
+
+        for resolved_list in jmespath.search("*.module[].*[].__resolved__", expected_data):
+            for list_index in range(0, len(resolved_list)):
+                match = resolved_pattern.match(resolved_list[list_index])
+                assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
+                resolved_list[list_index] = _make_module_ref_absolute(match, dir_path)
+                # print(f"{match[0]} -> {resolved_list[list_index]}")
 
         return expected_data
+
+
+def _make_module_ref_absolute(match, dir_path) -> str:
+    module_location = match[1]
+    if not os.path.isabs(module_location):
+        module_location = os.path.join(dir_path, module_location)
+
+    module_referrer = match[2]
+    if not os.path.isabs(module_referrer):
+        module_referrer = os.path.join(dir_path, module_referrer)
+    return f"{module_location}[{module_referrer}#{match[3]}]"
 
 
 if __name__ == '__main__':
