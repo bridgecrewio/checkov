@@ -4,7 +4,7 @@
       {
         "bucket": {
           "source": ["./bucket"],
-          "__resolved__": ["bucket/bucket.tf"]
+          "__resolved__": ["bucket/bucket.tf[main.tf#0]"]
         }
       }
     ],
@@ -14,7 +14,7 @@
       }
     ]
   },
-  "bucket/bucket.tf": {
+  "bucket/bucket.tf[main.tf#0]": {
     "resource": [
       {
         "aws_s3_bucket": {

@@ -1,55 +1,20 @@
 {
-  "buckets.tf": {
+  "main.tf": {
     "module": [
       {
         "bucket": {
           "source": ["./bucket"],
-          "name": ["my_bucket1"],
-          "__resolved__": {
-            "bucket/bucket.tf": {
-              "variable": [
-                {
-                  "name": {}
-                }
-              ],
-              "resource": [
-                {
-                  "aws_s3_bucket": {
-                    "example": {
-                      "bucket": [
-                        "my_bucket1"
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
-          }
+          "__resolved__": ["bucket/bucket.tf[main.tf#0]"]
         }
-      },
+      }
+    ]
+  },
+  "bucket/bucket.tf[main.tf#0]": {
+    "resource": [
       {
-        "bucket": {
-          "source": ["./bucket"],
-          "name": ["my_bucket2"],
-          "__resolved__": {
-            "bucket/bucket.tf": {
-              "variable": [
-                {
-                  "name": {}
-                }
-              ],
-              "resource": [
-                {
-                  "aws_s3_bucket": {
-                    "example": {
-                      "bucket": [
-                        "my_bucket2"
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
+        "aws_s3_bucket": {
+          "mybucket": {
+            "bucket": ["MyBucket"]
           }
         }
       }

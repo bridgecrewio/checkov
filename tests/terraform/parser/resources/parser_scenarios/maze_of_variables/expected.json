@@ -1,5 +1,5 @@
 {
-  "buckets.tf": {
+  "maze.tf": {
     "variable": [
       {
         "gratuitous_var_default": {
@@ -35,7 +35,7 @@
         "bucket": {
           "source": ["./bucket"],
           "name": ["module-input"],
-          "__resolved__": ["bucket/bucket.tf"]
+          "__resolved__": ["bucket/bucket.tf[maze.tf#0]"]
         }
       }
     ],
@@ -51,7 +51,7 @@
       }
     ]
   },
-  "bucket/bucket.tf": {
+  "bucket/bucket.tf[maze.tf#0]": {
     "variable": [
       {
         "name": {}
