@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure rotation for customer created CMKs is enabled"
+        name = "Ensure KMS key policy does not contain wildcard (*) principal"
         id = "CKV_AWS_28"
         supported_resources = ['AWS::KMS::Key']
         categories = [CheckCategories.ENCRYPTION]
