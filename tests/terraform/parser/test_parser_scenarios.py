@@ -80,6 +80,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify")
 
+    def test_bad_tf(self):
+        self.go("bad_tf")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),

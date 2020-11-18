@@ -28,7 +28,7 @@ class VarReference:
 
 @dataclass
 class EvaluationContext:
-    var_file: str                     # Example: '/tf/example.tf'
+    var_file: str                     # File the variable was defined in (e.g., '/tf/example.tf'
     value: Any = None                 # Example: 'us-east-1'
     definitions: List[VarReference] = field(default_factory=list)
 

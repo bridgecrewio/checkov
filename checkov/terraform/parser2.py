@@ -35,7 +35,7 @@ class Parser2:
             return False
 
     def parse_directory(self, directory: str, out_definitions: Optional[Dict],
-                        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
+                        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] = None,
                         out_parsing_errors: Dict[str, Exception] = None,
                         env_vars: Mapping[str, str] = None):
 
@@ -52,8 +52,9 @@ class Parser2:
 
 
 def _parse_directory(directory: str, include_sub_dirs: bool, out_definitions: Dict,
-                     out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
-                     out_parsing_errors: Dict[str, Exception] = None, env_vars: Mapping[str, str] = None,
+                     out_evaluations_context: Optional[Dict[str, Dict[str, EvaluationContext]]] = None,
+                     out_parsing_errors: Optional[Dict[str, Exception]] = None,
+                     env_vars: Optional[Mapping[str, str]] = None,
                      module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
                      dir_filter: Callable[[str], bool] = lambda _: True):
     """
@@ -86,6 +87,8 @@ The resulting data dictionary generally follows the layout of HCL parsing with a
                                        the directory.
     """
 
+    if out_evaluations_context is None:
+        out_evaluations_context = {}
     if out_parsing_errors is None:
         out_parsing_errors = {}
     if env_vars is None:
@@ -163,11 +166,16 @@ See `parse_directory` docs.
         # Load variable defaults
         #  (see https://www.terraform.io/docs/configuration/variables.html#declaring-an-input-variable)
         var_blocks = data.get("variable")
-        if var_blocks:
+        if var_blocks and isinstance(var_blocks, list):
             for var_block in var_blocks:
+                if not isinstance(var_block, dict):
+                    continue
                 for var_name, var_definition in var_block.items():
+                    if not isinstance(var_definition, dict):
+                        continue
+
                     default_value = var_definition.get("default")
-                    if default_value is not None:
+                    if default_value is not None and isinstance(default_value, list):
                         var_value_and_file_map[var_name] = default_value[0], file.path
 
     # Stage 2: Load vars in proper order:
@@ -187,14 +195,17 @@ See `parse_directory` docs.
         var_value_and_file_map[key[7:]] = value, f"env:{key}"
     if hcl_tfvars:                                                      # terraform.tfvars
         data = _load_or_die_quietly(hcl_tfvars, out_parsing_errors)
-        var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
+        if data:
+            var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
     if json_tfvars:                                                     # terraform.tfvars.json
         data = _load_or_die_quietly(json_tfvars, out_parsing_errors)
-        var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
+        if data:
+            var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
     if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
         for var_file in sorted(auto_vars_files, key=os.DirEntry.name):
             data = _load_or_die_quietly(var_file, out_parsing_errors)
-            var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
     if specified_vars:                                                  # specified
         var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
 
@@ -405,8 +416,11 @@ def _load_modules(out_definitions: Dict,
 
             # There should only be one module reference per outer dict, but... safety first
             for module_call_name, module_call_data in module_call.items():
+                if not isinstance(module_call_data, dict):
+                    continue
+
                 source = module_call_data.get("source")
-                if not source:
+                if not source or not isinstance(source, list):
                     continue
                 source = source[0]
 
@@ -420,58 +434,63 @@ def _load_modules(out_definitions: Dict,
                 if version and isinstance(version, list):
                     version = version[0]
 
-                with module_loader_registry.load(directory, source, version) as content:
-                    if not content.loaded():
-                        continue
-
-                    # Variables being passed to module, "source" and "version" are reserved
-                    specified_vars = {k: v[0] for k, v in module_call_data.items()
-                                      if k != "source" and k != "version"}
-
-                    module_definitions = {}
-                    module_evaluations_context = {}
-                    _internal_dir_load(content.path(), module_definitions,
-                                       module_evaluations_context, out_parsing_errors, env_vars,
-                                       specified_vars, module_loader_registry, dir_filter,
-                                       module_load_context)
-
-                    if not module_definitions:
-                        continue
-
-                    # NOTE: Modules are put into the main TF definitions structure "as normal" with the
-                    #       notable exception of the file name. For loaded modules referrer information is
-                    #       appended to the file name to create this format:
-                    #         <file_name>[<referred_file>#<referrer_index>]
-                    #       For example:
-                    #         /the/path/module/my_module.tf[/the/path/main.tf#0]
-                    #       The referrer and index allow a module allow a module to be loaded multiple
-                    #       times with differing data.
-                    #
-                    #       In addition, the referring block will have a "__resolved__" key added with a
-                    #       list pointing to the location of the module data that was resolved. For example:
-                    #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
-
-                    resolved_loc_list = module_call_data.get("__resolved__")
-                    if resolved_loc_list is None:
-                        resolved_loc_list = []
-                        module_call_data["__resolved__"] = resolved_loc_list
-
-                    # NOTE: Modules can load other modules, so only append referrer information where it
-                    #       has not already been added.
-                    keys = list(module_definitions.keys())
-                    for key in keys:
-                        if key.endswith("]"):
+                try:
+                    with module_loader_registry.load(directory, source, version) as content:
+                        if not content.loaded():
                             continue
-                        new_key = f"{key}[{file}#{module_index}]"
-                        module_definitions[new_key] = \
-                            module_definitions[key]
-                        del module_definitions[key]
 
-                        resolved_loc_list.append(new_key)
+                        # Variables being passed to module, "source" and "version" are reserved
+                        specified_vars = {k: v[0] for k, v in module_call_data.items()
+                                          if k != "source" and k != "version"}
 
-                    deep_merge.merge(all_module_definitions, module_definitions)
-                    # TODO: Not sure what to do with variable evaluations
-                    deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
+                        module_definitions = {}
+                        module_evaluations_context = {}
+                        _internal_dir_load(content.path(), module_definitions,
+                                           module_evaluations_context, out_parsing_errors, env_vars,
+                                           specified_vars, module_loader_registry, dir_filter,
+                                           module_load_context)
+
+                        if not module_definitions:
+                            continue
+
+                        # NOTE: Modules are put into the main TF definitions structure "as normal" with the
+                        #       notable exception of the file name. For loaded modules referrer information is
+                        #       appended to the file name to create this format:
+                        #         <file_name>[<referred_file>#<referrer_index>]
+                        #       For example:
+                        #         /the/path/module/my_module.tf[/the/path/main.tf#0]
+                        #       The referrer and index allow a module allow a module to be loaded multiple
+                        #       times with differing data.
+                        #
+                        #       In addition, the referring block will have a "__resolved__" key added with a
+                        #       list pointing to the location of the module data that was resolved. For example:
+                        #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
+
+                        resolved_loc_list = module_call_data.get("__resolved__")
+                        if resolved_loc_list is None:
+                            resolved_loc_list = []
+                            module_call_data["__resolved__"] = resolved_loc_list
+
+                        # NOTE: Modules can load other modules, so only append referrer information where it
+                        #       has not already been added.
+                        keys = list(module_definitions.keys())
+                        for key in keys:
+                            if key.endswith("]"):
+                                continue
+                            new_key = f"{key}[{file}#{module_index}]"
+                            module_definitions[new_key] = \
+                                module_definitions[key]
+                            del module_definitions[key]
+
+                            resolved_loc_list.append(new_key)
+
+                        deep_merge.merge(all_module_definitions, module_definitions)
+                        # TODO: Not sure what to do with variable evaluations
+                        deep_merge.merge(all_module_evaluations_context, module_evaluations_context)
+                except Exception as e:
+                    logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
+                                    source, version, e)
+                    pass
 
     if all_module_definitions:
         deep_merge.merge(out_definitions, all_module_definitions)
@@ -636,13 +655,20 @@ Load JSON or HCL, depending on filename.
     try:
         with open(file, "r") as f:
             if file_name.endswith(".json"):
-                return json.load(f)
+                return _clean_bad_definitions(json.load(f))
             else:
-                return hcl2.load(f)
+                return _clean_bad_definitions(hcl2.load(f))
     except Exception as e:
         LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
         parsing_errors[file_path] = e
         return None
+
+
+def _clean_bad_definitions(tf_definition_list):
+    return {
+        block_type: list(filter(lambda definition_list: block_type == 'locals' or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+        for block_type in tf_definition_list.keys()
+    }
 
 
 def _eval_string(value: str) -> Any:

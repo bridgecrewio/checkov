@@ -27,6 +27,7 @@ logging.basicConfig(level=LOG_LEVEL)
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
+
 class Runner(BaseRunner):
     check_type = "terraform"
 

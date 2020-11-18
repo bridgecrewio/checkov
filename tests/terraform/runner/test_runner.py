@@ -7,7 +7,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
 from checkov.common.output.report import Report
-from checkov.terraform.parser import Parser
+from checkov.terraform.parser2 import Parser2
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -344,9 +344,9 @@ class TestRunnerValid(unittest.TestCase):
                     'current': {'start_line': 27, 'end_line': 0, 'code_lines': [], 'skipped_checks': []}}}}}
         tf_definitions = {}
         runner = Runner()
-        parser = Parser()
+        parser = Parser2()
         runner.tf_definitions = tf_definitions
-        parser.hcl2(directory=tf_dir_path, tf_definitions=tf_definitions)
+        parser.parse_directory(tf_dir_path, tf_definitions)
         report = Report('terraform')
         runner.check_tf_definition(root_folder=tf_dir_path, report=report, runner_filter=RunnerFilter(), external_definitions_context=external_definitions_context)
         self.assertGreaterEqual(len(report.passed_checks), 1)
