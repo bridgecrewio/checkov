@@ -83,6 +83,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_bad_tf(self):
         self.go("bad_tf")
 
+    def test_null_variables_651(self):
+        self.go("null_variables_651")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),

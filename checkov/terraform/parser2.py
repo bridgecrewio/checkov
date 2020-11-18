@@ -293,7 +293,7 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
     def process_items_helper(key_value_iterator, data_map, context, allow_str_bool_translation: bool):
         made_change = False
-        for key, value in key_value_iterator():
+        for key, value in list(key_value_iterator()):       # Copy to list to allow deletion
             new_context = f"{context}/{key}" if len(context) != 0 else key
 
             if isinstance(value, str):
@@ -387,9 +387,13 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                                                  module_list, module_data_retrieval, root_directory,
                                                  new_context):
                     made_change = True
+
             elif isinstance(value, list):
                 if process_items_helper(lambda: enumerate(value), value, new_context, True):
                     made_change = True
+                # Some special cases that should be pruned from datasets
+                if value == [None] or value == [{}] or len(value) == 0:
+                    del data_map[key]
         return made_change
 
     return process_items_helper(out_definitions.items, out_definitions, outer_context, False)
