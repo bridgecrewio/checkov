@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Mapping, Optional, Dict, Any, List, Callable
+from typing import Mapping, Optional, Dict, Any, List, Callable, Tuple
 
 import deep_merge
 import hcl2
@@ -62,6 +62,14 @@ resulting data into `tf_definitions`. This loads data according to the Terraform
 specification (https://www.terraform.io/docs/configuration/index.html#code-organization), starting
 in the given directory and possibly moving out from there.
 
+The resulting data dictionary generally follows the layout of HCL parsing with a couple distinctions:
+- Data is broken out by file from which the data was loaded. So: <file>: <data>
+  - Loaded modules will also be keyed by referrer info: <file>[<referring_file>#<index>]: <data>
+- Module block will included a "__resolved__" key with a list of the file/referrer names under
+  which data for the file was loaded. For example: "__resolved__": ["main.tf#0"]. The values will
+  correspond to the file names mentioned in the first bullet.
+- All variables that can be resolved will be resolved.
+
     :param directory:                  Directory in which .tf and .tfvars files will be loaded.
     :param include_sub_dirs:           If true, subdirectories will be walked.
     :param out_definitions:            Dict into which the "simple" TF data with variables resolved is put.
@@ -113,7 +121,7 @@ See `parse_directory` docs.
     #          Load the raw data for non-variable files, but perform no processing other than loading
     #          variable default values.
     #          Variable files are also flagged for later processing.
-    var_values: Dict[str, Any] = {}
+    var_value_and_file_map: Dict[str, Tuple[Any, str]] = {}
     hcl_tfvars: Optional[os.DirEntry] = None
     json_tfvars: Optional[os.DirEntry] = None
     auto_vars_files: Optional[List[os.DirEntry]] = None      # lazy creation
@@ -160,7 +168,7 @@ See `parse_directory` docs.
                 for var_name, var_definition in var_block.items():
                     default_value = var_definition.get("default")
                     if default_value is not None:
-                        var_values[var_name] = default_value[0]
+                        var_value_and_file_map[var_name] = default_value[0], file.path
 
     # Stage 2: Load vars in proper order:
     #          https://www.terraform.io/docs/configuration/variables.html#variable-definition-precedence
@@ -176,19 +184,19 @@ See `parse_directory` docs.
     for key, value in env_vars.items():                                 # env vars
         if not key.startswith("TF_VAR_"):
             continue
-        var_values[key[7:]] = value
+        var_value_and_file_map[key[7:]] = value, f"env:{key}"
     if hcl_tfvars:                                                      # terraform.tfvars
         data = _load_or_die_quietly(hcl_tfvars, out_parsing_errors)
-        var_values.update(data)
+        var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
     if json_tfvars:                                                     # terraform.tfvars.json
         data = _load_or_die_quietly(json_tfvars, out_parsing_errors)
-        var_values.update(data)
+        var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
     if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
         for var_file in sorted(auto_vars_files, key=os.DirEntry.name):
             data = _load_or_die_quietly(var_file, out_parsing_errors)
-            var_values.update(data)
+            var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
     if specified_vars:                                                  # specified
-        var_values.update(specified_vars)
+        var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
 
     # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
     #                      may be a little overboard, but I don't want to just pass the entire data map down
@@ -198,7 +206,7 @@ See `parse_directory` docs.
     module_data_retrieval = lambda module_ref: out_definitions.get(module_ref)
 
     # Stage 3: Variable resolution round 1 - no modules yet
-    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values,
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_value_and_file_map,
                              module_data_retrieval)
 
     # Stage 4: Load modules
@@ -206,14 +214,14 @@ See `parse_directory` docs.
                   env_vars, directory, module_loader_registry, dir_filter, module_load_context)
 
     # Stage 5: Variable resolution round 2 - now with modules
-    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_values,
+    _process_vars_and_locals(out_definitions, out_evaluations_context, directory, var_value_and_file_map,
                              module_data_retrieval)
 
 
 def _process_vars_and_locals(out_definitions: Dict,
                              evaluations_context: Dict[str, Dict[str, EvaluationContext]],
                              directory: str,
-                             var_values: Dict[str, Any],
+                             var_value_and_file_map: Dict[str, Tuple[Any, str]],
                              module_data_retrieval: Callable[[str], Dict[str, Any]]):
     locals_values = {}
     for file_data in out_definitions.values():
@@ -246,10 +254,11 @@ def _process_vars_and_locals(out_definitions: Dict,
             if _process_vars_and_locals_loop(file_data,
                                              eval_context_dict,
                                              os.path.relpath(file, directory),
-                                             var_values, locals_values,
+                                             var_value_and_file_map, locals_values,
                                              file_data.get("resource"),
                                              file_data.get("module"),
-                                             module_data_retrieval):
+                                             module_data_retrieval,
+                                             directory):
                 made_change = True
 
             if len(eval_context_dict) == 0:
@@ -262,10 +271,12 @@ def _process_vars_and_locals(out_definitions: Dict,
 
 def _process_vars_and_locals_loop(out_definitions: Dict,
                                   eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
-                                  var_values: Dict[str, Any], locals_values: Dict[str, Any],
+                                  var_value_and_file_map: Dict[str, Tuple[Any, str]],
+                                  locals_values: Dict[str, Any],
                                   resource_list: Optional[List[Dict[str, Any]]],
                                   module_list: Optional[List[Dict[str, Any]]],
                                   module_data_retrieval: Callable[[str], Dict[str, Any]],
+                                  root_directory: str,
                                   outer_context: str = "") -> bool:
 
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
@@ -289,11 +300,11 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                         altered_value = var_base
                         had_pattern_match = True
                     else:
-                        replaced = _handle_single_var_pattern(var_base, var_values, locals_values,
+                        replaced = _handle_single_var_pattern(var_base, var_value_and_file_map, locals_values,
                                                               resource_list,
                                                               module_list, module_data_retrieval,
-                                                              eval_map_by_var_name, relative_file_path,
-                                                              new_context, value)
+                                                              eval_map_by_var_name,
+                                                              new_context, value, root_directory)
                         if replaced != var_base:
                             if match[0] == value:
                                 altered_value = replaced
@@ -359,9 +370,11 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                     data_map[key] = altered_value
                     made_change = True
             elif isinstance(value, dict):
-                if _process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path, var_values,
+                if _process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path,
+                                                 var_value_and_file_map,
                                                  locals_values, resource_list,
-                                                 module_list, module_data_retrieval, new_context):
+                                                 module_list, module_data_retrieval, root_directory,
+                                                 new_context):
                     made_change = True
             elif isinstance(value, list):
                 if process_items_helper(lambda: enumerate(value), value, new_context, True):
@@ -465,14 +478,13 @@ def _load_modules(out_definitions: Dict,
         deep_merge.merge(out_evaluations_context, all_module_evaluations_context)
 
 
-def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
+def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[str, Tuple[Any, str]],
                                locals_values: Dict[str, Any],
                                resource_list: Optional[List[Dict[str, Any]]],
                                module_list: Optional[List[Dict[str, Any]]],
                                module_data_retrieval: Callable[[str], Dict[str, Any]],
-                               eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
-                               context,
-                               orig_variable_full) -> Any:
+                               eval_map_by_var_name: Dict[str, EvaluationContext],
+                               context, orig_variable_full, root_directory: str) -> Any:
     if "${" in orig_variable:
         return orig_variable
 
@@ -514,11 +526,14 @@ def _handle_single_var_pattern(orig_variable: str, var_values: Dict[str, Any],
 
     elif orig_variable.startswith("var."):
         var_name = orig_variable[4:]
-        var_value = _handle_indexing(var_name, lambda r: var_values.get(r))
-        if var_value is not None:
+        var_value_and_file = _handle_indexing(var_name, lambda r: var_value_and_file_map.get(r))
+        if var_value_and_file is not None:
+            var_value, var_file = var_value_and_file
+            assert isinstance(var_file, str), f"Bad type on var {var_name}: {type(var_file)}"
             eval_context = eval_map_by_var_name.get(var_name)
             if eval_context is None:
-                eval_map_by_var_name[var_name] = EvaluationContext(relative_file_path, var_value,
+                eval_map_by_var_name[var_name] = EvaluationContext(os.path.relpath(var_file, root_directory),
+                                                                   var_value,
                                                                    [VarReference(var_name,
                                                                                  orig_variable_full,
                                                                                  context)])
