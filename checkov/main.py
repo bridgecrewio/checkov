@@ -12,7 +12,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
-from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.runner import Runner as k8_runner

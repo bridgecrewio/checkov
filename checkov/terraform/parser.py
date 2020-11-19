@@ -10,7 +10,7 @@ import hcl2
 import jmespath
 
 from checkov.common.runners.base_runner import filter_ignored_directories
-from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.variables.context import EvaluationContext, VarReference
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry

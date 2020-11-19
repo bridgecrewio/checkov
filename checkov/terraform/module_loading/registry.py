@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional, List
 
-from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
 
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
 
 
