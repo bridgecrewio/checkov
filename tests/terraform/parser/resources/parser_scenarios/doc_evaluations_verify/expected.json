@@ -1,0 +1,39 @@
+{
+  "main.tf": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "my_bucket": {
+            "region": ["us-west-2"],
+            "bucket": ["${local.bucket_name}"],
+            "acl": ["public-read"],
+            "force_destroy": [true]
+          }
+        }
+      }
+    ]
+  },
+  "variables.tf": {
+    "variable": [
+      {
+        "bucket_name": {
+          "default": [
+            "MyBucket"
+          ]
+        }
+      },
+      {
+        "acl": {
+          "default": [
+            "public-read"
+          ]
+        }
+      },
+      {
+        "region": {
+          "default": ["us-west-2"]
+        }
+      }
+    ]
+  }
+}

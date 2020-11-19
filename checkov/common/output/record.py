@@ -21,6 +21,12 @@ class Record:
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class):
+        """
+        :param evaluations: A dict with the key being the variable name, value being a dict containing:
+                             - 'var_file'
+                             - 'value'
+                             - 'definitions', a list of dicts which contain 'definition_expression'
+        """
         self.check_id = check_id
         self.check_name = check_name
         self.check_result = check_result

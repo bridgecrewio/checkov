@@ -187,7 +187,8 @@ jobs:
         run: |
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
-
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
@@ -205,6 +206,8 @@ jobs:
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
           echo $RELEASE_VERSION
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:

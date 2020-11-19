@@ -1,0 +1,35 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "dummy_with_dash": ["my-bucket-name"],
+        "dummy_with_comma": ["my-bucket-name"],
+        "bucket_name": ["my-bucket-name"]
+      }
+    ],
+    "resource": [
+      {
+        "aws_cognito_user_group": {
+          "user_group": {
+            "name": ["this-is-my-default"],
+            "description": ["this-is-my-default"],
+            "user_pool_id": ["this-is-my-default"]
+          }
+        },
+        "null_resource": {
+          "create_cognito_user": {
+
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "BUCKET_NAME": {
+          "type": ["string"],
+          "default": ["this-is-my-default"]
+        }
+      }
+    ]
+  }
+}

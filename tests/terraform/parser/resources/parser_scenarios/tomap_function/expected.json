@@ -1,0 +1,44 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "INTS": [
+          {
+            "a": 1,
+            "b": 2
+          }
+        ],
+        "FLOATS": [
+          {
+            "a": 1.1,
+            "b": 2.2
+          }
+        ],
+        "STRINGS": [
+          {
+            "a": "one",
+            "b": "two"
+          }
+        ],
+        "BOOLS": [
+          {
+            "a": true,
+            "b": false
+          }
+        ],
+        "MIXED_BOOL": [
+          {
+            "a": "foo",
+            "b": "true"
+          }
+        ],
+        "MIXED_FLOAT": [
+          {
+            "a": "foo",
+            "b": "1.2"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name_doesnt_matter.tf": {
+    "locals": [
+      {
+        "TRUE_STRING": [true],
+        "FALSE_STRING": [false]
+      }
+    ]
+  }
+}

@@ -110,7 +110,12 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(self, tf_file, definition_blocks, collect_skip_comments=True):
-        self.tf_file = tf_file
+        # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
+        # Chop off everything after the file name for our purposes here
+        if tf_file.endswith("]") and "[" in tf_file:
+            self.tf_file = tf_file[:tf_file.index("[")]
+        else:
+            self.tf_file = tf_file
         self.context = {}
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)

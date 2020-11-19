@@ -1,0 +1,22 @@
+{
+  "skip_bad_tf_example.tf": {
+    "module": [
+      {
+        "bar": {
+          "memory": ["1G"],
+          "source": ["baz"]
+        }
+      },
+      {
+        "okay": {
+          "source": ["./okay", "baz2"]
+        }
+      }
+    ],
+    "variable": [
+      {
+        "okay": {}
+      }
+    ]
+  }
+}

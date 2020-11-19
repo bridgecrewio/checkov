@@ -1,3 +1,8 @@
+variable "region" {
+  default = "us-east-1"
+}
+variable "VERSIONING_ENABLED" {}
+
 resource "aws_s3_bucket" "foo-bucket" {
   region        = var.region
   bucket        = local.bucket_name
@@ -6,7 +11,7 @@ resource "aws_s3_bucket" "foo-bucket" {
     Name = "foo-${data.aws_caller_identity.current.account_id}"
   }
   versioning {
-    enabled = true
+    enabled = var.VERSIONING_ENABLED
     mfa_delete = true
   }
   logging {

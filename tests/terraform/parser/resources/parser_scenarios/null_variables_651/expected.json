@@ -1,0 +1,41 @@
+{
+  "main.tf": {
+    "resource": [
+      {
+        "aws_cloudfront_distribution": {
+          "cf_dis": {
+            "enabled": [true]
+          }
+        }
+      },
+      {
+        "aws_s3_bucket": {
+          "website_bucket": {}
+        }
+      }
+    ],
+    "variable": [
+      {
+        "logging_include_cookies": {
+          "type": ["bool"],
+          "description": ["Whether to enable cookies in access logging"]
+        }
+      },
+      {
+        "logging_bucket_id": {
+          "type": ["string"],
+          "description": ["The bucket ID where to store access logs"]
+        }
+      },
+      {
+        "logging_bucket_prefix": {
+          "type": ["string"],
+          "description": ["The prefix where to store access logs"]
+        }
+      },
+      {
+        "versioning": {}
+      }
+    ]
+  }
+}

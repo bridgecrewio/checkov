@@ -1,0 +1,10 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "example1": ["Hello, Ander!"],
+        "example2": ["There are 4 lights"]
+      }
+    ]
+  }
+}
