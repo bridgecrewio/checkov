@@ -60,7 +60,7 @@ class TestBaseCheck(unittest.TestCase):
                 def scan_entity_conf(self, conf, some_unexpected_parameter_123):
                     return CheckResult.PASSED
         self.assertIsInstance(context.exception, NotImplementedError)
-        self.assertEquals(
+        self.assertEqual(
             "The signature ((\'self\', \'conf\', \'some_unexpected_parameter_123\'), None, None) for scan_entity_conf "
             "is not supported.",
             context.exception.args[0]

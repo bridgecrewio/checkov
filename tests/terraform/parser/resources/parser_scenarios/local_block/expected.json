@@ -1,0 +1,20 @@
+{
+  "name_doesnt_matter.tf": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "test_with_locals": {
+            "bucket": [
+              "my-bucket-name"
+            ]
+          }
+        }
+      }
+    ],
+    "locals": [
+      {
+        "BUCKET_NAME": ["my-bucket-name"]
+      }
+    ]
+  }
+}
