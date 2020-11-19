@@ -347,7 +347,7 @@ class TestRunnerValid(unittest.TestCase):
         runner.check_tf_definition(root_folder=tf_dir_path, report=report, runner_filter=RunnerFilter(), external_definitions_context=external_definitions_context)
         self.assertGreaterEqual(len(report.passed_checks), 1)
 
-    def test_resolved_module(self):
+    def test_failure_in_resolved_module(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = os.path.join(current_dir, "../parser/resources/parser_scenarios/module_matryoshka")
         valid_dir_path = os.path.normpath(valid_dir_path)

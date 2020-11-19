@@ -62,6 +62,10 @@ class RegistryLoader(ModuleLoader):
         return 'latest'
 
     def _process_inner_registry_module(self):
+        # Check if the source has '//' in it. If it does, it indicates a reference for an inner module.
+        # Example: "terraform-aws-modules/security-group/aws//modules/http-80" =>
+        #    module_source = terraform-aws-modules/security-group/aws
+        #    dest_dir = modules/http-80
         module_source_components = self.module_source.split('//')
         if len(module_source_components) > 1:
             self.module_source = module_source_components[0]

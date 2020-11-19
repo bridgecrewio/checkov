@@ -14,9 +14,9 @@ from checkov.common.goget.base_getter import BaseGetter
 
 
 class GitGetter(BaseGetter):
-    def __init__(self, url, create_clone_and_res_dirs=True):
+    def __init__(self, url, create_clone_and_result_dirs=True):
         self.logger = logging.getLogger(__name__)
-        self.create_clone_and_res_dirs = create_clone_and_res_dirs
+        self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
 
         search_tag = re.search(TAG_PATTERN, url)

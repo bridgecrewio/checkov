@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Dict
 
-import dpath.options
+import dpath.util
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
