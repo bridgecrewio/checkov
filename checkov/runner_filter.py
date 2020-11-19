@@ -1,4 +1,4 @@
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
 class RunnerFilter(object):

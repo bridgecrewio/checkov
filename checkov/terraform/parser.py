@@ -10,7 +10,7 @@ import hcl2
 import jmespath
 
 from checkov.common.runners.base_runner import filter_ignored_directories
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.terraform.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.variables.context import EvaluationContext, VarReference
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
@@ -476,10 +476,10 @@ class Parser:
                             #       list pointing to the location of the module data that was resolved. For example:
                             #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
 
-                            resolved_loc_list = module_call_data.get("__resolved__")
+                            resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
                             if resolved_loc_list is None:
                                 resolved_loc_list = []
-                                module_call_data["__resolved__"] = resolved_loc_list
+                                module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
 
                             # NOTE: Modules can load other modules, so only append referrer information where it
                             #       has not already been added.
@@ -526,7 +526,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
             return orig_variable        # fail safe, can the length ever be something other than 3?
 
         try:
-            ref_list = jmespath.search(f"[].{ref_tokens[1]}.__resolved__[]", module_list)
+            ref_list = jmespath.search(f"[].{ref_tokens[1]}.{RESOLVED_MODULE_ENTRY_NAME}[]", module_list)
             #                                ^^^^^^^^^^^^^ module name
 
             if not ref_list or not isinstance(ref_list, list):
