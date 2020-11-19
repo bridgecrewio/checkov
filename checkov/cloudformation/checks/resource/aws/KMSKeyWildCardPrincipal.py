@@ -33,7 +33,7 @@ def get_recursively(search_dict, field):
 class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure KMS key policy does not contain wildcard (*) principal"
-        id = "CKV_AWS_28"
+        id = "CKV_AWS_33"
         supported_resources = ['AWS::KMS::Key']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
