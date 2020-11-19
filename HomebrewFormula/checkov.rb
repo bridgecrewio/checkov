@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/75/0e/1205b5f8bbbecd70bec386aa81295a9ce6d5e8e30c606e6232121f563fef/checkov-1.0.633.tar.gz"
-  sha256 "e729f074dc52536e7070c19fe0e5074df8cf82f16f4d7c3caff27ecd45c03434"
+  url "https://files.pythonhosted.org/packages/e4/dc/796097f39c3c3d838dbc4d271a5684285b003f78e86cc9e34913bc59f302/checkov-1.0.634.tar.gz"
+  sha256 "b0cebd2500fb27a9f7caa385fc4f18130c9dac10987720ef4919d8eac10561e0"
 
   depends_on "python3"
 
@@ -108,7 +108,7 @@ class Checkov < Formula
     sha256 "921a37e2aefc64145e7b73d50c71bb4f26f46e4c9f414dc648c6245ff92cf7db"
   end
 
-  resource "semantic_version" do
+  resource "semantic-version" do
     url "https://files.pythonhosted.org/packages/d4/52/3be868c7ed1f408cb822bc92ce17ffe4e97d11c42caafce0589f05844dd0/semantic_version-2.8.5.tar.gz"
     sha256 "d2cb2de0558762934679b9a104e82eca7af448c9f4974d1f3eeccff651df8a54"
   end
