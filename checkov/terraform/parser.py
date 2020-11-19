@@ -23,7 +23,7 @@ _SIMPLE_TYPES = frozenset(["string", "number", "bool"])
 _RESOURCE_REF_PATTERN = re.compile(r'[\d\w]+(\.[\d\w]+)+')
 
 
-class Parser2:
+class Parser:
     def __init__(self):
         self._parsed_directories = set()
 

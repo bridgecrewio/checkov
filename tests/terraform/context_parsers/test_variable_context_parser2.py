@@ -1,5 +1,5 @@
 import unittest
-from checkov.terraform.parser2 import Parser2 as Parser
+from checkov.terraform.parser import Parser
 from checkov.terraform.context_parsers.registry import parser_registry
 import os
 
