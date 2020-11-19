@@ -8,10 +8,10 @@ Resources:
         Version: '2012-10-17'
         Id: key-default-1
         Statement:
-        - Sid: Enable IAM User Permissions
+        - Sid: Enable Permissions for All AWS Principals
           Effect: Allow
           Principal:
-            AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
-          Action: 'kms:*'
+            AWS: '*'
+          Action: kms:*
           Resource: '*'
       EnableKeyRotation: true
