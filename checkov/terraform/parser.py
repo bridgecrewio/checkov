@@ -149,7 +149,7 @@ See `parse_directory` docs.
             if auto_vars_files is None:
                 auto_vars_files = [file]
             else:
-                auto_vars_files.append(file.path)
+                auto_vars_files.append(file)
             continue
 
         # Resource files
@@ -202,7 +202,7 @@ See `parse_directory` docs.
         if data:
             var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
     if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
-        for var_file in sorted(auto_vars_files, key=os.DirEntry.name):
+        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
             data = _load_or_die_quietly(var_file, out_parsing_errors)
             if data:
                 var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
@@ -439,7 +439,7 @@ def _load_modules(out_definitions: Dict,
                     version = version[0]
 
                 try:
-                    with module_loader_registry.load(directory, source, version) as content:
+                    with module_loader_registry.load(os.path.dirname(file), source, version) as content:
                         if not content.loaded():
                             continue
 
