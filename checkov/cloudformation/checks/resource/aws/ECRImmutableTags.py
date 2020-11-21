@@ -6,12 +6,12 @@ class ECRImmutableTags(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure ECR Image Tags are immutable"
         id = "CKV_AWS_51"
-        supported_resources = ['AWS::ECR::Repository']
+        supported_resources = ["AWS::ECR::Repository"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'Properties/ImageTagMutability'
+        return "Properties/ImageTagMutability"
 
     def get_expected_value(self):
         return "IMMUTABLE"
