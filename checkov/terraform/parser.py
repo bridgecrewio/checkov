@@ -389,10 +389,11 @@ def _process_vars_and_locals_loop(out_definitions: Dict,
                     made_change = True
 
             elif isinstance(value, list):
-                if process_items_helper(lambda: enumerate(value), value, new_context, True):
-                    made_change = True
+                if len(value) > 0 and value[0] != value:
+                    if process_items_helper(lambda: enumerate(value), value, new_context, True):
+                        made_change = True
                 # Some special cases that should be pruned from datasets
-                if value == [None] or value == [{}] or len(value) == 0:
+                if value == [None] or value == [{}] or value == [[]] or len(value) == 0:
                     del data_map[key]
         return made_change
 
@@ -638,10 +639,17 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
     if reference.endswith("]") and "[" in reference:
         base_ref = reference[:reference.rindex("[")]
         value = data_source(base_ref)
+        reference_val = reference[reference.rindex("[") + 1: -1]
         if isinstance(value, dict):
-            return value.get(reference[reference.rindex("[")+1: -1])
+            return value.get(reference_val)
         elif isinstance(value, list):
-            return value[int(reference[reference.rindex("[")+1: -1])]
+            try:
+                return value[int(reference_val)]
+            except ValueError as e:
+                # TODO: handle count.index correctly
+                logging.debug(f'Failed to parse index int out of {reference_val}')
+                logging.debug(e, stack_info=True)
+                return
     else:
         return data_source(reference)
 
