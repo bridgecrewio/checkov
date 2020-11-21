@@ -638,14 +638,14 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
     if reference.endswith("]") and "[" in reference:
         base_ref = reference[:reference.rindex("[")]
         value = data_source(base_ref)
+        reference_val = reference[reference.rindex("[") + 1: -1]
         if isinstance(value, dict):
-            return value.get(reference[reference.rindex("[")+1: -1])
+            return value.get(reference_val)
         elif isinstance(value, list):
-            reference = reference[reference.rindex("[")+1: -1]
             try:
-                return value[int(reference[reference.rindex("[")+1: -1])]
+                return value[int(reference_val)]
             except ValueError as e:
-                logging.debug(f'Failed to parse index int out of {reference}')
+                logging.debug(f'Failed to parse index int out of {reference_val}')
                 logging.debug(e, stack_info=True)
                 return
     else:
