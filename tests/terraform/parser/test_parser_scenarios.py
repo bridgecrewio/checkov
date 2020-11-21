@@ -86,6 +86,11 @@ class TestParserScenarios(unittest.TestCase):
     def test_null_variables_651(self):
         self.go("null_variables_651")
 
+    @unittest.skip
+    def test_count_index_scenario(self):
+        # Run only manually, this test currently fails on multiple issues
+        self.go("count_eval")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
