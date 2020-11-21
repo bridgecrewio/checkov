@@ -641,7 +641,13 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
         if isinstance(value, dict):
             return value.get(reference[reference.rindex("[")+1: -1])
         elif isinstance(value, list):
-            return value[int(reference[reference.rindex("[")+1: -1])]
+            reference = reference[reference.rindex("[")+1: -1]
+            try:
+                return value[int(reference[reference.rindex("[")+1: -1])]
+            except ValueError as e:
+                logging.debug(f'Failed to parse index int out of {reference}')
+                logging.debug(e, stack_info=True)
+                return
     else:
         return data_source(reference)
 
