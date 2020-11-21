@@ -1,0 +1,13 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "RAW_T": [true],
+        "STRING_T": [true],
+        "RAW_F": [false],
+        "STRING_F": [false],
+        "JUNK": ["${tobool(\"invalid\")}"]
+      }
+    ]
+  }
+}

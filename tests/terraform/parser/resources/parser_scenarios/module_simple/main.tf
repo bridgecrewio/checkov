@@ -1,0 +1,3 @@
+module "bucket" {
+  source   = "./bucket"
+}

@@ -1,0 +1,15 @@
+{
+  "name_doesnt_matter.tf": {
+    "BUCKET_NAME": {
+      "var_file": "name_doesnt_matter.tf",
+      "value": "this-is-my-default",
+      "definitions": [
+        {
+          "definition_name": "BUCKET_NAME",
+          "definition_expression": "${var.BUCKET_NAME}",
+          "definition_path": "resource/0/aws_s3_bucket/test/bucket/0"
+        }
+      ]
+    }
+  }
+}

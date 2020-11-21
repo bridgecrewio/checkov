@@ -1,8 +1,6 @@
 import os
 import unittest
 
-import dpath.util
-
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
@@ -142,24 +140,6 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
 
-    def test_evaluate_string_booleans(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/hcl_0.11"
-        tf_file = f"{valid_dir_path}/main.tf"
-        runner = Runner()
-        runner.run(root_folder=valid_dir_path, external_checks_dir=None)
-        runner.evaluate_string_booleans()
-        print()
-        self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/apply_immediately/0'), True)
-        self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/backup_retention_period/0'),
-            True)
-        self.assertEqual(
-            dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/storage_encrypted/0'), False)
-        self.assertEqual(dpath.get(runner.tf_definitions[tf_file], 'resource/0/aws_db_instance/test_db/multi_az/0'),
-                         False)
-
     def test_provider_uniqueness(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/many_providers"
@@ -258,10 +238,10 @@ class TestRunnerValid(unittest.TestCase):
             def scan_resource_conf(self, conf, entity_type):
                 if entity_type == 'type_1':
                     test_self.assertIn('a', conf)
-                    test_self.assertEquals([1], conf['a'])
+                    test_self.assertEqual([1], conf['a'])
                 elif entity_type == 'type_2':
                     test_self.assertIn('b', conf)
-                    test_self.assertEquals([2], conf['b'])
+                    test_self.assertEqual([2], conf['b'])
                 else:
                     test_self.fail(f'Unexpected entity_type: {entity_type}. Expected type_1 or type_2, because no '
                                    f'other resources are defined in the files inside of {test_dir}.')
@@ -364,10 +344,33 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         parser = Parser()
         runner.tf_definitions = tf_definitions
-        parser.hcl2(directory=tf_dir_path, tf_definitions=tf_definitions)
+        parser.parse_directory(tf_dir_path, tf_definitions)
         report = Report('terraform')
         runner.check_tf_definition(root_folder=tf_dir_path, report=report, runner_filter=RunnerFilter(), external_definitions_context=external_definitions_context)
         self.assertGreaterEqual(len(report.passed_checks), 1)
+
+    def test_failure_in_resolved_module(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "../parser/resources/parser_scenarios/module_matryoshka")
+        valid_dir_path = os.path.normpath(valid_dir_path)
+        runner = Runner()
+        checks_allowlist = ['CKV_AWS_20']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
+        self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
+        self.assertEqual(1, len(report.failed_checks))
+
+        for record in report.failed_checks:
+            self.assertIn(record.check_id, checks_allowlist)
+
 
     def tearDown(self):
         parser_registry.definitions_context = {}

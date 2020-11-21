@@ -17,4 +17,4 @@ class BaseRunner(ABC):
 
 
 def filter_ignored_directories(d_names):
-    [d_names.remove(d) for d in list(d_names) if d in ignored_directories]
+    [d_names.remove(d) for d in list(d_names) if d in ignored_directories or d.startswith(".")]
