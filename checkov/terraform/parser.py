@@ -166,7 +166,7 @@ class Parser:
                 if auto_vars_files is None:
                     auto_vars_files = [file]
                 else:
-                    auto_vars_files.append(file.path)
+                    auto_vars_files.append(file)
                 continue
 
             # Resource files
@@ -219,12 +219,42 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
         if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
-            for var_file in sorted(auto_vars_files, key=os.DirEntry.name):
+            for var_file in sorted(auto_vars_files, key=lambda e: e.name):
                 data = _load_or_die_quietly(var_file, self.out_parsing_errors)
                 if data:
                     var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
         if specified_vars:                                                  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
+    # Stage 2: Load vars in proper order:
+    #          https://www.terraform.io/docs/configuration/variables.html#variable-definition-precedence
+    #          Defaults are loaded in stage 1.
+    #          Then loading in this order with later taking precedence:
+    #             - Environment variables
+    #             - The terraform.tfvars file, if present.
+    #             - The terraform.tfvars.json file, if present.
+    #             - Any *.auto.tfvars or *.auto.tfvars.json files, processed in lexical order of
+    #               their filenames.
+    #          Overriding everything else, variables form `specified_vars`, which are considered
+    #          directly set.
+    for key, value in env_vars.items():                                 # env vars
+        if not key.startswith("TF_VAR_"):
+            continue
+        var_value_and_file_map[key[7:]] = value, f"env:{key}"
+    if hcl_tfvars:                                                      # terraform.tfvars
+        data = _load_or_die_quietly(hcl_tfvars, out_parsing_errors)
+        if data:
+            var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
+    if json_tfvars:                                                     # terraform.tfvars.json
+        data = _load_or_die_quietly(json_tfvars, out_parsing_errors)
+        if data:
+            var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
+    if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
+        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
+            data = _load_or_die_quietly(var_file, out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+    if specified_vars:                                                  # specified
+        var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
 
         # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
         #                      may be a little overboard, but I don't want to just pass the entire data map down
@@ -400,13 +430,14 @@ class Parser:
                                                      new_context):
                         made_change = True
 
-                elif isinstance(value, list):
+            elif isinstance(value, list):
+                if len(value) > 0 and value[0] != value:
                     if process_items_helper(lambda: enumerate(value), value, new_context, True):
                         made_change = True
-                    # Some special cases that should be pruned from datasets
-                    if value == [None] or value == [{}] or len(value) == 0:
-                        del data_map[key]
-            return made_change
+                # Some special cases that should be pruned from datasets
+                if value == [None] or value == [{}] or value == [[]] or len(value) == 0:
+                    del data_map[key]
+        return made_change
 
         return process_items_helper(out_definitions.items, out_definitions, outer_context, False)
 
@@ -634,10 +665,17 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
     if reference.endswith("]") and "[" in reference:
         base_ref = reference[:reference.rindex("[")]
         value = data_source(base_ref)
+        reference_val = reference[reference.rindex("[") + 1: -1]
         if isinstance(value, dict):
-            return value.get(reference[reference.rindex("[")+1: -1])
+            return value.get(reference_val)
         elif isinstance(value, list):
-            return value[int(reference[reference.rindex("[")+1: -1])]
+            try:
+                return value[int(reference_val)]
+            except ValueError as e:
+                # TODO: handle count.index correctly
+                logging.debug(f'Failed to parse index int out of {reference_val}')
+                logging.debug(e, stack_info=True)
+                return
     else:
         return data_source(reference)
 

@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: KMS key example template
+Resources:
+  myKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+        - Sid: Enable Permissions for Everyone
+          Effect: Allow
+          Principal: '*'
+          Action: 'kms:*'
+          Resource: '*'
+      EnableKeyRotation: true
