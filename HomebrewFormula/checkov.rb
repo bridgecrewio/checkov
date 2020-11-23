@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/fe/83/67f93bab1e5972d05998247b3cc5be5ee878106e03966e3baf8154dcbc72/checkov-1.0.640.tar.gz"
-  sha256 "3b4bcbdb0bb6e946009a0ab40a3f1456288d5aea6abb4adca3fae7b07fc10541"
+  url "https://files.pythonhosted.org/packages/76/ef/d77126762961480c070a8d010f860e9b1eee58ebc3cd74acbe2f64d69ac9/checkov-1.0.641.tar.gz"
+  sha256 "1f60efa25412b2e9af41f4f7de0396641a266e7c998dd1fc5091753aa5b5c9be"
 
   depends_on "python3"
 
@@ -88,6 +88,16 @@ class Checkov < Formula
     sha256 "26215ebb157e6fb2ee74319aa4445b9f3b7e456e26be215ce19fdaaa901c20a4"
   end
 
+  resource "packaging" do
+    url "https://files.pythonhosted.org/packages/55/fd/fc1aca9cf51ed2f2c11748fa797370027babd82f87829c7a8e6dbe720145/packaging-20.4.tar.gz"
+    sha256 "4357f74f47b9c12db93624a82154e9b120fa8293699949152b22065d556079f8"
+  end
+
+  resource "pyparsing" do
+    url "https://files.pythonhosted.org/packages/c1/47/dfc9c342c9842bbe0036c7f763d2d6686bcf5eb1808ba3e170afdb282210/pyparsing-2.4.7.tar.gz"
+    sha256 "c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"
+  end
+
   resource "python-dateutil" do
     url "https://files.pythonhosted.org/packages/be/ed/5bbc91f03fa4c839c4c7360375da77f9659af5f7086b7a7bdda65771c8e0/python-dateutil-2.8.1.tar.gz"
     sha256 "73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"
@@ -146,11 +156,6 @@ class Checkov < Formula
   resource "urllib3" do
     url "https://files.pythonhosted.org/packages/81/f4/87467aeb3afc4a6056e1fe86626d259ab97e1213b1dfec14c7cb5f538bf0/urllib3-1.25.10.tar.gz"
     sha256 "91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"
-  end
-
-  resource "packaging" do
-    url "https://files.pythonhosted.org/packages/55/fd/fc1aca9cf51ed2f2c11748fa797370027babd82f87829c7a8e6dbe720145/packaging-20.4.tar.gz"
-    sha256 "4357f74f47b9c12db93624a82154e9b120fa8293699949152b22065d556079f8"
   end
 
   def install
