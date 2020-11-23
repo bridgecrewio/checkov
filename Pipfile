@@ -29,6 +29,7 @@ jmespath = "*"
 tqdm = "*"
 update_checker = "*"
 semantic_version = "*"      # For TF version resolution
+packaging = "*"
 
 [requires]
 python_version = "3.7"

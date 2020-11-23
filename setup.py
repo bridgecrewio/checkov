@@ -63,7 +63,8 @@ setup(
             "wcwidth==0.1.7",
             "zipp==0.6.0",
             "GitPython==3.1.7",
-            "gitdb==4.0.5"
+            "gitdb==4.0.5",
+            "packaging===20.4"
         ]
     },
     install_requires=[
@@ -88,7 +89,8 @@ setup(
         "urllib3==1.25.10",
         "dpath==1.5.0",
         "GitPython==3.1.7",
-        "gitdb==4.0.5"
+        "gitdb==4.0.5",
+        "packaging===20.4"
     ],
     license="Apache License 2.0",
     name="checkov",
