@@ -40,16 +40,24 @@ class TestParserInternals(unittest.TestCase):
                                out_evaluations_context={},
                                download_external_modules=True,
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
-        self.assertEqual(6, len(list(out_definitions.keys())))
-        expected_remote_module_path = f'{DEFAULT_EXTERNAL_MODULES_DIR}/terraform-aws-modules/security-group/aws/modules/http-80'
+        self.assertEqual(11, len(list(out_definitions.keys())))
+        expected_remote_module_path = f'{DEFAULT_EXTERNAL_MODULES_DIR}/terraform-aws-modules/security-group/aws'
+        expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
         expected_main_file = os.path.join(directory, 'main.tf')
+        expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
         expected_file_names = [
             expected_main_file,
-            os.path.join(directory, expected_remote_module_path, f'main.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'outputs.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'rules.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'variables.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'versions.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'main.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf[{expected_main_file}#0]'),
+
+            os.path.join(directory, expected_remote_module_path, f'main.tf[{expected_inner_main_file}#0]'),
+            os.path.join(directory, expected_remote_module_path, f'outputs.tf[{expected_inner_main_file}#0]'),
+            os.path.join(directory, expected_remote_module_path, f'rules.tf[{expected_inner_main_file}#0]'),
+            os.path.join(directory, expected_remote_module_path, f'variables.tf[{expected_inner_main_file}#0]'),
+            os.path.join(directory, expected_remote_module_path, f'versions.tf[{expected_inner_main_file}#0]'),
         ]
 
         for expected_file_name in expected_file_names:

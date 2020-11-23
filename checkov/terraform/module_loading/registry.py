@@ -20,6 +20,7 @@ Search all registered loaders for the first one which is able to load the module
 information, see `loader.ModuleLoader.load`.
         """
         local_dir = os.path.join(current_dir, self.external_modules_folder_name, source)
+        inner_module = ''
         next_url = source
         last_exception = None
         while next_url:
@@ -29,12 +30,15 @@ information, see `loader.ModuleLoader.load`.
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
-                    content = loader.load(current_dir, source, source_version, local_dir)
+                    content = loader.load(current_dir, source, source_version, local_dir, inner_module)
                 except Exception as e:
                     last_exception = e
                     continue
                 if content.next_url:
                     next_url = content.next_url
+                    if loader.inner_module:
+                        local_dir = loader.dest_dir
+                        inner_module = loader.inner_module
                     break
                 if content is None:
                     continue

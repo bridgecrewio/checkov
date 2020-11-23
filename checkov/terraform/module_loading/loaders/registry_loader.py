@@ -14,7 +14,6 @@ class RegistryLoader(ModuleLoader):
     def __init__(self):
         super().__init__()
         self.available_versions = []
-        self.inner_module = ''
 
     def _is_matching_loader(self) -> bool:
         self._process_inner_registry_module()
@@ -70,6 +69,7 @@ class RegistryLoader(ModuleLoader):
         if len(module_source_components) > 1:
             self.module_source = module_source_components[0]
             self.dest_dir = self.dest_dir.split('//')[0]
+            self.inner_module = module_source_components[1]
 
 
 loader = RegistryLoader()

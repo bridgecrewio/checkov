@@ -21,8 +21,9 @@ class ModuleLoader(ABC):
         self.dest_dir = None
         self.version = 'latest'
         self.is_external = True
+        self.inner_module = ''
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str], dest_dir) -> ModuleContent:
+    def load(self, current_dir: str, source: str, source_version: Optional[str], dest_dir, inner_module=Optional[str]) -> ModuleContent:
         """
 This function provides an opportunity for the loader to load a module's content if it chooses to do so.
 There are three resulting states that can occur when calling this function:
@@ -45,6 +46,7 @@ There are three resulting states that can occur when calling this function:
         self.version = str(source_version)
 
         self.dest_dir = dest_dir
+        self.inner_module = inner_module
         if os.path.exists(self.dest_dir):
             return ModuleContent(dir=self.dest_dir)
 

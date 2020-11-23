@@ -436,10 +436,7 @@ class Parser:
 
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
-                        module_path = os.path.normpath(os.path.join(os.path.dirname(file), source))
-                        if not dir_filter(os.path.abspath(module_path)):
-                            continue
-                        source = module_path
+                        source = os.path.normpath(os.path.join(os.path.dirname(file), source))
 
                     version = module_call_data.get("version", "latest")
                     if version and isinstance(version, list):
@@ -453,7 +450,7 @@ class Parser:
                             specified_vars = {k: v[0] for k, v in module_call_data.items()
                                               if k != "source" and k != "version"}
 
-                            if self.external_modules_download_path in content.path() and not dir_filter(os.path.abspath(content.path())):
+                            if not dir_filter(os.path.abspath(content.path())):
                                 continue
                             self._internal_dir_load(directory=content.path(), module_loader_registry=module_loader_registry,
                                                     dir_filter=dir_filter, specified_vars=specified_vars, module_load_context=module_load_context)
