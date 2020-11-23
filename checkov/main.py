@@ -12,7 +12,9 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
@@ -30,7 +32,10 @@ def run(banner=checkov_banner):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args()
-    runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check)
+    runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check,
+                                 download_external_modules=convert_str_to_bool(args.download_external_modules),
+                                 external_modules_download_path=args.external_modules_download_path,
+                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables))
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -125,6 +130,15 @@ def add_parser_args(parser):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
+    parser.add_argument('--download-external-modules',
+                        help="download external terraform modules from public git repositories and terraform registry",
+                        default=False)
+    parser.add_argument('--external-modules-download-path',
+                        help="set the path for the download external terraform modules",
+                        default=DEFAULT_EXTERNAL_MODULES_DIR)
+    parser.add_argument('--evaluate-variables',
+                        help="evaluate the values of variables and locals",
+                        default=True)
 
 
 def get_external_checks_dir(args):
