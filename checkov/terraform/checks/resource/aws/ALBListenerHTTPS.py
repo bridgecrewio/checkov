@@ -26,7 +26,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
                     default_action = conf['default_action'][0]
                     action_type = default_action['type']
                     if action_type == ['redirect']:
-                        if default_action['redirect'][0]['protocol'] == ['HTTPS']:
+                        if default_action.get('redirect') and default_action['redirect'][0]['protocol'] == ['HTTPS']:
                             return CheckResult.PASSED
         return CheckResult.FAILED
 

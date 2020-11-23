@@ -1,0 +1,2 @@
+DEFAULT_EXTERNAL_MODULES_DIR = ".external_modules"
+RESOLVED_MODULE_ENTRY_NAME = "__resolved__"

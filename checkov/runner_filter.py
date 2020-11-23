@@ -1,3 +1,5 @@
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+
 
 class RunnerFilter(object):
     # NOTE: This needs to be static because different filters may be used at load time versus runtime
@@ -5,7 +7,7 @@ class RunnerFilter(object):
     #       logically a "static" concept anyway, so this makes logical sense.
     __EXTERNAL_CHECK_IDS = set()
 
-    def __init__(self, framework='all', checks=None, skip_checks=None):
+    def __init__(self, framework='all', checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
         if checks is None:
             checks = []
         if isinstance(checks, str):
@@ -20,6 +22,9 @@ class RunnerFilter(object):
         else:
             self.skip_checks = skip_checks
         self.framework = framework
+        self.download_external_modules = download_external_modules
+        self.external_modules_download_path = external_modules_download_path
+        self.evaluate_variables = evaluate_variables
 
     def should_run_check(self, check_id):
         if RunnerFilter.is_external_check(check_id):

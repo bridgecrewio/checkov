@@ -1,77 +1,75 @@
 import os
-import tempfile
+from http import HTTPStatus
 
 import requests
-import semantic_version
-from typing import Optional
 
-from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.content import ModuleContent
+from checkov.terraform.module_loading.loader import ModuleLoader
+from checkov.terraform.module_loading.loaders.versions_parser import order_versions_in_descending_order, get_version_constraints
 
 
 class RegistryLoader(ModuleLoader):
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
-        # Reference: https://www.terraform.io/docs/modules/sources.html#terraform-registry
+    REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
 
-        # Format: [<HOSTNAME>/]<NAMESPACE>/<NAME>/<PROVIDER>
-        # Example: hashicorp/consul/aws
-        slash_count = source.count("/") != 2
-        if source.startswith("/") or source.endswith("/") or slash_count < 2 or slash_count > 3:
-            return ModuleContent(None)
+    def __init__(self):
+        super().__init__()
+        self.available_versions = []
 
-        tokens = source.split("/")
+    def _is_matching_loader(self) -> bool:
+        self._process_inner_registry_module()
+        if os.path.exists(self.dest_dir):
+            return True
 
-        if len(tokens) == 3:
-            host = "registry.terraform.io"
-            namespace = tokens[0]
-            name = tokens[1]
-            provider = tokens[2]
+        get_version_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, 'versions')
+        response = requests.get(url=get_version_url)
+        if response.status_code != HTTPStatus.OK:
+            return False
         else:
-            host = tokens[0]
-            namespace = tokens[1]
-            name = tokens[2]
-            provider = tokens[3]
+            self.available_versions = [v.get('version') for v in
+                                       response.json().get('modules', [{}])[0].get('versions', {})]
+            return True
 
-        # Info: https://www.terraform.io/docs/internals/module-registry-protocol.html#sample-request-1
-        base_url = f"https://{host}/{namespace}/{name}/{provider}"
+    def _load_module(self) -> ModuleContent:
+        if os.path.exists(self.dest_dir):
+            return ModuleContent(dir=None)
 
-        with requests.session() as session:
-            if not source_version:
-                source_version = self._determine_latest_version(base_url, session)
+        best_version = self._find_best_version()
 
-            temp_dir = tempfile.TemporaryDirectory()
-            try:
-                self._download_source(base_url, source_version, session)
-                return ModuleContent(temp_dir)
-            except:
-                temp_dir.cleanup()
-                raise
+        request_download_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, best_version, 'download')
+        response = requests.get(url=request_download_url)
+        if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
+            return ModuleContent(dir=None)
+        else:
+            return ModuleContent(dir=None, next_url=response.headers.get('X-Terraform-Get', ''))
 
-    @staticmethod
-    def _determine_latest_version(base_url: str, session: requests.Session) -> str:
-        # Example: https://registry.terraform.io/v1/modules/hashicorp/consul/aws/versions
+    def _find_best_version(self):
+        versions_by_size = order_versions_in_descending_order(self.available_versions)
+        if self.version == 'latest':
+            self.version = versions_by_size[0]
+        version_constraints = get_version_constraints(self.version)
+        num_of_matches = 0
+        for version in versions_by_size:
+            for version_constraint in version_constraints:
+                if not version_constraint.versions_matching(version):
+                    break
+                else:
+                    num_of_matches += 1
+            if num_of_matches == len(version_constraints):
+                return version
+            else:
+                num_of_matches = 0
+        return 'latest'
 
-        response = session.get(f"{base_url}/versions")
-        response.raise_for_status()
-
-        # TODO
-        return "not implemented yet... fix me!"
-
-    @staticmethod
-    def _download_source(base_url: str, source_version: str, session: requests.Session):
-        # Example: https://registry.terraform.io/v1/modules/hashicorp/consul/aws/0.0.1/download
-
-        # Sample response:
-        #
-        # HTTP/1.1 204 No Content
-        # Content-Length: 0
-        # X-Terraform-Get: https://api.github.com/repos/hashicorp/terraform-aws-consul/tarball/v0.0.1//*?archive=tar.gz
-        response = session.get(f"{base_url}/{source_version}/download")
-        response.raise_for_status()
-
-        # TODO
-
-        pass
+    def _process_inner_registry_module(self):
+        # Check if the source has '//' in it. If it does, it indicates a reference for an inner module.
+        # Example: "terraform-aws-modules/security-group/aws//modules/http-80" =>
+        #    module_source = terraform-aws-modules/security-group/aws
+        #    dest_dir = modules/http-80
+        module_source_components = self.module_source.split('//')
+        if len(module_source_components) > 1:
+            self.module_source = module_source_components[0]
+            self.dest_dir = self.dest_dir.split('//')[0]
+            self.inner_module = module_source_components[1]
 
 
 loader = RegistryLoader()

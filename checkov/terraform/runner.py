@@ -57,7 +57,10 @@ class Runner(BaseRunner):
             self.parser.parse_directory(directory=root_folder,
                                         out_definitions=self.tf_definitions,
                                         out_evaluations_context=self.evaluations_context,
-                                        out_parsing_errors=parsing_errors)
+                                        out_parsing_errors=parsing_errors,
+                                        download_external_modules=runner_filter.download_external_modules,
+                                        external_modules_download_path=runner_filter.external_modules_download_path,
+                                        evaluate_variables=runner_filter.evaluate_variables)
             self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         if files:
