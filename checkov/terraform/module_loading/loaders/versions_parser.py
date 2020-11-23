@@ -47,7 +47,7 @@ def get_version_constraints(raw_version):
     return version_constraints
 
 
-def order_versions_by_size(versions_strings):
+def order_versions_in_descending_order(versions_strings):
     """
     :param versions_strings: array of string versions: ["v1.2.3", "v1.2.4"...]
     :return: A sorted array of versions in descending order

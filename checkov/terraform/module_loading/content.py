@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 class ModuleContent(object):
     def __init__(self, dir: Optional[Union[tempfile.TemporaryDirectory, str]], next_url=None, exception=None) -> None:
-        self.dir = dir.replace('//', '/') if dir else dir
+        self.dir = dir.replace('//', '/') if dir else None
         self.next_url = next_url
 
     def loaded(self) -> bool:

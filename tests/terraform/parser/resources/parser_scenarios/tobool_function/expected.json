@@ -6,7 +6,7 @@
         "STRING_T": [true],
         "RAW_F": [false],
         "STRING_F": [false],
-        "JUNK": ["\"invalid\""]
+        "JUNK": ["${tobool(\"invalid\")}"]
       }
     ]
   }

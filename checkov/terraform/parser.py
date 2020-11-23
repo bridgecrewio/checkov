@@ -40,7 +40,6 @@ class Parser:
               env_vars: Mapping[str, str],
               download_external_modules: bool,
               external_modules_download_path: str, evaluate_variables):
-        self._parsed_directories.clear()
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -71,7 +70,7 @@ class Parser:
                         download_external_modules: bool = False,
                         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
         self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars, download_external_modules, external_modules_download_path, evaluate_variables)
-
+        self._parsed_directories.clear()
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
 
@@ -573,7 +572,11 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
         # https://www.terraform.io/docs/configuration/functions/tobool.html
         if orig_variable.startswith("tobool("):
             bool_variable = orig_variable[7:-1].lower()
-            return convert_str_to_bool(bool_variable)
+            bool_value = convert_str_to_bool(bool_variable)
+            if isinstance(bool_value, bool):
+                return bool_value
+            else:
+                return orig_variable
         # https://www.terraform.io/docs/configuration/functions/tolist.html
         elif orig_variable.startswith("tolist("):
             altered_value = _eval_string(orig_variable[7:-1])

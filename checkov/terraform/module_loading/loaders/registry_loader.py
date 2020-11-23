@@ -5,7 +5,7 @@ import requests
 
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
-from checkov.terraform.module_loading.loaders.versions_parser import order_versions_by_size, get_version_constraints
+from checkov.terraform.module_loading.loaders.versions_parser import order_versions_in_descending_order, get_version_constraints
 
 
 class RegistryLoader(ModuleLoader):
@@ -43,7 +43,7 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=None, next_url=response.headers.get('X-Terraform-Get', ''))
 
     def _find_best_version(self):
-        versions_by_size = order_versions_by_size(self.available_versions)
+        versions_by_size = order_versions_in_descending_order(self.available_versions)
         if self.version == 'latest':
             self.version = versions_by_size[0]
         version_constraints = get_version_constraints(self.version)
