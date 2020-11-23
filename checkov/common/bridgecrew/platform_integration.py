@@ -228,6 +228,7 @@ class BcPlatformIntegration(object):
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print('\n Saving API key to {}'.format(bridgecrew_file))
+                        print(Style.BRIGHT + colored("\n Checkov Dashboard configured, opening https://bridgecrew.cloud, check your inbox for login details! \n", 'blue', attrs=['bold']))
                         persist_key(self.bc_api_key)
                     else:
                         print(
