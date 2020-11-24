@@ -21,8 +21,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
 

@@ -1,17 +1,21 @@
 import os
-from typing import Optional
 
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.content import ModuleContent
 
 
 class LocalPathLoader(ModuleLoader):
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
-        # Local path references start with "./" or "../"
-        if not source.startswith("./") and not source.startswith("../"):
-            return ModuleContent(None)
+    def __init__(self) -> None:
+        super().__init__()
+        self.is_external = False
 
-        module_path = os.path.normpath(os.path.join(current_dir, source))
+    def _is_matching_loader(self) -> bool:
+        return self.module_source.startswith("./") or self.module_source.startswith("../") or self.module_source.startswith(self.current_dir)
+
+    def _load_module(self) -> ModuleContent:
+        module_path = os.path.normpath(os.path.join(self.current_dir, self.module_source))
+        if self.module_source.startswith(self.current_dir):
+            module_path = self.module_source
         if not os.path.exists(module_path):
             raise FileNotFoundError(module_path)
 
