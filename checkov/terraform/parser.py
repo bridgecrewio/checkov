@@ -436,7 +436,7 @@ class Parser:
 
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
-                        source = os.path.normpath(os.path.join(os.path.dirname(file), source))
+                        source = os.path.normpath(os.path.join(os.path.dirname(_remove_module_dependency_in_path(file)), source))
 
                     version = module_call_data.get("version", "latest")
                     if version and isinstance(version, list):
@@ -700,3 +700,14 @@ def _tostring(value: Any) -> str:
     elif value is False:
         return "false"
     return str(value)
+
+
+def _remove_module_dependency_in_path(path):
+    """
+    :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
+    :return: only the outer path: dir/main.tf
+    """
+    resolved_module_pattern = r'\[.+\#.+\]'
+    if re.findall(resolved_module_pattern, path):
+        path = re.sub(resolved_module_pattern, '', path)
+    return path
