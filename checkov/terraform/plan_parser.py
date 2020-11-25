@@ -23,9 +23,9 @@ def _is_list_of_dicts(l):
     if not isinstance(l, list):
         return False
     for i in l:
-        if isinstance(i, dict):
-            return True
-    return False
+        if not isinstance(i, dict):
+            return False
+    return True
 
 
 def _hclify(obj):
@@ -46,7 +46,7 @@ def _hclify(obj):
             ret_dict[key] = child_list
         if isinstance(value, dict):
             child_dict = _hclify(value)
-            ret_dict[key] = child_dict
+            ret_dict[key] = [child_dict]
     return ret_dict
 
 
