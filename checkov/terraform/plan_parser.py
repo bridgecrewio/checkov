@@ -46,7 +46,7 @@ def _hclify(obj):
             ret_dict[key] = child_list
         if isinstance(value, dict):
             child_dict = _hclify(value)
-            ret_dict[key] = child_dict
+            ret_dict[key] = [child_dict]
     return ret_dict
 
 
