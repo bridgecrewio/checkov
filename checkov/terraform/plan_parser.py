@@ -23,9 +23,9 @@ def _is_list_of_dicts(l):
     if not isinstance(l, list):
         return False
     for i in l:
-        if not isinstance(i, dict):
-            return False
-    return True
+        if isinstance(i, dict):
+            return True
+    return False
 
 
 def _hclify(obj):
