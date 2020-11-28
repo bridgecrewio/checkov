@@ -1,6 +1,8 @@
 name: homebrew
 
-on: pull_request
+on:
+  push:
+    tags: 'v*'
 
 jobs:
   homebrew:
