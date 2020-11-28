@@ -39,7 +39,8 @@ class GitGetter(BaseGetter):
             self._clone(git_url + ".git", clone_dir, result_dir, internal_dir)
         else:
             self._clone(self.url, clone_dir, result_dir)
-
+        # Clean up unnecessary files in local storage
+        shutil.rmtree(clone_dir)
         return result_dir
 
     def _clone(self, git_url, clone_dir, result_dir, internal_dir=''):
