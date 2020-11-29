@@ -28,6 +28,21 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["passed"],3)
 
 
+    def test_runner_child_modules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_with_child_modules/tfplan.json"
+        runner = Runner()
+        report = runner.run(root_folder=None,files=[valid_plan_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(report.get_summary()["failed"],3)
+        self.assertEqual(report.get_summary()["passed"],4)
 
 if __name__ == '__main__':
     unittest.main()

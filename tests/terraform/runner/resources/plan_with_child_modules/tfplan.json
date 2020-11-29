@@ -1,0 +1,210 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.28",
+  "planned_values": {
+    "root_module": {
+      "child_modules": [
+        {
+          "resources": [
+            {
+              "address": "module.iam_groups.aws_iam_account_password_policy.main",
+              "mode": "managed",
+              "type": "aws_iam_account_password_policy",
+              "name": "main",
+              "provider_name": "aws",
+              "schema_version": 0,
+              "values": {
+                "allow_users_to_change_password": true,
+                "hard_expiry": true,
+                "max_password_age": 300,
+                "minimum_password_length": 10,
+                "password_reuse_prevention": 5,
+                "require_lowercase_characters": true,
+                "require_numbers": true,
+                "require_symbols": true,
+                "require_uppercase_characters": true
+              }
+            }
+          ],
+          "address": "module.iam_groups"
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "module.iam_groups.aws_iam_account_password_policy.main",
+      "module_address": "module.iam_groups",
+      "mode": "managed",
+      "type": "aws_iam_account_password_policy",
+      "name": "main",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allow_users_to_change_password": true,
+          "hard_expiry": true,
+          "max_password_age": 300,
+          "minimum_password_length": 10,
+          "password_reuse_prevention": 5,
+          "require_lowercase_characters": true,
+          "require_numbers": true,
+          "require_symbols": true,
+          "require_uppercase_characters": true
+        },
+        "after_unknown": {
+          "expire_passwords": true,
+          "id": true
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "region": {
+            "constant_value": "eu-west-1"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "module_calls": {
+        "iam_groups": {
+          "source": "../../modules/iam-user-password-policy",
+          "expressions": {
+            "allow_users_to_change_password": {
+              "constant_value": true
+            },
+            "hard_expiry": {
+              "constant_value": true
+            },
+            "max_password_age": {
+              "constant_value": 300
+            },
+            "minimum_password_length": {
+              "constant_value": 10
+            },
+            "password_reuse_prevention": {
+              "constant_value": 5
+            },
+            "require_lowercase_characters": {
+              "constant_value": true
+            },
+            "require_numbers": {
+              "constant_value": true
+            },
+            "require_symbols": {
+              "constant_value": true
+            },
+            "require_uppercase_characters": {
+              "constant_value": true
+            }
+          },
+          "module": {
+            "resources": [
+              {
+                "address": "aws_iam_account_password_policy.main",
+                "mode": "managed",
+                "type": "aws_iam_account_password_policy",
+                "name": "main",
+                "provider_config_key": "iam_groups:aws",
+                "expressions": {
+                  "allow_users_to_change_password": {
+                    "references": [
+                      "var.allow_users_to_change_password"
+                    ]
+                  },
+                  "hard_expiry": {
+                    "references": [
+                      "var.hard_expiry"
+                    ]
+                  },
+                  "max_password_age": {
+                    "references": [
+                      "var.max_password_age"
+                    ]
+                  },
+                  "minimum_password_length": {
+                    "references": [
+                      "var.minimum_password_length"
+                    ]
+                  },
+                  "password_reuse_prevention": {
+                    "references": [
+                      "var.password_reuse_prevention"
+                    ]
+                  },
+                  "require_lowercase_characters": {
+                    "references": [
+                      "var.require_lowercase_characters"
+                    ]
+                  },
+                  "require_numbers": {
+                    "references": [
+                      "var.require_numbers"
+                    ]
+                  },
+                  "require_symbols": {
+                    "references": [
+                      "var.require_symbols"
+                    ]
+                  },
+                  "require_uppercase_characters": {
+                    "references": [
+                      "var.require_uppercase_characters"
+                    ]
+                  }
+                },
+                "schema_version": 0
+              }
+            ],
+            "variables": {
+              "allow_users_to_change_password": {
+                "default": true,
+                "description": "Whether to allow users to change their own password (true or false)."
+              },
+              "hard_expiry": {
+                "default": true,
+                "description": "Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset) (true or false)."
+              },
+              "max_password_age": {
+                "default": 0,
+                "description": "The number of days that an user password is valid. Enter 0 for no expiration."
+              },
+              "minimum_password_length": {
+                "default": 16,
+                "description": "Minimum length to require for user passwords."
+              },
+              "password_reuse_prevention": {
+                "default": 5,
+                "description": "The number of previous passwords that users are prevented from reusing."
+              },
+              "require_lowercase_characters": {
+                "default": true,
+                "description": "Whether to require lowercase characters for user passwords (true or false)."
+              },
+              "require_numbers": {
+                "default": true,
+                "description": "Whether to require numbers for user passwords (true or false)."
+              },
+              "require_symbols": {
+                "default": true,
+                "description": "Whether to require symbols for user passwords (true or false)."
+              },
+              "require_uppercase_characters": {
+                "default": true,
+                "description": "Whether to require uppercase characters for user passwords (true or false)."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
