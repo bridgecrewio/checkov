@@ -75,11 +75,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-          echo "new tag: $new_tag"
 
           ## update docs
           export PYTHONPATH='.'
@@ -103,6 +98,15 @@ jobs:
 
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb coverage.svg || echo "No changes to commit"
           git push origin
+      - name: Push tag with PAT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          echo "new tag: $new_tag"
           git tag $new_tag
           git push origin $new_tag
 
