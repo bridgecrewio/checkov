@@ -34,10 +34,13 @@ class Runner(BaseRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory, runner_filter)
+
         if root_folder:
             root_folder = os.path.abspath(root_folder)
-            # Assume plan files will have this name by default
-            files = [f'{root_folder}/planfile.json']
+            auto_plan_file_path = f'{root_folder}/planfile.json'
+            if os.path.exists(auto_plan_file_path):
+                # Assume plan files will have this name by default
+                files = [auto_plan_file_path]
 
         if files:
             files = [os.path.abspath(file) for file in files]
