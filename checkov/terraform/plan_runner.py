@@ -1,4 +1,5 @@
-import dpath.util
+import logging
+import json
 import logging
 import os
 
@@ -10,6 +11,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 # Allow the evaluation of empty variables
 from checkov.terraform.plan_parser import parse_tf_plan
+
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
 logging.basicConfig(level=LOG_LEVEL)
 
@@ -36,11 +38,15 @@ class Runner(BaseRunner):
                 resource_registry.load_external_checks(directory, runner_filter)
 
         if root_folder:
-            root_folder = os.path.abspath(root_folder)
-            auto_plan_file_path = f'{root_folder}/planfile.json'
-            if os.path.exists(auto_plan_file_path):
-                # Assume plan files will have this name by default
-                files = [auto_plan_file_path]
+            files = [] if not files else files
+            for root, d_names, f_names in os.walk(root_folder):
+                for file in f_names:
+                    file_ending = os.path.splitext(file)[1]
+                    if file_ending == '.json':
+                        with open(f'{root}/{file}') as f:
+                            content = json.load(f)
+                        if content.get('terraform_version'):
+                            files.append(os.path.join(root, file))
 
         if files:
             files = [os.path.abspath(file) for file in files]
@@ -101,4 +107,3 @@ class Runner(BaseRunner):
                     entity_context['code_lines'] = self.template_lines[entity_context['start_line']:entity_context['end_line']]
                     return entity_context
         return entity_context
-
