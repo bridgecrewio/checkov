@@ -3,9 +3,10 @@ from typing import Optional, Union
 
 
 class ModuleContent(object):
-    def __init__(self, dir: Optional[Union[tempfile.TemporaryDirectory, str]], next_url=None, exception=None) -> None:
+    def __init__(self, dir: Optional[Union[tempfile.TemporaryDirectory, str]], next_url=None, failed_url=None) -> None:
         self.dir = dir.replace('//', '/') if dir else None
         self.next_url = next_url
+        self.failed_url = failed_url
 
     def loaded(self) -> bool:
         """
