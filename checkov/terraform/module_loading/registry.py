@@ -13,6 +13,7 @@ class ModuleLoaderRegistry:
         self.logger = logging.getLogger(__name__)
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
+        self.failed_urls_cache = set()
 
     def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
@@ -26,6 +27,8 @@ information, see `loader.ModuleLoader.load`.
         while next_url:
             source = next_url
             next_url = ''
+            if source in self.failed_urls_cache:
+                break
             for loader in self.loaders:
                 if not self.download_external_modules and loader.is_external:
                     continue
@@ -43,6 +46,8 @@ information, see `loader.ModuleLoader.load`.
                 if content is None:
                     continue
                 elif not content.loaded():
+                    if content.failed_url:
+                        self.failed_urls_cache.add(content.failed_url)
                     content.cleanup()
                     continue
                 else:
