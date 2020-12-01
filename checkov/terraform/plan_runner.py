@@ -43,10 +43,15 @@ class Runner(BaseRunner):
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending == '.json':
-                        with open(f'{root}/{file}') as f:
-                            content = json.load(f)
-                        if isinstance(content, dict) and content.get('terraform_version'):
-                            files.append(os.path.join(root, file))
+                        try:
+                            with open(f'{root}/{file}') as f:
+                                content = json.load(f)
+                            if isinstance(content, dict) and content.get('terraform_version'):
+                                files.append(os.path.join(root, file))
+                        except Exception as e:
+                            logging.debug(f'Failed to load json file {root}/{file}, skipping')
+                            logging.debug('Failure message:')
+                            logging.debug(e, stack_info=True)
 
         if files:
             files = [os.path.abspath(file) for file in files]
