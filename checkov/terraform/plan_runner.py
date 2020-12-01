@@ -45,7 +45,7 @@ class Runner(BaseRunner):
                     if file_ending == '.json':
                         with open(f'{root}/{file}') as f:
                             content = json.load(f)
-                        if content.get('terraform_version'):
+                        if isinstance(content, dict) and content.get('terraform_version'):
                             files.append(os.path.join(root, file))
 
         if files:
