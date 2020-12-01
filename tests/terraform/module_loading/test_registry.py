@@ -21,3 +21,12 @@ class TestModuleLoaderRegistry(unittest.TestCase):
             assert content.loaded()
             expected_content_path = os.path.join(self.current_dir, DEFAULT_EXTERNAL_MODULES_DIR, source)
             self.assertEqual(expected_content_path, content.path(), f"expected content.path() to be {content.path()}, got {expected_content_path}")
+
+    def test_load_terraform_registry_check_cache(self):
+        registry = ModuleLoaderRegistry(download_external_modules=True)
+        source1 = "https://github.com/bridgecrewio/checkov_not_working1.git"
+        registry.load(current_dir=self.current_dir, source=source1, source_version="latest")
+        self.assertTrue(source1 in registry.failed_urls_cache)
+        source2 = "https://github.com/bridgecrewio/checkov_not_working2.git"
+        registry.load(current_dir=self.current_dir, source=source2, source_version="latest")
+        self.assertTrue(source1 in registry.failed_urls_cache and source2 in registry.failed_urls_cache)

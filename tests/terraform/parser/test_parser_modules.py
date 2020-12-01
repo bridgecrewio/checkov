@@ -64,3 +64,14 @@ class TestParserInternals(unittest.TestCase):
             if expected_file_name not in list(out_definitions.keys()):
                 self.fail(f"expected file {expected_file_name} to be in out_definitions")
 
+    def test_invalid_module_sources(self):
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "failing_module_address")
+        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        out_definitions = {}
+        parser.parse_directory(directory=directory, out_definitions=out_definitions,
+                               out_evaluations_context={},
+                               download_external_modules=True,
+                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+        # check that only the original file was parsed successfully without getting bad external modules
+        self.assertEqual(1, len(list(out_definitions.keys())))
