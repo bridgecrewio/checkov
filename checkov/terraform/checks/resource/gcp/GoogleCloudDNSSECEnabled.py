@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class GoogleCloudDNSSECEnabled(BaseResourceValueCheck):
@@ -14,6 +14,15 @@ class GoogleCloudDNSSECEnabled(BaseResourceValueCheck):
         supported_resources = ["google_dns_managed_zone"]
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def scan_resource_conf(self, conf):
+
+        if 'visibility' in conf:
+            if conf['visibility'][0] == 'private':
+                return CheckResult.UNKNOWN  # check is irrelevant (cannot set DNSSEC to anything else)
+
+        # default visibility is public; just use base class implementation
+        return super().scan_resource_conf(conf)
 
     def get_inspected_key(self):
         return "dnssec_config/[0]/state"
