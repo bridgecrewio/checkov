@@ -3,8 +3,8 @@ class Checkov < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/checkov"
-  url "https://files.pythonhosted.org/packages/fe/83/67f93bab1e5972d05998247b3cc5be5ee878106e03966e3baf8154dcbc72/checkov-1.0.640.tar.gz"
-  sha256 "3b4bcbdb0bb6e946009a0ab40a3f1456288d5aea6abb4adca3fae7b07fc10541"
+  url "https://files.pythonhosted.org/packages/ad/69/f07babd124ccfacff171ce468fbeb6806c6ebf2d0013cbdbe5cf4b0b213e/checkov-1.0.657.tar.gz"
+  sha256 "8210da37252c9f1fe9056927351661067ea6b6c609af04eca1ddc486a4fb14c4"
 
   depends_on "python3"
 
@@ -86,6 +86,16 @@ class Checkov < Formula
   resource "lark-parser" do
     url "https://files.pythonhosted.org/packages/34/b8/aa7d6cf2d5efdd2fcd85cf39b33584fe12a0f7086ed451176ceb7fb510eb/lark-parser-0.7.8.tar.gz"
     sha256 "26215ebb157e6fb2ee74319aa4445b9f3b7e456e26be215ce19fdaaa901c20a4"
+  end
+
+  resource "packaging" do
+    url "https://files.pythonhosted.org/packages/55/fd/fc1aca9cf51ed2f2c11748fa797370027babd82f87829c7a8e6dbe720145/packaging-20.4.tar.gz"
+    sha256 "4357f74f47b9c12db93624a82154e9b120fa8293699949152b22065d556079f8"
+  end
+
+  resource "pyparsing" do
+    url "https://files.pythonhosted.org/packages/c1/47/dfc9c342c9842bbe0036c7f763d2d6686bcf5eb1808ba3e170afdb282210/pyparsing-2.4.7.tar.gz"
+    sha256 "c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"
   end
 
   resource "python-dateutil" do

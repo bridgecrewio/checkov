@@ -1,15 +1,17 @@
 import logging
 import operator
-from functools import reduce
 import re
+from functools import reduce
 
-#COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
+# COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
+
 
 class ContextParser(object):
     """
     ARM template context parser
     """
+
     def __init__(self, arm_file, arm_template, arm_template_lines):
         self.arm_file = arm_file
         self.arm_template = arm_template
@@ -41,28 +43,34 @@ class ContextParser(object):
 
         # Substitute Parameters and Variables
         for key_entry in keys_w_params:
-            param = re.sub("\[parameters\('|'\)\]", "", self._get_from_dict(dict(self.arm_template),
-                                                                            key_entry[:-1])[key_entry[-1]])
-            if param in parameter_defaults:
-                logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
-                self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
+            try:
+                param = re.sub("\[parameters\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
+                                                                               key_entry[:-1])[key_entry[-1]])
+                if param in parameter_defaults:
+                    logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
+                    self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
+            except TypeError as e:
+                logging.debug(f'Failed to evaluate param in {self.arm_file}, error:')
+                logging.debug(e, stack_info=True)
 
         for key_entry in keys_w_vars:
-            param = re.sub("\[variables\('|'\)\]", "", self._get_from_dict(dict(self.arm_template),
-                                                                            key_entry[:-1])[key_entry[-1]])
-            if param in variable_values.keys():
-                self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
-                logging.debug(
-                    "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
-                                                                                  variable_values[param]))
-            else:
-                logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
-
-
+            try:
+                param = re.sub("\[variables\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
+                                                                              key_entry[:-1])[key_entry[-1]])
+                if param in variable_values.keys():
+                    self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
+                    logging.debug(
+                        "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
+                                                                                         variable_values[param]))
+                else:
+                    logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
+            except TypeError as e:
+                logging.debug(f'Failed to evaluate param in {self.arm_file}, error:')
+                logging.debug(e, stack_info=True)
 
     @staticmethod
     def extract_arm_resource_id(arm_resource):
-        #if arm_resource_name == '__startline__' or arm_resource_name == '__endline__':
+        # if arm_resource_name == '__startline__' or arm_resource_name == '__endline__':
         #    return
         if 'type' not in arm_resource:
             # This is not an ARM resource, skip
@@ -74,7 +82,7 @@ class ContextParser(object):
 
     @staticmethod
     def extract_arm_resource_name(arm_resource):
-        #if arm_resource_name == '__startline__' or arm_resource_name == '__endline__':
+        # if arm_resource_name == '__startline__' or arm_resource_name == '__endline__':
         #    return
         if 'name' not in arm_resource:
             # This is not an ARM resource, skip
