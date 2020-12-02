@@ -369,6 +369,36 @@ class TestRunnerValid(unittest.TestCase):
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
 
+    def test_runner_hcl1_handling_default_off(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/hcl1"
+        runner = Runner()
+        checks_allowlist = ['CKV_AWS_20']
+
+        # Default setting does not allow HCL1, so should find no issues but fail parsing
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+        self.assertEqual(report.failed_checks, [])
+        self.assertEqual(len(report.parsing_errors), 1)
+
+    def test_runner_hcl1_handling_turned_on(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/hcl1"
+        checks_allowlist = ['CKV_AWS_20']
+
+        # NOTE: Must be set before Runner is constructed
+        os.environ['CKV_ENABLE_HCL1'] = "yes"
+        try:
+            runner = Runner()
+            report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                                runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+            self.assertEqual(len(report.parsing_errors), 0, "Had unexpected parsing error")
+            self.assertEqual(len(report.failed_checks), 1, "Incorrect failed check count")
+            for record in report.failed_checks:
+                self.assertIn(record.check_id, checks_allowlist)
+        finally:
+            del os.environ['CKV_ENABLE_HCL1']
+
 
     def tearDown(self):
         parser_registry.definitions_context = {}

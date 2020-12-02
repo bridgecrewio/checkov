@@ -37,6 +37,9 @@ class Runner(BaseRunner):
         self.definitions_context = {}
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
 
+        # HCL1 transform is currently in experimental status
+        self.allow_hcl1 = os.getenv('CKV_ENABLE_HCL1', 'no').lower() in ['yes', '1', 'true']
+
     block_type_registries = {
         'resource': resource_registry,
         'data': data_registry,
@@ -60,7 +63,8 @@ class Runner(BaseRunner):
                                         out_parsing_errors=parsing_errors,
                                         download_external_modules=runner_filter.download_external_modules,
                                         external_modules_download_path=runner_filter.external_modules_download_path,
-                                        evaluate_variables=runner_filter.evaluate_variables)
+                                        evaluate_variables=runner_filter.evaluate_variables,
+                                        allow_hcl1=self.allow_hcl1)
             self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         if files:

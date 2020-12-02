@@ -37,6 +37,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_compound_local(self):
         self.go("compound_local")
 
+    def test_map_function(self):
+        self.go("map_function")
+
     def test_tobool_function(self):
         self.go("tobool_function")
 
@@ -61,6 +64,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
+    def test_local_module_parent_relative(self):
+        self.go("local_module_parent_relative")
+
     def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
         self.go("list_default_622")
 
@@ -73,6 +79,9 @@ class TestParserScenarios(unittest.TestCase):
 
     def test_module_reference(self):
         self.go("module_reference")
+
+    def test_module_multiple_submodules(self):
+        self.go("module_multiple_submodules")
 
     def test_bad_ref_fallbacks(self):
         self.go("bad_ref_fallbacks")
@@ -92,7 +101,7 @@ class TestParserScenarios(unittest.TestCase):
         self.go("count_eval")
 
     @staticmethod
-    def go(dir_name):
+    def go(dir_name, allow_hcl1: bool = False):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/parser_scenarios/{dir_name}")
         assert os.path.exists(dir_path)
@@ -106,7 +115,8 @@ class TestParserScenarios(unittest.TestCase):
         actual_eval_data = {}
         errors = {}
         parser = Parser()
-        parser.parse_directory(dir_path, actual_data, actual_eval_data, errors, download_external_modules=True)
+        parser.parse_directory(dir_path, actual_data, actual_eval_data, errors,
+                               download_external_modules=True, allow_hcl1=allow_hcl1)
         assert not errors, f"{dir_name}: Unexpected errors: {errors}"
         definition_string = json.dumps(actual_data, indent=2, default=json_encoder)
         definition_encoded = json.loads(definition_string)
@@ -150,7 +160,7 @@ class TestParserScenarios(unittest.TestCase):
             else:
                 if os.path.isabs(key):
                     continue
-                new_key = os.path.join(dir_path, key)
+                new_key = os.path.normpath(os.path.join(dir_path, key))
             expected_data[new_key] = expected_data[key]
             del expected_data[key]
 
@@ -167,11 +177,11 @@ class TestParserScenarios(unittest.TestCase):
 def _make_module_ref_absolute(match, dir_path) -> str:
     module_location = match[1]
     if not os.path.isabs(module_location):
-        module_location = os.path.join(dir_path, module_location)
+        module_location = os.path.normpath(os.path.join(dir_path, module_location))
 
     module_referrer = match[2]
     if not os.path.isabs(module_referrer):
-        module_referrer = os.path.join(dir_path, module_referrer)
+        module_referrer = os.path.normpath(os.path.join(dir_path, module_referrer))
     return f"{module_location}[{module_referrer}#{match[3]}]"
 
 

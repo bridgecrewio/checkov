@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Mapping, Optional, Dict, Any, List, Callable, Tuple
 
 import deep_merge
+import hcl as hcl1
 import hcl2
 import jmespath
 
@@ -15,7 +16,7 @@ from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.variables.context import EvaluationContext, VarReference
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry
-
+from checkov.terraform.transforms import transform_hcl1
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +40,9 @@ class Parser:
               out_parsing_errors: Dict[str, Exception],
               env_vars: Mapping[str, str],
               download_external_modules: bool,
-              external_modules_download_path: str, evaluate_variables):
+              external_modules_download_path: str,
+              evaluate_variables: bool,
+              allow_hcl1: bool):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -48,6 +51,7 @@ class Parser:
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
+        self.allow_hcl1 = allow_hcl1
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -68,8 +72,11 @@ class Parser:
                         out_parsing_errors: Dict[str, Exception] = None,
                         env_vars: Mapping[str, str] = None,
                         download_external_modules: bool = False,
-                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
-        self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars, download_external_modules, external_modules_download_path, evaluate_variables)
+                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+                        evaluate_variables: bool = True,
+                        allow_hcl1: bool = False):
+        self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
+                   download_external_modules, external_modules_download_path, evaluate_variables, allow_hcl1)
         self._parsed_directories.clear()
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
@@ -77,10 +84,11 @@ class Parser:
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d))
 
     @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
+    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, allow_hcl1: bool = False) -> \
+            Optional[Dict]:
         if not file.endswith(".tf") and not file.endswith(".tf.json"):
             return None
-        return _load_or_die_quietly(Path(file), parsing_errors)
+        return _load_or_die_quietly(Path(file), parsing_errors, allow_hcl1)
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
@@ -170,7 +178,7 @@ class Parser:
 
             # Resource files
             if file.name.endswith(".tf.json") or file.name.endswith(".tf"):
-                data = _load_or_die_quietly(file, self.out_parsing_errors)
+                data = _load_or_die_quietly(file, self.out_parsing_errors, self.allow_hcl1)
             else:
                 continue
 
@@ -210,16 +218,16 @@ class Parser:
                 continue
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
         if hcl_tfvars:                                                      # terraform.tfvars
-            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors)
+            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, self.allow_hcl1)
             if data:
                 var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
         if json_tfvars:                                                     # terraform.tfvars.json
-            data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
+            data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors, self.allow_hcl1)
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
         if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
             for var_file in sorted(auto_vars_files, key=lambda e: e.name):
-                data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+                data = _load_or_die_quietly(var_file, self.out_parsing_errors, self.allow_hcl1)
                 if data:
                     var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
         if specified_vars:                                                  # specified
@@ -275,13 +283,13 @@ class Parser:
                     # }
 
                 if self._process_vars_and_locals_loop(file_data,
-                                                     eval_context_dict,
-                                                     os.path.relpath(file, directory),
-                                                     var_value_and_file_map, locals_values,
-                                                     file_data.get("resource"),
-                                                     file_data.get("module"),
-                                                     module_data_retrieval,
-                                                     directory):
+                                                      eval_context_dict,
+                                                      os.path.relpath(file, directory),
+                                                      var_value_and_file_map, locals_values,
+                                                      file_data.get("resource"),
+                                                      file_data.get("module"),
+                                                      module_data_retrieval,
+                                                      directory):
                     made_change = True
 
                 if len(eval_context_dict) == 0:
@@ -322,11 +330,11 @@ class Parser:
                             altered_value = var_base
                             had_pattern_match = True
                         else:
-                            replaced = _handle_single_var_pattern(var_base, var_value_and_file_map, locals_values,
-                                                              resource_list,
-                                                              module_list, module_data_retrieval,
-                                                              eval_map_by_var_name,
-                                                              new_context, value, root_directory)
+                            replaced = _handle_single_var_pattern(var_base, var_value_and_file_map,
+                                                                  locals_values, resource_list,
+                                                                  module_list, module_data_retrieval,
+                                                                  eval_map_by_var_name,
+                                                                  new_context, value, root_directory)
                             if replaced != var_base:
                                 if match[0] == value:
                                     altered_value = replaced
@@ -347,28 +355,7 @@ class Parser:
 
                             if not isinstance(altered_value, dict):
                                 continue
-
-                            # If there is a string and anything else, convert to string
-                            had_string = False
-                            had_something_else = False
-                            for k, v in altered_value.items():
-                                if v == "${True}":
-                                    altered_value[k] = True
-                                    v = True
-                                elif v == "${False}":
-                                    altered_value[k] = False
-                                    v = False
-
-                                if isinstance(v, str):
-                                    had_string = True
-                                    if had_something_else:
-                                        break
-                                else:
-                                    had_something_else = True
-                                    if had_string:
-                                        break
-                            if had_string and had_something_else:
-                                altered_value = {k: _tostring(v) for k, v in altered_value.items()}
+                            altered_value = _check_map_type_consistency(altered_value)
                         # Same as above, regex can blow this up
                         # (see parser scenario: tostring_function, INNER_CURLY
                         elif value.startswith("${tostring(\"") and value.endswith("\")}"):
@@ -393,10 +380,10 @@ class Parser:
                         made_change = True
                 elif isinstance(value, dict):
                     if self._process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path,
-                                                     var_value_and_file_map,
-                                                     locals_values, resource_list,
-                                                     module_list, module_data_retrieval, root_directory,
-                                                     new_context):
+                                                          var_value_and_file_map,
+                                                          locals_values, resource_list,
+                                                          module_list, module_data_retrieval, root_directory,
+                                                          new_context):
                         made_change = True
 
                 elif isinstance(value, list):
@@ -620,6 +607,20 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
     #     format_tokens = orig_variable[7:-1].split(",")
     #     return format_tokens[0].format([_to_native_value(t) for t in format_tokens[1:]])
 
+    elif orig_variable.startswith("map(") and orig_variable.endswith(")"):
+        # NOTE: Splitting by commas is annoying due to possible commas in strings. To avoid
+        #       the issue, act like it's a list (to allow comma separation) and let the HCL
+        #       parser deal with it. Then iterating the list is easy.
+        converted_to_list = _eval_string(f"[{orig_variable[4:-1]}]")
+        new_map = {}
+        list_len = len(converted_to_list)
+        if list_len & 1:
+            # An odd number of args is invalid, ignore
+            return orig_variable
+        for i in range(0, list_len, 2):
+            new_map[converted_to_list[i]] = converted_to_list[i + 1]
+        return _check_map_type_consistency(new_map)
+
     elif _RESOURCE_REF_PATTERN.match(orig_variable):
         # Reference to resources, example: 'aws_s3_bucket.example.bucket'
         # TODO: handle index into map/list
@@ -653,7 +654,7 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
         return data_source(reference)
 
 
-def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict) -> Optional[Mapping]:
+def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict, allow_hcl1: bool) -> Optional[Mapping]:
     """
 Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
@@ -665,9 +666,20 @@ Load JSON or HCL, depending on filename.
     try:
         with open(file, "r") as f:
             if file_name.endswith(".json"):
-                return _clean_bad_definitions(json.load(f))
+                data = json.load(f)
             else:
-                return _clean_bad_definitions(hcl2.load(f))
+                try:
+                    data = hcl2.load(f)
+                except Exception as original_e:
+                    if allow_hcl1:          # Try loading with HCL1
+                        f.seek(0)           # HCL2 read will have advanced the stream, roll it back
+                        try:
+                            data = transform_hcl1(hcl1.load(f))
+                        except Exception:
+                            raise original_e            # fall back to original exception
+                    else:
+                        raise original_e
+        return _clean_bad_definitions(data)
     except Exception as e:
         LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
         parsing_errors[file_path] = e
@@ -700,3 +712,28 @@ def _tostring(value: Any) -> str:
     elif value is False:
         return "false"
     return str(value)
+
+
+def _check_map_type_consistency(value: Dict) -> Dict:
+    # If there is a string and anything else, convert to string
+    had_string = False
+    had_something_else = False
+    for k, v in value.items():
+        if v == "${True}":
+            value[k] = True
+            v = True
+        elif v == "${False}":
+            value[k] = False
+            v = False
+
+        if isinstance(v, str):
+            had_string = True
+            if had_something_else:
+                break
+        else:
+            had_something_else = True
+            if had_string:
+                break
+    if had_string and had_something_else:
+        value = {k: _tostring(v) for k, v in value.items()}
+    return value
