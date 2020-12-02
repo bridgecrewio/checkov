@@ -15,6 +15,7 @@ bc-python-hcl2 = "*"
 
 [packages]
 bc-python-hcl2 = "*"
+pyhcl = "*"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"

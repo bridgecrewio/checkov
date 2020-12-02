@@ -44,6 +44,7 @@ setup(
             "pluggy==0.13.1",
             "py==1.8.0",
             "pygments==2.5.2",
+            "pyhcl==0.4.4",
             "pyparsing==2.4.5",
             "pytest==5.3.1",
             "bc-python-hcl2>=0.3.10",
