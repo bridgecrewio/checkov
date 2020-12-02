@@ -46,7 +46,7 @@ def _hclify(obj):
             ret_dict[key] = child_list
         if isinstance(value, dict):
             child_dict = _hclify(value)
-            ret_dict[key] = child_dict
+            ret_dict[key] = [child_dict]
     return ret_dict
 
 
@@ -65,5 +65,11 @@ def parse_tf_plan(tf_plan_file):
         resource_block[resource['type']] = {}
         resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
         tf_defintions[tf_plan_file]['resource'].append(resource_block)
+    for child_module in template.get('planned_values', {}).get("root_module", {}).get("child_modules",[]):
+        for resource in child_module.get("resources", []):
+            resource_block = {}
+            resource_block[resource['type']] = {}
+            resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
+            tf_defintions[tf_plan_file]['resource'].append(resource_block)
 
     return tf_defintions, template_lines
