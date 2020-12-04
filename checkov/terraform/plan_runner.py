@@ -58,6 +58,8 @@ class Runner(BaseRunner):
             for file in files:
                 if file.endswith(".json"):
                     tf_definitions, template_lines = parse_tf_plan(file)
+                    if not tf_definitions:
+                        continue
                     self.tf_definitions = tf_definitions
                     self.template_lines = template_lines
                     self.check_tf_definition(report, runner_filter)
