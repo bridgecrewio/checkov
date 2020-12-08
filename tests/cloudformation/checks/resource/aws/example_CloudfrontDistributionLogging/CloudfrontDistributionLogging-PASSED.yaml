@@ -5,5 +5,28 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: True
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          DefaultTTL: 3600
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          MaxTTL: 86400
+          MinTTL: 60
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: 'https-only'
+          - DomainName: 'awsexamplebucket.s3.us-west-2.amazonaws.com'
+            Id: s3origin
+            S3OriginConfig:
+              OriginAccessIdentity: 'origin-access-identity/cloudfront/CloudFrontOriginAccessIdentity'
         Logging:
           Bucket: myawslogbucket.s3.amazonaws.com
