@@ -16,8 +16,8 @@ class MSKClusterEncryption(BaseResourceCheck):
             if 'encryption_at_rest_kms_key_arn' in encryption:
                 if 'encryption_in_transit' in encryption:
                     transit = encryption['encryption_in_transit'][0]
-                    if 'client_broker' in transit and transit['client_broker'] != 'TLS' or \
-                            'in_cluster' in transit and transit['in_cluster'] is False:
+                    if 'client_broker' in transit and transit['client_broker'][0] != 'TLS' or \
+                            'in_cluster' in transit and transit['in_cluster'][0] is False:
                         return CheckResult.FAILED
                     return CheckResult.PASSED
                 return CheckResult.PASSED
