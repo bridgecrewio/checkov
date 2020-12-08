@@ -59,11 +59,32 @@ class ContextParser(object):
             start_line = min(find_lines_result_list)
             end_line = max(list(self.find_lines(cf_resource, ENDLINE)))
 
-            entity_lines_range = [start_line, end_line - 1]
+            # start_line - 2: -1 to switch to 0-based indexing, and -1 to capture the resource name
+            entity_code_lines = self.cf_template_lines[start_line - 2: end_line - 1]
 
-            entity_code_lines = self.cf_template_lines[start_line - 1: end_line - 1]
+            # if the file did not end in a new line, and this was the last resource in the file, then we
+            # trimmed off the last line
+            if (end_line - 1) < len(self.cf_template_lines) and not self.cf_template_lines[end_line - 1][1].endswith('\n'):
+                entity_code_lines.append(self.cf_template_lines[end_line - 1])
+
+            entity_code_lines = ContextParser.trim_lines(entity_code_lines)
+            entity_lines_range = [entity_code_lines[0][0],entity_code_lines[-1][0]]
             return entity_lines_range, entity_code_lines
         return None, None
+
+    @staticmethod
+    def trim_lines(code_lines):
+        # Removes leading and trailing lines that are only whitespace, returning a new value
+        # The passed value should be a list of tuples of line numbers and line strings (entity_code_lines)
+        start = 0
+        end = len(code_lines)
+        while start < end and not code_lines[start][1].strip():
+            start += 1
+        while end > start and not code_lines[end - 1][1].strip():
+            end -= 1
+
+        # if start == end, this will just be empty
+        return code_lines[start:end]
 
     @staticmethod
     def find_lines(node, kv):
