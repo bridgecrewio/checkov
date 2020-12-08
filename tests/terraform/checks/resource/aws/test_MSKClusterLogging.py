@@ -15,7 +15,7 @@ class TestMSKClusterLogging(unittest.TestCase):
                         {
                             "cloudwatch_logs": [
                                 {
-                                    "enabled": False,
+                                    "enabled": [False],
                                 }
                             ],
                         }
@@ -42,7 +42,7 @@ class TestMSKClusterLogging(unittest.TestCase):
                         {
                             "cloudwatch_logs": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         }
@@ -62,21 +62,21 @@ class TestMSKClusterLogging(unittest.TestCase):
                         {
                             "cloudwatch_logs": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         },
                         {
                             "firehose": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         },
                         {
                             "s3": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         }
@@ -96,21 +96,21 @@ class TestMSKClusterLogging(unittest.TestCase):
                         {
                             "cloudwatch_logs": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         },
                         {
                             "firehose": [
                                 {
-                                    "enabled": True,
+                                    "enabled": [True],
                                 }
                             ],
                         },
                         {
                             "s3": [
                                 {
-                                    "enabled": False,
+                                    "enabled": [False],
                                 }
                             ],
                         }

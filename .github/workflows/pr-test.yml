@@ -49,6 +49,7 @@ jobs:
         run: |
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install --upgrade pip==20.2
           pipenv run pip install dist/checkov-*
       - name: Clone Terragoat - vulnerable terraform
         uses: actions/checkout@master

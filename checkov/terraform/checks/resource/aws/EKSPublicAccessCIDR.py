@@ -21,7 +21,7 @@ class EKSPublicAccessCIDR(BaseResourceCheck):
             if "endpoint_public_access" in conf["vpc_config"][0].keys() and not conf["vpc_config"][0]["endpoint_public_access"][0]:
                 return CheckResult.PASSED
             elif "public_access_cidrs" in conf["vpc_config"][0].keys():
-                if not len(conf["vpc_config"][0]["public_access_cidrs"][0]) or "0.0.0.0/0" in conf["vpc_config"][0]["public_access_cidrs"][0]:
+                if not len(conf["vpc_config"][0]["public_access_cidrs"][0]) or "0.0.0.0/0" in conf["vpc_config"][0]["public_access_cidrs"][0]:  # nosec
                     return CheckResult.FAILED
                 else:
                     return CheckResult.PASSED

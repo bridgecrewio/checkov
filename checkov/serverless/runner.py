@@ -124,7 +124,7 @@ class Runner(BaseRunner):
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         variable_evaluations = {}
-                        if token == "functions":
+                        if token == "functions": #nosec
                             # "Enriching" copies things like "environment" and "stackTags" down into the
                             # function data from the provider block since logically that's what serverless
                             # does. This allows checks to see what the complete data would be.

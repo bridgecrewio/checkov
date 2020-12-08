@@ -60,10 +60,18 @@ def parse_tf_plan(tf_plan_file):
     tf_defintions[tf_plan_file] = {}
     tf_defintions[tf_plan_file]['resource'] = []
     template, template_lines = parse(tf_plan_file)
+    if not template:
+        return None, None
     for resource in template.get('planned_values', {}).get("root_module", {}).get("resources", []):
         resource_block = {}
         resource_block[resource['type']] = {}
         resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
         tf_defintions[tf_plan_file]['resource'].append(resource_block)
+    for child_module in template.get('planned_values', {}).get("root_module", {}).get("child_modules",[]):
+        for resource in child_module.get("resources", []):
+            resource_block = {}
+            resource_block[resource['type']] = {}
+            resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
+            tf_defintions[tf_plan_file]['resource'].append(resource_block)
 
     return tf_defintions, template_lines
