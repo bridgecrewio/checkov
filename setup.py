@@ -24,7 +24,7 @@ version = mod.version  # type: ignore
 setup(
     extras_require={
         "dev": [
-            "pytest",
+            "pytest==5.3.1",
             "coverage",
             "coverage-badge",
             "pipenv-setup",
