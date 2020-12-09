@@ -41,8 +41,8 @@ if [ -f /etc/checkov/apikey ]; then
     repoid="runtime/unknown"
   fi
 
-  checkov -s -d /data --bc-api-key "$apikey" --repo-id "$repoid" --branch runtime
+  checkov -s -d /data --bc-api-key "$apikey" --repo-id "$repoid" --branch runtime --framework kubernetes
 else
-  checkov -s -d /data
+  checkov -s -d /data --framework kubernetes
 fi
 
