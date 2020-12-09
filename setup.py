@@ -29,7 +29,9 @@ setup(
             "coverage-badge",
             "pipenv-setup",
             "GitPython==3.1.7",
-            "bandit"
+            "bandit",
+            # TESTING: See if this matters for unit test fix...
+            "importlib-metadata==1.1.0; python_version < '3.8'",
         ]
     },
     install_requires=[
@@ -53,6 +55,7 @@ setup(
     license="Apache License 2.0",
     name="checkov",
     version=version,
+    python_requires=">=3.7",
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
