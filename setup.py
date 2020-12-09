@@ -29,9 +29,7 @@ setup(
             "coverage-badge",
             "pipenv-setup",
             "GitPython==3.1.7",
-            "bandit",
-            # TESTING: See if this matters for unit test fix...
-            "importlib-metadata==1.1.0; python_version < '3.8'",
+            "bandit"
         ]
     },
     install_requires=[
