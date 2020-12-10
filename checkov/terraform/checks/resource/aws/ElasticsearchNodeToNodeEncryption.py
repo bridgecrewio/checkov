@@ -30,12 +30,9 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                             self.evaluated_keys = 'node_to_node_encryption/[0]/enabled'
                             if conf["node_to_node_encryption"][0]["enabled"]:
                                 return CheckResult.PASSED
-                        else:
-                            return CheckResult.FAILED
-                    else:
-                        return CheckResult.PASSED
-                else:
-                    return CheckResult.UNKNOWN
+                        return CheckResult.FAILED
+                    return CheckResult.PASSED
+                return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
 
