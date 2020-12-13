@@ -15,7 +15,7 @@ jobs:
       - name: security test
         uses: jpetrucciani/bandit-check@master
         with:
-          path: '.'
+          path: 'checkov'
   detect-secrets:
     runs-on: ubuntu-latest
     steps:

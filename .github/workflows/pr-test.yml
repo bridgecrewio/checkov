@@ -12,7 +12,7 @@ jobs:
           python-version: 3.7
       - name: Install cfn-lint
         run: |
-          pip install cfn-lint==0.32.1
+          pip install cfn-lint==0.41.0
       - name: Lint Cloudformation templates
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
@@ -49,6 +49,7 @@ jobs:
         run: |
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install --upgrade pip==20.2
           pipenv run pip install dist/checkov-*
       - name: Clone Terragoat - vulnerable terraform
         uses: actions/checkout@master

@@ -117,7 +117,7 @@ Check: CKV_AWS_20: "S3 Bucket has an ACL defined which allows public access."
 If available, each `PASSED/FAILED` check contains the evaluation information, which contains all the variables
  who were evaluated.
 
-Each variable contains it's variable source file path, the evaluated value and the expressions in
+Each variable contains its variable source file path, the evaluated value, and the expressions in
 which it was referenced:
 
 ```json

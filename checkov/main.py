@@ -12,7 +12,7 @@ from typing import Optional, Iterable, Iterator
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner as checkov_banner
@@ -23,6 +23,7 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
+from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.version import version
 
@@ -47,14 +48,16 @@ def run(banner=checkov_banner):
     add_parser_args(parser)
     args = parser.parse_args()
     config = get_configuration(args)
-    bc_integration = BcPlatformIntegration()
-    runner_filter = RunnerFilter(framework=config.framework, checks=config.check, skip_checks=config.skip_check)
+    runner_filter = RunnerFilter(framework=config.framework, checks=config.check, skip_checks=config.skip_check,
+                                 download_external_modules=config.download_external_modules,
+                                 external_modules_download_path=config.external_modules_download_path,
+                                 evaluate_variables=config.evaluate_variables)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                         arm_runner())
+                                         arm_runner(), tf_plan_runner())
     if args.version:
         print(version)
         return
@@ -336,6 +339,15 @@ def add_parser_args(parser):
                         # Default value is implemented in config.CheckovConfig.branch
                         help='Selected branch of the persisted repository. Only has effect when using the --bc-api-key '
                              'flag. Defaults to "master"')
+    parser.add_argument('--download-external-modules', action='store_true', default=None,
+                        # Default value is implemented in config.CheckovConfig.download_external_modules
+                        help="download external terraform modules from public git repositories and terraform registry")
+    parser.add_argument('--external-modules-download-path',
+                        # Default value is implemented in config.CheckovConfig.external_modules_download_path
+                        help="set the path for the download external terraform modules")
+    parser.add_argument('--evaluate-variables', action='store_true', default=None,
+                        # Default value is implemented in config.CheckovConfig.evaluate_variables
+                        help="evaluate the values of variables and locals")
 
 
 def get_external_checks_dir(config: CheckovConfig):

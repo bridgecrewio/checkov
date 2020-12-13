@@ -36,7 +36,9 @@ class EC2PublicIP(BaseResourceCheck):
 
         # For aws_launch_template
         if (
-            'network_interfaces' in conf.keys()
+            'network_interfaces' in conf
+            and
+            isinstance(conf['network_interfaces'][0], dict)
             and
             conf['network_interfaces'][0].get('associate_public_ip_address') == [True]
         ):

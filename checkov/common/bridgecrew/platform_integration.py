@@ -62,6 +62,8 @@ class BcPlatformIntegration(object):
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
+        self.guidelines = None
+        self.bc_id_mapping = None
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
@@ -187,24 +189,34 @@ class BcPlatformIntegration(object):
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_guidelines(self) -> dict:
+        if not self.guidelines:
+            self.get_checkov_mapping_metadata()
+        return self.guidelines
+
+    def get_id_mapping(self) -> dict:
+        if not self.bc_id_mapping:
+            self.get_checkov_mapping_metadata()
+        return self.bc_id_mapping
+
+    def get_checkov_mapping_metadata(self) -> dict:
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
-            guidelines_map = response["guidelines"]
-            logging.debug(f"Got guidelines form Bridgecrew BE")
-            return guidelines_map
+            self.guidelines = response["guidelines"]
+            self.bc_id_mapping = response.get("idMapping")
+            logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
 
     def onboarding(self):
         if not self.bc_api_key:
-            print(Style.BRIGHT + colored("Visualize and collaborate on these issues with Bridgecrew! \n", 'blue',
+            print(Style.BRIGHT + colored("Visualize and collaborate on security issues with Bridgecrew! \n", 'blue',
                                          attrs=['bold']) + colored(
                 "Bridgecrew's dashboard allows automation of future checks, Pull Request scanning and "
-                "auto-comments, automatic remidiation PR's and more! Plus it's free for 100 Terraform objects and a "
-                "great way to visualize and collaborate on these results. To instantly see this scan in the "
-                "platform, Press y! \n ",
+                "auto-comments, automatic remidiation PR's and more! \n Plus it's free for 100 cloud resources and a "
+                "great way to visualize and collaborate on Checkov results. For more information on dashboard integration, see: http://bridge.dev/checkov-dashboard \n \n To instantly see future Checkov scans in the "
+                "platform, Press y! \n",
                 'yellow') + Style.RESET_ALL)
             reply = self._input_visualize_results()
             if reply[:1] == 'y':
@@ -217,12 +229,15 @@ class BcPlatformIntegration(object):
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print('\n Saving API key to {}'.format(bridgecrew_file))
+                        print(Style.BRIGHT + colored("\n Checkov Dashboard configured, opening https://bridgecrew.cloud, check your inbox for login details! \n", 'blue', attrs=['bold']))
                         persist_key(self.bc_api_key)
                     else:
                         print(
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
                                                    'red', attrs=['bold']) + Style.RESET_ALL)
                     webbrowser.open("https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
+            else:
+                print("\n To see the Dashboard prompt again, run `checkov` with no arguments \n For Checkov usage, try `checkov --help`")
         else:
             print("No argument given. Try ` --help` for further information")
 
@@ -295,6 +310,8 @@ class BcPlatformIntegration(object):
         while not valid:
             result = str(
                 input('Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
+            # remove spaces and special characters
+            result = ''.join(e for e in result if e.isalnum())
             if result:
                 valid = True
         return result
@@ -325,3 +342,6 @@ class BcPlatformIntegration(object):
                 t.set_description(msg)
                 t.set_postfix(refresh=False)
                 sleep(1)
+
+
+bc_integration = BcPlatformIntegration()

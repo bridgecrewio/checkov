@@ -15,6 +15,7 @@ bc-python-hcl2 = "*"
 
 [packages]
 bc-python-hcl2 = "*"
+deep_merge = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
@@ -27,6 +28,8 @@ six = "==1.15.0"
 jmespath = "*"
 tqdm = "*"
 update_checker = "*"
+semantic_version = "*"      # For TF version resolution
+packaging = "*"
 
 [requires]
 python_version = "3.7"

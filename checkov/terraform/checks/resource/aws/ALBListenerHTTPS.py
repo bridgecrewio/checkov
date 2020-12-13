@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class ALBListenerHTTPS(BaseResourceCheck):
 
     def __init__(self):
@@ -19,19 +20,19 @@ class ALBListenerHTTPS(BaseResourceCheck):
         """
         key = 'protocol'
         if key in conf.keys():
-            if (
-                conf[key] == ["HTTPS"]
-                or
-                conf[key] == ["TLS"]
-            ):
+            if conf[key] in (["HTTPS"], ["TLS"], ["TCP"], ["UDP"], ["TCP_UDP"]):
                 return CheckResult.PASSED
             elif conf[key] == ["HTTP"]:
                 if 'default_action' in conf.keys():
                     default_action = conf['default_action'][0]
                     action_type = default_action['type']
                     if action_type == ['redirect']:
-                        if default_action['redirect'][0]['protocol'] == ['HTTPS']:
-                            return CheckResult.PASSED
+                        if default_action.get('redirect'):
+                            protocol = default_action['redirect'][0].get('protocol')
+                            if protocol == ['HTTPS']:
+                                return CheckResult.PASSED
+                            elif protocol is None:
+                                return CheckResult.UNKNOWN
         return CheckResult.FAILED
 
 

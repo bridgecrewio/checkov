@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.util.type_forcers import force_list
 import re
 
-INTERNET_ADDRESSES = ["*", "0.0.0.0", "<nw>/0", "/0", "internet", "any"]
+INTERNET_ADDRESSES = ["*", "0.0.0.0", "<nw>/0", "/0", "internet", "any"] # nosec
 PORT_RANGE = re.compile('\d+-\d+')
 
 
@@ -17,28 +17,31 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
     def is_port_in_range(self, conf):
         ports = force_list(conf['destination_port_range'][0])
         for range in ports:
-            if re.match(PORT_RANGE, range):
+            str_range = str(range)
+            if re.match(PORT_RANGE, str_range):
                 start, end = int(range.split('-')[0]), int(range.split('-')[1])
                 if start <= self.port <= end:
                     return True
-            if range in [str(self.port), '*']:
+            if str_range in [str(self.port), '*']:
                 return True
         return False
 
     def scan_resource_conf(self, conf):
         if "dynamic" in conf:
             return CheckResult.UNKNOWN
-            
+
         rule_confs = [conf]
         if 'security_rule' in conf:
             rule_confs = conf['security_rule']
 
         for rule_conf in rule_confs:
-            if 'access' in rule_conf and rule_conf['access'][0] == "Allow":
-                if 'direction' in rule_conf and rule_conf['direction'][0] == "Inbound":
-                    if 'protocol' in rule_conf and rule_conf['protocol'][0].upper() == 'TCP':
+            if not isinstance(rule_conf, dict):
+                return CheckResult.UNKNOWN
+            if 'access' in rule_conf and rule_conf['access'][0].lower() == "allow":
+                if 'direction' in rule_conf and rule_conf['direction'][0].lower() == "inbound":
+                    if 'protocol' in rule_conf and rule_conf['protocol'][0].lower() in ['tcp', '*']:
                         if 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf):
-                            if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0] in INTERNET_ADDRESSES:
+                            if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
                                 return CheckResult.FAILED
         return CheckResult.PASSED
 

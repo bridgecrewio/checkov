@@ -1,0 +1,26 @@
+{
+  "main.tf": {
+    "acl": {
+      "var_file": "variables.tf",
+      "value": "public-read",
+      "definitions": [
+        {
+          "definition_name": "acl",
+          "definition_expression": "${var.acl}",
+          "definition_path": "resource/0/aws_s3_bucket/my_bucket/acl/0"
+        }
+      ]
+    },
+    "region": {
+      "var_file": "variables.tf",
+      "value": "us-west-2",
+      "definitions": [
+        {
+          "definition_name": "region",
+          "definition_expression": "${var.region}",
+          "definition_path": "resource/0/aws_s3_bucket/my_bucket/region/0"
+        }
+      ]
+    }
+  }
+}

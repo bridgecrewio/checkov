@@ -1,0 +1,82 @@
+{
+  "maze.tf": {
+    "variable": [
+      {
+        "gratuitous_var_default": {
+          "type": [
+            "string"
+          ],
+          "default": [
+            "-yay"
+          ]
+        }
+      },
+      {
+        "input": {
+          "default": ["module-input"]
+        }
+      }
+    ],
+    "locals": [
+      {
+        "BUCKET": ["bucket"],
+        "NAME": [
+          {
+            "module-input-bucket": "mapped-bucket-name"
+          }
+        ],
+        "TAIL": [
+          "works"
+        ]
+      }
+    ],
+    "module": [
+      {
+        "bucket": {
+          "source": ["./bucket"],
+          "name": ["module-input"],
+          "__resolved__": ["bucket/bucket.tf[maze.tf#0]"]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example2": {
+            "bucket": [
+              "mapped-bucket-name-works-yay"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "bucket/bucket.tf[maze.tf#0]": {
+    "variable": [
+      {
+        "name": {}
+      }
+    ],
+    "locals": [
+      {
+        "MODULE_TAIL": ["bucket"]
+      }
+    ],
+    "output": [
+      {
+        "bucket_name": {
+          "value": ["module-input-bucket"]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example": {
+            "bucket": ["module-input-bucket"]
+          }
+        }
+      }
+    ]
+  }
+}

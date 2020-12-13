@@ -10,7 +10,9 @@ class TestVariableContextParser(unittest.TestCase):
         test_root_dir = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/'
         tf_definitions = {}
         parsing_errors = {}
-        Parser().hcl2(directory=test_root_dir, tf_definitions=tf_definitions, parsing_errors=parsing_errors)
+        Parser().parse_directory(directory=test_root_dir,
+                                  out_definitions=tf_definitions,
+                                  out_parsing_errors=parsing_errors)
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
         self.definitions_context = definitions_context

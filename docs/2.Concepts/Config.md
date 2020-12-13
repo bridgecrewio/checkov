@@ -83,6 +83,9 @@ The default block is also considered.
 | `--soft-fail` | `soft_fail` | boolean ||
 | `--repo-id` | `repo_id` | string | See `checkov --help` for the expected format. |
 | `--branch` | `branch` | string ||
+| `--download-external-modules` | `download_external_modules` | boolean ||
+| `--external-modules-download-path` | `external_modules_download_path` | string ||
+| `--evaluate-variables` | `evaluate_variables` | boolean ||
 
 
 ## Merging configurations

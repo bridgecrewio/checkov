@@ -18,14 +18,16 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "enabled_cluster_log_types" in conf.keys():
-           log_types = [ "api", "audit", "authenticator", "controllerManager", "scheduler" ]
+            log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-           if all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
-               return CheckResult.PASSED
-           else:
-               return CheckResult.FAILED
+            if conf["enabled_cluster_log_types"][0] == None:
+                return CheckResult.FAILED
+            if all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
+                return CheckResult.PASSED
+            else:
+                return CheckResult.FAILED
         else:
-           return CheckResult.FAILED
-     
-check = EKSControlPlaneLogging()
+            return CheckResult.FAILED
 
+
+check = EKSControlPlaneLogging()

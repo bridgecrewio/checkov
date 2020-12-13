@@ -63,7 +63,8 @@ setup(
             "wcwidth==0.1.7",
             "zipp==0.6.0",
             "GitPython==3.1.7",
-            "gitdb==4.0.5"
+            "gitdb==4.0.5",
+            "packaging==20.4"
         ]
     },
     install_requires=[
@@ -72,6 +73,7 @@ setup(
         "boto3==1.12.43",
         "chardet==3.0.4",
         "colorama==0.4.3",
+        "deep_merge==0.0.4",
         "docopt==0.6.2",
         "idna==2.8",
         "jmespath==0.10.0",
@@ -81,12 +83,14 @@ setup(
         "pyyaml==5.3.1",
         "requests==2.22.0",
         "six==1.15.0",
+        "semantic_version==2.8.5",
         "tabulate==0.8.6",
         "termcolor==1.1.0",
         "urllib3==1.25.10",
         "dpath==1.5.0",
         "GitPython==3.1.7",
-        "gitdb==4.0.5"
+        "gitdb==4.0.5",
+        "packaging==20.4"
     ],
     license="Apache License 2.0",
     name="checkov",

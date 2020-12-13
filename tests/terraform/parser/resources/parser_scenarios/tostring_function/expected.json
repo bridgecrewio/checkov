@@ -1,0 +1,12 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "NUM": ["1"],
+        "STRING": ["a string"],
+        "INVALID_ARRAY": ["${tostring([])}"],
+        "INNER_CURLY": ["annoying {"]
+      }
+    ]
+  }
+}

@@ -9,4 +9,5 @@ tests/terraform/runner/resources/example/example.tf
 tests/terraform/checks/provider/aws/test_credentials.py
 tests/terraform/checks/resource/aws/test_EC2Credentials.py
 tests/unit/test_secrets.py
+tests/terraform/runner/resources/plan/tfplan.json
 .*Scans.md

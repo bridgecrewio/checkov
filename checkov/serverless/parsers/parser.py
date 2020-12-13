@@ -15,13 +15,13 @@ from checkov.cloudformation.parser.node import dict_node, str_node
 
 logger = logging.getLogger(__name__)
 
-IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'
-CFN_RESOURCES_TOKEN = 'resources'
-PROVIDER_TOKEN = 'provider'
-FUNCTIONS_TOKEN = 'functions'
-ENVIRONMENT_TOKEN = 'environment'
-STACK_TAGS_TOKEN = 'stackTags'
-TAGS_TOKEN = 'tags'
+IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements' #nosec
+CFN_RESOURCES_TOKEN = 'resources' #nosec
+PROVIDER_TOKEN = 'provider' #nosec
+FUNCTIONS_TOKEN = 'functions' #nosec
+ENVIRONMENT_TOKEN = 'environment' #nosec
+STACK_TAGS_TOKEN = 'stackTags' #nosec
+TAGS_TOKEN = 'tags' #nosec
 SUPPORTED_PROVIDERS = ['aws']
 
 DEFAULT_VAR_PATTERN = "\\${([^{}]+?)}"
@@ -106,6 +106,7 @@ Modifies the template data in-place to resolve variables.
     # Loop while the data is being changed, stop when no more changes are happening.
     # To ensure there's not some kind of oscillation, a cap of 25 passes is in place.
     # More than a couple loops isn't normally expected.
+    # NOTE: If this approach proves to be a performance liability, a DAG will be needed.
     loop_count = 0
     for i in range(0, 25):
         loop_count += 1

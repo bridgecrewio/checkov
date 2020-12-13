@@ -12,8 +12,10 @@ class APIGatewayAuthorization(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        if 'artifacts' not in conf:
+            return CheckResult.UNKNOWN
         artifact = conf['artifacts'][0]
-        if artifact['type'] != "NO_ARTIFACTS" and 'encryption_disabled' in artifact and artifact['encryption_disabled']:
+        if isinstance(artifact, dict) and artifact['type'] != "NO_ARTIFACTS" and 'encryption_disabled' in artifact and artifact['encryption_disabled']:
             return CheckResult.FAILED
         return CheckResult.PASSED
 

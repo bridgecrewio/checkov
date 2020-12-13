@@ -8,8 +8,10 @@ from abc import ABC, abstractmethod
 from typing import Optional, Iterable, TextIO, Union, Any, List, Sequence
 from yaml import YAMLError
 
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
-FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'all']
+FRAMEWORK_CHOICES = ['cloudformation', 'terraform', 'terraform_plan', 'kubernetes', 'serverless', 'arm', 'all']
 MERGING_BEHAVIOR_CHOICES = [
     'union',  # merge current with parent
     'override',  # ignore the parent
@@ -64,7 +66,9 @@ class CheckovConfig:
                  external_checks_git: Optional[Sequence[str]] = None, output: Optional[str] = None,
                  no_guide: Optional[bool] = None, quiet: Optional[bool] = None, framework: Optional[str] = None,
                  merging_behavior: Optional[str] = None, check: Optional[str] = None, skip_check: Optional[str] = None,
-                 soft_fail: Optional[bool] = None, repo_id: Optional[str] = None, branch: Optional[str] = None):
+                 soft_fail: Optional[bool] = None, repo_id: Optional[str] = None, branch: Optional[str] = None,
+                 download_external_modules: Optional[bool] = None,
+                 external_modules_download_path: Optional[str] = None, evaluate_variables: Optional[bool] = None):
         self.source = source
         self.directory: FrozenUniqueList = FrozenUniqueList(directory)
         self.file: FrozenUniqueList = FrozenUniqueList(file)
@@ -80,10 +84,12 @@ class CheckovConfig:
         self._soft_fail = soft_fail
         self.repo_id = repo_id
         self._branch = branch
+        self._download_external_modules = download_external_modules
+        self._external_modules_download_path = external_modules_download_path
+        self._evaluate_variables = evaluate_variables
 
     @staticmethod
     def from_args(args: argparse.Namespace) -> 'CheckovConfig':
-        # TODO there should be a way to clear this from a parent
         # Currently if a parent set this, there is no way for the cli to override that in a way, that every check
         # runs
         return CheckovConfig(
@@ -102,6 +108,9 @@ class CheckovConfig:
             soft_fail=args.soft_fail,
             repo_id=args.repo_id,
             branch=args.branch,
+            download_external_modules=args.download_external_modules,
+            external_modules_download_path=args.external_modules_download_path,
+            evaluate_variables=args.evaluate_variables,
         )
 
     @staticmethod
@@ -180,6 +189,18 @@ class CheckovConfig:
         return self._branch or 'master'
 
     @property
+    def download_external_modules(self):
+        return self._download_external_modules or False
+
+    @property
+    def external_modules_download_path(self):
+        return self._external_modules_download_path or DEFAULT_EXTERNAL_MODULES_DIR
+
+    @property
+    def evaluate_variables(self):
+        return self._evaluate_variables or True
+
+    @property
     def is_check_selection_valid(self):
         return not self.check or not self.skip_check
 
@@ -253,6 +274,10 @@ class CheckovConfig:
         self.repo_id = self.repo_id or parent.repo_id
         # repo_id is never ''
         self._branch = self._branch or parent._branch
+        self._download_external_modules = self._download_external_modules or parent._download_external_modules
+        self._external_modules_download_path = self._external_modules_download_path or \
+                                               parent._external_modules_download_path
+        self._evaluate_variables = self._evaluate_variables or parent._evaluate_variables
 
     def _merge_copy_parent(self, parent: 'CheckovConfig'):
         self.directory = parent.directory
@@ -267,6 +292,9 @@ class CheckovConfig:
         self._soft_fail = parent._soft_fail
         self.repo_id = parent.repo_id
         self._branch = parent._branch
+        self._download_external_modules = parent._download_external_modules
+        self._external_modules_download_path = parent._external_modules_download_path
+        self._evaluate_variables = parent._evaluate_variables
 
         self.check = parent.check
         self.skip_check = parent.skip_check
@@ -299,6 +327,9 @@ class CheckovConfig:
             ('soft_fail', '_soft_fail', default_filter, default_getter),
             ('repo_id', 'repo_id', default_filter, default_getter),
             ('branch', '_branch', default_filter, default_getter),
+            ('download_external_modules', '_download_external_modules', default_filter, default_getter),
+            ('external_modules_download_path', '_external_modules_download_path', default_filter, default_getter),
+            ('evaluate_variables', '_evaluate_variables', default_filter, default_getter),
         ]
         filtered = (f'{label}={repr(g(p))}' for label, p, f, g in kwargs if f(p))
         kwargs = ', '.join(itertools.chain((repr(self.source),), filtered))
@@ -351,6 +382,9 @@ class _Parser(ABC):
             self.handle_type('soft_fail', 'soft_fail', bool)
             self.handle_type('repo_id', 'repo_id', str)
             self.handle_type('branch', 'branch', str)
+            self.handle_type('download_external_modules', 'download_external_modules', bool)
+            self.handle_type('external_modules_download_path', 'external_modules_download_path', str)
+            self.handle_type('evaluate_variables', 'evaluate_variables', bool)
             self.after_parse_hook()
 
         return CheckovConfig('file', **self.kwargs)
