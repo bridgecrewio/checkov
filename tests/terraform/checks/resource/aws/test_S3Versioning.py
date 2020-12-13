@@ -67,8 +67,3 @@ class TestS3Versioning(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-                        #  "frog": [{"enabled": [True]}],
-                        #  "dog": [{"enabled": [True]}],
-                        #  "log": [{"enabled": [True]}],
-                        #  "frog": [{"versioning": [{"enabled": [True]}]}]
