@@ -61,14 +61,16 @@ class BaseResourceValueCheck(BaseResourceCheck):
             for attribute in reversed(inspected_attributes):
                 for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
                     filtered_sub_key = self._filter_key_path(sub_key)
-                    if self._is_nesting_key(inspected_attributes, filtered_sub_key):
-                        if isinstance(sub_conf, list) and len(sub_conf) == 1:
-                            sub_conf = sub_conf[0]
-                        if sub_conf in self.get_expected_values():
-                            return CheckResult.PASSED
-                        if self._is_variable_dependant(sub_conf):
-                            # If the tested attribute is variable-dependant, then result is PASSED
-                            return CheckResult.PASSED
+                    # Only proceed with check if full path for key is similar - not partial match
+                    if inspected_attributes == filtered_sub_key:
+                        if self._is_nesting_key(inspected_attributes, filtered_sub_key):
+                            if isinstance(sub_conf, list) and len(sub_conf) == 1:
+                                sub_conf = sub_conf[0]
+                            if sub_conf in self.get_expected_values():
+                                return CheckResult.PASSED
+                            if self._is_variable_dependant(sub_conf):
+                                # If the tested attribute is variable-dependant, then result is PASSED
+                                return CheckResult.PASSED
 
         return self.missing_block_result
 
