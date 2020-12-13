@@ -110,7 +110,7 @@ class CheckovConfig:
             branch=args.branch,
             download_external_modules=args.download_external_modules,
             external_modules_download_path=args.external_modules_download_path,
-            evaluate_variables=args.evaluate_variables,
+            evaluate_variables=args.do_not_evaluate_variables,
         )
 
     @staticmethod
