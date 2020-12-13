@@ -345,7 +345,7 @@ def add_parser_args(parser):
     parser.add_argument('--external-modules-download-path',
                         # Default value is implemented in config.CheckovConfig.external_modules_download_path
                         help="set the path for the download external terraform modules")
-    parser.add_argument('--evaluate-variables', action='store_true', default=None,
+    parser.add_argument('--do-not-evaluate-variables', action='store_false', default=None,
                         # Default value is implemented in config.CheckovConfig.evaluate_variables
                         help="evaluate the values of variables and locals")
 

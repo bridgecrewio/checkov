@@ -85,7 +85,7 @@ The default block is also considered.
 | `--branch` | `branch` | string ||
 | `--download-external-modules` | `download_external_modules` | boolean ||
 | `--external-modules-download-path` | `external_modules_download_path` | string ||
-| `--evaluate-variables` | `evaluate_variables` | boolean ||
+| `--do-not-evaluate-variables` | `evaluate_variables` | boolean | The cli option works in the oposite way. The default value is `True` and therefore you setting it to false when using the flag. In the configuration you set the value wo the value you want. |
 
 
 ## Merging configurations
