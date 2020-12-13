@@ -25,7 +25,7 @@ class TestAKSRbacEnabled(unittest.TestCase):
                          'addon_profile': [{'oms_agent': [{'enabled': [True], 'log_analytics_workspace_id': ['']}]}]}
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
         resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
