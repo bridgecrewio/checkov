@@ -11,7 +11,7 @@ class AKSRbacEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'role_based_access_control/[0]/enabled/[0]'
+        return 'role_based_access_control/[0]/enabled'
 
 
 check = AKSRbacEnabled()

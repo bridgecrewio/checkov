@@ -11,7 +11,7 @@ class EKSPublicAccess(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'vpc_config/[0]/endpoint_public_access/[0]/endpoint_public_access'
+        return 'vpc_config/[0]/endpoint_public_access'
 
     def get_expected_value(self):
         return False
