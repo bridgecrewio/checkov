@@ -39,7 +39,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 400 built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, CloudFormation and Kubernetes, Serverless framework and ARM template files.
+ * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Serverless framework and ARM template files.
  * Detects [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Concepts/Evaluations.md) to their optional default value.

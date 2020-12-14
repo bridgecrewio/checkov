@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+#
+# REMINDER: Update "dev" deps on setup.py when changing
+#
 pytest = "*"
 coverage ="*"
 coverage-badge = "*"
@@ -11,24 +14,26 @@ pipenv-setup = "*"
 GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"
-bc-python-hcl2 = "*"
 
 [packages]
+#
+# REMINDER: Update "install_requires" deps on setup.py when changing
+#
 bc-python-hcl2 = "*"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
 junit-xml ="*"
-dpath = "==1.5.0"
-pyyaml = "==5.3.1"
+dpath = ">=1.5.0,<2"
+pyyaml = ">=5.3.1"
 boto3 = "*"
 GitPython = "*"
 six = "==1.15.0"
 jmespath = "*"
 tqdm = "*"
 update_checker = "*"
-semantic_version = "*"      # For TF version resolution
+semantic_version = "*"
 packaging = "*"
 
 [requires]
