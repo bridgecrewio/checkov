@@ -1,0 +1,14 @@
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+
+  MyBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'hello'

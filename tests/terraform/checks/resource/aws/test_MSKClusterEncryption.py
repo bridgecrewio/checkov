@@ -20,8 +20,8 @@ class TestMSKClusterEncryption(unittest.TestCase):
                 {
                     "encryption_in_transit": [
                         {
-                            "client_broker": "TLS",
-                            "in_cluster": "true",
+                            "client_broker": ["TLS"],
+                            "in_cluster": ["true"],
                         }
                     ],
                 }
@@ -38,8 +38,8 @@ class TestMSKClusterEncryption(unittest.TestCase):
                     "encryption_at_rest_kms_key_arn": "aws_kms_key.kms.arn",
                     "encryption_in_transit": [
                         {
-                            "client_broker": "PLAINTEXT",
-                            "in_cluster": "true",
+                            "client_broker": ["PLAINTEXT"],
+                            "in_cluster": ["true"],
                         }
                     ],
                 }
@@ -53,11 +53,11 @@ class TestMSKClusterEncryption(unittest.TestCase):
             "name": "test-project",
             "encryption_info": [
                 {
-                    "encryption_at_rest_kms_key_arn": "aws_kms_key.kms.arn",
+                    "encryption_at_rest_kms_key_arn": ["aws_kms_key.kms.arn"],
                     "encryption_in_transit": [
                         {
-                            "client_broker": "TLS",
-                            "in_cluster": False,
+                            "client_broker": ["TLS"],
+                            "in_cluster": [False],
                         }
                     ],
                 }
@@ -71,11 +71,11 @@ class TestMSKClusterEncryption(unittest.TestCase):
             "name": "test-project",
             "encryption_info": [
                 {
-                    "encryption_at_rest_kms_key_arn": "aws_kms_key.kms.arn",
+                    "encryption_at_rest_kms_key_arn": ["aws_kms_key.kms.arn"],
                     "encryption_in_transit": [
                         {
-                            "client_broker": "TLS",
-                            "in_cluster": "true",
+                            "client_broker": ["TLS"],
+                            "in_cluster": ["true"],
                         }
                     ],
                 }
@@ -89,7 +89,7 @@ class TestMSKClusterEncryption(unittest.TestCase):
             "name": "test-project",
             "encryption_info": [
                 {
-                    "encryption_at_rest_kms_key_arn": "aws_kms_key.kms.arn",
+                    "encryption_at_rest_kms_key_arn": ["aws_kms_key.kms.arn"],
                 }
             ],
         }

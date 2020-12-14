@@ -2,6 +2,8 @@ import json
 import logging
 from abc import abstractmethod
 
+from checkov.common.output.report import Report
+
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -39,17 +41,29 @@ class RunnerRegistry(object):
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
+        junit_reports = []
         for report in scan_reports:
             if not report.is_empty():
                 if args.output == "json":
                     report_jsons.append(report.get_dict())
                 elif args.output == "junitxml":
-                    report.print_junit_xml()
+                    junit_reports.append(report)
+                    # report.print_junit_xml()
                 elif args.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
                     report.print_console(is_quiet=args.quiet)
             exit_codes.append(report.get_exit_code(args.soft_fail))
+        if args.output == "junitxml":
+            if len(junit_reports) == 1:
+                junit_reports[0].print_junit_xml()
+            else:
+                master_report = Report(None)
+                for report in junit_reports:
+                    master_report.skipped_checks += report.skipped_checks
+                    master_report.passed_checks += report.passed_checks
+                    master_report.failed_checks += report.failed_checks
+                master_report.print_junit_xml()
         if args.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))

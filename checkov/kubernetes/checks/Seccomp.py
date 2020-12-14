@@ -1,3 +1,4 @@
+import dpath
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
@@ -12,6 +13,7 @@ class Seccomp(BaseK8Check):
         # Location: Pod.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: CronJob.spec.jobTemplate.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: *.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
+        # Location: *.spec.securityContext.seccompProfile.type
         supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
@@ -26,6 +28,10 @@ class Seccomp(BaseK8Check):
         metadata = {}
 
         if conf['kind'] == 'Pod':
+            security_profile = dpath.search(conf, 'spec/securityContext/seccompProfile/type')
+            if security_profile:
+                security_profile = dpath.get(conf, 'spec/securityContext/seccompProfile/type')
+                return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
         elif conf['kind'] == 'CronJob':
@@ -45,8 +51,9 @@ class Seccomp(BaseK8Check):
             if "annotations" in metadata and isinstance(metadata['annotations'], dict):
                 if "seccomp.security.alpha.kubernetes.io/pod" in metadata["annotations"]:
                     if ("docker/default" in metadata["annotations"]["seccomp.security.alpha.kubernetes.io/pod"] or
-                    "runtime/default" in metadata["annotations"]["seccomp.security.alpha.kubernetes.io/pod"]):
+                            "runtime/default" in metadata["annotations"]["seccomp.security.alpha.kubernetes.io/pod"]):
                         return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = Seccomp()
