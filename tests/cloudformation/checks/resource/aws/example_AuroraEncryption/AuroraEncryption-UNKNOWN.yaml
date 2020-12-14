@@ -5,7 +5,7 @@ Resources:
       DatabaseName: 'mydb'
       Engine: 'aurora'
       SnapshotIdentifier: 'SnapshotIdentifier'
-  Aurora0:
+  Aurora1:
     Type: 'AWS::RDS::DBCluster'
     Properties:
       DatabaseName: 'mydb'
