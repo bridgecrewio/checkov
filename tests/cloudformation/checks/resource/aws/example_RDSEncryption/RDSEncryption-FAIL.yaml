@@ -1,5 +1,5 @@
 Resources:
-  MyDB_0:
+  MyDB0:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'
@@ -7,7 +7,7 @@ Resources:
       Engine: 'mysql'
       MasterUsername: 'master'
       MasterUserPassword: 'password'
-  MyDB_1:
+  MyDB1:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'
