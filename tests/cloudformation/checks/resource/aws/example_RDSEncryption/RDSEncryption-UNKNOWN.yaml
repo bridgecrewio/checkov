@@ -1,0 +1,19 @@
+Resources:
+  MyDBAurora0:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.r3.2xlarge'
+      Engine: 'aurora'
+  MyDBAurora1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.r3.2xlarge'
+      Engine: 'aurora-mysql'
+  MyDBAurora2:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.medium'
+      Engine: 'aurora-postgresql'
