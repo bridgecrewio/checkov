@@ -14,12 +14,12 @@ class RDSEncryption(BaseResourceCheck):
         # If DB is Aurora then Encryption is set in other resource
         # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html#cfn-rds-dbinstance-storageencrypted
         if 'Properties' in conf.keys():
-            if 'Engine' in conf['Properties'].keys()
+            if 'Engine' in conf['Properties'].keys():
                 if 'aurora' in conf['Properties']['Engine']:
                     return CheckResult.PASSED
 
         if 'Properties' in conf.keys():
-            if 'StorageEncrypted' in conf['Properties'].keys()
+            if 'StorageEncrypted' in conf['Properties'].keys():
                 if conf['Properties']['StorageEncrypted'] == True:
                     return CheckResult.PASSED
 
