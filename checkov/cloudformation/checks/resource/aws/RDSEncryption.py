@@ -9,16 +9,6 @@ class RDSEncryption(BaseResourceValueCheck):
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
-
-    def scan_resource_conf(self, conf):
-
-        if 'visibility' in conf:
-            if conf['visibility'][0] == 'private':
-                return CheckResult.UNKNOWN 
-
-        # default visibility is public; just use base class implementation
-        return super().scan_resource_conf(conf)
-    
     
     def scan_resource_conf(self, conf):
         # If DB is Aurora then Encryption is set in other resource
