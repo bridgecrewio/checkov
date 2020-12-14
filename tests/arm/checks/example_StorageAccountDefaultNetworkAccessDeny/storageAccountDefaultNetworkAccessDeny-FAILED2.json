@@ -1,0 +1,2425 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-03-01-hybrid/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "a": {
+      "type": "string"
+    },
+    "b": {
+      "type": "string"
+    },
+    "c": {
+      "type": "string"
+    },
+    "e": {
+      "type": "string"
+    },
+    "f": {
+      "type": "string"
+    },
+    "g": {
+      "type": "string"
+    },
+    "h": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "pwd": {
+      "type": "string"
+    },
+    "wsName": {
+      "type": "string"
+    },
+    "BEvirtualMachineNames": {
+      "type": "string"
+    },
+    "BEsubnetIPPrefix": {
+      "type": "string"
+    },
+    "BEnicStartingAddress": {
+      "type": "string"
+    },
+    "onPremDNSServers": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "batchSize": {
+      "type": "string"
+    },
+    "dnsLabelPrefix": {
+      "type": "string"
+    },
+    "keyvaultSettings": {
+      "type": "string"
+    },
+    "keyvaultSecrets": {
+      "type": "string"
+    },
+    "newZoneName": {
+      "type": "string"
+    },
+    "nt0InstanceCount": {
+      "type": "string"
+    },
+    "newAccountName": {
+      "type": "string"
+    },
+    "storageAccountId": {
+      "type": "string"
+    },
+    "newRecordName": {
+      "type": "string"
+    },
+    "d": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "loadBalancerName": {
+      "type": "string",
+      "metadata": {
+        "description": "This is the name of the load balancer"
+      }
+    },
+    "publicIPAddressID1": "123",
+    "nt0fabricTcpGatewayPort": "3000",
+    "nt0fabricHttpGatewayPort": "3000",
+    "lbIPName": "loadbalancerIPName",
+    "vmNodeType0Name": "virtualMachineName",
+    "importExportJobName": "ieJobName"
+  },
+  "outputs": {
+    "out1": {
+      "type": "secureObject",
+      "value": {
+        "abc": "val1"
+      }
+    }
+  },
+  "apiProfile": "2018-06-01-profile",
+  "resources": [
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2015-11-01",
+      "name": "a",
+      "location": "global",
+      "properties": {
+        "dnsConfig": {
+          "relativeName": "a",
+          "ttl": "[trim('a')]",
+          "fqdn": "a"
+        },
+        "monitorConfig": {
+          "path": "a",
+          "port": 80,
+          "protocol": "HTTP"
+        },
+        "trafficRoutingMethod": "Performance"
+      }
+    },
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2015-11-01",
+      "name": "a",
+      "location": "global",
+      "properties": {
+        "dnsConfig": {
+          "relativeName": "a",
+          "ttl": "[trim('a')]",
+          "fqdn": "a"
+        },
+        "monitorConfig": {
+          "path": "a",
+          "port": 80,
+          "protocol": "HTTP"
+        },
+        "trafficRoutingMethod": "Performance"
+      }
+    },
+    {
+      "type": "Microsoft.Cdn/profiles",
+      "apiVersion": "2015-06-01",
+      "name": "b",
+      "location": "Korea South",
+      "properties": {
+        "accessPolicies": [],
+        "sku": {}
+      }
+    },
+    {
+      "type": "Microsoft.DataLakeAnalytics/accounts",
+      "apiVersion": "2015-10-01-preview",
+      "location": "Australia East",
+      "name": "DataLakeAnalyticsTest",
+      "properties": {
+        "dataLakeStoreAccounts": [],
+        "defaultDataLakeStoreAccount": "[parameters('b')]",
+        "storageAccounts": [
+          {
+            "name": "storageaccounttest",
+            "properties": {
+              "accessKey": "asb"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DataLakeStore/accounts",
+      "apiVersion": "2015-10-01-preview",
+      "location": "Australia East",
+      "name": "b",
+      "properties": {
+        "defaultGroup": "parameters('b')",
+        "firewallRules": [
+          {
+            "name": "dfadf",
+            "properties": {
+              "endIpAddress": "1.0.0.0",
+              "startIpAddress": "1.0.0.0"
+            }
+          }
+        ],
+        "firewallState": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Scheduler/jobCollections",
+      "apiVersion": "2014-08-01-preview",
+      "name": "a",
+      "location": "Central India",
+      "properties": {
+        "sku": {
+          "name": "Free"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DevTestLab/labs/virtualmachines",
+      "apiVersion": "2015-05-21-preview",
+      "name": "[ parameters('b') ]",
+      "location": "parameters('c')]",
+      "properties": {
+        "labSubnetName": "daf",
+        "labVirtualNetworkId": "dafda",
+        "size": "afadfa"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/containerServices",
+      "apiVersion": "2016-03-30",
+      "location": "Australia East",
+      "name": "a",
+      "properties": {
+        "agentPoolProfiles": [
+          {
+            "count": "[parameters('c')]",
+            "dnsPrefix": "dafaf",
+            "name": "a",
+            "vmSize": "Standard_A0"
+          }
+        ],
+        "linuxProfile": {
+          "adminUsername": "a",
+          "ssh": {
+            "publicKeys": [
+              {
+                "keyData": "afdaf"
+              }
+            ]
+          }
+        },
+        "masterProfile": {
+          "count": 1,
+          "dnsPrefix": "afdaf"
+        },
+        "orchestratorProfile": {
+          "orchestratorType": "Swarm"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.PowerBI/workspaceCollections",
+      "name": "[parameters('a')]",
+      "apiVersion": "2016-01-29",
+      "location": "[parameters('a')]",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.Network/dnszones",
+      "apiVersion": "2015-05-04-preview",
+      "name": "adf",
+      "location": "abcd",
+      "properties": {
+        "maxNumberOfRecordSets": "[parameters('b')]"
+      },
+      "tags": {
+        "a": "n"
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts/applications",
+      "apiVersion": "2015-12-01",
+      "name": "dafdaf",
+      "location": "dfadafd",
+      "tags": {
+        "c": "cac"
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2015-12-01",
+      "location": "Australia East",
+      "name": "dafdaf",
+      "tags": {
+        "c": "cac"
+      },
+      "properties": {
+        "autoStorage": {
+          "storageAccountId": "afdafa"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2016-02-01-preview",
+      "kind": "ComputerVision",
+      "location": "Australia East",
+      "name": "adfad",
+      "sku": {
+        "name": "S0"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Cdn/profiles",
+      "apiVersion": "2015-06-01",
+      "name": "[parameters('c')]",
+      "location": "Australia Southeast",
+      "properties": {
+        "sku": {
+          "name": "Premium"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2016-01-01",
+      "kind": "BlobStorage",
+      "name": "cdsdf",
+      "location": "Australia East",
+      "sku": {
+        "name": "Premium_LRS"
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/runbooks",
+      "apiVersion": "2015-10-31",
+      "name": "daf",
+      "location": "Australia East",
+      "properties": {
+        "publishedContentLink": "afdaf",
+        "runbookType": "Graph"
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "adfdaf",
+      "location": "Australia East",
+      "properties": {
+        "contentLink": {
+          "uri": "afda",
+          "contentHash": {
+            "algorithm": "afd",
+            "value": "afdaf"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DevTestLab/labs",
+      "apiVersion": "2016-05-15",
+      "name": "adfa",
+      "properties": {
+        "defaultStorageAccount": "abc",
+        "labStorageType": "Premium"
+      },
+      "resources": [
+        {
+          "type": "virtualmachines",
+          "apiVersion": "2016-05-15",
+          "name": "ljkio",
+          "properties": {
+            "notes": "bcde",
+            "isAuthenticationWithSshKey": true
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.DevTestLab/labs/artifactsources",
+      "apiVersion": "2016-05-15",
+      "name": "dss",
+      "properties": {
+        "displayName": "jldskl",
+        "sourceType": "GitHub"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "name": "[parameters(concat('a-', copyIndex()))]",
+      "properties": {
+        "mode": "Incremental",
+        "parametersLink": {
+          "uri": "http://a.com/1",
+          "contentVersion": "1.0.0.0"
+        },
+        "templateLink": {
+          "uri": "http://a.com/1",
+          "contentVersion": "1.0.0.0"
+        }
+      },
+      "copy": {
+        "count": 3,
+        "name": "adfb"
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "nestedTemplate",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "http://ryanstorage.blob.core.windows.net/fwlink/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [],
+          "variables": {},
+          "outputs": {
+            "result": {
+              "value": "Hello World",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/dnszones",
+      "apiVersion": "2015-05-04-preview",
+      "name": "zonesWithChildResource",
+      "properties": {
+        "maxNumberOfRecordSets": 123,
+        "numberOfRecordSets": 32
+      },
+      "resources": [
+        {
+          "type": "TXT",
+          "apiVersion": "2015-05-04-preview",
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Scheduler/jobCollections",
+      "apiVersion": "2016-03-01",
+      "name": "mycollection",
+      "properties": {},
+      "resources": [
+        {
+          "name": "jobs",
+          "type": "jobs",
+          "apiVersion": "2016-03-01",
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2015-02-01-preview",
+      "name": "myflow",
+      "properties": {
+        "state": "Enabled",
+        "parameters": {
+          "para1": {
+            "type": "Array",
+            "value": {}
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.RecoveryServices/vaults",
+      "apiVersion": "2016-06-01",
+      "name": "vaults",
+      "location": "East US",
+      "sku": {
+        "name": "RS0",
+        "tier": "Standard"
+      },
+      "properties": {
+        "prop1": "val1"
+      },
+      "tags": {
+        "additional": "value"
+      }
+    },
+    {
+      "type": "Microsoft.Media/mediaServices",
+      "apiVersion": "2015-10-01",
+      "name": "sfdsfw",
+      "location": "East US",
+      "properties": {
+        "storageAccounts": [
+          {
+            "id": "123",
+            "isPrimary": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Cache/Redis",
+      "name": "redis",
+      "location": "East US",
+      "apiVersion": "2016-04-01",
+      "properties": {
+        "sku": {
+          "name": "Basic",
+          "capacity": 15,
+          "family": "C"
+        },
+        "shardCount": 30,
+        "tenantSettings": {
+          "set1": "abc"
+        },
+        "subnetId": "/subscriptions/123/resourceGroups/abc/providers/Microsoft.Network/virtualNetworks/abc/subnets/sub"
+      }
+    },
+    {
+      "type": "Microsoft.MachineLearning/workspaces",
+      "apiVersion": "2016-04-01",
+      "location": "East US",
+      "name": "[parameters('wsName')]",
+      "properties": {
+        "userStorageAccountId": "guid",
+        "ownerEmail": "owner@machinelearning.com"
+      }
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2016-02-03",
+      "location": "East US",
+      "name": "myiot",
+      "resourcegroup": "myRg",
+      "subscriptionid": "mySubscriptionId",
+      "properties": {
+        "authorizationPolicies": [
+          {
+            "keyName": "key1",
+            "rights": "RegistryRead"
+          }
+        ],
+        "eventHubEndpoints": {
+          "prop1": {
+            "partitionCount": 12,
+            "retentionTimeInDays": 12
+          }
+        },
+        "cloudToDevice": {
+          "maxDeliveryCount": 99,
+          "defaultTtlAsIso8601": "abc",
+          "feedback": {
+            "lockDurationAsIso8601": "123",
+            "ttlAsIso8601": "33",
+            "maxDeliveryCount": 33
+          }
+        },
+        "operationsMonitoringProperties": {
+          "events": {
+            "abc": "Error",
+            "ds": "Error, Information"
+          }
+        },
+        "ipFilterRules": [
+          {
+            "filterName": "name",
+            "action": "Accept",
+            "ipMask": "192.168.1.1/24"
+          }
+        ]
+      },
+      "sku": {
+        "name": "F1",
+        "capacity": 1
+      }
+    },
+    {
+      "apiVersion": "2017-06-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('BEvirtualMachineNames')[copyIndex()],'-nic')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "BEnicLoop",
+        "count": 1
+      },
+      "dependsOn": [],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(parameters('BEsubnetIPPrefix'),copyIndex(parameters('BEnicStartingAddress')))]",
+              "subnet": {
+                "id": "123"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": "[skip(parameters('onPremDNSServers'), 3)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/dnszones",
+      "apiVersion": "2016-04-01",
+      "name": "myzones",
+      "location": "Canada Central",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "myflows",
+      "properties": {
+        "state": "Suspended",
+        "sku": {
+          "name": "NotSpecified",
+          "plan": {
+            "id": "123"
+          }
+        },
+        "definition": {
+          "prop1": "val1"
+        },
+        "parameters": {
+          "para1": {
+            "type": "Bool",
+            "value": {},
+            "metadata": "[parameters('metadata')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2016-03-30",
+      "name": "myextension",
+      "location": "East US",
+      "properties": {
+        "publisher": "publisher",
+        "settings": {},
+        "type": "mytype",
+        "typeHandlerVersion": "123",
+        "autoUpgradeMinorVersion": "abc"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2016-04-30-preview",
+      "name": "myextension",
+      "location": "East US",
+      "properties": {
+        "publisher": "publisher",
+        "settings": {},
+        "type": "mytype",
+        "typeHandlerVersion": "123",
+        "autoUpgradeMinorVersion": "abc"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2015-06-15",
+      "name": "extension1",
+      "location": "West US",
+      "properties": {
+        "publisher": "Microsoft.Azure.Diagnostics",
+        "type": "IaaSDiagnostics",
+        "typeHandlerVersion": "12",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "xmlCfg": "123",
+          "StorageAccount": "ba"
+        },
+        "protectedSettings": {
+          "storageAccountName": "storage",
+          "storageAccountKey": "ljsfa;lj",
+          "storageAccountEndPoint": "endpoint"
+        }
+      }
+    },
+    {
+      "name": "Test Name",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "Canada East",
+      "tags": {},
+      "apiVersion": "2015-06-15",
+      "properties": {
+        "publisher": "Microsoft.Azure.RecoveryServices",
+        "type": "VMSnapshot",
+        "typeHandlerVersion": "Test Type Handler Version",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "locale": "test locale",
+          "taskId": "test id",
+          "commandToExecute": "test cmd",
+          "objectStr": "test objstr",
+          "logsBlobUri": "test log uri",
+          "statusBlobUri": "test blob uri",
+          "commandStartTimeUTCTicks": "test cmd starttime",
+          "vmType": "microsoft.compute/virtualmachines"
+        }
+      }
+    },
+    {
+      "name": "Test Name",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "Canada East",
+      "tags": {},
+      "apiVersion": "2015-06-15",
+      "properties": {
+        "publisher": "Microsoft.Azure.NetworkWatcher",
+        "type": "NetworkWatcherAgentWindows",
+        "typeHandlerVersion": "123",
+        "autoUpgradeMinorVersion": false,
+        "settings": {
+          "absURL": "abc"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2016-04-30-preview",
+      "name": "extension1",
+      "location": "West US",
+      "properties": {
+        "publisher": "Microsoft.Azure.Diagnostics",
+        "type": "IaaSDiagnostics",
+        "typeHandlerVersion": "12",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "xmlCfg": "123",
+          "StorageAccount": "ba"
+        },
+        "protectedSettings": {
+          "storageAccountName": "storage",
+          "storageAccountKey": "ljsfa;lj",
+          "storageAccountEndPoint": "endpoint"
+        }
+      }
+    },
+    {
+      "name": "Test Name",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "Canada East",
+      "tags": {},
+      "apiVersion": "2016-04-30-preview",
+      "properties": {
+        "publisher": "Microsoft.Azure.RecoveryServices",
+        "type": "VMSnapshot",
+        "typeHandlerVersion": "Test Type Handler Version",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "locale": "test locale",
+          "taskId": "test id",
+          "commandToExecute": "test cmd",
+          "objectStr": "test objstr",
+          "logsBlobUri": "test log uri",
+          "statusBlobUri": "test blob uri",
+          "commandStartTimeUTCTicks": "test cmd starttime",
+          "vmType": "microsoft.compute/virtualmachines"
+        }
+      }
+    },
+    {
+      "name": "Test Name",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "Canada East",
+      "tags": {},
+      "apiVersion": "2016-04-30-preview",
+      "properties": {
+        "publisher": "Microsoft.Azure.NetworkWatcher",
+        "type": "NetworkWatcherAgentWindows",
+        "typeHandlerVersion": "123",
+        "autoUpgradeMinorVersion": false
+      }
+    },
+    {
+      "name": "Test Name",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2018-06-01",
+      "location": "West Us",
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "Test Type Handler Version",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "test file uri",
+            "test file uri 2"
+          ],
+          "commandToExecute": "ls"
+        }
+      }
+    },
+    {
+      "name": "Test Name",
+      "location": "West Us",
+      "type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "Test Type Handler Version",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "test file uri",
+            "test file uri 2"
+          ],
+          "commandToExecute": "ls"
+        },
+        "protectedSettings": {
+          "commandToExecute": "ls",
+          "storageAccountName": "Test Storage Account Name",
+          "storageAccountKey": "Test Storage Account Key",
+          "storageAccountEndPoint": "Test Storage Account End Point"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2015-06-15",
+      "location": "Canada East",
+      "name": "virtualmachine",
+      "properties": {
+        "hardwareProfile": "[parameters('a')]",
+        "storageProfile": "[parameters('b')]",
+        "networkProfile": "[parameters('c')]",
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": false,
+            "storageUri": "uri"
+          }
+        }
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "apiVersion": "2015-06-15",
+          "name": "extension1",
+          "location": "West US 2",
+          "properties": {
+            "publisher": "Microsoft.Azure.Diagnostics",
+            "type": "IaaSDiagnostics",
+            "typeHandlerVersion": "12",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "xmlCfg": "123",
+              "StorageAccount": "ba"
+            },
+            "protectedSettings": {
+              "storageAccountName": "storage",
+              "storageAccountKey": "ljsfa;lj",
+              "storageAccountEndPoint": "endpoint"
+            }
+          }
+        },
+        {
+          "type": "extensions",
+          "apiVersion": "2015-06-15",
+          "name": "myextension",
+          "location": "West Central US",
+          "properties": {
+            "publisher": "publisher",
+            "settings": {},
+            "type": "mytype",
+            "typeHandlerVersion": "123",
+            "autoUpgradeMinorVersion": "abc"
+          }
+        },
+        {
+          "name": "Test Name",
+          "type": "extensions",
+          "location": "Australia East",
+          "apiVersion": "2015-06-15",
+          "properties": {
+            "publisher": "Microsoft.Azure.RecoveryServices",
+            "type": "VMSnapshotLinux",
+            "typeHandlerVersion": "Test Type Handler Version",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "locale": "test locale",
+              "taskId": "test id",
+              "commandToExecute": "test cmd",
+              "objectStr": "test objstr",
+              "logsBlobUri": "test log uri",
+              "statusBlobUri": "test blob uri",
+              "commandStartTimeUTCTicks": "test cmd starttime",
+              "vmType": "microsoft.compute/virtualmachines"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "Canada East",
+      "name": "virtualmachine",
+      "properties": {
+        "hardwareProfile": "[parameters('a')]",
+        "storageProfile": "[parameters('b')]",
+        "networkProfile": "[parameters('c')]",
+        "osProfile": {
+          "fdsfdsfs": "123"
+        }
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "apiVersion": "2016-04-30-preview",
+          "name": "extension1",
+          "location": "West US 2",
+          "properties": {
+            "publisher": "Microsoft.Azure.Diagnostics",
+            "type": "IaaSDiagnostics",
+            "typeHandlerVersion": "12",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "xmlCfg": "123",
+              "StorageAccount": "ba"
+            },
+            "protectedSettings": {
+              "storageAccountName": "storage",
+              "storageAccountKey": "ljsfa;lj",
+              "storageAccountEndPoint": "endpoint"
+            }
+          }
+        },
+        {
+          "type": "extensions",
+          "apiVersion": "2016-04-30-preview",
+          "name": "myextension",
+          "location": "West Central US",
+          "properties": {
+            "publisher": "publisher",
+            "settings": {},
+            "type": "mytype",
+            "typeHandlerVersion": "123",
+            "autoUpgradeMinorVersion": "abc"
+          }
+        },
+        {
+          "name": "Test Name",
+          "type": "extensions",
+          "location": "Australia East",
+          "apiVersion": "2016-04-30-preview",
+          "properties": {
+            "publisher": "Microsoft.Azure.RecoveryServices",
+            "type": "VMSnapshotLinux",
+            "typeHandlerVersion": "Test Type Handler Version",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "locale": "test locale",
+              "taskId": "test id",
+              "commandToExecute": "test cmd",
+              "objectStr": "test objstr",
+              "logsBlobUri": "test log uri",
+              "statusBlobUri": "test blob uri",
+              "commandStartTimeUTCTicks": "test cmd starttime",
+              "vmType": "microsoft.compute/virtualmachines"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-06-01",
+      "location": "Canada East",
+      "name": "virtualmachine",
+      "properties": {
+        "hardwareProfile": "[parameters('a')]",
+        "storageProfile": "[parameters('b')]",
+        "networkProfile": "[parameters('c')]",
+        "osProfile": {
+          "fdsfdsfs": "123"
+        }
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "apiVersion": "2018-06-01",
+          "name": "extension1",
+          "location": "West US 2",
+          "properties": {
+            "publisher": "Microsoft.Azure.Diagnostics",
+            "type": "IaaSDiagnostics",
+            "typeHandlerVersion": "12",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "xmlCfg": "123",
+              "StorageAccount": "ba"
+            },
+            "protectedSettings": {
+              "storageAccountName": "storage",
+              "storageAccountKey": "ljsfa;lj",
+              "storageAccountEndPoint": "endpoint"
+            }
+          }
+        },
+        {
+          "type": "extensions",
+          "apiVersion": "2018-06-01",
+          "name": "myextension",
+          "location": "West Central US",
+          "properties": {
+            "publisher": "publisher",
+            "settings": {},
+            "type": "mytype",
+            "typeHandlerVersion": "123",
+            "autoUpgradeMinorVersion": "abc"
+          }
+        },
+        {
+          "name": "Test Name",
+          "type": "extensions",
+          "location": "Australia East",
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "publisher": "Microsoft.Azure.RecoveryServices",
+            "type": "VMSnapshotLinux",
+            "typeHandlerVersion": "Test Type Handler Version",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "locale": "test locale",
+              "taskId": "test id",
+              "commandToExecute": "test cmd",
+              "objectStr": "test objstr",
+              "logsBlobUri": "test log uri",
+              "statusBlobUri": "test blob uri",
+              "commandStartTimeUTCTicks": "test cmd starttime",
+              "vmType": "microsoft.compute/virtualmachines"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/snapshots",
+      "apiVersion": "2017-03-30",
+      "name": "sets",
+      "location": "West Central US",
+      "properties": {
+        "creationData": {
+          "createOption": "Empty"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-03-30",
+      "name": "virtualMachines",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "VirtualMachineProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-12-01",
+      "name": "virtualMachines",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "VirtualMachineProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/images",
+      "apiVersion": "2017-12-01",
+      "name": "images",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "additionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2017-12-01",
+      "name": "sets",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "additionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-12-01",
+      "name": "sets",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "additionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
+      "apiVersion": "2017-12-01",
+      "name": "sets",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "publisher": "samplePublisher",
+        "type": "virtualMachineScaleSets/extensions",
+        "typeHandlerVersion": "123",
+        "settings": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2017-03-30",
+      "name": "sets",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "additionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2017-12-01",
+      "name": "sets",
+      "location": "West Central US",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "publisher": "samplePublisher",
+        "type": "virtualMachines/extensions",
+        "typeHandlerVersion": "123",
+        "settings": {}
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "apiVersion": "2018-06-01",
+      "name": "sets",
+      "location": "Japan East",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "virtualMachineProfile": {
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "id": "123",
+                "name": "name",
+                "properties": {
+                  "ipConfigurations": [
+                    {
+                      "name": "123"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/disks",
+      "apiVersion": "2016-04-30-preview",
+      "name": "mydisks",
+      "location": "West US",
+      "properties": {
+        "creationData": {
+          "createOption": "Copy"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/images",
+      "apiVersion": "2016-04-30-preview",
+      "name": "myimages",
+      "location": "East US",
+      "properties": {
+        "sourceVirtualMachine": {
+          "id": "id11"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/snapshots",
+      "apiVersion": "2016-04-30-preview",
+      "name": "myname",
+      "location": "East US 2",
+      "properties": {
+        "creationData": {
+          "createOption": "Copy"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-04-30-preview",
+      "name": "sets",
+      "location": "Japan West",
+      "properties": {
+        "managed": true
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "apiVersion": "2016-04-30-preview",
+      "name": "sets",
+      "location": "Japan East",
+      "sku": {
+        "name": "name"
+      },
+      "properties": {
+        "virtualMachineProfile": {
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "id": "123",
+                "name": "name",
+                "properties": {
+                  "ipConfigurations": [
+                    {
+                      "name": "123"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.MachineLearning/commitmentPlans",
+      "apiVersion": "2016-05-01-preview",
+      "name": "myplans",
+      "location": "West Central US",
+      "sku": {
+        "name": "mysku",
+        "tier": "12",
+        "capacity": 12
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2016-02-01-preview",
+      "name": "myaccounts",
+      "sku": "[parameters('sku')]",
+      "kind": "Face",
+      "location": "Canada Central",
+      "properties": {
+        "prop1": "val1"
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2015-08-01",
+      "name": "eventhubNamespaces",
+      "location": "Central US",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "properties": {
+        "status": "Active",
+        "enabled": false
+      },
+      "resources": [
+        {
+          "type": "eventhubs",
+          "apiVersion": "2015-08-01",
+          "location": "Canada East",
+          "name": "23",
+          "properties": {
+            "status": "Creating"
+          }
+        },
+        {
+          "type": "AuthorizationRules",
+          "apiVersion": "2015-08-01",
+          "location": "Canada East",
+          "name": "234",
+          "properties": {
+            "rights": [
+              "Manage"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+      "apiVersion": "2015-08-01",
+      "name": "rules",
+      "location": "East Asia",
+      "properties": {
+        "rights": [
+          "Listen",
+          "Manage"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2015-08-01",
+      "location": "Canada Central",
+      "name": "fds123",
+      "sku": {
+        "tier": "Premium"
+      },
+      "properties": {
+        "status": "Creating"
+      },
+      "resources": [
+        {
+          "type": "queues",
+          "apiVersion": "2015-08-01",
+          "name": "234",
+          "location": "Canada Central",
+          "properties": {},
+          "resources": [
+            {
+              "type": "authorizationRules",
+              "apiVersion": "2015-08-01",
+              "location": "West US",
+              "name": "jlk",
+              "properties": {
+                "rights": [
+                  "Listen"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2015-08-01",
+      "name": "123",
+      "location": "Central US",
+      "properties": {
+        "requiresSession": true
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "name": "[parameters('a')]",
+      "properties": {
+        "template": {},
+        "parameters": {},
+        "mode": "Complete"
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "nestedTemplate",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "http://ryanstorage.blob.core.windows.net/fwlink/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [],
+          "variables": {},
+          "outputs": {
+            "result": {
+              "value": "Hello World",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "nestedTemplate",
+      "type": "Microsoft.Resources/deployments",
+      "subscriptionId": "aa",
+      "resourceGroup": "myRG",
+      "copy": {
+        "name": "copy1",
+        "count": 12,
+        "mode": "Serial",
+        "batchSize": "[parameters('batchSize')]"
+      },
+      "condition": true,
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "http://ryanstorage.blob.core.windows.net/fwlink/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [],
+          "variables": {},
+          "outputs": {
+            "result": {
+              "value": "Hello World",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "deploymentsSample",
+      "apiVersion": "2016-09-01",
+      "type": "Microsoft.Resources/deployments",
+      "mode": "Incremental",
+      "properties": {
+        "mode": "Incremental"
+      }
+    },
+    {
+      "apiVersion": "2018-05-01",
+      "name": "resourceGroupsSample",
+      "type": "Microsoft.Network/dnsZones",
+      "location": "West US",
+      "properties": {
+        "level": "",
+        "ResourceGroupProperties": {}
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "validLock",
+      "type": "Microsoft.ServiceFabric/clusters",
+      "location": "West US",
+      "properties": {
+        "managementEndpoint": "",
+        "nodeTypes": [],
+        "level": "CanNotDelete",
+        "notes": "test note"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "name": "myservice",
+      "apiVersion": "2016-07-07",
+      "location": "Canada East",
+      "sku": {
+        "name": "Standard",
+        "capacity": 1
+      },
+      "properties": {
+        "publisherName": "admin@live.com",
+        "publisherEmail": "abc"
+      }
+    },
+    {
+      "type": "Microsoft.AnalysisServices/servers",
+      "apiVersion": "2016-05-16",
+      "name": "myservers",
+      "location": "West US",
+      "sku": {
+        "name": "S1"
+      },
+      "properties": {
+        "asAdministrators": {
+          "members": [
+            "abc"
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceFabric/clusters",
+      "apiVersion": "2016-09-01",
+      "name": "Microsoft.ServiceFabric/clusters",
+      "location": "West US",
+      "properties": {
+        "nodeTypes": [
+          {
+            "vmInstanceCount": 12,
+            "name": "name",
+            "clientConnectionEndpointPort": 443,
+            "httpGatewayEndpointPort": 443,
+            "isPrimary": true
+          }
+        ],
+        "managementEndpoint": "https://abc.com"
+      }
+    },
+    {
+      "type": "Microsoft.MachineLearning/webServices",
+      "apiVersion": "2016-05-01-preview",
+      "name": "myservice",
+      "location": "East Asia",
+      "properties": {
+        "packageType": "Graph",
+        "title": "abc",
+        "package": {
+          "nodes": {
+            "prop1": {
+              "assetId": "123"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2015-08-19",
+      "location": "Central US",
+      "sku": {
+        "name": "standard"
+      },
+      "name": "abc",
+      "properties": {
+        "hostingMode": "highDensity",
+        "replicaCount": 10,
+        "partitionCount": 12,
+        "location": "West US"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2016-06-27-preview",
+      "name": "name",
+      "location": "Canada East",
+      "properties": {
+        "storageAccount": {
+          "name": "abc",
+          "accessKey": "key"
+        },
+        "adminUserEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2017-03-01",
+      "name": "profile1",
+      "location": "global",
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Geographic",
+        "dnsConfig": {
+          "relativeName": "name1",
+          "ttl": 120
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/healthprobe"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/actionGroups",
+      "apiVersion": "2017-03-01-preview",
+      "name": "ag1",
+      "location": "UK West",
+      "properties": {
+        "enabled": true,
+        "groupShortName": "name1"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2014-04-01",
+      "name": "server1",
+      "location": "Japan West",
+      "properties": {
+        "administratorLogin": "aaa",
+        "administratorLoginPassword": "password"
+      },
+      "resources": [
+        {
+          "type": "administrators",
+          "apiVersion": "2014-04-01",
+          "name": "activeDirectory",
+          "properties": {
+            "administratorType": "ActiveDirectory",
+            "login": "myuser",
+            "sid": "00000000-1111-2222-3333-444444444444",
+            "tenantId": "00000000-1111-2222-3333-444444444444"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2014-04-01",
+      "name": "server1",
+      "location": "Japan West",
+      "properties": {
+        "administratorLogin": "aaa",
+        "administratorLoginPassword": "password"
+      },
+      "resources": [
+        {
+          "type": "databases",
+          "apiVersion": "2014-04-01",
+          "name": "admin1",
+          "location": "west us",
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2015-05-01-preview",
+      "name": "sql",
+      "location": "west us",
+      "properties": {
+        "administratorLogin": "mylogin",
+        "administratorLoginPassword": "mypa$$w0rd"
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "apiVersion": "2017-03-01",
+      "name": "table",
+      "location": "West US",
+      "properties": {
+        "routes": [
+          {
+            "name": "name1",
+            "properties": {
+              "addressPrefix": "aaa",
+              "nextHopType": "Internet"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2016-06-01",
+      "name": "ip1",
+      "location": "Brazil South",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.Solutions/appliances",
+      "name": "[parameters('dnsLabelPrefix')]",
+      "apiVersion": "2016-09-01-preview",
+      "kind": "ServiceCatalog",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "applianceDefinitionId": "/subscriptions/d05f4e58-b80d-4ebd-a6d7-c9cac216cd39/resourceGroups/EuapAppDefs/providers/Microsoft.Solutions/applianceDefinitions/SinlgeVMBuildDemo",
+        "managedResourceGroupId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, parameters('dnsLabelPrefix'), '-', uniqueString(concat(resourceGroup().name, parameters('dnsLabelPrefix'))))]",
+        "parameters": {
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "dnsLabelPrefix": {
+            "value": "[parameters('dnsLabelPrefix')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Solutions/applianceDefinitions",
+      "name": "[parameters('dnsLabelPrefix')]",
+      "apiVersion": "2016-09-01-preview",
+      "location": "eastus2euap",
+      "properties": {
+        "lockLevel": "None",
+        "displayName": "NirajGSingleVMBuildDemo",
+        "description": "NirajGSingleVMBuildDemo",
+        "authorizations": [
+          {
+            "principalId": "05250873-b7a8-4392-b112-cf3c65d72ee1",
+            "roleDefinitionId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+          }
+        ],
+        "packageFileUri": "https://nirajgappliancepackages.blob.core.windows.net/singlestorageaccount/windowsManagedApp.zip"
+      }
+    },
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2017-05-01",
+      "location": "global",
+      "name": "abc",
+      "properties": {
+        "trafficRoutingMethod": "Geographic",
+        "dnsConfig": {
+          "relativeName": "name",
+          "ttl": 123
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "name": "validSite",
+      "type": "Microsoft.Web/sites",
+      "properties": {
+        "enabled": true,
+        "reserved": false,
+        "siteConfig": {
+          "phpVersion": "v5.6",
+          "httpLoggingEnabled": true,
+          "appSettings": [
+            {
+              "name": "appSetting1",
+              "vallue": "appSettingValue1"
+            },
+            {
+              "name": "appSetting2",
+              "vallue": "appSettingValue2"
+            }
+          ],
+          "connectionStrings": [
+            {
+              "name": "connectionStringName1",
+              "type": "MySql",
+              "connectionString": "connectionString1"
+            },
+            {
+              "name": "connectionStringName2",
+              "type": "SQLAzure",
+              "connectionString": "connectionString2"
+            }
+          ]
+        },
+        "hostNameSslStates": [
+          {
+            "name": "validSite.azurewebsites.net",
+            "sslState": "SniEnabled",
+            "hostType": "Standard"
+          },
+          {
+            "name": "validSite.scm.azurewebsites.net",
+            "sslState": "SniEnabled",
+            "hostType": "Repository"
+          }
+        ],
+        "hostingEnvironmentProfile": {
+          "id": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/hostingEnvironments/aseName1"
+        },
+        "serverFarmId": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/serverfarms/serverFarm1",
+        "keyVaultId": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.KeyVault/vaults/vaultName1",
+        "keyVaultSecretName": "secret1",
+        "password": "0050159BAA314687BC64-BFFDFB066F4E",
+        "cerBlob": "SDSD@%#^#$SDSDS"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2016-08-01",
+          "name": "appsettings",
+          "properties": {
+            "setting1": "value1"
+          }
+        },
+        {
+          "type": "config",
+          "apiVersion": "2016-08-01",
+          "name": "connectionstrings",
+          "properties": {
+            "setting1": {
+              "type": "SQLServer",
+              "value": "Connection string value"
+            }
+          }
+        },
+        {
+          "apiVersion": "2016-08-01",
+          "type": "slots",
+          "name": "staging",
+          "properties": {
+            "phpVersion": "v5.6",
+            "httpLoggingEnabled": true
+          },
+          "resources": [
+            {
+              "type": "config",
+              "apiVersion": "2016-08-01",
+              "name": "appsettings",
+              "properties": {
+                "setting1": "value1"
+              }
+            },
+            {
+              "apiVersion": "2016-08-01",
+              "type": "config",
+              "name": "connectionstrings",
+              "properties": {
+                "connectionName": {
+                  "type": "NotificationHub",
+                  "value": "Connection string value"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2016-08-01",
+      "name": "site1",
+      "location": "West US",
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "id",
+        "hostNameSslStates": [
+          {
+            "name": "s1",
+            "sslState": "Disabled"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "connection",
+      "location": "West US",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2016-08-01",
+      "name": "a1/web",
+      "location": "Japan West",
+      "properties": {
+        "numberOfWorkers": 1,
+        "netFrameworkVersion": "v4.6"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "name": "name",
+      "apiVersion": "2017-03-01",
+      "location": "East US",
+      "sku": {
+        "name": "Developer"
+      },
+      "properties": {
+        "publisherEmail": "admin@live.com",
+        "publisherName": "org"
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2017-04-01",
+      "name": "namename",
+      "location": "west us",
+      "properties": {
+        "createdAt": "2015-01-01"
+      }
+    },
+    {
+      "type": "Microsoft.Web/customApis",
+      "apiVersion": "2016-06-01",
+      "name": "abc",
+      "location": "West US 2",
+      "properties": {
+        "displayName": "name1"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2017-06-01",
+      "name": "name1",
+      "location": "West US 2",
+      "sku": {
+        "name": "Standard_GRS"
+      },
+      "kind": "BlobStorage"
+    },
+    {
+      "type": "Microsoft.Compute/disks",
+      "apiVersion": "2017-03-30",
+      "name": "disk1",
+      "location": "East US",
+      "properties": {
+        "creationData": {
+          "createOption": "Empty"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries",
+      "apiVersion": "2018-06-01",
+      "name": "myGallery",
+      "location": "East US",
+      "properties": {
+        "description": "Sample gallery description."
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries/images",
+      "apiVersion": "2018-06-01",
+      "name": "myGalleryImage",
+      "location": "East US",
+      "properties": {
+        "osType": "Linux",
+        "osState": "Generalized",
+        "identifier": {
+          "publisher": "samplePublisher",
+          "offer": "sampleOffer",
+          "sku": "sampleSku"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries/images/versions",
+      "apiVersion": "2018-06-01",
+      "name": "myGalleryImageVersion",
+      "location": "East US",
+      "properties": {
+        "publishingProfile": {
+          "source": {
+            "managedImage": {
+              "id": "/subscriptions/64646596-7b0f-4f89-86a8-01473e7a1e39/resourceGroups/rgName/providers/Microsoft.Compute/images/imageName"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries",
+      "apiVersion": "2019-03-01",
+      "name": "myGallery",
+      "location": "East US",
+      "properties": {
+        "description": "Sample gallery description."
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries/images",
+      "apiVersion": "2019-03-01",
+      "name": "myGalleryImage",
+      "location": "East US",
+      "properties": {
+        "osType": "Linux",
+        "osState": "Generalized",
+        "identifier": {
+          "publisher": "samplePublisher",
+          "offer": "sampleOffer",
+          "sku": "sampleSku"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/galleries/images/versions",
+      "apiVersion": "2019-03-01",
+      "name": "myGalleryImageVersion",
+      "location": "East US",
+      "properties": {
+        "publishingProfile": {
+          "source": {
+            "managedImage": {
+              "id": "/subscriptions/64646596-7b0f-4f89-86a8-01473e7a1e39/resourceGroups/rgName/providers/Microsoft.Compute/images/imageName"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceFabric/clusters",
+      "apiVersion": "2017-07-01-preview",
+      "name": "name1",
+      "location": "west us",
+      "properties": {
+        "managementEndpoint": "[concat('http://',reference(concat(variables('lbIPName'),'-','0')).dnsSettings.fqdn,':',variables('nt0fabricHttpGatewayPort'))]",
+        "nodeTypes": [
+          {
+            "name": "[variables('vmNodeType0Name')]",
+            "clientConnectionEndpointPort": "[variables('nt0fabricTcpGatewayPort')]",
+            "httpGatewayEndpointPort": "[variables('nt0fabricHttpGatewayPort')]",
+            "isPrimary": true,
+            "vmInstanceCount": "[parameters('nt0InstanceCount')]"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2016-03-01",
+      "location": "west us",
+      "name": "abc",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.ServiceFabric/clusters",
+      "apiVersion": "2017-07-01-preview",
+      "location": "west us",
+      "name": "na",
+      "properties": {
+        "nodeTypes": [],
+        "managementEndpoint": "11"
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2016-03-01",
+      "location": "west us",
+      "name": "nam31",
+      "properties": {
+        "outputStartMode": "JobStartTime"
+      }
+    },
+    {
+      "type": "Microsoft.MachineLearningExperimentation/accounts",
+      "name": "[parameters('newAccountName')]",
+      "apiVersion": "2017-05-01-preview",
+      "location": "East US 2",
+      "properties": {
+        "keyVaultId": "keyVaultId",
+        "vsoAccountId": "vsoAccountId",
+        "storageAccount": {
+          "storageAccountId": "userstoragearmId",
+          "accessKey": "accessKey"
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-11-01",
+      "type": "Microsoft.ImportExport/jobs",
+      "name": "[variables('importExportJobName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "storageAccountId": "[parameters('storageAccountId')]",
+        "jobType": "abc"
+      }
+    },
+    {
+      "type": "Microsoft.TimeSeriesInsights/environments",
+      "apiVersion": "2017-11-15",
+      "location": "West Us",
+      "name": "EnvironmentTest",
+      "sku": {
+        "name": "S1",
+        "capacity": 5
+      },
+      "properties": {
+        "dataRetentionTime": "P31D"
+      }
+    },
+    {
+      "name": "test1",
+      "type": "Microsoft.Devices/provisioningServices",
+      "apiVersion": "2017-08-21-preview",
+      "location": "West US",
+      "sku": {
+        "name": "S1",
+        "tier": "standard",
+        "capacity": 1
+      },
+      "properties": {
+        "authorizationPolicies": [
+          {
+            "keyName": "testkey",
+            "primaryKey": "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=",
+            "secondaryKey": "RpkT42rNZl4/J08pI8tnsE2mPbsbuQ//+9x3HSs0XcU=",
+            "rights": "ServiceConfig"
+          }
+        ],
+        "iotHubs": [
+          {
+            "name": "test.azure-devices.net",
+            "connectionString": "#####################################",
+            "location": "westus"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Relay/namespaces",
+      "apiVersion": "2017-04-01",
+      "location": "West Us",
+      "name": "NamespaceTest",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2017-04-01",
+      "location": "West Us",
+      "name": "aa1234",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "properties": {}
+    },
+    {
+      "apiVersion": "2017-09-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "loadBalancerFrontEnd1",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('publicIPAddressID1')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "loadBalancerFrontEnd1",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('publicIPAddressID1')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Cache/Redis",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "Standard",
+          "family": "C",
+          "capacity": 123
+        },
+        "additionalProperties": {}
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "loadBalancerFrontEnd1",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('publicIPAddressID1')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addtionalProperties": {}
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addtionalProperties": {}
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addtionalProperties": {}
+      }
+    },
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/routeTables",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addtionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2017-10-01",
+      "location": "West Us",
+      "name": "sto725",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_GRS"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Network/dnsZones",
+      "name": "[parameters('newZoneName')]",
+      "apiVersion": "2017-09-01",
+      "location": "global",
+      "properties": {
+        "addtionalProperties": {}
+      }
+    },
+    {
+      "type": "Microsoft.Network/dnsZones/TXT",
+      "name": "[concat(parameters('newZoneName'), concat('/', parameters('newRecordName')))]",
+      "apiVersion": "2017-09-01",
+      "location": "global",
+      "properties": {
+        "TTL": 3600,
+        "TXTRecords": [
+          {
+            "value": [
+              "test",
+              "abc"
+            ]
+          },
+          {
+            "value": [
+              "123"
+            ]
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/dnsZones/', parameters('newZoneName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[parameters('keyvaultSettings').keyVaultName]",
+      "apiVersion": "2016-10-01",
+      "location": "[parameters('keyvaultSettings').location]",
+      "properties": {
+        "enabledForDeployment": true,
+        "enabledForTemplateDeployment": true,
+        "enabledForVolumeEncryption": false,
+        "tenantId": "[parameters('keyvaultSettings').tenantId]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('keyvaultSettings').tenantId]",
+            "objectId": "[parameters('keyvaultSettings').objectId]",
+            "permissions": {
+              "keys": [
+                "get"
+              ],
+              "secrets": [
+                "get"
+              ]
+            }
+          }
+        ],
+        "sku": {
+          "name": "[parameters('keyvaultSettings').vaultSku]",
+          "family": "A"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[parameters('keyvaultSecrets').keyVaultName]",
+      "apiVersion": "2016-10-01",
+      "location": "[parameters('keyvaultSecrets').location]",
+      "properties": {
+        "enabledForDeployment": true,
+        "enabledForTemplateDeployment": true,
+        "enabledForVolumeEncryption": false,
+        "tenantId": "[parameters('keyvaultSecrets').tenantId]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('keyvaultSecrets').tenantId]",
+            "objectId": "[parameters('keyvaultSecrets').objectId]",
+            "permissions": {
+              "keys": [
+                "get"
+              ],
+              "secrets": [
+                "get"
+              ]
+            }
+          }
+        ],
+        "sku": {
+          "name": "[parameters('keyvaultSecrets').vaultSku]",
+          "family": "A"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "accessPolicies",
+      "apiVersion": "2016-10-01",
+      "location": "[parameters('keyvaultSettings').location]",
+      "properties": {
+        "accessPolicies": [
+          {
+            "permissions": {
+              "keys": "[parameters('b')]",
+              "secrets": "[parameters('c')]"
+            },
+            "objectId": "[parameters('d')]",
+            "tenantId": "[parameters('e')]"
+          }
+        ],
+        "sku": {
+          "family": "[parameters('f')]",
+          "name": "[parameters('g')]"
+        },
+        "tenantId": "[parameters('h')]"
+      }
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-10-01",
+      "name": "name",
+      "location": "west us",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "name",
+      "location": "west us",
+      "properties": {}
+    },
+    {
+      "name": "mycontainergroup",
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2018-04-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [],
+      "properties": {
+        "containers": [
+          {
+            "name": "nginx",
+            "properties": {
+              "command": [],
+              "image": "nginx",
+              "ports": [
+                {
+                  "port": 80
+                }
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": 2,
+                  "memoryInGB": 8
+                }
+              },
+              "volumeMounts": [
+                {
+                  "name": "secret",
+                  "mountPath": "/mnt/secrets",
+                  "readOnly": false
+                }
+              ]
+            }
+          }
+        ],
+        "osType": "Linux",
+        "ipAddress": {
+          "type": "Public",
+          "dnsNameLabel": "demonginx",
+          "ports": [
+            {
+              "protocol": "TCP",
+              "port": 80
+            }
+          ]
+        },
+        "volumes": [
+          {
+            "name": "secret",
+            "secret": {
+              "sslcertificateData": "certificate-data",
+              "sslcertificatePwd": "[base64('certificate-key')]"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

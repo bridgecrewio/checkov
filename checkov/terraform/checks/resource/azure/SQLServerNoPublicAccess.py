@@ -15,7 +15,7 @@ class SQLServerNoPublicAccess(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'start_ip_address' in conf and conf['start_ip_address'][0] in ['0.0.0.0', '0.0.0.0/0']:
+        if 'start_ip_address' in conf and conf['start_ip_address'][0] in ['0.0.0.0', '0.0.0.0/0']: # nosec
             return CheckResult.FAILED
         return CheckResult.PASSED
 

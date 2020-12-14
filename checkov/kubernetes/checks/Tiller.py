@@ -13,23 +13,27 @@ class Tiller(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-            return conf['parent']
+        return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
+        return CheckResult.FAILED if self.is_tiller(conf) else CheckResult.PASSED
+
+    @staticmethod
+    def is_tiller(conf):
         if "image" in conf:
             conf_image = conf["image"]
             if isinstance(conf_image,str) and  "tiller" in conf_image:
-                    return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
+                    return True
+
         if "parent_metadata" in conf:
             if "labels" in conf["parent_metadata"]:
                 if "app" in conf["parent_metadata"]["labels"]:
                     if conf["parent_metadata"]["labels"]["app"] == "helm":
-                        return CheckResult.FAILED
+                        return True
                 elif "name" in conf["parent_metadata"]["labels"]:
                     if conf["parent_metadata"]["labels"]["name"] == "tiller":
-                        return CheckResult.FAILED
-        return CheckResult.PASSED
+                        return True
+
+        return False
 
 check = Tiller()

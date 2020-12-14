@@ -11,7 +11,7 @@ class GoogleStorageBucketUniformAccess(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'bucket_policy_only/[0]'
+        return 'uniform_bucket_level_access'
 
 
 check = GoogleStorageBucketUniformAccess()

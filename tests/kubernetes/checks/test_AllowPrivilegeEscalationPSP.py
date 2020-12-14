@@ -28,7 +28,7 @@ class TestAllowPrivilegeEscalationPSP(unittest.TestCase):
         test_files_dir = current_dir + "/example_PSP"
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(skip_checks=[check.id]))
         for record in report.failed_checks:
-            self.assertNotEquals(record.check_id,check.id,"check should be skipped")
+            self.assertNotEqual(record.check_id,check.id,"check should be skipped")
 
 if __name__ == '__main__':
     unittest.main()

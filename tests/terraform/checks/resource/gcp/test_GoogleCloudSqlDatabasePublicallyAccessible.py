@@ -1,59 +1,25 @@
 import unittest
-import hcl2
+import os
 
 from checkov.terraform.checks.resource.gcp.GoogleCloudSqlDatabasePublicallyAccessible import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
-class GoogleCloudSqlDatabasePublicallyAccessible(unittest.TestCase):
+class TestGoogleCloudSqlDatabasePublicallyAccessible(unittest.TestCase):
 
-    def test_failure(self):
-        hcl_parsed = hcl2.loads("""
-resource google_sql_database_instance "master_instance" {
-  name             = "terragoat-${var.environment}-master"
-  database_version = "POSTGRES_11"
-  region           = var.region
+    def test_summary(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-  settings {
-    tier = "db-f1-micro"
-    ip_configuration {
-      ipv4_enabled = true
-      authorized_networks {
-        name  = "WWW"
-        value = "0.0.0.0/0"
-      }
-    }
-  }
-}
-""")
-        resource_conf = hcl_parsed['resource'][0]['google_sql_database_instance']['master_instance']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/test_GoogleCloudSqlDatabasePublicallyAccessible"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        resource_conf = {'settings': [{'tier': ['db-f1-micro'], 'ip_configuration': [{'ipv4_enabled': True, 'authorized_networks': [ {'name': 'net1', 'value': '10.0.0.0/16'}, {'name': 'net1', 'value': '10.10.0.0/16'} ]}]}]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_unknown(self):
-            hcl_parsed = hcl2.loads("""
-    resource "google_sql_database_instance" "sql_instance" {
-      name   = "${var.gcp-project}-db-dev"
-      region = "${var.region}"
-      settings {
-        tier = "${var.db_machine_type}"
-        ip_configuration {
-                    ipv4_enabled = true
-                    authorized_networks {
-                    name = "${var.gcp-project}-sql-network"
-                    value = google_compute_address.ip_address-dev.address
-                    }
-      }
-     }
-    }""")
-            resource_conf = hcl_parsed['resource'][0]['google_sql_database_instance']['sql_instance']
-            scan_result = check.scan_resource_conf(conf=resource_conf)
-            self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary['passed'], 4)
+        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
 
 
 if __name__ == '__main__':

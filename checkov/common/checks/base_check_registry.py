@@ -1,39 +1,87 @@
+import fnmatch
 import importlib
 import logging
 import os
 import sys
 from abc import abstractmethod
+from itertools import chain
+from typing import Generator, Tuple
+
+from checkov.common.checks.base_check import BaseCheck
+
+from collections import defaultdict
+
+from checkov.runner_filter import RunnerFilter
 
 
 class BaseCheckRegistry(object):
-    checks = {}
-    check_id_allowlist = None
+    # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
+    #       checks aren't registered. (This happens with Serverless, for example.)
+    __loading_external_checks = False
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.checks = {}
+        # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
+        self.checks = defaultdict(list)
+        # IMPLEMENTATION NOTE: When using a wildcard, every pattern needs to be checked. To reduce the
+        #                      number of checks checks with the same pattern are grouped, which is the
+        #                      reason to use a dict for this too.
+        self.wildcard_checks = defaultdict(list)
         self.check_id_allowlist = None
 
     def register(self, check):
+        # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
+        #                      (see BaseResourceCheck.__init__() for the various frameworks). The only
+        #                      difficultly with this process is that external checks need to be specially
+        #                      identified for filter handling. That's why you'll see stateful setting of
+        #                      RunnerFilters during load_external_checks.
+        #                      Built-in checks are registered immediately at script start, before
+        #                      external checks.
+        if BaseCheckRegistry.__loading_external_checks:
+            RunnerFilter.notify_external_check(check.id)
+
         for entity in check.supported_entities:
-            if entity not in self.checks.keys():
-                self.checks[entity] = []
-            self.checks[entity].append(check)
+            checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
+            checks[entity].append(check)
+
+    @staticmethod
+    def _is_wildcard(entity):
+        return ('*' in entity
+                or '?' in entity
+                or ('[' in entity and ']' in entity))
 
     def get_check_by_id(self, check_id):
-        for resource_type in self.checks.keys():
-            resource_type_checks = self.checks[resource_type]
-            for check in resource_type_checks:
-                if check_id == check.id:
-                    return check
-        return None
+        return next(
+            filter(
+                lambda c: c.id == check_id,
+                chain(*self.checks.values(), *self.wildcard_checks.values())
+            ), None)
+
+    def all_checks(self) -> Generator[Tuple[str, BaseCheck], None, None]:
+        for entity, checks in self.checks.items():
+            for check in checks:
+                yield entity, check
+        for entity, checks in self.wildcard_checks.items():
+            for check in checks:
+                yield entity, check
+
+    @property
+    def contains_wildcard(self) -> bool:
+        return bool(self.wildcard_checks)
 
     def get_checks(self, entity):
-        if entity in self.checks.keys():
-            return self.checks[entity]
-        return []
+        if not self.wildcard_checks:
+            # Optimisation: When no wildcards are used, we can use the list in self.checks
+            return self.checks.get(entity) or []
+        else:
+            res = self.checks[entity].copy() if entity in self.checks.keys() else []
+            # check wildcards
+            for pattern, checks in self.wildcard_checks.items():
+                if fnmatch.fnmatchcase(entity, pattern):
+                    res += checks
+            return res
 
-    def set_checks_allowlist(self,runner_filter):
+    def set_checks_allowlist(self, runner_filter):
         if runner_filter.checks:
             self.check_id_allowlist = runner_filter.checks
 
@@ -41,26 +89,17 @@ class BaseCheckRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter=None):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
-        check_id_allowlist = runner_filter.checks
-        check_id_denylist = runner_filter.skip_checks
         for check in checks:
             skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
-            if check_id_allowlist:
-                if check.id in check_id_allowlist:
-                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
-                    results[check] = result
-            elif check_id_denylist:
-                if check.id not in check_id_denylist:
-                    result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
-                    results[check] = result
-            else:
+
+            if runner_filter.should_run_check(check.id):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -89,7 +128,7 @@ class BaseCheckRegistry(object):
             return True
         return False
 
-    def load_external_checks(self, directory):
+    def load_external_checks(self, directory, runner_filter):
         """ Browse a directory looking for .py files to import.
 
         Log an error when the directory does not contains an __init__.py or
@@ -106,7 +145,11 @@ class BaseCheckRegistry(object):
                 for entry in directory_content:
                     if self._file_can_be_imported(entry):
                         check_name = entry.name.replace('.py', '')
+
+                        # Filter is set while loading external checks so the filter can be informed
+                        # of the checks, which need to be handled specially.
                         try:
+                            BaseCheckRegistry.__loading_external_checks = True
                             self.logger.debug("Importing external check '{}'".format(check_name))
                             importlib.import_module(check_name)
                         except SyntaxError as e:
@@ -121,3 +164,5 @@ class BaseCheckRegistry(object):
                                     error_column=e.args[1][2]
                                 )
                             )
+                        finally:
+                            BaseCheckRegistry.__loading_external_checks = False

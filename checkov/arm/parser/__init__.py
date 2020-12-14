@@ -1,4 +1,5 @@
 import logging
+from checkov.arm.parser.node import dict_node
 
 try:
     from json.decoder import JSONDecodeError
@@ -50,4 +51,6 @@ def parse(filename):
     except YAMLError as err:
         pass
 
-    return template, template_lines
+    if template is not None and isinstance(template, dict_node) and '$schema' in template and 'resources' in template:
+        return template, template_lines
+    return None, None

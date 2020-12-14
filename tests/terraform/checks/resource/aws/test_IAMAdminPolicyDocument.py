@@ -13,7 +13,7 @@ class TestAdminPolicyDocument(unittest.TestCase):
                          "Action": [\n        "ec2:Describe*"\n      ],\n      \
                          "Effect": "Allow",\n     \
                           "Resource": "*"\n    }\n  ]\n}']}
-        scan_result = check.scan_entity_conf(conf=resource_conf)
+        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_failure(self):
@@ -23,7 +23,18 @@ class TestAdminPolicyDocument(unittest.TestCase):
                          "Action": [\n        "*"\n      ],\n      \
                          "Effect": "Allow",\n     \
                           "Resource": "*"\n    }\n  ]\n}']}
-        scan_result = check.scan_entity_conf(conf=resource_conf)
+        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_failure_multiple_statements(self):
+        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
+                         'policy': [
+                             '{"Version":"2012-10-17","Statement":[{"Sid":"SqsAllow","Effect":"Allow","Action":['
+                             '"sqs:GetQueueAttributes","sqs:GetQueueUrl","sqs:ListDeadLetterSourceQueues",'
+                             '"sqs:ListQueues","sqs:ReceiveMessage","sqs:SendMessage","sqs:SendMessageBatch"],'
+                             '"Resource":"*"},{"Sid":"ALL","Effect":"Allow","Action":["*"],"Resource":["*"]}]} '
+                             ]}
+        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
         self.assertEqual(CheckResult.FAILED, scan_result)
 
 

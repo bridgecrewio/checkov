@@ -16,7 +16,7 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 class Runner(BaseRunner):
     check_type = "arm"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                arm_registry.load_external_checks(directory)
+                arm_registry.load_external_checks(directory, runner_filter)
 
         if files:
             for file in files:
@@ -51,6 +51,25 @@ class Runner(BaseRunner):
                 arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
                 logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
                 arm_context_parser.evaluate_default_parameters()
+
+                # Split out nested resources from base resource
+                for resource in definitions[arm_file]['resources']:
+                    if "parent_name" in resource.keys():
+                        continue
+                    nested_resources = []
+                    nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
+                    if nested_resources:
+                        for nr in nested_resources:
+                            nr_element = nr.pop()
+                            if nr_element:
+                                for element in nr_element:
+                                    new_resource = {}
+                                    new_resource = element
+                                    if isinstance(new_resource, dict):
+                                        new_resource["parent_name"] = resource["name"]
+                                        new_resource["parent_type"] = resource["type"]
+                                        definitions[arm_file]['resources'].append(new_resource)
+
                 for resource in definitions[arm_file]['resources']:
                     resource_id = arm_context_parser.extract_arm_resource_id(resource)
                     resource_name = arm_context_parser.extract_arm_resource_name(resource)

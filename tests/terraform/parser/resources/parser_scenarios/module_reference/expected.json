@@ -1,0 +1,37 @@
+{
+  "main.tf": {
+    "module": [
+      {
+        "bucket": {
+          "source": ["./bucket"],
+          "__resolved__": ["bucket/bucket.tf[main.tf#0]"]
+        }
+      }
+    ],
+    "locals": [
+      {
+        "BUCKET_NAME": ["my_bucket"]
+      }
+    ]
+  },
+  "bucket/bucket.tf[main.tf#0]": {
+    "output": [
+      {
+        "bucket_name": {
+          "value": ["my_bucket"]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "example": {
+            "bucket": [
+              "my_bucket"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -5,10 +5,55 @@ on:
     branches:
     - master
 jobs:
-  test:
+  integration-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+      - name: Build & install checkov package
+        run: |
+          pipenv run pip install pytest
+          pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install --upgrade pip==20.2
+          pipenv run pip install dist/checkov-*
+      - name: Clone Terragoat - vulnerable terraform
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+      - name: Clone Cfngoat - vulnerable cloudformation
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'cfngoat'
+      - name: Clone Kubernetes-goat - vulnerable kubernetes
+        uses: actions/checkout@master
+        with:
+          repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'kubernetes-goat'
+      - name: Create checkov reports
+        run: |
+          pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
+          pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+          pipenv run checkov -s -d kubernetes-goat/ -o json > checkov_report_kubernetes-goat.json
+
+      - name: Run integration tests
+        run: |
+          pipenv run pytest integration_tests
+  bump-version:
+    needs: [integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -25,19 +70,6 @@ jobs:
           pipenv run python -m coverage report
           pipenv run python -m coverage html
           pipenv run python -m coverage_badge -o coverage.svg -f
-  bump-version:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
-        run: |
-          pipenv install --dev
       - name: update docs and bump version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,10 +102,11 @@ jobs:
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt HomebrewFormula/checkov.rb coverage.svg || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
+
   publish-package:
     needs: bump-version
     runs-on: ubuntu-latest
@@ -102,26 +135,6 @@ jobs:
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
-  update-brew:
-    needs: publish-package
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-      - name: publish brew
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          pipenv run pip install homebrew-pypi-poet
-          pipenv run pip install checkov -U
-          git pull
-          pipenv run poet -f checkov > HomebrewFormula/checkov.rb
-          git commit --reuse-message=HEAD@{1} HomebrewFormula/checkov.rb || echo "No brew changes to commit"
-          git push origin
   update-bridgecrew-projects:
     needs: publish-package
     runs-on: ubuntu-latest
@@ -132,7 +145,7 @@ jobs:
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/bridgecrew-py/dispatches --data '{"event_type": "build"}'
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkovdb/dispatches --data '{"event_type": "build"}'
-          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/platform/dispatches --data '{"event_type": "checkov-upgrade"}'
+          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/relations-graph/dispatches --data '{"event_type": "checkov-upgrade"}'
   publish-checkov-dockerhub:
     runs-on: ubuntu-latest
     needs: publish-package
@@ -143,7 +156,8 @@ jobs:
         run: |
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
-
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
@@ -161,6 +175,8 @@ jobs:
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
           echo $RELEASE_VERSION
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:

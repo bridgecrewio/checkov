@@ -204,6 +204,14 @@
           ]
         },
         {
+          "name": "log_checkpoints",
+          "type": "Microsoft.DBforPostgreSQL/servers/configurations",
+          "apiVersion": "2017-12-01",
+          "properties": {
+            "value": "ON"
+          }
+        },
+        {
           "name": "connection_throttling",
           "type": "Microsoft.DBforPostgreSQL/servers/configurations",
           "apiVersion": "2017-12-01",

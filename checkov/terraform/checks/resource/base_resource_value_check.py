@@ -9,8 +9,9 @@ VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources):
+    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        self.missing_block_result = missing_block_result
 
     @staticmethod
     def _filter_key_path(path):
@@ -41,6 +42,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:
+            # Inspected key exists
             if ANY_VALUE in expected_values:
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
@@ -52,22 +54,25 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 return CheckResult.PASSED
             if value in expected_values:
                 return CheckResult.PASSED
+            return CheckResult.FAILED
         else:
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
             for attribute in reversed(inspected_attributes):
                 for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
                     filtered_sub_key = self._filter_key_path(sub_key)
-                    if self._is_nesting_key(inspected_attributes, filtered_sub_key):
-                        if isinstance(sub_conf, list) and len(sub_conf) == 1:
-                            sub_conf = sub_conf[0]
-                        if sub_conf in self.get_expected_values():
-                            return CheckResult.PASSED
-                        if self._is_variable_dependant(sub_conf):
-                            # If the tested attribute is variable-dependant, then result is PASSED
-                            return CheckResult.PASSED
+                    # Only proceed with check if full path for key is similar - not partial match
+                    if inspected_attributes == filtered_sub_key:
+                        if self._is_nesting_key(inspected_attributes, filtered_sub_key):
+                            if isinstance(sub_conf, list) and len(sub_conf) == 1:
+                                sub_conf = sub_conf[0]
+                            if sub_conf in self.get_expected_values():
+                                return CheckResult.PASSED
+                            if self._is_variable_dependant(sub_conf):
+                                # If the tested attribute is variable-dependant, then result is PASSED
+                                return CheckResult.PASSED
 
-        return CheckResult.FAILED
+        return self.missing_block_result
 
     @abstractmethod
     def get_inspected_key(self):

@@ -15,7 +15,6 @@ body {
   bottom: auto;
   z-index: 10;
   width: 100vw;
-  padding: 8px 6vw;
   -webkit-transition: background-color 500ms ease;
   transition: background-color 500ms ease;
 }
@@ -150,7 +149,7 @@ body {
 }
 
 .checkov-page {
-  padding-top: 0px;
+  padding-top: 40px;
   background-color: #123489;
   background-image: linear-gradient(135deg, #123489, #102867);
 }
@@ -615,8 +614,7 @@ body {
     text-align: center;
   }
   .header {
-    padding-right: 20px;
-    padding-left: 20px;
+
   }
   .header-container {
     -webkit-box-pack: center;

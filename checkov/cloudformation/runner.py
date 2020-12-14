@@ -16,7 +16,7 @@ CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 class Runner(BaseRunner):
     check_type = "cloudformation"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                cfn_registry.load_external_checks(directory)
+                cfn_registry.load_external_checks(directory, runner_filter)
 
         if files:
             for file in files:
@@ -46,7 +46,7 @@ class Runner(BaseRunner):
                     logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
-        definitions = {k: v for k, v in definitions.items() if v and v.__contains__("Resources")}
+        definitions = {k: v for k, v in definitions.items() if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for cf_file in definitions.keys():

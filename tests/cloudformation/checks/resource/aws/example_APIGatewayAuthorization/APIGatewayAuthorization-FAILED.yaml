@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyMethod0:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: MyAPIID
+      ResourceId: MyResourceID 
+      HttpMethod: GET
+      AuthorizationType: NONE
+  MyMethod1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: MyAPIID
+      ResourceId: MyResourceID 
+      HttpMethod: POST
+      AuthorizationType: NONE

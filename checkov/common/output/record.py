@@ -21,6 +21,12 @@ class Record:
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class):
+        """
+        :param evaluations: A dict with the key being the variable name, value being a dict containing:
+                             - 'var_file'
+                             - 'value'
+                             - 'definitions', a list of dicts which contain 'definition_expression'
+        """
         self.check_id = check_id
         self.check_name = check_name
         self.check_result = check_result
@@ -75,11 +81,11 @@ class Record:
         if self.guideline:
             guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
         file_details = colored(
-            "\tFile: {}:{}\n\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
+            "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")
         code_lines = ""
         if self.code_block:
-            code_lines = "{}\n".format("".join(
+            code_lines = "\n{}\n".format("".join(
                 [self._code_line_string(self.code_block)]))
         if self.evaluations:
             for (var_name, var_evaluations) in self.evaluations.items():
@@ -94,9 +100,9 @@ class Record:
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result['result'] == CheckResult.FAILED and code_lines:
-            return check_message + status_message + guideline_message + file_details + code_lines + evaluation_message
+            return check_message + status_message + file_details + guideline_message + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
-            return check_message + status_message + guideline_message + suppress_comment + file_details
+            return check_message + status_message + suppress_comment + file_details + guideline_message
         else:
-            return check_message + status_message + guideline_message + file_details + evaluation_message
+            return check_message + status_message + file_details + evaluation_message + guideline_message

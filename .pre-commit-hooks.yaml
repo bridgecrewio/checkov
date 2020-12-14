@@ -6,9 +6,9 @@
 -   id: checkov
     name: Checkov
     description: This hook runs checkov.
-    entry: hooks/checkov.sh
-    language: script
-    pass_filenames: true
+    entry: checkov -d .
+    language: python
+    pass_filenames: false
     always_run: false
     files: \.tf$
     exclude: \.+.terraform\/.*$

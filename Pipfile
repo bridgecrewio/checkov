@@ -11,9 +11,11 @@ pipenv-setup = "*"
 GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"
+bc-python-hcl2 = "*"
 
 [packages]
-python-hcl2 = "*"
+bc-python-hcl2 = "*"
+deep_merge = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
@@ -21,6 +23,13 @@ junit-xml ="*"
 dpath = "==1.5.0"
 pyyaml = "==5.3.1"
 boto3 = "*"
+GitPython = "*"
+six = "==1.15.0"
+jmespath = "*"
+tqdm = "*"
+update_checker = "*"
+semantic_version = "*"      # For TF version resolution
+packaging = "*"
 
 [requires]
 python_version = "3.7"

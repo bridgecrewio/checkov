@@ -16,7 +16,7 @@ class AllowedCapabilities(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent']
+        return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
         if "securityContext" in conf:
@@ -25,5 +25,6 @@ class AllowedCapabilities(BaseK8Check):
                     if conf["securityContext"]["capabilities"]["add"]:
                         return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = AllowedCapabilities()

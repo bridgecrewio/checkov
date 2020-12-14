@@ -17,10 +17,14 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
             try:
                 assume_role_block = json.loads(conf['assume_role_policy'][0])
                 if 'Statement' in assume_role_block.keys():
-                    if 'Principal' in assume_role_block['Statement'][0]:
-                        if 'AWS' in assume_role_block['Statement'][0]['Principal']:
-                            if assume_role_block['Statement'][0]['Principal']['AWS'] == '*':
-                                    return CheckResult.FAILED
+                    for statement in assume_role_block['Statement']:
+                        if 'Effect' in statement and statement['Effect'] == 'Deny':
+                            continue
+                        if 'AWS' in statement['Principal']:
+                            # Can be a string or an array of strings
+                            aws = statement['Principal']['AWS']
+                            if (type(aws) == str and aws == '*') or (type(aws) == list and '*' in aws):
+                                return CheckResult.FAILED
             except: # nosec
                 pass
         return CheckResult.PASSED

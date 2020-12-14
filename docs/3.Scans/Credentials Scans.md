@@ -9,7 +9,9 @@ order: 7
 
 Cloud account secrets are a priceless target for an attacker to utilize cloud resources, leak data or harm the application infrastructure. 
 
-Checkov can scan for aws credentials (`access key` and `secret key`) that are hard coded in a terraform code block. 
+Checkov can scan for a number of different common credentials, such as AWS access keys, Azure, service credentials, or private keys that are hard coded in a terraform code block.
+
+The list of regular expressions is available [here](https://github.com/bridgecrewio/checkov/blob/master/checkov/common/util/secrets.py), and we welcome any contributions to this list.
 
 ## Example 
 Let's assume we have the following terraform provider block:
@@ -46,7 +48,7 @@ terraform scan results:
 
 Passed checks: 0, Failed checks: 1, Skipped checks: 0
 
-Check: CKV_AWS_41: "Ensure no hard coded AWS access key and and secret key exists"
+Check: CKV_AWS_41: "Ensure no hard coded AWS access key and secret key exists"
 	FAILED for resource: provider.aws
 	File: :1-5
 

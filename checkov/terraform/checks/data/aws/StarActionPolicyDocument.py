@@ -19,7 +19,7 @@ class StarActionPolicyDocument(BaseDataCheck):
         """
         key = 'statement'
         if key in conf.keys():
-            for statement in conf['statement']:
+            for statement in conf[key]:
                 if 'actions' in statement and '*' in statement['actions'][0] and statement.get('effect', ['Allow'])[0] == 'Allow':
                     return CheckResult.FAILED
         return CheckResult.PASSED

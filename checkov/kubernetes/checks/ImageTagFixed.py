@@ -21,15 +21,15 @@ class ImageTagFixed(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def get_resource_id(self, conf):
-        return conf['parent']
+        return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
         if "image" in conf:
 
             # Remove the digest, if present
             image_val = conf["image"]
-            if not isinstance(image_val, str):
-                return CheckResult.FAILED
+            if not isinstance(image_val, str) or image_val.strip() == '':
+                return CheckResult.UNKNOWN
             if '@' in image_val:
                 image_val = image_val[0:image_val.index('@')]
 

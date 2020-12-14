@@ -12,9 +12,9 @@ class BaseRunner(ABC):
     check_type = ""
 
     @abstractmethod
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         pass
 
 
 def filter_ignored_directories(d_names):
-    [d_names.remove(d) for d in list(d_names) if d in ignored_directories]
+    [d_names.remove(d) for d in list(d_names) if d in ignored_directories or d.startswith(".")]

@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      RestApiId: MyRestApi
+      DeploymentId: TestDeployment
+      DocumentationVersion: MyDocumentationVersion
+      ClientCertificateId: ClientCertificate
+      Variables:
+        Stack: Prod
+      MethodSettings:
+        - ResourcePath: /
+          HttpMethod: GET
+          MetricsEnabled: true
+          DataTraceEnabled: false
+        - ResourcePath: /stack
+          HttpMethod: POST
+          MetricsEnabled: true
+          DataTraceEnabled: false
+          ThrottlingBurstLimit: 999
+        - ResourcePath: /stack
+          HttpMethod: GET
+          MetricsEnabled: true
+          DataTraceEnabled: false
+          ThrottlingBurstLimit: 555
+      AccessLogSetting:
+        DestinationArn: 'arn:aws:logs:us-east-1:123456789:log-group:my-log-group'
+        Format: >-
+          {"requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
+          "caller":"$context.identity.caller",
+          "user":"$context.identity.user","requestTime":"$context.requestTime",
+          "eventType":"$context.eventType","routeKey":"$context.routeKey",
+          "status":"$context.status","connectionId":"$context.connectionId"}

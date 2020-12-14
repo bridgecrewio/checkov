@@ -16,7 +16,7 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 class Runner(BaseRunner):
     check_type = "kubernetes"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter()):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                registry.load_external_checks(directory)
+                registry.load_external_checks(directory, runner_filter)
 
         if files:
             for file in files:
@@ -76,9 +76,15 @@ class Runner(BaseRunner):
 
                     # Skip entity without metadata["name"]
                     if "metadata" in entity_conf:
-                        if not "name" in entity_conf["metadata"]:
+                        if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
                             continue
                     else:
+                        continue
+
+                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
+                    # We will alert in runtime only
+                    if "ownerReferences" in entity_conf["metadata"] and \
+                            entity_conf["metadata"]["ownerReferences"] is not None:
                         continue
 
                     # Append containers and initContainers to definitions list
@@ -119,12 +125,21 @@ class Runner(BaseRunner):
                     if entity_conf["kind"] == "List":
                         continue
 
+                    if isinstance(entity_conf["kind"], int):
+                        continue
                     # Skip entity without metadata["name"] or parent_metadata["name"]
                     if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
                         if "metadata" in entity_conf:
-                            if not "name" in entity_conf["metadata"]:
+                            if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
                                 continue
                         else:
+                            continue
+
+                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
+                    # We will alert in runtime only
+                    if "metadata" in entity_conf:
+                        if "ownerReferences" in entity_conf["metadata"] and \
+                                entity_conf["metadata"]["ownerReferences"] is not None:
                             continue
 
                     # Skip Kustomization Templates (for now)
@@ -157,7 +172,6 @@ class Runner(BaseRunner):
                                         resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
                                         check_class=check.__class__.__module__)
                         report.add_record(record=record)
-
 
         return report
 
@@ -201,7 +215,7 @@ def get_skipped_checks(entity_conf):
     else:
         if "metadata" in entity_conf.keys():
             metadata = entity_conf["metadata"]
-    if "annotations" in metadata.keys():
+    if "annotations" in metadata.keys() and metadata["annotations"] is not None:
         for key in metadata["annotations"].keys():
             skipped_item = {}
             if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:

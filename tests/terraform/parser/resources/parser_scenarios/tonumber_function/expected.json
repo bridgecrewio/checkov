@@ -1,0 +1,12 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "NUM": [1],
+        "FLOAT": [3.14],
+        "STRING": [1],
+        "INVALID": ["${tonumber(\"no\")}"]
+      }
+    ]
+  }
+}
