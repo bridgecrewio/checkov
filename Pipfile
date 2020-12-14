@@ -35,6 +35,7 @@ tqdm = "*"
 update_checker = "*"
 semantic_version = "*"
 packaging = "*"
+pyhcl = "*"
 
 [requires]
 python_version = "3.7"

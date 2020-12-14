@@ -1,0 +1,23 @@
+{
+  "main.tf": {
+    "module": [
+      {
+        "bucket": {
+          "source": ["../local_module_parent_relative_MODULE"],
+          "__resolved__": ["../local_module_parent_relative_MODULE/bucket.tf[main.tf#0]"]
+        }
+      }
+    ]
+  },
+  "../local_module_parent_relative_MODULE/bucket.tf[main.tf#0]": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "mybucket": {
+            "bucket": ["MyBucket"]
+          }
+        }
+      }
+    ]
+  }
+}
