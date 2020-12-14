@@ -4,9 +4,9 @@ from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.azure.AKSRbacEnabled import check
 
 
-class TestAKSLoggingEnabled(unittest.TestCase):
+class TestAKSRbacEnabled(unittest.TestCase):
 
-    def test_failure(self):
+    def test_failure_false(self):
         resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
                          'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
                          'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
@@ -16,7 +16,7 @@ class TestAKSLoggingEnabled(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_failure_default(self):
         resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
                          'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
                          'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
@@ -25,9 +25,9 @@ class TestAKSLoggingEnabled(unittest.TestCase):
                          'addon_profile': [{'oms_agent': [{'enabled': [True], 'log_analytics_workspace_id': ['']}]}]}
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success2(self):
+    def test_success(self):
         resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
                          'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
                          'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
