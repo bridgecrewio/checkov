@@ -1,5 +1,5 @@
 Resources:
-  MyDB:
+  MyDB_0:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'
@@ -8,3 +8,37 @@ Resources:
       MasterUsername: 'master'
       MasterUserPassword: 'password'
       StorageEncrypted: true
+  MyDB_Aurora_0:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'aurora'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+      StorageEncrypted: true
+  MyDB_Aurora_1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'aurora'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+      StorageEncrypted: false
+  MyDB_Aurora_2:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'aurora-mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+  MyDB_Aurora_3:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'aurora-postgresql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
