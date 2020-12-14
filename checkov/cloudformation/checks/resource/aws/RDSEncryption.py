@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class RDSEncryption(BaseResourceCheck):
+class RDSEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
         id = "CKV_AWS_16"
@@ -11,19 +11,27 @@ class RDSEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+
+        if 'visibility' in conf:
+            if conf['visibility'][0] == 'private':
+                return CheckResult.UNKNOWN 
+
+        # default visibility is public; just use base class implementation
+        return super().scan_resource_conf(conf)
+    
+    
+    def scan_resource_conf(self, conf):
         # If DB is Aurora then Encryption is set in other resource
         # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html#cfn-rds-dbinstance-storageencrypted
         if 'Properties' in conf.keys():
             if 'Engine' in conf['Properties'].keys():
                 if 'aurora' in conf['Properties']['Engine']:
-                    return CheckResult.PASSED
+                    return CheckResult.UNKNOWN
+        # Database is not Aurora; Use base class implementation
+        return super().scan_resource_conf(conf)
 
-        if 'Properties' in conf.keys():
-            if 'StorageEncrypted' in conf['Properties'].keys():
-                if conf['Properties']['StorageEncrypted'] == True:
-                    return CheckResult.PASSED
-
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'Properties/StorageEncrypted'
 
 
 check = RDSEncryption()
