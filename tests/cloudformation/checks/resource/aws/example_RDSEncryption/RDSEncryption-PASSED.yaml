@@ -26,6 +26,6 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'
-      DBInstanceClass: 'db.r3.2xlarge'
+      DBInstanceClass: 'db.t3.medium'
       Engine: 'aurora-postgresql'
       MasterUsername: 'master'
