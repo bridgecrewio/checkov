@@ -6,7 +6,7 @@ from checkov.common.models.consts import ANY_VALUE
 class CloudwatchLogGroupEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure CloudWatch logs are encrypted at rest using KMS CMKs"
-        id = "CKV_AWS_95"
+        id = "CKV_AWS_97"
         supported_resources = ['AWS::Logs::LogGroup']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
