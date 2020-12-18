@@ -1,0 +1,19 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "test",
+  "Resources": {
+    "myBadLogGroup": {
+      "Type" : "AWS::Logs::LogGroup",
+      "Properties" : {
+        "LogGroupName": "my bad log group"
+      }
+    },
+    "myGoodLogGroup": {
+      "Type" : "AWS::Logs::LogGroup",
+      "Properties" : {
+        "LogGroupName": "my good log group",
+        "KmsKeyId": "mykmskey"
+      }
+    }
+  }
+}
