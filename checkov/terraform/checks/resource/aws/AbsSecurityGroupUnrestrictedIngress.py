@@ -55,8 +55,8 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         return CheckResult.PASSED
 
     def contains_violation(self, conf):
-        from_port = force_int(force_list(conf['from_port'])[0])
-        to_port = force_int(force_list(conf['to_port'])[0])
+        from_port = force_int(force_list(conf.get('from_port',[{-1}]))[0])
+        to_port = force_int(force_list(conf.get('to_port',[{-1}]))[0])
 
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
             cidr_blocks = force_list(conf.get('cidr_blocks', [[]])[0])
