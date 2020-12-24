@@ -33,6 +33,7 @@ def run(banner=checkov_banner):
     add_parser_args(parser)
     args = parser.parse_args()
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check,
+                                 skip_pattern=args.skip_pattern,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(args.evaluate_variables))
@@ -59,6 +60,8 @@ def run(banner=checkov_banner):
     if args.check and args.skip_check:
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
+    if args.skip_check and args.skip_pattern or args.skip_pattern and args.check:
+        parser.error("--skip-check and --skip-pattern can not be applied together. please use only on of them")
     if args.list:
         print_checks(framework=args.framework)
         return
@@ -122,6 +125,9 @@ def add_parser_args(parser):
     parser.add_argument('--skip-check',
                         help='filter scan to run on all check but a specific check identifier(denylist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)
+    parser.add_argument('--skip-pattern',
+                        help='filter scan to run on all check but a specific check pattern(denylist), You can '
+                             'specify multiple checks using a pattern (eg. CKV_AWS* to skeep all aws checks)', default=None)
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')

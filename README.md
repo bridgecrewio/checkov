@@ -140,6 +140,11 @@ Run all checks except 1 specified:
 checkov -d . --skip-check CKV_AWS_52
 ```
 
+Run all checks except specified patterns:
+```sh
+checkov -d . --skip-pattern CKV_AWS*
+```
+
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
 kube-system namespace:
 ```sh

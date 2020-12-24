@@ -1,3 +1,4 @@
+import fnmatch
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
@@ -7,7 +8,7 @@ class RunnerFilter(object):
     #       logically a "static" concept anyway, so this makes logical sense.
     __EXTERNAL_CHECK_IDS = set()
 
-    def __init__(self, framework='all', checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
+    def __init__(self, framework='all', checks=None, skip_checks=None, skip_pattern=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
         if checks is None:
             checks = []
         if isinstance(checks, str):
@@ -21,6 +22,11 @@ class RunnerFilter(object):
             self.skip_checks = skip_checks.split(",")
         else:
             self.skip_checks = skip_checks
+        if skip_pattern is None:
+            self.skip_pattern = []
+        else:
+            self.skip_pattern = skip_pattern
+
         self.framework = framework
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
@@ -36,6 +42,9 @@ class RunnerFilter(object):
                 return False
         if self.skip_checks and check_id in self.skip_checks:
             return False
+        elif self.skip_pattern:
+            if fnmatch.fnmatch(check_id, self.skip_pattern):
+                return False
         return True
 
     @staticmethod
