@@ -1,0 +1,19 @@
+Resources:
+  MyAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: MyCustomWorkGroup
+      Description: My WorkGroup
+      State: ENABLED
+      Tags:
+        - Key: "key1"
+          Value: "value1"
+        - Key: "key2"
+          Value: "value2"
+      WorkGroupConfiguration:
+        BytesScannedCutoffPerQuery: 200000000
+        EnforceWorkGroupConfiguration: true
+        PublishCloudWatchMetricsEnabled: false
+        RequesterPaysEnabled: true
+        ResultConfiguration:
+          OutputLocation: s3://path/to/my/bucket/
