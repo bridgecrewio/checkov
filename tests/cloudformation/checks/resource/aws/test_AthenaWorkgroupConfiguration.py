@@ -12,6 +12,10 @@ class TestAthenaWorkgroupConfiguration(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
+        # There is some internal conflcits on "Tags" in the Athena WG Docs. And corresponding specs.
+        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-athena-workgroup.html
+        # This may mean that the "Tags" in this test data needs to correspondingly change when CF / CF Lint are updated in the future.
+        # CF Lint Issue: https://github.com/aws-cloudformation/cfn-python-lint/issues/1577
         test_files_dir = current_dir + "/example_AthenaWorkgroupConfiguration"
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
