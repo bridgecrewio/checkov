@@ -14,7 +14,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if isinstance(conf['assume_role_policy'][0], str):
+        if conf.get('assume_role_policy') and isinstance(conf['assume_role_policy'][0], str):
             try:
                 assume_role_block = json.loads(conf['assume_role_policy'][0])
                 if 'Statement' in assume_role_block.keys():
