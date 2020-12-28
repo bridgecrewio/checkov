@@ -1,3 +1,4 @@
+import fnmatch
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
@@ -34,7 +35,7 @@ class RunnerFilter(object):
                 return True
             else:
                 return False
-        if self.skip_checks and check_id in self.skip_checks:
+        if self.skip_checks and any(fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks):
             return False
         return True
 
