@@ -17,7 +17,7 @@ Resources:
         RequesterPaysEnabled: true
         ResultConfiguration:
           OutputLocation: s3://path/to/my/bucket/
-  MyAthenaWorkGroup0:
+  MyAthenaWorkGroup1:
     Type: AWS::Athena::WorkGroup
     Properties:
       Name: MyCustomWorkGroup
