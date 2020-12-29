@@ -15,7 +15,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'AssumeRolePolicyDocument' in conf['Properties']:
-            if 'Fn::Sub' in conf['Properties']['AssumeRolePolicyDocument'].keys():
+            if isinstance(conf['Properties']['AssumeRolePolicyDocument'], dict) and 'Fn::Sub' in conf['Properties']['AssumeRolePolicyDocument'].keys():
                 assume_role_block = json.loads(conf['Properties']['AssumeRolePolicyDocument']['Fn::Sub'])
                 if 'Statement' in assume_role_block.keys():
                     if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
@@ -30,7 +30,10 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                                                 assume_role_block['Statement'][0]['Principal']['AWS'][0]):
                                         return CheckResult.FAILED
             else:
-                assume_role_block = conf['Properties']['AssumeRolePolicyDocument']
+                if isinstance(conf['Properties']['AssumeRolePolicyDocument'], str):
+                    assume_role_block = json.loads(conf['Properties']['AssumeRolePolicyDocument'])
+                else:
+                    assume_role_block = conf['Properties']['AssumeRolePolicyDocument']
                 if 'Statement' in assume_role_block.keys():
                     if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
                             assume_role_block['Statement'][0]:
