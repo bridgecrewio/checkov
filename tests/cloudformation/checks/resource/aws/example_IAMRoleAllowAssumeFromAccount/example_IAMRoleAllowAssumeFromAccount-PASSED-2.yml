@@ -607,7 +607,7 @@ Resources:
           ToPort: 60999
       SecurityGroupEgress:
         - CidrIp: "0.0.0.0/0"
-          IpProtocol: -1
+          IpProtocol: "-1"
 
   ScheduledRuleScalingLambda:
     Type: AWS::Events::Rule
