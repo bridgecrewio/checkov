@@ -23,8 +23,10 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = []
         if 'description' in conf.keys():
             if conf['description']:
+                self.evaluated_keys = 'description'
                 return CheckResult.PASSED
         egress_result = self.check_rule(rule_type='egress', conf=conf)
         ingress_result = self.check_rule(rule_type='ingress', conf=conf)
@@ -37,6 +39,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
             for rule in conf[rule_type]:
                 if isinstance(rule, dict):
                     if 'description' not in rule.keys() or not rule['description']:
+                        self.evaluated_keys.append(f'{rule_type}/{conf[rule_type].index(rule)}')
                         return CheckResult.FAILED
         return CheckResult.PASSED
 

@@ -17,6 +17,7 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
         :param conf: aws_elasticsearch_domain configuration
         :return: <CheckResult>
         """
+        self.evaluated_key = []
         if "cluster_config" in conf.keys():
             cluster_config = conf["cluster_config"][0]
             if isinstance(cluster_config, dict):
@@ -25,7 +26,9 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                 instance_count = cluster_config["instance_count"]
                 if isinstance(instance_count, int):
                     if instance_count > 1:
-                        if "node_to_node_encryption" in conf.keys() and conf["node_to_node_encryption"][0]["enabled"]:
+                        if "node_to_node_encryption" in conf.keys() and "enabled" in conf["node_to_node_encryption"][0]:
+                            self.evaluated_keys = 'node_to_node_encryption/[0]/enabled'
+                            if conf["node_to_node_encryption"][0]["enabled"]:
                                 return CheckResult.PASSED
                         else:
                             return CheckResult.FAILED

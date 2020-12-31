@@ -19,6 +19,7 @@ class ECRPolicy(BaseResourceCheck):
         :param conf: aws_ecr_repository configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = []
         if "policy" in conf.keys():
             if is_json(conf["policy"][0]):
                 if json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':

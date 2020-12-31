@@ -11,10 +11,13 @@ class ECSClusterContainerInsights(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = []
         if 'setting' in conf.keys():
             setting_conf = conf['setting']
             for setting in setting_conf:
                 if isinstance(setting, dict) and setting['name'] == ['containerInsights'] and setting['value'] == ['enabled']:
+                    self.evaluated_keys = [f'setting/[{conf["setting"].index(setting)}]/name',
+                                           f'setting/[{conf["setting"].index(setting)}]/value']
                     return CheckResult.PASSED
         return CheckResult.FAILED
 

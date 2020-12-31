@@ -11,8 +11,14 @@ class ELBAccessLogs(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if ('access_logs' in conf) and (('enabled' not in conf['access_logs'][0]) or (conf['access_logs'][0]['enabled'] == [True])):
-            return CheckResult.PASSED    
+        self.evaluated_keys = []
+        if 'access_logs' in conf:
+            self.evaluated_keys = 'access_logs'
+            if 'enabled' not in conf['access_logs'][0]:
+                return CheckResult.PASSED
+            self.evaluated_keys = 'access_logs/[0]/enabled'
+            if conf['access_logs'][0]['enabled'] == [True]:
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = ELBAccessLogs()

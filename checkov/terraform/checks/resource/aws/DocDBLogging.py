@@ -11,9 +11,10 @@ class DocDBLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = []
         log_types = ["profiler", "audit"]
-
         if 'enabled_cloudwatch_logs_exports' in conf:
+            self.evaluated_keys = 'enabled_cloudwatch_logs_exports'
             if all(elem in conf["enabled_cloudwatch_logs_exports"][0] for elem in log_types):
                 return CheckResult.PASSED
             else:

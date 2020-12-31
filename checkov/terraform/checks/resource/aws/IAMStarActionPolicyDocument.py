@@ -14,6 +14,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = []
         if 'policy' in conf.keys():
             try:
                 policy_block = json.loads(conf['policy'][0])

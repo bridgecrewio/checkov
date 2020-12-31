@@ -17,16 +17,19 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :param conf: cloudfront configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = []
         if "default_cache_behavior" in conf.keys():
             if isinstance(conf["default_cache_behavior"][0], dict):
                 default_viewer_policy = conf["default_cache_behavior"][0]["viewer_protocol_policy"][0]
                 if default_viewer_policy == "allow-all":
+                    self.evaluated_keys = 'default_cache_behavior/[0]/viewer_protocol_policy'
                     return CheckResult.FAILED
         if "ordered_cache_behavior" in conf.keys():
             for behavior in conf["ordered_cache_behavior"]:
                 if isinstance(behavior, dict):
                     # behavior which is a string will return PASSED
                     if behavior["viewer_protocol_policy"][0] == "allow-all":
+                        self.evaluated_keys = f'ordered_cache_behavior/[{conf["ordered_cache_behaviour"].index(behavior)}]/viewer_protocol_policy'
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
