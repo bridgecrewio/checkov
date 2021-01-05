@@ -20,7 +20,7 @@
                     
                  ],
                  "name":"test",
-                 "role_arn":"arn:aws:iam::204481888888:role/test",
+                 "role_arn":"arn:aws:iam::12345678912:role/test",
                  "tags":null,
                  "timeouts":null,
                  "vpc_config":[
@@ -67,7 +67,7 @@
                  
               ],
               "name":"test",
-              "role_arn":"arn:aws:iam::204481888888:role/test",
+              "role_arn":"arn:aws:iam::12345678912:role/test",
               "tags":null,
               "timeouts":null,
               "vpc_config":[
@@ -166,7 +166,7 @@
                     "constant_value":"test"
                  },
                  "role_arn":{
-                    "constant_value":"arn:aws:iam::204481888888:role/test"
+                    "constant_value":"arn:aws:iam::12345678912:role/test"
                  },
                  "vpc_config":[
                     {
