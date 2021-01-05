@@ -1,0 +1,12 @@
+Resources:
+  Aurora0:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'mydb'
+      Engine: 'aurora'
+  Aurora1:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'mydb'
+      Engine: 'aurora'
+      StorageEncrypted: false

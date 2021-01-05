@@ -1,5 +1,5 @@
 Resources:
-  MyDB:
+  MyDB0:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb'

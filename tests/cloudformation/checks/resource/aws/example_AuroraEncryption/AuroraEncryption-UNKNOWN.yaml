@@ -1,0 +1,13 @@
+Resources:
+  Aurora0:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'mydb'
+      Engine: 'aurora'
+      SnapshotIdentifier: 'SnapshotIdentifier'
+  Aurora1:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'mydb'
+      Engine: 'aurora'
+      SourceDBClusterIdentifier: 'SourceDBClusterIdentifier'

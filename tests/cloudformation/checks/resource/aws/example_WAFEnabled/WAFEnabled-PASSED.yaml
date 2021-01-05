@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyCloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Enabled: True
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          DefaultTTL: 3600
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          MaxTTL: 86400
+          MinTTL: 60
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: 'https-only'
+        Origins:
+          - DomainName: 'awsexamplebucket.s3.us-west-2.amazonaws.com'
+            Id: s3origin
+            S3OriginConfig:
+              OriginAccessIdentity: 'origin-access-identity/cloudfront/CloudFrontOriginAccessIdentity'
+        Logging:
+          Bucket: myawslogbucket.s3.amazonaws.com
+        WebACLId: arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a
