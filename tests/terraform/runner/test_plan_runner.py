@@ -44,7 +44,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_root_module_resources_no_values(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_plan_path = current_dir + "/resources/root_module_resources_no_values/tfplan.json"
+        valid_plan_path = current_dir + "/resources/plan_root_module_resources_no_values/tfplan.json"
         runner = Runner()
         report = runner.run(root_folder=None, files=[valid_plan_path], external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all'))
