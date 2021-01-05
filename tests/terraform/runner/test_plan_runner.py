@@ -78,7 +78,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(60, report.get_summary()["passed"])
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
-        self.assertGreaterEqual(2, len(files_scanned))
+        self.assertGreaterEqual(3, len(files_scanned))
 
 
 if __name__ == '__main__':
