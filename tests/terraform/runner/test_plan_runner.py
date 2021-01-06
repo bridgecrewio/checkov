@@ -85,8 +85,8 @@ class TestRunnerValid(unittest.TestCase):
         # So some values can be known but other are not at plan time
         # This can cause the data block resource to be scanned as if it were a managed resource which is not configured correctly
         # See 'Modes': https://www.terraform.io/docs/internals/json-format.html#values-representation
-        # This test verifies that such a circumstance stops occuring.
-        # There is a EKS Managed Resource and a EKS Data Resource.
+        # This test verifies that such a circumstance stops occurring
+        # There is a EKS Managed Resource and a EKS Data Resource
         # The EKS Managed Resource should have 4 failures corresponding with EKS checks.
         # The EKS Data Resource should not be scanned. Previously this would cause 8 failures. 
         current_dir = os.path.dirname(os.path.realpath(__file__))

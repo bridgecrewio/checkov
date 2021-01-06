@@ -62,7 +62,7 @@ def _prepare_resource_block(resource):
     mode = ""
     if 'mode' in resource:
         mode = resource.get("mode")
-    # Rare cases where data block has same name as a resource block and so the scan becomes invalid
+    # Rare cases where data block appears in resources with same name as resource block and only partial values
     # and where *_module resources don't have values field
     if mode == "managed" and 'values' in resource:
         resource_block[resource['type']][resource.get("name", "default")] = _hclify(resource['values'])
