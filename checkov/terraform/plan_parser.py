@@ -49,6 +49,25 @@ def _hclify(obj):
             ret_dict[key] = [child_dict]
     return ret_dict
 
+def _prepare_resource_block(resource):
+    """
+    hclify resource if pre-conditions met.
+    :type: resource: dict: tf resource block
+    :rtype: resource_block: dict: hclifyed if conditions met
+    :rtype: prepared: boolean: whether conditions met to prepare data
+    """
+    resource_block = {}
+    resource_block[resource['type']] = {}
+    prepared = False
+    mode = ""
+    if 'mode' in resource:
+        mode = resource.get("mode")
+    # Rare cases where data block appears in resources with same name as resource block and only partial values
+    # and where *_module resources don't have values field
+    if mode == "managed" and 'values' in resource:
+        resource_block[resource['type']][resource.get("name", "default")] = _hclify(resource['values'])
+        prepared = True
+    return resource_block, prepared
 
 def _find_child_modules(child_modules):
     """
@@ -64,10 +83,8 @@ def _find_child_modules(child_modules):
             for resource in nested_blocks:
                 resource_blocks.append(resource)
         for resource in child_module.get("resources", []):
-            resource_block = {}
-            resource_block[resource['type']] = {}
-            if 'values' in resource: # rare cases where child_module resources don't have values field
-                resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
+            resource_block, prepared = _prepare_resource_block(resource)
+            if prepared is True:
                 resource_blocks.append(resource_block)
     return resource_blocks
 
@@ -84,10 +101,8 @@ def parse_tf_plan(tf_plan_file):
     if not template:
         return None, None
     for resource in template.get('planned_values', {}).get("root_module", {}).get("resources", []):
-        resource_block = {}
-        resource_block[resource['type']] = {}
-        if 'values' in resource: # rare cases where root_module resources don't have values field
-            resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
+        resource_block, prepared = _prepare_resource_block(resource)
+        if prepared is True:
             tf_defintions[tf_plan_file]['resource'].append(resource_block)
     child_modules = template.get('planned_values', {}).get("root_module", {}).get("child_modules",[])
     # Terraform supports modules within modules so we need to search
