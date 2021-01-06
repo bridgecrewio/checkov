@@ -50,9 +50,30 @@ def _hclify(obj):
     return ret_dict
 
 
+def _find_child_modules(child_modules):
+    """
+    Find all child modules if any. Including any amount of nested child modules.
+    :type: child_modules: list of tf child_module objects
+    :rtype: resource_blocks: list of hcl resources
+    """
+    resource_blocks = []
+    for child_module in child_modules:
+        if child_module.get("child_modules",[]):
+            nested_child_modules = child_module.get("child_modules",[])
+            nested_blocks = _find_child_modules(nested_child_modules)
+            for resource in nested_blocks:
+                resource_blocks.append(resource)
+        for resource in child_module.get("resources", []):
+            resource_block = {}
+            resource_block[resource['type']] = {}
+            if 'values' in resource: # rare cases where child_module resources don't have values field
+                resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
+                resource_blocks.append(resource_block)
+    return resource_blocks
+
+
 def parse_tf_plan(tf_plan_file):
     """
-
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary
     """
@@ -65,15 +86,13 @@ def parse_tf_plan(tf_plan_file):
     for resource in template.get('planned_values', {}).get("root_module", {}).get("resources", []):
         resource_block = {}
         resource_block[resource['type']] = {}
-        if 'values' in resource: # modules block does not have 'values' section in plan file
+        if 'values' in resource: # rare cases where root_module resources don't have values field
             resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
             tf_defintions[tf_plan_file]['resource'].append(resource_block)
-    for child_module in template.get('planned_values', {}).get("root_module", {}).get("child_modules",[]):
-        for resource in child_module.get("resources", []):
-            resource_block = {}
-            resource_block[resource['type']] = {}
-            if 'values' in resource: # modules block does not have 'values' section in plan file
-                resource_block[resource['type']][resource.get('name', "default")] = _hclify(resource['values'])
-                tf_defintions[tf_plan_file]['resource'].append(resource_block)
-
+    child_modules = template.get('planned_values', {}).get("root_module", {}).get("child_modules",[])
+    # Terraform supports modules within modules so we need to search
+    # in nested modules to find all resource blocks
+    resource_blocks = _find_child_modules(child_modules)
+    for resource in resource_blocks:
+        tf_defintions[tf_plan_file]['resource'].append(resource)
     return tf_defintions, template_lines
