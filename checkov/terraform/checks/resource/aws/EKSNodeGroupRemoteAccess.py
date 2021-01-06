@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class EKSNodeGroupRemoteAccess(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Amazon EKS Node group has implict SSH access from 0.0.0.0/0"
-        id = "CKV_AWS_99"
+        id = "CKV_AWS_100"
         supported_resources = ['aws_eks_node_group']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
