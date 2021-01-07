@@ -37,6 +37,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_compound_local(self):
         self.go("compound_local")
 
+    def test_merge_function(self):
+        self.go("merge_function")
+
     def test_tobool_function(self):
         self.go("tobool_function")
 
