@@ -64,6 +64,15 @@ class TestAzureStorageAccountNamingRule(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_failure_empty_configuration(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_storage_account" "example" {
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
