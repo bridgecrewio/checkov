@@ -793,40 +793,9 @@ def _split_merge_args(value: str) -> Optional[List[str]]:
         else:
             current_arg_buffer += c
 
-        inside_a_string = False
-        if inside_collection_stack:
-            terminator = inside_collection_stack[0]
-
-            if terminator == '"' or terminator == "'":
-                if processing_str_escape:
-                    processing_str_escape = False
-                    continue
-                elif c == "\\":
-                    processing_str_escape = True
-                    continue
-                else:
-                    inside_a_string = True
-
-            if c == terminator:
-                del inside_collection_stack[0]
-                continue
-
-        if not inside_a_string:
-            if c == '"':
-                inside_collection_stack.insert(0, '"')
-                continue
-            if c == "'":
-                inside_collection_stack.insert(0, "'")
-                continue
-            elif c == "{":
-                inside_collection_stack.insert(0, "}")
-                continue
-            elif c == "[":
-                inside_collection_stack.insert(0, "]")
-                continue
-            elif c == "(":
-                inside_collection_stack.insert(0, ")")
-                continue
+        processing_str_escape = _str_parser_loop_collection_helper(c,
+                                                                   inside_collection_stack,
+                                                                   processing_str_escape)
 
     current_arg_buffer = current_arg_buffer.strip()
     if len(current_arg_buffer) > 0:
@@ -855,7 +824,7 @@ def _find_var_blocks(value: str) -> List[VarBlockMatch]:
     in_eval = False
     preceding_dollar = False
     processing_str_escape = False
-    inside_collection_stack = []        # newest at position 0, contains the terminator for the collection
+    inside_collection_stack: List[str] = []        # newest at position 0, contains terminator for collection
     for c in value:
         if c == "$":
             if preceding_dollar:        # ignore double $
@@ -889,39 +858,53 @@ def _find_var_blocks(value: str) -> List[VarBlockMatch]:
         else:
             eval_buffer += c
 
-        inside_a_string = False
-        if inside_collection_stack:
-            terminator = inside_collection_stack[0]
-
-            if terminator == '"' or terminator == "'":
-                if processing_str_escape:
-                    processing_str_escape = False
-                    continue
-                elif c == "\\":
-                    processing_str_escape = True
-                    continue
-                else:
-                    inside_a_string = True
-
-            if c == terminator:
-                del inside_collection_stack[0]
-                continue
-
-        if not inside_a_string:
-            if c == '"':
-                inside_collection_stack.insert(0, '"')
-                continue
-            if c == "'":
-                inside_collection_stack.insert(0, "'")
-                continue
-            elif c == "{":
-                inside_collection_stack.insert(0, "}")
-                continue
-            elif c == "[":
-                inside_collection_stack.insert(0, "]")
-                continue
-            elif c == "(":
-                inside_collection_stack.insert(0, ")")
-                continue
+        processing_str_escape = _str_parser_loop_collection_helper(c, inside_collection_stack,
+                                                                   processing_str_escape)
 
     return to_return
+
+
+def _str_parser_loop_collection_helper(c: str, inside_collection_stack: List[str],
+                                       processing_str_escape: bool) -> bool:
+    """
+    This function handles dealing with tracking when a char-by-char state loop is inside a
+    "collection" (map, array index, method args, string).
+
+    :param c:       Active character
+    :param inside_collection_stack:     Stack of terminators for collections. This will be modified by
+                                        this function. The active terminator will be at position 0.
+
+
+    :return: value to set for `processing_str_escape`
+    """
+    inside_a_string = False
+    if inside_collection_stack:
+        terminator = inside_collection_stack[0]
+
+        if terminator == '"' or terminator == "'":
+            if processing_str_escape:
+                processing_str_escape = False
+                return processing_str_escape
+            elif c == "\\":
+                processing_str_escape = True
+                return processing_str_escape
+            else:
+                inside_a_string = True
+
+        if c == terminator:
+            del inside_collection_stack[0]
+            return processing_str_escape
+
+    if not inside_a_string:
+        if c == '"':
+            inside_collection_stack.insert(0, '"')
+        elif c == "'":
+            inside_collection_stack.insert(0, "'")
+        elif c == "{":
+            inside_collection_stack.insert(0, "}")
+        elif c == "[":
+            inside_collection_stack.insert(0, "]")
+        elif c == "(":
+            inside_collection_stack.insert(0, ")")
+
+    return processing_str_escape
