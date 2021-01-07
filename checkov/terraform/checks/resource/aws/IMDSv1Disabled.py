@@ -29,23 +29,15 @@ class IMDSv1Disabled(BaseResourceCheck):
         :param conf: dict of supported resource configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
+        self.evaluated_keys = ['metadata_options/[0]/http_tokens', 'metadata_options/[0]/http_endpoint']
         if 'metadata_options' not in conf.keys():
             return CheckResult.FAILED
         else:
             if not isinstance(conf['metadata_options'][0], dict):
-                self.evaluated_keys = 'metadata_options'
                 return CheckResult.FAILED
             metadata_options = conf['metadata_options'][0]
-            if 'http_tokens' in metadata_options:
-                self.evaluated_keys.append('metadata_options/[0]/http_tokens')
-            if 'http_endpoint' in metadata_options:
-                self.evaluated_keys.append('metadata_options/[0]/http_endpoint')
-            if (
-                metadata_options.get("http_tokens") == ["required"]
-                or
-                metadata_options.get("http_endpoint") == ["disabled"]
-            ):
+            if ('http_tokens' in metadata_options and metadata_options["http_tokens"] == ["required"]) or \
+                ('http_endpoint' in metadata_options and metadata_options["http_endpoint"] == ["disabled"]):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

@@ -18,10 +18,9 @@ class ALBListenerHTTPS(BaseResourceCheck):
         :param conf: aws_kms_key configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
+        self.evaluated_keys = 'protocol'
         key = 'protocol'
         if key in conf.keys():
-            self.evaluated_keys = 'protocol'
             if conf[key] in (["HTTPS"], ["TLS"], ["TCP"], ["UDP"], ["TCP_UDP"]):
                 return CheckResult.PASSED
             elif conf[key] == ["HTTP"]:

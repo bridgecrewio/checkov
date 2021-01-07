@@ -13,9 +13,8 @@ class EC2Credentials(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        self.evaluated_keys = []
+        self.evaluated_keys = 'user_data'
         if 'user_data' in conf.keys():
-            self.evaluated_keys = 'user_data'
             user_data = conf['user_data'][0]
             if isinstance(user_data, str):
                 if string_has_secrets(user_data, AWS):

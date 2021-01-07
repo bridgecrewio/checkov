@@ -17,7 +17,7 @@ class EKSPublicAccessCIDR(BaseResourceCheck):
         :param conf: aws_eks_cluster configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
+        self.evaluated_keys = 'vpc_config'
         if "vpc_config" in conf.keys():
             if "endpoint_public_access" in conf["vpc_config"][0].keys() and not conf["vpc_config"][0]["endpoint_public_access"][0]:
                 self.evaluated_keys = 'vpc_config/[0]/endpoint_public_access'
