@@ -4,6 +4,7 @@ import dpath
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
+from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -59,3 +60,5 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         """
         return False
 
+    def get_evaluated_keys(self):
+        return force_list(self.get_inspected_key())
