@@ -1,10 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.SagemakerEncryption import check
+from checkov.terraform.checks.resource.aws.SagemakerNotebookEncryption import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestSagemakerEncryption(unittest.TestCase):
+class TestSagemakerNotebookEncryption(unittest.TestCase):
 
     def test_failure(self):
         resource_conf = {'name': ['my-notebook-instance'], 'role_arn': ['${aws_iam_role.role.arn}'],
