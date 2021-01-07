@@ -38,8 +38,8 @@ class EC2PublicIP(BaseResourceCheck):
 
         # For aws_launch_template
         if 'network_interfaces' in conf and isinstance(conf['network_interfaces'][0], dict):
+            self.evaluated_keys = 'network_interfaces/[0]/associate_public_ip_address'
             if 'associate_public_ip_address' in conf['network_interfaces'][0]:
-                self.evaluated_keys = 'network_interfaces/[0]/associate_public_ip_address'
                 if conf['network_interfaces'][0]['associate_public_ip_address'] == [True]:
                     return CheckResult.FAILED
 
