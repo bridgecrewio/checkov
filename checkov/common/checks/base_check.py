@@ -76,4 +76,5 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         return wrapper
 
     def get_evaluated_keys(self):
+        # retrieves the evaluated keys for the run's report. Child classes override the function amd return the `expected_keys` instead.
         return force_list(self.evaluated_keys)
