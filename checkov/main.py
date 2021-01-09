@@ -4,6 +4,7 @@ import atexit
 import argparse
 import os
 import shutil
+import sys
 from pathlib import Path
 
 from checkov.arm.runner import Runner as arm_runner
@@ -28,10 +29,10 @@ outer_registry = None
 logging_init()
 
 
-def run(banner=checkov_banner):
+def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
