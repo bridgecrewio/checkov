@@ -18,7 +18,7 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "a_string": ["${merge(local.foo, {'a': 'b'}}"]
+                    "a_string": ["${merge(local.foo,,{'a': 'b'},)}"]
                 }
             ]
         }
