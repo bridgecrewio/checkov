@@ -38,6 +38,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
             self.logger.debug(message)
         else:
             try:
+                self.evaluated_keys = []
                 check_result['result'] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result['evaluated_keys'] = self.get_evaluated_keys()
                 message = "File {}, {}  \"{}.{}\" check \"{}\" Result: {} ".format(
