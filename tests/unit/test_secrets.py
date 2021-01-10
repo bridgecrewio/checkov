@@ -28,3 +28,11 @@ class TestSecrets(unittest.TestCase):
 
         # check explicit all plus another category
         self.assertEqual(3, sum(1 for s in test_strings if string_has_secrets(s, ALL, AWS)))
+
+    # Regression test for https://github.com/bridgecrewio/checkov/issues/754
+    def test_does_not_consider_single_hash_as_a_secret(self):
+        # SHA1
+        self.assertFalse(string_has_secrets("b5a5b36b6be8d98c6f1bea655536d67abef23be8"))
+
+        # MD5
+        self.assertFalse(string_has_secrets("d9de48cf0676e9edb99bd8ee1ed44a21"))

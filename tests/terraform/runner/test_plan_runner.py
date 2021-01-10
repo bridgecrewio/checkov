@@ -42,6 +42,68 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 4)
 
+    def test_runner_nested_child_modules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_nested_child_modules/tfplan.json"
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[valid_plan_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(report.get_summary()["failed"], 12)
+        self.assertEqual(report.get_summary()["passed"], 0)
+
+    def test_runner_root_module_resources_no_values(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_root_module_resources_no_values/tfplan.json"
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[valid_plan_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        # 4 checks fail on test data for single eks resource as of present
+        # If more eks checks are added then this number will need to increase correspondingly to reflect
+        # This reasoning holds for all current pass/fails in these tests
+        self.assertEqual(report.get_summary()["failed"], 4)
+        self.assertEqual(report.get_summary()["passed"], 0)
+
+    def test_runner_data_resource_partial_values(self):
+        # In rare circumstances a data resource with partial values in the plan could cause false negatives
+        # Often 'data' does not even appear in the *_modules[x].resouces field within planned_values and is not scanned as expected
+        # It can occur when tf module B depends on tf module A
+        # And tf module A creates a resource that is used in a data block in tf module B
+        # So some values can be known but other are not at plan time
+        # This can cause the data block resource to be scanned as if it were a managed resource which is not configured correctly
+        # See 'Modes': https://www.terraform.io/docs/internals/json-format.html#values-representation
+        # This test verifies that such a circumstance stops occurring
+        # There is a EKS Managed Resource and a EKS Data Resource
+        # The EKS Managed Resource should have 4 failures corresponding with EKS checks.
+        # The EKS Data Resource should not be scanned. Previously this would cause 8 failures. 
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_data_resource_partial_values/tfplan.json"
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[valid_plan_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(report.get_summary()["failed"], 4)
+        self.assertEqual(report.get_summary()["passed"], 0)
+
     def test_runner_root_dir(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         root_dir = current_dir + "/resources"
@@ -55,11 +117,11 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(41, report.get_summary()["failed"])
-        self.assertEqual(60, report.get_summary()["passed"])
+        self.assertEqual(60, report.get_summary()["failed"])
+        self.assertEqual(61, report.get_summary()["passed"])
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
-        self.assertGreaterEqual(2, len(files_scanned))
+        self.assertGreaterEqual(5, len(files_scanned))
 
 
 if __name__ == '__main__':

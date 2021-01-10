@@ -16,7 +16,7 @@ class MemoryLimits(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "resources" in conf:
+        if conf.get("resources"):
             if "limits" in conf["resources"]:
                 if "memory" not in conf["resources"]["limits"]:
                     return CheckResult.FAILED

@@ -3,9 +3,9 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class SagemakerEncryption(BaseResourceValueCheck):
+class SagemakerNotebookEncryption(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure all data stored in the Sagemaker is securely encrypted at rest"
+        name = "Ensure all data stored in the Sagemaker Notebook is securely encrypted at rest"
         id = "CKV_AWS_22"
         supported_resources = ['aws_sagemaker_notebook_instance']
         categories = [CheckCategories.ENCRYPTION]
@@ -18,4 +18,4 @@ class SagemakerEncryption(BaseResourceValueCheck):
         return ANY_VALUE
 
 
-check = SagemakerEncryption()
+check = SagemakerNotebookEncryption()

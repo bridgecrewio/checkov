@@ -54,6 +54,16 @@ _patterns = {k: [re.compile(p, re.DOTALL) for p in v] for k, v in _secrets_regex
 # now combine all the compiled patterns into one long list
 _patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
 
+_hash_patterns = list(map(lambda regex: re.compile(regex, re.IGNORECASE), ['^[a-f0-9]{32}$', '^[a-f0-9]{40}$']))
+def is_hash(s: str) -> bool:
+    """
+    Checks whether a string is a MD5 or SHA1 hash
+
+    :param s:
+    :return:
+    """
+    return any([pattern.search(s) for pattern in _hash_patterns])
+
 
 def string_has_secrets(s: str, *categories) -> bool:
     """
@@ -75,6 +85,9 @@ def string_has_secrets(s: str, *categories) -> bool:
     # explicitly so we don't do any duplication
     if not categories or 'all' in categories:
         categories = ['all']
+
+    if is_hash(s):
+        return False
 
     for c in categories:
         if any([pattern.search(s) for pattern in _patterns[c]]):
