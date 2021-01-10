@@ -1,0 +1,38 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: pghero-capture-query-stats
+spec:
+  schedule: "*/5 * * * *"
+  startingDeadlineSeconds: 120
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            cronjob: pghero-capture-query-stats
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: cron
+            image: "pghero:latest"
+            imagePullPolicy: Always
+            command: ["bin/rake", "pghero:capture_query_stats"]
+            env:
+              - name: "PGHERO_CONFIG_PATH"
+                value: "/etc/pghero/pghero.yaml"
+            envFrom:
+            - secretRef:
+                name: pghero-secret
+            volumeMounts:
+            - name: config
+              mountPath: "/etc/pghero"
+              readOnly: true
+            resources:
+          volumes:
+          - name: config
+            secret:
+              secretName: pghero-yaml-secret

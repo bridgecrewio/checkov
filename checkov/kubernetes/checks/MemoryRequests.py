@@ -16,7 +16,7 @@ class MemoryRequests(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "resources" in conf and conf.get("resources") is not None:
+        if conf.get("resources"):
             if "requests" in conf["resources"]:
                 if "memory" not in conf["resources"]["requests"]:
                     return CheckResult.FAILED
