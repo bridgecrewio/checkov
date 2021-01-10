@@ -11,7 +11,6 @@ class GlueDataCatalogEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        self.evaluated_keys = []
         if 'data_catalog_encryption_settings' in conf:
             data_conf = conf['data_catalog_encryption_settings'][0]
             connection_encrypted = False

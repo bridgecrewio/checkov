@@ -11,7 +11,6 @@ class DocDBTLS(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        self.evaluated_keys = []
         if 'parameter' in conf:
             for elem in conf["parameter"]:
                 if isinstance(elem, dict) and elem["name"][0] == "tls" and elem["value"][0] == "disabled":

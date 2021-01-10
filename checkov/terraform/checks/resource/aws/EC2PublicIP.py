@@ -30,7 +30,6 @@ class EC2PublicIP(BaseResourceCheck):
         :return: <CheckResult>
         """
         # For aws_instance
-        self.evaluated_keys = []
         if 'associate_public_ip_address' in conf.keys():
             self.evaluated_keys = 'associate_public_ip_address'
             if conf['associate_public_ip_address'] == [True]:

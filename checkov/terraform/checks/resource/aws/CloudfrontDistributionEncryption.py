@@ -17,7 +17,6 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :param conf: cloudfront configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
         if "default_cache_behavior" in conf.keys():
             self.evaluated_keys = 'default_cache_behavior/[0]/viewer_protocol_policy'
             if isinstance(conf["default_cache_behavior"][0], dict):

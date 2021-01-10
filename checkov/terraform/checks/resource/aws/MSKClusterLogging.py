@@ -11,7 +11,6 @@ class MSKClusterLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        self.evaluated_keys = []
         if 'logging_info' in conf.keys() and 'broker_logs' in conf['logging_info'][0]:
             logging = conf['logging_info'][0]['broker_logs'][0]
             types = ["cloudwatch_logs", "firehose", "s3"]

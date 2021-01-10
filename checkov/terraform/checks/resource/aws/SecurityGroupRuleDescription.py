@@ -23,7 +23,6 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
         if 'description' in conf.keys():
             if conf['description']:
                 self.evaluated_keys = 'description'

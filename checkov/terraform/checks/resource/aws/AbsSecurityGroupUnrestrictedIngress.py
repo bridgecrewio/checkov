@@ -33,7 +33,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = []
+
         if 'ingress' in conf:  # This means it's an SG resource with ingress block(s)
             ingress_conf = conf['ingress']
             for ingress_rule in ingress_conf:
