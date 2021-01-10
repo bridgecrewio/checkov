@@ -16,7 +16,7 @@ class CPURequests(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "resources" in conf:
+        if "resources" in conf and conf.get("resources") is not None:
             if "requests" in conf["resources"]:
                 if "cpu" not in conf["resources"]["requests"]:
                     return CheckResult.FAILED
