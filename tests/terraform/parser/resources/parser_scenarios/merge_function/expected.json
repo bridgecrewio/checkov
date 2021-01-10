@@ -80,6 +80,13 @@
           {
             "Tag4": "four"
           }
+        ],
+        "multiline": [
+          {
+            "Tag1": "one",
+            "Tag2": "multiline_tag2",
+            "Tag4": "four"
+          }
         ]
       }
     ]

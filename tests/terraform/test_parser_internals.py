@@ -25,8 +25,8 @@ class TestParserInternals(unittest.TestCase):
              None),
             ("",
              None),
-            (", junk",
-             None),
+            (", leading_comma",
+             ["leading_comma"]),
             ("kinda_maybe_shouldnt_work_but_we_will_roll_with_it, ",        # <-- trailing comma
              ["kinda_maybe_shouldnt_work_but_we_will_roll_with_it"]),
             ("local.one",
@@ -36,7 +36,9 @@ class TestParserInternals(unittest.TestCase):
             ("{'a': '}, evil'}",        # bracket inside string, should not be split
              ["{'a': '}, evil'}"]),     # Note: these happen with native maps (see merge tests)
             ('${merge({\'a\': \'}, evil\'})}',
-             ['${merge({\'a\': \'}, evil\'})}'])
+             ['${merge({\'a\': \'}, evil\'})}']),
+            ('local.common_tags,,{\'Tag4\': \'four\'},,{\'Tag2\': \'Dev\'},',
+             ["local.common_tags", "{\'Tag4\': \'four\'}", "{\'Tag2\': \'Dev\'}"])
         ]
         for case in cases:
             actual = parser._split_merge_args(case[0])

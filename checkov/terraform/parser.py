@@ -785,10 +785,10 @@ def _split_merge_args(value: str) -> Optional[List[str]]:
     for c in value:
         if c == "," and not inside_collection_stack:
             current_arg_buffer = current_arg_buffer.strip()
-            if len(current_arg_buffer) == 0:
-                # Something went wrong because we have an empty arg. Blow out.
-                return None
-            to_return.append(current_arg_buffer)
+            # Note: can get a zero-length buffer when there's a double comman. This can
+            #       happen with multi-line args (see parser_internals test)
+            if len(current_arg_buffer) != 0:
+                to_return.append(current_arg_buffer)
             current_arg_buffer = ""
         else:
             current_arg_buffer += c
@@ -801,6 +801,8 @@ def _split_merge_args(value: str) -> Optional[List[str]]:
     if len(current_arg_buffer) > 0:
         to_return.append(current_arg_buffer)
 
+    if len(to_return) == 0:
+        return None
     return to_return
 
 

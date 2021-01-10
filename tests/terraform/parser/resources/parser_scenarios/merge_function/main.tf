@@ -10,7 +10,7 @@ locals {
   local_to_local = merge(local.common_tags, local.common_data_tags)
   local_to_manual = merge(local.common_tags, {Tag4 = "four"})
   manual_to_local = merge({Tag4 = "four"}, local.common_tags)
-  manual_to_manual = merge({Tag4 = "four"}, {Tag5 = "five"})
+  manual_to_manual = merge({Tag4 = "four"}, {Tag5="five"})
 
   nested = merge(local.common_tags, merge({Tag4 = "four"}, {Tag5 = "five"}))
 
@@ -30,4 +30,10 @@ locals {
 
   one_arg_local = merge(local.common_tags)
   one_arg_manual = merge({Tag4 = "four"})
+
+  multiline = merge(
+    local.common_tags,
+    {Tag4 = "four"},
+    {Tag2="multiline_tag2"}
+  )
 }
