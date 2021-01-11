@@ -16,6 +16,16 @@ class TestAdminPolicyDocument(unittest.TestCase):
         scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_service_star(self):
+        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
+                         'policy': ['{\n  "Version": "2012-10-17", \n  \
+                         "Statement": [\n    {\n      \
+                         "Action": "ec2:*",\n      \
+                         "Effect": "Allow",\n     \
+                          "Resource": "abc*"\n    }\n  ]\n}']}
+        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_failure(self):
         resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
                          'policy': ['{\n  "Version": "2012-10-17", \n  \
