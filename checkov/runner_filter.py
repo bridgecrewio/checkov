@@ -1,3 +1,4 @@
+import logging
 import fnmatch
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
@@ -8,7 +9,7 @@ class RunnerFilter(object):
     #       logically a "static" concept anyway, so this makes logical sense.
     __EXTERNAL_CHECK_IDS = set()
 
-    def __init__(self, framework='all', checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
+    def __init__(self, framework='all', skip_framework=None, checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True, runners=None):
         if checks is None:
             checks = []
         if isinstance(checks, str):
@@ -22,7 +23,19 @@ class RunnerFilter(object):
             self.skip_checks = skip_checks.split(",")
         else:
             self.skip_checks = skip_checks
-        self.framework = framework
+
+        if skip_framework is None:
+            self.framework = framework
+        else:
+            if isinstance(skip_framework, str):
+                if framework == "all":
+                    selected_frameworks = list(set(runners) - set(skip_framework.split(",")))
+                    self.framework = ','.join(selected_frameworks)
+                else:
+                    selected_frameworks = list(set(framework.split(",")) - set(skip_framework.split(",")))
+                    self.framework = ','.join(selected_frameworks)
+        logging.info(f'Resultant set of frameworks (removing skipped frameworks): {self.framework}')
+
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
