@@ -12,6 +12,7 @@ class APIGatewayAuthorization(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['http_method', 'authorization']
         if conf['http_method'][0] != "OPTIONS" and conf['authorization'][0] == "NONE":
             return CheckResult.FAILED
         return CheckResult.PASSED

@@ -33,6 +33,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
+
         if 'ingress' in conf:  # This means it's an SG resource with ingress block(s)
             ingress_conf = conf['ingress']
             for ingress_rule in ingress_conf:
@@ -40,6 +41,11 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                 for rule in ingress_rules:
                     if isinstance(rule, dict):
                         if self.contains_violation(rule):
+                            self.evaluated_keys = [
+                                f'ingress/{ingress_conf.index(ingress_rule)}/from_port',
+                                f'ingress/{ingress_conf.index(ingress_rule)}/to_port',
+                                f'ingress/{ingress_conf.index(ingress_rule)}/cidr_blocks',
+                            ]
                             return CheckResult.FAILED
 
             return CheckResult.PASSED
@@ -47,9 +53,11 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if 'type' in conf:  # This means it's an SG_rule resource.
             type = force_list(conf['type'])[0]
             if type == 'ingress':
-                return CheckResult.FAILED if self.contains_violation(conf) else CheckResult.PASSED
-            else:
-                return CheckResult.UNKNOWN
+                self.evaluated_keys = ['from_port','to_port','cidr_blocks']
+                if self.contains_violation(conf):
+                    return CheckResult.FAILED
+                return CheckResult.PASSED
+            return CheckResult.UNKNOWN
 
         # The result for an SG with no ingress block
         return CheckResult.PASSED

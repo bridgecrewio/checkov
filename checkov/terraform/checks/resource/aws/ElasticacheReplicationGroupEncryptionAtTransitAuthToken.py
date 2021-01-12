@@ -17,9 +17,11 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
         :param conf: aws_elasticache_replication_group configuration
         :return: <CheckResult>
         """
-        if "transit_encryption_enabled" in conf.keys() and "auth_token" in conf.keys():
+        self.evaluated_keys = ['transit_encryption_enabled', 'auth_token']
+        if "transit_encryption_enabled" in conf.keys():
             if conf["transit_encryption_enabled"][0]:
-                return CheckResult.PASSED
+                if "auth_token" in conf.keys():
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 

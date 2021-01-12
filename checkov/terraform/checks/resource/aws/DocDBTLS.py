@@ -14,9 +14,8 @@ class DocDBTLS(BaseResourceCheck):
         if 'parameter' in conf:
             for elem in conf["parameter"]:
                 if isinstance(elem, dict) and elem["name"][0] == "tls" and elem["value"][0] == "disabled":
+                    self.evaluated_keys = [f'parameter/[{conf["parameter"].index(elem)}]/name', f'parameter/[{conf["parameter"].index(elem)}]/value']
                     return CheckResult.FAILED
-        else:
-            return CheckResult.PASSED
         return CheckResult.PASSED
 
 

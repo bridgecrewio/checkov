@@ -18,6 +18,10 @@ class BaseResourceCheck(BaseCheck):
     @multi_signature()
     @abstractmethod
     def scan_resource_conf(self, conf, entity_type):
+        """
+        self.evaluated_keys should be set with a JSONPath of the attribute inspected.
+        If not relevant it should be set to an empty array so the previous check's value gets overridden in the report.
+        """
         raise NotImplementedError()
 
     @classmethod

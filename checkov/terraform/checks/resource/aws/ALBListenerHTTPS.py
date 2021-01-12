@@ -18,6 +18,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
         :param conf: aws_kms_key configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = 'protocol'
         key = 'protocol'
         if key in conf.keys():
             if conf[key] in (["HTTPS"], ["TLS"], ["TCP"], ["UDP"], ["TCP_UDP"]):
@@ -30,6 +31,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
                         if default_action.get('redirect'):
                             protocol = default_action['redirect'][0].get('protocol')
                             if protocol == ['HTTPS']:
+                                self.evaluated_keys = 'default_action/[0]/redirect/[0]/protocol'
                                 return CheckResult.PASSED
                             elif protocol is None:
                                 return CheckResult.UNKNOWN

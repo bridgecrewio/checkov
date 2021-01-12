@@ -1,8 +1,9 @@
+from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class SagemakerNotebookEncryption(BaseResourceCheck):
+class SagemakerNotebookEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Sagemaker Notebook is securely encrypted at rest"
         id = "CKV_AWS_22"
@@ -10,16 +11,11 @@ class SagemakerNotebookEncryption(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-            Looks for encryption configuration at aws_sagemaker_notebook_instance:
-            https://www.terraform.io/docs/providers/aws/r/sagemaker_notebook_instance.html
-        :param conf: aws_sagemaker_notebook_instance configuration
-        :return: <CheckResult>
-        """
-        if 'kms_key_id' in conf.keys():
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'kms_key_id'
+
+    def get_expected_value(self):
+        return ANY_VALUE
 
 
 check = SagemakerNotebookEncryption()

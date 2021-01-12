@@ -14,6 +14,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = 'environment/[0]/variables'
         if 'environment' in conf.keys():
             if isinstance(conf['environment'][0], dict):
                 if 'variables' in conf['environment'][0]:

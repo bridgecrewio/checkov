@@ -1,6 +1,7 @@
 import logging
 from abc import abstractmethod
 
+from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
@@ -18,6 +19,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.block_type = block_type
         self.supported_entities = supported_entities
         self.logger = logging.getLogger("{}".format(self.__module__))
+        self.evaluated_keys = []
 
     def run(self, scanned_file, entity_configuration, entity_name, entity_type, skip_info):
         check_result = {}
@@ -36,7 +38,9 @@ class BaseCheck(metaclass=MultiSignatureMeta):
             self.logger.debug(message)
         else:
             try:
+                self.evaluated_keys = []
                 check_result['result'] = self.scan_entity_conf(entity_configuration, entity_type)
+                check_result['evaluated_keys'] = self.get_evaluated_keys()
                 message = "File {}, {}  \"{}.{}\" check \"{}\" Result: {} ".format(
                     scanned_file,
                     self.block_type,
@@ -71,3 +75,10 @@ class BaseCheck(metaclass=MultiSignatureMeta):
             return wrapped(self, conf)
 
         return wrapper
+
+    def get_evaluated_keys(self):
+        """
+        Retrieves the evaluated keys for the run's report. Child classes override the function and return the `expected_keys` instead.
+        :return: List of the evaluated keys, as JSONPath syntax paths of the checked attributes
+        """
+        return force_list(self.evaluated_keys)

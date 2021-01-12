@@ -17,17 +17,14 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :param conf: aws_eks_cluster configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = 'enabled_cluster_log_types'
         if "enabled_cluster_log_types" in conf.keys():
             log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-
             if conf["enabled_cluster_log_types"][0] == None:
                 return CheckResult.FAILED
             if all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
                 return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
+        return CheckResult.FAILED
 
 
 check = EKSControlPlaneLogging()

@@ -15,8 +15,12 @@ class APIGatewayAuthorization(BaseResourceCheck):
         if 'artifacts' not in conf:
             return CheckResult.UNKNOWN
         artifact = conf['artifacts'][0]
-        if isinstance(artifact, dict) and artifact['type'] != "NO_ARTIFACTS" and 'encryption_disabled' in artifact and artifact['encryption_disabled']:
-            return CheckResult.FAILED
+        if isinstance(artifact, dict):
+            if artifact['type'] == "NO_ARTIFACTS":
+                self.evaluated_keys = 'artifacts/[0]/type'
+            elif 'encryption_disabled' in artifact and artifact['encryption_disabled']:
+                self.evaluated_keys = 'artifacts/[0]/encryption_disabled'
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
