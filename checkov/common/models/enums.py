@@ -4,7 +4,10 @@ from enum import Enum
 class CheckResult(str, Enum):
     PASSED = "PASSED"
     FAILED = "FAILED"
+    # Unknown should be used when a check does not wish to return a result, generally due to the inability
+    # to resolve a value or similar types of errors.
     UNKNOWN = "UNKNOWN"
+    # Skipped is used by the framework when a test is suppressed and should not be used directly by checks.
     SKIPPED = "SKIPPED"
 
 

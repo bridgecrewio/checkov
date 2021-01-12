@@ -1,0 +1,94 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "common_tags": [
+          {
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ],
+        "common_data_tags": [
+          {
+            "Tag3": "three"
+          }
+        ],
+        "local_to_local": [
+          {
+            "Tag1": "one",
+            "Tag2": "two",
+            "Tag3": "three"
+          }
+        ],
+        "local_to_manual": [
+          {
+            "Tag1": "one",
+            "Tag2": "two",
+            "Tag4": "four"
+          }
+        ],
+        "manual_to_local": [
+          {
+            "Tag4": "four",
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ],
+        "manual_to_manual": [
+          {
+            "Tag4": "four",
+            "Tag5": "five"
+          }
+        ],
+        "nested": [
+          {
+            "Tag1": "one",
+            "Tag2": "two",
+            "Tag4": "four",
+            "Tag5": "five"
+          }
+        ],
+        "doc_example1": [
+          {
+            "a": "b",
+            "c": "z",
+            "e": "f"
+          }
+        ],
+        "doc_example2": [
+          {
+            "a": [
+              1,
+              2
+            ],
+            "c": "z",
+            "d": 3
+          }
+        ],
+        "evil_strings1": [
+          {
+            "a": "}, evil"
+          }
+        ],
+        "one_arg_local": [
+          {
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ],
+        "one_arg_manual": [
+          {
+            "Tag4": "four"
+          }
+        ],
+        "multiline": [
+          {
+            "Tag1": "one",
+            "Tag2": "multiline_tag2",
+            "Tag4": "four"
+          }
+        ]
+      }
+    ]
+  }
+}

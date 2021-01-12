@@ -7,6 +7,53 @@ import hcl2
 # This group of tests is used to confirm assumptions about how the hcl2 library parses into json.
 # We want to make sure important assumptions are caught if behavior changes.
 class TestHCL2LoadAssumptions(unittest.TestCase):
+    def test_multiline_function(self):
+        tf = '''
+        locals {
+           a_string = merge(
+             local.foo,
+             {a="b"}
+           )
+        }'''
+        expect = {
+            "locals": [
+                {
+                    "a_string": ["${merge(local.foo,,{'a': 'b'},)}"]
+                }
+            ]
+        }
+        self.go(tf, expect)
+
+    def test_string_with_quotes(self):
+        tf = '''
+        locals {
+           a_string = "Quotes are \\"fun\\"!"
+        }'''
+        expect = {
+            "locals": [
+                {
+                    "a_string": ["Quotes are \\\"fun\\\"!"]
+                    #                        __--
+                    #                        |  |
+                    #                backslash  quote
+                }
+            ]
+        }
+        self.go(tf, expect)
+
+    def test_inner_quoting(self):
+        tf = '''
+        locals {
+          evil_strings1 = merge({a="}, evil"})
+        }'''
+        expect = {
+            "locals": [
+                {
+                    "evil_strings1": ["${merge({'a': '}, evil'})}"]
+                }
+            ]
+        }
+        self.go(tf, expect)
 
     def test_variable_block(self):
         tf = '''
