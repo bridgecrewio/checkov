@@ -435,7 +435,7 @@ class Parser:
                     source = source[0]
 
                     # Special handling for local sources to make sure we aren't double-parsing
-                    if source.startswith("./") or source.startswith("../") or source.startswith('/'):
+                    if source.startswith("./") or source.startswith("../"):
                         source = os.path.normpath(os.path.join(os.path.dirname(_remove_module_dependency_in_path(file)), source))
 
                     version = module_call_data.get("version", "latest")
