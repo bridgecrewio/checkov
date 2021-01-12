@@ -33,7 +33,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_local_module_absolute_path(self):
         registry = ModuleLoaderRegistry(download_external_modules=True)
-        source = "/tmp/some-module"
+        source = "/some/module"
         try:
             registry.load(current_dir=self.current_dir, source=source, source_version="latest")
             self.assertEqual(1, 2, 'Module loading should have thrown an error')

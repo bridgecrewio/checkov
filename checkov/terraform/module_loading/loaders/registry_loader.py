@@ -21,6 +21,9 @@ class RegistryLoader(ModuleLoader):
             return True
 
         get_version_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, 'versions')
+        if not get_version_url.startswith(self.REGISTRY_URL_PREFIX):
+            # Local paths don't get the prefix appended
+            return False
         response = requests.get(url=get_version_url)
         if response.status_code != HTTPStatus.OK:
             return False
