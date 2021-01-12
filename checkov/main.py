@@ -22,27 +22,49 @@ from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.helm.runner import Runner as helm_runner
 from checkov.version import version
 
 outer_registry = None
 
 logging_init()
+checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
+checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm']
 
+#Check runners for system deps, append --skip-framework list for failing deps.
+checkov_frameworks_unmatched_deps = []
+for runner in checkov_runner_module_names:
+    try:
+        globals()[f"{runner}_runner"]().system_deps
+    except:
+        continue
+    
+    if globals()[f"{runner}_runner"]().system_deps:
+            result = globals()[f"{runner}_runner"]().check_system_deps()
+            if result is not None:
+                checkov_frameworks_unmatched_deps.append(result)
 
-def run(banner=checkov_banner, argv=sys.argv[1:]):
+def run(banner=checkov_banner, runners=checkov_runners, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
-    runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check,
+    if checkov_frameworks_unmatched_deps:
+        print(f"The following frameworks have been automatically disabled due to missing system dependancies: {','.join(checkov_frameworks_unmatched_deps)}")
+        if args.skip_framework is None:
+            args.skip_framework = ",".join(checkov_frameworks_unmatched_deps)
+        else:
+            args.skip_framework = f"{args.skip_framework},{','.join(checkov_frameworks_unmatched_deps)}"
+    
+    runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
-                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables))
+                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables), runners=checkov_runners)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                         arm_runner(), tf_plan_runner())
+                                         arm_runner(), tf_plan_runner(), helm_runner())
     if args.version:
         print(version)
         return
@@ -114,9 +136,12 @@ def add_parser_args(parser):
                         default=False,
                         help='in case of CLI output, display only failed checks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
-                        choices=['cloudformation', 'terraform', 'terraform_plan', 'kubernetes', 'serverless', 'arm',
-                                 'all'],
+                        choices=checkov_runners + ["all"],
                         default='all')
+    parser.add_argument('--skip-framework', help='filter scan to skip specific infrastructure code frameworks. \n'
+                                                 'will be included automatically for some frameworks if system dependancies are missing.',
+                        choices=checkov_runners,
+                        default=None)
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)

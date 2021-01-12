@@ -80,10 +80,12 @@ class RunnerRegistry(object):
             return
         if self.runner_filter.framework == 'all':
             return
+        filtered_runners = []
         for runner in self.runners:
-            if runner.check_type == self.runner_filter.framework:
-                self.runners = [runner]
-                return
+            if runner.check_type in self.runner_filter.framework:
+                filtered_runners.append(runner)
+        self.runners = filtered_runners
+        return
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
