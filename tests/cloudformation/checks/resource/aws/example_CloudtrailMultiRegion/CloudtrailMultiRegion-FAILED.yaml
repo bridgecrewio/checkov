@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  MyTrail0:
+    Type: AWS::CloudTrail::Trail
+    Properties: 
+      IsLogging: True
+      IsMultiRegionTrail: False
+      S3BucketName: String
+  MyTrail1:
+    Type: AWS::CloudTrail::Trail
+    Properties: 
+      IsLogging: True
+      IsMultiRegionTrail: False
+      S3BucketName: String
