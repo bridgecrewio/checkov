@@ -20,7 +20,7 @@ class Record:
     guideline = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, helm_chart):
+                 evaluations, check_class):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -36,7 +36,6 @@ class Record:
         self.resource = resource
         self.evaluations = evaluations
         self.check_class = check_class
-        self.helm_chart = helm_chart
 
     def set_guideline(self, guideline):
         self.guideline = guideline
