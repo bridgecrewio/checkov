@@ -26,12 +26,13 @@ class ImageTagFixed(BaseK8Check):
     def scan_spec_conf(self, conf):
         if "image" in conf:
 
-            # Remove the digest, if present
             image_val = conf["image"]
             if not isinstance(image_val, str) or image_val.strip() == '':
                 return CheckResult.UNKNOWN
+
+            # If there's a digest, then this is even better than the tag, so the check passes
             if '@' in image_val:
-                image_val = image_val[0:image_val.index('@')]
+                return CheckResult.PASSED
 
             (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
             if tag == "latest" or tag == "":
