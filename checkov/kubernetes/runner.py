@@ -182,9 +182,7 @@ class Runner(BaseRunner):
                                         code_block=entity_code_lines, file_path=k8_file,
                                         file_line_range=entity_lines_range,
                                         resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
-                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path, helm_chart=None)
-                        if helmChart is not None:
-                            record.helm_chart = helmChart
+                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                         report.add_record(record=record)
 
         return report
