@@ -18,6 +18,7 @@ class Record:
     file_line_range = []
     resource = ""
     guideline = None
+    fix_definition = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class):

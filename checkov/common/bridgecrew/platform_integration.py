@@ -1,3 +1,4 @@
+from itertools import groupby
 from time import sleep
 
 import boto3
@@ -53,6 +54,7 @@ class BcPlatformIntegration(object):
         self.credentials = None
         self.repo_path = None
         self.repo_id = None
+        self.skip_fixes = False
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
@@ -63,36 +65,39 @@ class BcPlatformIntegration(object):
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
         self.guidelines = None
         self.bc_id_mapping = None
+        self.ckv_to_bc_id_mapping = None
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False):
         """
         Setup credentials against Bridgecrew's platform.
+        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
         :param bc_api_key: Bridgecrew issued API key
         """
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
-        try:
-            repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
-            self.bucket, self.repo_path = repo_full_path.split("/", 1)
-            self.timestamp = self.repo_path.split("/")[-1]
-            self.credentials = response["creds"]
-            self.s3_client = boto3.client("s3",
-                                          aws_access_key_id=self.credentials["AccessKeyId"],
-                                          aws_secret_access_key=self.credentials["SecretAccessKey"],
-                                          aws_session_token=self.credentials["SessionToken"],
-                                          region_name=DEFAULT_REGION
-                                          )
-            sleep(10)  # Wait for the policy to update
-        except HTTPError as e:
-            logging.error(f"Failed to get customer assumed role\n{e}")
-            raise e
-        except ClientError as e:
-            logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
-            raise e
-        except JSONDecodeError as e:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-            raise e
+        self.skip_fixes = skip_fixes
+        # try:
+        #     repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
+        #     self.bucket, self.repo_path = repo_full_path.split("/", 1)
+        #     self.timestamp = self.repo_path.split("/")[-1]
+        #     self.credentials = response["creds"]
+        #     self.s3_client = boto3.client("s3",
+        #                                   aws_access_key_id=self.credentials["AccessKeyId"],
+        #                                   aws_secret_access_key=self.credentials["SecretAccessKey"],
+        #                                   aws_session_token=self.credentials["SessionToken"],
+        #                                   region_name=DEFAULT_REGION
+        #                                   )
+        #     sleep(10)  # Wait for the policy to update
+        # except HTTPError as e:
+        #     logging.error(f"Failed to get customer assumed role\n{e}")
+        #     raise e
+        # except ClientError as e:
+        #     logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
+        #     raise e
+        # except JSONDecodeError as e:
+        #     logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+        #     raise e
 
     def get_s3_role(self, bc_api_key, repo_id):
         request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
@@ -115,7 +120,8 @@ class BcPlatformIntegration(object):
         Checks if Bridgecrew integration is fully configured.
         :return: True if the integration is configured, False otherwise
         """
-        return all([self.repo_path, self.credentials, self.s3_client])
+        return True
+        # return all([self.repo_path, self.credentials, self.s3_client])
 
     def persist_repository(self, root_dir):
         """
@@ -197,16 +203,46 @@ class BcPlatformIntegration(object):
             self.get_checkov_mapping_metadata()
         return self.bc_id_mapping
 
+    def get_ckv_to_bc_id_mapping(self) -> dict:
+        if not self.bc_id_mapping:
+            self.get_checkov_mapping_metadata()
+        return self.bc_id_mapping
+
     def get_checkov_mapping_metadata(self) -> dict:
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")
+            self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
+
+    def get_platform_fixes(self, scan_results, root_folder=None):
+
+        for report in scan_results:
+            for file, failed_checks in groupby(report.failed_checks, key=lambda c: c.file_path):
+                failed_checks = list(failed_checks)
+                # local file path always starts with /
+                file_abs_path = os.path.abspath(os.path.join(root_folder, file[1:]))
+                with open(file_abs_path, 'r') as reader:
+                    file_contents = reader.read()
+
+                fixes = self._get_fixes_for_file(file, file_contents, failed_checks)
+                all_fixes = fixes['fixes']
+
+                # a mapping of (checkov_check_id, resource_id) to the failed check Record object for lookup later
+                # guaranteed to map to exactly one record
+                failed_check_by_check_resource = {k: list(v)[0] for k, v in groupby(failed_checks, key=lambda c: (c.check_id, c.resource))}
+
+                for fix in all_fixes:
+                    ckv_id = self.bc_id_mapping[fix['policyId']]
+                    failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
+                    failed_check.fix_definition = fix['fixedDefinition']
+
+        pass
 
     def onboarding(self):
         if not self.bc_api_key:
@@ -333,6 +369,54 @@ class BcPlatformIntegration(object):
             else:
                 print("email should match the following pattern: {}".format(EMAIL_PATTERN))
         return email
+
+    def _get_fixes_for_file(self, filename, file_contents, failed_checks):
+
+        errors = list(map(lambda c: {
+            'resourceId': c.resource,
+            'policyId': self.ckv_to_bc_id_mapping[c.check_id],
+            'startLine': c.file_line_range[0],
+            'endLine': c.file_line_range[1]
+        }, failed_checks))
+
+        req_obj = {
+            'filePath': filename,
+            'fileContent': file_contents,
+            'errors': errors
+        }
+
+        fixes = []
+
+        if 's3' in filename:
+            fixes = [
+                    {
+                        'resourceId': 'aws_s3_bucket.data',
+                        'policyId': 'BC_AWS_S3_14',
+                        'originalStartLine': 1,
+                        'originalEndLine': 13,
+                        'fixedDefinition': 'resource aws_s3_bucket data {hello}'
+                    },
+                    {
+                        'resourceId': 'aws_s3_bucket.data',
+                        'policyId': 'BC_AWS_S3_16',
+                        'originalStartLine': 1,
+                        'originalEndLine': 13,
+                        'fixedDefinition': 'resource aws_s3_bucket data {hello}'
+                    },
+                    {
+                        'resourceId': 'aws_s3_bucket.financials',
+                        'policyId': 'BC_AWS_S3_14',
+                        'originalStartLine': 25,
+                        'originalEndLine': 37,
+                        'fixedDefinition': 'resource aws_s3_bucket financials {hello}'
+                    }
+                ]
+
+        return {
+            'filePath': filename,
+            'fixes': fixes
+        }
+
 
     @staticmethod
     def loading_output(msg):

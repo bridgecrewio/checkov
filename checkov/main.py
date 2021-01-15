@@ -70,9 +70,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file, guidelines=guidelines)
             if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder)
-                bc_integration.persist_scan_results(scan_reports)
-                bc_integration.commit_repository(args.branch)
+                # bc_integration.persist_repository(root_folder)
+                # bc_integration.persist_scan_results(scan_reports)
+                # bc_integration.commit_repository(args.branch)
+                if not bc_integration.skip_fixes:
+                    bc_integration.get_platform_fixes(scan_reports, root_folder)
+
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
@@ -81,9 +84,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            bc_integration.persist_repository(root_folder)
-            bc_integration.persist_scan_results(scan_reports)
-            bc_integration.commit_repository(args.branch)
+            # bc_integration.persist_repository(root_folder)
+            # bc_integration.persist_scan_results(scan_reports)
+            # bc_integration.commit_repository(args.branch)
+            if not bc_integration.skip_fixes:
+                bc_integration.get_platform_fixes(scan_reports, root_folder)
         runner_registry.print_reports(scan_reports, args)
     else:
         print(f"{banner}")
@@ -131,6 +136,9 @@ def add_parser_args(parser):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
+    parser.add_argument('--skip-fixes',
+                        help='Do not download fixed resource templates from Bridgecrew. Only has effect when using the --bc-api-key flag',
+                        action='store_true')
     parser.add_argument('--download-external-modules',
                         help="download external terraform modules from public git repositories and terraform registry",
                         default=False)
