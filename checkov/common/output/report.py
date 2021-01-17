@@ -56,7 +56,7 @@ class Report:
                 "passed_checks": [check.__dict__ for check in self.passed_checks],
                 "failed_checks": [check.__dict__ for check in self.failed_checks],
                 "skipped_checks": [check.__dict__ for check in self.skipped_checks],
-                "parsing_errors": [check for check in self.parsing_errors]
+                "parsing_errors": self.parsing_errors
             },
             "summary": self.get_summary()
         }
