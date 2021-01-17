@@ -53,7 +53,7 @@ class Runner(BaseRunner):
                 resource_registry.load_external_checks(directory, runner_filter)
         if root_folder:
             root_folder = os.path.abspath(root_folder)
-
+            
             self.parser.parse_directory(directory=root_folder,
                                         out_definitions=self.tf_definitions,
                                         out_evaluations_context=self.evaluations_context,
@@ -68,10 +68,14 @@ class Runner(BaseRunner):
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             for file in files:
                 if file.endswith(".tf"):
-                    self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=parsing_errors)
+                    file_parsing_errors = {}
+                    self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+                    if file_parsing_errors:
+                        parsing_errors.update(file_parsing_errors)
+                        continue
                     self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
-        report.add_parsing_errors(parsing_errors.keys())
+        report.add_parsing_errors(parsing_errors)
 
         return report
 

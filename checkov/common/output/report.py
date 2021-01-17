@@ -21,13 +21,13 @@ class Report:
         self.skipped_checks = []
         self.parsing_errors = []
 
-    def add_parsing_errors(self, files):
-        for file in files:
-            self.add_parsing_error(file)
+    def add_parsing_errors(self, errors):
+        for file in errors:
+            self.add_parsing_error(file, errors[file])
 
-    def add_parsing_error(self, file):
-        if file:
-            self.parsing_errors.append(file)
+    def add_parsing_error(self, file, error):
+        if file and error:
+            self.parsing_errors.append({file: str(error)})
 
     def add_record(self, record):
         if record.check_result['result'] == CheckResult.PASSED:
@@ -69,7 +69,7 @@ class Report:
         return 0
 
     def is_empty(self):
-        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
+        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) + len(self.parsing_errors) == 0
 
     def print_console(self, is_quiet=False):
         summary = self.get_summary()
