@@ -1124,8 +1124,8 @@
           "environment": [
             {
               "variables": {
-                "access_key": "XXX",
-                "secret_key": "XXX"
+                "access_key": "AKIAIOSFODNN7EXAMPLE",
+                "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
               }
             }
           ],
@@ -3501,8 +3501,8 @@
               {
                 "variables": {
                   "constant_value": {
-                    "access_key": "XXX",
-                    "secret_key": "XXX"
+                    "access_key": "AKIAIOSFODNN7EXAMPLE",
+                    "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
                   }
                 }
               }
