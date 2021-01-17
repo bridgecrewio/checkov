@@ -218,6 +218,32 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
 
+    def test_parser_error_handled_for_directory_target(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        invalid_dir_path = os.path.join(current_dir, "resources/invalid_terraform_syntax")
+        file_names = ['bad_tf_1.tf', 'bad_tf_2.tf']
+        invalid_dir_abs_path = os.path.abspath(invalid_dir_path)
+
+        runner = Runner()
+        result = runner.run(root_folder=invalid_dir_path, external_checks_dir=None)
+
+        self.assertEqual(len(result.parsing_errors), 2)
+        for file in file_names:
+            self.assertIn(os.path.join(invalid_dir_abs_path, file), result.parsing_errors)
+
+    def test_parser_error_handled_for_file_target(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        invalid_dir_path = os.path.join(current_dir, "resources/invalid_terraform_syntax")
+        file_names = ['bad_tf_1.tf', 'bad_tf_2.tf']
+        invalid_dir_abs_path = os.path.abspath(invalid_dir_path)
+
+        runner = Runner()
+        result = runner.run(files=[os.path.join(invalid_dir_path, file) for file in file_names], root_folder=None, external_checks_dir=None)
+
+        self.assertEqual(len(result.parsing_errors), 2)
+        for file in file_names:
+            self.assertIn(os.path.join(invalid_dir_abs_path, file), result.parsing_errors)
+
     def test_typed_terraform_resource_checks_are_performed(self):
         test_self = self
         check_name = "TF_M_2"
