@@ -19,7 +19,7 @@ class Report:
         self.passed_checks = []
         self.failed_checks = []
         self.skipped_checks = []
-        self.parsing_errors = []
+        self.parsing_errors = {}
 
     def add_parsing_errors(self, errors):
         for file in errors:
@@ -27,7 +27,7 @@ class Report:
 
     def add_parsing_error(self, file, error):
         if file and error:
-            self.parsing_errors.append({file: str(error)})
+            self.parsing_errors[file] = str(error)
 
     def add_record(self, record):
         if record.check_result['result'] == CheckResult.PASSED:
@@ -89,6 +89,14 @@ class Report:
         if not is_quiet:
             for record in self.skipped_checks:
                 print(record)
+
+        if not is_quiet:
+            for file, error in self.parsing_errors.items():
+                Report._print_parsing_error_console(file, error)
+
+    @staticmethod
+    def _print_parsing_error_console(file, error):
+        print(colored(f'Error parsing file {file}: {error}', 'red'))
 
     def print_junit_xml(self):
         ts = self.get_test_suites()
