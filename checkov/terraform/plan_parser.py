@@ -28,7 +28,7 @@ def _is_list_of_dicts(l):
     return False
 
 
-def _hclify(obj):
+def _hclify(obj, parent_key=None):
     ret_dict = {}
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
@@ -37,7 +37,10 @@ def _hclify(obj):
         obj["end_line"] = obj.end_mark.line
     for key, value in obj.items():
         if _is_simple_type(value) or _is_list_of_simple_types(value):
-            ret_dict[key] = [value]
+            if parent_key == "tags":
+                ret_dict[key] = value
+            else:
+                ret_dict[key] = [value]
 
         if _is_list_of_dicts(value):
             child_list = []
@@ -45,8 +48,11 @@ def _hclify(obj):
                 child_list.append(_hclify(internal_val))
             ret_dict[key] = child_list
         if isinstance(value, dict):
-            child_dict = _hclify(value)
-            ret_dict[key] = [child_dict]
+            child_dict = _hclify(value, key)
+            if parent_key == "tags":
+                ret_dict[key] = child_dict
+            else:
+                ret_dict[key] = [child_dict]
     return ret_dict
 
 def _prepare_resource_block(resource):
