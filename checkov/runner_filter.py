@@ -9,7 +9,7 @@ class RunnerFilter(object):
     #       logically a "static" concept anyway, so this makes logical sense.
     __EXTERNAL_CHECK_IDS = set()
 
-    def __init__(self, framework='all', skip_framework=None, checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True, runners=None):
+    def __init__(self, framework='all', checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True, runners=None, skip_framework=None):
         if checks is None:
             checks = []
         if isinstance(checks, str):

@@ -47,7 +47,7 @@ for runner in checkov_runner_module_names:
             if result is not None:
                 checkov_frameworks_unmatched_deps.append(result)
 
-def run(banner=checkov_banner, runners=checkov_runners, argv=sys.argv[1:]):
+def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
