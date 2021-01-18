@@ -38,8 +38,9 @@ for runner in checkov_runner_module_names:
     try:
         globals()[f"{runner}_runner"]().system_deps
     except:
-        logging.info(f"{runner}_runner declares no system dependency checks required.")
-    
+        logging.debug(f"{runner}_runner declares no system dependency checks required.")
+        continue
+
     if globals()[f"{runner}_runner"]().system_deps:
             result = globals()[f"{runner}_runner"]().check_system_deps()
             if result is not None:
