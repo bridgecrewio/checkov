@@ -83,6 +83,8 @@ class RunnerRegistry(object):
     def filter_runner_framework(self):
         if not self.runner_filter:
             return
+        if self.runner_filter.framework is None:
+            return
         if self.runner_filter.framework == 'all':
             return
         filtered_runners = []
