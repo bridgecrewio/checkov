@@ -75,7 +75,7 @@ class Runner(BaseRunner):
                         continue
                     self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
-        report.add_parsing_errors(parsing_errors)
+        report.add_parsing_errors(parsing_errors.keys())
 
         return report
 
