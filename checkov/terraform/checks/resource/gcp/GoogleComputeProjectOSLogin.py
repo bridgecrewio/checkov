@@ -13,5 +13,8 @@ class GoogleComputeProjectOSLogin(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'metadata/[0]/enable-oslogin'
 
+    def get_expected_value(self):
+        return "TRUE"
+
 
 check = GoogleComputeProjectOSLogin()
