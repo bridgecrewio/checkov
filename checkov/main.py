@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+import logging
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -40,7 +41,7 @@ for runner in checkov_runner_module_names:
     try:
         globals()[f"{runner}_runner"]().system_deps
     except:
-        continue
+        logging.info(f"{runner}_runner declares no system dependency checks required.")
     
     if globals()[f"{runner}_runner"]().system_deps:
             result = globals()[f"{runner}_runner"]().check_system_deps()
@@ -52,7 +53,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     add_parser_args(parser)
     args = parser.parse_args(argv)
     if checkov_frameworks_unmatched_deps:
-        print(f"The following frameworks have been automatically disabled due to missing system dependancies: {','.join(checkov_frameworks_unmatched_deps)}")
+        print(f"The following frameworks have been automatically disabled due to missing system dependency: {','.join(checkov_frameworks_unmatched_deps)}")
         if args.skip_framework is None:
             args.skip_framework = ",".join(checkov_frameworks_unmatched_deps)
         else:
@@ -159,7 +160,7 @@ def add_parser_args(parser):
                         choices=checkov_runners + ["all"],
                         default='all')
     parser.add_argument('--skip-framework', help='filter scan to skip specific infrastructure code frameworks. \n'
-                                                 'will be included automatically for some frameworks if system dependancies are missing.',
+                                                 'will be included automatically for some frameworks if system dependencies are missing.',
                         choices=checkov_runners,
                         default=None)
     parser.add_argument('-c', '--check',
