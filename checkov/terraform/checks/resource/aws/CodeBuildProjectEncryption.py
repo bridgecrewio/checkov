@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class APIGatewayAuthorization(BaseResourceCheck):
+class CodeBuildProjectEncryption(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure that CodeBuild Project encryption is not disabled"
@@ -24,4 +24,4 @@ class APIGatewayAuthorization(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = APIGatewayAuthorization()
+check = CodeBuildProjectEncryption()

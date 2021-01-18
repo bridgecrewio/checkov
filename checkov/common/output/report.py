@@ -26,7 +26,7 @@ class Report:
             self.add_parsing_error(file)
 
     def add_parsing_error(self, file):
-        if file :
+        if file:
             self.parsing_errors.append(file)
 
     def add_record(self, record):

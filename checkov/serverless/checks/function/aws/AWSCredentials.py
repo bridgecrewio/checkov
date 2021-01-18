@@ -8,7 +8,7 @@ from checkov.serverless.parsers.parser import ENVIRONMENT_TOKEN
 class AWSCredentials(BaseFunctionCheck):
 
     def __init__(self):
-        name = "Ensure no hard coded AWS access key and and secret key exists in provider"
+        name = "Ensure no hard coded AWS access key and secret key exists in provider"
         id = "CKV_AWS_41"
         supported_entities = ['serverless_aws']
         categories = [CheckCategories.SECRETS]

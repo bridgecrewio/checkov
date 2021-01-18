@@ -7,7 +7,7 @@ from checkov.common.models.consts import access_key_pattern, secret_key_pattern
 class AWSCredentials(BaseProviderCheck):
 
     def __init__(self):
-        name = "Ensure no hard coded AWS access key and and secret key exists in provider"
+        name = "Ensure no hard coded AWS access key and secret key exists in provider"
         id = "CKV_AWS_41"
         supported_provider = ['aws']
         categories = [CheckCategories.SECRETS]
