@@ -28,7 +28,7 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
                 if isinstance(behavior, dict):
                     # behavior which is a string will return PASSED
                     if behavior["viewer_protocol_policy"][0] == "allow-all":
-                        self.evaluated_keys = f'ordered_cache_behavior/[{conf["ordered_cache_behaviour"].index(behavior)}]/viewer_protocol_policy'
+                        self.evaluated_keys = f'ordered_cache_behavior/[{conf["ordered_cache_behavior"].index(behavior)}]/viewer_protocol_policy'
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
