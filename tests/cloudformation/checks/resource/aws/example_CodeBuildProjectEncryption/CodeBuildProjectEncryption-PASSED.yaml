@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  MyCodeBuildProject0:
+    Type: AWS::CodeBuild::Project
+    Properties: 
+      Artifacts:
+        EncryptionDisabled: False
+        Location: MyS3BucketName
+        Name: /
+        Type: S3
+      Environment: 
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        Type: LINUX_CONTAINER
+      ServiceRole: arn:aws:iam::123456789012:role/CodeBuild-service-role
+      Source: 
+        Type: NO_SOURCE
+  MyCodeBuildProject1:
+    Type: AWS::CodeBuild::Project
+    Properties: 
+      Artifacts:
+        Location: MyS3BucketName
+        Name: /
+        Type: S3
+      Environment: 
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        Type: LINUX_CONTAINER
+      ServiceRole: arn:aws:iam::123456789012:role/CodeBuild-service-role
+      Source: 
+        Type: NO_SOURCE
+  MyCodeBuildProject2:
+    Type: AWS::CodeBuild::Project
+    Properties: 
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment: 
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        Type: LINUX_CONTAINER
+      ServiceRole: arn:aws:iam::123456789012:role/CodeBuild-service-role
+      Source: 
+        Type: NO_SOURCE
