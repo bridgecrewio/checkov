@@ -142,7 +142,7 @@ Create a directory **checkov/terraform/checks/provider/linode** and add **creden
 import re
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
-from checkov.common.models.consts import access_key_pattern, secret_key_pattern
+from checkov.common.models.consts import linode_token_pattern
 
 
 class LinodeCredentials(BaseProviderCheck):
@@ -155,7 +155,7 @@ class LinodeCredentials(BaseProviderCheck):
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
     def scan_provider_conf(self, conf):
-        if self.secret_found(conf, "token", access_key_pattern):
+        if self.secret_found(conf, "token", linode_token_pattern):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
@@ -172,6 +172,18 @@ check = LinodeCredentials()
 ```
 
 And also **checkov/terraform/checks/provider/linode/__init__.py**
+
+Update the security constants **checkov/common/models/consts.py** with the new pattern.
+
+```python
+SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
+ANY_VALUE = "CKV_ANY"
+DOCKER_IMAGE_REGEX = r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)'
+access_key_pattern = "(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])" # nosec
+secret_key_pattern = "(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])" # nosec
+linode_token_pattern ="(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])" # nosec
+
+```
 
 ```python
 from os.path import dirname, basename, isfile, join
