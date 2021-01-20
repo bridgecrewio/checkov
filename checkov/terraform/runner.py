@@ -142,7 +142,7 @@ class Runner(BaseRunner):
                                 code_block=entity_code_lines, file_path=scanned_file,
                                 file_line_range=entity_lines_range,
                                 resource=entity_id, evaluations=entity_evaluations,
-                                check_class=check.__class__.__module__)
+                                check_class=check.__class__.__module__, file_abs_path=full_file_path)
                 report.add_record(record=record)
 
     @staticmethod

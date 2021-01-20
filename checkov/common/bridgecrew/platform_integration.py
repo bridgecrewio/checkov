@@ -227,7 +227,7 @@ class BcPlatformIntegration(object):
     def get_platform_fixes(self, scan_results, root_folder=None):
 
         for report in scan_results:
-            for file, failed_checks in groupby(report.failed_checks, key=lambda c: c.file_path):
+            for file, failed_checks in groupby(report.failed_checks, key=lambda c: c.repo_file_path):
                 failed_checks = list(failed_checks)
                 # local file path always starts with /
                 file_abs_path = os.path.abspath(os.path.join(root_folder, file[1:]))

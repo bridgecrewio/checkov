@@ -50,6 +50,7 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for cf_file in definitions.keys():
+            file_abs_path = os.path.abspath(cf_file)
             if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
                 cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
                 logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
@@ -72,6 +73,6 @@ class Runner(BaseRunner):
                                                 code_block=entity_code_lines, file_path=cf_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__)
+                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                                 report.add_record(record=record)
         return report

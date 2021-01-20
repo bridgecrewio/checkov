@@ -55,6 +55,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
         bc_integration.set_integration_params(skip_fixes=args.skip_fixes, skip_suppressions=args.skip_suppressions)
 
+    working_dir = os.getcwd()
+
     guidelines = {}
     if not args.no_guide:
         guidelines = bc_integration.get_guidelines()
