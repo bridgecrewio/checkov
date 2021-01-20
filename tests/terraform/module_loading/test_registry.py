@@ -24,10 +24,10 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_terraform_registry_check_cache(self):
         registry = ModuleLoaderRegistry(download_external_modules=True)
-        source1 = "https://github.com/bridgecrewio/checkov_not_working1.git"
+        source1 = "https://fakecreds:fakecreds@github.com/bridgecrewio/example_nonexistant_repo.git"
         registry.load(current_dir=self.current_dir, source=source1, source_version="latest")
         self.assertTrue(source1 in registry.failed_urls_cache)
-        source2 = "https://github.com/bridgecrewio/checkov_not_working2.git"
+        source2 = "https://ifakecreds:fakecreds@github.com/bridgecrewio/example_nonexistant_repo2.git"
         registry.load(current_dir=self.current_dir, source=source2, source_version="latest")
         self.assertTrue(source1 in registry.failed_urls_cache and source2 in registry.failed_urls_cache)
 
