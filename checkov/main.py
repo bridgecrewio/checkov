@@ -53,6 +53,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
         bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
+        bc_integration.set_integration_params(skip_fixes=args.skip_fixes, skip_suppressions=args.skip_suppressions)
 
     guidelines = {}
     if not args.no_guide:
@@ -138,6 +139,10 @@ def add_parser_args(parser):
                         default='master')
     parser.add_argument('--skip-fixes',
                         help='Do not download fixed resource templates from Bridgecrew. Only has effect when using the --bc-api-key flag',
+                        action='store_true')
+    parser.add_argument('--skip-suppressions',
+                        help='Do not download preconfigured suppressions from the Bridgecrew platform. Code comment suppressions will still be honored. '
+                             'Only has effect when using the --bc-api-key flag',
                         action='store_true')
     parser.add_argument('--download-external-modules',
                         help="download external terraform modules from public git repositories and terraform registry",

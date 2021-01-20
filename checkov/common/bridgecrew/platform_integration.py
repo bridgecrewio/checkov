@@ -55,6 +55,7 @@ class BcPlatformIntegration(object):
         self.repo_path = None
         self.repo_id = None
         self.skip_fixes = False
+        self.skip_suppressions = False
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
@@ -67,7 +68,7 @@ class BcPlatformIntegration(object):
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
         """
         Setup credentials against Bridgecrew's platform.
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
@@ -76,7 +77,6 @@ class BcPlatformIntegration(object):
         """
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
-        self.skip_fixes = skip_fixes
         # try:
         #     repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
         #     self.bucket, self.repo_path = repo_full_path.split("/", 1)
@@ -98,6 +98,10 @@ class BcPlatformIntegration(object):
         # except JSONDecodeError as e:
         #     logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
         #     raise e
+
+    def set_integration_params(self, skip_fixes=False, skip_suppressions=False):
+        self.skip_fixes = skip_fixes
+        self.skip_suppressions = skip_suppressions
 
     def get_s3_role(self, bc_api_key, repo_id):
         request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
