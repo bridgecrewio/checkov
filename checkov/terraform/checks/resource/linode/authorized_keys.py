@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class authorized_keys(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure ssh key set in authorized_keys"
+        name = "Ensure SSH key set in authorized_keys"
         id = "CKV_LIN_2"
         supported_resources = ['linode_instance']
         categories = [CheckCategories.GENERAL_SECURITY]

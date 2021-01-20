@@ -1,7 +1,7 @@
 import re
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
-from checkov.common.models.consts import access_key_pattern, secret_key_pattern
+from checkov.common.models.consts import linode_token_pattern
 
 
 class LinodeCredentials(BaseProviderCheck):
@@ -14,7 +14,7 @@ class LinodeCredentials(BaseProviderCheck):
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
     def scan_provider_conf(self, conf):
-        if self.secret_found(conf, "token", access_key_pattern):
+        if self.secret_found(conf, "token", linode_token_pattern):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
