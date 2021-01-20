@@ -1,5 +1,5 @@
 module "security_group1" {
-  source  = "https://github.com/bridgecrewio/checkov_not_working.git"
+  source  = "https://fakecreds:fakecreds@github.com/bridgecrewio/nonexistant_sample_repo.git"
   version = "latest"
 
   name        = "example"
@@ -13,7 +13,7 @@ module "security_group1" {
 
 
 module "security_group2" {
-  source  = "https://github.com/bridgecrewio/checkov_not_working.git"
+  source  = "https://fakecreds:fakecreds@github.com/bridgecrewio/nonexistantsamplerepo2.git"
   version = "latest"
 
   name        = "example"
