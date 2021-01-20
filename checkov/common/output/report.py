@@ -21,8 +21,8 @@ class Report:
         self.skipped_checks = []
         self.parsing_errors = []
 
-    def add_parsing_errors(self, files):
-        for file in files:
+    def add_parsing_errors(self, errors):
+        for file in errors:
             self.add_parsing_error(file)
 
     def add_parsing_error(self, file):
@@ -56,7 +56,7 @@ class Report:
                 "passed_checks": [check.__dict__ for check in self.passed_checks],
                 "failed_checks": [check.__dict__ for check in self.failed_checks],
                 "skipped_checks": [check.__dict__ for check in self.skipped_checks],
-                "parsing_errors": [check for check in self.parsing_errors]
+                "parsing_errors": list(self.parsing_errors)
             },
             "summary": self.get_summary()
         }
@@ -69,7 +69,7 @@ class Report:
         return 0
 
     def is_empty(self):
-        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) == 0
+        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) + len(self.parsing_errors) == 0
 
     def print_console(self, is_quiet=False):
         summary = self.get_summary()
@@ -89,6 +89,14 @@ class Report:
         if not is_quiet:
             for record in self.skipped_checks:
                 print(record)
+
+        if not is_quiet:
+            for file in self.parsing_errors:
+                Report._print_parsing_error_console(file)
+
+    @staticmethod
+    def _print_parsing_error_console(file):
+        print(colored(f'Error parsing file {file}', 'red'))
 
     def print_junit_xml(self):
         ts = self.get_test_suites()

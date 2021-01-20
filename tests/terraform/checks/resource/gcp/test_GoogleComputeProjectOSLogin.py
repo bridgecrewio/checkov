@@ -25,7 +25,7 @@ class TestGoogleComputeProjectOSLogin(unittest.TestCase):
                     resource "google_compute_project_metadata" "default" {
                       metadata = {
                         foo  = "bar"
-                        enable-oslogin = true
+                        enable-oslogin = "TRUE"
                       }
                     }
                         """)

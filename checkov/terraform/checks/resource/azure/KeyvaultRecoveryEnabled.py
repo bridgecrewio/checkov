@@ -12,7 +12,7 @@ class KeyVaultRecoveryEnabled(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'purge_protection_enabled' in conf and conf['purge_protection_enabled'][0] and \
-                'soft_delete_enabled' in conf and conf['soft_delete_enabled'][0]:
+                ('soft_delete_enabled' not in conf or conf['soft_delete_enabled'][0]):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
