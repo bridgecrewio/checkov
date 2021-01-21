@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from abc import abstractmethod
 
 from checkov.common.output.report import Report
