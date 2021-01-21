@@ -15,6 +15,8 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
         self.evaluated_keys = ['user', 'users']
         if 'user' in conf.keys():
             return CheckResult.FAILED
+        if 'users' in conf.keys() and conf['users'][0] is None: #"users": null case 
+            return CheckResult.PASSED
         if 'users' in conf.keys() and len(conf['users'][0]) > 0:
             return CheckResult.FAILED
         return CheckResult.PASSED

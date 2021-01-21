@@ -47,6 +47,18 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for arm_file in definitions.keys():
+
+            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
+            # or there will be no leading slash; root_folder will always be none.
+            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
+            # The goal here is simply to get a valid path to the file (which arm_file does not always give).
+            if arm_file[0] == '/':
+                path_to_convert = (root_folder + arm_file) if root_folder else arm_file
+            else:
+                path_to_convert = (os.path.join(root_folder, arm_file)) if root_folder else arm_file
+
+            file_abs_path = os.path.abspath(path_to_convert)
+
             if isinstance(definitions[arm_file], dict_node) and 'resources' in definitions[arm_file].keys():
                 arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
                 logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
@@ -87,6 +99,6 @@ class Runner(BaseRunner):
                                             code_block=entity_code_lines, file_path=arm_file,
                                             file_line_range=entity_lines_range,
                                             resource=resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                             report.add_record(record=record)
         return report

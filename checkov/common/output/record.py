@@ -22,7 +22,8 @@ class Record:
     fix_definition = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path=None):
+
+                 evaluations, check_class, file_abs_path):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'

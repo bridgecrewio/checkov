@@ -58,11 +58,17 @@ Scheduled scan result in Jenkins
 
 ## Getting started
 
+### Requrirements
+ * Python >= 3.7 (Data classes are available for Python 3.7+)
+ * Terraform >= 0.12
+
 ### Installation
 
+
 ```sh
-pip install checkov
+pip3 install checkov
 ```
+
 Installation on Alpine:
 ```sh
 pip3 install --upgrade pip && pip3 install --upgrade setuptools
@@ -81,7 +87,14 @@ or
 brew upgrade checkov
 ```
 
-### Configure an input folder
+### Upgrade
+
+if you installed checkov with pip3
+```sh
+pip3 install -U checkov
+```
+
+### Configure an input folder or file
 
 ```sh
 checkov -d /user/path/to/iac/code
@@ -92,12 +105,48 @@ Or a specific file
 ```sh
 checkov -f /user/tf/example.tf
 ```
-
-or
-
+Or
 ```sh
 checkov -f /user/cloudformation/example.yml
 ```
+
+Or a terraform plan file in json format
+```sh
+terraform init
+terraform plan -out tf.plan
+terraform show -json tf.plan  > tf.json 
+checkov -f tf.json
+```
+Note: `terraform show` output  file `tf.json` will be single line. 
+For that reason all findings will be reported line number 0 by checkov
+```sh
+check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.customer
+	File: /tf/tf.json:0-0
+	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+  ```
+
+If you have installed `jq` you can convert json file into multiple lines with the following command:
+```sh
+terraform show -json tf.plan | jq '.' > tf.json 
+```
+Scan result would be much user friendly.
+
+```sh
+checkov -f tf.json
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.customer
+	File: /tf/tf1.json:224-268
+	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+
+		225 |               "values": {
+		226 |                 "acceleration_status": "",
+		227 |                 "acl": "private",
+		228 |                 "arn": "arn:aws:s3:::mybucket",
+
+```
+
+
 
 ### Scan result sample (CLI)
 
@@ -115,10 +164,12 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ### Using Docker
 
+
 ```sh
 docker pull bridgecrew/checkov
 docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
 ```
+Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, You can use docker version 
 
 ### Running or skipping checks 
 
