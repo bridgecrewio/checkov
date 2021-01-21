@@ -404,7 +404,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "resources/nested_dir")
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path)
@@ -415,6 +415,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
@@ -425,7 +426,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "resources/nested_dir")
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
 
         dir_rel_path = os.path.relpath(scan_dir_path)
 
@@ -437,6 +438,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
@@ -458,6 +460,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
@@ -479,6 +482,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')

@@ -81,7 +81,18 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for sls_file, sls_file_data in definitions.items():
-            file_abs_path = os.path.abspath(sls_file)
+
+            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
+            # or there will be no leading slash; root_folder will always be none.
+            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
+            # The goal here is simply to get a valid path to the file (which sls_file does not always give).
+            if sls_file[0] == '/':
+                path_to_convert = (root_folder + sls_file) if root_folder else sls_file
+            else:
+                path_to_convert = (os.path.join(root_folder, sls_file)) if root_folder else sls_file
+
+            file_abs_path = os.path.abspath(path_to_convert)
+
             if not isinstance(sls_file_data, dict_node):
                 continue
 
