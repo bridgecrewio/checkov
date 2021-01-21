@@ -97,7 +97,7 @@ pip3 install -U checkov
 ### Configure an input folder or file
 
 ```sh
-checkov --file /user/path/to/iac/code
+checkov --directory /user/path/to/iac/code
 ```
 
 Or a specific file or files
@@ -167,9 +167,11 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ```sh
 docker pull bridgecrew/checkov
-docker run --volume /user/tf:/tf bridgecrew/checkov --directory /tf
+docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
+
+Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
 
 ### Running or skipping checks 
 
@@ -199,7 +201,7 @@ checkov --directory . --skip-check CKV_AWS*
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
 kube-system namespace:
 ```sh
-checkov -d . --skip-check kube-system
+checkov --directory . --skip-check kube-system
 ```
 
 ### Suppressing/Ignoring a check
