@@ -12,3 +12,4 @@ tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
 .*Scans.md
+docs/5.Contribution/New-Provider.md
