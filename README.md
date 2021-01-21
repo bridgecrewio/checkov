@@ -107,7 +107,7 @@ checkov --file /user/tf/example.tf
 ```
 Or
 ```sh
-checkov --file /user/cloudformation/example1.yml --file /user/cloudformation/example2.yml
+checkov -f /user/cloudformation/example1.yml -f /user/cloudformation/example2.yml
 ```
 
 Or a terraform plan file in json format
@@ -115,7 +115,7 @@ Or a terraform plan file in json format
 terraform init
 terraform plan -out tf.plan
 terraform show -json tf.plan  > tf.json 
-checkov --file tf.json
+checkov -f tf.json
 ```
 Note: `terraform show` output  file `tf.json` will be single line. 
 For that reason all findings will be reported line number 0 by checkov
@@ -190,18 +190,18 @@ checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 
 Run all checks except 1 specified:
 ```sh
-checkov --directory . --skip-check CKV_AWS_52
+checkov -d . --skip-check CKV_AWS_52
 ```
 
 Run all checks except checks with specified patterns:
 ```sh
-checkov --directory . --skip-check CKV_AWS*
+checkov - . --skip-check CKV_AWS*
 ```
 
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
 kube-system namespace:
 ```sh
-checkov --directory . --skip-check kube-system
+checkov -d . --skip-check kube-system
 ```
 
 ### Suppressing/Ignoring a check
