@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 class AuroraEncryption(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure all data stored in Aurrora is securely encrypted at rest"
+        name = "Ensure all data stored in Aurora is securely encrypted at rest"
         id = "CKV_AWS_96"
         supported_resources = ['aws_rds_cluster']
         categories = [CheckCategories.ENCRYPTION]
