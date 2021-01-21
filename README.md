@@ -169,7 +169,7 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 docker pull bridgecrew/checkov
 docker run --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
-Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, You can use docker version 
+Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
 
 ### Running or skipping checks 
 
