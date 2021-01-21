@@ -97,17 +97,17 @@ pip3 install -U checkov
 ### Configure an input folder or file
 
 ```sh
-checkov -d /user/path/to/iac/code
+checkov --file /user/path/to/iac/code
 ```
 
-Or a specific file
+Or a specific file or files
 
 ```sh
-checkov -f /user/tf/example.tf
+checkov --file /user/tf/example.tf
 ```
 Or
 ```sh
-checkov -f /user/cloudformation/example.yml
+checkov --file /user/cloudformation/example1.yml --file /user/cloudformation/example2.yml
 ```
 
 Or a terraform plan file in json format
@@ -115,7 +115,7 @@ Or a terraform plan file in json format
 terraform init
 terraform plan -out tf.plan
 terraform show -json tf.plan  > tf.json 
-checkov -f tf.json
+checkov --file tf.json
 ```
 Note: `terraform show` output  file `tf.json` will be single line. 
 For that reason all findings will be reported line number 0 by checkov
@@ -167,7 +167,7 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ```sh
 docker pull bridgecrew/checkov
-docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
+docker run --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, You can use docker version 
 
@@ -178,22 +178,22 @@ those listed (deny list).
 
 List available checks:
 ```sh
-checkov -l 
+checkov --list 
 ```
 
 Allow only 2 checks to run: 
 ```sh
-checkov -d . --check CKV_AWS_20,CKV_AWS_57
+checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 ```
 
 Run all checks except 1 specified:
 ```sh
-checkov -d . --skip-check CKV_AWS_52
+checkov --directory . --skip-check CKV_AWS_52
 ```
 
 Run all checks except checks with specified patterns:
 ```sh
-checkov -d . --skip-check CKV_AWS*
+checkov --directory . --skip-check CKV_AWS*
 ```
 
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
