@@ -113,6 +113,9 @@ def add_parser_args(parser):
     parser.add_argument('--quiet', action='store_true',
                         default=False,
                         help='in case of CLI output, display only failed checks')
+    parser.add_argument('--compact', action='store_true',
+                        default=False,
+                        help='in case of CLI output, do not display header and code blocks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
                         choices=['cloudformation', 'terraform', 'terraform_plan', 'kubernetes', 'serverless', 'arm',
                                  'all'],
