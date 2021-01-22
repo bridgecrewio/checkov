@@ -23,6 +23,9 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from ..util.consts import DEV_API_GET_HEADERS
+from ..util.dict_utils import merge_dicts
+from ..util.http_utils import extract_error_message
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -56,6 +59,7 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.skip_fixes = False
         self.skip_suppressions = False
+        self.suppressions = []
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
@@ -64,11 +68,15 @@ class BcPlatformIntegration(object):
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
+        self.suppressions_url = f"{self.bc_api_url}/suppressions"
         self.guidelines = None
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None
+        self.origin = None
+        self.origin_version = None
+        self.platform_integration_configured = False
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, origin=None, origin_version=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
@@ -77,31 +85,49 @@ class BcPlatformIntegration(object):
         """
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
-        # try:
-        #     repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
-        #     self.bucket, self.repo_path = repo_full_path.split("/", 1)
-        #     self.timestamp = self.repo_path.split("/")[-1]
-        #     self.credentials = response["creds"]
-        #     self.s3_client = boto3.client("s3",
-        #                                   aws_access_key_id=self.credentials["AccessKeyId"],
-        #                                   aws_secret_access_key=self.credentials["SecretAccessKey"],
-        #                                   aws_session_token=self.credentials["SessionToken"],
-        #                                   region_name=DEFAULT_REGION
-        #                                   )
-        #     sleep(10)  # Wait for the policy to update
-        # except HTTPError as e:
-        #     logging.error(f"Failed to get customer assumed role\n{e}")
-        #     raise e
-        # except ClientError as e:
-        #     logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
-        #     raise e
-        # except JSONDecodeError as e:
-        #     logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-        #     raise e
-
-    def set_integration_params(self, skip_fixes=False, skip_suppressions=False):
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
+        self.origin = origin
+        self.origin_version = origin_version
+
+        if self.origin != 'vscode':
+            try:
+                repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
+                self.bucket, self.repo_path = repo_full_path.split("/", 1)
+                self.timestamp = self.repo_path.split("/")[-1]
+                self.credentials = response["creds"]
+                self.s3_client = boto3.client("s3",
+                                              aws_access_key_id=self.credentials["AccessKeyId"],
+                                              aws_secret_access_key=self.credentials["SecretAccessKey"],
+                                              aws_session_token=self.credentials["SessionToken"],
+                                              region_name=DEFAULT_REGION
+                                              )
+                sleep(10)  # Wait for the policy to update
+                self.platform_integration_configured = True
+            except HTTPError as e:
+                logging.error(f"Failed to get customer assumed role\n{e}")
+                raise e
+            except ClientError as e:
+                logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
+                raise e
+            except JSONDecodeError as e:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+                raise e
+
+        self.get_id_mapping()
+
+        suppressions = None
+        # Fetch the suppressions to verify the API token if we didn't already set up the integration above.
+        if not self.platform_integration_configured:
+            suppressions = self._get_suppressions_from_platform()
+
+        # But don't save them if the skip flag was used
+        if not self.skip_suppressions:
+            self.suppressions = suppressions or self._get_suppressions_from_platform()
+            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+
+        self.platform_integration_configured = True
+
 
     def get_s3_role(self, bc_api_key, repo_id):
         request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
@@ -208,9 +234,9 @@ class BcPlatformIntegration(object):
         return self.bc_id_mapping
 
     def get_ckv_to_bc_id_mapping(self) -> dict:
-        if not self.bc_id_mapping:
+        if not self.ckv_to_bc_id_mapping:
             self.get_checkov_mapping_metadata()
-        return self.bc_id_mapping
+        return self.ckv_to_bc_id_mapping
 
     def get_checkov_mapping_metadata(self) -> dict:
         try:
@@ -421,6 +447,45 @@ class BcPlatformIntegration(object):
             'fixes': fixes
         }
 
+    def _get_suppressions_from_platform(self):
+        headers = merge_dicts(DEV_API_GET_HEADERS, self._get_auth_header())
+        response = requests.request('GET', self.suppressions_url, headers=headers)
+
+        if response.status_code != 200:
+            error_message = extract_error_message(response)
+            raise Exception(f'Get suppressions request failed with response code {response.status_code}: {error_message}')
+
+        # filter out custom policies and non-checkov policies
+        suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
+
+        for suppression in suppressions:
+            suppression['checkovPolicyId'] = self.bc_id_mapping[suppression['policyId']]
+
+        return suppressions
+
+    def _suppression_valid(self, suppression):
+        """
+        Returns whether this suppression is valid. A suppression is NOT valid if:
+        - its policy ID is not a Checkov ID, or
+        - the suppression type is 'Accounts' and this repo is not included in the account list
+        :param suppression:
+        :return:
+        """
+
+        policyId = suppression['policyId']
+        if policyId not in self.bc_id_mapping:
+            return False
+
+        if suppression['suppressionType'] == 'Accounts':
+            if self.repo_id not in suppression['accountIds']:
+                return False
+
+        return True
+
+    def _get_auth_header(self):
+        return {
+            'Authorization': self.bc_api_key
+        }
 
     @staticmethod
     def loading_output(msg):
