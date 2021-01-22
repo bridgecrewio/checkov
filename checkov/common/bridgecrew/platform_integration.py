@@ -74,6 +74,7 @@ class BcPlatformIntegration(object):
         self.ckv_to_bc_id_mapping = None
         self.origin = None
         self.origin_version = None
+        self.use_s3_integration = False
         self.platform_integration_configured = False
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, origin=None, origin_version=None):
@@ -104,6 +105,7 @@ class BcPlatformIntegration(object):
                                               )
                 sleep(10)  # Wait for the policy to update
                 self.platform_integration_configured = True
+                self.use_s3_integration = True
             except HTTPError as e:
                 logging.error(f"Failed to get customer assumed role\n{e}")
                 raise e
@@ -128,7 +130,6 @@ class BcPlatformIntegration(object):
 
         self.platform_integration_configured = True
 
-
     def get_s3_role(self, bc_api_key, repo_id):
         request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
@@ -147,17 +148,20 @@ class BcPlatformIntegration(object):
 
     def is_integration_configured(self):
         """
-        Checks if Bridgecrew integration is fully configured.
+        Checks if Bridgecrew integration is fully configured based in input params.
         :return: True if the integration is configured, False otherwise
         """
-        return True
-        # return all([self.repo_path, self.credentials, self.s3_client])
+        return self.platform_integration_configured
 
     def persist_repository(self, root_dir):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform
         :param root_dir: Absolute path of the directory containing the repository root level
         """
+
+        if not self.use_s3_integration:
+            return
+
         for root_path, d_names, f_names in os.walk(root_dir):
             for file_path in f_names:
                 _, file_extension = os.path.splitext(file_path)
@@ -171,6 +175,9 @@ class BcPlatformIntegration(object):
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
+        if not self.use_s3_integration:
+            return
+
         self.scan_reports = scan_reports
         reduced_scan_reports = reduce_scan_reports(scan_reports)
         checks_metadata_paths = enrich_and_persist_checks_metadata(scan_reports, self.s3_client, self.bucket,
@@ -183,6 +190,9 @@ class BcPlatformIntegration(object):
         :param branch: branch to be persisted
         Finalize the repository's scanning in bridgecrew's platform.
         """
+        if not self.use_s3_integration:
+            return
+
         request = None
         try:
             request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
@@ -335,6 +345,41 @@ class BcPlatformIntegration(object):
         response = self._create_bridgecrew_account(email, org)
         bc_api_token = response.json()["checkovSignup"]
         return bc_api_token, response
+
+    def apply_suppressions(self, scan_report):
+        new_failed_checks = []
+        new_skipped_checks = []
+        for failed_check in scan_report.failed_checks:
+            if self.check_suppressions(failed_check, self.suppressions):
+                new_skipped_checks.append(failed_check)
+            else:
+                new_failed_checks.append(failed_check)
+
+        pass
+
+    def check_suppressions(self, record, suppressions):
+        for suppression in suppressions:
+            if self.check_suppression(record, suppression):
+                return True
+        return False
+
+    def check_suppression(self, record, suppression):
+        if record.check_id != suppression['checkovPolicyId']:
+            return False
+
+        if suppression['suppressionType'] in ['Policy', 'Accounts']:
+            # We already validated the policy ID above, and when we got suppressions, we filted out account suppressions that did not include this repo
+            return True
+        elif suppression['suppressionType'] == ' Resources':
+            for resource in suppression['resources']:
+                if resource['accountId'] == self.repo_id and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
+                    return True
+            return False
+        elif suppression['suppressionType'] == ' Tags':
+            pass  ##TODO need to get resource tags in result
+        return False
+
+
 
     def _upload_run(self, args, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
