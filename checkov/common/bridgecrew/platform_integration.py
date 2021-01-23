@@ -347,15 +347,24 @@ class BcPlatformIntegration(object):
         return bc_api_token, response
 
     def apply_suppressions(self, scan_report):
+        if self.skip_suppressions:
+            return
+
+        self.suppressions = sorted(self.suppressions, key=lambda s: s['checkovPolicyId'])
+
+        suppressions_by_policy = {policy_id: list(suppressions) for policy_id, suppressions in groupby(self.suppressions, key=lambda s: s['checkovPolicyId'])}
+
         new_failed_checks = []
         new_skipped_checks = []
         for failed_check in scan_report.failed_checks:
-            if self.check_suppressions(failed_check, self.suppressions):
+            relevant_suppressions = suppressions_by_policy.get(failed_check.check_id)
+            if relevant_suppressions and self.check_suppressions(failed_check, relevant_suppressions):
                 new_skipped_checks.append(failed_check)
             else:
                 new_failed_checks.append(failed_check)
 
-        pass
+        scan_report.failed_checks = new_failed_checks
+        scan_report.skipped_checks += new_skipped_checks
 
     def check_suppressions(self, record, suppressions):
         for suppression in suppressions:
@@ -367,16 +376,32 @@ class BcPlatformIntegration(object):
         if record.check_id != suppression['checkovPolicyId']:
             return False
 
-        if suppression['suppressionType'] in ['Policy', 'Accounts']:
-            # We already validated the policy ID above, and when we got suppressions, we filted out account suppressions that did not include this repo
+        type = suppression['suppressionType']
+
+        if type == 'Policy':
+            # We already validated the policy ID above
             return True
-        elif suppression['suppressionType'] == ' Resources':
+        elif type == 'Accounts':
+            # This should be true, because we validated when we downloaded the policies.
+            # But checking here adds some resiliency against bugs if that changes.
+            return self.repo_id in suppression['accountIds']
+        elif type == 'Resources':
             for resource in suppression['resources']:
                 if resource['accountId'] == self.repo_id and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
             return False
-        elif suppression['suppressionType'] == ' Tags':
-            pass  ##TODO need to get resource tags in result
+        elif type == 'Tags':
+            entity_tags = record.entity_tags
+            if not entity_tags:
+                return False
+            suppression_tags = suppression['tags'] # a list of objects of the form {key: str, value: str}
+
+            for tag in suppression_tags:
+                key = tag['key']
+                value = tag['value']
+                if entity_tags.get(key) == value:
+                    return True
+
         return False
 
 
@@ -502,6 +527,9 @@ class BcPlatformIntegration(object):
 
         # filter out custom policies and non-checkov policies
         suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
+
+        # TODO testing
+        suppressions = [s for s in suppressions if s['policyId'] in ('BC_AWS_S3_13', 'BC_AWS_GENERAL_31', 'BC_AWS_S3_16')]
 
         for suppression in suppressions:
             suppression['checkovPolicyId'] = self.bc_id_mapping[suppression['policyId']]

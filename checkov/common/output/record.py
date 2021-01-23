@@ -20,10 +20,10 @@ class Record:
     resource = ""
     guideline = None
     fix_definition = None
+    entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-
-                 evaluations, check_class, file_abs_path):
+                 evaluations, check_class, file_abs_path, entity_tags=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -40,6 +40,8 @@ class Record:
         self.resource = resource
         self.evaluations = evaluations
         self.check_class = check_class
+        self.fix_definition = None
+        self.entity_tags = entity_tags
 
     def set_guideline(self, guideline):
         self.guideline = guideline

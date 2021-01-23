@@ -81,13 +81,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file, guidelines=guidelines)
+                                               files=file, guidelines=guidelines, bc_integration=bc_integration)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.commit_repository(args.branch)
-                if not bc_integration.skip_suppressions:
-                    bc_integration.apply_suppressions(scan_reports)
                 if not bc_integration.skip_fixes:
                     bc_integration.get_platform_fixes(scan_reports, root_folder)
 

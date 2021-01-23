@@ -1,4 +1,5 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.terraform.tag_providers import get_resource_tags
 
 
 class Registry(BaseCheckRegistry):
