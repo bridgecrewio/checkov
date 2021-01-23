@@ -524,6 +524,7 @@ class BcPlatformIntegration(object):
         # filter out custom policies and non-checkov policies
         suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
 
+        # TODO remove me
         suppressions = [s for s in suppressions if s['policyId'] in ('BC_AWS_S3_13', 'BC_AWS_S3_16', 'BC_AWS_IAM_16')]
 
         for suppression in suppressions:
