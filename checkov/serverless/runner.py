@@ -112,14 +112,15 @@ class Runner(BaseRunner):
                         # TODO - Variable Eval Message!
                         variable_evaluations = {}
 
-                        results = cfn_registry.scan(sls_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
+                        entity = {resource_name: resource}
+                        results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                        tags = Runner.get_resource_tags(entity, cfn_registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
                             report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
@@ -141,15 +142,15 @@ class Runner(BaseRunner):
                             # function data from the provider block since logically that's what serverless
                             # does. This allows checks to see what the complete data would be.
                             sls_context_parser.enrich_function_with_provider(item_name)
-                        results = registry.scan(sls_file,
-                                                EntityDetails(sls_context_parser.provider_type, item_content),
-                                                skipped_checks, runner_filter)
+                        entity = EntityDetails(sls_context_parser.provider_type, item_content)
+                        results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                        tags = Runner.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
                             report.add_record(record=record)
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
@@ -162,15 +163,15 @@ class Runner(BaseRunner):
 
                 skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                 variable_evaluations = {}
-                results = registry.scan(sls_file,
-                                        EntityDetails(sls_context_parser.provider_type, item_content),
-                                        skipped_checks, runner_filter)
+                entity = EntityDetails(sls_context_parser.provider_type, item_content)
+                results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                tags = Runner.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
                     report.add_record(record=record)
 
             # "Complete" checks
@@ -179,9 +180,9 @@ class Runner(BaseRunner):
             if entity_lines_range:
                 skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                 variable_evaluations = {}
-                results = complete_registry.scan(sls_file,
-                                                 EntityDetails(sls_context_parser.provider_type, sls_file_data),
-                                                 skipped_checks, runner_filter)
+                entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
+                results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                tags = Runner.get_resource_tags(entity, complete_registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=[],              # Don't show, could be large
@@ -189,7 +190,37 @@ class Runner(BaseRunner):
                                     file_line_range=entity_lines_range,
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
                     report.add_record(record=record)
 
         return report
+
+    @staticmethod
+    def get_resource_tags(entity, registry):
+        entity_details = registry.extract_entity_details(entity)
+        entity_config = entity_details[-1]
+
+        if type(entity_config) not in (dict, dict_node):
+            return None
+
+        properties = entity_config.get('Properties')
+        if properties:
+            tags = properties.get('Tags')
+            if tags:
+                tag_dict = {tag['Key']: str(Runner.get_entity_value_as_string(tag['Value'])) for tag in tags}
+                return tag_dict
+
+        return None
+
+    @staticmethod
+    def get_entity_value_as_string(value):
+        if type(value) in (dict, dict_node):
+            value = list(value.values())[0]
+            # If the value is a long-form function, then the first element is the template string (technically str_node)
+            # Otherwise the dict value is the template string
+            if type(value) == list:
+                return value[0]
+            else:
+                return value
+        else:
+            return value
