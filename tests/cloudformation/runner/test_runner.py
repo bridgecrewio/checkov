@@ -96,6 +96,29 @@ class TestRunnerValid(unittest.TestCase):
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
+    def test_get_tags(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "tags.yaml")
+
+        file_abs_path = os.path.abspath(scan_file_path)
+
+        runner = Runner()
+        checks_allowlist = ['CKV_AWS_20']
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
+                            runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
+
+        record = report.passed_checks[0]
+        self.assertEqual(len(record.entity_tags), 4)
+        tags = {
+            'Simple': 'Value',
+            'Name': '${AWS::AccountId}-data',
+            'Environment': 'long-form-sub-${account}',
+            'Account': 'long-form-sub-${account}'
+        }
+
+        for name, value in tags.items():
+            self.assertEqual(record.entity_tags[name], value)
+
     def tearDown(self):
         pass
 
