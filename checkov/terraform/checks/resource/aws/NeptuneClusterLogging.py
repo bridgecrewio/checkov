@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class NeptuneClusterLogging(BaseResourceValueCheck):
+class NeptuneClusterLogging(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Neptune logging is enabled"
         id = "CKV_AWS_101"
