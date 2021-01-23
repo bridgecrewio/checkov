@@ -404,8 +404,6 @@ class BcPlatformIntegration(object):
 
         return False
 
-
-
     def _upload_run(self, args, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
