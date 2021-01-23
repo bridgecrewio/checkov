@@ -87,22 +87,21 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.commit_repository(args.branch)
                 if not bc_integration.skip_fixes:
-                    bc_integration.get_platform_fixes(scan_reports, root_folder)
+                    bc_integration.get_platform_fixes(scan_reports)
 
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
-        external_suppressions = bc_integration.suppressions if bc_integration.is_integration_configured() else None
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
-                                           guidelines=guidelines)
+                                           guidelines=guidelines, bc_integration=bc_integration)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            # bc_integration.persist_repository(root_folder)
-            # bc_integration.persist_scan_results(scan_reports)
-            # bc_integration.commit_repository(args.branch)
+            bc_integration.persist_repository(root_folder)
+            bc_integration.persist_scan_results(scan_reports)
+            bc_integration.commit_repository(args.branch)
             if not bc_integration.skip_fixes:
-                bc_integration.get_platform_fixes(scan_reports, root_folder)
+                bc_integration.get_platform_fixes(scan_reports)
         runner_registry.print_reports(scan_reports, args)
     else:
         print(f"{banner}")

@@ -23,7 +23,7 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-from ..util.consts import DEV_API_GET_HEADERS
+from ..util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
 from ..util.dict_utils import merge_dicts
 from ..util.http_utils import extract_error_message
 
@@ -69,6 +69,7 @@ class BcPlatformIntegration(object):
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
         self.suppressions_url = f"{self.bc_api_url}/suppressions"
+        self.fixes_url = f"{self.bc_api_url}/fixes/checkov"
         self.guidelines = None
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None
@@ -260,13 +261,14 @@ class BcPlatformIntegration(object):
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
 
-    def get_platform_fixes(self, scan_results, root_folder=None):
+    def get_platform_fixes(self, scan_results):
 
         for report in scan_results:
-            for file, failed_checks in groupby(report.failed_checks, key=lambda c: c.repo_file_path):
+            sorted_by_file = sorted(report.failed_checks, key=lambda c: c.repo_file_path)
+            for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.repo_file_path):
                 failed_checks = list(failed_checks)
-                # local file path always starts with /
-                file_abs_path = os.path.abspath(os.path.join(root_folder, file[1:]))
+                # file path always starts with /
+                file_abs_path = os.path.abspath(os.path.join(os.getcwd(), file[1:]))
                 with open(file_abs_path, 'r') as reader:
                     file_contents = reader.read()
 
@@ -281,8 +283,6 @@ class BcPlatformIntegration(object):
                     ckv_id = self.bc_id_mapping[fix['policyId']]
                     failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
                     failed_check.fix_definition = fix['fixedDefinition']
-
-        pass
 
     def onboarding(self):
         if not self.bc_api_key:
@@ -479,43 +479,21 @@ class BcPlatformIntegration(object):
             'endLine': c.file_line_range[1]
         }, failed_checks))
 
-        req_obj = {
+        payload = {
             'filePath': filename,
             'fileContent': file_contents,
             'errors': errors
         }
 
-        fixes = []
+        headers = merge_dicts(DEV_API_POST_HEADERS, self._get_auth_header())
+        response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
 
-        if 's3' in filename:
-            fixes = [
-                    {
-                        'resourceId': 'aws_s3_bucket.data',
-                        'policyId': 'BC_AWS_S3_14',
-                        'originalStartLine': 1,
-                        'originalEndLine': 13,
-                        'fixedDefinition': 'resource aws_s3_bucket data {hello}'
-                    },
-                    {
-                        'resourceId': 'aws_s3_bucket.data',
-                        'policyId': 'BC_AWS_S3_16',
-                        'originalStartLine': 1,
-                        'originalEndLine': 13,
-                        'fixedDefinition': 'resource aws_s3_bucket data {hello}'
-                    },
-                    {
-                        'resourceId': 'aws_s3_bucket.financials',
-                        'policyId': 'BC_AWS_S3_14',
-                        'originalStartLine': 25,
-                        'originalEndLine': 37,
-                        'fixedDefinition': 'resource aws_s3_bucket financials {hello}'
-                    }
-                ]
+        if response.status_code != 200:
+            error_message = extract_error_message(response)
+            raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
 
-        return {
-            'filePath': filename,
-            'fixes': fixes
-        }
+        fixes = json.loads(response.content)
+        return fixes
 
     def _get_suppressions_from_platform(self):
         headers = merge_dicts(DEV_API_GET_HEADERS, self._get_auth_header())
@@ -527,9 +505,6 @@ class BcPlatformIntegration(object):
 
         # filter out custom policies and non-checkov policies
         suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
-
-        # TODO testing
-        suppressions = [s for s in suppressions if s['policyId'] in ('BC_AWS_S3_13', 'BC_AWS_GENERAL_31', 'BC_AWS_S3_16')]
 
         for suppression in suppressions:
             suppression['checkovPolicyId'] = self.bc_id_mapping[suppression['policyId']]
