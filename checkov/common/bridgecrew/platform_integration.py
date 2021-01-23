@@ -23,6 +23,7 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from ..models.enums import CheckResult
 from ..util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
 from ..util.dict_utils import merge_dicts
 from ..util.http_utils import extract_error_message
@@ -354,25 +355,44 @@ class BcPlatformIntegration(object):
 
         suppressions_by_policy = {policy_id: list(suppressions) for policy_id, suppressions in groupby(self.suppressions, key=lambda s: s['checkovPolicyId'])}
 
-        new_failed_checks = []
-        new_skipped_checks = []
+        # holds the checks that are still not suppressed
+        still_failed_checks = []
         for failed_check in scan_report.failed_checks:
             relevant_suppressions = suppressions_by_policy.get(failed_check.check_id)
-            if relevant_suppressions and self.check_suppressions(failed_check, relevant_suppressions):
-                new_skipped_checks.append(failed_check)
+            if not relevant_suppressions:
+                continue
+            applied_suppression = self.check_suppressions(failed_check, relevant_suppressions)
+            if applied_suppression:
+                failed_check.check_result = {
+                    'result': CheckResult.SKIPPED,
+                    'suppress_comment': applied_suppression['comment']
+                }
+                scan_report.skipped_checks.append(failed_check)
             else:
-                new_failed_checks.append(failed_check)
+                still_failed_checks.append(failed_check)
 
-        scan_report.failed_checks = new_failed_checks
-        scan_report.skipped_checks += new_skipped_checks
+        scan_report.failed_checks = still_failed_checks
 
     def check_suppressions(self, record, suppressions):
+        """
+        Checks the specified suppressions against the specified record, returning the first applicable suppression,
+        or None of no suppression is applicable.
+        :param record:
+        :param suppressions:
+        :return:
+        """
         for suppression in suppressions:
             if self.check_suppression(record, suppression):
-                return True
-        return False
+                return suppression
+        return None
 
     def check_suppression(self, record, suppression):
+        """
+        Returns True if and only if the specified suppression applies to the specified record.
+        :param record:
+        :param suppression:
+        :return:
+        """
         if record.check_id != suppression['checkovPolicyId']:
             return False
 
@@ -503,6 +523,8 @@ class BcPlatformIntegration(object):
 
         # filter out custom policies and non-checkov policies
         suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
+
+        suppressions = [s for s in suppressions if s['policyId'] in ('BC_AWS_S3_13', 'BC_AWS_S3_16', 'BC_AWS_IAM_16')]
 
         for suppression in suppressions:
             suppression['checkovPolicyId'] = self.bc_id_mapping[suppression['policyId']]

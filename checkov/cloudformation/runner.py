@@ -76,14 +76,40 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
 
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
-
-                            results = cfn_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
+                            entity = {resource_name: resource}
+                            results = cfn_registry.scan(cf_file, entity, skipped_checks,
                                                         runner_filter)
+                            tags = Runner.get_resource_tags(entity)
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=cf_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                                file_line_range=entity_lines_range, resource=resource_id,
+                                                evaluations=variable_evaluations,check_class=check.__class__.__module__,
+                                                file_abs_path=file_abs_path, entity_tags=tags)
                                 report.add_record(record=record)
         return report
+
+    @staticmethod
+    def get_resource_tags(entity):
+        (_, _, entity_config) = cfn_registry.extract_entity_details(entity)
+        properties = entity_config.get('Properties')
+        if properties:
+            tags = properties.get('Tags')
+            if tags:
+                tag_dict = {tag['Key']: str(Runner.get_entity_value_as_string(tag['Value'])) for tag in tags}
+                return tag_dict
+
+        return None
+
+    @staticmethod
+    def get_entity_value_as_string(value):
+        if type(value) in (dict, dict_node):
+            value = list(value.values())[0]
+            # If the value is a long-form function, then the first element is the template string (technically str_node)
+            # Otherwise the dict value is the template string
+            if type(value) == list:
+                return value[0]
+            else:
+                return value
+        else:
+            return value
