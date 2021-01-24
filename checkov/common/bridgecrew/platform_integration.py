@@ -22,11 +22,11 @@ from urllib3.exceptions import HTTPError
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-from ..models.enums import CheckResult
-from ..util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
-from ..util.dict_utils import merge_dicts
-from ..util.http_utils import extract_error_message
+from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
+from checkov.common.models.enums import CheckResult
+from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.http_utils import extract_error_message
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
