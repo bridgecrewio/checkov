@@ -359,9 +359,8 @@ class BcPlatformIntegration(object):
         still_failed_checks = []
         for failed_check in scan_report.failed_checks:
             relevant_suppressions = suppressions_by_policy.get(failed_check.check_id)
-            if not relevant_suppressions:
-                continue
-            applied_suppression = self.check_suppressions(failed_check, relevant_suppressions)
+
+            applied_suppression = self.check_suppressions(failed_check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
                 failed_check.check_result = {
                     'result': CheckResult.SKIPPED,
@@ -511,7 +510,7 @@ class BcPlatformIntegration(object):
             raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
 
         fixes = json.loads(response.content)
-        return fixes
+        return fixes[0]
 
     def _get_suppressions_from_platform(self):
         headers = merge_dicts(DEV_API_GET_HEADERS, self._get_auth_header())
