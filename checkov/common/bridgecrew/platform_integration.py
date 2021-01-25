@@ -64,7 +64,7 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = None
+        self.bc_source = os.getenv('BC_SOURCE', 'cli')
         self.bc_source_version = None
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
@@ -89,8 +89,10 @@ class BcPlatformIntegration(object):
         self.repo_id = repo_id
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
-        self.bc_source = source
-        self.bc_source_version = source_version
+        if source:
+            self.bc_source = source
+        if source_version:
+            self.bc_source_version = source_version
 
         if self.bc_source != 'vscode':
             try:
@@ -282,7 +284,7 @@ class BcPlatformIntegration(object):
                 for fix in all_fixes:
                     ckv_id = self.bc_id_mapping[fix['policyId']]
                     failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
-                    failed_check.fix_definition = fix['fixedDefinition']
+                    failed_check.fixed_definition = fix['fixedDefinition']
 
     def onboarding(self):
         if not self.bc_api_key:
