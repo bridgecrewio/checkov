@@ -4,7 +4,14 @@ from checkov.cloudformation.parser.node import dict_node
 
 def get_resource_tags(entity, registry=cfn_registry):
     entity_details = registry.extract_entity_details(entity)
+
+    if not entity_details:
+        return None
+
     entity_config = entity_details[-1]
+
+    if type(entity_config) not in (dict, dict_node):
+        return None
 
     properties = entity_config.get('Properties')
     if properties:
