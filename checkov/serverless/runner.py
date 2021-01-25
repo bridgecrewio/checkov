@@ -1,5 +1,7 @@
 import logging
 import os
+
+from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
@@ -114,7 +116,7 @@ class Runner(BaseRunner):
 
                         entity = {resource_name: resource}
                         results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                        tags = Runner.get_resource_tags(entity, cfn_registry)
+                        tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
@@ -144,7 +146,7 @@ class Runner(BaseRunner):
                             sls_context_parser.enrich_function_with_provider(item_name)
                         entity = EntityDetails(sls_context_parser.provider_type, item_content)
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                        tags = Runner.get_resource_tags(entity, registry)
+                        tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
@@ -165,7 +167,7 @@ class Runner(BaseRunner):
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, item_content)
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                tags = Runner.get_resource_tags(entity, registry)
+                tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=sls_file,
@@ -182,7 +184,7 @@ class Runner(BaseRunner):
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
                 results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                tags = Runner.get_resource_tags(entity, complete_registry)
+                tags = cfn_utils.get_resource_tags(entity, complete_registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=[],              # Don't show, could be large
@@ -194,33 +196,3 @@ class Runner(BaseRunner):
                     report.add_record(record=record)
 
         return report
-
-    @staticmethod
-    def get_resource_tags(entity, registry):
-        entity_details = registry.extract_entity_details(entity)
-        entity_config = entity_details[-1]
-
-        if type(entity_config) not in (dict, dict_node):
-            return None
-
-        properties = entity_config.get('Properties')
-        if properties:
-            tags = properties.get('Tags')
-            if tags:
-                tag_dict = {tag['Key']: str(Runner.get_entity_value_as_string(tag['Value'])) for tag in tags}
-                return tag_dict
-
-        return None
-
-    @staticmethod
-    def get_entity_value_as_string(value):
-        if type(value) in (dict, dict_node):
-            value = list(value.values())[0]
-            # If the value is a long-form function, then the first element is the template string (technically str_node)
-            # Otherwise the dict value is the template string
-            if type(value) == list:
-                return value[0]
-            else:
-                return value
-        else:
-            return value
