@@ -30,8 +30,8 @@ def get_version_headers(client, client_version):
 
 
 def get_default_get_headers(client, client_version):
-    return merge_dicts(DEV_API_GET_HEADERS, get_version_headers())
+    return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client, client_version))
 
 
 def get_default_post_headers(client, client_version):
-    return merge_dicts(DEV_API_POST_HEADERS, get_version_headers())
+    return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client, client_version))
