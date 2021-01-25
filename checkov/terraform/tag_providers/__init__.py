@@ -1,7 +1,11 @@
 import checkov.terraform.tag_providers.aws
+import checkov.terraform.tag_providers.azure
+import checkov.terraform.tag_providers.gcp
 
 provider_tag_mapping = {
-    'aws': aws.get_resource_tags
+    'aws': aws.get_resource_tags,
+    'azure': azure.get_resource_tags,
+    'gcp': gcp.get_resource_tags
 }
 
 
