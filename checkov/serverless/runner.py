@@ -81,6 +81,18 @@ class Runner(BaseRunner):
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
         for sls_file, sls_file_data in definitions.items():
+
+            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
+            # or there will be no leading slash; root_folder will always be none.
+            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
+            # The goal here is simply to get a valid path to the file (which sls_file does not always give).
+            if sls_file[0] == '/':
+                path_to_convert = (root_folder + sls_file) if root_folder else sls_file
+            else:
+                path_to_convert = (os.path.join(root_folder, sls_file)) if root_folder else sls_file
+
+            file_abs_path = os.path.abspath(path_to_convert)
+
             if not isinstance(sls_file_data, dict_node):
                 continue
 
@@ -107,7 +119,7 @@ class Runner(BaseRunner):
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                             report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
@@ -137,7 +149,7 @@ class Runner(BaseRunner):
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                             report.add_record(record=record)
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
@@ -158,7 +170,7 @@ class Runner(BaseRunner):
                                     code_block=entity_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                     report.add_record(record=record)
 
             # "Complete" checks
@@ -177,7 +189,7 @@ class Runner(BaseRunner):
                                     file_line_range=entity_lines_range,
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                     report.add_record(record=record)
 
         return report

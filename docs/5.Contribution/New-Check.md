@@ -2,7 +2,7 @@
 
 ## Background
 
-Checkov contributors are encouraged to contribute new checks to help increase our existing coverage of infrastructure-as-code. 
+Checkov contributors are encouraged to contribute new checks to help increase our existing coverage of infrastructure-as-code.
 
 In our documentation, a check is sometimes referred loosely also as a Policy. We expect to solve a real-world hardening, assessment, auditing or forensic gap you encountered. In other words, a new check should reflect a policy you think should be globally accepted when provisioning and changing infrastructure.
 
@@ -75,7 +75,6 @@ Read more about Checkov's [Suppressions](../3.Scans/resource-scans.md) for furth
 ## IaC type scanner
 Identify which IaC type would be tested under the check. currently, Checkov scans either Terraform or CloudFormation configuration files.
 Place your following code under `checkov/<scanner>` folder, where `<scanner>` is either `terraform` or `cloudformation`. 
-
 
 ### Check type and provider
 

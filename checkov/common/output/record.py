@@ -1,3 +1,4 @@
+import os
 import re
 
 from colorama import init, Fore, Style
@@ -20,7 +21,7 @@ class Record:
     guideline = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class):
+                 evaluations, check_class, file_abs_path):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -32,6 +33,7 @@ class Record:
         self.check_result = check_result
         self.code_block = code_block
         self.file_path = file_path
+        self.repo_file_path = f'/{os.path.relpath(file_abs_path)}' # matches file paths given in the BC platform.
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations

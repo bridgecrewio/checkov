@@ -38,7 +38,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
  ## Features
 
- * [Over 400 built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
+ * [Over 500 built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
  * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Serverless framework and ARM template files.
  * Detects [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
@@ -58,11 +58,17 @@ Scheduled scan result in Jenkins
 
 ## Getting started
 
+### Requrirements
+ * Python >= 3.7 (Data classes are available for Python 3.7+)
+ * Terraform >= 0.12
+
 ### Installation
 
+
 ```sh
-pip install checkov
+pip3 install checkov
 ```
+
 Installation on Alpine:
 ```sh
 pip3 install --upgrade pip && pip3 install --upgrade setuptools
@@ -81,23 +87,66 @@ or
 brew upgrade checkov
 ```
 
-### Configure an input folder
+### Upgrade
 
+if you installed checkov with pip3
 ```sh
-checkov -d /user/path/to/iac/code
+pip3 install -U checkov
 ```
 
-Or a specific file
+### Configure an input folder or file
 
 ```sh
-checkov -f /user/tf/example.tf
+checkov --directory /user/path/to/iac/code
 ```
 
-or
+Or a specific file or files
 
 ```sh
-checkov -f /user/cloudformation/example.yml
+checkov --file /user/tf/example.tf
 ```
+Or
+```sh
+checkov -f /user/cloudformation/example1.yml -f /user/cloudformation/example2.yml
+```
+
+Or a terraform plan file in json format
+```sh
+terraform init
+terraform plan -out tf.plan
+terraform show -json tf.plan  > tf.json 
+checkov -f tf.json
+```
+Note: `terraform show` output  file `tf.json` will be single line. 
+For that reason all findings will be reported line number 0 by checkov
+```sh
+check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.customer
+	File: /tf/tf.json:0-0
+	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+  ```
+
+If you have installed `jq` you can convert json file into multiple lines with the following command:
+```sh
+terraform show -json tf.plan | jq '.' > tf.json 
+```
+Scan result would be much user friendly.
+
+```sh
+checkov -f tf.json
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.customer
+	File: /tf/tf1.json:224-268
+	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+
+		225 |               "values": {
+		226 |                 "acceleration_status": "",
+		227 |                 "acl": "private",
+		228 |                 "arn": "arn:aws:s3:::mybucket",
+
+```
+
+
 
 ### Scan result sample (CLI)
 
@@ -115,10 +164,14 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ### Using Docker
 
+
 ```sh
 docker pull bridgecrew/checkov
-docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
+docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
+Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
+
+Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
 
 ### Running or skipping checks 
 
@@ -127,12 +180,12 @@ those listed (deny list).
 
 List available checks:
 ```sh
-checkov -l 
+checkov --list 
 ```
 
 Allow only 2 checks to run: 
 ```sh
-checkov -d . --check CKV_AWS_20,CKV_AWS_57
+checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 ```
 
 Run all checks except 1 specified:
