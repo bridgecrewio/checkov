@@ -55,14 +55,14 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
 
-        origin = os.getenv('BC_ORIGIN', 'checkov')
-        origin_version = os.getenv('BC_ORIGIN_VERSION', version)
-        logger.debug(f'BC_ORIGIN = {origin}, version = {origin_version}')
+        source = os.getenv('BC_SOURCE', 'cli')
+        source_version = os.getenv('BC_SOURCE_VERSION', version)
+        logger.debug(f'BC_ORIGIN = {source}, version = {source_version}')
         try:
             bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id,
                                                         skip_fixes=args.skip_fixes,
                                                         skip_suppressions=args.skip_suppressions,
-                                                        origin=origin, origin_version=origin_version)
+                                                        source=source, source_version=source_version)
         except Exception as e:
             logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token and try again.', exc_info=True)
             return

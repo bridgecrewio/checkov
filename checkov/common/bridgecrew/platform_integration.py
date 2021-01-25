@@ -64,7 +64,8 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', "cli")
+        self.bc_source = None
+        self.bc_source_version = None
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
@@ -74,12 +75,10 @@ class BcPlatformIntegration(object):
         self.guidelines = None
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None
-        self.origin = None
-        self.origin_version = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, origin=None, origin_version=None):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None, source_version=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
@@ -90,10 +89,10 @@ class BcPlatformIntegration(object):
         self.repo_id = repo_id
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
-        self.origin = origin
-        self.origin_version = origin_version
+        self.bc_source = source
+        self.bc_source_version = source_version
 
-        if self.origin != 'vscode':
+        if self.bc_source != 'vscode':
             try:
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
