@@ -26,7 +26,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.dict_utils import merge_dicts
-from checkov.common.util.http_utils import extract_error_message
+from checkov.common.util.http_utils import extract_error_message, get_default_post_headers, get_default_get_headers
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -503,7 +503,7 @@ class BcPlatformIntegration(object):
             'errors': errors
         }
 
-        headers = merge_dicts(DEV_API_POST_HEADERS, self._get_auth_header())
+        headers = merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version), self._get_auth_header())
         response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
 
         if response.status_code != 200:
@@ -514,7 +514,7 @@ class BcPlatformIntegration(object):
         return fixes[0]
 
     def _get_suppressions_from_platform(self):
-        headers = merge_dicts(DEV_API_GET_HEADERS, self._get_auth_header())
+        headers = merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version), self._get_auth_header())
         response = requests.request('GET', self.suppressions_url, headers=headers)
 
         if response.status_code != 200:
