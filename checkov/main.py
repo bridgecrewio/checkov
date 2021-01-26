@@ -88,7 +88,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                files=file, guidelines=guidelines)
 
             bc_integration.root_folder = root_folder
-            integration_feature_registry.run_post_scan()
+            integration_feature_registry.run_post_scan(scan_reports)
 
             runner_registry.print_reports(scan_reports, args)
         return
@@ -99,7 +99,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         files = [os.path.abspath(file) for file in args.file]
         root_folder = os.path.split(os.path.commonprefix(files))[0]
         bc_integration.root_folder = root_folder
-        integration_feature_registry.run_post_scan()
+        integration_feature_registry.run_post_scan(scan_reports)
 
         runner_registry.print_reports(scan_reports, args)
     else:
