@@ -127,6 +127,14 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertIsNone(entity_tags)
 
+        'TerraformServerAutoScalingGroup'
+        resource_name = 'TerraformServerAutoScalingGroup'
+        resource = definitions['Resources'][resource_name]
+        entity = {resource_name: resource}
+        entity_tags = cfn_utils.get_resource_tags(entity)
+
+        self.assertIsNone(entity_tags)
+
         resource_name = 'EKSClusterNodegroup'
         resource = definitions['Resources'][resource_name]
         entity = {resource_name: resource}
