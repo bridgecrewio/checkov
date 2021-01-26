@@ -2,6 +2,7 @@
 import atexit
 
 import argparse
+import logging
 import os
 import shutil
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -27,6 +29,7 @@ from checkov.version import version
 outer_registry = None
 
 logging_init()
+logger = logging.getLogger(__name__)
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
@@ -52,7 +55,18 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if len(args.repo_id.split('/')) != 2:
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
-        bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id)
+
+        source = os.getenv('BC_SOURCE', 'cli')
+        source_version = os.getenv('BC_SOURCE_VERSION', version)
+        logger.debug(f'BC_SOURCE = {source}, version = {source_version}')
+        try:
+            bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id,
+                                                        skip_fixes=args.skip_fixes,
+                                                        skip_suppressions=args.skip_suppressions,
+                                                        source=source, source_version=source_version)
+        except Exception as e:
+            logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token and try again.', exc_info=True)
+            return
 
     guidelines = {}
     if not args.no_guide:
@@ -68,16 +82,17 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file, guidelines=guidelines)
+                                               files=file, guidelines=guidelines, bc_integration=bc_integration)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.commit_repository(args.branch)
+
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
-                                           guidelines=guidelines)
+                                           guidelines=guidelines, bc_integration=bc_integration)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -131,6 +146,13 @@ def add_parser_args(parser):
     parser.add_argument('-b', '--branch',
                         help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                         default='master')
+    parser.add_argument('--skip-fixes',
+                        help='Do not download fixed resource templates from Bridgecrew. Only has effect when using the --bc-api-key flag',
+                        action='store_true')
+    parser.add_argument('--skip-suppressions',
+                        help='Do not download preconfigured suppressions from the Bridgecrew platform. Code comment suppressions will still be honored. '
+                             'Only has effect when using the --bc-api-key flag',
+                        action='store_true')
     parser.add_argument('--download-external-modules',
                         help="download external terraform modules from public git repositories and terraform registry",
                         default=False)

@@ -1,6 +1,7 @@
 import logging
 import os
 
+from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.parser import parse
 from checkov.common.output.record import Record
@@ -61,6 +62,7 @@ class Runner(BaseRunner):
                 path_to_convert = (os.path.join(root_folder, cf_file)) if root_folder else cf_file
 
             file_abs_path = os.path.abspath(path_to_convert)
+
             if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
                 cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
                 logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
@@ -75,14 +77,16 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
 
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
-
-                            results = cfn_registry.scan(cf_file, {resource_name: resource}, skipped_checks,
+                            entity = {resource_name: resource}
+                            results = cfn_registry.scan(cf_file, entity, skipped_checks,
                                                         runner_filter)
+                            tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=cf_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                                file_line_range=entity_lines_range, resource=resource_id,
+                                                evaluations=variable_evaluations,check_class=check.__class__.__module__,
+                                                file_abs_path=file_abs_path, entity_tags=tags)
                                 report.add_record(record=record)
         return report
+

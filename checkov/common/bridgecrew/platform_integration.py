@@ -1,3 +1,4 @@
+from itertools import groupby
 from time import sleep
 
 import boto3
@@ -21,7 +22,10 @@ from urllib3.exceptions import HTTPError
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from .wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
+from checkov.common.models.enums import CheckResult
+from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.http_utils import extract_error_message, get_default_post_headers, get_default_get_headers
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -53,46 +57,69 @@ class BcPlatformIntegration(object):
         self.credentials = None
         self.repo_path = None
         self.repo_id = None
+        self.skip_fixes = False
+        self.skip_suppressions = False
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', "cli")
+        self.bc_source = os.getenv('BC_SOURCE', 'cli')
+        self.bc_source_version = None
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
         self.onboarding_url = f"{self.bc_api_url}/signup/checkov"
         self.api_token_url = f"{self.bc_api_url}/integrations/apiToken"
+        self.suppressions_url = f"{self.bc_api_url}/suppressions"
+        self.fixes_url = f"{self.bc_api_url}/fixes/checkov"
         self.guidelines = None
         self.bc_id_mapping = None
+        self.ckv_to_bc_id_mapping = None
+        self.use_s3_integration = False
+        self.platform_integration_configured = False
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None, source_version=None):
         """
         Setup credentials against Bridgecrew's platform.
+        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
         :param bc_api_key: Bridgecrew issued API key
         """
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
-        try:
-            repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
-            self.bucket, self.repo_path = repo_full_path.split("/", 1)
-            self.timestamp = self.repo_path.split("/")[-1]
-            self.credentials = response["creds"]
-            self.s3_client = boto3.client("s3",
-                                          aws_access_key_id=self.credentials["AccessKeyId"],
-                                          aws_secret_access_key=self.credentials["SecretAccessKey"],
-                                          aws_session_token=self.credentials["SessionToken"],
-                                          region_name=DEFAULT_REGION
-                                          )
-            sleep(10)  # Wait for the policy to update
-        except HTTPError as e:
-            logging.error(f"Failed to get customer assumed role\n{e}")
-            raise e
-        except ClientError as e:
-            logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
-            raise e
-        except JSONDecodeError as e:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-            raise e
+        self.skip_fixes = skip_fixes
+        self.skip_suppressions = skip_suppressions
+        if source:
+            self.bc_source = source
+        if source_version:
+            self.bc_source_version = source_version
+
+        if self.bc_source != 'vscode':
+            try:
+                repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
+                self.bucket, self.repo_path = repo_full_path.split("/", 1)
+                self.timestamp = self.repo_path.split("/")[-1]
+                self.credentials = response["creds"]
+                self.s3_client = boto3.client("s3",
+                                              aws_access_key_id=self.credentials["AccessKeyId"],
+                                              aws_secret_access_key=self.credentials["SecretAccessKey"],
+                                              aws_session_token=self.credentials["SessionToken"],
+                                              region_name=DEFAULT_REGION
+                                              )
+                sleep(10)  # Wait for the policy to update
+                self.platform_integration_configured = True
+                self.use_s3_integration = True
+            except HTTPError as e:
+                logging.error(f"Failed to get customer assumed role\n{e}")
+                raise e
+            except ClientError as e:
+                logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
+                raise e
+            except JSONDecodeError as e:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+                raise e
+
+        self.get_id_mapping()
+
+        self.platform_integration_configured = True
 
     def get_s3_role(self, bc_api_key, repo_id):
         request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
@@ -112,16 +139,20 @@ class BcPlatformIntegration(object):
 
     def is_integration_configured(self):
         """
-        Checks if Bridgecrew integration is fully configured.
+        Checks if Bridgecrew integration is fully configured based in input params.
         :return: True if the integration is configured, False otherwise
         """
-        return all([self.repo_path, self.credentials, self.s3_client])
+        return self.platform_integration_configured
 
     def persist_repository(self, root_dir):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform
         :param root_dir: Absolute path of the directory containing the repository root level
         """
+
+        if not self.use_s3_integration:
+            return
+
         for root_path, d_names, f_names in os.walk(root_dir):
             for file_path in f_names:
                 _, file_extension = os.path.splitext(file_path)
@@ -135,6 +166,9 @@ class BcPlatformIntegration(object):
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
+        if not self.use_s3_integration:
+            return
+
         self.scan_reports = scan_reports
         reduced_scan_reports = reduce_scan_reports(scan_reports)
         checks_metadata_paths = enrich_and_persist_checks_metadata(scan_reports, self.s3_client, self.bucket,
@@ -147,6 +181,9 @@ class BcPlatformIntegration(object):
         :param branch: branch to be persisted
         Finalize the repository's scanning in bridgecrew's platform.
         """
+        if not self.use_s3_integration:
+            return
+
         request = None
         try:
             request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
@@ -197,12 +234,18 @@ class BcPlatformIntegration(object):
             self.get_checkov_mapping_metadata()
         return self.bc_id_mapping
 
+    def get_ckv_to_bc_id_mapping(self) -> dict:
+        if not self.ckv_to_bc_id_mapping:
+            self.get_checkov_mapping_metadata()
+        return self.ckv_to_bc_id_mapping
+
     def get_checkov_mapping_metadata(self) -> dict:
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")
+            self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")

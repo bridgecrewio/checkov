@@ -1,0 +1,20 @@
+Resources:
+  DataBucket:
+    # Public, not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-data"
+      Tags:
+        - Key: Simple
+          Value: Value
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-data"
+        - Key: Environment
+          Value: !Sub
+            - long-form-sub-${account}
+            - account: test
+        - Key: Account
+          Value: !Sub
+            - long-form-sub-${account}
+            - { account: !Ref  AWS::AccountId }
