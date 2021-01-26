@@ -517,6 +517,10 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
     if "${" in orig_variable:
         return orig_variable
 
+    ternary_info = _is_ternary(orig_variable)
+    if ternary_info:
+        return _process_ternary(orig_variable, ternary_info[0], ternary_info[1])
+
     elif orig_variable.startswith("module."):
         if not module_list:
             return orig_variable
@@ -849,16 +853,30 @@ def _find_var_blocks(value: str) -> List[VarBlockMatch]:
             continue
 
         if c == "}" and not inside_collection_stack:
-            eval_buffer = eval_buffer.strip()
-            if len(eval_buffer) == 0:
+            clean_buffer = eval_buffer.strip()
+            if len(clean_buffer) == 0:
                 # Something went wrong because we have an empty arg. Blow out.
                 return []
-            to_return.append(VarBlockMatch("${" + eval_buffer + "}", eval_buffer))
+            to_return.append(VarBlockMatch("${" + clean_buffer + "}", clean_buffer))
             eval_buffer = ""
             in_eval = False
             continue
-        else:
-            eval_buffer += c
+        elif c == "?" and not inside_collection_stack:          # for ternary expressions
+            clean_buffer = eval_buffer.strip()
+            if len(clean_buffer) == 0:
+                # Invalid. Blow out.
+                return []
+            # At this point we should be in a ternary expression where the condition should resolve to
+            # "true" or "false". If we're there, then this isn't a variable. Otherwise, it is.
+            if clean_buffer.lower() not in ["true", "false"]:
+                # If it is an un-evaluated condition, then that's all we're going to do in this pass
+                return [VarBlockMatch(clean_buffer, clean_buffer)]       # partial, don't wrap in ${...}
+
+            # If the condition was resolved, then proceed as the full variable will include the remainder
+            # (that is, we're still in the ternary)
+            # Fall through for normal character eval...
+
+        eval_buffer += c
 
         processing_str_escape = _str_parser_loop_collection_helper(c, inside_collection_stack,
                                                                    processing_str_escape)
@@ -910,3 +928,37 @@ def _str_parser_loop_collection_helper(c: str, inside_collection_stack: List[str
             inside_collection_stack.insert(0, ")")
 
     return processing_str_escape
+
+
+def _is_ternary(value: str) -> Optional[Tuple[int,int]]:
+    """
+    Determines whether or not the given string is *probably* a ternary operation
+    :return:        If the expression does represent a possibly-processable ternary expression, a tuple
+                    containing the index of the question mark and colon will be returned.
+    """
+    if not value:
+        return None
+    question_index = value.find("?")
+    if question_index < 1 or value.count("?") > 1:
+        return None
+    colon_index = value.find(":")
+    if colon_index < question_index or value.count(":") > 1:
+        return None
+    return question_index, colon_index
+
+
+def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
+    assert question_index > 0
+    assert colon_index > question_index
+
+    condition = value[:question_index].strip()
+
+    # Fast & easy case is simple boolean
+    condition_lower = condition.lower()
+    if condition_lower == "true":
+        return _to_native_value(value[question_index + 1: colon_index].strip())
+    elif condition_lower == "false":
+        return _to_native_value(value[colon_index].strip())
+
+    # Otherwise, this isn't evaluated enough
+    return value

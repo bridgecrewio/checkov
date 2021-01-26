@@ -7,6 +7,27 @@ import hcl2
 # This group of tests is used to confirm assumptions about how the hcl2 library parses into json.
 # We want to make sure important assumptions are caught if behavior changes.
 class TestHCL2LoadAssumptions(unittest.TestCase):
+    def test_ternary(self):
+        # Ternary and removal of parens are interesting things here
+        tf = '''
+        resource "aws_instance" "foo" {
+          metadata_options {
+            http_tokens = (var.metadata_http_tokens_required) ? "required" : "optional"
+          }
+        }'''
+        expect = {
+            "resource": [{
+                "aws_instance": {
+                    "foo": {
+                        "metadata_options": [{
+                            "http_tokens": ['${var.metadata_http_tokens_required ? "required" : "optional"}']
+                        }]
+                    }
+                }
+            }]
+        }
+        self.go(tf, expect)
+
     def test_multiline_function(self):
         tf = '''
         locals {

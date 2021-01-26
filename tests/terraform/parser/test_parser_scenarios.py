@@ -94,6 +94,9 @@ class TestParserScenarios(unittest.TestCase):
         # Run only manually, this test currently fails on multiple issues
         self.go("count_eval")
 
+    def test_ternary_793(self):
+        self.go("ternary_793")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),

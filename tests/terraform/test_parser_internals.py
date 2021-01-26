@@ -70,7 +70,17 @@ class TestParserInternals(unittest.TestCase):
                   "merge({\"a\": \"}, evil\"},{\"b\": \"\\\" , evil\"})")]),
             ("$${foo}", []),         # escape interpolation
             ('${merge({\'a\': \'}, evil\'})}',
-             [VBM('${merge({\'a\': \'}, evil\'})}', 'merge({\'a\': \'}, evil\'})')])
+             [VBM('${merge({\'a\': \'}, evil\'})}', 'merge({\'a\': \'}, evil\'})')]),
+
+            # Ternaries
+            ('${var.metadata_http_tokens_required ? "required" : "optional"}',
+             [VBM('var.metadata_http_tokens_required', 'var.metadata_http_tokens_required')]),
+            ('${1 + 1 == 2 ? "required" : "optional"}',
+             [VBM('1 + 1 == 2', '1 + 1 == 2')]),
+            ('${true ? "required" : "optional"}',
+             [VBM('${true ? "required" : "optional"}', 'true ? "required" : "optional"')]),
+            ('${false ? "required" : "optional"}',
+             [VBM('${false ? "required" : "optional"}', 'false ? "required" : "optional"')])
         ]
         for case in cases:
             actual = parser._find_var_blocks(case[0])
