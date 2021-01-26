@@ -29,12 +29,12 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True):
         for runner in self.runners:
-            integration_feature_registry.run_pre_scan()
+            integration_feature_registry.run_pre_runner()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                      runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-            integration_feature_registry.run_post_scan(scan_report)
+            integration_feature_registry.run_post_runner(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             self.scan_reports.append(scan_report)
@@ -73,8 +73,8 @@ class RunnerRegistry(object):
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
-        if args.output == "cli":
-            self.bc_platform.get_report_to_platform(args,scan_reports)
+        # if args.output == "cli":
+        #     self.bc_platform.get_report_to_platform(args,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)

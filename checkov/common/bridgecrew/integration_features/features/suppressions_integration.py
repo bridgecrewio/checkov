@@ -26,7 +26,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self.suppressions = {policy_id: list(sup) for policy_id, sup in groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
         logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
 
-    def post_scan(self, scan_report):
+    def post_runner(self, scan_report):
         self._apply_suppressions_to_report(scan_report)
 
     def _apply_suppressions_to_report(self, scan_report):

@@ -61,7 +61,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         logger.debug(f'BC_SOURCE = {source}, version = {source_version}')
         try:
             bc_integration.setup_bridgecrew_credentials(bc_api_key=args.bc_api_key, repo_id=args.repo_id,
-                                                        skip_fixes=args.skip_fixes,
+                                                        branch=args.branch, skip_fixes=args.skip_fixes,
                                                         skip_suppressions=args.skip_suppressions,
                                                         source=source, source_version=source_version)
         except Exception as e:
@@ -78,27 +78,29 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         print_checks(framework=args.framework)
         return
     external_checks_dir = get_external_checks_dir(args)
+
+    integration_feature_registry.run_pre_scan()
+
     if args.directory:
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file, guidelines=guidelines, bc_integration=bc_integration)
-            if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder)
-                bc_integration.persist_scan_results(scan_reports)
-                bc_integration.commit_repository(args.branch)
+                                               files=file, guidelines=guidelines)
+
+            bc_integration.root_folder = root_folder
+            integration_feature_registry.run_post_scan()
 
             runner_registry.print_reports(scan_reports, args)
         return
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
-                                           guidelines=guidelines, bc_integration=bc_integration)
-        if bc_integration.is_integration_configured():
-            files = [os.path.abspath(file) for file in args.file]
-            root_folder = os.path.split(os.path.commonprefix(files))[0]
-            bc_integration.persist_repository(root_folder)
-            bc_integration.persist_scan_results(scan_reports)
-            bc_integration.commit_repository(args.branch)
+                                           guidelines=guidelines)
+
+        files = [os.path.abspath(file) for file in args.file]
+        root_folder = os.path.split(os.path.commonprefix(files))[0]
+        bc_integration.root_folder = root_folder
+        integration_feature_registry.run_post_scan()
+
         runner_registry.print_reports(scan_reports, args)
     else:
         print(f"{banner}")

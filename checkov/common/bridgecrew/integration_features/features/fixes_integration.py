@@ -21,7 +21,7 @@ class FixesIntegration(BaseIntegrationFeature):
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
 
-    def post_scan(self, scan_report):
+    def post_runner(self, scan_report):
         self._get_platform_fixes(scan_report)
 
     def _get_platform_fixes(self, scan_report):

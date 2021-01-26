@@ -14,6 +14,16 @@ class IntegrationFeatureRegistry:
             if integration.is_valid():
                 integration.pre_scan()
 
+    def run_pre_runner(self):
+        for integration in self.features:
+            if integration.is_valid():
+                integration.pre_runner()
+
+    def run_post_runner(self, scan_report):
+        for integration in self.features:
+            if integration.is_valid():
+                integration.post_runner(scan_report)
+
     def run_post_scan(self, scan_reports):
         for integration in self.features:
             if integration.is_valid():
