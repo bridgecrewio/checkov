@@ -32,7 +32,9 @@ class FixesIntegration(BaseIntegrationFeature):
 
         sorted_by_file = sorted(scan_report.failed_checks, key=lambda c: c.repo_file_path)
         for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.repo_file_path):
-            failed_checks = list(failed_checks)
+            failed_checks = [fc for fc in failed_checks if fc.check_id in self.bc_integration.ckv_to_bc_id_mapping]
+            if not failed_checks:
+                continue
             # file path always starts with /
             file_abs_path = os.path.abspath(os.path.join(os.getcwd(), file[1:]))
             with open(file_abs_path, 'r') as reader:
