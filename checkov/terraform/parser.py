@@ -701,7 +701,7 @@ Load JSON or HCL, depending on filename.
     try:
         with open(file, "r") as f:
             if file_name.endswith(".json"):
-                return _clean_bad_definitions(json.load(f))
+                return json.load(f)
             else:
                 return _clean_bad_definitions(hcl2.load(f))
     except Exception as e:
@@ -712,7 +712,8 @@ Load JSON or HCL, depending on filename.
 
 def _clean_bad_definitions(tf_definition_list):
     return {
-        block_type: list(filter(lambda definition_list: block_type == 'locals' or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+        block_type: list(filter(lambda definition_list: block_type == 'locals' or
+                                                        len(definition_list.keys()) == 1, tf_definition_list[block_type]))
         for block_type in tf_definition_list.keys()
     }
 

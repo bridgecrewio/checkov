@@ -84,6 +84,7 @@ class TestParserScenarios(unittest.TestCase):
         self.go("doc_evaluations_verify")
 
     def test_bad_tf(self):
+        # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf")
 
     def test_null_variables_651(self):
@@ -93,6 +94,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_count_index_scenario(self):
         # Run only manually, this test currently fails on multiple issues
         self.go("count_eval")
+
+    def test_json_807(self):
+        self.go("json_807")
 
     @staticmethod
     def go(dir_name):
