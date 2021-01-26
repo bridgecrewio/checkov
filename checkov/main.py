@@ -11,6 +11,7 @@ from pathlib import Path
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -86,8 +87,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.commit_repository(args.branch)
-                if not bc_integration.skip_fixes:
-                    bc_integration.get_platform_fixes(scan_reports)
 
             runner_registry.print_reports(scan_reports, args)
         return
@@ -100,8 +99,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
             bc_integration.commit_repository(args.branch)
-            if not bc_integration.skip_fixes:
-                bc_integration.get_platform_fixes(scan_reports)
         runner_registry.print_reports(scan_reports, args)
     else:
         print(f"{banner}")

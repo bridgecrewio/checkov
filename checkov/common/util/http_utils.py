@@ -21,6 +21,12 @@ def extract_error_message(response: requests.Response):
     return response.reason
 
 
+def get_auth_header(token):
+    return {
+        'Authorization': token
+    }
+
+
 def get_version_headers(client, client_version):
     return {
         'x-api-client': client,

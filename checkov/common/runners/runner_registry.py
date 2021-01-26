@@ -3,6 +3,7 @@ import logging
 import os
 from abc import abstractmethod
 
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.report import Report
 
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
@@ -30,10 +31,10 @@ class RunnerRegistry(object):
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None):
         for runner in self.runners:
+            integration_feature_registry.run_pre_scan()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                      runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-            if bc_integration and bc_integration.is_integration_configured():
-                bc_integration.apply_suppressions(scan_report)
+            integration_feature_registry.run_post_scan(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             self.scan_reports.append(scan_report)

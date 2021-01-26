@@ -23,7 +23,6 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.dict_utils import merge_dicts
 from checkov.common.util.http_utils import extract_error_message, get_default_post_headers, get_default_get_headers
@@ -60,7 +59,6 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.skip_fixes = False
         self.skip_suppressions = False
-        self.suppressions = []
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
@@ -120,16 +118,6 @@ class BcPlatformIntegration(object):
                 raise e
 
         self.get_id_mapping()
-
-        suppressions = None
-        # Fetch the suppressions to verify the API token if we didn't already set up the integration above.
-        if not self.platform_integration_configured:
-            suppressions = self._get_suppressions_from_platform()
-
-        # But don't save them if the skip flag was used
-        if not self.skip_suppressions:
-            self.suppressions = suppressions or self._get_suppressions_from_platform()
-            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
 
         self.platform_integration_configured = True
 
@@ -263,29 +251,6 @@ class BcPlatformIntegration(object):
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
             return {}
 
-    def get_platform_fixes(self, scan_results):
-
-        for report in scan_results:
-            sorted_by_file = sorted(report.failed_checks, key=lambda c: c.repo_file_path)
-            for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.repo_file_path):
-                failed_checks = list(failed_checks)
-                # file path always starts with /
-                file_abs_path = os.path.abspath(os.path.join(os.getcwd(), file[1:]))
-                with open(file_abs_path, 'r') as reader:
-                    file_contents = reader.read()
-
-                fixes = self._get_fixes_for_file(file, file_contents, failed_checks)
-                all_fixes = fixes['fixes']
-
-                # a mapping of (checkov_check_id, resource_id) to the failed check Record object for lookup later
-                # guaranteed to map to exactly one record
-                failed_check_by_check_resource = {k: list(v)[0] for k, v in groupby(failed_checks, key=lambda c: (c.check_id, c.resource))}
-
-                for fix in all_fixes:
-                    ckv_id = self.bc_id_mapping[fix['policyId']]
-                    failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
-                    failed_check.fixed_definition = fix['fixedDefinition']
-
     def onboarding(self):
         if not self.bc_api_key:
             print(Style.BRIGHT + colored("Visualize and collaborate on security issues with Bridgecrew! \n", 'blue',
@@ -347,82 +312,6 @@ class BcPlatformIntegration(object):
         response = self._create_bridgecrew_account(email, org)
         bc_api_token = response.json()["checkovSignup"]
         return bc_api_token, response
-
-    def apply_suppressions(self, scan_report):
-        if self.skip_suppressions:
-            return
-
-        self.suppressions = sorted(self.suppressions, key=lambda s: s['checkovPolicyId'])
-
-        suppressions_by_policy = {policy_id: list(suppressions) for policy_id, suppressions in groupby(self.suppressions, key=lambda s: s['checkovPolicyId'])}
-
-        # holds the checks that are still not suppressed
-        still_failed_checks = []
-        for failed_check in scan_report.failed_checks:
-            relevant_suppressions = suppressions_by_policy.get(failed_check.check_id)
-
-            applied_suppression = self.check_suppressions(failed_check, relevant_suppressions) if relevant_suppressions else None
-            if applied_suppression:
-                failed_check.check_result = {
-                    'result': CheckResult.SKIPPED,
-                    'suppress_comment': applied_suppression['comment']
-                }
-                scan_report.skipped_checks.append(failed_check)
-            else:
-                still_failed_checks.append(failed_check)
-
-        scan_report.failed_checks = still_failed_checks
-
-    def check_suppressions(self, record, suppressions):
-        """
-        Checks the specified suppressions against the specified record, returning the first applicable suppression,
-        or None of no suppression is applicable.
-        :param record:
-        :param suppressions:
-        :return:
-        """
-        for suppression in suppressions:
-            if self.check_suppression(record, suppression):
-                return suppression
-        return None
-
-    def check_suppression(self, record, suppression):
-        """
-        Returns True if and only if the specified suppression applies to the specified record.
-        :param record:
-        :param suppression:
-        :return:
-        """
-        if record.check_id != suppression['checkovPolicyId']:
-            return False
-
-        type = suppression['suppressionType']
-
-        if type == 'Policy':
-            # We already validated the policy ID above
-            return True
-        elif type == 'Accounts':
-            # This should be true, because we validated when we downloaded the policies.
-            # But checking here adds some resiliency against bugs if that changes.
-            return self.repo_id in suppression['accountIds']
-        elif type == 'Resources':
-            for resource in suppression['resources']:
-                if resource['accountId'] == self.repo_id and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
-                    return True
-            return False
-        elif type == 'Tags':
-            entity_tags = record.entity_tags
-            if not entity_tags:
-                return False
-            suppression_tags = suppression['tags'] # a list of objects of the form {key: str, value: str}
-
-            for tag in suppression_tags:
-                key = tag['key']
-                value = tag['value']
-                if entity_tags.get(key) == value:
-                    return True
-
-        return False
 
     def _upload_run(self, args, scan_reports):
         print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
@@ -512,41 +401,6 @@ class BcPlatformIntegration(object):
 
         fixes = json.loads(response.content)
         return fixes[0]
-
-    def _get_suppressions_from_platform(self):
-        headers = merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version), self._get_auth_header())
-        response = requests.request('GET', self.suppressions_url, headers=headers)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get suppressions request failed with response code {response.status_code}: {error_message}')
-
-        # filter out custom policies and non-checkov policies
-        suppressions = [s for s in json.loads(response.content) if self._suppression_valid(s)]
-
-        for suppression in suppressions:
-            suppression['checkovPolicyId'] = self.bc_id_mapping[suppression['policyId']]
-
-        return suppressions
-
-    def _suppression_valid(self, suppression):
-        """
-        Returns whether this suppression is valid. A suppression is NOT valid if:
-        - its policy ID is not a Checkov ID, or
-        - the suppression type is 'Accounts' and this repo is not included in the account list
-        :param suppression:
-        :return:
-        """
-
-        policyId = suppression['policyId']
-        if policyId not in self.bc_id_mapping:
-            return False
-
-        if suppression['suppressionType'] == 'Accounts':
-            if self.repo_id not in suppression['accountIds']:
-                return False
-
-        return True
 
     def _get_auth_header(self):
         return {
