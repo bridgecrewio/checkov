@@ -377,36 +377,6 @@ class BcPlatformIntegration(object):
                 print("email should match the following pattern: {}".format(EMAIL_PATTERN))
         return email
 
-    def _get_fixes_for_file(self, filename, file_contents, failed_checks):
-
-        errors = list(map(lambda c: {
-            'resourceId': c.resource,
-            'policyId': self.ckv_to_bc_id_mapping[c.check_id],
-            'startLine': c.file_line_range[0],
-            'endLine': c.file_line_range[1]
-        }, failed_checks))
-
-        payload = {
-            'filePath': filename,
-            'fileContent': file_contents,
-            'errors': errors
-        }
-
-        headers = merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version), self._get_auth_header())
-        response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
-
-        fixes = json.loads(response.content)
-        return fixes[0]
-
-    def _get_auth_header(self):
-        return {
-            'Authorization': self.bc_api_key
-        }
-
     @staticmethod
     def loading_output(msg):
         with trange(ACCOUNT_CREATION_TIME) as t:
