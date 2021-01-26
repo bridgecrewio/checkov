@@ -18,3 +18,23 @@ Resources:
           Value: !Sub
             - long-form-sub-${account}
             - { account: !Ref  AWS::AccountId }
+  NoTags:
+    # Public, not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-notags"
+  EKSClusterNodegroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref ClusterName
+      NodegroupName: !Ref NodeGroupName
+      NodeRole: !GetAtt EKSNodegroupIAMRole.Arn
+      InstanceTypes: !Ref NodeGroupInstanceType
+      ScalingConfig:
+        MinSize: !Ref NodeGroupAmount
+        DesiredSize: !Ref NodeGroupAmount
+        MaxSize: !Ref NodeGroupAmount
+      Subnets: !Ref VPCSubnets
+      Tags:
+        Name: !Join ["-", [!Ref ClusterName, EKS, !Ref NodeGroupName]]
