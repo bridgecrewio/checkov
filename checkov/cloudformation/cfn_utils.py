@@ -24,6 +24,24 @@ def get_resource_tags(entity, registry=cfn_registry):
 
 
 def get_entity_value_as_string(value):
+    """
+    Handles different type of entities with possible CFN function substitutions. Returns the simplest possible string value
+    (without performing any function calls).
+
+    Examples:
+    Key: Value  # returns simple string
+
+    Key: !Ref ${AWS::AccountId}-data  # returns ${AWS::AccountId}-data
+
+    Key:
+    - ${account}-data
+    - account: !Ref ${AWS::AccountId}
+
+    # returns ${account}-data
+
+    :param value:
+    :return:
+    """
     if type(value) in (dict, dict_node):
         value = list(value.values())[0]
         # If the value is a long-form function, then the first element is the template string (technically str_node)
