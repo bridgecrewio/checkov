@@ -34,7 +34,7 @@ checkov -d /user/tf
   -o [{cli,json,junitxml,github_failed_only}], --output [{cli,json,junitxml,github_failed_only}]
                         Report output format
   --quiet               in case of CLI output, display only failed checks
-  --compact               in case of CLI output, do not display header and code blocks
+  --compact               in case of CLI output, do not display code blocks
   --framework {cloudformation,terraform,kubernetes,all}
                         filter scan to run only on a specific infrastructure
                         code frameworks
