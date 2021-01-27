@@ -8,7 +8,6 @@ from typing import Mapping, Optional, Dict, Any, List, Callable, Tuple
 import deep_merge
 import hcl2
 import jmespath
-from dataclasses import dataclass
 
 from checkov.common.runners.base_runner import filter_ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -16,7 +15,7 @@ from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.variables.context import EvaluationContext, VarReference
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry
-
+from checkov.terraform.parser_var_blocks import find_var_blocks, split_merge_args
 
 LOGGER = logging.getLogger(__name__)
 
@@ -327,7 +326,7 @@ class Parser:
                     # processor loop. This works... but requires another processor loop.
                     # (If you're thinking we should make a DAG and do this properly... you're probably right.)
                     prev_matches: List[Tuple[str, str]] = []        # original value -> replaced
-                    for match in _find_var_blocks(value):
+                    for match in find_var_blocks(value):
                         # Update what's expected in the match, see comment above
                         for prev_match in prev_matches:
                             match.replace(prev_match[0], prev_match[1])
@@ -535,10 +534,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
                                module_data_retrieval: Callable[[str], Dict[str, Any]],
                                eval_map_by_var_name: Dict[str, EvaluationContext],
                                context, orig_variable_full, root_directory: str) -> Any:
-    if "${" in orig_variable:
-        return orig_variable
-
-    elif orig_variable.startswith("module."):
+    if orig_variable.startswith("module."):
         if not module_list:
             return orig_variable
 
@@ -647,7 +643,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
                     return orig_variable     # no change
     elif orig_variable.startswith("merge(") and orig_variable.endswith(")"):
         altered_value = orig_variable[6:-1]
-        args = _split_merge_args(altered_value)
+        args = split_merge_args(altered_value)
         if args is None:
             return orig_variable
         merged_map = {}
@@ -780,160 +776,3 @@ def _remove_module_dependency_in_path(path):
     if re.findall(resolved_module_pattern, path):
         path = re.sub(resolved_module_pattern, '', path)
     return path
-
-
-def _split_merge_args(value: str) -> Optional[List[str]]:
-    """
-    Split arguments of a merge function. For example, "merge(local.one, local.two)" would
-    call this function with a value of "local.one, local.two" which would return
-    ["local.one", "local.two"]. If the value cannot be unpacked, None will be returned.
-    """
-    if not value:
-        return None
-
-    # There are a number of splitting scenarios depending on whether variables or
-    # direct maps are used:
-    #           merge({tag1="foo"},{tag2="bar"})
-    #           merge({tag1="foo"},local.some_tags)
-    #           merge(local.some_tags,{tag2="bar"})
-    #           merge(local.some_tags,local.some_other_tags)
-    # Also, the number of arguments can vary, things can be nested, strings are evil...
-    # See tests/terraform/test_parser_internals.py for many examples.
-
-    to_return = []
-    current_arg_buffer = ""
-    processing_str_escape = False
-    inside_collection_stack = []        # newest at position 0, contains the terminator for the collection
-    for c in value:
-        if c == "," and not inside_collection_stack:
-            current_arg_buffer = current_arg_buffer.strip()
-            # Note: can get a zero-length buffer when there's a double comman. This can
-            #       happen with multi-line args (see parser_internals test)
-            if len(current_arg_buffer) != 0:
-                to_return.append(current_arg_buffer)
-            current_arg_buffer = ""
-        else:
-            current_arg_buffer += c
-
-        processing_str_escape = _str_parser_loop_collection_helper(c,
-                                                                   inside_collection_stack,
-                                                                   processing_str_escape)
-
-    current_arg_buffer = current_arg_buffer.strip()
-    if len(current_arg_buffer) > 0:
-        to_return.append(current_arg_buffer)
-
-    if len(to_return) == 0:
-        return None
-    return to_return
-
-
-@dataclass
-class VarBlockMatch:
-    full_str: str       # Example: ${local.foo}
-    var_only: str       # Example: local.fop
-
-    def replace(self, original: str, replaced: str):
-        self.full_str = self.full_str.replace(original, replaced)
-        self.var_only = self.var_only.replace(original, replaced)
-
-
-def _find_var_blocks(value: str) -> List[VarBlockMatch]:
-    """
-    Find and return all the var blocks within a given string. Order is important and may contain portions of
-    one another.
-    """
-
-    # Note: This used to be implemented with a regex: r'\${([^{}]+?)}')
-    #       That found ${...} without a {} inside. However, this caused issues with things containing maps
-    #       which needed to be processed.
-
-    to_return: List[VarBlockMatch] = []
-    eval_buffer = ""
-    in_eval = False
-    preceding_dollar = False
-    processing_str_escape = False
-    inside_collection_stack: List[str] = []        # newest at position 0, contains terminator for collection
-    for c in value:
-        if c == "$":
-            if preceding_dollar:        # ignore double $
-                preceding_dollar = False
-                continue
-            preceding_dollar = True
-        elif c == "{" and preceding_dollar:
-            # NOTE: An eval block can start within another eval block, in which case we drop the old
-            #       stuff and process this one.
-            in_eval = True
-            eval_buffer = ""                    # reset buffer
-            inside_collection_stack.clear()     # reset stack
-            processing_str_escape = False
-            preceding_dollar = False
-            continue
-        else:
-            preceding_dollar = False
-
-        if not in_eval:
-            continue
-
-        if c == "}" and not inside_collection_stack:
-            eval_buffer = eval_buffer.strip()
-            if len(eval_buffer) == 0:
-                # Something went wrong because we have an empty arg. Blow out.
-                return []
-            to_return.append(VarBlockMatch("${" + eval_buffer + "}", eval_buffer))
-            eval_buffer = ""
-            in_eval = False
-            continue
-        else:
-            eval_buffer += c
-
-        processing_str_escape = _str_parser_loop_collection_helper(c, inside_collection_stack,
-                                                                   processing_str_escape)
-
-    return to_return
-
-
-def _str_parser_loop_collection_helper(c: str, inside_collection_stack: List[str],
-                                       processing_str_escape: bool) -> bool:
-    """
-    This function handles dealing with tracking when a char-by-char state loop is inside a
-    "collection" (map, array index, method args, string).
-
-    :param c:       Active character
-    :param inside_collection_stack:     Stack of terminators for collections. This will be modified by
-                                        this function. The active terminator will be at position 0.
-
-
-    :return: value to set for `processing_str_escape`
-    """
-    inside_a_string = False
-    if inside_collection_stack:
-        terminator = inside_collection_stack[0]
-
-        if terminator == '"' or terminator == "'":
-            if processing_str_escape:
-                processing_str_escape = False
-                return processing_str_escape
-            elif c == "\\":
-                processing_str_escape = True
-                return processing_str_escape
-            else:
-                inside_a_string = True
-
-        if c == terminator:
-            del inside_collection_stack[0]
-            return processing_str_escape
-
-    if not inside_a_string:
-        if c == '"':
-            inside_collection_stack.insert(0, '"')
-        elif c == "'":
-            inside_collection_stack.insert(0, "'")
-        elif c == "{":
-            inside_collection_stack.insert(0, "}")
-        elif c == "[":
-            inside_collection_stack.insert(0, "]")
-        elif c == "(":
-            inside_collection_stack.insert(0, ")")
-
-    return processing_str_escape
