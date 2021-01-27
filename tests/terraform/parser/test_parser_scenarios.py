@@ -98,6 +98,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_json_807(self):
         self.go("json_807")
 
+    def test_unbalanced_eval_brackets(self):
+        self.go("unbalanced_eval_brackets")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
