@@ -7,6 +7,23 @@ import hcl2
 # This group of tests is used to confirm assumptions about how the hcl2 library parses into json.
 # We want to make sure important assumptions are caught if behavior changes.
 class TestHCL2LoadAssumptions(unittest.TestCase):
+    def test_unbalanced_eval_brackets(self):
+        tf = '''
+        locals {
+          # This is intentionally missing the closing bracket
+          s3_access_logs_prefix = "${replace(var.cdn_logging_prefix, "cdn", "s3")/${var.bucket_name}"
+        }'''
+        expect = {
+            "locals": [
+                {
+                    # NOTE: Not 100% sure what it will do, but it shouldn't loop indefinitely.
+                    #       (See https://github.com/bridgecrewio/checkov/issues/822)
+                    "s3_access_logs_prefix": ["${replace(var.cdn_logging_prefix, 'cdn', 's3')/${var.bucket_name}"]
+                }
+            ]
+        }
+        self.go(tf, expect)
+
     def test_multiline_function(self):
         tf = '''
         locals {
