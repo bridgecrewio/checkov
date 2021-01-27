@@ -55,6 +55,24 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         }
         self.go(tf, expect)
 
+    def test_merge_with_inner_var(self):
+        tf = '''
+        resource "aws_s3_bucket" "foo" {
+          tags = merge(local.common_tags, local.common_data_tags, {Name = "my-thing-${var.ENVIRONMENT}-${var.REGION}"})
+        }'''
+        expect = {
+            "resource": [
+                {
+                    "aws_s3_bucket": {
+                        "foo": {
+                            "tags": ["${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}"]
+                        }
+                    }
+                }
+            ]
+        }
+        self.go(tf, expect)
+
     def test_variable_block(self):
         tf = '''
         variable "my_var" {

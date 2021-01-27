@@ -310,9 +310,28 @@ class Parser:
                 if isinstance(value, str):
                     altered_value = value
 
-                    had_pattern_match = False
+                    had_var_block_match = False
 
+                    # The way in which matches are processed is important as they are ordered and may contain
+                    # portions of one another. For example:
+                    #  ${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}
+                    # In this case, we expect blocks similar to this:
+                    #  1) ${var.ENVIRONMENT}
+                    #  2) ${var.REGION}
+                    #  3) ${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}
+                    # If either of the first two are replaced, we can still process the outer eval block
+                    # if the substitutions made to the earlier vars are also made to the later. That allows
+                    # knowing what the string should really look like so substitutions can be made properly.
+                    # If this proves not to work well, the other option is to abort the later (because
+                    # the full string isn't found in the value anymore) and come back to it on another
+                    # processor loop. This works... but requires another processor loop.
+                    # (If you're thinking we should make a DAG and do this properly... you're probably right.)
+                    prev_matches: List[Tuple[str, str]] = []        # original value -> replaced
                     for match in _find_var_blocks(value):
+                        # Update what's expected in the match, see comment above
+                        for prev_match in prev_matches:
+                            match.replace(prev_match[0], prev_match[1])
+
                         var_base = match.var_only
 
                         # Expressions such as (from variable definition):
@@ -321,7 +340,8 @@ class Parser:
                         #    "type = ${string}"
                         if var_base in _SIMPLE_TYPES and match.full_str == value:
                             altered_value = var_base
-                            had_pattern_match = True
+                            had_var_block_match = True
+                            prev_matches.append((match.full_str, var_base))
                         else:
                             replaced = _handle_single_var_pattern(var_base, var_value_and_file_map,
                                                                   locals_values, resource_list,
@@ -333,9 +353,10 @@ class Parser:
                                     altered_value = replaced
                                 else:
                                     altered_value = altered_value.replace(match.full_str, str(replaced))
-                                had_pattern_match = True
+                                prev_matches.append((match.full_str, replaced))
+                                had_var_block_match = True
 
-                    if not had_pattern_match:
+                    if not had_var_block_match:
                         # tomap is annoying because the curly braces in the string break the regex. Rather than
                         # coming up with something that's significantly more complex, we'll special case this
                         # check. Only do this when there wasn't a pattern match to make sure there are no
@@ -812,10 +833,15 @@ class VarBlockMatch:
     full_str: str       # Example: ${local.foo}
     var_only: str       # Example: local.fop
 
+    def replace(self, original: str, replaced: str):
+        self.full_str = self.full_str.replace(original, replaced)
+        self.var_only = self.var_only.replace(original, replaced)
+
 
 def _find_var_blocks(value: str) -> List[VarBlockMatch]:
     """
-    Find and return all the var blocks within a given string.
+    Find and return all the var blocks within a given string. Order is important and may contain portions of
+    one another.
     """
 
     # Note: This used to be implemented with a regex: r'\${([^{}]+?)}')

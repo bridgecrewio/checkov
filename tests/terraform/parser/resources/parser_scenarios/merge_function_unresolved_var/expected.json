@@ -1,0 +1,34 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "common_tags": [
+          {
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "ENV": {}
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "bucket": {
+            "tags": [
+              {
+                "Tag1": "one",
+                "Tag2": "two",
+                "Name": "my-bucket-${var.ENV}"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

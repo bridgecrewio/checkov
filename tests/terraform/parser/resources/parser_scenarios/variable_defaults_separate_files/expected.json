@@ -1,0 +1,25 @@
+{
+  "main.tf": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "test": {
+            "bucket": [
+              "this-is-my-default"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "variables.tf": {
+    "variable": [
+      {
+        "BUCKET_NAME": {
+          "type": ["string"],
+          "default": ["this-is-my-default"]
+        }
+      }
+    ]
+  }
+}

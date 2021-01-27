@@ -70,7 +70,16 @@ class TestParserInternals(unittest.TestCase):
                   "merge({\"a\": \"}, evil\"},{\"b\": \"\\\" , evil\"})")]),
             ("$${foo}", []),         # escape interpolation
             ('${merge({\'a\': \'}, evil\'})}',
-             [VBM('${merge({\'a\': \'}, evil\'})}', 'merge({\'a\': \'}, evil\'})')])
+             [VBM('${merge({\'a\': \'}, evil\'})}', 'merge({\'a\': \'}, evil\'})')]),
+
+            # Ordered returning of sub-vars and then outer var.
+            ("${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+             [
+                 VBM("${var.ENVIRONMENT}", "var.ENVIRONMENT"),
+                 VBM("${var.REGION}", "var.REGION"),
+                 VBM("${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+                     "merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})")
+             ])
         ]
         for case in cases:
             actual = parser._find_var_blocks(case[0])

@@ -28,6 +28,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_variable_defaults(self):
         self.go("variable_defaults")
 
+    def test_variable_defaults_separate_files(self):
+        self.go("variable_defaults_separate_files")
+
     def test_local_block(self):
         self.go("local_block")
 
@@ -39,6 +42,9 @@ class TestParserScenarios(unittest.TestCase):
 
     def test_merge_function(self):
         self.go("merge_function")
+
+    def test_merge_function_unresolved_var(self):
+        self.go("merge_function_unresolved_var")
 
     def test_tobool_function(self):
         self.go("tobool_function")
