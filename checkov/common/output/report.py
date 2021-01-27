@@ -71,7 +71,7 @@ class Report:
     def is_empty(self):
         return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) + len(self.parsing_errors) == 0
 
-    def print_console(self, is_quiet=False):
+    def print_console(self, is_quiet=False, is_compact=False):
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -83,12 +83,12 @@ class Report:
         print(colored(message, "cyan"))
         if not is_quiet:
             for record in self.passed_checks:
-                print(record)
+                print(record.to_string(compact=is_compact))
         for record in self.failed_checks:
-            print(record)
+            print(record.to_string(compact=is_compact))
         if not is_quiet:
             for record in self.skipped_checks:
-                print(record)
+                print(record.to_string(compact=is_compact))
 
         if not is_quiet:
             for file in self.parsing_errors:

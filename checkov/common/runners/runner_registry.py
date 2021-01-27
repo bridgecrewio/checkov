@@ -56,7 +56,7 @@ class RunnerRegistry(object):
                 elif args.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=args.quiet)
+                    report.print_console(is_quiet=args.quiet, is_compact=args.compact)
             exit_codes.append(report.get_exit_code(args.soft_fail))
         if args.output == "junitxml":
             if len(junit_reports) == 1:
