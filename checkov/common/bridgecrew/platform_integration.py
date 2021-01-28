@@ -1,11 +1,9 @@
-from itertools import groupby
 from time import sleep
 
 import boto3
 import dpath.util
 import json
 import logging
-import os
 import re
 import requests
 import urllib3
@@ -19,13 +17,12 @@ from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError
 
+from checkov.common.bridgecrew.ci_variables import *
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
+from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
+    enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, enrich_and_persist_checks_metadata
-from checkov.common.models.enums import CheckResult
-from checkov.common.util.dict_utils import merge_dicts
-from checkov.common.util.http_utils import extract_error_message, get_default_post_headers, get_default_get_headers
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -76,7 +73,8 @@ class BcPlatformIntegration(object):
         self.use_s3_integration = False
         self.platform_integration_configured = False
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None, source_version=None):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
+                                     source_version=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
@@ -186,8 +184,14 @@ class BcPlatformIntegration(object):
 
         request = None
         try:
+
             request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
-                                   body=json.dumps({"path": self.repo_path, "branch": branch}),
+                                   body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
+                                                    "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
+                                                    "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
+                                                    "author": BC_AUTHOR, "author_url": BC_AUTHOR_URL,
+                                                    "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
+                                                    "repository_url": BC_REPOSITORY_URL}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
         except HTTPError as e:
@@ -271,15 +275,19 @@ class BcPlatformIntegration(object):
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print('\n Saving API key to {}'.format(bridgecrew_file))
-                        print(Style.BRIGHT + colored("\n Checkov Dashboard configured, opening https://bridgecrew.cloud, check your inbox for login details! \n", 'blue', attrs=['bold']))
+                        print(Style.BRIGHT + colored(
+                            "\n Checkov Dashboard configured, opening https://bridgecrew.cloud, check your inbox for login details! \n",
+                            'blue', attrs=['bold']))
                         persist_key(self.bc_api_key)
                     else:
                         print(
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
                                                    'red', attrs=['bold']) + Style.RESET_ALL)
-                    webbrowser.open("https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
+                    webbrowser.open(
+                        "https://bridgecrew.cloud/?utm_source=cli&utm_medium=organic_oss&utm_campaign=checkov")
             else:
-                print("\n To see the Dashboard prompt again, run `checkov` with no arguments \n For Checkov usage, try `checkov --help`")
+                print(
+                    "\n To see the Dashboard prompt again, run `checkov` with no arguments \n For Checkov usage, try `checkov --help`")
         else:
             print("No argument given. Try ` --help` for further information")
 
@@ -351,7 +359,8 @@ class BcPlatformIntegration(object):
         result = None
         while not valid:
             result = str(
-                input('Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
+                input(
+                    'Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
             # remove spaces and special characters
             result = ''.join(e for e in result if e.isalnum())
             if result:
