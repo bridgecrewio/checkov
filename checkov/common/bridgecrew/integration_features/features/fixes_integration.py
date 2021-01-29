@@ -13,6 +13,9 @@ from checkov.common.util.http_utils import get_default_get_headers, get_auth_hea
     get_default_post_headers
 
 
+SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
+
+
 class FixesIntegration(BaseIntegrationFeature):
 
     def __init__(self, bc_integration):
@@ -22,6 +25,8 @@ class FixesIntegration(BaseIntegrationFeature):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
 
     def post_scan(self, scan_report):
+        if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
+            return
         self._get_platform_fixes(scan_report)
 
     def _get_platform_fixes(self, scan_report):
