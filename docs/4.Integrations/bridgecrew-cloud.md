@@ -23,6 +23,25 @@ Or by using the `-f` file flag:
 - `<branch>` - Branch name to be persisted on platform, defaults to the master branch. NOTE: please make sure the scanned directory (supplied with `-d` flag)
 is currently checked out from the given branch name.
 
+### Environment variables
+We strongly recommend that checkov use environment variables that enriches bridgecrew's context with CI/CD systems data.
+
+| Environment variable      | Description                               | Example 
+| ------------------------- | -----------                               | ------------------------- | 
+| BC_FROM_BRANCH            | Source branch                             | feature/foo |
+| BC_TO_BRANCH              | Target branch                             | main |
+| BC_PR_ID                  | Pull request identifier                   | 825 |
+| BC_PR_URL                 | Link to pull request/merge request        | https://github.com/bridgecrewio/checkov/pull/825 |
+| BC_COMMIT_HASH            | Commit identifier                         | 5df50ab857e7a255e4e731877748b539915ad489 |
+| BC_COMMIT_URL             | Link to commit in CI/VCS system           | https://github.com/bridgecrewio/checkov/commit/5df50ab857e7a255e4e731877748b539915ad489 |
+| BC_AUTHOR                 | User associated with the CI trigger       | schosterbarak |
+| BC_AUTHOR_URL             | Link to the user profile page             | https://github.com/schosterbarak |
+| BC_RUN_ID                 | CI run identifier                         | 525220526 |
+| BC_RUN_URL                | Link to the run in the CI system          | https://github.com/bridgecrewio/checkov/actions/runs/525220526 |
+| BC_REPOSITORY_URL         | Link to the github reposito               | https://github.com/bridgecrewio/checkov/ |
+| BC_SOURCE                 | Name of CI system being integrated        | githubActions |
+
+
 ## Bridgecrew cloud view
 After successfully terminating, the scan results are persisted on [Bridgecrew Cloud](https://www.bridgecrew.cloud), and are available as possible violations
 that can be seen
