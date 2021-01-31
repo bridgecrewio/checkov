@@ -78,6 +78,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         print_checks(framework=args.framework)
         return
     external_checks_dir = get_external_checks_dir(args)
+    url = None
+
     if args.directory:
         for root_folder in args.directory:
             file = args.file
@@ -86,9 +88,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
-                bc_integration.commit_repository(args.branch)
+                url = bc_integration.commit_repository(args.branch)
 
-            runner_registry.print_reports(scan_reports, args)
+            runner_registry.print_reports(scan_reports, args,url)
         return
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
@@ -98,8 +100,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
-            bc_integration.commit_repository(args.branch)
-        runner_registry.print_reports(scan_reports, args)
+            url = bc_integration.commit_repository(args.branch)
+        runner_registry.print_reports(scan_reports, args,url)
     else:
         print(f"{banner}")
 

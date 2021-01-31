@@ -40,7 +40,7 @@ class RunnerRegistry(object):
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, args):
+    def print_reports(self, scan_reports, args, url=None):
         if args.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
@@ -57,6 +57,8 @@ class RunnerRegistry(object):
                     report.print_failed_github_md()
                 else:
                     report.print_console(is_quiet=args.quiet, is_compact=args.compact)
+                    if url:
+                        print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(args.soft_fail))
         if args.output == "junitxml":
             if len(junit_reports) == 1:

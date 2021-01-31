@@ -198,6 +198,8 @@ class BcPlatformIntegration(object):
                                             'x-api-client': self.bc_source, 'x-api-checkov-version': checkov_version
                                             })
             response = json.loads(request.data.decode("utf8"))
+            url = response.get("url", None)
+            return url
         except HTTPError as e:
             logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
             raise e
