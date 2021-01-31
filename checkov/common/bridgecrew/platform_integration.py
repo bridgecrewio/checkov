@@ -305,19 +305,10 @@ class BcPlatformIntegration(object):
                 self._upload_run(args, scan_reports)
 
     def get_repository(self, args):
+        if BC_FROM_BRANCH:
+            return BC_FROM_BRANCH
         repo_id = "cli_repo/" + path.basename(args.directory[0])
         valid_repos = 0
-        # Work out git repo name for BC --repo-id from root_folder
-        # for dir in args.directory:
-        #     try:
-        #         repo = Repo(dir)
-        #         git_remote_uri = repo.remotes.origin.url
-        #         git_repo_dict = re.match(r'(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+).git',
-        #                                  git_remote_uri).group(4, 5)
-        #         repo_id = git_repo_dict[0] + "/" + git_repo_dict[1]
-        #         valid_repos += 1
-        #     except:  # nosec
-        #         pass
         return repo_id
 
     def get_api_token(self, email, org):
