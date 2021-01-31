@@ -5,6 +5,7 @@ import os
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
+
 class TestCheckovJsonReport(unittest.TestCase):
 
     def test_terragoat_report(self):
@@ -18,6 +19,14 @@ class TestCheckovJsonReport(unittest.TestCase):
     def test_k8goat_report(self):
         report_path = current_dir + "/../checkov_report_kubernetes-goat.json"
         self.validate_report(report_path)
+
+    def test_checkov_report_terragoat_with_skip(self):
+        report_path = current_dir + "/../checkov_report_terragoat_with_skip.json"
+        with open(report_path) as json_file:
+            data = json.load(json_file)
+            for check_result in data["results"]["passed_checks"]:
+                self.assertNotEquals(check_result["check_id"], "CKV_AWS_33")
+                self.assertNotEquals(check_result["check_id"], "CKV_AWS_41")
 
     def validate_report(self, report_path):
         with open(report_path) as json_file:
