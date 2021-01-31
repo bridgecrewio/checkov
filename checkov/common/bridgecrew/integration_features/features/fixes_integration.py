@@ -1,17 +1,14 @@
-import json
-import logging
-import os
 from itertools import groupby
 
+import json
+import os
 import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.models.enums import CheckResult
 from checkov.common.util.dict_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message, \
+from checkov.common.util.http_utils import get_auth_header, extract_error_message, \
     get_default_post_headers
-
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 

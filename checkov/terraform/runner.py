@@ -143,7 +143,7 @@ class Runner(BaseRunner):
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                       entity_context_path)
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
-
+            absolut_scanned_file_path = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             (entity_type, _, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
@@ -152,7 +152,7 @@ class Runner(BaseRunner):
                                 code_block=entity_code_lines, file_path=scanned_file,
                                 file_line_range=entity_lines_range,
                                 resource=entity_id, evaluations=entity_evaluations,
-                                check_class=check.__class__.__module__, file_abs_path=full_file_path, entity_tags=tags)
+                                check_class=check.__class__.__module__, file_abs_path=absolut_scanned_file_path, entity_tags=tags)
                 report.add_record(record=record)
 
     @staticmethod
