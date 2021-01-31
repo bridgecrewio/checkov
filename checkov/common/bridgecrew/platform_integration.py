@@ -23,6 +23,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from checkov.version import version as checkov_version
 
 EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
 
@@ -192,7 +193,9 @@ class BcPlatformIntegration(object):
                                                     "author": BC_AUTHOR, "author_url": BC_AUTHOR_URL,
                                                     "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
                                                     "repository_url": BC_REPOSITORY_URL}),
-                                   headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
+                                   headers={"Authorization": self.bc_api_key, "Content-Type": "application/json",
+                                            'x-api-client': self.bc_source, 'x-api-checkov-version': checkov_version
+                                            })
             response = json.loads(request.data.decode("utf8"))
         except HTTPError as e:
             logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
