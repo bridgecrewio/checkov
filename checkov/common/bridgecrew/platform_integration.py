@@ -93,6 +93,7 @@ class BcPlatformIntegration(object):
 
         if self.bc_source != 'vscode':
             try:
+                self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
