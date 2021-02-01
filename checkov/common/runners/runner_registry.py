@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from abc import abstractmethod
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
