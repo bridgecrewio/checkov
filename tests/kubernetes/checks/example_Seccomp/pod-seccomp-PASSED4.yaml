@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seccomp-passed-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: test
+        image: quay.io/test:0.1
+        ports:
+        - containerPort: 1234
+      securityContext:
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault

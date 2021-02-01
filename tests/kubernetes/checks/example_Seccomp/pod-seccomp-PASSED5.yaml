@@ -1,0 +1,38 @@
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME
+  labels:
+    app.kubernetes.io/instance: RELEASE-NAME
+  annotations:
+  namespace: default
+spec:
+  serviceName: RELEASE-NAME
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      name: RELEASE-NAME
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+      annotations:
+    spec:
+      affinity:
+        podAffinity:
+        podAntiAffinity:
+        nodeAffinity:
+      automountServiceAccountToken: false
+      securityContext:
+        allowPrivilegeEscalation: false
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: RELEASE-NAME
+          image: docker.io/test:1
+          imagePullPolicy: "Always"
