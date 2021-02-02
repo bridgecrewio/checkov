@@ -40,6 +40,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         return any([x in key for x in inspected_attributes])
 
     def scan_resource_conf(self, conf):
+        self.handle_dynamic_values(conf)
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:

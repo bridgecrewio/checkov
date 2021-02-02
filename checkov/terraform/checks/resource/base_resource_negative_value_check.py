@@ -13,6 +13,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.handle_dynamic_values(conf)
+
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:
             if dpath.search(conf, excluded_key) != {}:
