@@ -13,6 +13,7 @@ class BaseResourceCheck(BaseCheck):
         resource_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):
+        self.handle_dynamic_values(conf)
         return self.scan_resource_conf(conf, entity_type)
 
     @multi_signature()
@@ -32,3 +33,8 @@ class BaseResourceCheck(BaseCheck):
             return wrapped(self, conf)
 
         return wrapper
+
+    def handle_dynamic_values(self, conf):
+        for dynamic_element in conf.get("dynamic", []):
+            for element_name in dynamic_element.keys():
+                conf[element_name] = dynamic_element[element_name].get('content', [])
