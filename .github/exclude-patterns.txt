@@ -13,3 +13,4 @@ tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
 .*Scans.md
 docs/5.Contribution/New-Provider.md
+tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-FAILED.yaml
