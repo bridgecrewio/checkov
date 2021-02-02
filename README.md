@@ -276,6 +276,10 @@ Default is `LOG_LEVEL=WARNING`.
 To skip a whole directory, use the environment variable `CKV_IGNORED_DIRECTORIES`. 
 Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
 
+#### VSCODE Extension
+
+If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+
 ## Alternatives
 
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline) for secured basline.
