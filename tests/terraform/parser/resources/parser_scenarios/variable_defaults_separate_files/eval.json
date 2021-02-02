@@ -1,0 +1,15 @@
+{
+  "main.tf": {
+    "BUCKET_NAME": {
+      "var_file": "variables.tf",
+      "value": "this-is-my-default",
+      "definitions": [
+        {
+          "definition_name": "BUCKET_NAME",
+          "definition_expression": "${var.BUCKET_NAME}",
+          "definition_path": "resource/0/aws_s3_bucket/test/bucket/0"
+        }
+      ]
+    }
+  }
+}
