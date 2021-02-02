@@ -329,7 +329,7 @@ class Parser:
                     for match in find_var_blocks(value):
                         # Update what's expected in the match, see comment above
                         for prev_match in prev_matches:
-                            match.replace(prev_match[0], prev_match[1])
+                            match.replace(prev_match[0], str(prev_match[1]))
 
                         var_base = match.var_only
 
