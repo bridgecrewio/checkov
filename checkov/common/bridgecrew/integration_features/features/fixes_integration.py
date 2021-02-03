@@ -1,3 +1,4 @@
+import logging
 from itertools import groupby
 
 import json
@@ -43,6 +44,8 @@ class FixesIntegration(BaseIntegrationFeature):
                 file_contents = reader.read()
 
             fixes = self._get_fixes_for_file(file, file_contents, failed_checks)
+            if not fixes:
+                continue
             all_fixes = fixes['fixes']
 
             # a mapping of (checkov_check_id, resource_id) to the failed check Record object for lookup later
@@ -78,7 +81,12 @@ class FixesIntegration(BaseIntegrationFeature):
             error_message = extract_error_message(response)
             raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
 
-        fixes = json.loads(response.content)
+        logging.debug(f'Response from fixes API: {response.content}')
+
+        fixes = json.loads(response.content) if response.content else None
+        if not fixes or type(fixes) != list:
+            logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
+            return None
         return fixes[0]
 
 

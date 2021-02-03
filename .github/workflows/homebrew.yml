@@ -3,7 +3,7 @@ name: homebrew
 on:
   push:
     branches:
-      - '*'
+      - 'master'
     tags: 
       - '*'
 
@@ -15,6 +15,7 @@ jobs:
       - name: Get release version
         id: get_version
         run: |
+          sleep 10m
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
         env:
