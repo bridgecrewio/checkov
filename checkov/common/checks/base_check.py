@@ -15,6 +15,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     def __init__(self, name, id, categories, supported_entities, block_type):
         self.name = name
         self.id = id
+        self.bc_id = None
         self.categories = categories
         self.block_type = block_type
         self.supported_entities = supported_entities

@@ -19,6 +19,8 @@ class BaseCheckRegistry(object):
     #       checks aren't registered. (This happens with Serverless, for example.)
     __loading_external_checks = False
 
+    __all_registered_checks = []
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
@@ -43,6 +45,8 @@ class BaseCheckRegistry(object):
         for entity in check.supported_entities:
             checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
             checks[entity].append(check)
+
+        BaseCheckRegistry.__all_registered_checks.append(check)
 
     @staticmethod
     def _is_wildcard(entity):
@@ -168,3 +172,7 @@ class BaseCheckRegistry(object):
                             )
                         finally:
                             BaseCheckRegistry.__loading_external_checks = False
+
+    @staticmethod
+    def get_all_registered_checks():
+        return BaseCheckRegistry.__all_registered_checks

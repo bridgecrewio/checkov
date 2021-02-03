@@ -12,6 +12,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -80,6 +81,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     external_checks_dir = get_external_checks_dir(args)
     url = None
 
+    all_checks = BaseCheckRegistry.get_all_registered_checks()
+    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+    for check in all_checks:
+        check.bc_id = ckv_to_bc_id_mapping.get(check.id)
+
     if args.directory:
         for root_folder in args.directory:
             file = args.file
@@ -138,11 +144,17 @@ def add_parser_args(parser):
                                  'all'],
                         default='all')
     parser.add_argument('-c', '--check',
-                        help='filter scan to run only on a specific check identifier(allowlist), You can '
-                             'specify multiple checks separated by comma delimiter', default=None)
+                        help='filter scan to run only on a specific check identifier (allowlist), You can '
+                             'specify multiple checks separated by comma delimiter. The IDs can be Checkov IDs (CKV_XX) '
+                             'or Bridgecrew IDs (BC_XX).', default=None)
     parser.add_argument('--skip-check',
-                        help='filter scan to run on all check but a specific check identifier(denylist), You can '
-                             'specify multiple checks separated by comma delimiter', default=None)
+                        help='filter scan to run on all check but a specific check identifier (denylist), You can '
+                             'specify multiple checks separated by comma delimiter. The IDs can be Checkov IDs (CKV_XX) '
+                             'or Bridgecrew IDs (BC_XX).', default=None)
+    parser.add_argument('--use-bc-ids',
+                        help='Use check IDs from the Bridgecrew platform (BC_XX) in the output, instead of Checkov IDs. '
+                             'Both sets of IDs are included in the JSON output. Not all Checkov policies exist in Bridgecrew, '
+                             'so some will still use Checkov IDs. ', default=None, action='store_true')
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')

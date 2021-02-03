@@ -27,7 +27,7 @@ class RunnerFilter(object):
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
 
-    def should_run_check(self, check_id):
+    def should_run_check(self, check_id, bc_check_id=None):
         if RunnerFilter.is_external_check(check_id):
             pass        # enabled unless skipped
         elif self.checks:
