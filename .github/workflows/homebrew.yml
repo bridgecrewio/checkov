@@ -3,7 +3,7 @@ name: homebrew
 on:
   push:
     branches:
-      - '*'
+      - 'master'
     tags: 
       - '*'
 
