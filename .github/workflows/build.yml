@@ -64,8 +64,6 @@ jobs:
         run: |
           pipenv install --dev
       - name: Test with pytest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
@@ -73,8 +71,7 @@ jobs:
           pipenv run python -m coverage_badge -o coverage.svg -f
       - name: update docs and bump version
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'  
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -106,24 +103,9 @@ jobs:
 
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
-          echo ::set-env name=RELEASE_VERSION::$(echo $new_tag)
+          git tag $new_tag
+          git push origin $new_tag
 
-          ## git tag $new_tag
-          ## git push origin $new_tag
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v5.1
-        with:
-          custom_tag: ${{ env.RELEASE_VERSION }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create a GitHub release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
-          body: ${{ steps.tag_version.outputs.changelog }}
   publish-package:
     needs: bump-version
     runs-on: ubuntu-latest
