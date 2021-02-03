@@ -23,6 +23,6 @@ jobs:
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
-          url: https://pypi.io/packages/source/c/checkov/checkov-${{ env.RELEASE_VERSION }}.tar.gz
+          download-url: https://pypi.io/packages/source/c/checkov/checkov-${{ env.RELEASE_VERSION }}.tar.gz
         env:
           COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
