@@ -106,7 +106,7 @@ jobs:
 
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
-          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          echo ::set-env name=RELEASE_VERSION::$(echo $new_tag)
 
           ## git tag $new_tag
           ## git push origin $new_tag
