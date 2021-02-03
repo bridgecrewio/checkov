@@ -55,7 +55,7 @@ class RunnerRegistry(object):
                 elif args.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=args.quiet, is_compact=args.compact)
+                    report.print_console(is_quiet=args.quiet, is_compact=args.compact, use_bc_ids=args.use_bc_ids)
                     if url:
                         print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(args.soft_fail))

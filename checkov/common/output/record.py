@@ -23,7 +23,7 @@ class Record:
     entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path, entity_tags=None):
+                 evaluations, check_class, file_abs_path, entity_tags=None, bc_check_id=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -31,6 +31,7 @@ class Record:
                              - 'definitions', a list of dicts which contain 'definition_expression'
         """
         self.check_id = check_id
+        self.bc_check_id = bc_check_id
         self.check_name = check_name
         self.check_result = check_result
         self.code_block = code_block
@@ -67,7 +68,7 @@ class Record:
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
         return string_block
 
-    def to_string(self, compact=False):
+    def to_string(self, compact=False, use_bc_ids=False):
         status = ''
         evaluation_message = f''
         status_color = "white"
@@ -82,7 +83,9 @@ class Record:
             status_color = 'blue'
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
 
-        check_message = colored("Check: {}: \"{}\"\n".format(self.check_id, self.check_name), "white")
+        check_id = self.bc_check_id if (use_bc_ids and self.bc_check_id) else self.check_id
+
+        check_message = colored("Check: {}: \"{}\"\n".format(check_id, self.check_name), "white")
         guideline_message = ''
         if self.guideline:
             guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL

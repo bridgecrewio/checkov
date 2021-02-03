@@ -1,6 +1,4 @@
-import os
 import unittest
-from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
 
@@ -68,7 +66,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_specific_disable_AND_enable(self):
         instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_1"])
         self.assertTrue(instance.should_run_check("CHECK_1"))
-    
+
     def test_should_run_omitted_wildcard(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertTrue(instance.should_run_check("CHECK_999"))
@@ -76,7 +74,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertTrue(instance.should_run_check("CHECK_999", "BC_CHECK_999"))
-    
+
     def test_should_run_omitted_wildcard2(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertFalse(instance.should_run_check("CHECK_AWS_909"))
@@ -84,13 +82,13 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard2_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertFalse(instance.should_run_check("CHECK_AWS_909", "BC_CHECK_AWS_909"))
-    
+
     def test_should_run_omitted_wildcard3(self):
-        instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE*"])
-        self.assertTrue(instance.should_run_check("EXT_CHECK_909")) 
+        instance = RunnerFilter(skip_checks=["CHECK_AWS*", "CHECK_AZURE*"])
+        self.assertTrue(instance.should_run_check("EXT_CHECK_909"))
 
     def test_should_run_omitted_wildcard4(self):
-        instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE_01"])
+        instance = RunnerFilter(skip_checks=["CHECK_AWS*", "CHECK_AZURE_01"])
         self.assertFalse(instance.should_run_check("CHECK_AZURE_01"))
 
 
