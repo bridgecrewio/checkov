@@ -118,11 +118,12 @@ class Runner(BaseRunner):
                         results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                         for check, check_result in results.items():
-                            record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                            record.set_bc_check_id(check.bc_id)
                             report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
@@ -148,11 +149,12 @@ class Runner(BaseRunner):
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
-                            record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                            record.set_bc_check_id(check.bc_id)
                             report.add_record(record=record)
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
@@ -169,11 +171,12 @@ class Runner(BaseRunner):
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                    record.set_bc_check_id(check.bc_id)
                     report.add_record(record=record)
 
             # "Complete" checks
@@ -186,13 +189,14 @@ class Runner(BaseRunner):
                 results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, complete_registry)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=[],              # Don't show, could be large
                                     file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                    record.set_bc_check_id(check.bc_id)
                     report.add_record(record=record)
 
         return report

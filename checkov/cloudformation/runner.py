@@ -82,11 +82,12 @@ class Runner(BaseRunner):
                                                         runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
-                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=cf_file,
                                                 file_line_range=entity_lines_range, resource=resource_id,
                                                 evaluations=variable_evaluations,check_class=check.__class__.__module__,
                                                 file_abs_path=file_abs_path, entity_tags=tags)
+                                record.set_bc_check_id(check.bc_id)
                                 report.add_record(record=record)
         return report
 

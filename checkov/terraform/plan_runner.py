@@ -94,11 +94,12 @@ class Runner(BaseRunner):
                 entity_code_lines = entity_context.get('code_lines')
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, evaluations=entity_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path)
+                    record.set_bc_check_id(check.bc_id)
                     report.add_record(record=record)
 
     def get_entity_context(self, definition_path, full_file_path):
