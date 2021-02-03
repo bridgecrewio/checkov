@@ -1,3 +1,4 @@
+import logging
 from itertools import groupby
 
 import json
@@ -77,6 +78,8 @@ class FixesIntegration(BaseIntegrationFeature):
         if response.status_code != 200:
             error_message = extract_error_message(response)
             raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
+
+        logging.debug(f'Response from fixes API: {response.content}')
 
         fixes = json.loads(response.content)
         return fixes[0]
