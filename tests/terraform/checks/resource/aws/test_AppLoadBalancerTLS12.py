@@ -1,5 +1,6 @@
 import unittest
 
+import hcl2
 
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.aws.AppLoadBalancerTLS12 import check
@@ -29,6 +30,27 @@ class TestAppLoadBalancerTLS12(unittest.TestCase):
             }
         ]
         }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_redirect(self):
+        hcl_res = hcl2.loads("""
+            resource "aws_lb_listener" "http" {
+              load_balancer_arn = aws_lb.public.arn
+              port              = "80"
+              protocol          = "HTTP" 
+            
+              default_action {
+                redirect {
+                  port        = "443"
+                  protocol    = "HTTPS"
+                  status_code = "HTTP_301"
+                }
+                type = "redirect"
+              }
+            }
+            """)
+        resource_conf = hcl_res['resource'][0]['aws_lb_listener']['http']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 

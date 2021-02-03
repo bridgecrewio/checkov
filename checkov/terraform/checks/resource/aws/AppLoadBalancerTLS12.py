@@ -25,6 +25,10 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
                 else:
                   return CheckResult.FAILED
             else:
+                for action in conf.get('default_action',[]):
+                    for redirect in action.get('redirect',[]):
+                        if redirect.get('protocol',[]) == ["HTTPS"]:
+                            return CheckResult.PASSED
                 return CheckResult.FAILED
         else:
             return CheckResult.FAILED
