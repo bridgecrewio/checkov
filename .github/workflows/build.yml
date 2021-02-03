@@ -114,15 +114,15 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v5.1
         with:
-          custom_tag: ${{ env.RELEASE_VERSION }}"
+          custom_tag: ${{ env.RELEASE_VERSION }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create a GitHub release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
           body: ${{ steps.tag_version.outputs.changelog }}
   publish-package:
     needs: bump-version
