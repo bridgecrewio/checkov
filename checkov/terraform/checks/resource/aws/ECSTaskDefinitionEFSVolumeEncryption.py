@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class ECSTaskDefinitionEFSVolumeEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Encryption in transit is enabled for ECS Task defintion EFS volumes"
+        name = "Ensure Encryption in transit is enabled for EFS volumes in ECS Task definitions"
         id = "CKV_AWS_97"
         supported_resources = ['aws_ecs_task_definition']
         categories = [CheckCategories.ENCRYPTION]
