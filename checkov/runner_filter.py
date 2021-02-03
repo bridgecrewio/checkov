@@ -31,11 +31,10 @@ class RunnerFilter(object):
         if RunnerFilter.is_external_check(check_id):
             pass        # enabled unless skipped
         elif self.checks:
-            if check_id in self.checks:
-                return True
-            else:
-                return False
-        if self.skip_checks and any(fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks):
+            return check_id in self.checks or bc_check_id in self.checks
+
+        # bc_check_id can't be null for fnmatch
+        if self.skip_checks and any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in self.skip_checks):
             return False
         return True
 
