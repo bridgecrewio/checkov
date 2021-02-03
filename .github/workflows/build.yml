@@ -191,9 +191,10 @@ jobs:
     needs: publish-package
     runs-on: ubuntu-latest
     steps:
-      - uses: mislav/bump-homebrew-formula-action@master
+      - uses: mislav/bump-homebrew-formula-action@1.8
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
+          version: ${{ env.RELEASE_VERSION }}
         env:
           COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
