@@ -104,7 +104,7 @@ jobs:
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
           git tag $new_tag
-#          git push origin $new_tag
+          git push origin $new_tag
           RELEASE_NOTE=$(git log -1 --pretty=%B)
           gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
 
