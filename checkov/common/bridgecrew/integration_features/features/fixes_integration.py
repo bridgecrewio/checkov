@@ -83,7 +83,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         logging.debug(f'Response from fixes API: {response.content}')
 
-        fixes = json.loads(response.content)
+        fixes = json.loads(response.content) if response.content else None
         if not fixes or type(fixes) != list:
             logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
         return fixes[0]
