@@ -74,6 +74,7 @@ jobs:
       - name: update docs and bump version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'  
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -105,9 +106,24 @@ jobs:
 
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
-          git tag $new_tag
-          git push origin $new_tag
+          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
 
+          ## git tag $new_tag
+          ## git push origin $new_tag
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.1
+        with:
+          custom_tag: ${{ env.RELEASE_VERSION }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create a GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
   publish-package:
     needs: bump-version
     runs-on: ubuntu-latest
@@ -186,15 +202,3 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }}"
           dockerfile: kubernetes/Dockerfile
-  homebrew:
-    name: Bump Homebrew formula
-    needs: publish-package
-    runs-on: ubuntu-latest
-    steps:
-      - uses: mislav/bump-homebrew-formula-action@v1.8
-        with:
-          # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
-          formula-name: checkov
-          version: ${{ env.RELEASE_VERSION }}
-        env:
-          COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
