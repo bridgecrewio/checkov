@@ -9,9 +9,17 @@ jobs:
     name: Bump Homebrew formula
     runs-on: ubuntu-latest
     steps:
+      - name: Get release version
+        id: get_version
+        run: |
+          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
+          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - uses: mislav/bump-homebrew-formula-action@v1
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
+          url: https://pypi.io/packages/source/c/checkov/checkov-${{ env.RELEASE_VERSION }}.tar.gz
         env:
           COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
