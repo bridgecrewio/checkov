@@ -53,7 +53,7 @@ class RunnerRegistry(object):
                     junit_reports.append(report)
                     # report.print_junit_xml()
                 elif args.output == 'github_failed_only':
-                    report.print_failed_github_md()
+                    report.print_failed_github_md(use_bc_ids=args.use_bc_ids)
                 else:
                     report.print_console(is_quiet=args.quiet, is_compact=args.compact, use_bc_ids=args.use_bc_ids)
                     if url:
@@ -75,7 +75,7 @@ class RunnerRegistry(object):
             else:
                 print(json.dumps(report_jsons, indent=4))
         if args.output == "cli":
-            self.bc_platform.get_report_to_platform(args,scan_reports)
+            self.bc_platform.get_report_to_platform(args, scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)

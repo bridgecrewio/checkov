@@ -102,11 +102,12 @@ class Report:
         ts = self.get_test_suites()
         print(TestSuite.to_xml_string(ts))
 
-    def print_failed_github_md(self):
+    def print_failed_github_md(self, use_bc_ids=False):
         result = []
         for record in self.failed_checks:
-            result.append([record.check_id, record.file_path ,record.resource, record.check_name, record.guideline])
-        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name", "guideline"], tablefmt="github", showindex=True))
+            check_id = record.bc_check_id if (use_bc_ids and record.bc_check_id) else record.check_id
+            result.append([check_id, record.file_path, record.resource, record.check_name, record.guideline])
+        print(tabulate(result, headers=["check_id", "file", "resource", "check_name", "guideline"], tablefmt="github", showindex=True))
         print("\n\n---\n\n")
 
     def get_test_suites(self):
