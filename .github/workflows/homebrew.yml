@@ -25,8 +25,9 @@ jobs:
           echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      - uses: mislav/bump-homebrew-formula-action@v1
-        if: ${{env.ZERO_IF_SHOULD_RELEASE}} == '0'
+      - name: release homebrew
+        uses: mislav/bump-homebrew-formula-action@v1
+        if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
