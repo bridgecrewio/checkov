@@ -34,7 +34,7 @@ We strongly recommend that checkov use environment variables that enriches bridg
 | BC_PR_URL                 | Link to pull request/merge request        | https://github.com/bridgecrewio/checkov/pull/825 |
 | BC_COMMIT_HASH            | Commit identifier                         | 5df50ab857e7a255e4e731877748b539915ad489 |
 | BC_COMMIT_URL             | Link to commit in CI/VCS system           | https://github.com/bridgecrewio/checkov/commit/5df50ab857e7a255e4e731877748b539915ad489 |
-| BC_AUTHOR                 | User associated with the CI trigger       | schosterbarak |
+| BC_AUTHOR_NAME            | User associated with the CI trigger       | schosterbarak |
 | BC_AUTHOR_URL             | Link to the user profile page             | https://github.com/schosterbarak |
 | BC_RUN_ID                 | CI run identifier                         | 525220526 |
 | BC_RUN_URL                | Link to the run in the CI system          | https://github.com/bridgecrewio/checkov/actions/runs/525220526 |
