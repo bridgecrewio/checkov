@@ -42,9 +42,9 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                     if isinstance(rule, dict):
                         if self.contains_violation(rule):
                             self.evaluated_keys = [
-                                f'ingress/{ingress_conf.index(ingress_rule)}/from_port',
-                                f'ingress/{ingress_conf.index(ingress_rule)}/to_port',
-                                f'ingress/{ingress_conf.index(ingress_rule)}/cidr_blocks',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
                             ]
                             return CheckResult.FAILED
 
