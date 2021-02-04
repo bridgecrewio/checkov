@@ -18,9 +18,15 @@ jobs:
           sleep 10m
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          micro_version=$(echo $RELEASE_VERSION | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
+          echo $micro_version
+          ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
+          echo $ZERO_IF_SHOULD_RELEASE
+          echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - uses: mislav/bump-homebrew-formula-action@v1
+        if: ${{env.ZERO_IF_SHOULD_RELEASE}} == '0'
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
