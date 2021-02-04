@@ -191,7 +191,7 @@ class BcPlatformIntegration(object):
                                    body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
                                                     "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
                                                     "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
-                                                    "author": BC_AUTHOR, "author_url": BC_AUTHOR_URL,
+                                                    "author": BC_AUTHOR_NAME, "author_url": BC_AUTHOR_URL,
                                                     "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
                                                     "repository_url": BC_REPOSITORY_URL}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json",
