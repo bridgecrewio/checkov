@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  Resource0:
+  EC2InstanceResource0:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-04169656fea786776
@@ -11,3 +11,15 @@ Resources:
             - Ref: "myVPCEC2SecurityGroup"
           SubnetId: 
             Ref: "PublicSubnet"
+  EC2LaunchTemplateResource0:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: ami-04169656fea786776
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: true
+            DeviceIndex: "0"
+            GroupSet: 
+              - Ref: "myVPCEC2SecurityGroup"
+            SubnetId: 
+              Ref: "PublicSubnet"
