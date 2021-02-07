@@ -10,7 +10,7 @@ Resources:
       ImageId: ami-04169656fea786776
       NetworkInterfaces: 
         - AssociatePublicIpAddress: false
-          DeviceIndex: 0
+          DeviceIndex: "0"
           GroupSet: 
             - "myVPCEC2SecurityGroup"
           SubnetId: "PublicSubnet"
@@ -27,6 +27,6 @@ Resources:
         NetworkInterfaces: 
           - AssociatePublicIpAddress: false
             DeviceIndex: 0
-            GroupSet: 
+            Groups: 
               - "myVPCEC2SecurityGroup"
             SubnetId: "PublicSubnet"
