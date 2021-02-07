@@ -29,3 +29,10 @@ layers:
 functions:
   myFunction:
     handler: myfunction.invoke
+
+resources:
+  Resources:
+    ApiGatewayRestApi:
+      Properties:
+        BinaryMediaTypes:
+          - "*/*"

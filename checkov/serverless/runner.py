@@ -107,6 +107,9 @@ class Runner(BaseRunner):
                     if not isinstance(resource, dict_node):
                         continue
                     cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
+                    if not cf_resource_id:
+                        # Not Type attribute for resource
+                        continue
                     entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
                         resource)
                     if entity_lines_range and entity_code_lines:
