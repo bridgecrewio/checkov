@@ -13,7 +13,7 @@ Resources:
           Memory: 512
           Command: 
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
-          Essential: false
+          Essential: true
       Volumes: 
         - Name: MyVolume
           EFSVolumeConfiguration:
@@ -32,7 +32,7 @@ Resources:
           Memory: 512
           Command: 
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
-          Essential: false
+          Essential: true
   Resource2:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -46,7 +46,7 @@ Resources:
           Memory: 512
           Command: 
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
-          Essential: false
+          Essential: true
       Volumes: 
         - Name: MyVolume
           Host:
