@@ -168,7 +168,7 @@ class Parser:
                 continue
 
             # Resource files
-            if file.name.endswith(".tf.json") or file.name.endswith(".tf"):
+            if file.name.endswith(".tf"):  # TODO: add support for .tf.json
                 data = _load_or_die_quietly(file, self.out_parsing_errors)
             else:
                 continue

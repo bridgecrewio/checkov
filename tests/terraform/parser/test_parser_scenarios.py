@@ -101,6 +101,7 @@ class TestParserScenarios(unittest.TestCase):
         # Run only manually, this test currently fails on multiple issues
         self.go("count_eval")
 
+    @unittest.skip
     def test_json_807(self):
         self.go("json_807")
 
