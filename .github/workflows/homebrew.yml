@@ -26,11 +26,10 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: release homebrew
-        uses: mislav/bump-homebrew-formula-action@v1
+        uses: dawidd6/action-homebrew-bump-formula@v3.5.1
         if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
-          download-url: https://pypi.io/packages/source/c/checkov/checkov-${{ env.RELEASE_VERSION }}.tar.gz
-        env:
-          COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }} 
+
