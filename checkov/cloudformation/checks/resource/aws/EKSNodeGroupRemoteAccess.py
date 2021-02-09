@@ -1,0 +1,23 @@
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+
+class EKSNodeGroupRemoteAccess(BaseResourceCheck):
+    def __init__(self):
+        name = "Ensure Amazon EKS Node group has implict SSH access from 0.0.0.0/0"
+        id = "CKV_AWS_100"
+        supported_resources = ['AWS::EKS::Nodegroup']
+        categories = [CheckCategories.KUBERNETES]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def scan_resource_conf(self, conf):
+        if 'Properties' in conf.keys():
+            if 'RemoteAccess' in conf['Properties'].keys():
+                if 'Ec2SshKey' in conf['Properties']['RemoteAccess'].keys():
+                    if 'SourceSecurityGroups' in conf['Properties']['RemoteAccess'].keys():
+                        return CheckResult.PASSED
+                    else:
+                        return CheckResult.FAILED
+        return CheckResult.PASSED
+
+
+check = EKSNodeGroupRemoteAccess()

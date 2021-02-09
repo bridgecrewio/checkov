@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: 'AWS::EKS::Nodegroup'
+    Properties:
+      ClusterName: test
+      NodeRole: 'arn:aws:iam::012345678910:role/eksInstanceRole'
+      ScalingConfig:
+        MinSize: 3
+        DesiredSize: 5
+        MaxSize: 7
+      Labels:
+        Key1: Value1
+        Key2: Value2
+      Subnets:
+        - subnet-6782e71e
+        - subnet-e7e761ac
+      RemoteAccess: 
+        Ec2SshKey: SshKeyString
+        SourceSecurityGroups: 
+          - sg-0
+  Resource1:
+    Type: 'AWS::EKS::Nodegroup'
+    Properties:
+      ClusterName: test
+      NodeRole: 'arn:aws:iam::012345678910:role/eksInstanceRole'
+      ScalingConfig:
+        MinSize: 3
+        DesiredSize: 5
+        MaxSize: 7
+      Labels:
+        Key1: Value1
+        Key2: Value2
+      Subnets:
+        - subnet-6782e71e
+        - subnet-e7e761ac
