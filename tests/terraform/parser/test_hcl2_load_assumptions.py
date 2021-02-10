@@ -265,3 +265,10 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                                                  f"{json.dumps(expected_result, indent=2)}\n" \
                                                  f"** ACTUAL **\n" \
                                                  f"{json.dumps(actual_result, indent=2)}"
+
+    def test_math(self):
+        tf = "four = 2 + 2"
+        expect = {
+            "four": ["${2 + 2}"]
+        }
+        self.go(tf, expect)

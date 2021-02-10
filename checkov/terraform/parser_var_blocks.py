@@ -110,6 +110,17 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
         elif c == "(":                                      # do we care?
             if not ParserMode.is_string(current_mode):
                 mode_stack.append(ParserMode.PARAMS)
+        elif c == "?" and current_mode == ParserMode.EVAL:  # ternary
+            # If what's been processed in the ternary so far is "true" or "false" (boolean or string type)
+            # then nothing special will happen here and only the full expression will be returned.
+            # Anything else will be treated as an unresolved variable block.
+            start_pos = eval_start_pos_stack[-1]        # DO NOT pop: there's no separate eval start indicator
+            eval_string = value[start_pos: index].strip()
+            if eval_string not in ["true", "false", '"true"', '"false"']:
+                # REMINDER: The eval string is not wrapped in a eval markers since they didn't really
+                #           appear in the original value. If they're put in, substitution doesn't
+                #           work properly.
+                to_return.append(VarBlockMatch(eval_string, eval_string))
 
         preceding_string_escape = False
 

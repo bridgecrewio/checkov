@@ -781,3 +781,37 @@ def _remove_module_dependency_in_path(path):
     if re.findall(resolved_module_pattern, path):
         path = re.sub(resolved_module_pattern, '', path)
     return path
+
+
+def _is_ternary(value: str) -> Optional[Tuple[int,int]]:
+    """
+    Determines whether or not the given string is *probably* a ternary operation
+    :return:        If the expression does represent a possibly-processable ternary expression, a tuple
+                    containing the index of the question mark and colon will be returned.
+    """
+    if not value:
+        return None
+    question_index = value.find("?")
+    if question_index < 1 or value.count("?") > 1:
+        return None
+    colon_index = value.find(":")
+    if colon_index < question_index or value.count(":") > 1:
+        return None
+    return question_index, colon_index
+
+
+def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
+    assert question_index > 0
+    assert colon_index > question_index
+
+    condition = value[:question_index].strip()
+
+    # Fast & easy case is simple boolean
+    condition_lower = condition.lower()
+    if condition_lower == "true":
+        return _to_native_value(value[question_index + 1: colon_index].strip())
+    elif condition_lower == "false":
+        return _to_native_value(value[colon_index].strip())
+
+    # Otherwise, this isn't evaluated enough
+    return value
