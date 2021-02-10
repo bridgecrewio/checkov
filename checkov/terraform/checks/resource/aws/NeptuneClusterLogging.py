@@ -12,8 +12,8 @@ class NeptuneClusterLogging(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         log_types = ["audit"]
-        if 'enable_cloudwatch_logs_exports' in conf.keys():
-            if all(elem in conf['enable_cloudwatch_logs_exports'] for elem in log_types):
+        if 'enable_cloudwatch_logs_exports' in conf:
+            if conf['enable_cloudwatch_logs_exports'][0] and all(elem in conf['enable_cloudwatch_logs_exports'][0] for elem in log_types):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
