@@ -2,8 +2,8 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.aws.ALBListenerHTTPS import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.ALBListenerHTTPS import check
 
 
 class TestALBListenerHTTPS(unittest.TestCase):
