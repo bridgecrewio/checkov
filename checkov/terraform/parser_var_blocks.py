@@ -116,7 +116,10 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
             # Anything else will be treated as an unresolved variable block.
             start_pos = eval_start_pos_stack[-1]        # DO NOT pop: there's no separate eval start indicator
             eval_string = value[start_pos: index].strip()
-            if eval_string not in ["true", "false", '"true"', '"false"']:
+
+            # HACK ALERT: For the cases with the trailing quotes, see:
+            #             test_hcl2_load_assumptions.py -> test_weird_ternary_string_clipping
+            if eval_string not in {"true", "false", '"true"', '"false"', 'true"', 'false"'}:
                 # REMINDER: The eval string is not wrapped in a eval markers since they didn't really
                 #           appear in the original value. If they're put in, substitution doesn't
                 #           work properly.

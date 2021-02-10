@@ -105,6 +105,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_json_807(self):
         self.go("json_807")
 
+    def test_ternaries(self):
+        self.go("ternaries")
+
     def test_ternary_793(self):
         self.go("ternary_793")
 

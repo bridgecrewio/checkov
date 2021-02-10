@@ -272,3 +272,13 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
             "four": ["${2 + 2}"]
         }
         self.go(tf, expect)
+
+    def test_weird_ternary_string_clipping(self):
+        tf = 'bool_string_false = "false" ? "wrong" : "correct"'
+        expect = {
+            "bool_string_false": ["false\" ? \"wrong\" : \"correct"]
+            #                     --                             --
+            #                      |                             |
+            #                      missing quotes on outer tokens :-(
+        }
+        self.go(tf, expect)

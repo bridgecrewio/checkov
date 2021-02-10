@@ -150,7 +150,17 @@ class TestParserInternals(unittest.TestCase):
                 [
                     VBM('${false ? "required" : "optional"}', 'false ? "required" : "optional"')
                 ]
-            )
+            ),
+            # TODO: var -> comparison -> ternary
+            # (
+            #     '${local.empty != "" ? local.a : "default value"}',
+            #     [
+            #         VBM("local.empty", "local.empty"),
+            #         VBM('local.empty != ""', 'local.empty != ""'),
+            #         VBM('${local.empty != "" ? local.a : "default value"}',
+            #             'local.empty != "" ? local.a : "default value"')
+            #     ]
+            # )
         ]
         for case in cases:
             actual = find_var_blocks(case[0])

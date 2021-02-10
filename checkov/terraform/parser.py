@@ -801,9 +801,6 @@ def _is_ternary(value: str) -> Optional[Tuple[int,int]]:
 
 
 def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
-    assert question_index > 0
-    assert colon_index > question_index
-
     condition = value[:question_index].strip()
 
     # Fast & easy case is simple boolean
@@ -811,7 +808,7 @@ def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
     if condition_lower == "true":
         return _to_native_value(value[question_index + 1: colon_index].strip())
     elif condition_lower == "false":
-        return _to_native_value(value[colon_index].strip())
+        return _to_native_value(value[colon_index + 1:].strip())
 
     # Otherwise, this isn't evaluated enough
     return value
