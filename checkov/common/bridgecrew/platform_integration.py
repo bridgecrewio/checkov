@@ -309,8 +309,8 @@ class BcPlatformIntegration(object):
     def get_repository(self, args):
         if BC_FROM_BRANCH:
             return BC_FROM_BRANCH
-        repo_id = "cli_repo/" + path.basename(args.directory[0])
-        valid_repos = 0
+        basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
+        repo_id = "cli_repo/" + basename
         return repo_id
 
     def get_api_token(self, email, org):
