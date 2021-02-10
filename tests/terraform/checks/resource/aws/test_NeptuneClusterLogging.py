@@ -37,7 +37,7 @@ class TestNeptuneClusterLogging(unittest.TestCase):
         """)
         resource_conf = hcl_res['resource'][0]['aws_neptune_cluster']['test']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
