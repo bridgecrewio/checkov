@@ -49,17 +49,26 @@ class Report:
     def get_json(self):
         return json.dumps(self.get_dict(), indent=4)
 
-    def get_dict(self):
-        return {
-            "check_type": self.check_type,
-            "results": {
-                "passed_checks": [check.__dict__ for check in self.passed_checks],
-                "failed_checks": [check.__dict__ for check in self.failed_checks],
-                "skipped_checks": [check.__dict__ for check in self.skipped_checks],
-                "parsing_errors": list(self.parsing_errors)
-            },
-            "summary": self.get_summary()
+    def get_dict(self, is_quiet=False):
+        if is_quiet:
+            return {
+                "check_type": self.check_type,
+                "results": {
+                    "failed_checks": [check.__dict__ for check in self.failed_checks]
+                },
+                "summary": self.get_summary()
         }
+        else: 
+            return {
+                "check_type": self.check_type,
+                "results": {
+                    "passed_checks": [check.__dict__ for check in self.passed_checks],
+                    "failed_checks": [check.__dict__ for check in self.failed_checks],
+                    "skipped_checks": [check.__dict__ for check in self.skipped_checks],
+                    "parsing_errors": list(self.parsing_errors)
+                },
+                "summary": self.get_summary()
+            }
 
     def get_exit_code(self, soft_fail):
         if soft_fail:

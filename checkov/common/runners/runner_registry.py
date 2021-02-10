@@ -48,7 +48,7 @@ class RunnerRegistry(object):
         for report in scan_reports:
             if not report.is_empty():
                 if args.output == "json":
-                    report_jsons.append(report.get_dict())
+                    report_jsons.append(report.get_dict(is_quiet=args.quiet))
                 elif args.output == "junitxml":
                     junit_reports.append(report)
                     # report.print_junit_xml()
