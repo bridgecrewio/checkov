@@ -3,5 +3,7 @@ templates:
   - tests/cloudformation/checks/resource/aws/**/*.yaml
 ignore_templates:
   - tests/cloudformation/checks/resource/aws/unused/*
+  # https://github.com/aws-cloudformation/cfn-python-lint/issues/1577
+  - tests/cloudformation/checks/resource/aws/example_AthenaWorkgroupConfiguration/*
 ignore_checks:
   - W

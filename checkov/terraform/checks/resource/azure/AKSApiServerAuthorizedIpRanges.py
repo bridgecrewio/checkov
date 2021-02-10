@@ -12,7 +12,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'api_server_authorized_ip_ranges/[0]/[0]'
+        return 'api_server_authorized_ip_ranges/[0]'
 
     def get_expected_value(self):
         return ANY_VALUE

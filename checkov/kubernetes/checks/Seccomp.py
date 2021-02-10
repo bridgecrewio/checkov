@@ -34,6 +34,20 @@ class Seccomp(BaseK8Check):
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
+        if conf['kind'] == 'Deployment':
+            security_profile = dpath.search(conf, 'spec/template/spec/securityContext/seccompProfile/type')
+            if security_profile:
+                security_profile = dpath.get(conf, 'spec/template/spec/securityContext/seccompProfile/type')
+                return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
+            if "metadata" in conf:
+                metadata = conf["metadata"]
+        if conf['kind'] == 'StatefulSet':
+            security_profile = dpath.search(conf, 'spec/template/spec/securityContext/seccompProfile/type')
+            if security_profile:
+                security_profile = dpath.get(conf, 'spec/template/spec/securityContext/seccompProfile/type')
+                return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
+            if "metadata" in conf:
+                metadata = conf["metadata"]            
         elif conf['kind'] == 'CronJob':
             if "spec" in conf:
                 if "jobTemplate" in conf["spec"]:

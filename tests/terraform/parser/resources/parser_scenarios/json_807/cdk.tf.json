@@ -1,0 +1,49 @@
+{
+  "variable": {
+    "environment": {
+      "type": "string"
+    },
+    "aws_region": {
+      "default": "us-east-1",
+      "type": "string"
+    },
+    "aws_profile": {
+      "type": "string"
+    }
+  },
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "version": "~> 2.70.0",
+        "source": "aws"
+      }
+    }
+  },
+  "provider": {
+    "aws": [
+      {
+        "profile": "${var.aws_profile}",
+        "region": "${var.aws_region}",
+        "alias": "default"
+      },
+      {
+        "profile": "external",
+        "region": "us-west-1",
+        "skip_requesting_account_id": true,
+        "alias": "external"
+      }
+    ]
+  },
+  "resource": {
+    "aws_secretsmanager_secret": {
+      "local-secret": {
+        "name": "internal-secret",
+        "provider": "aws.default"
+      },
+      "external-secret": {
+        "name": "external-secret",
+        "provider": "aws.external"
+      }
+    }
+  }
+}

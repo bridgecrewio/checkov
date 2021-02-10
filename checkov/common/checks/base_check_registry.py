@@ -90,7 +90,9 @@ class BaseCheckRegistry(object):
         raise NotImplementedError()
 
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
+
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
+
         results = {}
         checks = self.get_checks(entity_type)
         for check in checks:
@@ -104,7 +106,7 @@ class BaseCheckRegistry(object):
                 results[check] = result
         return results
 
-    def run_check(self, check, entity_configuration, entity_name, entity_type, scanned_file, skip_info):
+    def run_check(self, check, entity_configuration, entity_name, entity_type, scanned_file, skip_info, tags=None):
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
         result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
                            entity_name=entity_name, entity_type=entity_type, skip_info=skip_info)

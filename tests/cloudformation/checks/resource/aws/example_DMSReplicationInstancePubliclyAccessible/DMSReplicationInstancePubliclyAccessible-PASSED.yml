@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Resource0:
+    Type: AWS::DMS::ReplicationInstance
+    Properties: 
+      PubliclyAccessible: False
+      ReplicationInstanceClass: dms.c4.large

@@ -3,14 +3,14 @@
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity) 
-[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage)
+[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/documentation?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Python Version](https://img.shields.io/github/pipenv/locked/python-version/bridgecrewio/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
-
+ 
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
@@ -97,17 +97,17 @@ pip3 install -U checkov
 ### Configure an input folder or file
 
 ```sh
-checkov -d /user/path/to/iac/code
+checkov --directory /user/path/to/iac/code
 ```
 
-Or a specific file
+Or a specific file or files
 
 ```sh
-checkov -f /user/tf/example.tf
+checkov --file /user/tf/example.tf
 ```
 Or
 ```sh
-checkov -f /user/cloudformation/example.yml
+checkov -f /user/cloudformation/example1.yml -f /user/cloudformation/example2.yml
 ```
 
 Or a terraform plan file in json format
@@ -167,9 +167,11 @@ Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting
 
 ```sh
 docker pull bridgecrew/checkov
-docker run -t -v /user/tf:/tf bridgecrew/checkov -d /tf
+docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
-Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, You can use docker version 
+Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
+
+Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
 
 ### Running or skipping checks 
 
@@ -178,12 +180,12 @@ those listed (deny list).
 
 List available checks:
 ```sh
-checkov -l 
+checkov --list 
 ```
 
 Allow only 2 checks to run: 
 ```sh
-checkov -d . --check CKV_AWS_20,CKV_AWS_57
+checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 ```
 
 Run all checks except 1 specified:
@@ -273,6 +275,10 @@ Default is `LOG_LEVEL=WARNING`.
 #### Skipping directories
 To skip a whole directory, use the environment variable `CKV_IGNORED_DIRECTORIES`. 
 Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
+
+#### VSCODE Extension
+
+If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
 ## Alternatives
 

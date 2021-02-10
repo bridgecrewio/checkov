@@ -2,7 +2,8 @@
 
 You can integrate Checkov into Github Actions. This provides a simple, automatic way of applying policies to your Terraform code both during merge request review and as part of any build process.
 
-## Use a checkov action from the marketplace:
+## Use a checkov action from the marketplace
+
 go to https://github.com/bridgecrewio/checkov-action and use a pre-made action!
 
 ## Create your own action: Basic Set-up
@@ -27,19 +28,18 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.8
       - name: Test with Checkov
-        run: |
-          pip install checkov
-          checkov -d .
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: example/examplea
+          framework: terraform 
 ```
 
 ## Example Results
@@ -72,11 +72,11 @@ Is not set to be encrypted. This will fail a Checkov test:
 
 ### Pipeline Success
 
-The previous error can be fixed by setting the value of encyption to **true**.
+The previous error can be fixed by setting the value of encryption to **true**.
 ![Actions success](actions_success.png)
 
 ## Further Reading
 
 For more details on using Python in Github Actions <https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions>.
 
-The test code sample: <https://github.com/JamesWoolfenden/checkov-action>
+The test code sample: <https://github.com/JamesWoolfenden/terraform-aws-appsync/blob/master/.github/workflows/master.yml>

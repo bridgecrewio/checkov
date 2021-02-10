@@ -6,7 +6,7 @@ from checkov.common.util.secrets import string_has_secrets, AWS
 class EC2Credentials(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure no hard coded AWS access key and secret key exists in EC2 user data"
+        name = "Ensure no hard-coded secrets exist in EC2 user data"
         id = "CKV_AWS_46"
         supported_resources = ['aws_instance']
         categories = [CheckCategories.SECRETS]

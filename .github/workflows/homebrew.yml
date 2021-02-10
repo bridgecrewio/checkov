@@ -2,16 +2,34 @@ name: homebrew
 
 on:
   push:
-    tags: '*'
+    branches:
+      - 'master'
+    tags: 
+      - '*'
 
 jobs:
   homebrew:
     name: Bump Homebrew formula
     runs-on: ubuntu-latest
     steps:
-      - uses: mislav/bump-homebrew-formula-action@v1
+      - name: Get release version
+        id: get_version
+        run: |
+          sleep 10m
+          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
+          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
+          echo $micro_version
+          ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
+          echo $ZERO_IF_SHOULD_RELEASE
+          echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      - name: release homebrew
+        uses: dawidd6/action-homebrew-bump-formula@v3.5.1
+        if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula-name: checkov
-        env:
-          COMMITTER_TOKEN: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }} 
+

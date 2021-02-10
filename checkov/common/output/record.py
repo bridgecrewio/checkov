@@ -19,9 +19,11 @@ class Record:
     file_line_range = []
     resource = ""
     guideline = None
+    fixed_definition = None
+    entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path):
+                 evaluations, check_class, file_abs_path, entity_tags=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -38,6 +40,8 @@ class Record:
         self.resource = resource
         self.evaluations = evaluations
         self.check_class = check_class
+        self.fixed_definition = None
+        self.entity_tags = entity_tags
 
     def set_guideline(self, guideline):
         self.guideline = guideline
@@ -63,7 +67,7 @@ class Record:
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
         return string_block
 
-    def __str__(self):
+    def to_string(self, compact=False):
         status = ''
         evaluation_message = f''
         status_color = "white"
@@ -101,10 +105,13 @@ class Record:
                             f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
-        if self.check_result['result'] == CheckResult.FAILED and code_lines:
+        if self.check_result['result'] == CheckResult.FAILED and code_lines and not compact:
             return check_message + status_message + file_details + guideline_message + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
             return check_message + status_message + suppress_comment + file_details + guideline_message
         else:
             return check_message + status_message + file_details + evaluation_message + guideline_message
+
+    def __str__(self):
+        return self.to_string()

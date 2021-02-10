@@ -1,0 +1,74 @@
+Resources:
+  DataBucket:
+    # Public, not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-data"
+      Tags:
+        - Key: Simple
+          Value: Value
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-data"
+        - Key: Environment
+          Value: !Sub
+            - long-form-sub-${account}
+            - account: test
+        - Key: Account
+          Value: !Sub
+            - long-form-sub-${account}
+            - { account: !Ref  AWS::AccountId }
+  NoTags:
+    # Public, not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-notags"
+  EKSClusterNodegroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref ClusterName
+      NodegroupName: !Ref NodeGroupName
+      NodeRole: !GetAtt EKSNodegroupIAMRole.Arn
+      InstanceTypes: !Ref NodeGroupInstanceType
+      ScalingConfig:
+        MinSize: !Ref NodeGroupAmount
+        DesiredSize: !Ref NodeGroupAmount
+        MaxSize: !Ref NodeGroupAmount
+      Subnets: !Ref VPCSubnets
+      Tags:
+        Name: !Join ["-", [!Ref ClusterName, EKS, !Ref NodeGroupName]]
+  TerraformServerAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref TerraformServerAutoScalingLaunchConfig
+      MaxSize: 20
+      MinSize: 1
+      DesiredCapacity: !Ref WrapperServerCount
+      VPCZoneIdentifier:
+        - !If
+          - CreateVpc
+          - !If
+            - CreatePrivateSubnet
+            - !Ref TerraformPrivateSubnet
+            - !Ref TerraformPublicSubnet
+          - !Ref Subnet
+      Tags:
+        - Key: Name
+          Value: TF-FulfillmentServer
+          PropagateAtLaunch: true
+        - Key: terraform-server-tag-key
+          Value: terraform-server-tag-value
+          PropagateAtLaunch: true
+        - !If
+          - CreateVpc
+          - Key: PublicRouteDependency
+            Value: !Ref TerraformPublicGatewayRoute
+            PropagateAtLaunch: false
+          - !Ref AWS::NoValue
+        - !If
+          - CreatePrivateSubnet
+          - Key: PrivateRouteDependency
+            Value: !Ref TerraformNatGatewayRoute
+            PropagateAtLaunch: false
+          - !Ref AWS::NoValue

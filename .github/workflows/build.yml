@@ -45,13 +45,15 @@ jobs:
           pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
           pipenv run checkov -s -d kubernetes-goat/ -o json > checkov_report_kubernetes-goat.json
+          pipenv run checkov -s  --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
+          pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
 
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
   bump-version:
     needs: [integration-tests]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@master
       - name: Set up Python 3.7
@@ -63,8 +65,6 @@ jobs:
         run: |
           pipenv install --dev
       - name: Test with pytest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
@@ -72,7 +72,7 @@ jobs:
           pipenv run python -m coverage_badge -o coverage.svg -f
       - name: update docs and bump version
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -106,6 +106,8 @@ jobs:
           git push origin
           git tag $new_tag
           git push origin $new_tag
+          RELEASE_NOTE=$(git log -1 --pretty=%B)
+          gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
 
   publish-package:
     needs: bump-version

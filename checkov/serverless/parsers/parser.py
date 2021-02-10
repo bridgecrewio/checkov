@@ -51,7 +51,8 @@ def parse(filename):
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return
-    except YAMLError:
+    except YAMLError as e:
+        print(e)
         return
 
     process_variables(template, filename)
