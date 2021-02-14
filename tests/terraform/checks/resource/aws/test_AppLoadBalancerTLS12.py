@@ -33,6 +33,26 @@ class TestAppLoadBalancerTLS12(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_nlb_tls_success(self):
+        resource_conf = {
+            'load_balancer_arn': [
+                '${aws_lb.example.arn}'
+            ],
+            'port': ['443'],
+            'protocol': ['TLS'],
+            'ssl_policy': ["ELBSecurityPolicy-FS-1-2-Res-2019-08"],
+            'default_action': [
+                {
+                    'type': ['forward'],
+                    'target_group_arn': [
+                        '${aws_lb_target_group.example.arn}'
+                    ]
+                }
+            ]
+        }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_redirect(self):
         hcl_res = hcl2.loads("""
             resource "aws_lb_listener" "http" {
