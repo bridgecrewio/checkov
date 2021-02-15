@@ -6,6 +6,11 @@ locals {
   bool_true  = true ? "correct" : "wrong"
   bool_false = false ? "wrong" : "correct"
 
+//  local_true = true
+  // TODO: HCL2 parser doesn't like the following line
+//  multiline = (local.local_true) ?
+//    "correct" : "wrong"
+
   // TODO: See test_hcl2_load_assumptions.py -> test_weird_ternary_string_clipping
   //       Doesn't currently pull the ternary correctly since it's evaluated inside the string.
 //  bool_string_true  = "true" ? "correct" : "wrong"
