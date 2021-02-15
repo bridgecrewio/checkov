@@ -10,6 +10,9 @@ provider_tag_mapping = {
 
 
 def get_resource_tags(resource_type, entity_config):
+    if not isinstance(entity_config, dict):
+        return None
+
     if '_' not in resource_type:
         return None  # probably not a resource block
     provider = resource_type[:resource_type.index('_')]
