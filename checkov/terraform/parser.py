@@ -573,7 +573,9 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
 
     elif orig_variable.startswith("var."):
         var_name = orig_variable[4:]
-        var_value_and_file = _handle_indexing(var_name, lambda r: var_value_and_file_map.get(r))
+        var_value_and_file = _handle_indexing(var_name,
+                                              lambda r: var_value_and_file_map.get(r),
+                                              value_is_a_tuple=True)
         if var_value_and_file is not None:
             var_value, var_file = var_value_and_file
             eval_context = eval_map_by_var_name.get(var_name)
@@ -688,21 +690,48 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
     return orig_variable        # fall back to no change
 
 
-def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]) -> Optional[Any]:
+def _handle_indexing(reference: str,
+                     data_source: Callable[[str], Optional[Any]],
+                     value_is_a_tuple: bool = False) -> Optional[Any]:
+    """
+
+    :param reference:           Full reference with the variable (ex: "my_list[0]")
+    :param data_source:         Data source for retrieving the variable value. Provided the variable name
+                                (ex: "my_list"), the value should be returned, if available.
+    :param value_is_a_tuple:    Indicates whether the returned value will be a tuple with the value as
+                                item 0 and the source location as item 1. This is returned for some data
+                                sources and not for others. When true, the returned value will also be a
+                                Tuple, if non-None.
+    :return:
+    """
     if reference.endswith("]") and "[" in reference:
         base_ref = reference[:reference.rindex("[")]
-        value = data_source(base_ref)
         reference_val = reference[reference.rindex("[") + 1: -1]
+
+        value = data_source(base_ref)
+        if value is None:
+            return None
+
+        if value_is_a_tuple:
+            value_tuple = value
+            value = value_tuple[0]
+
         if isinstance(value, dict):
-            return value.get(reference_val)
+            if value_is_a_tuple:
+                return value.get(reference_val), value_tuple[1]
+            else:
+                return value.get(reference_val)
         elif isinstance(value, list):
             try:
-                return value[int(reference_val)]
+                if value_is_a_tuple:
+                    return value[int(reference_val)], value_tuple[1]
+                else:
+                    return value[int(reference_val)]
             except ValueError as e:
                 # TODO: handle count.index correctly
                 logging.debug(f'Failed to parse index int out of {reference_val}')
                 logging.debug(e, stack_info=True)
-                return
+                return None
     else:
         return data_source(reference)
 
