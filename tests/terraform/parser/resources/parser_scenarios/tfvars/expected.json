@@ -3,6 +3,12 @@
     "variable": [
       {
         "foo": {}
+      },
+      {
+        "list_data": {}
+      },
+      {
+        "map_data": {}
       }
     ],
     "resource": [
