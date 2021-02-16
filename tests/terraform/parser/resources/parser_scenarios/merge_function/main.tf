@@ -9,6 +9,7 @@ locals {
 
   local_to_local = merge(local.common_tags, local.common_data_tags)
   local_to_manual = merge(local.common_tags, {Tag4 = "four"})
+  local_local_manual = merge(local.common_tags, local.common_data_tags, {Name = "Bob"})
   manual_to_local = merge({Tag4 = "four"}, local.common_tags)
   manual_to_manual = merge({Tag4 = "four"}, {Tag5="five"})
 
@@ -36,4 +37,12 @@ locals {
     {Tag4 = "four"},
     {Tag2="multiline_tag2"}
   )
+
+  static1 = "one"
+  static2 = "two"
+}
+
+resource "aws_something" "something" {
+  #
+  tags = merge(local.common_tags, local.common_data_tags, {Name = "Bob-${local.static1}-${local.static2}"})
 }

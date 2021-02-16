@@ -349,7 +349,7 @@ class Parser:
                                                                   eval_map_by_var_name,
                                                                   new_context, value, root_directory)
                             if replaced != var_base:
-                                if match.full_str == value:
+                                if match.full_str == altered_value:
                                     altered_value = replaced
                                 else:
                                     altered_value = altered_value.replace(match.full_str, str(replaced))

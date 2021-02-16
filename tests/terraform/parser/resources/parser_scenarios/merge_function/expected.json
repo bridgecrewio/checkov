@@ -27,6 +27,14 @@
             "Tag4": "four"
           }
         ],
+        "local_local_manual": [
+          {
+            "Tag1": "one",
+            "Tag2": "two",
+            "Tag3": "three",
+            "Name": "Bob"
+          }
+        ],
         "manual_to_local": [
           {
             "Tag4": "four",
@@ -87,7 +95,25 @@
             "Tag2": "multiline_tag2",
             "Tag4": "four"
           }
-        ]
+        ],
+        "static1": ["one"],
+        "static2": ["two"]
+      }
+    ],
+    "resource": [
+      {
+        "aws_something": {
+          "something": {
+            "tags": [
+              {
+                "Tag1": "one",
+                "Tag2": "two",
+                "Tag3": "three",
+                "Name": "Bob-one-two"
+              }
+            ]
+          }
+        }
       }
     ]
   }
