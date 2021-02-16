@@ -25,6 +25,8 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                     }
                 }
             }]
+        }
+        self.go(tf, expect)
 
     def test_tfvars(self):
         tf = '''
