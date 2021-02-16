@@ -211,7 +211,7 @@ class Parser:
         if hcl_tfvars:                                                      # terraform.tfvars
             data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors)
             if data:
-                var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
+                var_value_and_file_map.update({k: (v[0], hcl_tfvars.path) for k, v in data.items()})
         if json_tfvars:                                                     # terraform.tfvars.json
             data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
@@ -730,7 +730,8 @@ Load JSON or HCL, depending on filename.
 def _clean_bad_definitions(tf_definition_list):
     return {
         block_type: list(filter(lambda definition_list: block_type == 'locals' or
-                                                        len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+                                                        not isinstance(definition_list, dict)
+                                                        or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
         for block_type in tf_definition_list.keys()
     }
 

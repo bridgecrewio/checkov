@@ -7,6 +7,17 @@ import hcl2
 # This group of tests is used to confirm assumptions about how the hcl2 library parses into json.
 # We want to make sure important assumptions are caught if behavior changes.
 class TestHCL2LoadAssumptions(unittest.TestCase):
+    def test_tfvars(self):
+        tf = '''
+        VERSIONING = true
+        CHECKOV = "awesome"
+        '''
+        expect = {
+            "VERSIONING": [True],
+            "CHECKOV": ["awesome"]
+        }
+        self.go(tf, expect)
+
     def test_multiline_function(self):
         tf = '''
         locals {

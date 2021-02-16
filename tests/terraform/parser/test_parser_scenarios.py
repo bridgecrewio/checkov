@@ -105,6 +105,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_json_807(self):
         self.go("json_807")
 
+    def test_tfvars(self):
+        self.go("tfvars")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
