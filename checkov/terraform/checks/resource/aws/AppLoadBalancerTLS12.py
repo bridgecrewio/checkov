@@ -13,8 +13,8 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         key="protocol"
         if key in conf.keys():
-            if conf[key] == ["HTTPS"]:
-              # Only interested in HTTPS listeners
+            if conf[key] in (["HTTPS"], ["TLS"]):
+              # Only interested in HTTPS & TLS listeners
                 policy="ssl_policy"
                 if policy in conf.keys():
                   name=str(conf[policy]).strip("['']") 

@@ -132,6 +132,10 @@ class TestRunnerValid(unittest.TestCase):
 
         gcp_checks = list(filter(lambda check_id: '_GCP_' in check_id, unique_checks))
         for i in range(1, len(gcp_checks)):
+            if f'CKV_GCP_{i}' == 'CKV_GCP_5':
+                # CKV_GCP_5 is no longer a valid platform check
+                continue
+
             self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
 
         azure_checks = list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks))
@@ -494,6 +498,15 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
+
+    def test_runner_malformed_857(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        passing_tf_file_path = current_dir + "/resources/malformed_857/main.tf"
+
+        runner = Runner()
+        runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
+        # If we get here all is well. :-)  Failure would throw an exception.
 
     def tearDown(self):
         parser_registry.definitions_context = {}

@@ -209,9 +209,10 @@ class Parser:
                 continue
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
         if hcl_tfvars:                                                      # terraform.tfvars
-            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors)
+            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors,
+                                        clean_definitions=False)
             if data:
-                var_value_and_file_map.update({k: (v, hcl_tfvars.path) for k, v in data.items()})
+                var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
         if json_tfvars:                                                     # terraform.tfvars.json
             data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
@@ -711,7 +712,8 @@ def _handle_indexing(reference: str, data_source: Callable[[str], Optional[Any]]
         return data_source(reference)
 
 
-def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict) -> Optional[Mapping]:
+def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict,
+                         clean_definitions: bool = True) -> Optional[Mapping]:
     """
 Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
@@ -725,7 +727,11 @@ Load JSON or HCL, depending on filename.
             if file_name.endswith(".json"):
                 return json.load(f)
             else:
-                return _clean_bad_definitions(hcl2.load(f))
+                raw_data = hcl2.load(f)
+                if clean_definitions:
+                    return _clean_bad_definitions(raw_data)
+                else:
+                    return raw_data
     except Exception as e:
         LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
         parsing_errors[file_path] = e
@@ -735,7 +741,8 @@ Load JSON or HCL, depending on filename.
 def _clean_bad_definitions(tf_definition_list):
     return {
         block_type: list(filter(lambda definition_list: block_type == 'locals' or
-                                                        len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+                                                        not isinstance(definition_list, dict)
+                                                        or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
         for block_type in tf_definition_list.keys()
     }
 
@@ -812,3 +819,11 @@ def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
 
     # Otherwise, this isn't evaluated enough
     return value
+
+def _safe_index(sequence_hopefully, index) -> Optional[Any]:
+    try:
+        return sequence_hopefully[index]
+    except IndexError as e:
+        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}')
+        logging.debug(e, stack_info=True)
+        return None

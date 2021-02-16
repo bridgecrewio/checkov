@@ -1,0 +1,26 @@
+{
+  "main.tf": {
+    "variable": [
+      {
+        "foo": {}
+      },
+      {
+        "list_data": {}
+      },
+      {
+        "map_data": {}
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "my_bucket": {
+            "bucket": [
+              "fü"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

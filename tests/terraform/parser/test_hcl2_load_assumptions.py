@@ -25,6 +25,15 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                     }
                 }
             }]
+
+    def test_tfvars(self):
+        tf = '''
+        VERSIONING = true
+        CHECKOV = "awesome"
+        '''
+        expect = {
+            "VERSIONING": [True],
+            "CHECKOV": ["awesome"]
         }
         self.go(tf, expect)
 

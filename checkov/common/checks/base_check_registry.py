@@ -94,6 +94,10 @@ class BaseCheckRegistry(object):
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
 
         results = {}
+
+        if not isinstance(entity_configuration, dict):
+            return results
+
         checks = self.get_checks(entity_type)
         for check in checks:
             skip_info = {}

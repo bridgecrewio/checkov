@@ -111,6 +111,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_ternary_793(self):
         self.go("ternary_793")
 
+    def test_tfvars(self):
+        self.go("tfvars")
+
     @staticmethod
     def go(dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),

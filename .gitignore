@@ -9,7 +9,6 @@ __pycache__/
 # Terraform
 *.tfstate*
 *.terraform*
-*.tfvars
 *.tfbackend
 
 # git
