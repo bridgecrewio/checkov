@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class CloudStorageSelfLogging(BaseResourceCheck):
     def __init__(self):
         name = "Bucket should not log to itself"
-        id = "CKV_GCP_62"
+        id = "CKV_GCP_63"
         supported_resources = ['google_storage_bucket']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
