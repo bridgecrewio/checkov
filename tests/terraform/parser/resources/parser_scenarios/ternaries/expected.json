@@ -1,0 +1,15 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "a": ["a"],
+        "b": ["b"],
+        "empty": [""],
+        "bool_true": ["correct"],
+        "bool_false": ["correct"],
+        "type": ["bool"],
+        "default": [true]
+      }
+    ]
+  }
+}

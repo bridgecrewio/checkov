@@ -7,6 +7,27 @@ import hcl2
 # This group of tests is used to confirm assumptions about how the hcl2 library parses into json.
 # We want to make sure important assumptions are caught if behavior changes.
 class TestHCL2LoadAssumptions(unittest.TestCase):
+    def test_ternary(self):
+        # Ternary and removal of parens are interesting things here
+        tf = '''
+        resource "aws_instance" "foo" {
+          metadata_options {
+            http_tokens = (var.metadata_http_tokens_required) ? "required" : "optional"
+          }
+        }'''
+        expect = {
+            "resource": [{
+                "aws_instance": {
+                    "foo": {
+                        "metadata_options": [{
+                            "http_tokens": ['${var.metadata_http_tokens_required ? "required" : "optional"}']
+                        }]
+                    }
+                }
+            }]
+        }
+        self.go(tf, expect)
+
     def test_tfvars(self):
         tf = '''
         VERSIONING = true
@@ -255,3 +276,20 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                                                  f"{json.dumps(expected_result, indent=2)}\n" \
                                                  f"** ACTUAL **\n" \
                                                  f"{json.dumps(actual_result, indent=2)}"
+
+    def test_math(self):
+        tf = "four = 2 + 2"
+        expect = {
+            "four": ["${2 + 2}"]
+        }
+        self.go(tf, expect)
+
+    def test_weird_ternary_string_clipping(self):
+        tf = 'bool_string_false = "false" ? "wrong" : "correct"'
+        expect = {
+            "bool_string_false": ["false\" ? \"wrong\" : \"correct"]
+            #                     --                             --
+            #                      |                             |
+            #                      missing quotes on outer tokens :-(
+        }
+        self.go(tf, expect)

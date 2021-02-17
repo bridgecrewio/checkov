@@ -121,7 +121,46 @@ class TestParserInternals(unittest.TestCase):
                     VBM("${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
                         "merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})")
                 ]
-            )
+            ),
+
+            # Ternaries
+            (
+                '${var.metadata_http_tokens_required ? "required" : "optional"}',
+                [
+                    VBM('var.metadata_http_tokens_required', 'var.metadata_http_tokens_required'),
+                    VBM('${var.metadata_http_tokens_required ? "required" : "optional"}',
+                        'var.metadata_http_tokens_required ? "required" : "optional"')
+                ]
+            ),
+            (
+                '${1 + 1 == 2 ? "required" : "optional"}',
+                [
+                    VBM('1 + 1 == 2', '1 + 1 == 2'),
+                    VBM('${1 + 1 == 2 ? "required" : "optional"}', '1 + 1 == 2 ? "required" : "optional"')
+                ]
+            ),
+            (
+                '${true ? "required" : "optional"}',
+                [
+                    VBM('${true ? "required" : "optional"}', 'true ? "required" : "optional"')
+                ]
+            ),
+            (
+                '${false ? "required" : "optional"}',
+                [
+                    VBM('${false ? "required" : "optional"}', 'false ? "required" : "optional"')
+                ]
+            ),
+            # TODO: var -> comparison -> ternary
+            # (
+            #     '${local.empty != "" ? local.a : "default value"}',
+            #     [
+            #         VBM("local.empty", "local.empty"),
+            #         VBM('local.empty != ""', 'local.empty != ""'),
+            #         VBM('${local.empty != "" ? local.a : "default value"}',
+            #             'local.empty != "" ? local.a : "default value"')
+            #     ]
+            # )
         ]
         for case in cases:
             actual = find_var_blocks(case[0])
