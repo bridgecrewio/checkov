@@ -250,6 +250,10 @@ class BcPlatformIntegration(object):
         return self.ckv_to_bc_id_mapping
 
     def get_checkov_mapping_metadata(self) -> dict:
+        BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING","FALSE")
+        if BC_SKIP_MAPPING == "TRUE":
+            logging.debug(f"Skipped mapping API call")
+            return {}
         try:
             request = http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
