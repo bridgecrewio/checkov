@@ -14,10 +14,11 @@ class SQLServerAuditPolicyRetentionPeriod(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'retention_in_days' in conf: 
             retention=force_int(conf['retention_in_days'][0])
-            if retention < 90:
-                return CheckResult.FAILED
-            else:
-                return CheckResult.PASSED
+            if retention:
+                if retention < 90:
+                    return CheckResult.FAILED
+                else:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 
