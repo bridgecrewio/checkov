@@ -42,6 +42,7 @@ class TestBCApiUrl(unittest.TestCase):
         socket.socket = guard
         instance = BcPlatformIntegration()
         self.assertEquals(None,instance.ckv_to_bc_id_mapping)
+        socket.socket = socket.socket()
 
 
 if __name__ == '__main__':
