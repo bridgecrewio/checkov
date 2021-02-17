@@ -93,6 +93,10 @@ class TestParserScenarios(unittest.TestCase):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf")
 
+    def test_colon(self):
+        # Note: this hits the _clean_bad_definitions internal function
+        self.go("colon")
+
     def test_null_variables_651(self):
         self.go("null_variables_651")
 
