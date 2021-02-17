@@ -17,7 +17,7 @@ class EC2Credentials(BaseResourceCheck):
         if 'user_data' in conf.keys():
             user_data = conf['user_data'][0]
             if isinstance(user_data, str):
-                if string_has_secrets(user_data, AWS):
+                if string_has_secrets(user_data):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
