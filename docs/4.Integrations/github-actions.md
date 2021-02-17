@@ -30,16 +30,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Test with Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: example/examplea
-          framework: terraform 
+          framework: terraform
 ```
 
 ## Example Results

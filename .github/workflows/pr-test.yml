@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install cfn-lint
         run: |
           pip install cfn-lint==0.41.0
@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |
@@ -83,6 +83,3 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-
-
-
