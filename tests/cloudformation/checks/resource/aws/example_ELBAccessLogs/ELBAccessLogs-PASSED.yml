@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Properties:
+      Listeners:
+      - InstancePort: '443'
+        InstanceProtocol: HTTPS
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+      AccessLoggingPolicy:
+        Enabled: true
+        S3BucketName: MyBucket
