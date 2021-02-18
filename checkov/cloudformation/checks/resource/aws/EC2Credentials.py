@@ -18,7 +18,7 @@ class EC2Credentials(BaseResourceCheck):
                 # on Yaml or JSON CF Templates and how the B64 conversion is done.
                 user_data_str = str(user_data)
                 if isinstance(user_data_str, str):
-                    if string_has_secrets(user_data_str):
+                    if string_has_secrets(user_data_str, AWS):
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
