@@ -7,9 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: setup pyenv
+        uses: gabrielfalcao/pyenv-action@v5
         with:
-          python-version: 3.9
+            default: 3.9.1
       - name: Install cfn-lint
         run: |
           pip install cfn-lint==0.41.0
@@ -21,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: setup pyenv
+        uses: gabrielfalcao/pyenv-action@v5
         with:
-          python-version: 3.9
+            default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
@@ -41,9 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: setup pyenv
+        uses: gabrielfalcao/pyenv-action@v5
         with:
-          python-version: 3.9
+            default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |

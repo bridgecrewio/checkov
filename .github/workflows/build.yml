@@ -56,10 +56,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+      - name: setup pyenv
+        uses: gabrielfalcao/pyenv-action@v5
         with:
-          python-version: 3.9
+            default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
@@ -114,10 +114,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+      - name: setup pyenv
+        uses: gabrielfalcao/pyenv-action@v5
         with:
-          python-version: 3.9
+            default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
