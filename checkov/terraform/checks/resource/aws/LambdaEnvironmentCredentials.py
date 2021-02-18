@@ -7,7 +7,7 @@ from checkov.common.util.type_forcers import force_list
 class LambdaEnvironmentCredentials(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure no hard-coded secrets exists in lambda environment"
+        name = "Ensure no hard-coded secrets exist in lambda environment"
         id = "CKV_AWS_45"
         supported_resources = ['aws_lambda_function']
         categories = [CheckCategories.SECRETS]
@@ -22,7 +22,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                         # variables can be a string, which in this case it points to a variable
                         for values in list(force_list(conf['environment'][0]['variables'])[0].values()):
                             for value in list(filter(lambda value: isinstance(value, str), force_list(values))):
-                                if string_has_secrets(value, AWS):
+                                if string_has_secrets(value):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
 
