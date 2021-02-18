@@ -1,0 +1,23 @@
+{
+  "tf/main.tf": {
+    "module": [
+      {
+        "bucket": {
+          "source": ["../bucket"],
+          "__resolved__": ["bucket/bucket.tf[tf/main.tf#0]"]
+        }
+      }
+    ]
+  },
+  "bucket/bucket.tf[tf/main.tf#0]": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "mybucket": {
+            "bucket": ["MyBucket"]
+          }
+        }
+      }
+    ]
+  }
+}

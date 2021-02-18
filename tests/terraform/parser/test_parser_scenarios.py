@@ -67,6 +67,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_simple(self):
         self.go("module_simple")
 
+    def test_module_simple_up_dir_ref(self):
+        self.go("module_simple_up_dir_ref")
+
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
@@ -117,6 +120,9 @@ class TestParserScenarios(unittest.TestCase):
 
     def test_tfvars(self):
         self.go("tfvars")
+
+    def test_account_dirs_and_modules(self):
+        self.go("account_dirs_and_modules")
 
     @staticmethod
     def go(dir_name):
