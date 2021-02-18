@@ -4,10 +4,10 @@ Resources:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       Listeners:
-      - InstancePort: '443'
-        InstanceProtocol: HTTPS
-        LoadBalancerPort: '443'
-        Protocol: HTTPS
+      - InstancePort: '80'
+        InstanceProtocol: HTTP
+        LoadBalancerPort: '80'
+        Protocol: HTTP
       AccessLoggingPolicy:
         Enabled: false
         S3BucketName: MyBucket
@@ -15,8 +15,7 @@ Resources:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       Listeners:
-      - InstancePort: '443'
-        InstanceProtocol: HTTPS
-        LoadBalancerPort: '443'
-        Protocol: HTTPS
-
+      - InstancePort: '80'
+        InstanceProtocol: HTTP
+        LoadBalancerPort: '80'
+        Protocol: HTTP
