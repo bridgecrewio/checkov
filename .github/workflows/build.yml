@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: setup pyenv
-        uses: gabrielfalcao/pyenv-action@v5
+        uses: gabrielfalcao/pyenv-action@v7
         with:
             default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
@@ -115,7 +115,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: setup pyenv
-        uses: gabrielfalcao/pyenv-action@v5
+        uses: gabrielfalcao/pyenv-action@v7
         with:
             default: 3.9.1
       - uses: dschep/install-pipenv-action@v1
