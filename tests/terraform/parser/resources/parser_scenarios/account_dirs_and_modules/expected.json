@@ -8,8 +8,8 @@
           "ENGINE_VERSION": ["11"],
           "ENCRYPTED": [true],
           "__resolved__": [
-            "modules/db/variables.tf[envs/myaccount/us-east-1/main.tf#0]",
-            "modules/db/db.tf[envs/myaccount/us-east-1/main.tf#0]"
+            "modules/db/db.tf[envs/myaccount/us-east-1/main.tf#0]",
+            "modules/db/variables.tf[envs/myaccount/us-east-1/main.tf#0]"
           ]
         }
       }
@@ -76,8 +76,8 @@
           "ENGINE_VERSION": ["11"],
           "ENCRYPTED": [true],
           "__resolved__": [
-            "modules/db/variables.tf[envs/myotheraccount/us-east-1/main.tf#0]",
-            "modules/db/db.tf[envs/myotheraccount/us-east-1/main.tf#0]"
+            "modules/db/db.tf[envs/myotheraccount/us-east-1/main.tf#0]",
+            "modules/db/variables.tf[envs/myotheraccount/us-east-1/main.tf#0]"
           ]
         }
       }

@@ -541,6 +541,7 @@ class Parser:
                                 del self.out_definitions[key]
                                 if new_key not in resolved_loc_list:
                                     resolved_loc_list.append(new_key)
+                            resolved_loc_list.sort()        # For testing, need predictable ordering
 
                             deep_merge.merge(all_module_definitions, module_definitions)
                     except Exception as e:
