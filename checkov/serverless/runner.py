@@ -3,6 +3,7 @@ import os
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
+from checkov.common.checks.base_check import BaseDefinitionAccess
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -82,6 +83,7 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
+        definition_access = BaseDefinitionAccess(definitions)
         for sls_file, sls_file_data in definitions.items():
 
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
@@ -118,7 +120,8 @@ class Runner(BaseRunner):
                         variable_evaluations = {}
 
                         entity = {resource_name: resource}
-                        results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                        results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter,
+                                                    definition_access)
                         tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
@@ -148,7 +151,8 @@ class Runner(BaseRunner):
                             # does. This allows checks to see what the complete data would be.
                             sls_context_parser.enrich_function_with_provider(item_name)
                         entity = EntityDetails(sls_context_parser.provider_type, item_content)
-                        results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                        results = registry.scan(sls_file, entity, skipped_checks, runner_filter,
+                                                definition_access)
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
@@ -169,7 +173,7 @@ class Runner(BaseRunner):
                 skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, item_content)
-                results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                results = registry.scan(sls_file, entity, skipped_checks, runner_filter, definition_access)
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
@@ -186,7 +190,8 @@ class Runner(BaseRunner):
                 skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
-                results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter,
+                                                 definition_access)
                 tags = cfn_utils.get_resource_tags(entity, complete_registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,

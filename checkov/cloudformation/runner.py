@@ -4,6 +4,7 @@ import os
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.parser import parse
+from checkov.common.checks.base_check import BaseDefinitionAccess
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
@@ -50,6 +51,8 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
+        definition_access = BaseDefinitionAccess(definitions)
+
         for cf_file in definitions.keys():
 
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
@@ -79,7 +82,7 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks,
-                                                        runner_filter)
+                                                        runner_filter, definition_access)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,

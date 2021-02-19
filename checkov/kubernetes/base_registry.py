@@ -12,7 +12,7 @@ class Registry(BaseCheckRegistry):
         conf = entity
         return kind, conf
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
+    def scan(self, scanned_file, entity, skipped_checks, runner_filter, definition_access):
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
@@ -26,7 +26,8 @@ class Registry(BaseCheckRegistry):
                 self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
                 result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
-                                   entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+                                   entity_name=entity_type, entity_type=entity_type, skip_info=skip_info,
+                                   definition_access=definition_access)
                 results[check] = result
         return results
 

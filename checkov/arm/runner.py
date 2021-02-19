@@ -3,6 +3,7 @@ import os
 
 from checkov.arm.registry import arm_registry
 from checkov.arm.parser import parse
+from checkov.common.checks.base_check import BaseDefinitionAccess
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
@@ -45,6 +46,8 @@ class Runner(BaseRunner):
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
+        definition_access = BaseDefinitionAccess(definitions)
 
         for arm_file in definitions.keys():
 
@@ -93,7 +96,7 @@ class Runner(BaseRunner):
                         skipped_checks = ContextParser.collect_skip_comments(resource)
 
                         results = arm_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
+                                                    runner_filter, definition_access)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=arm_file,

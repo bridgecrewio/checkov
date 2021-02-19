@@ -3,6 +3,7 @@ import operator
 import os
 from functools import reduce
 
+from checkov.common.checks.base_check import BaseDefinitionAccess
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
@@ -50,6 +51,7 @@ class Runner(BaseRunner):
                 if parse_result:
                     (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
 
+        definition_access = BaseDefinitionAccess(definitions)
         for k8_file in definitions.keys():
 
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
@@ -160,7 +162,8 @@ class Runner(BaseRunner):
 
                     skipped_checks = get_skipped_checks(entity_conf)
 
-                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
+                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter,
+                                            definition_access)
 
                     # TODO refactor into context parsing
                     find_lines_result_list = list(find_lines(entity_conf, '__startline__'))

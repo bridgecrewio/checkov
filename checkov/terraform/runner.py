@@ -12,6 +12,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.definition_access import TerraformDefinitionAccess
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
@@ -92,22 +93,25 @@ class Runner(BaseRunner):
             self.definitions_context = definitions_context
             logging.debug('Created definitions context')
 
+        definition_access = TerraformDefinitionAccess(self.tf_definitions)
         for full_file_path, definition in self.tf_definitions.items():
+            definition_access._set_file_being_checked(full_file_path)
+
             scanned_file = f"/{os.path.relpath(self._strip_module_referrer(full_file_path), root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, definitions_context, full_file_path, root_folder, report,
-                                scanned_file, runner_filter)
+                                scanned_file, runner_filter, definition_access)
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
-                       scanned_file, runner_filter):
+                       scanned_file, runner_filter, definition_access):
         for block_type in definition.keys():
             if block_type in CHECK_BLOCK_TYPES:
-                self.run_block(definition[block_type], definitions_context,
+                self.run_block(definition[block_type], definitions_context, definition_access,
                                full_file_path, root_folder, report,
                                scanned_file, block_type, runner_filter)
 
     def run_block(self, entities,
-                  definition_context,
+                  definition_context, definition_access,
                   full_file_path, root_folder, report, scanned_file,
                   block_type, runner_filter=None, entity_context_path_header=None):
 
@@ -142,7 +146,7 @@ class Runner(BaseRunner):
                     variables_evaluations[var_name] = dataclasses.asdict(context_info)
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                       entity_context_path)
-            results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
+            results = registry.scan(scanned_file, entity, skipped_checks, runner_filter, definition_access)
             absolut_scanned_file_path = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             (entity_type, _, entity_config) = registry.extract_entity_details(entity)

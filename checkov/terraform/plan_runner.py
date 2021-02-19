@@ -7,6 +7,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.definition_access import TerraformDefinitionAccess
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 # Allow the evaluation of empty variables
@@ -71,15 +72,18 @@ class Runner(BaseRunner):
     def check_tf_definition(self, report, runner_filter,
                             ):
 
+        definition_access = TerraformDefinitionAccess(self.tf_definitions)
         for full_file_path, definition in self.tf_definitions.items():
+            definition_access._set_file_being_checked(full_file_path)
+
             scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], full_file_path, report, scanned_file,
-                                   block_type, runner_filter)
+                                   block_type, definition_access, runner_filter)
 
-    def run_block(self, entities, full_file_path, report, scanned_file, block_type,
+    def run_block(self, entities, full_file_path, report, scanned_file, block_type, definition_access,
                   runner_filter=None):
         registry = self.block_type_registries[block_type]
         if registry:
@@ -92,7 +96,7 @@ class Runner(BaseRunner):
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
-                results = registry.scan(scanned_file, entity, [], runner_filter)
+                results = registry.scan(scanned_file, entity, [], runner_filter, definition_access)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,

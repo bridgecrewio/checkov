@@ -93,7 +93,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     @classmethod
     @scan_entity_conf.add_signature(args=["self", "conf", "entity_type"])
-    def _scan_entity_conf_self_conf(cls, wrapped):
+    def _scan_entity_conf_self_conf_entitytype(cls, wrapped):
         def wrapper(self, conf, entity_type, entity_name=None, definition_access=None):
             # keep default argument for entity_type so old code, that doesn't set it, will work.
             return wrapped(self, conf, entity_type)
@@ -117,12 +117,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         return force_list(self.evaluated_keys)
 
 
-class BaseDefinitionAccess(metaclass=abc.ABCMeta):
+class BaseDefinitionAccess:
     def __init__(self, doc: Dict) -> None:
         super().__init__()
         self.__full_doc = doc
 
-    @abstractmethod
     def full_definition(self) -> Mapping:
         """
         Return the full document definition. Note that the resulting mapping should not be modified. It
