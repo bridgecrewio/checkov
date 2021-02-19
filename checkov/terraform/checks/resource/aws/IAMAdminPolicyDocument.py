@@ -19,11 +19,12 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                 policy_block = json.loads(conf['policy'][0])
                 if 'Statement' in policy_block.keys():
                     for statement in force_list(policy_block['Statement']):
-                        if 'Action' in statement and \
-                                statement.get('Effect', ['Allow']) == 'Allow' and \
-                                '*' in statement.get('Action', ['']) and \
-                                '*' in statement.get('Resource', ['']):
-                            return CheckResult.FAILED
+                        if 'Action' in statement:
+                            effect = statement.get('Effect', 'Allow')
+                            action = force_list(statement.get('Action', ['']))
+                            resource = force_list(statement.get('Resource', ['']))
+                            if effect == 'Allow' and '*' in action and '*' in resource:
+                                return CheckResult.FAILED
             except:  # nosec
                 pass
         return CheckResult.PASSED

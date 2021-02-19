@@ -30,6 +30,6 @@ jobs:
         if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
-          formula-name: checkov
+          formula: checkov
           token: ${{ secrets.PAT_TOKEN }} 
 
