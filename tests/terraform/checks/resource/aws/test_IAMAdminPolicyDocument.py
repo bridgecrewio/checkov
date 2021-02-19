@@ -1,41 +1,42 @@
+import os
 import unittest
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.IAMAdminPolicyDocument import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestAdminPolicyDocument(unittest.TestCase):
 
-    def test_success(self):
-        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
-                         'policy': ['{\n  "Version": "2012-10-17", \n  \
-                         "Statement": [\n    {\n      \
-                         "Action": [\n        "ec2:Describe*"\n      ],\n      \
-                         "Effect": "Allow",\n     \
-                          "Resource": "*"\n    }\n  ]\n}']}
-        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
-        self.assertEqual(CheckResult.PASSED, scan_result)
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
-                         'policy': ['{\n  "Version": "2012-10-17", \n  \
-                         "Statement": [\n    {\n      \
-                         "Action": [\n        "*"\n      ],\n      \
-                         "Effect": "Allow",\n     \
-                          "Resource": "*"\n    }\n  ]\n}']}
-        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_IAMAdminPolicyDocument"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure_multiple_statements(self):
-        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
-                         'policy': [
-                             '{"Version":"2012-10-17","Statement":[{"Sid":"SqsAllow","Effect":"Allow","Action":['
-                             '"sqs:GetQueueAttributes","sqs:GetQueueUrl","sqs:ListDeadLetterSourceQueues",'
-                             '"sqs:ListQueues","sqs:ReceiveMessage","sqs:SendMessage","sqs:SendMessageBatch"],'
-                             '"Resource":"*"},{"Sid":"ALL","Effect":"Allow","Action":["*"],"Resource":["*"]}]} '
-                             ]}
-        scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            'aws_iam_policy.pass1',
+            'aws_iam_policy.pass2'
+        }
+        failing_resources = {
+            'aws_iam_policy.fail1',
+            'aws_iam_policy.fail2',
+            'aws_iam_policy.fail3',
+            'aws_iam_policy.fail4'
+        }
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['failed'], 4)
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':
