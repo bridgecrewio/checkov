@@ -1,4 +1,5 @@
-from typing import Dict
+import itertools
+from typing import Any, Dict, Iterator
 
 import dpath
 
@@ -16,8 +17,7 @@ class TerraformDefinitionAccess(BaseDefinitionAccess):
         if found, returns its configuration data. If not found, an empty dict will be returned.
         """
 
-        # IMPLEMENTATION NOTE: This would be super easy to implement, except for the problem that the full
-        #                      full definition might contain definitions that
+        # TODO: Could be in another file in the same directory
         if self.__file_being_processed is None:
             raise AssertionError("Logic error: _set_file_being_checked has not been called. Please report "
                                  "this as a checkov bug.")
@@ -31,6 +31,32 @@ class TerraformDefinitionAccess(BaseDefinitionAccess):
                              f"resource/*/{resource_type}/{resource_name}")
         except KeyError:
             return {}
+
+    def find_resources_by_attribute(self, resource_type: str, search_path: str,
+                                    search_value: Any) -> Iterator[Dict]:
+        """
+        Returns an iterator of definitions for resources of a given type which has an attribute matching a
+        particular value.
+        """
+
+        # TODO: Could be in another file in the same directory
+        if self.__file_being_processed is None:
+            raise AssertionError("Logic error: _set_file_being_checked has not been called. Please report "
+                                 "this as a checkov bug.")
+
+        file_def = self.full_definition().get(self.__file_being_processed)
+        if file_def is None:
+            yield from ()
+            return
+
+        for match in dpath.search(file_def, f"resource/*/{resource_type}/*", yielded=True):
+            try:
+                found_value = dpath.get(match[1], search_path)
+                if found_value == search_value:
+                    yield match[1]
+            except KeyError:
+                pass
+
 
     def _set_file_being_checked(self, full_file_path):
         """

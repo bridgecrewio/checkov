@@ -14,7 +14,7 @@ from checkov.terraform.runner import Runner
 DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-class PolicyToBucketVerificationCheck(BaseResourceCheck):
+class PolicyToBucketByName(BaseResourceCheck):
     def __init__(self):
         super().__init__(
             name="Make sure the bucket can be found for the policy",
@@ -31,6 +31,27 @@ class PolicyToBucketVerificationCheck(BaseResourceCheck):
 
         bucket_conf = definition_access.find_resource_by_name("aws_s3_bucket", "my_bucket")
         assert dpath.get(bucket_conf, "bucket/0") == "mybucket.us-east-1.mycompany.com", bucket_conf
+        return CheckResult.PASSED
+
+
+class PolicyToBucketByValue(BaseResourceCheck):
+    def __init__(self):
+        super().__init__(
+            name="Make sure the bucket can be found for the policy",
+            id="PolicyToBucketVerificationCheck",
+            categories=[],
+            supported_resources=["aws_s3_bucket_policy"])
+
+    def scan_resource_conf(self, conf, entity_type, entity_name, definition_access):
+        assert isinstance(definition_access, TerraformDefinitionAccess)     # verify type
+
+        count = 0
+        for bucket_conf in definition_access.find_resources_by_attribute("aws_s3_bucket", "bucket/0",
+                                                                         "mybucket.us-east-1.mycompany.com"):
+            assert dpath.get(bucket_conf, "bucket/0") == "mybucket.us-east-1.mycompany.com", bucket_conf
+            count += 1
+
+        assert count == 1
         return CheckResult.PASSED
 
 
@@ -78,8 +99,11 @@ class TestResourceCorrelation(unittest.TestCase):
     def test_backwards_compat2(self):
         self._do_run_expect_pass(BackwardsCompat2Check())
 
-    def test_policy_to_bucket_verification(self):
-        self._do_run_expect_pass(PolicyToBucketVerificationCheck())
+    def test_policy_to_bucket_by_name(self):
+        self._do_run_expect_pass(PolicyToBucketByName())
+
+    def test_policy_to_bucket_by_value(self):
+        self._do_run_expect_pass(PolicyToBucketByValue())
 
 
     def _do_run_expect_pass(self, check):
