@@ -18,7 +18,7 @@ class PolicyToBucketByName(BaseResourceCheck):
     def __init__(self):
         super().__init__(
             name="Make sure the bucket can be found for the policy",
-            id="PolicyToBucketVerificationCheck",
+            id="PolicyToBucketByName",
             categories=[],
             supported_resources=["aws_s3_bucket_policy"])
 
@@ -38,7 +38,7 @@ class PolicyToBucketByValue(BaseResourceCheck):
     def __init__(self):
         super().__init__(
             name="Make sure the bucket can be found for the policy",
-            id="PolicyToBucketVerificationCheck",
+            id="PolicyToBucketByValue",
             categories=[],
             supported_resources=["aws_s3_bucket_policy"])
 
