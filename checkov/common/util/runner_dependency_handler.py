@@ -31,7 +31,6 @@ class RunnerDependencyHandler():
         :param checkov_runner_module_names: A list of runners as module names to check for deps
         :return: A list of runners which have failed deps, listed as the runners self.check_type.
         """
-        print(globals())
         for runner in self.checkov_runner_module_names:
             try:
                 self.calledGlobals[f"{runner}_runner"]().system_deps
