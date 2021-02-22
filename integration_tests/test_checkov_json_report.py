@@ -30,8 +30,8 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
-            print(json.dumps(data))
-            print(json.dumps(data["summary"]))
+            if 'kubernetes-goat' in report_path:
+                data = data[0]
             self.assertEqual(data["summary"]["parsing_errors"], 0, "expecting 0 parsing errors")
             self.assertGreater(data["summary"]["failed"], 1, "expecting more then 1 failed checks")
 
