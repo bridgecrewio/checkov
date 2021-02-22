@@ -773,6 +773,8 @@ Load JSON or HCL, depending on filename.
 
 
 def _is_valid_block(block):
+    if not isinstance(block, dict):
+        return True
     entity_name, _ = next(iter(block.items()))
     return entity_name.isidentifier()
 
