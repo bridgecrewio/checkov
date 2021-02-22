@@ -776,7 +776,9 @@ def _is_valid_block(block):
     if not isinstance(block, dict):
         return True
     entity_name, _ = next(iter(block.items()))
-    return entity_name.isidentifier()
+    if re.fullmatch(r'[^\W0-9][\w-]*', entity_name):
+        return True
+    return False
 
 
 def _validate_malformed_definitions(raw_data):
