@@ -5,6 +5,7 @@
         "a": ["a"],
         "b": ["b"],
         "empty": [""],
+        "local_true": [true],
         "bool_true": ["correct"],
         "bool_false": ["correct"],
         "type": ["bool"],
