@@ -75,3 +75,15 @@ class TestParserInternals(unittest.TestCase):
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
         # check that only the original file was parsed successfully without getting bad external modules
         self.assertEqual(1, len(list(out_definitions.keys())))
+
+    def test_malformed_output_blocks(self):
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "malformed_outputs")
+        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        out_definitions = {}
+        parser.parse_directory(directory=directory, out_definitions=out_definitions,
+                               out_evaluations_context={},
+                               download_external_modules=True,
+                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+        file_path, entity_definitions = next(iter(out_definitions.items()))
+        self.assertEqual(2, len(list(out_definitions[file_path]['output'])))

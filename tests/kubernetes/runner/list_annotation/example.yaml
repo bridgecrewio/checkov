@@ -1,0 +1,7 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: myName
+  description: description
+  annotations:
+    - backstage.io/techdocs-ref: url:https://github.com/test/repo

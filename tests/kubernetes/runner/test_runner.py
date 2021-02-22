@@ -96,6 +96,17 @@ class TestRunnerValid(unittest.TestCase):
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
+    def test_list_metadata_annotations(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "list_annotation", "example.yaml")
+        file_rel_path = os.path.relpath(scan_file_path)
+        runner = Runner()
+        try:
+            runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
+                                runner_filter=RunnerFilter(framework='kubernetes'))
+        except:
+            self.assertTrue(False, "Could not run K8 runner on configuration")
+
     def tearDown(self):
         pass
 
