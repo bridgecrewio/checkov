@@ -500,8 +500,6 @@ class Parser:
                             specified_vars = {k: v[0] for k, v in module_call_data.items()
                                               if k != "source" and k != "version"}
 
-                            if not dir_filter(os.path.abspath(content.path())):
-                                continue
                             self._internal_dir_load(directory=content.path(),
                                                     module_loader_registry=module_loader_registry,
                                                     dir_filter=dir_filter, specified_vars=specified_vars,
