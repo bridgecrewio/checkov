@@ -228,19 +228,38 @@ def get_skipped_checks(entity_conf):
         if "metadata" in entity_conf.keys():
             metadata = entity_conf["metadata"]
     if "annotations" in metadata.keys() and metadata["annotations"] is not None:
-        for key in metadata["annotations"].keys():
-            skipped_item = {}
-            if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                if "CKV_K8S" in metadata["annotations"][key]:
-                    if "=" in metadata["annotations"][key]:
-                        (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")
+        if isinstance(metadata["annotations"], dict):
+            for key in metadata["annotations"].keys():
+                skipped_item = {}
+                if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
+                    if "CKV_K8S" in metadata["annotations"][key]:
+                        if "=" in metadata["annotations"][key]:
+                            (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")
+                        else:
+                            skipped_item["id"] = metadata["annotations"][key]
+                            skipped_item["suppress_comment"] = "No comment provided"
+                        skipped.append(skipped_item)
                     else:
-                        skipped_item["id"] = metadata["annotations"][key]
-                        skipped_item["suppress_comment"] = "No comment provided"
-                    skipped.append(skipped_item)
-                else:
-                    logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                        logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                        continue
+        elif isinstance(metadata["annotations"], list):
+            for annotation in metadata["annotations"]:
+                if not isinstance(annotation, dict):
+                    logging.debug( f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                     continue
+                for key in annotation:
+                    skipped_item = {}
+                    if "checkov.io/skip" in annotation or "bridgecrew.io/skip" in annotation:
+                        if "CKV_K8S" in key:
+                            if "=" in key:
+                                (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
+                            else:
+                                skipped_item["id"] = annotation[key]
+                                skipped_item["suppress_comment"] = "No comment provided"
+                            skipped.append(skipped_item)
+                        else:
+                            logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                            continue
     return skipped
 
 def _get_from_dict(data_dict, map_list):
