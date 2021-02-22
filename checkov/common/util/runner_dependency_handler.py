@@ -44,7 +44,7 @@ class RunnerDependencyHandler():
                         self.checkov_frameworks_unmatched_deps.append(result)
         
         if self.checkov_frameworks_unmatched_deps:
-            print(f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(self.checkov_frameworks_unmatched_deps)}")
+            logging.info(f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(self.checkov_frameworks_unmatched_deps)}")
 
 
     def disable_incompatible_runners(self, skip_framework):
