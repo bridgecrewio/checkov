@@ -4,7 +4,7 @@ import os
 import re
 from pathlib import Path
 from typing import Mapping, Optional, Dict, Any, List, Callable, Tuple
-
+import copy
 import deep_merge
 import hcl2
 import jmespath
@@ -326,7 +326,7 @@ class Parser:
                     # the full string isn't found in the value anymore) and come back to it on another
                     # processor loop. This works... but requires another processor loop.
                     # (If you're thinking we should make a DAG and do this properly... you're probably right.)
-                    prev_matches: List[Tuple[str, str]] = []        # original value -> replaced
+                    prev_matches: List[Tuple[str, str]] = []  # original value -> replaced
                     for match in find_var_blocks(value):
                         # Update what's expected in the match, see comment above
                         for prev_match in prev_matches:
@@ -461,7 +461,8 @@ class Parser:
 
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
-                        source = os.path.normpath(os.path.join(os.path.dirname(_remove_module_dependency_in_path(file)), source))
+                        source = os.path.normpath(
+                            os.path.join(os.path.dirname(_remove_module_dependency_in_path(file)), source))
 
                     version = module_call_data.get("version", "latest")
                     if version and isinstance(version, list):
@@ -477,10 +478,14 @@ class Parser:
 
                             if not dir_filter(os.path.abspath(content.path())):
                                 continue
-                            self._internal_dir_load(directory=content.path(), module_loader_registry=module_loader_registry,
-                                                    dir_filter=dir_filter, specified_vars=specified_vars, module_load_context=module_load_context)
+                            self._internal_dir_load(directory=content.path(),
+                                                    module_loader_registry=module_loader_registry,
+                                                    dir_filter=dir_filter, specified_vars=specified_vars,
+                                                    module_load_context=module_load_context)
 
-                            module_definitions = {path: self.out_definitions[path] for path in list(self.out_definitions.keys()) if os.path.dirname(path) == content.path()}
+                            module_definitions = {path: self.out_definitions[path] for path in
+                                                  list(self.out_definitions.keys()) if
+                                                  os.path.dirname(path) == content.path()}
 
                             if not module_definitions:
                                 continue
@@ -535,7 +540,6 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
                                module_data_retrieval: Callable[[str], Dict[str, Any]],
                                eval_map_by_var_name: Dict[str, EvaluationContext],
                                context, orig_variable_full, root_directory: str) -> Any:
-
     ternary_info = _is_ternary(orig_variable)
     if ternary_info:
         return _process_ternary(orig_variable, ternary_info[0], ternary_info[1])
@@ -547,7 +551,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
         # Reference to module outputs, example: 'module.bucket.bucket_name'
         ref_tokens = orig_variable.split(".")
         if len(ref_tokens) != 3:
-            return orig_variable        # fail safe, can the length ever be something other than 3?
+            return orig_variable  # fail safe, can the length ever be something other than 3?
 
         try:
             ref_list = jmespath.search(f"[].{ref_tokens[1]}.{RESOLVED_MODULE_ENTRY_NAME}[]", module_list)
@@ -648,7 +652,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
                     else:
                         return str(int(altered_value))
                 except ValueError:
-                    return orig_variable     # no change
+                    return orig_variable  # no change
     elif orig_variable.startswith("merge(") and orig_variable.endswith(")"):
         altered_value = orig_variable[6:-1]
         args = split_merge_args(altered_value)
@@ -674,7 +678,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
             if isinstance(value, dict):
                 merged_map.update(value)
             else:
-                return orig_variable            # don't know what this is, blow out
+                return orig_variable  # don't know what this is, blow out
         return merged_map
     # TODO - format() support, still in progress
     # elif orig_variable.startswith("format(") and orig_variable.endswith(")"):
@@ -692,7 +696,7 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
             if result is not None:
                 return result
 
-    return orig_variable        # fall back to no change
+    return orig_variable  # fall back to no change
 
 
 def _handle_indexing(reference: str,
@@ -757,21 +761,40 @@ Load JSON or HCL, depending on filename.
                 return json.load(f)
             else:
                 raw_data = hcl2.load(f)
+                non_malformed_definitions = _validate_malformed_definitions(raw_data)
                 if clean_definitions:
-                    return _clean_bad_definitions(raw_data)
+                    return _clean_bad_definitions(non_malformed_definitions)
                 else:
-                    return raw_data
+                    return non_malformed_definitions
     except Exception as e:
         LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
         parsing_errors[file_path] = e
         return None
 
 
+def _is_valid_block(block):
+    if not isinstance(block, dict):
+        return True
+    entity_name, _ = next(iter(block.items()))
+    if re.fullmatch(r'[^\W0-9][\w-]*', entity_name):
+        return True
+    return False
+
+
+def _validate_malformed_definitions(raw_data):
+    raw_data_cleaned = copy.deepcopy(raw_data)
+    for block_type, blocks in raw_data.items():
+        raw_data_cleaned[block_type] = [block for block in blocks if _is_valid_block(block)]
+
+    return raw_data_cleaned
+
+
 def _clean_bad_definitions(tf_definition_list):
     return {
         block_type: list(filter(lambda definition_list: block_type == 'locals' or
                                                         not isinstance(definition_list, dict)
-                                                        or len(definition_list.keys()) == 1, tf_definition_list[block_type]))
+                                                        or len(definition_list.keys()) == 1,
+                                tf_definition_list[block_type]))
         for block_type in tf_definition_list.keys()
     }
 
@@ -779,7 +802,7 @@ def _clean_bad_definitions(tf_definition_list):
 def _eval_string(value: str) -> Optional[Any]:
     try:
         value_string = value.replace("'", '"')
-        parsed = hcl2.loads(f'eval = {value_string}\n')      # NOTE: newline is needed
+        parsed = hcl2.loads(f'eval = {value_string}\n')  # NOTE: newline is needed
         return parsed["eval"][0]
     except Exception:
         return None
@@ -819,7 +842,7 @@ def _remove_module_dependency_in_path(path):
     return path
 
 
-def _is_ternary(value: str) -> Optional[Tuple[int,int]]:
+def _is_ternary(value: str) -> Optional[Tuple[int, int]]:
     """
     Determines whether or not the given string is *probably* a ternary operation
     :return:        If the expression does represent a possibly-processable ternary expression, a tuple
@@ -848,6 +871,7 @@ def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
 
     # Otherwise, this isn't evaluated enough
     return value
+
 
 def _safe_index(sequence_hopefully, index) -> Optional[Any]:
     try:
