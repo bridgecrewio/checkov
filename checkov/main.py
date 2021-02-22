@@ -37,7 +37,7 @@ checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm']
 
 # Check runners for necessary system dependencies.
-runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names)
+runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
 runnerDependencyHandler.validate_runner_deps()
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):

@@ -9,13 +9,16 @@ class RunnerDependencyHandler():
     """
     checkov_frameworks_unmatched_deps = []
     checkov_runner_module_names = ""
+    calledGlobals = {}
 
-    def __init__(self, checkov_runner_module_names):
+    def __init__(self, checkov_runner_module_names: list, calledGlobals: dict):
         """
         RunnerDependencyHandler
         :param checkov_runner_module_names: list of runner module names to check
+        :param calledGlobals: The main-scoped dict output of globals(), so we can access the registered runners.
         """
         self.checkov_runner_module_names = checkov_runner_module_names
+        self.calledGlobals = calledGlobals
 
     def validate_runner_deps(self):
         """
@@ -28,15 +31,16 @@ class RunnerDependencyHandler():
         :param checkov_runner_module_names: A list of runners as module names to check for deps
         :return: A list of runners which have failed deps, listed as the runners self.check_type.
         """
+        print(globals())
         for runner in self.checkov_runner_module_names:
             try:
-                globals()[f"{runner}_runner"]().system_deps
+                self.calledGlobals[f"{runner}_runner"]().system_deps
             except:
                 logging.debug(f"{runner}_runner declares no system dependency checks required.")
                 continue
 
-            if globals()[f"{runner}_runner"]().system_deps:
-                    result = globals()[f"{runner}_runner"]().check_system_deps()
+            if self.calledGlobals[f"{runner}_runner"]().system_deps:
+                    result = self.calledGlobals[f"{runner}_runner"]().check_system_deps()
                     if result is not None:
                         self.checkov_frameworks_unmatched_deps.append(result)
         
