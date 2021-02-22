@@ -19,6 +19,7 @@ from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
@@ -35,30 +36,16 @@ logger = logging.getLogger(__name__)
 checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm']
 
-#Check runners for system deps, append --skip-framework list for failing deps.
-checkov_frameworks_unmatched_deps = []
-for runner in checkov_runner_module_names:
-    try:
-        globals()[f"{runner}_runner"]().system_deps
-    except:
-        logging.debug(f"{runner}_runner declares no system dependency checks required.")
-        continue
-
-    if globals()[f"{runner}_runner"]().system_deps:
-            result = globals()[f"{runner}_runner"]().check_system_deps()
-            if result is not None:
-                checkov_frameworks_unmatched_deps.append(result)
+# Check runners for necessary system dependencies.
+runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names)
+runnerDependencyHandler.validate_runner_deps()
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
-    if checkov_frameworks_unmatched_deps:
-        print(f"The following frameworks have been automatically disabled due to missing system dependency: {','.join(checkov_frameworks_unmatched_deps)}")
-        if args.skip_framework is None:
-            args.skip_framework = ",".join(checkov_frameworks_unmatched_deps)
-        else:
-            args.skip_framework = f"{args.skip_framework},{','.join(checkov_frameworks_unmatched_deps)}"
+    # Disable runners with missing system dependencies
+    args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
     
     runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
