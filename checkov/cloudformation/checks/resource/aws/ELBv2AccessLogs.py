@@ -16,7 +16,7 @@ class ELBv2AccessLogs(BaseResourceCheck):
                 if isinstance(conf['Properties']['LoadBalancerAttributes'], list):
                     for item in conf['Properties']['LoadBalancerAttributes']:
                         if 'Key' in item.keys() and 'Value' in item.keys():
-                            if item['Key'] == "access_logs.s3.enabled" and item['Value'] is True:
+                            if item['Key'] == "access_logs.s3.enabled" and item['Value'] == "true":
                                 return CheckResult.PASSED
         return CheckResult.FAILED
 

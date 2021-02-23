@@ -6,7 +6,7 @@ Resources:
       Name: MyLB
       LoadBalancerAttributes:
       - Key: access_logs.s3.enabled
-        Value: false
+        Value: "false"
       - Key: access_logs.s3.bucket 
         Value: MyBucket
       Subnets:
@@ -18,7 +18,7 @@ Resources:
       Name: MyLB
       LoadBalancerAttributes:
       - Key: idle_timeout.timeout_seconds
-        Value: 60
+        Value: "60"
       Subnets:
       - SubnetID0
       - SubnetID1

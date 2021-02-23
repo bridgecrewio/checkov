@@ -6,7 +6,7 @@ Resources:
       Name: MyLB
       LoadBalancerAttributes:
       - Key: access_logs.s3.enabled
-        Value: true
+        Value: "true"
       - Key: access_logs.s3.bucket 
         Value: MyBucket
       Subnets:
