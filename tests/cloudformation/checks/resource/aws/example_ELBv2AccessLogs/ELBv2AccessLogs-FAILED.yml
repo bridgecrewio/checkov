@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyLB
+      LoadBalancerAttributes:
+      - Key: access_logs.s3.enabled
+        Value: "false"
+      - Key: access_logs.s3.bucket 
+        Value: MyBucket
+      Subnets:
+      - SubnetID0
+      - SubnetID1
+  Resource1:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyLB
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: "60"
+      Subnets:
+      - SubnetID0
+      - SubnetID1
+  Resource2:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyLB
+      Subnets:
+      - SubnetID0
+      - SubnetID1
