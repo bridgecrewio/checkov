@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Mapping, Optional, Dict, Any, List, Callable, Tuple
+from typing import Mapping, Optional, Dict, Any, List, Callable, Set, Tuple
 import copy
 import deep_merge
 import hcl2
@@ -32,6 +32,10 @@ def _filter_ignored_directories(d_names):
 class Parser:
     def __init__(self):
         self._parsed_directories = set()
+
+        # This ensures that we don't try to double-load modules
+        # Tuple is <file>, <module_index> (see _load_modules)
+        self._loaded_modules: Set[Tuple[str, int]] = set()
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -108,18 +112,27 @@ class Parser:
                                            True will allow processing. The argument will be the absolute path of
                                            the directory.
         """
+        keys_referenced_as_modules: Set[str] = set()
 
         if include_sub_dirs:
             for sub_dir, d_names, f_names in os.walk(self.directory):
                 _filter_ignored_directories(d_names)
                 if dir_filter(os.path.abspath(sub_dir)):
-                    self._internal_dir_load(sub_dir, module_loader_registry, dir_filter)
+                    self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
+                                            keys_referenced_as_modules)
         else:
-            self._internal_dir_load(self.directory, module_loader_registry, dir_filter)
+            self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
+                                    keys_referenced_as_modules)
+
+        # Ensure anything that was referenced as a module is removed
+        for key in keys_referenced_as_modules:
+            if key in self.out_definitions:
+                del self.out_definitions[key]
 
     def _internal_dir_load(self, directory: str,
                            module_loader_registry: ModuleLoaderRegistry,
                            dir_filter: Callable[[str], bool],
+                           keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
                            module_load_context: Optional[str] = None):
         """
@@ -237,7 +250,8 @@ class Parser:
             self._process_vars_and_locals(directory, var_value_and_file_map, module_data_retrieval)
 
         # Stage 4: Load modules
-        self._load_modules(self.directory, module_loader_registry, dir_filter, module_load_context)
+        self._load_modules(self.directory, module_loader_registry, dir_filter, module_load_context,
+                           keys_referenced_as_modules)
 
         # Stage 5: Variable resolution round 2 - now with modules
         if self.evaluate_variables:
@@ -436,16 +450,26 @@ class Parser:
         return process_items_helper(out_definitions.items, out_definitions, outer_context, False)
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
-                      dir_filter: Callable[[str], bool], module_load_context: Optional[str]):
+                      dir_filter: Callable[[str], bool], module_load_context: Optional[str],
+                      keys_referenced_as_modules: Set[str]):
         all_module_definitions = {}
         all_module_evaluations_context = {}
         for file in list(self.out_definitions.keys()):
+            # Don't process a file reference which has already been processed
+            if file.endswith("]"):
+                continue
+
             file_data = self.out_definitions.get(file)
             module_calls = file_data.get("module")
             if not module_calls or not isinstance(module_calls, list):
                 continue
 
             for module_index, module_call in enumerate(module_calls):
+                module_address = (file, module_index)
+                if module_address in self._loaded_modules:
+                    continue
+                self._loaded_modules.add(module_address)
+
                 if not isinstance(module_call, dict):
                     continue
 
@@ -476,12 +500,11 @@ class Parser:
                             specified_vars = {k: v[0] for k, v in module_call_data.items()
                                               if k != "source" and k != "version"}
 
-                            if not dir_filter(os.path.abspath(content.path())):
-                                continue
                             self._internal_dir_load(directory=content.path(),
                                                     module_loader_registry=module_loader_registry,
                                                     dir_filter=dir_filter, specified_vars=specified_vars,
-                                                    module_load_context=module_load_context)
+                                                    module_load_context=module_load_context,
+                                                    keys_referenced_as_modules=keys_referenced_as_modules)
 
                             module_definitions = {path: self.out_definitions[path] for path in
                                                   list(self.out_definitions.keys()) if
@@ -512,15 +535,16 @@ class Parser:
                             #       has not already been added.
                             keys = list(module_definitions.keys())
                             for key in keys:
-                                if key.endswith("]"):
+                                if key.endswith("]") or file.endswith("]"):
                                     continue
+                                keys_referenced_as_modules.add(key)
                                 new_key = f"{key}[{file}#{module_index}]"
-                                module_definitions[new_key] = \
-                                    module_definitions[key]
+                                module_definitions[new_key] = module_definitions[key]
                                 del module_definitions[key]
                                 del self.out_definitions[key]
-
-                                resolved_loc_list.append(new_key)
+                                if new_key not in resolved_loc_list:
+                                    resolved_loc_list.append(new_key)
+                            resolved_loc_list.sort()        # For testing, need predictable ordering
 
                             deep_merge.merge(all_module_definitions, module_definitions)
                     except Exception as e:
