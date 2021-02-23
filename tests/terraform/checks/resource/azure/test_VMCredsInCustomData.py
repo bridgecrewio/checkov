@@ -12,7 +12,7 @@ resource "azurerm_virtual_machine" "secret" {
   os_profile {
     computer_name  = "hostname"
     custom_data = <<EOF
-ABCDEFGHIJKLMNOPQRSTUVWXYZ123456
+0000-0000-0000-0000-000000000000
 EOF
   }
 }
