@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class MSSQLServerMinTLSVersion(BaseResourceCheck):
+class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure MSSQL is using the latest version of TLS encryption"
         id = "CKV_AZURE_52"
@@ -10,14 +10,11 @@ class MSSQLServerMinTLSVersion(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if 'minimum_tls_version' in conf:
-            if conf['minimum_tls_version'][0] != '1.2':
-                return CheckResult.FAILED
-            else:
-                return CheckResult.PASSED
-        else:
-            return CheckResult.FAILED    
-        
+
+    def get_inspected_key(self):
+        return "minimum_tls_version"
+
+    def get_expected_value(self):
+        return "1.2"
 
 check = MSSQLServerMinTLSVersion()
