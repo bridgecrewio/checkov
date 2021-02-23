@@ -75,6 +75,19 @@ pip3 install --upgrade pip && pip3 install --upgrade setuptools
 pip3 install checkov
 ```
 
+Installation on Ubuntu 18.04 LTS:
+
+Ubuntu 18.04 ships with Python 3.6. Install python 3.7 (from ppa repository)
+
+```sh
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install python3.7
+sudo apt install python3-pip
+sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
+```
+
 or using homebrew (MacOS only)
 
 ```sh

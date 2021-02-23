@@ -62,11 +62,12 @@ class Seccomp(BaseK8Check):
                         metadata = conf["spec"]["template"]["metadata"]
 
         if metadata:
-            if "annotations" in metadata and isinstance(metadata['annotations'], dict):
-                if "seccomp.security.alpha.kubernetes.io/pod" in metadata["annotations"]:
-                    if ("docker/default" in metadata["annotations"]["seccomp.security.alpha.kubernetes.io/pod"] or
-                            "runtime/default" in metadata["annotations"]["seccomp.security.alpha.kubernetes.io/pod"]):
-                        return CheckResult.PASSED
+            if "annotations" in metadata:
+                for annotation in metadata["annotations"]:
+                    for key in annotation:
+                        if "seccomp.security.alpha.kubernetes.io/pod" in key:
+                            if "docker/default" in annotation[key] or "runtime/default" in annotation[key]:
+                                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
