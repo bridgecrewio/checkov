@@ -21,7 +21,7 @@ class SeccompPSP(BaseK8Check):
 
     def scan_spec_conf(self, conf):
         if "metadata" in conf:
-            if "annotations" in conf["metadata"]:
+            if "annotations" in conf["metadata"] and conf["metadata"].get("annotations"):
                 for annotation in conf["metadata"]["annotations"]:
                     for key in annotation:
                         if "seccomp.security.alpha.kubernetes.io/defaultProfileName" in key:
