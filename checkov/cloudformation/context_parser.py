@@ -88,6 +88,15 @@ class ContextParser(object):
 
     @staticmethod
     def find_lines(node, kv):
+        # Hack to allow running checkov on json templates 
+        # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
+        # CF scripts that are parsed using the json mechnism use dicts that have a marker
+        if hasattr(node, 'start_mark') and kv == STARTLINE:
+            yield node.start_mark.line + 1
+
+        if hasattr(node, "end_mark") and kv == ENDLINE:
+            yield node.end_mark.line + 1
+
         if isinstance(node, list):
             for i in node:
                 for x in ContextParser.find_lines(i, kv):
