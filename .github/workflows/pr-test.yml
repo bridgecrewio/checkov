@@ -44,6 +44,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - uses: azure/setup-helm@v1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |
@@ -76,7 +77,8 @@ jobs:
         run: |
           pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
-          pipenv run checkov -s -d kubernetes-goat/ -o json > checkov_report_kubernetes-goat.json
+          pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
+          pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json          
           pipenv run checkov -s  --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
           pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
 

@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+import logging
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -18,34 +19,44 @@ from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.helm.runner import Runner as helm_runner
 from checkov.version import version
 
 outer_registry = None
 
 logging_init()
 logger = logging.getLogger(__name__)
+checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
+checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm']
 
+# Check runners for necessary system dependencies.
+runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
+runnerDependencyHandler.validate_runner_deps()
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
-    runner_filter = RunnerFilter(framework=args.framework, checks=args.check, skip_checks=args.skip_check,
+    # Disable runners with missing system dependencies
+    args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
+    
+    runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
-                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables))
+                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables), runners=checkov_runners)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                         arm_runner(), tf_plan_runner())
+                                         arm_runner(), tf_plan_runner(), helm_runner())
     if args.version:
         print(version)
         return
@@ -134,9 +145,12 @@ def add_parser_args(parser):
                         default=False,
                         help='in case of CLI output, do not display code blocks')
     parser.add_argument('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
-                        choices=['cloudformation', 'terraform', 'terraform_plan', 'kubernetes', 'serverless', 'arm',
-                                 'all'],
+                        choices=checkov_runners + ["all"],
                         default='all')
+    parser.add_argument('--skip-framework', help='filter scan to skip specific infrastructure code frameworks. \n'
+                                                 'will be included automatically for some frameworks if system dependencies are missing.',
+                        choices=checkov_runners,
+                        default=None)
     parser.add_argument('-c', '--check',
                         help='filter scan to run only on a specific check identifier(allowlist), You can '
                              'specify multiple checks separated by comma delimiter', default=None)

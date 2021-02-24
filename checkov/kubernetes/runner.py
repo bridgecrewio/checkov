@@ -16,7 +16,7 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 class Runner(BaseRunner):
     check_type = "kubernetes"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
