@@ -13,6 +13,7 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
+      - uses: azure/setup-helm@v1
       - name: Build & install checkov package
         run: |
           pipenv run pip install pytest
