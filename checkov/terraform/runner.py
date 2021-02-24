@@ -134,12 +134,16 @@ class Runner(BaseRunner):
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
-                    caller_context = dpath.get(definition_context[abs_caller_file],
-                                               # HACK ALERT: module data is currently double-nested in
-                                               #             definition context. If fixed, remove the
-                                               #             addition of "module." at the beginning.
-                                               "module." + referrer_id,
-                                               separator=".")
+                    try:
+                        caller_context = dpath.get(definition_context[abs_caller_file],
+                                                   # HACK ALERT: module data is currently double-nested in
+                                                   #             definition context. If fixed, remove the
+                                                   #             addition of "module." at the beginning.
+                                                   "module." + referrer_id,
+                                                   separator=".")
+                    except KeyError:
+                        caller_context = None
+
                     if caller_context:
                         caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                 else:
