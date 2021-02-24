@@ -17,13 +17,16 @@ class Record:
     code_block = ""
     file_path = ""
     file_line_range = []
+    caller_file_path = None           # When created from a module
+    caller_file_line_range = None     #
     resource = ""
     guideline = None
     fixed_definition = None
     entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path, entity_tags=None):
+                 evaluations, check_class, file_abs_path, entity_tags=None,
+                 caller_file_path=None, caller_file_line_range=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -42,6 +45,8 @@ class Record:
         self.check_class = check_class
         self.fixed_definition = None
         self.entity_tags = entity_tags
+        self.caller_file_path = caller_file_path
+        self.caller_file_line_range = caller_file_line_range
 
     def set_guideline(self, guideline):
         self.guideline = guideline
@@ -93,6 +98,12 @@ class Record:
         if self.code_block:
             code_lines = "\n{}\n".format("".join(
                 [self._code_line_string(self.code_block)]))
+        caller_file_details = ""
+        if self.caller_file_path:
+            caller_file_details = colored(
+                "\tCalling File: {}:{}\n".format(self.caller_file_path,
+                                                 "-".join([str(x) for x in self.caller_file_line_range])),
+                "magenta")
         if self.evaluations:
             for (var_name, var_evaluations) in self.evaluations.items():
                 var_file = var_evaluations['var_file']
@@ -106,12 +117,12 @@ class Record:
                             'white')
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result['result'] == CheckResult.FAILED and code_lines and not compact:
-            return check_message + status_message + file_details + guideline_message + code_lines + evaluation_message
+            return check_message + status_message + file_details + caller_file_details + guideline_message + code_lines + evaluation_message
 
         if self.check_result['result'] == CheckResult.SKIPPED:
-            return check_message + status_message + suppress_comment + file_details + guideline_message
+            return check_message + status_message + suppress_comment + file_details + caller_file_details + guideline_message
         else:
-            return check_message + status_message + file_details + evaluation_message + guideline_message
+            return check_message + status_message + file_details + caller_file_details + evaluation_message + guideline_message
 
     def __str__(self):
         return self.to_string()

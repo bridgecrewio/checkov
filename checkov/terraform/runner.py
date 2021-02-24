@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import os
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 import dpath.util
 
@@ -93,23 +93,25 @@ class Runner(BaseRunner):
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.tf_definitions.items():
-            scanned_file = f"/{os.path.relpath(self._strip_module_referrer(full_file_path), root_folder)}"
+            abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
+            scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, definitions_context, full_file_path, root_folder, report,
-                                scanned_file, runner_filter)
+                                scanned_file, runner_filter, abs_referrer)
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
-                       scanned_file, runner_filter):
+                       scanned_file, runner_filter, module_referrer: Optional[str]):
         for block_type in definition.keys():
             if block_type in CHECK_BLOCK_TYPES:
                 self.run_block(definition[block_type], definitions_context,
                                full_file_path, root_folder, report,
-                               scanned_file, block_type, runner_filter)
+                               scanned_file, block_type, runner_filter, None, module_referrer)
 
     def run_block(self, entities,
                   definition_context,
                   full_file_path, root_folder, report, scanned_file,
-                  block_type, runner_filter=None, entity_context_path_header=None):
+                  block_type, runner_filter=None, entity_context_path_header=None,
+                  module_referrer: Optional[str] = None):
 
         registry = self.block_type_registries[block_type]
         if not registry:
@@ -119,7 +121,30 @@ class Runner(BaseRunner):
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
-            entity_id = ".".join(definition_path)
+            entity_id = ".".join(definition_path)       # example: aws_s3_bucket.my_bucket
+
+            caller_file_path = None
+            caller_file_line_range = None
+
+            if module_referrer is not None:
+                referrer_id = self._find_id_for_referrer(full_file_path,
+                                                         self.tf_definitions)
+                if referrer_id:
+                    entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
+                    abs_caller_file = module_referrer[:module_referrer.rindex("#")]
+                    caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
+
+                    caller_context = dpath.get(definition_context[abs_caller_file],
+                                               # HACK ALERT: module data is currently double-nested in
+                                               #             definition context. If fixed, remove the
+                                               #             addition of "module." at the beginning.
+                                               "module." + referrer_id,
+                                               separator=".")
+                    if caller_context:
+                        caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
+                else:
+                    logging.debug(f"Unable to find referrer ID for full path: %s", full_file_path)
+
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path
             else:
@@ -143,7 +168,7 @@ class Runner(BaseRunner):
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                       entity_context_path)
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
-            absolut_scanned_file_path = self._strip_module_referrer(file_path=full_file_path)
+            absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             (entity_type, _, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
@@ -152,13 +177,35 @@ class Runner(BaseRunner):
                                 code_block=entity_code_lines, file_path=scanned_file,
                                 file_line_range=entity_lines_range,
                                 resource=entity_id, evaluations=entity_evaluations,
-                                check_class=check.__class__.__module__, file_abs_path=absolut_scanned_file_path, entity_tags=tags)
+                                check_class=check.__class__.__module__, file_abs_path=absolut_scanned_file_path,
+                                entity_tags=tags,
+                                caller_file_path=caller_file_path,
+                                caller_file_line_range=caller_file_line_range)
                 report.add_record(record=record)
 
     @staticmethod
-    def _strip_module_referrer(file_path:str) -> str:
+    def _strip_module_referrer(file_path: str) -> Tuple[str, Optional[str]]:
+        """
+        For file paths containing module referrer information (e.g.: "module/module.tf[main.tf#0]"), this
+        returns a tuple containing the file path (e.g., "module/module.tf") and referrer (e.g., "main.tf#0").
+        If the file path does not contain a referred, the tuple will contain the original file path and None.
+        """
         if file_path.endswith("]") and "[" in file_path:
-            return file_path[:file_path.index("[")]
+            return file_path[:file_path.index("[")], file_path[file_path.index("[") + 1: -1]
         else:
-            return file_path
+            return file_path, None
 
+    @staticmethod
+    def _find_id_for_referrer(full_file_path, definitions) -> Optional[str]:
+        for file, file_content in definitions.items():
+            if "module" not in file_content:
+                continue
+
+            for modules in file_content["module"]:
+                for module_name, module_content in modules.items():
+                    if "__resolved__" not in module_content:
+                        continue
+
+                    if full_file_path in module_content["__resolved__"]:
+                        return f"module.{module_name}"
+        return None
