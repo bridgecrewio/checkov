@@ -12,6 +12,8 @@ class EKSNodeGroupRemoteAccess(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if "remote_access" in conf.keys():
+            if not conf["remote_access"]:
+                return CheckResult.PASSED
             if "ec2_ssh_key" in conf["remote_access"][0].keys() and not 'source_security_group_ids' in conf["remote_access"][0].keys():
                 return CheckResult.FAILED
         return CheckResult.PASSED
