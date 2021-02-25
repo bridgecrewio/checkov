@@ -118,7 +118,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
         self.assertEqual(61, report.get_summary()["failed"])
-        self.assertEqual(62, report.get_summary()["passed"])
+        self.assertEqual(63, report.get_summary()["passed"])
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(5, len(files_scanned))
@@ -205,6 +205,22 @@ class TestRunnerValid(unittest.TestCase):
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
             self.assertEqual(record.repo_file_path, record.file_path)
 
+
+    def test_runner_unexpected_eks_node_group_remote_access(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/unexpected/eks_node_group_remote_access.json"
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[valid_plan_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        report_json = report.get_json()
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+        self.assertEqual(report.get_exit_code(soft_fail=False), 0)
+        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+
+        self.assertEqual(report.get_summary()["failed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
 if __name__ == '__main__':
     unittest.main()
