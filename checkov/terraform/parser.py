@@ -1,21 +1,23 @@
+import copy
 import json
 import logging
 import os
 import re
 from pathlib import Path
-from typing import Mapping, Optional, Dict, Any, List, Callable, Set, Tuple
-import copy
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Tuple
+
 import deep_merge
 import hcl2
 import jmespath
 
 from checkov.common.runners.base_runner import filter_ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.variables.context import EvaluationContext, VarReference
-from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
-from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry
-from checkov.terraform.parser_var_blocks import find_var_blocks, split_merge_args
+from checkov.terraform import parser_functions
+from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
+    ModuleLoaderRegistry
+from checkov.terraform.parser_functions import FUNCTION_FAILED
+from checkov.terraform.parser_utils import eval_string, find_var_blocks, to_string
 
 LOGGER = logging.getLogger(__name__)
 
@@ -366,62 +368,15 @@ class Parser:
                                 if match.full_str == altered_value:
                                     altered_value = replaced
                                 else:
-                                    altered_value = altered_value.replace(match.full_str, str(replaced))
+                                    replace_str = f"'{match.full_str}'"
+                                    if isinstance(replaced, str) or replace_str not in altered_value:
+                                        replace_str = match.full_str
+                                    altered_value = altered_value.replace(replace_str, str(replaced))
                                 prev_matches.append((match.full_str, replaced))
                                 had_var_block_match = True
 
                     if not had_var_block_match:
-                        # tomap is annoying because the curly braces in the string break the regex. Rather than
-                        # coming up with something that's significantly more complex, we'll special case this
-                        # check. Only do this when there wasn't a pattern match to make sure there are no
-                        # variables lingering in the map value.
-                        # https://www.terraform.io/docs/configuration/functions/tomap.html
-                        if value.startswith("${tomap(") and value.endswith(")}"):
-                            trimmed = value[8:-2]
-                            trimmed = trimmed.replace(":", "=")     # converted to colons by parser #shrug
-                            altered_value = _eval_string(trimmed)
-                            if altered_value is None:
-                                altered_value = value
-                                continue
-
-                            if not isinstance(altered_value, dict):
-                                continue
-
-                            # If there is a string and anything else, convert to string
-                            had_string = False
-                            had_something_else = False
-                            for k, v in altered_value.items():
-                                if v == "${True}":
-                                    altered_value[k] = True
-                                    v = True
-                                elif v == "${False}":
-                                    altered_value[k] = False
-                                    v = False
-
-                                if isinstance(v, str):
-                                    had_string = True
-                                    if had_something_else:
-                                        break
-                                else:
-                                    had_something_else = True
-                                    if had_string:
-                                        break
-                            if had_string and had_something_else:
-                                altered_value = {k: _tostring(v) for k, v in altered_value.items()}
-                        # Same as above, regex can blow this up
-                        # (see parser scenario: tostring_function, INNER_CURLY
-                        elif value.startswith("${tostring(\"") and value.endswith("\")}"):
-                            altered_value = value[12:-3]
-
-                        # Support HCL 0.11 optional boolean syntax - evaluate "true" to true and "false" to false
-                        #
-                        # `allow_str_bool_translation` exists because we want to prevent conversion in a dict
-                        # which is a direct value. See the "MIXED_BOOL" variable in the "tomap_function" parser
-                        # scenario for a situation which worked incorrectly without this.
-                        # NOTE: This is probably not a big deal to be removed if this causes problems in other
-                        #       places. The MIXED_BOOL test case is technically correct with the TF spec, but
-                        #       isn't essential operation for Checkov.
-                        elif allow_str_bool_translation and value == "true":
+                        if allow_str_bool_translation and value == "true":
                             altered_value = True
                         elif allow_str_bool_translation and value == "false":
                             altered_value = False
@@ -625,89 +580,27 @@ def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[
         var_value = _handle_indexing(orig_variable[6:], lambda r: locals_values.get(r))
         if var_value is not None:
             return var_value
-    elif orig_variable.startswith("to") and orig_variable.endswith(")"):
-        # https://www.terraform.io/docs/configuration/functions/tobool.html
-        if orig_variable.startswith("tobool("):
-            bool_variable = orig_variable[7:-1].lower()
-            bool_value = convert_str_to_bool(bool_variable)
-            if isinstance(bool_value, bool):
-                return bool_value
-            else:
-                return orig_variable
-        # https://www.terraform.io/docs/configuration/functions/tolist.html
-        elif orig_variable.startswith("tolist("):
-            altered_value = _eval_string(orig_variable[7:-1])
-            if altered_value is None:
-                return orig_variable
-            return altered_value if isinstance(altered_value, list) else list(altered_value)
-        # NOTE: tomap as handled outside this loop (see below)
-        # https://www.terraform.io/docs/configuration/functions/tonumber.html
-        elif orig_variable.startswith("tonumber("):
-            num_variable = orig_variable[9:-1]
-            if num_variable.startswith('"') and num_variable.endswith('"'):
-                num_variable = num_variable[1:-1]
-            try:
-                if "." in num_variable:
-                    return float(num_variable)
-                else:
-                    return int(num_variable)
-            except ValueError:
-                return orig_variable
-        # https://www.terraform.io/docs/configuration/functions/toset.html
-        elif orig_variable.startswith("toset("):
-            altered_value = _eval_string(orig_variable[6:-1])
-            if altered_value is None:
-                return orig_variable
-            return set(altered_value)
-        # https://www.terraform.io/docs/configuration/functions/tostring.html
-        elif orig_variable.startswith("tostring("):
-            altered_value = orig_variable[9:-1]
-            # Indicates a safe string, all good
-            if altered_value.startswith('"') and altered_value.endswith('"'):
-                return altered_value[1:-1]
-            # Otherwise, need to check for valid types (number or bool)
-            bool_value = convert_str_to_bool(altered_value)
-            if isinstance(bool_value, bool):
-                return bool_value
-            else:
-                try:
-                    if "." in altered_value:
-                        return str(float(altered_value))
-                    else:
-                        return str(int(altered_value))
-                except ValueError:
-                    return orig_variable  # no change
-    elif orig_variable.startswith("merge(") and orig_variable.endswith(")"):
-        altered_value = orig_variable[6:-1]
-        args = split_merge_args(altered_value)
-        if args is None:
-            return orig_variable
-        merged_map = {}
-        for arg in args:
-            if arg.startswith("{"):
-                value = _map_string_to_native(arg)
-                if value is None:
-                    return orig_variable
-            else:
-                value = _handle_single_var_pattern(arg,
-                                                   var_value_and_file_map,
-                                                   locals_values,
-                                                   resource_list,
-                                                   module_list,
-                                                   module_data_retrieval,
-                                                   eval_map_by_var_name,
-                                                   context,
-                                                   arg,
-                                                   root_directory)
-            if isinstance(value, dict):
-                merged_map.update(value)
-            else:
-                return orig_variable  # don't know what this is, blow out
-        return merged_map
-    # TODO - format() support, still in progress
-    # elif orig_variable.startswith("format(") and orig_variable.endswith(")"):
-    #     format_tokens = orig_variable[7:-1].split(",")
-    #     return format_tokens[0].format([_to_native_value(t) for t in format_tokens[1:]])
+    elif orig_variable.endswith(")") and not orig_variable.startswith("(") and "(" in orig_variable:
+        # Function handling. See parser_functions for implementations.
+        paren_start = orig_variable.index("(")
+        function_name = orig_variable[:paren_start]
+        function = getattr(parser_functions,        # call from `parser_functions` script
+                           function_name,           # name of the function which will be executed
+                           function_nyi_handler)    # function (in this file) called if lookup fails
+        value_before = orig_variable[paren_start + 1: -1]
+        value_after = function(value_before,
+                               var_resolver=lambda v: _handle_single_var_pattern(v,
+                                                                                 var_value_and_file_map,
+                                                                                 locals_values,
+                                                                                 resource_list,
+                                                                                 module_list,
+                                                                                 module_data_retrieval,
+                                                                                 eval_map_by_var_name,
+                                                                                 context,
+                                                                                 v,
+                                                                                 root_directory),
+                               function_name=function_name)
+        return value_after if value_after != FUNCTION_FAILED else orig_variable
 
     elif _RESOURCE_REF_PATTERN.match(orig_variable):
         # Reference to resources, example: 'aws_s3_bucket.example.bucket'
@@ -823,36 +716,11 @@ def _clean_bad_definitions(tf_definition_list):
     }
 
 
-def _eval_string(value: str) -> Optional[Any]:
-    try:
-        value_string = value.replace("'", '"')
-        parsed = hcl2.loads(f'eval = {value_string}\n')  # NOTE: newline is needed
-        return parsed["eval"][0]
-    except Exception:
-        return None
-
-
 def _to_native_value(value: str) -> Any:
     if value.startswith('"') or value.startswith("'"):
         return value[1:-1]
     else:
-        return _eval_string(value)
-
-
-def _tostring(value: Any) -> str:
-    if value is True:
-        return "true"
-    elif value is False:
-        return "false"
-    return str(value)
-
-
-def _map_string_to_native(value: str) -> Optional[Dict]:
-    try:
-        value_string = value.replace("'", '"')
-        return json.loads(value_string)
-    except Exception:
-        return None
+        return eval_string(value)
 
 
 def _remove_module_dependency_in_path(path):
@@ -904,3 +772,10 @@ def _safe_index(sequence_hopefully, index) -> Optional[Any]:
         logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}')
         logging.debug(e, stack_info=True)
         return None
+
+
+def function_nyi_handler(original, function_name, **_):
+    logging.debug("Function '%s' is not yet implemented and will not be handled. Please file a"
+                  "feature request if it is important to your evaluation (value: '%s')",
+                  function_name, original)
+    return FUNCTION_FAILED

@@ -40,6 +40,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_compound_local(self):
         self.go("compound_local")
 
+    def test_concat_function(self):
+        self.go("concat_function")
+
     def test_merge_function(self):
         self.go("merge_function")
 
@@ -123,6 +126,9 @@ class TestParserScenarios(unittest.TestCase):
 
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
+
+    def test_bogus_function(self):
+        self.go("bogus_function")
 
     @staticmethod
     def go(dir_name):
