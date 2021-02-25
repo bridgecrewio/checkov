@@ -142,6 +142,7 @@ class Runner(BaseRunner):
                                                    "module." + referrer_id,
                                                    separator=".")
                     except KeyError:
+                        logging.debug("Unable to find caller context for: %s", abs_caller_file)
                         caller_context = None
 
                     if caller_context:
