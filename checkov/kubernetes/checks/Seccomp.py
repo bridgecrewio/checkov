@@ -62,7 +62,7 @@ class Seccomp(BaseK8Check):
                         metadata = conf["spec"]["template"]["metadata"]
 
         if metadata:
-            if "annotations" in metadata:
+            if "annotations" in metadata and metadata.get('annotations'):
                 for annotation in metadata["annotations"]:
                     for key in annotation:
                         if "seccomp.security.alpha.kubernetes.io/pod" in key:
