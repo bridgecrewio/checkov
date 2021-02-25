@@ -8,7 +8,7 @@ This area can be used to verify that certain checks are robust in catching issue
 `remote_access` is ommitted in HCL. But is represented as `remote_access: [ ]` in the Plan.
 
 This needs to be taken in to account when writing the check.
-### HCL Input**
+### HCL Input
 ```
 resource "aws_eks_node_group" "test" {
   cluster_name    = "test"
@@ -22,5 +22,5 @@ resource "aws_eks_node_group" "test" {
   }
 }
 ```
-### JSON Output**
+### JSON Output
 [eks_node_group_remote_access.json](eks_node_group_remote_access.json)
