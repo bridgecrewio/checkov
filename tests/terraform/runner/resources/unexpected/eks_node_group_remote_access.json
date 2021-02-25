@@ -1,0 +1,138 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.14.6",
+    "planned_values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "aws_eks_node_group.test",
+            "mode": "managed",
+            "type": "aws_eks_node_group",
+            "name": "test",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "cluster_name": "test",
+              "force_update_version": null,
+              "labels": null,
+              "launch_template": [],
+              "node_group_name": "example",
+              "node_role_arn": "example-arn",
+              "remote_access": [],
+              "scaling_config": [
+                {
+                  "desired_size": 1,
+                  "max_size": 1,
+                  "min_size": 1
+                }
+              ],
+              "subnet_ids": [
+                "subnet-ids"
+              ],
+              "tags": null,
+              "timeouts": null
+            }
+          }
+        ]
+      }
+    },
+    "resource_changes": [
+      {
+        "address": "aws_eks_node_group.test",
+        "mode": "managed",
+        "type": "aws_eks_node_group",
+        "name": "test",
+        "provider_name": "registry.terraform.io/hashicorp/aws",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "cluster_name": "test",
+            "force_update_version": null,
+            "labels": null,
+            "launch_template": [],
+            "node_group_name": "example",
+            "node_role_arn": "example-arn",
+            "remote_access": [],
+            "scaling_config": [
+              {
+                "desired_size": 1,
+                "max_size": 1,
+                "min_size": 1
+              }
+            ],
+            "subnet_ids": [
+              "subnet-ids"
+            ],
+            "tags": null,
+            "timeouts": null
+          },
+          "after_unknown": {
+            "ami_type": true,
+            "arn": true,
+            "capacity_type": true,
+            "disk_size": true,
+            "id": true,
+            "instance_types": true,
+            "launch_template": [],
+            "release_version": true,
+            "remote_access": [],
+            "resources": true,
+            "scaling_config": [
+              {}
+            ],
+            "status": true,
+            "subnet_ids": [
+              false
+            ],
+            "version": true
+          }
+        }
+      }
+    ],
+    "configuration": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "aws_eks_node_group.test",
+            "mode": "managed",
+            "type": "aws_eks_node_group",
+            "name": "test",
+            "provider_config_key": "aws",
+            "expressions": {
+              "cluster_name": {
+                "constant_value": "test"
+              },
+              "node_group_name": {
+                "constant_value": "example"
+              },
+              "node_role_arn": {
+                "constant_value": "example-arn"
+              },
+              "scaling_config": [
+                {
+                  "desired_size": {
+                    "constant_value": 1
+                  },
+                  "max_size": {
+                    "constant_value": 1
+                  },
+                  "min_size": {
+                    "constant_value": 1
+                  }
+                }
+              ],
+              "subnet_ids": {
+                "constant_value": [
+                  "subnet-ids"
+                ]
+              }
+            },
+            "schema_version": 0
+          }
+        ]
+      }
+    }
+}
