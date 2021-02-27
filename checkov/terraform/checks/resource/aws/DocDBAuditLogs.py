@@ -7,7 +7,7 @@ class DocDBAuditLogs(BaseResourceCheck):
         name = "Ensure DocDB has audit logs enabled"
         id = "CKV_AWS_104"
         supported_resources = ['aws_docdb_cluster_parameter_group']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
