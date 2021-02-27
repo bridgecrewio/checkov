@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
-class DocDBAuditLogs(BaseResourceValueCheck):
+class DocDBAuditLogs(BaseResourceCheck):
     def __init__(self):
         name = "Ensure DocDB has audit logs enabled"
         id = "CKV_AWS_104"
