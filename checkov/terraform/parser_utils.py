@@ -1,6 +1,9 @@
+import json
 from dataclasses import dataclass
 from enum import Enum, IntEnum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+
+import hcl2
 
 
 @dataclass
@@ -221,3 +224,27 @@ def _str_parser_loop_collection_helper(c: str, inside_collection_stack: List[str
             inside_collection_stack.insert(0, ")")
 
     return processing_str_escape
+
+
+def eval_string(value: str) -> Optional[Any]:
+    try:
+        value_string = value.replace("'", '"')
+        parsed = hcl2.loads(f'eval = {value_string}\n')  # NOTE: newline is needed
+        return parsed["eval"][0]
+    except Exception:
+        return None
+
+
+def string_to_native(value: str) -> Optional[Dict]:
+    try:
+        value_string = value.replace("'", '"')
+        return json.loads(value_string)
+    except Exception:
+        return None
+
+def to_string(value: Any) -> str:
+    if value is True:
+        return "true"
+    elif value is False:
+        return "false"
+    return str(value)

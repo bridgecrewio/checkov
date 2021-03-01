@@ -1,0 +1,99 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "inline_map": [
+          {
+            "key": "a_key",
+            "value": "a_value",
+            "propagate_at_launch": false
+          }
+        ]
+      },
+      {
+        "simple_list": [
+          [
+            "a",
+            "",
+            "b",
+            "c"
+          ]
+        ],
+        "simple_list2": [
+          [
+            "a",
+            "",
+            "b",
+            "c"
+          ]
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "extra_tags": {
+          "default": [
+            [
+              {
+                "key": "Foo",
+                "value": "Bar",
+                "propagate_at_launch": true
+              },
+              {
+                "key": "Baz",
+                "value": "Bam",
+                "propagate_at_launch": true
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "resource": [
+      {
+        "aws_autoscaling_group": {
+          "bar": {
+            "name": [
+              "foobar3-terraform-test"
+            ],
+            "max_size": [
+              5
+            ],
+            "min_size": [
+              2
+            ],
+            "tags": [
+              [
+                {
+                  "key": "interpolation1",
+                  "value": "value3",
+                  "propagate_at_launch": true
+                },
+                {
+                  "key": "interpolation2",
+                  "value": "value4",
+                  "propagate_at_launch": true
+                },
+                {
+                  "key": "a_key",
+                  "value": "a_value",
+                  "propagate_at_launch": false
+                },
+                {
+                  "key": "Foo",
+                  "value": "Bar",
+                  "propagate_at_launch": true
+                },
+                {
+                  "key": "Baz",
+                  "value": "Bam",
+                  "propagate_at_launch": true
+                }
+              ]
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
