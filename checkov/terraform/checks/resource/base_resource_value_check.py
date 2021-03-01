@@ -5,8 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
-
-VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
+from checkov.terraform.parser_var_blocks import find_var_blocks
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -25,7 +24,12 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
     @staticmethod
     def _is_variable_dependant(value):
-        if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
+        if not isinstance(value, str):
+            return False
+        if "${" not in value:
+            return False
+
+        if find_var_blocks(value):
             return True
         return False
 
