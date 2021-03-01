@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
-from checkov.terraform.parser_var_blocks import find_var_blocks
+from checkov.terraform.parser_utils import find_var_blocks
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
