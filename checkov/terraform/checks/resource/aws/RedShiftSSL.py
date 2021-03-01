@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
-class RedshiftSSL(BaseResourceCheck):
+class RedShiftSSL(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Redshift uses ssl"
         id = "CKV_AWS_105"
