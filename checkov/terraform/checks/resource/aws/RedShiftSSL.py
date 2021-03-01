@@ -13,7 +13,7 @@ class RedShiftSSL(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'parameter' in conf:
             for elem in conf["parameter"]:
-                if isinstance(elem, dict) and elem["name"][0] == "require_ssl" and elem["value"][0] == "enabled":
+                if isinstance(elem, dict) and elem["name"][0] == "require_ssl" and elem["value"][0] == "true":
                     self.evaluated_keys = [f'parameter/[{conf["parameter"].index(elem)}]/name', f'parameter/[{conf["parameter"].index(elem)}]/value']
                     return CheckResult.PASSED
 
