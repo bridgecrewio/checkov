@@ -415,6 +415,8 @@ class Parser:
                 continue
 
             file_data = self.out_definitions.get(file)
+            if file_data is None:
+                continue
             module_calls = file_data.get("module")
             if not module_calls or not isinstance(module_calls, list):
                 continue
