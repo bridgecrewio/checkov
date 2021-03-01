@@ -99,7 +99,7 @@ class Record:
             code_lines = "\n{}\n".format("".join(
                 [self._code_line_string(self.code_block)]))
         caller_file_details = ""
-        if self.caller_file_path:
+        if self.caller_file_path and self.caller_file_line_range:
             caller_file_details = colored(
                 "\tCalling File: {}:{}\n".format(self.caller_file_path,
                                                  "-".join([str(x) for x in self.caller_file_line_range])),
