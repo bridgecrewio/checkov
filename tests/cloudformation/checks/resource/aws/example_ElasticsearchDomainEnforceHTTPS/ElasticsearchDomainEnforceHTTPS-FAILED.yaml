@@ -9,7 +9,7 @@ Resources:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
       DomainEndpointOptions:
-        CustomEndpointEnabled: False
+        TLSSecurityPolicy: "Policy-Min-TLS-1-2-2019-07"
   Resource2:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
