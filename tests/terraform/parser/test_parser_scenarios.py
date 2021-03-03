@@ -92,6 +92,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_reference(self):
         self.go("module_reference")
 
+    def test_module_output_reference(self):
+        self.go("module_output_reference")
+
     def test_bad_ref_fallbacks(self):
         self.go("bad_ref_fallbacks")
 
