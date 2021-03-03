@@ -242,6 +242,7 @@ def string_to_native(value: str) -> Optional[Dict]:
     except Exception:
         return None
 
+
 def to_string(value: Any) -> str:
     if value is True:
         return "true"

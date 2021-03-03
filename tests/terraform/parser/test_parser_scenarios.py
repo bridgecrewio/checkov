@@ -58,6 +58,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_tomap_function(self):
         self.go("tomap_function")
 
+    def test_map_function(self):
+        self.go("map_function")
+
     def test_tonumber_function(self):
         self.go("tonumber_function")
 
