@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, Optional
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
@@ -20,6 +21,7 @@ FUNCTION_FAILED = "____FUNCTION_FAILED____"
 
 
 def merge(original, var_resolver, **_):
+    # https://www.terraform.io/docs/language/functions/merge.html
     args = split_merge_args(original)
     if args is None:
         return FUNCTION_FAILED
@@ -39,6 +41,7 @@ def merge(original, var_resolver, **_):
 
 
 def concat(original, var_resolver, **_):
+    # https://www.terraform.io/docs/language/functions/concat.html
     args = split_merge_args(original)
     if args is None:
         return FUNCTION_FAILED
@@ -112,21 +115,41 @@ def toset(original, **_):
 
 
 def tomap(original, **_):
+    # https://www.terraform.io/docs/language/functions/tomap.html
     original = original.replace(":", "=")     # converted to colons by parser #shrug
 
     altered_value = eval_string(original)
     if altered_value is None or not isinstance(altered_value, dict):
         return FUNCTION_FAILED
+    return _check_map_type_consistency(altered_value)
 
+
+def map(original, **_):
+    # https://www.terraform.io/docs/language/functions/map.html
+
+    # NOTE: Splitting by commas is annoying due to possible commas in strings. To avoid
+    #       the issue, act like it's a list (to allow comma separation) and let the HCL
+    #       parser deal with it. Then iterating the list is easy.
+    converted_to_list = eval_string(f"[{original}]")
+    if converted_to_list is None or len(converted_to_list) & 1:       # none or odd number of args
+        return FUNCTION_FAILED
+
+    new_map = {}
+    for i in range(0, len(converted_to_list), 2):
+        new_map[converted_to_list[i]] = converted_to_list[i + 1]
+    return _check_map_type_consistency(new_map)
+
+
+def _check_map_type_consistency(value: Dict) -> Dict:
     # If there is a string and anything else, convert to string
     had_string = False
     had_something_else = False
-    for k, v in altered_value.items():
+    for k, v in value.items():
         if v == "${True}":
-            altered_value[k] = True
+            value[k] = True
             v = True
         elif v == "${False}":
-            altered_value[k] = False
+            value[k] = False
             v = False
 
         if isinstance(v, str):
@@ -138,5 +161,5 @@ def tomap(original, **_):
             if had_string:
                 break
     if had_string and had_something_else:
-        return {k: to_string(v) for k, v in altered_value.items()}
-    return altered_value
+        value = {k: to_string(v) for k, v in value.items()}
+    return value

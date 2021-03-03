@@ -26,6 +26,12 @@
             "b",
             "c"
           ]
+        ],
+        "single_item_list": [
+          ["a"]
+        ],
+        "single_item_trailing_list": [
+          ["a"]
         ]
       }
     ],
@@ -87,6 +93,35 @@
                 {
                   "key": "Baz",
                   "value": "Bam",
+                  "propagate_at_launch": true
+                }
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "aws_autoscaling_group": {
+          "bar_simplified": {
+            "name": [
+              "bar_simplified_group"
+            ],
+            "max_size": [
+              5
+            ],
+            "min_size": [
+              2
+            ],
+            "tags": [
+              [
+                {
+                  "key": "interpolation1",
+                  "value": "value3",
+                  "propagate_at_launch": true
+                },
+                {
+                  "key": "interpolation2",
+                  "value": "value4",
                   "propagate_at_launch": true
                 }
               ]
