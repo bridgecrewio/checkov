@@ -12,7 +12,7 @@ class CloudStorageSelfLogging(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         bucket_name = conf['name']
-        #check fot logging
+        #check for logging
         if 'logging' in conf:
             if conf['logging'][0]:
                 log_bucket_name = conf['logging'][0]['log_bucket']

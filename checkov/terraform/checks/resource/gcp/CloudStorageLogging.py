@@ -11,7 +11,7 @@ class CloudStorageLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        #check fot logging
+        #check for logging
         if 'logging' in conf:
             if conf['logging'][0]:
                 log_bucket_name = conf['logging'][0]['log_bucket']
