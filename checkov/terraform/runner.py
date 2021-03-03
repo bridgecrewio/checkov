@@ -104,6 +104,7 @@ class Runner(BaseRunner):
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
                        scanned_file, runner_filter, module_referrer: Optional[str]):
         if not definition:
+            logger.debug("Empty definition, skipping run")
             return
         for block_type in definition.keys():
             if block_type in CHECK_BLOCK_TYPES:
