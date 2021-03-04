@@ -109,7 +109,11 @@ class Report:
 
     def print_junit_xml(self):
         ts = self.get_test_suites()
-        print(TestSuite.to_xml_string(ts))
+        xml_string = self.get_junit_xml_string(ts)
+        print(xml_string)
+
+    def get_junit_xml_string(self, ts):
+        return TestSuite.to_xml_string(ts)
 
     def print_failed_github_md(self):
         result = []
