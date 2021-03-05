@@ -6,6 +6,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
 from checkov.common.output.report import Report
 from checkov.terraform.parser import Parser
+from checkov.terraform.checks.resource.registry import resource_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -80,6 +81,38 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary['skipped'], 2)
         self.assertEqual(summary["parsing_errors"], 0)
+
+
+    def test_runner_extra_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/extra_check_test"
+        extra_checks_dir_path = [current_dir + "/extra_checks"]
+
+        print("testing dir" + tf_dir_path)
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
+        report_json = report.get_json()
+        resource_registry.checks["aws_s3_bucket"]
+        for check in resource_registry.checks["aws_s3_bucket"]:
+            if check.id == "CUSTOM_AWS_1":
+                resource_registry.checks["aws_s3_bucket"].remove(check)
+        self.assertTrue(isinstance(report_json, str))
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suites())
+
+        passing_custom =0
+        failed_custom = 0
+        for record in report.passed_checks:
+            if record.check_id == "CUSTOM_AWS_1":
+                passing_custom=passing_custom+1
+        for record in report.failed_checks:
+            if record.check_id == "CUSTOM_AWS_1":
+                failed_custom=failed_custom+1
+
+        self.assertEqual(passing_custom, 1)
+        self.assertEqual(failed_custom, 2)
+
 
     def test_runner_specific_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
