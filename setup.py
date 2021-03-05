@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2",
+        "bc-python-hcl2>=0.3.18",
         "deep_merge",
         "tabulate",
         "colorama",

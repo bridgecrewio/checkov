@@ -6,6 +6,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner
 from checkov.common.output.report import Report
 from checkov.terraform.parser import Parser
+from checkov.terraform.checks.resource.registry import resource_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -92,6 +93,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
+        resource_registry.checks["aws_s3_bucket"]
+        for check in resource_registry.checks["aws_s3_bucket"]:
+            if check.id == "CUSTOM_AWS_1":
+                resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
