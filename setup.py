@@ -40,7 +40,7 @@ setup(
         "termcolor",
         "junit-xml",
         "dpath>=1.5.0,<2",
-        "pyyaml>=5.3.1",
+        "pyyaml>=5.4.1",
         "boto3",
         "GitPython",
         "six==1.15.0",
