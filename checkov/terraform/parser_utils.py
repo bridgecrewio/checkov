@@ -20,6 +20,13 @@ class VarBlockMatch:
         self.full_str = self.full_str.replace(original, replaced)
         self.var_only = self.var_only.replace(original, replaced)
 
+    def is_simple_var(self):
+        """
+        Indicates whether or not the value of the var block matches a "simple" var pattern. For example:
+        local.blah, var.foo, module.one.a_resource.
+        """
+        return _ARG_VAR_PATTERN.match(self.var_only) is not None
+
 
 class ParserMode(Enum):
     # Note: values are just for debugging.
