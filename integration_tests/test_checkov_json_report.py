@@ -35,7 +35,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         with open(report_path) as json_file:
             data = json.load(json_file)
             self.assertEqual(data["summary"]["parsing_errors"], 0,
-                             f"expecting 0 parsing errors but got: {data}")
+                             f"expecting 0 parsing errors but got: {data['results']['parsing_errors']}")
             self.assertGreater(data["summary"]["failed"], 1,
                                f"expecting more than 1 failed checks, got: {data['summary']['failed']}")
 
