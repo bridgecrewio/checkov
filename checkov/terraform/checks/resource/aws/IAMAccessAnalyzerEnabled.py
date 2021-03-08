@@ -13,7 +13,7 @@ class IAMAccessAnalyzerEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'resource/[0]/aws_accessanalyzer_analyzer'
+        return 'analyzer_name'
 
     def get_expected_values(self):
         return [ANY_VALUE]
