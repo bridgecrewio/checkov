@@ -64,7 +64,7 @@ class Runner(BaseRunner):
                     self.template_lines = template_lines
                     self.check_tf_definition(report, runner_filter)
                 else:
-                    logging.debug(f'Failed to load {root}/{file} as is not a .json file, skipping')
+                    logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
         report.add_parsing_errors(parsing_errors.keys())
 
