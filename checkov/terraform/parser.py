@@ -291,7 +291,7 @@ class Parser:
             if not file_locals:
                 continue
             for k, v in file_locals[0].items():
-                locals_values[k] = v[0]
+                locals_values[k] = v[0] if isinstance(v, list) else v
 
         # Processing is done in a loop to deal with chained references and the like.
         # Loop while the data is being changed, stop when no more changes are happening.
