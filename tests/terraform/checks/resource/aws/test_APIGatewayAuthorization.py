@@ -10,7 +10,8 @@ class TestAPIGatewayAuthorization(unittest.TestCase):
         resource_conf = {"rest_api_id": ["${var.rest_api_id}"],
                          "resource_id": ["${var.resource_id}"],
                          "http_method": ["${var.method}"],
-                         "authorization": ["NONE"]}
+                         "authorization": ["NONE"],
+                         "api_key_required": False}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
@@ -20,6 +21,15 @@ class TestAPIGatewayAuthorization(unittest.TestCase):
                          "resource_id": ["${var.resource_id}"],
                          "http_method": ["${var.method}"],
                          "authorization": ["AWS_IAM"]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_apikey(self):
+        resource_conf = {"rest_api_id": ["${var.rest_api_id}"],
+                         "resource_id": ["${var.resource_id}"],
+                         "http_method": ["${var.method}"],
+                         "authorization": ["NONE"],
+                         "api_key_required": True}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
