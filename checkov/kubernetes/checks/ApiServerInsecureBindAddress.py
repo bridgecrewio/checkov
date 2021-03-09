@@ -4,7 +4,7 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 class ApiServerInsecureBindAddress(BaseK8Check):
     def __init__(self):
         # CIS-1.6 1.2.18
-        id = "CKV2_K8S_39"
+        id = "CKV_K8S_86"
         name = "Ensure that the --insecure-bind-address argument is not set"
         categories = [CheckCategories.KUBERNETES]
         supported_kind = ['containers']
