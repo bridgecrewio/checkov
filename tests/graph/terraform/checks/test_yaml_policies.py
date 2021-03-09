@@ -4,7 +4,7 @@ import unittest
 import warnings
 
 import yaml
-from checkov.graph import checks
+from checkov.graph.terraform import checks
 
 
 class TestYamlPolicies(unittest.TestCase):
@@ -13,8 +13,11 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    def test_vpc_flow_log(self):
+    def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
+
+    def test_CloudtrailHasCloudwatch(self):
+        self.go("CloudtrailHasCloudwatch")
 
     @staticmethod
     def go(dir_name):
@@ -23,10 +26,16 @@ class TestYamlPolicies(unittest.TestCase):
         assert os.path.exists(dir_path)
         policy_dir_path = os.path.dirname(checks.__file__)
         assert os.path.exists(policy_dir_path)
-        policy = load_yaml_data(f"{dir_name}.yaml", policy_dir_path)
-        assert policy is not None
-        expected = load_yaml_data("expected.yaml", dir_path)
-        assert expected is not None
+        found = False
+        for root, d_names, f_names in os.walk(policy_dir_path):
+            for f_name in f_names:
+                if f_name == f"{dir_name}.yaml":
+                    found = True
+                    policy = load_yaml_data(f_name, root)
+                    assert policy is not None
+                    expected = load_yaml_data("expected.yaml", dir_path)
+                    assert expected is not None
+        assert found
 
 
 def load_yaml_data(source_file_name, dir_path):
