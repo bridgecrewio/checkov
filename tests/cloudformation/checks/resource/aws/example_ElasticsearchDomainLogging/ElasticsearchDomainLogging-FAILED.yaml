@@ -7,7 +7,7 @@ Resources:
         EnforceHTTPS: True
       LogPublishingOptions:
         Enabled: False
-  Resource0:
+  Resource1:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
       DomainEndpointOptions:
