@@ -13,8 +13,11 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    def test_vpc_flow_log(self):
+    def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
+
+    def test_CloudtrailHasCloudwatch(self):
+        self.go("CloudtrailHasCloudwatch")
 
     @staticmethod
     def go(dir_name):
