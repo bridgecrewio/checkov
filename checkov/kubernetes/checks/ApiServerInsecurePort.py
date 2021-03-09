@@ -5,7 +5,7 @@ class ApiServerInsecurePort(BaseK8Check):
     def __init__(self):
         # CIS-1.6 1.2.19
         id = "CKV_K8S_88"
-        name = "Ensure that the --insecure-port argument is set to 0  
+        name = "Ensure that the --insecure-port argument is set to 0"
         categories = [CheckCategories.KUBERNETES]
         supported_kind = ['containers']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
