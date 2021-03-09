@@ -8,7 +8,7 @@ from checkov.common.models.enums import CheckResult
 
 class TestAzureDefenderOnAppServices(unittest.TestCase):
 
-    def test_failure1(self):
+    def test_failure(self):
         hcl_res = hcl2.loads("""
                 resource "azurerm_security_center_subscription_pricing" "example" {
                   tier          = "Free"
