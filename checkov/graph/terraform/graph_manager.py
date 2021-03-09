@@ -10,12 +10,12 @@ class GraphManager:
         self.db_connector = db_connector
         self.source = source
 
-    def build_graph_from_source_directory(self, source_dir, render_variables=True):
+    def build_graph_from_source_directory(self, source_dir, render_variables=True, local_graph_class=LocalGraph):
         parser = TerraformGraphParser()
         module, module_dependency_map, tf_definitions = \
             parser.parse_hcl_module(source_dir, self.source)
 
-        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph = local_graph_class(module, module_dependency_map)
         local_graph.build_graph(render_variables=render_variables)
 
         return local_graph, tf_definitions

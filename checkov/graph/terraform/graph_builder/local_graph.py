@@ -3,14 +3,14 @@ import os
 import re
 from copy import deepcopy
 from pathlib import PurePosixPath
-from typing import Union
 
-from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.graph_builder.graph_components.attribute_names import reserved_attribute_names, \
     EncryptionValues
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.graph_builder.graph_components.edge import Edge
-from checkov.graph.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.graph.terraform.graph_builder.graph_components.generic_resource_encryption import \
+    ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.graph.terraform.graph_builder.utils import is_local_path
 from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, update_dictionary_attribute, \
     join_trimmed_strings, \
@@ -36,9 +36,7 @@ class LocalGraph:
     def build_graph(self, render_variables):
         self._create_vertices()
         undetermined_values = self._set_variables_values_from_modules()
-        self.get_module_vertices_mapping()
-        aliases = self._get_aliases()
-        self._build_edges(aliases)
+        self._build_edges()
         self.calculate_encryption_attribute()
         if render_variables:
             renderer = VariableRenderer(self)
@@ -135,10 +133,9 @@ class LocalGraph:
             if module_index > -1:
                 vertex.source_module = module_index
 
-    def _build_edges(self, aliases):
-        """
-        :param aliases: Used to check if blocks are connected via their alias name, rather then their original names
-        """
+    def _build_edges(self):
+        self.get_module_vertices_mapping()
+        aliases = self._get_aliases()
         for origin_node_index, vertex in enumerate(self.vertices):
             for attribute_key in vertex.attributes:
                 if attribute_key in reserved_attribute_names or self._attribute_has_nested_attributes(attribute_key,
@@ -375,77 +372,6 @@ class LocalGraph:
             if len(same_ids) > 0:
                 return True
         return False
-
-    def _build_edges_from_runtime(self) -> None:
-        """
-        This method runs after all vertices were created, and looks for references of other vertices in the graph.
-        It bases itself on the map that was produced from the state file, which maps the AWS resource ID to the terraform ID (resource.name)
-        """
-        for origin_node_index, vertex in enumerate(self.vertices):
-            referenced_vertices = []
-            for attribute_key in vertex.attributes:
-                if attribute_key in reserved_attribute_names or self._attribute_has_nested_attributes(attribute_key,
-                                                                                                      vertex.attributes):
-                    continue
-                references = self.find_resource_references(value=vertex.attributes[attribute_key], vertex_id=vertex.id)
-                if references:
-                    referenced_vertices.append({'attribute': attribute_key, 'references': references})
-
-            for attribute_reference in referenced_vertices:
-                for reference in attribute_reference['references']:
-                    destination_node_index = self._find_vertex_index_relative_to_path(BlockType.RESOURCE,
-                                                                                      reference['id'],
-                                                                                      reference['path'])
-                    if destination_node_index >= 0 and origin_node_index >= 0:
-                        self._create_edge(origin_node_index, destination_node_index, attribute_reference['attribute'])
-
-    def _fetch_vertex_runtime_id(self, vertex):
-        """
-        Return the runtime if of the resource identified in the given vertex, according to the state file map
-        :param vertex:
-        :return:
-        """
-        for state_file_id, state_file_value in self.state_file_map.items():
-            if state_file_value["id"] == vertex.id:
-                return state_file_id
-
-    def find_resource_references(self, value: Union[str, dict, list], vertex_id: str) -> list:
-        """
-        This method iterates through all the strings in value to look for references to other resources
-        :param vertex_id: ID of the vertex in question
-        :param value: The original value as created in the .tf file. Examples:
-                        ['sg-0ddb3078c0c8bce07']
-                        'sg-0ddb3078c0c8bce07
-                        {
-                            "security_group_ids": ['sg-0ddb3078c0c8bce07']
-                        }
-
-        :return: A list of references in the following structure:
-        [
-            {
-                'id': 'aws_network_interface.tfer--eni-002D-001d0f642be2a7c65',
-                'path': '/Users/.../eni/network_interface.tf
-            },
-            ...
-        ]
-        """
-        references = []
-        if isinstance(value, str):
-            # Include the option of a self_link being handled, which contains the resource name in the last section of the URI
-            possible_values = [value, value.split('/')[-1]]
-            for possible_value in list(set(possible_values)):
-                if possible_value in self.state_file_map:
-                    reference_id = self.state_file_map[possible_value]['id']
-                    if all(ref['id'] != reference_id for ref in references) and not vertex_id == reference_id:
-                        references.append(self.state_file_map[possible_value])
-        elif isinstance(value, dict):
-            for sub_key in value:
-                references += self.find_resource_references(value[sub_key], vertex_id)
-        elif isinstance(value, list):
-            for val in value:
-                references += self.find_resource_references(val, vertex_id)
-
-        return references
 
     def calculate_encryption_attribute(self):
         for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE.value, []):

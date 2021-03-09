@@ -13,6 +13,7 @@ from checkov.graph.terraform.checks.checks_infra.nx_checks_parser import NXGraph
 from checkov.graph.terraform.checks.checks_infra.registry import Registry
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.parser import TerraformGraphParser
+from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
 from checkov.graph.terraform.graph_manager import GraphManager
 from checkov.graph.graph_record import GraphRecord
 from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -36,7 +37,8 @@ class TerraformGraphRunner(BaseRunner):
         self.tf_runner = TerraformRunner()
         self.graph = None
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
+            collect_skip_comments=True, local_graph_class=LocalGraph):
         report = Report(self.check_type)
         self.tf_definitions = {}
         parsing_errors = {}
@@ -47,7 +49,7 @@ class TerraformGraphRunner(BaseRunner):
         if root_folder:
             root_folder = os.path.abspath(root_folder)
 
-            local_graph = self.graph_manager.build_graph_from_source_directory(root_folder)
+            local_graph = self.graph_manager.build_graph_from_source_directory(root_folder, local_graph_class)
             self.graph = self.graph_manager.save_graph(local_graph)
             self.tf_runner.tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
             self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
