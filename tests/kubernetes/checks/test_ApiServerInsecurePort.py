@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.kubernetes.checks.ApiServerInsecureBindAddress import check
+from checkov.kubernetes.checks.ApiServerInsecurePort import check
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

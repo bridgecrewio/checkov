@@ -11,7 +11,7 @@ spec:
   containers:
   - command:
     - kube-apiserver
-    - --bind-address=192.168.1.1
+    - --insecure-port=0
     image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
     livenessProbe:
       failureThreshold: 8

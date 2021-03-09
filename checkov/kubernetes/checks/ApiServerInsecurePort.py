@@ -1,11 +1,11 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
 
-class ApiServerInsecureBindAddress(BaseK8Check):
+class ApiServerInsecurePort(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.18
-        id = "CKV_K8S_86"
-        name = "Ensure that the --insecure-bind-address argument is not set"
+        # CIS-1.6 1.2.19
+        id = "CKV_K8S_88"
+        name = "Ensure that the --insecure-port argument is set to 0  
         categories = [CheckCategories.KUBERNETES]
         supported_kind = ['containers']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
@@ -16,10 +16,9 @@ class ApiServerInsecureBindAddress(BaseK8Check):
     def scan_spec_conf(self, conf):
         if "command" in conf:
             if "kube-apiserver" in conf["command"]:
-                strippedArgs = [arg.split("=")[0] for arg in conf["command"]]
-                if "--insecure-bind-address" in strippedArgs:
+                if "--insecure-port=0" not in conf["command"]:
                     return CheckResult.FAILED
 
         return CheckResult.PASSED
 
-check = ApiServerInsecureBindAddress()
+check = ApiServerInsecurePort()
