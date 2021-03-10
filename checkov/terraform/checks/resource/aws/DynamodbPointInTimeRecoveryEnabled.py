@@ -7,7 +7,7 @@ class DynamodbPointInTimeRecoveryEnabled(BaseResourceValueCheck):
         name = "Ensure that that point in time recovery is enabled for Amazon DynamoDB tables"
         id = "CKV_AWS_125"
         supported_resources = ['aws_dynamodb_table']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
