@@ -14,7 +14,7 @@ class ApiServerAuditLogMaxBackup(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kube-apiserver" in conf["command"]:
                 hasAuditLogMaxBackup = False
                 for command in conf["command"]:

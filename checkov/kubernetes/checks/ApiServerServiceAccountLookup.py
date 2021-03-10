@@ -14,7 +14,7 @@ class ApiServerServiceAccountLookup(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kube-apiserver" in conf["command"]:
                 if "--service-account-lookup=false" in conf["command"] or "--service-account-lookup=true" not in conf["command"]:
                     return CheckResult.FAILED
