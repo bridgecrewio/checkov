@@ -19,9 +19,9 @@ class DropCapabilities(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "securityContext" in conf:
-            if "capabilities" in conf["securityContext"]:
-                if "drop" in conf["securityContext"]["capabilities"]:
+        if conf.get("securityContext"):
+            if conf["securityContext"].get("capabilities"):
+                if conf["securityContext"]["capabilities"].get("drop"):
                     for d in conf["securityContext"]["capabilities"]["drop"]:
                         if "ALL" in d or "NET_RAW" in d:
                             return CheckResult.PASSED
