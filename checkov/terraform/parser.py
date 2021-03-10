@@ -36,8 +36,8 @@ class Parser:
         self._parsed_directories = set()
 
         # This ensures that we don't try to double-load modules
-        # Tuple is <file>, <module_index> (see _load_modules)
-        self._loaded_modules: Set[Tuple[str, int]] = set()
+        # Tuple is <file>, <module_index>, <name> (see _load_modules)
+        self._loaded_modules: Set[Tuple[str, int, str]] = set()
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -252,23 +252,46 @@ class Parser:
             self._process_vars_and_locals(directory, var_value_and_file_map, module_data_retrieval)
 
         # Stage 4: Load modules
-        self._load_modules(self.directory, module_loader_registry, dir_filter, module_load_context,
-                           keys_referenced_as_modules)
+        #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
+        #          be loadable until other modules are loaded. This happens when parameters to one module
+        #          depend on the output of another. For such cases, the base module must be loaded, then
+        #          a parameter resolution pass needs to happen, then the second module can be loaded.
+        #
+        #          One gotcha is that we need to make sure we load all modules at some point, even if their
+        #          parameters don't resolve. So, if we hit a spot where resolution doesn't change anything
+        #          and there are still modules to be loaded, they will be forced on the next pass.
+        force_final_module_load = False
+        for i in range(0, 10):      # circuit breaker - no more than 10 loops
+            logging.debug("Module load loop %d", i)
 
-        # Stage 5: Variable resolution round 2 - now with modules
-        if self.evaluate_variables:
-            self._process_vars_and_locals(directory, var_value_and_file_map, module_data_retrieval)
+            # Stage 4a: Load eligible modules
+            has_more_modules = self._load_modules(directory, module_loader_registry,
+                                                  dir_filter, module_load_context,
+                                                  keys_referenced_as_modules,
+                                                  force_final_module_load)
+
+            # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
+            made_var_changes = False
+            if self.evaluate_variables:
+                made_var_changes = self._process_vars_and_locals(directory, var_value_and_file_map,
+                                                                 module_data_retrieval)
+            if not has_more_modules:
+                break       # nothing more to do
+            elif not made_var_changes:
+                # If there are more modules to load but no variables were resolved, then to a final module
+                # load, forcing things through without complete resolution.
+                force_final_module_load = True
 
     def _process_vars_and_locals(self, directory: str,
                                  var_value_and_file_map: Dict[str, Tuple[Any, str]],
-                                 module_data_retrieval: Callable[[str], Dict[str, Any]]):
+                                 module_data_retrieval: Callable[[str], Dict[str, Any]]) -> bool:
         locals_values = {}
         for file_data in self.out_definitions.values():
             file_locals = file_data.get("locals")
             if not file_locals:
                 continue
             for k, v in file_locals[0].items():
-                locals_values[k] = v[0]
+                locals_values[k] = v[0] if isinstance(v, list) else v
 
         # Processing is done in a loop to deal with chained references and the like.
         # Loop while the data is being changed, stop when no more changes are happening.
@@ -276,8 +299,10 @@ class Parser:
         # More than a couple loops isn't normally expected.
         # NOTE: If this approach proves to be a performance liability, a DAG will be needed.
         loop_count = 0
+        made_change_in_any_loop = False
         for i in range(0, 25):
             loop_count += 1
+            logging.debug("Parser loop %d", i)
 
             made_change = False
             # Put out file layer here so the context works inside the loop
@@ -291,21 +316,22 @@ class Parser:
                     # }
 
                 if self._process_vars_and_locals_loop(file_data,
-                                                     eval_context_dict,
-                                                     os.path.relpath(file, directory),
-                                                     var_value_and_file_map, locals_values,
-                                                     file_data.get("resource"),
-                                                     file_data.get("module"),
-                                                     module_data_retrieval,
-                                                     directory):
+                                                      eval_context_dict,
+                                                      os.path.relpath(file, directory),
+                                                      var_value_and_file_map, locals_values,
+                                                      file_data.get("resource"),
+                                                      file_data.get("module"),
+                                                      module_data_retrieval,
+                                                      directory):
                     made_change = True
 
                 if len(eval_context_dict) == 0:
                     del self.out_evaluations_context[file]
+            made_change_in_any_loop = made_change_in_any_loop or made_change
             if not made_change:
                 break
-
         LOGGER.debug("Processing variables took %d loop iterations", loop_count)
+        return made_change_in_any_loop
 
     def _process_vars_and_locals_loop(self, out_definitions: Dict,
                                       eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
@@ -387,10 +413,10 @@ class Parser:
                         made_change = True
                 elif isinstance(value, dict):
                     if self._process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path,
-                                                     var_value_and_file_map,
-                                                     locals_values, resource_list,
-                                                     module_list, module_data_retrieval, root_directory,
-                                                     new_context):
+                                                          var_value_and_file_map,
+                                                          locals_values, resource_list,
+                                                          module_list, module_data_retrieval, root_directory,
+                                                          new_context):
                         made_change = True
 
                 elif isinstance(value, list):
@@ -406,10 +432,24 @@ class Parser:
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool], module_load_context: Optional[str],
-                      keys_referenced_as_modules: Set[str]):
+                      keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
+        """
+        Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
+
+        :param ignore_unresolved_params:    If true, not-yet-loaded modules will be loaded even if they are
+                                            passed parameters that are not fully resolved.
+        :return:                            True if there were modules that were not loaded due to unresolved
+                                            parameters.
+        """
         all_module_definitions = {}
         all_module_evaluations_context = {}
+        skipped_a_module = False
         for file in list(self.out_definitions.keys()):
+            # Don't process a file in a directory other than the directory we're processing. For example,
+            # if we're down dealing with <top_dir>/<module>/something.tf, we don't want to rescan files
+            # up in <top_dir>.
+            if os.path.dirname(file) != root_dir:
+                continue
             # Don't process a file reference which has already been processed
             if file.endswith("]"):
                 continue
@@ -422,10 +462,6 @@ class Parser:
                 continue
 
             for module_index, module_call in enumerate(module_calls):
-                module_address = (file, module_index)
-                if module_address in self._loaded_modules:
-                    continue
-                self._loaded_modules.add(module_address)
 
                 if not isinstance(module_call, dict):
                     continue
@@ -434,6 +470,25 @@ class Parser:
                 for module_call_name, module_call_data in module_call.items():
                     if not isinstance(module_call_data, dict):
                         continue
+
+                    module_address = (file, module_index, module_call_name)
+                    if module_address in self._loaded_modules:
+                        continue
+
+                    # Variables being passed to module, "source" and "version" are reserved
+                    specified_vars = {k: v[0] for k, v in module_call_data.items()
+                                      if k != "source" and k != "version"}
+
+                    if not ignore_unresolved_params:
+                        has_unresolved_params = False
+                        for k, v in specified_vars.items():
+                            if not is_acceptable_module_param(v) or not is_acceptable_module_param(k):
+                                has_unresolved_params = True
+                                break
+                        if has_unresolved_params:
+                            skipped_a_module = True
+                            continue
+                    self._loaded_modules.add(module_address)
 
                     source = module_call_data.get("source")
                     if not source or not isinstance(source, list):
@@ -452,10 +507,6 @@ class Parser:
                         with module_loader_registry.load(root_dir, source, version) as content:
                             if not content.loaded():
                                 continue
-
-                            # Variables being passed to module, "source" and "version" are reserved
-                            specified_vars = {k: v[0] for k, v in module_call_data.items()
-                                              if k != "source" and k != "version"}
 
                             self._internal_dir_load(directory=content.path(),
                                                     module_loader_registry=module_loader_registry,
@@ -512,6 +563,7 @@ class Parser:
         if all_module_definitions:
             deep_merge.merge(self.out_definitions, all_module_definitions)
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
+        return skipped_a_module
 
 
 def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[str, Tuple[Any, str]],
@@ -781,3 +833,29 @@ def function_nyi_handler(original, function_name, **_):
                   "feature request if it is important to your evaluation (value: '%s')",
                   function_name, original)
     return FUNCTION_FAILED
+
+
+def is_acceptable_module_param(value: Any) -> bool:
+    """
+    This function determines if a value should be passed to a module as a parameter. We don't want to pass
+    unresolved var, local or module references because they can't be resolved from the module, so they need
+    to be resolved prior to being passed down.
+    """
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if not is_acceptable_module_param(v) or not is_acceptable_module_param(k):
+                return False
+        return True
+    if isinstance(value, set) or isinstance(value, list):
+        for v in value:
+            if not is_acceptable_module_param(v):
+                return False
+        return True
+
+    if not isinstance(value, str):
+        return True
+
+    for vbm in find_var_blocks(value):
+        if vbm.is_simple_var():
+            return False
+    return True

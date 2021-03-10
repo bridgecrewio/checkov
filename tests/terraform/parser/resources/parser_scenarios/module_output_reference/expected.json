@@ -1,0 +1,59 @@
+{
+  "main.tf": {
+    "module": [
+      {
+        "common": {
+          "source": ["./common"],
+          "__resolved__": ["common/common.tf[main.tf#0]"]
+        }
+      },
+      {
+        "bucket": {
+          "source": ["./bucket"],
+          "tags": [
+            {
+              "Team": "my_team",
+              "Color": "red"
+            }
+          ],
+          "__resolved__": ["bucket/bucket.tf[main.tf#1]"]
+        }
+      }
+    ]
+  },
+  "bucket/bucket.tf[main.tf#1]": {
+    "variable": [
+      {
+        "tags": {}
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "bucket": {
+            "bucket": ["its.a.bucket"],
+            "tags": [
+              {
+                "Team": "my_team",
+                "Color": "red",
+                "more_tags": "yes"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "common/common.tf[main.tf#0]": {
+    "output": [
+      {
+        "tags": {
+          "value": [{
+            "Team": "my_team",
+            "Color": "red"
+          }]
+        }
+      }
+    ]
+  }
+}
