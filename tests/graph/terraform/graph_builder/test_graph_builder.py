@@ -2,9 +2,10 @@ import os
 import shutil
 from unittest import TestCase
 
+from checkov.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_manager import GraphManager
-from checkov.graph.parser import external_modules_download_path
+from checkov.graph.terraform.parser import external_modules_download_path
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,7 +15,7 @@ class TestGraphBuilder(TestCase):
     def test_build_graph(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
 
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(db_connector=NetworkxConnector())
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
         expected_num_of_var_nodes = 3
@@ -70,9 +71,8 @@ class TestGraphBuilder(TestCase):
         return vertices[0]
 
     def test_update_vertices_configs_deep_nesting(self):
-
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_deep_nesting')
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         expected_config = {'aws_s3_bucket': {'default': {'server_side_encryption_configuration': [
             {'rule': [{'apply_server_side_encryption_by_default': [
@@ -85,7 +85,7 @@ class TestGraphBuilder(TestCase):
         # see the image to view the expected graph in tests/resources/modules/linked_modules/expected_graph.png
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/linked_modules'))
 
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(NetworkxConnector())
         local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=False)
 
         vertices_by_block_type = local_graph.vertices_by_block_type
@@ -133,7 +133,7 @@ class TestGraphBuilder(TestCase):
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/modules/registry_security_group_inner_module'))
 
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(NetworkxConnector())
         local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir,
                                                                                       render_variables=True)
 
@@ -165,7 +165,7 @@ class TestGraphBuilder(TestCase):
     def test_build_graph_with_deep_nested_edges(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/k8_service'))
 
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(NetworkxConnector())
         local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         resource_kubernetes_deployment = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE,

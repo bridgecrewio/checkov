@@ -1,12 +1,9 @@
-from checkov.graph.db_connectors.networkx.networkx import NetworkxConnector
-from checkov.graph.parser import TerraformGraphParser
+from checkov.graph.terraform.parser import TerraformGraphParser
 from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
 
 
 class GraphManager:
-    def __init__(self, source='', db_connector=None):
-        if db_connector is None:
-            db_connector = NetworkxConnector()
+    def __init__(self, db_connector, source=''):
         self.db_connector = db_connector
         self.source = source
 

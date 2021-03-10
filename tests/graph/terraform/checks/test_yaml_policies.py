@@ -5,6 +5,7 @@ import warnings
 
 import yaml
 from checkov.graph.terraform import checks
+from checkov.graph.terraform.checks_infra.registry import Registry
 
 
 class TestYamlPolicies(unittest.TestCase):
@@ -18,6 +19,12 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
+
+    def test_registry(self):
+        registry = Registry()
+        registry.load_checks()
+        # TODO: ensure this is more than 0 once check parsing is enabled
+        self.assertEqual(len(registry.checks), 0)
 
     @staticmethod
     def go(dir_name):

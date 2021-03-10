@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from checkov.graph.parser import TerraformGraphParser
+from checkov.graph.terraform.parser import TerraformGraphParser
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 

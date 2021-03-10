@@ -48,7 +48,8 @@ setup(
         "tqdm",
         "update_checker",
         "semantic_version",
-        "packaging"
+        "packaging",
+        "networkx"
     ],
     license="Apache License 2.0",
     name="checkov2",

@@ -1,3 +1,4 @@
+import logging
 import os
 from copy import deepcopy
 
@@ -34,7 +35,7 @@ class VariableRenderer:
         # all the edges entering `end_vertices`
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
         while len(edges_to_render) > 0:
-            print(f'evaluating {len(edges_to_render)} edges')
+            logging.info(f'evaluating {len(edges_to_render)} edges')
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
@@ -47,7 +48,7 @@ class VariableRenderer:
             edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
             edges_to_render = [edge for edge in edges_to_render if edge not in self.done_edges]
         self.local_graph.update_vertices_configs()
-        print('done evaluating edges')
+        logging.info('done evaluating edges')
 
     def _edge_evaluation_task(self, edges):
         edges = edges[0]

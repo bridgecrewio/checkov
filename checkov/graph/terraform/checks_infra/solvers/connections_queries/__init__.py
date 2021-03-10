@@ -1,0 +1,5 @@
+from checkov.graph.terraform.checks_infra.solvers.connections_queries.and_connection_solver import AndConnectionSolver
+from checkov.graph.terraform.checks_infra.solvers.connections_queries.complex_connection_solver import ComplexConnectionSolver
+from checkov.graph.terraform.checks_infra.solvers.connections_queries.connection_exists_solver import ConnectionExistsSolver
+from checkov.graph.terraform.checks_infra.solvers.connections_queries.connection_not_exists_solver import ConnectionNotExistsSolver
+from checkov.graph.terraform.checks_infra.solvers.connections_queries.or_connection_solver import OrConnectionSolver

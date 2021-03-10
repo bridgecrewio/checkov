@@ -2,12 +2,13 @@ import json
 import os
 from unittest import TestCase
 
+from checkov.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.graph.graph_builder.graph_components.attribute_names import EncryptionValues, EncryptionTypes
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
 from checkov.graph.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
-from checkov.graph.parser import TerraformGraphParser
+from checkov.graph.terraform.parser import TerraformGraphParser
 from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
 from checkov.graph.terraform.graph_manager import GraphManager
 from checkov.graph.terraform.utils.utils import calculate_hash, decode_graph_property_value
@@ -51,7 +52,7 @@ class TestLocalGraph(TestCase):
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/k8_service'))
 
-        graph_manager = GraphManager()
+        graph_manager = GraphManager(NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir,
                                                                           render_variables=True)
         edges_hash = []
