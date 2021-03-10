@@ -3,11 +3,11 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 import re
 
 
-class ApiServerRequestTimeout(BaseK8Check):
+class ApiServerServiceAccountKeyFile(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.26
-        id = "CKV_K8S_95"
-        name = "Ensure that the --request-timeout argument is set as appropriate"
+        # CIS-1.6 1.2.28
+        id = "CKV_K8S_97"
+        name = "Ensure that the --service-account-key-file argument is set as appropriate"
         categories = [CheckCategories.KUBERNETES]
         supported_entities = ['containers']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
@@ -19,13 +19,18 @@ class ApiServerRequestTimeout(BaseK8Check):
         if "command" in conf:
             if "kube-apiserver" in conf["command"]:
                 for cmd in conf["command"]:
+                    if cmd == "--service-account-key-file":
+                        return CheckResult.FAILED
                     if "=" in cmd:
                         [field,value] = cmd.split("=")
-                        if field == "--request-timeout":
-                            regex = r"^(\d{1,2}[h])(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[s])$"
+                        if field == "--service-account-key-file":
+                            # should be a valid path and to end with .pem
+                            print(value)
+                            regex = r"^([\/|\.\/]?[a-z_\-\s0-9\.]+)+\.(pem)$"
                             matches = re.match(regex, value)
+                            print(matches)
                             if not matches:
                                 return CheckResult.FAILED                            
         return CheckResult.PASSED
 
-check = ApiServerRequestTimeout()
+check = ApiServerServiceAccountKeyFile()
