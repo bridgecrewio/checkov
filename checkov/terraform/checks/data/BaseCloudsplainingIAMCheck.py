@@ -27,9 +27,5 @@ class BaseCloudsplainingIAMCheck(BaseDataCheck):
     @multi_signature()
     @abstractmethod
     def cloudsplaining_analysis(self, policy):
-        """
-        self.evaluated_keys should be set with a JSONPath of the attribute inspected.
-        If not relevant it should be set to an empty array so the previous check's value gets overridden in the report.
-        """
         raise NotImplementedError()
 
