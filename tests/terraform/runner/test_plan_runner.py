@@ -118,7 +118,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
         self.assertEqual(62, report.get_summary()["failed"])
-        self.assertEqual(64, report.get_summary()["passed"])
+        self.assertEqual(65, report.get_summary()["passed"])
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(5, len(files_scanned))
