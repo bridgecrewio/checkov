@@ -116,10 +116,34 @@ class TestParserInternals(unittest.TestCase):
             (
                 "${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
                 [
+                    VBM("local.common_tags", "local.common_tags"),
+                    VBM("local.common_data_tags", "local.common_data_tags"),
                     VBM("${var.ENVIRONMENT}", "var.ENVIRONMENT"),
                     VBM("${var.REGION}", "var.REGION"),
                     VBM("${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
                         "merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})")
+                ]
+            ),
+            (
+                "${merge(${local.common_tags},${local.common_data_tags},{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+                [
+                    VBM("${local.common_tags}", "local.common_tags"),
+                    VBM("${local.common_data_tags}", "local.common_data_tags"),
+                    VBM("${var.ENVIRONMENT}", "var.ENVIRONMENT"),
+                    VBM("${var.REGION}", "var.REGION"),
+                    VBM("${merge(${local.common_tags},${local.common_data_tags},{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+                        "merge(${local.common_tags},${local.common_data_tags},{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})")
+                ]
+            ),
+            (
+                '${merge(var.tags, map("Name", "${var.name}", "data_classification", "none"))}',
+                [
+                    VBM("var.tags", "var.tags"),
+                    VBM("${var.name}", "var.name"),
+                    VBM('map("Name", "${var.name}", "data_classification", "none")',
+                        'map("Name", "${var.name}", "data_classification", "none")'),
+                    VBM('${merge(var.tags, map("Name", "${var.name}", "data_classification", "none"))}',
+                        'merge(var.tags, map("Name", "${var.name}", "data_classification", "none"))')
                 ]
             ),
 

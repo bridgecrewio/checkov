@@ -1,10 +1,15 @@
 import json
+import re
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional
 
 import hcl2
 
+
+_FUNCTION_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+_ARG_VAR_PATTERN = re.compile(r"[a-zA-Z_]+(\.[a-zA-Z_]+)+")
 
 @dataclass
 class VarBlockMatch:
@@ -14,6 +19,13 @@ class VarBlockMatch:
     def replace(self, original: str, replaced: str):
         self.full_str = self.full_str.replace(original, replaced)
         self.var_only = self.var_only.replace(original, replaced)
+
+    def is_simple_var(self):
+        """
+        Indicates whether or not the value of the var block matches a "simple" var pattern. For example:
+        local.blah, var.foo, module.one.a_resource.
+        """
+        return _ARG_VAR_PATTERN.match(self.var_only) is not None
 
 
 class ParserMode(Enum):
@@ -46,8 +58,12 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
 
     mode_stack: List[ParserMode] = []
     eval_start_pos_stack: List[int] = []            # location of first char inside brackets
+    param_start_pos_stack: List[int] = []           # location of open parens
     preceding_dollar = False
     preceding_string_escape = False
+    # NOTE: function calls can be nested, but since param args are only being inspected for variables,
+    #       it's alright to ignore outer calls.
+    param_arg_start = -1
     for index, c in enumerate(value):
         current_mode = "  " if not mode_stack else mode_stack[-1]
 
@@ -86,7 +102,31 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
         elif c == "]" and current_mode == ParserMode.ARRAY:
             mode_stack.pop()
         elif c == ")" and current_mode == ParserMode.PARAMS:
+            if param_arg_start > 0:
+                param_arg = value[param_arg_start: index].strip()
+                if _ARG_VAR_PATTERN.match(param_arg):
+                    to_return.append(VarBlockMatch(param_arg, param_arg))
+                param_arg_start = -1
+
             mode_stack.pop()
+            start_pos = param_start_pos_stack.pop()
+            # See if these params are for a function call. Back up from the index to determine if there's
+            # a function preceding.
+            function_name_start_index = start_pos
+            for function_index in range(start_pos - 1, 0, -1):
+                if value[function_index] in _FUNCTION_NAME_CHARS:
+                    function_name_start_index = function_index
+                else:
+                    break
+            # We know now there's a function call here. But, don't call it out if it's directly wrapped
+            # in eval markers.
+            in_eval_markers = False
+            if function_name_start_index >= 2:
+                in_eval_markers = value[function_name_start_index - 2] == "$" and \
+                                  value[function_name_start_index - 1] == "{"
+            if function_name_start_index < start_pos and not in_eval_markers:
+                to_return.append(VarBlockMatch(value[function_name_start_index: index + 1],
+                                               value[function_name_start_index: index + 1]))
         elif c == '"':
             if preceding_string_escape:
                 preceding_string_escape = False
@@ -113,6 +153,14 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
         elif c == "(":                                      # do we care?
             if not ParserMode.is_string(current_mode):
                 mode_stack.append(ParserMode.PARAMS)
+                param_start_pos_stack.append(index)
+                param_arg_start = index + 1
+        elif c == ",":
+            if current_mode == ParserMode.PARAMS and param_arg_start > 0:
+                param_arg = value[param_arg_start: index].strip()
+                if _ARG_VAR_PATTERN.match(param_arg):
+                    to_return.append(VarBlockMatch(param_arg, param_arg))
+                param_arg_start = index + 1
         elif c == "?" and current_mode == ParserMode.EVAL:  # ternary
             # If what's been processed in the ternary so far is "true" or "false" (boolean or string type)
             # then nothing special will happen here and only the full expression will be returned.

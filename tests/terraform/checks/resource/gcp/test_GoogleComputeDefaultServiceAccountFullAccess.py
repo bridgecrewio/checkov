@@ -71,6 +71,15 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_handle_empty(self):
+        hcl_res = hcl2.loads("""
+        resource "google_compute_instance" "broken" {
+        }
+        """)
+        resource_conf = hcl_res['resource'][0]['google_compute_instance']['broken']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()

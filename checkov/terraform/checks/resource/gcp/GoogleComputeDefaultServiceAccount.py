@@ -24,7 +24,7 @@ class GoogleComputeDefaultServiceAccount(BaseResourceCheck):
             if 'email' in conf['service_account'][0]:
                 if not re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
                     return CheckResult.PASSED
-        if conf['name'][0].startswith('gke-'):
+        if 'name' in conf and conf['name'][0].startswith('gke-'):
             return CheckResult.PASSED
         return CheckResult.FAILED
 

@@ -34,8 +34,10 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
-            self.assertEqual(data["summary"]["parsing_errors"], 0, "expecting 0 parsing errors")
-            self.assertGreater(data["summary"]["failed"], 1, "expecting more then 1 failed checks")
+            self.assertEqual(data["summary"]["parsing_errors"], 0,
+                             f"expecting 0 parsing errors but got: {data['results']['parsing_errors']}")
+            self.assertGreater(data["summary"]["failed"], 1,
+                               f"expecting more than 1 failed checks, got: {data['summary']['failed']}")
 
     def validate_json_quiet(self):
         report_path = current_dir + "/../checkov_report_cfngoat_quiet.json"
