@@ -22,13 +22,10 @@ class ApiServerRequestTimeout(BaseK8Check):
                     if "=" in cmd:
                         [field,value] = cmd.split("=")
                         if field == "--request-timeout":
-                            regex = r"^(\d{1,2}+[h])(\d{1,2}+[m])?(\d{1,2}+[s])?$|^(\d{1,2}+[m])?(\d{1,2}+[s])?$|^(\d{1,2}+[s])"
-                            print(value)
+                            regex = r"^(\d{1,2}[h])(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[s])$"
                             matches = re.match(regex, value)
-                            print(matches)
                             if not matches:
-                                return CheckResult.FAILED
-
+                                return CheckResult.FAILED                            
         return CheckResult.PASSED
 
 check = ApiServerRequestTimeout()
