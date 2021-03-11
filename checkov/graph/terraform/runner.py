@@ -57,9 +57,9 @@ class Runner(BaseRunner):
             self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         if files:
-            # TODO: support parsing a specific file!!
             files = [os.path.abspath(file) for file in files]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
+            self.parser.evaluate_variables = False
             for file in files:
                 if file.endswith(".tf"):
                     file_parsing_errors = {}
@@ -69,7 +69,10 @@ class Runner(BaseRunner):
                     if file_parsing_errors:
                         parsing_errors.update(file_parsing_errors)
                         continue
-                    self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
+            local_graph = self.graph_manager.build_graph_from_tf_definitions(self.tf_runner.tf_definitions)
+            self.tf_runner.tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                local_graph.vertices, root_folder)
+            self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         report.add_parsing_errors(parsing_errors.keys())
 
