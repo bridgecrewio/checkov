@@ -38,6 +38,7 @@ resource "azurerm_monitor_activity_log_alert" "ok_monitor_activity_log_alert" {
     category       = "Recommendation"
   }
 
+
   action {
     action_group_id = azurerm_monitor_action_group.main.id
 
