@@ -21,7 +21,7 @@ spec:
         scheme: HTTPS
       initialDelaySeconds: 15
       timeoutSeconds: 15
-    name: kube-apiserver
+    name: kube-apiserver-should-pass
     resources:
       requests:
         cpu: 250m

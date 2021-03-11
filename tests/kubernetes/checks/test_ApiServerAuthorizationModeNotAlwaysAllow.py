@@ -21,6 +21,11 @@ class TestApiServerAuthorizationModeNotAlwaysAllow(unittest.TestCase):
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
+        for failed in report.failed_checks:
+            self.assertTrue("should-fail" in failed.resource)
+        for passed in report.passed_checks:
+            self.assertTrue("should-pass" in passed.resource)
+
 
 if __name__ == '__main__':
     unittest.main()
