@@ -414,7 +414,7 @@ class TestRunnerValid(unittest.TestCase):
         runner.tf_definitions = tf_definitions
         parser.parse_directory(tf_dir_path, tf_definitions)
         report = Report('terraform')
-        runner.check_tf_definition(root_folder=tf_dir_path, report=report, runner_filter=RunnerFilter(), external_definitions_context=external_definitions_context)
+        runner.check_tf_definition(root_folder=tf_dir_path, report=report, runner_filter=RunnerFilter(), definitions_context=external_definitions_context)
         self.assertGreaterEqual(len(report.passed_checks), 1)
 
     def test_failure_in_resolved_module(self):

@@ -83,10 +83,10 @@ class Runner(BaseRunner):
 
         return report
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, definitions_context=None):
         parser_registry.reset_definitions_context()
-        if external_definitions_context:
-            definitions_context = external_definitions_context
+        if definitions_context:
+            definitions_context = definitions_context
         else:
             definitions_context = {}
             for definition in self.tf_definitions.items():
