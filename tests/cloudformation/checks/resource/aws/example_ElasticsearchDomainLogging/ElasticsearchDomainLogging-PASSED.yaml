@@ -6,5 +6,6 @@ Resources:
       DomainEndpointOptions:
         EnforceHTTPS: True
       LogPublishingOptions:
-        Enabled: True
-        CloudWatchLogsLogGroupArn: CloudWatchLogsLogGroupArn
+        AUDIT_LOGS:
+          Enabled: True
+          CloudWatchLogsLogGroupArn: CloudWatchLogsLogGroupArn
