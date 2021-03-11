@@ -15,6 +15,7 @@ class CustomAttributes:
     SOURCE = "source_"
     RESOURCE_TYPE = "resource_type"
     RESOURCE_ID = "resource_id"
+    SOURCE_MODULE = "source_module_"
 
 
 def props(cls):
