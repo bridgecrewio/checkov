@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from typing import Optional, List
 
 import yaml
 
@@ -18,6 +19,7 @@ class Registry(BaseRegistry):
         self.parser = parser
 
     def load_checks(self):
+        self.checks = []
         checks_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checks")
         for root, d_names, f_names in os.walk(checks_dir):
             for file in f_names:

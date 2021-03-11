@@ -273,3 +273,30 @@ def filter_sub_keys(key_list):
         if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
             filtered_key_list.append(key)
     return filtered_key_list
+
+def generate_possible_strings_from_wildcards(origin_string, max_entries=10):
+    max_entries = int(os.environ.get("MAX_WILDCARD_ARR_SIZE", max_entries))
+    generated_strings = [origin_string]
+    if not origin_string:
+        return []
+    if '*' not in origin_string:
+        return generated_strings
+
+    locations_of_wildcards = []
+    for i, char in enumerate(origin_string):
+        if char == '*':
+            locations_of_wildcards.append(i)
+    locations_of_wildcards.reverse()
+
+    for wildcard_index in locations_of_wildcards:
+        new_generated_strings = []
+        for s in generated_strings:
+            before_wildcard = s[:wildcard_index]
+            after_wildcard = s[wildcard_index+1:]
+            for i in range(max_entries):
+                new_generated_strings.append(before_wildcard + str(i) + after_wildcard)
+        generated_strings = new_generated_strings
+
+    # if origin_string == "ingress.*.cidr_blocks", check for "ingress.cidr_blocks" too
+    generated_strings.append(''.join(origin_string.split('.*')))
+    return generated_strings

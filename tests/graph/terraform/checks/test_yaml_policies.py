@@ -20,7 +20,7 @@ class TestYamlPolicies(unittest.TestCase):
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
 
-    def test_registry(self):
+    def test_registry_load(self):
         registry = Registry()
         registry.load_checks()
         # TODO: ensure this is more than 0 once check parsing is enabled
