@@ -1,10 +1,12 @@
+import copy
 def convert_terraform_conf_to_iam_policy(conf):
     """
         converts terraform parsed configuration to iam policy document
     """
-    if "statement" in conf.keys():
-        conf["Statement"] = conf.pop("statement")
-        for statement in conf["Statement"]:
+    result = copy.deepcopy(conf)
+    if "statement" in result.keys():
+        result["Statement"] = result.pop("statement")
+        for statement in result["Statement"]:
             if "actions" in statement:
                 statement["Action"] = statement.pop("actions")[0]
             if "resources" in statement:
@@ -17,3 +19,4 @@ def convert_terraform_conf_to_iam_policy(conf):
                 statement["Effect"] = statement.pop("effect")[0]
             if "effect" not in statement:
                 statement["Effect"] = "Allow"
+    return result

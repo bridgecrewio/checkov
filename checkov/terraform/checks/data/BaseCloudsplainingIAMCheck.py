@@ -16,8 +16,8 @@ class BaseCloudsplainingIAMCheck(BaseDataCheck):
     def scan_data_conf(self, conf):
         key = 'statement'
         if key in conf.keys():
-            convert_terraform_conf_to_iam_policy(conf)
-            policy = PolicyDocument(conf)
+            converted_conf = convert_terraform_conf_to_iam_policy(conf)
+            policy = PolicyDocument(converted_conf)
             violations = self.cloudsplaining_analysis(policy)
             if violations:
                 logging.debug("detailed cloudsplainging finding: {}",json.dumps(violations))
