@@ -4,7 +4,7 @@ resource "google_sql_database_instance" "instance1-fail" {
   settings {
     tier = "db-f1-micro"
     ip_configuration {
-      ipv4_enabled    = true
+      ipv4_enabled = true
       authorized_networks = [
         {
           name  = "XYZ"
@@ -15,7 +15,7 @@ resource "google_sql_database_instance" "instance1-fail" {
           value = "0.0.0.0/0"
         },
         {
-          name = "ABC",
+          name  = "ABC",
           value = "5.5.5.0/24"
         }
       ]
@@ -29,14 +29,14 @@ resource "google_sql_database_instance" "instance2-pass" {
   settings {
     tier = "db-f1-micro"
     ip_configuration {
-      ipv4_enabled    = true
+      ipv4_enabled = true
       authorized_networks = [
         {
           name  = "XYZ"
           value = "1.2.3.4"
         },
         {
-          name = "ABC",
+          name  = "ABC",
           value = "5.5.5.0/24"
         }
       ]

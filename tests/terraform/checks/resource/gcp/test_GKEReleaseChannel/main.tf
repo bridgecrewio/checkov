@@ -40,7 +40,7 @@ resource "google_container_cluster" "success" {
   }
 
   release_channel {
-    channel=var.release_channel
+    channel = var.release_channel
   }
 
 }
