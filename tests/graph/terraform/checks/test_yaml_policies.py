@@ -48,6 +48,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
 
+    def test_S3BucketHasPublicAccessBlock(self):
+        self.go("S3BucketHasPublicAccessBlock")
+
+    def test_AccessToPostgreSQLFromAzureServicesIsDisabled(self):
+        self.go("AccessToPostgreSQLFromAzureServicesIsDisabled")
+
+    def test_AzureActiveDirectoryAdminIsConfigured(self):
+        self.go("AzureActiveDirectoryAdminIsConfigured")
+
+    def test_DisableAccessToSqlDBInstanceForRootUsersWithoutPassword(self):
+        self.go("DisableAccessToSqlDBInstanceForRootUsersWithoutPassword")
+
+    def test_GCPProjectHasNoLegacyNetworks(self):
+        self.go("GCPProjectHasNoLegacyNetworks")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()
