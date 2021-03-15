@@ -71,7 +71,9 @@ class Runner(BaseRunner):
             for file in files:
                 if file.endswith(".tf"):
                     file_parsing_errors = {}
-                    self.tf_definitions[file] = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+                    parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+                    if parse_result is not None:
+                        self.tf_definitions[file] = parse_result
                     if file_parsing_errors:
                         parsing_errors.update(file_parsing_errors)
                         continue
@@ -101,6 +103,9 @@ class Runner(BaseRunner):
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
                        scanned_file, runner_filter, module_referrer: Optional[str]):
+        if not definition:
+            logging.debug("Empty definition, skipping run (root_folder=%s)", root_folder)
+            return
         for block_type in definition.keys():
             if block_type in CHECK_BLOCK_TYPES:
                 self.run_block(definition[block_type], definitions_context,

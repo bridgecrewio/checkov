@@ -22,3 +22,11 @@ Resources:
       HttpMethod: GET
       AuthorizationType: CUSTOM
       AuthorizerId: MyAuthorizerID
+  MyMethod3:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: MyAPIID
+      ResourceId: MyResourceID 
+      HttpMethod: GET
+      AuthorizationType: NONE
+      ApiKeyRequired: true

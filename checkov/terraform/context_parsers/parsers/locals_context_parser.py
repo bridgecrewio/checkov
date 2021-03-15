@@ -10,8 +10,8 @@ class LocalsContextParser(BaseContextParser):
     def _collect_local_values(self, local_block):
         if isinstance(local_block,dict):
             for local_name, local_value in local_block.items():
-                local_value = local_value[0]
-                if type(local_value) in (int, float, bool, str):
+                local_value = local_value[0] if isinstance(local_value, list) else local_value
+                if type(local_value) in (int, float, bool, str, dict):
                     dpath.new(self.context, ['assignments', local_name], local_value)
 
     def get_block_type(self):

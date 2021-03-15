@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      DomainEndpointOptions:
+        EnforceHTTPS: True
+      LogPublishingOptions:
+        AUDIT_LOGS:
+          Enabled: False
+  Resource1:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      DomainEndpointOptions:
+        EnforceHTTPS: True
