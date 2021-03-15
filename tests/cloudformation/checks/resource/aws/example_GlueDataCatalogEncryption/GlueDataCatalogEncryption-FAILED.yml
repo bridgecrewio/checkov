@@ -23,3 +23,7 @@ Resources:
     Type: 'AWS::Glue::DataCatalogEncryptionSettings'
     Properties:
       CatalogId: "CatalogId"
+      DataCatalogEncryptionSettings:
+        EncryptionAtRest:
+          CatalogEncryptionMode: "Disabled"
+          SseAwsKmsKeyId: "SseAwsKmsKeyId"
