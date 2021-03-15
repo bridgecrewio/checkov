@@ -4,6 +4,7 @@ import concurrent.futures
 import hashlib
 import io
 import json
+import os
 import pickle  # nosec
 import re
 
