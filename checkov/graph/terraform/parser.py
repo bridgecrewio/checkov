@@ -6,21 +6,28 @@ from checkov.graph.terraform.graph_builder.graph_components.module import Module
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 from checkov.graph.terraform.graph_builder.utils import remove_module_dependency_in_path
+
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
 class TerraformGraphParser(Parser):
+    def __init__(self, module_class=Module):
+        super().__init__()
+        self.module_class = module_class
+
     def parse_hcl_module(self, source_dir, source):
         tf_definitions = {}
         parsing_errors = {}
         download_external_modules = os.environ.get('DOWNLOAD_EXTERNAL_MODULES', 'false').lower() == 'true'
-        self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={}, out_parsing_errors=parsing_errors,
-                             download_external_modules=download_external_modules, evaluate_variables=False, external_modules_download_path=external_modules_download_path)
+        self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
+                             out_parsing_errors=parsing_errors,
+                             download_external_modules=download_external_modules, evaluate_variables=False,
+                             external_modules_download_path=external_modules_download_path)
         tf_definitions = TerraformGraphParser._hcl_boolean_types_to_boolean(tf_definitions)
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
-        module = Module(source_dir)
+        module = self.module_class(source_dir)
         module_dependency_map, tf_definitions = self.get_module_dependency_map(tf_definitions)
         copy_of_tf_definitions = deepcopy(tf_definitions)
         for file_path in copy_of_tf_definitions:
@@ -36,7 +43,8 @@ class TerraformGraphParser(Parser):
     @staticmethod
     def _hcl_boolean_types_to_boolean(conf: dict) -> dict:
         sorted_keys = sorted(filter(lambda x: x is not None, conf.keys()))
-        sorted_conf = {key: conf[key] for key in sorted_keys}  # Create a new dict where the keys are sorted alphabetically
+        # Create a new dict where the keys are sorted alphabetically
+        sorted_conf = {key: conf[key] for key in sorted_keys}
         for attribute, values in sorted_conf.items():
             if attribute is 'alias':
                 continue

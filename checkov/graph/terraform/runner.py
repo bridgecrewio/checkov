@@ -11,31 +11,25 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.variables.context import EvaluationContext
 from checkov.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.graph.graph_record import GraphRecord
-from checkov.graph.terraform.parser import TerraformGraphParser
 from checkov.graph.terraform.checks_infra.nx_checks_parser import NXGraphCheckParser
 from checkov.graph.terraform.checks_infra.registry import Registry
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
 from checkov.graph.terraform.graph_manager import GraphManager
+from checkov.graph.terraform.parser import TerraformGraphParser
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as TerraformRunner
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
 logging.basicConfig(level=LOG_LEVEL)
 
+
 class PersistentGraphData:
     tf_definitions = None
     definitions_context = None
     breadcrumbs = {}
-
-
-TRUE_STRING = "true"
-ONE_STRING = "1"
-FALSE_STRING = "false"
-ZERO_STRING = "0"
 
 
 class Runner(BaseRunner):
@@ -145,29 +139,6 @@ class Runner(BaseRunner):
                                        entity_context_path)
             entity_context['definition_path'] = definition_path
         return entity_context, entity_evaluations
-
-    def create_definitions_context(self, tf_definitions, evaluate_variables=True, collect_skip_comments=True):
-        definitions_context = {}
-        parser_registry.reset_definitions_context()
-        for definition in tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments=collect_skip_comments)
-        if evaluate_variables:
-            self._evaluate_string_booleans()
-        return tf_definitions, definitions_context
-
-    def _evaluate_string_booleans(self):
-        # Support HCL 0.11 optional boolean syntax - evaluate "true" and "1" to true, "false" and "0" to false
-        for tf_file in self.tf_definitions.keys():
-            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
-                                                         afilter=lambda x: x == TRUE_STRING or x == ONE_STRING,
-                                                         yielded=True):
-                if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, True)
-            for var_path, var_value in dpath.util.search(self.tf_definitions[tf_file], "**",
-                                                         afilter=lambda x: x == FALSE_STRING or x == ZERO_STRING,
-                                                         yielded=True):
-                if not var_path.endswith('alias/0'):
-                    dpath.set(self.tf_definitions[tf_file], var_path, False)
 
 
 def merge_reports(base_report, report_to_merge):
