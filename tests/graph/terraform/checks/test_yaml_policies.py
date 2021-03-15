@@ -5,6 +5,7 @@ import warnings
 
 import yaml
 from checkov.graph.terraform import checks
+from checkov.graph.terraform.checks_infra.nx_checks_parser import NXGraphCheckParser
 from checkov.graph.terraform.checks_infra.registry import Registry
 
 
@@ -17,14 +18,40 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_APIGWLoggingLevelsDefinedProperly(self):
+        self.go("APIGWLoggingLevelsDefinedProperly")
+
+    def test_GuardDutyIsEnabled(self):
+        self.go("GuardDutyIsEnabled")
+
+    def test_SGToEC2AndENI(self):
+        self.go("SGToEC2AndENI")
+
+    def test_StorageContainerActivityLogsNotPublic(self):
+        self.go("StorageContainerActivityLogsNotPublic")
+
+    def test_StorageCriticalDataEncryptedCMK(self):
+        self.go("StorageCriticalDataEncryptedCMK")
+
+    def test_VAconfiguredToSendReports(self):
+        self.go("VAconfiguredToSendReports")
+
+    def test_VAconfiguredToSendReportsToAdmins(self):
+        self.go("VAconfiguredToSendReportsToAdmins")
+
+    def test_VAisEnabledInStorageAccount(self):
+        self.go("VAisEnabledInStorageAccount")
+
+    def test_VAsetPeriodicScansOnSQL(self):
+        self.go("VAsetPeriodicScansOnSQL")
+
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
 
     def test_registry_load(self):
-        registry = Registry()
+        registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()
-        # TODO: ensure this is more than 0 once check parsing is enabled
-        self.assertEqual(len(registry.checks), 0)
+        self.assertGreater(len(registry.checks), 0)
 
     @staticmethod
     def go(dir_name):

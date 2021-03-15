@@ -8,10 +8,10 @@ operators_to_attributes_query_classes = {
     'not_equals': NotEqualsAttributeSolver,
     'exists': ExistsAttributeSolver,
     'any': AnyResourceSolver,
-    'contains': ArrayContainsAttributeSolver,
+    'contains': ContainsAttributeSolver,
     'not_exists': NotExistsAttributeSolver,
     'within': WithinAttributeSolver,
-    'not_contains': ArrayNotContainsAttributeSolver,
+    'not_contains': NotContainsAttributeSolver,
     'starting_with': StartingWithAttributeSolver,
     'not_starting_with': NotStartingWithAttributeSolver,
     'ending_with': EndingWithAttributeSolver,
@@ -47,11 +47,13 @@ condition_type_to_query_type = {
 
 class NXGraphCheckParser(BaseGraphCheckParser):
     def parse_raw_check(self, raw_check, **kwargs):
-        policy_query = raw_check.get("query")
+        policy_query = raw_check.get("definition")
         check = self._parse_raw_check(policy_query, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
+
+        return check
 
     def _parse_raw_check(self, raw_check, resources_types):
         check = BaseGraphCheck()
@@ -61,7 +63,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             check.operator = complex_operator
             sub_queries = raw_check.get(complex_operator)
             for sub_query in sub_queries:
-                check.sub_checks.append(self.parse_raw_check(sub_query))
+                check.sub_checks.append(self._parse_raw_check(sub_query, resources_types))
             resources_types_of_sub_queries = [q.resource_types for q in check.sub_checks]
             check.resource_types = list(set(sum(resources_types_of_sub_queries, [])))
             if any(q.type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION] for q in check.sub_checks):

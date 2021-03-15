@@ -14,4 +14,4 @@ class BaseGraphCheck:
         self.solver = solver
 
     def run(self, graph_connector):
-        return self.solver().run(graph_connector)
+        return self.solver.run(graph_connector=graph_connector)
