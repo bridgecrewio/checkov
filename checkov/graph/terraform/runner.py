@@ -42,7 +42,8 @@ class Runner(BaseRunner):
     check_type = "terraform"
 
     def __init__(self, parser=TerraformGraphParser(), db_connector=NetworkxConnector(), external_registries=None,
-                 source="Terraform", graph_class=LocalGraph, existing_data: PersistentGraphData = None):
+                 source="Terraform", graph_class=LocalGraph, existing_data: PersistentGraphData = None,
+                 graph_manager=None):
         self.existing_data = existing_data
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
@@ -51,7 +52,7 @@ class Runner(BaseRunner):
         self.definitions_context = None if existing_data is None else existing_data.definitions_context
         self.breadcrumbs = None if existing_data is None else existing_data.breadcrumbs
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        self.graph_manager = GraphManager(source=source, db_connector=db_connector)
+        self.graph_manager = graph_manager if graph_manager is not None else GraphManager(source=source, db_connector=db_connector)
         self.tf_runner = TerraformRunner()
         self.graph = None
 
