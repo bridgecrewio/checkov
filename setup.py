@@ -34,6 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2>=0.3.18",
+        "cloudsplaining",
         "deep_merge",
         "tabulate",
         "colorama",
