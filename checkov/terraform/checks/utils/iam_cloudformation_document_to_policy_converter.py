@@ -10,11 +10,19 @@ def convert_cloudformation_conf_to_iam_policy(conf):
             if "Action" in statement:
                 statement["Action"] = str(statement.pop("Action")[0])
             if "Resource" in statement:
-                statement["Resource"] = str(statement.pop("Resource")[0])
+                resources = statement.pop("Resource")
+                if isinstance(resources,list):
+                    statement["Resource"] = str(resources[0])
+                else:
+                    statement["Resource"] = str(resources)
             if "NotAction" in statement:
                 statement["NotAction"] = str(statement.pop("NotAction")[0])
             if "NotResource" in statement:
-                statement["NotResource"] = str(statement.pop("NotResource")[0])
+                not_resources = statement.pop("NotResource")
+                if isinstance(not_resources,list):
+                    statement["NotResource"] = str(not_resources[0])
+                else:
+                    statement["NotResource"] = str(not_resources)
             if "Effect" in statement:
                 statement["Effect"] = str(statement.pop("Effect"))
             if "Effect" not in statement:

@@ -6,7 +6,7 @@ from checkov.terraform.checks.data.aws.IAMCredentialsExposure import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestCloudSplainningPrivilegeEscalation(unittest.TestCase):
+class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""

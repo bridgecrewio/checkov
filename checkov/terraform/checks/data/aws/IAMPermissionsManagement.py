@@ -1,7 +1,7 @@
 from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningPermissionsManagement(BaseCloudsplainingIAMCheck):
+class CloudSplainingPermissionsManagement(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow permissions management / resource exposure without constraints"
@@ -12,4 +12,4 @@ class CloudSplainningPermissionsManagement(BaseCloudsplainingIAMCheck):
         return policy.permissions_management_without_constraints
 
 
-check = CloudSplainningPermissionsManagement()
+check = CloudSplainingPermissionsManagement()

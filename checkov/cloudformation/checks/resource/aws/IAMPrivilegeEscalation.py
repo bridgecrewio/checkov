@@ -1,7 +1,7 @@
 from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningPrivilegeEscalation(BaseCloudsplainingIAMCheck):
+class cloudsplainingPrivilegeEscalation(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow privilege escalation"
@@ -13,4 +13,4 @@ class CloudSplainningPrivilegeEscalation(BaseCloudsplainingIAMCheck):
         return escalation
 
 
-check = CloudSplainningPrivilegeEscalation()
+check = cloudsplainingPrivilegeEscalation()

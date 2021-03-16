@@ -6,7 +6,7 @@ from checkov.terraform.checks.data.aws.IAMDataExfiltration import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestCloudSplainningDataExfiltration(unittest.TestCase):
+class TestcloudsplainingDataExfiltration(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
