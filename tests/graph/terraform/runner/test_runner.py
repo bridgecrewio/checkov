@@ -14,7 +14,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
         tf_definitions = runner.tf_runner.tf_definitions
-        self.assertEqual(2, len(report.failed_checks))
+        self.assertEqual(3, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):
                 s3_bucket_config = definitions['resource'][0]['aws_s3_bucket']['bucket_with_versioning']
