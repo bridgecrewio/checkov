@@ -1,7 +1,7 @@
 from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningCredentialsExposure(BaseCloudsplainingIAMCheck):
+class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow credentials exposure"
@@ -12,4 +12,4 @@ class CloudSplainningCredentialsExposure(BaseCloudsplainingIAMCheck):
         return policy.credentials_exposure
 
 
-check = CloudSplainningCredentialsExposure()
+check = CloudSplainingCredentialsExposure()

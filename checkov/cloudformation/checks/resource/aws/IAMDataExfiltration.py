@@ -1,7 +1,7 @@
 from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningDataExfiltration(BaseCloudsplainingIAMCheck):
+class cloudsplainingDataExfiltration(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow data exfiltration"
@@ -12,4 +12,4 @@ class CloudSplainningDataExfiltration(BaseCloudsplainingIAMCheck):
         return policy.allows_data_exfiltration_actions
 
 
-check = CloudSplainningDataExfiltration()
+check = cloudsplainingDataExfiltration()

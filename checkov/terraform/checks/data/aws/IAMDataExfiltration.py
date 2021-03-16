@@ -1,7 +1,7 @@
 from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningDataExfiltration(BaseCloudsplainingIAMCheck):
+class CloudSplainingDataExfiltration(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow data exfiltration"
@@ -12,4 +12,4 @@ class CloudSplainningDataExfiltration(BaseCloudsplainingIAMCheck):
         return policy.allows_data_exfiltration_actions
 
 
-check = CloudSplainningDataExfiltration()
+check = CloudSplainingDataExfiltration()

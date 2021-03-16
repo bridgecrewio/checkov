@@ -1,7 +1,7 @@
 from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningWriteAccess(BaseCloudsplainingIAMCheck):
+class cloudsplainingWriteAccess(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow write access without constraints"
@@ -12,4 +12,4 @@ class CloudSplainningWriteAccess(BaseCloudsplainingIAMCheck):
         return policy.write_actions_without_constraints
 
 
-check = CloudSplainningWriteAccess()
+check = cloudsplainingWriteAccess()

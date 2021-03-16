@@ -1,7 +1,7 @@
 from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
-class CloudSplainningPermissionsManagement(BaseCloudsplainingIAMCheck):
+class cloudsplainingPermissionsManagement(BaseCloudsplainingIAMCheck):
 
     def __init__(self):
         name = "Ensure IAM policies does not allow permissions management without constraints"
@@ -12,4 +12,4 @@ class CloudSplainningPermissionsManagement(BaseCloudsplainingIAMCheck):
         return policy.permissions_management_without_constraints
 
 
-check = CloudSplainningPermissionsManagement()
+check = cloudsplainingPermissionsManagement()
