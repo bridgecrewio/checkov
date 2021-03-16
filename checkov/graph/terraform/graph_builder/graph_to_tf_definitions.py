@@ -1,10 +1,11 @@
 import logging
 import os
+from typing import List
 
 from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
 
 
-def convert_graph_vertices_to_tf_definitions(vertices, root_folder):
+def convert_graph_vertices_to_tf_definitions(vertices: List[Block], root_folder):
     tf_definitions = {}
     breadcrumbs = {}
     for vertex in vertices:

@@ -37,6 +37,3 @@ class GraphManager:
 
     def disconnect_from_db(self):
         self.db_connector.disconnect()
-
-    def get_vertices_attributes(self):
-        return self.db_connector.get_vertices_attributes()

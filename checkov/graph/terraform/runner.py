@@ -30,23 +30,28 @@ class Runner(BaseRunner):
     check_type = "terraform"
 
     def __init__(self, parser=TerraformGraphParser(), db_connector=NetworkxConnector(), external_registries=None,
-                 source="Terraform", graph_class=LocalGraph, graph_manager=None, external_definitions_context=None):
+                 source="Terraform", graph_class=LocalGraph, graph_manager=None):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser
         self.tf_definitions = None
-        self.definitions_context = external_definitions_context
+        self.definitions_context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager = graph_manager if graph_manager is not None else GraphManager(source=source, db_connector=db_connector)
         self.tf_runner = TerraformRunner()
         self.graph = None
 
+    def set_external_data(self, tf_definitions: dict, definitions_context: dict, breadcrumbs: dict):
+        self.tf_definitions = tf_definitions
+        self.definitions_context = definitions_context
+        self.breadcrumbs = breadcrumbs
+
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
-        if self.definitions_context is None:
+        if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
             self.tf_definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
             if external_checks_dir:
@@ -76,8 +81,7 @@ class Runner(BaseRunner):
             self.graph = self.graph_manager.save_graph(local_graph)
             self.tf_runner.tf_definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
-            vertices = self.graph_manager.get_vertices_attributes()
-            self.tf_runner.tf_definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(vertices, root_folder)
+            self.tf_runner.tf_definition = self.tf_definitions
 
         self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments, self.definitions_context)
 

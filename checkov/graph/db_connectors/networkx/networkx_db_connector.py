@@ -27,8 +27,3 @@ class NetworkxConnector(DBConnector):
         self.graph.add_edges_from(edges_to_add)
 
         return self.graph
-
-    def get_vertices_attributes(self):
-        return self.graph.nodes.values()
-
-

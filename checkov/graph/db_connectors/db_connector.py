@@ -10,6 +10,3 @@ class DBConnector:
 
     def disconnect(self):
         pass
-
-    def get_vertices_attributes(self):
-        pass

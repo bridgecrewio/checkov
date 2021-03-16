@@ -8,6 +8,7 @@ from checkov.graph.terraform.graph_builder.graph_components.attribute_names impo
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
 from checkov.graph.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.graph.terraform.parser import TerraformGraphParser
 from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
 from checkov.graph.terraform.graph_manager import GraphManager
@@ -145,3 +146,15 @@ class TestLocalGraph(TestCase):
             else:
                 self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION))
                 self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION_DETAILS))
+
+    def test_vertices_from_local_graph(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_from_module_vpc'))
+        hcl_config_parser = TerraformGraphParser()
+        module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
+                                                                              self.source)
+        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph._create_vertices()
+        tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
+        self.assertIsNotNone(tf_definitions)
+        self.assertIsNotNone(breadcrumbs)
