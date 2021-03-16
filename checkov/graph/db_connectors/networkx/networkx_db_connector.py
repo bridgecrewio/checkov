@@ -28,4 +28,7 @@ class NetworkxConnector(DBConnector):
 
         return self.graph
 
+    def get_vertices_attributes(self):
+        return self.graph.nodes.values()
+
 
