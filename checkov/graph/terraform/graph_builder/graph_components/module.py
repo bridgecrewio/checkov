@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import List
 
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_builder.graph_components.blocks import Block, get_inner_attributes
@@ -7,7 +8,7 @@ from checkov.graph.terraform.graph_builder.graph_components.blocks import Block,
 class Module:
     def __init__(self, source_dir):
         self.path = ''
-        self.blocks = []
+        self.blocks: List[Block] = []
         self.customer_name = ''
         self.account_id = ''
         self.source = ''

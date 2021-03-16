@@ -27,7 +27,7 @@ class TerraformGraphParser(Parser):
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
-        module = self.module_class(source_dir)
+        module = self.get_new_module(source_dir)
         module_dependency_map, tf_definitions = self.get_module_dependency_map(tf_definitions)
         copy_of_tf_definitions = deepcopy(tf_definitions)
         for file_path in copy_of_tf_definitions:
@@ -92,3 +92,6 @@ class TerraformGraphParser(Parser):
                 module_dependency_map[dir_name] = module_dependency
             copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
         return module_dependency_map, copy_of_tf_definitions
+
+    def get_new_module(self, source_dir):
+        return Module(source_dir)
