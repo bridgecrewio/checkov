@@ -1,4 +1,4 @@
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
 
 class CloudSplainningPrivilegeEscalation(BaseCloudsplainingIAMCheck):
