@@ -27,7 +27,6 @@ class TestGraphBuilder(TestCase):
     def test_run_clean(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         runner = Runner()
-        # runner.set_external_data({}, {}, {})
         report = runner.run(root_folder=resources_path)
         self.assertEqual(len(report.failed_checks), 4)
         self.assertEqual(len(report.passed_checks), 7)

@@ -3,7 +3,7 @@ from unittest import TestCase
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.utils.utils import replace_map_attribute_access_with_dot, get_referenced_vertices_in_value, \
-    VertexReference, update_dictionary_attribute
+    VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards
 
 
 class Test(TestCase):
@@ -59,3 +59,21 @@ class Test(TestCase):
         expected_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
         actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
         self.assertEqual(expected_config, actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
+
+    def test_generate_possible_strings_from_wildcards(self):
+        origin_string = "a.*.b.*.c.*"
+        expected_results = [
+            "a.0.b.0.c.0",
+            "a.0.b.1.c.0",
+            "a.1.b.0.c.0",
+            "a.0.b.0.c.1",
+            "a.1.b.1.c.0",
+            "a.1.b.0.c.1",
+            "a.0.b.1.c.1",
+            "a.1.b.1.c.1",
+            "a.b.c",
+        ]
+        expected_results.sort()
+        results = generate_possible_strings_from_wildcards(origin_string=origin_string, max_entries=2)
+        results.sort()
+        self.assertEqual(expected_results, results)
