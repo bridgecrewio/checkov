@@ -63,6 +63,39 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
+        self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
+
+    def test_AzureUnattachedDisksAreEncrypted(self):
+        self.go("AzureUnattachedDisksAreEncrypted")
+
+    def test_AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs(self):
+        self.go("AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs")
+
+    def test_ALBRedirectsHTTPToHTTPS(self):
+        self.go("ALBRedirectsHTTPToHTTPS")
+
+    def test_GCPLogBucketsConfiguredUsingLock(self):
+        self.go("GCPLogBucketsConfiguredUsingLock")
+
+    def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
+        self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
+
+    def test_GCPKMSCryptoKeysAreNotPubliclyAccessible(self):
+        self.go("GCPKMSCryptoKeysAreNotPubliclyAccessible")
+
+    def test_VirtualMachinesUtilizingManagedDisks(self):
+        self.go("VirtualMachinesUtilizingManagedDisks")
+
+    def test_RDSClusterHasBackupPlan(self):
+        self.go("RDSClusterHasBackupPlan")
+
+    def test_RedshiftClusterHasBackupPlan(self):
+        self.go("RedshiftClusterHasBackupPlan")
+
+    def test_EBSAddedBackup(self):
+        self.go("EBSAddedBackup")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()

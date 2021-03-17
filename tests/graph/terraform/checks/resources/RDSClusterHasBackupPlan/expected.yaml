@@ -1,0 +1,4 @@
+pass:
+  - "aws_rds_cluster.rds_cluster_good"
+fail:
+  - "aws_rds_cluster.rds_cluster_bad"
