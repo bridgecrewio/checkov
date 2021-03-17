@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Session Manager data is encrypted in transit"
-        id = "CKV_AWS_107"
+        id = "CKV_AWS_112"
         supported_resources = ["aws_ssm_document"]
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -29,7 +29,9 @@ class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
                 if inputs and not inputs.get("kmsKeyId"):
                     return CheckResult.FAILED
 
-        return CheckResult.PASSED
+                return CheckResult.PASSED
+
+        return CheckResult.UNKNOWN
 
 
 def is_json(data):
