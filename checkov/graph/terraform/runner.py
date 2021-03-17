@@ -51,12 +51,12 @@ class Runner(BaseRunner):
             collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                resource_registry.load_external_checks(directory, runner_filter)
         if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
             self.tf_definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
-            if external_checks_dir:
-                for directory in external_checks_dir:
-                    resource_registry.load_external_checks(directory, runner_filter)
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
 
@@ -95,11 +95,11 @@ class Runner(BaseRunner):
 
     def get_graph_checks_report(self, root_folder, breadcrumbs):
         registry = Registry(parser=NXGraphCheckParser())
-        registry.load_checks()
         report = Report(self.check_type)
         checks_results = {}
         for r in self.external_registries + [registry]:
-            registry_results = r.run_checks(self.graph)
+            r.load_checks()
+            registry_results = r.run_checks(self.graph_manager.get_reader_traversal())
             checks_results = {**checks_results, **registry_results}
 
         for check_id, check_results in checks_results.items():

@@ -1,5 +1,3 @@
-from typing import Optional, List
-
 from checkov.common.models.enums import CheckResult
 
 

@@ -46,7 +46,7 @@ condition_type_to_query_type = {
 
 
 class NXGraphCheckParser(BaseGraphCheckParser):
-    def parse_raw_check(self, raw_check, **kwargs):
+    def parse_raw_check(self, raw_check, **kwargs) -> BaseGraphCheck:
         policy_query = raw_check.get("definition")
         check = self._parse_raw_check(policy_query, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id")
