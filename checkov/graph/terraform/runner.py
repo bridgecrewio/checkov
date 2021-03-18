@@ -85,6 +85,7 @@ class Runner(BaseRunner):
             self.tf_runner.tf_definitions = self.tf_definitions
 
         self.tf_runner.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments, self.definitions_context)
+        self.definitions_context = self.tf_runner.definitions_context
 
         report.add_parsing_errors(parsing_errors.keys())
 
@@ -134,9 +135,8 @@ class Runner(BaseRunner):
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context = None
         entity_context_path = [block_type] + definition_path
-        if dpath.search(self.tf_runner.definitions_context.get(full_file_path), entity_context_path):
-            entity_context = dpath.get(self.tf_runner.definitions_context[full_file_path],
-                                       entity_context_path)
+        if dpath.search(self.definitions_context.get(full_file_path), entity_context_path):
+            entity_context = dpath.get(self.definitions_context[full_file_path], entity_context_path)
             entity_context['definition_path'] = definition_path
         return entity_context, entity_evaluations
 
