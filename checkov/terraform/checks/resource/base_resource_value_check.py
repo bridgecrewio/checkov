@@ -7,7 +7,6 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.parser_utils import find_var_blocks
 
-
 class BaseResourceValueCheck(BaseResourceCheck):
     def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
