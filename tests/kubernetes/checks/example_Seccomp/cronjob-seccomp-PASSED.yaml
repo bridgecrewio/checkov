@@ -1,0 +1,30 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cronjob-passed
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            seccomp.security.alpha.kubernetes.io/pod: runtime/default
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 3000
+            fsGroup: 2000
+          volumes:
+            - name: sec-ctx-vol
+              emptyDir: {}
+          containers:
+            - name: sec-ctx-demo
+              image: busybox
+              command: ["sh", "-c", "sleep 1h"]
+              volumeMounts:
+                - name: sec-ctx-vol
+                  mountPath: /data/demo
+              securityContext:
+                allowPrivilegeEscalation: false
