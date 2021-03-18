@@ -2,7 +2,7 @@ import logging
 import re
 import shutil
 
-TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>v\d+.\d+.\d+)')
+TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 try:
     from git import Repo
     git_import_error = None
@@ -22,6 +22,8 @@ class GitGetter(BaseGetter):
         search_tag = re.search(TAG_PATTERN, url)
         if search_tag:
             self.tag = search_tag.groupdict().get('tag')
+            #remove tag/ or tags/ from ref= to get actual branch name
+            self.tag = re.sub('tag.*/','', self.tag)   
         url = re.sub(TAG_PATTERN, '', url)
 
         super().__init__(url)
