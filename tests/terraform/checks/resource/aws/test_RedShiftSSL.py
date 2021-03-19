@@ -1,66 +1,40 @@
+import os
 import unittest
-import hcl2
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.RedShiftSSL import check
-
+from checkov.terraform.runner import Runner
 
 class TestRedShiftSSL(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_redshift_parameter_group" "examplea" {
-                  name   = var.param_group_name
-                  family = "redshift-1.0"
-                  
-                  parameter {
-                    name  = "require_ssl"
-                    value = "false"
-                  }
-                  
-                  parameter {
-                    name  = "enable_user_activity_logging"
-                    value = "true"
-                  }
-                }
+        test_files_dir = current_dir + "/example_RedShiftSSL"
+        report = runner.run(
+            root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
+        )
+        summary = report.get_summary()
 
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_redshift_parameter_group']['examplea']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_redshift_parameter_group.pass"
+        }
+        failing_resources = {
+            "aws_redshift_parameter_group.fail",
+            "aws_redshift_parameter_group.failasfalse"
+        }
 
-    def test_failure_no_parameters(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_redshift_parameter_group" "examplea" {
-                  name   = var.param_group_name
-                  family = "redshift-1.0"
-                  
-                }
-       """)
-        resource_conf = hcl_res['resource'][0]['aws_redshift_parameter_group']['examplea']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success_with_parameters(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_redshift_parameter_group" "examplea" {
-                  name   = var.param_group_name
-                  family = "redshift-1.0"
-                  
-                  parameter {
-                    name  = "require_ssl"
-                    value = "true"
-                  }
-                  
-                  parameter {
-                    name  = "enable_user_activity_logging"
-                    value = "true"
-                  }
-                }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_redshift_parameter_group']['examplea']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-if __name__ == '__main__':
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()
