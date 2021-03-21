@@ -45,6 +45,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                                 f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
                                 f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
                                 f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/ipv6_cidr_blocks',
                             ]
                             return CheckResult.FAILED
 
@@ -53,7 +54,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if 'type' in conf:  # This means it's an SG_rule resource.
             type = force_list(conf['type'])[0]
             if type == 'ingress':
-                self.evaluated_keys = ['from_port','to_port','cidr_blocks']
+                self.evaluated_keys = ['from_port','to_port','cidr_blocks', 'ipv6_cidr_blocks']
                 if self.contains_violation(conf):
                     return CheckResult.FAILED
                 return CheckResult.PASSED
@@ -69,6 +70,9 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
             cidr_blocks = force_list(conf.get('cidr_blocks', [[]])[0])
             if "0.0.0.0/0" in cidr_blocks:
+                return True
+            ipv6_cidr_blocks = force_list(conf.get('ipv6_cidr_blocks', [[]])[0])
+            if any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks):
                 return True
 
         return False
