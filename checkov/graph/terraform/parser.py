@@ -42,7 +42,9 @@ class TerraformGraphParser(Parser):
 
     @staticmethod
     def _hcl_boolean_types_to_boolean(conf: dict) -> dict:
-        sorted_keys = sorted(filter(lambda x: x is not None, conf.keys()))
+        sorted_keys = list(conf.keys())
+        if len(conf.keys()) > 0 and all(isinstance(x, type(list(conf.keys())[0])) for x in conf.keys()):
+            sorted_keys = sorted(filter(lambda x: x is not None, conf.keys()))
         # Create a new dict where the keys are sorted alphabetically
         sorted_conf = {key: conf[key] for key in sorted_keys}
         for attribute, values in sorted_conf.items():
