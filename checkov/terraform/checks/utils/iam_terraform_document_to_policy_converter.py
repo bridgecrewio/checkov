@@ -17,6 +17,6 @@ def convert_terraform_conf_to_iam_policy(conf):
                 statement["NotResource"] = statement.pop("not_resources")[0]
             if "effect" in statement:
                 statement["Effect"] = statement.pop("effect")[0]
-            if "effect" not in statement:
+            if "effect" not in statement and "Effect" not in statement:
                 statement["Effect"] = "Allow"
     return result
