@@ -13,8 +13,8 @@ def init():
     consoleHandler.setFormatter(logFormatter)
     consoleHandler.setLevel(LOG_LEVEL)
     rootLogger.addHandler(consoleHandler)
+    logging.getLogger().setLevel(LOG_LEVEL)
     logging.getLogger("urllib3").setLevel(logging.ERROR)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
     logging.getLogger("urllib3.connectionpool").propagate = False
     logging.getLogger("urllib3").propagate = False
-    logging.getLogger().setLevel(LOG_LEVEL)
