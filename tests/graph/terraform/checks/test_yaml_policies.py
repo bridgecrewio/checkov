@@ -63,6 +63,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_AzureStorageAccountsUseCustomerManagedKeyForEncryption(self):
+        self.go("AzureStorageAccountsUseCustomerManagedKeyForEncryption")
+
     def test_AzureMSSQLServerHasSecurityAlertPolicy(self):
         self.go("AzureMSSQLServerHasSecurityAlertPolicy")
 
