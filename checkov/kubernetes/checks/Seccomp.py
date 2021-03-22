@@ -2,6 +2,7 @@ import dpath
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
+from checkov.common.util.type_forcers import force_list
 
 
 class Seccomp(BaseK8Check):
@@ -63,7 +64,7 @@ class Seccomp(BaseK8Check):
 
         if metadata:
             if metadata.get('annotations'):
-                for annotation in metadata["annotations"]:
+                for annotation in force_list(metadata["annotations"]):
                     for key in annotation:
                         if "seccomp.security.alpha.kubernetes.io/pod" in key:
                             if "docker/default" in annotation[key] or "runtime/default" in annotation[key]:

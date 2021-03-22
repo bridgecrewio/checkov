@@ -11,6 +11,6 @@ class ElasticsearchDomainLogging(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'Properties/LogPublishingOptions/Enabled'
+        return 'Properties/LogPublishingOptions/AUDIT_LOGS/Enabled'
 
 check = ElasticsearchDomainLogging()

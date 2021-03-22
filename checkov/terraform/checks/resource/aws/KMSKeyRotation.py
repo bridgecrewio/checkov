@@ -6,7 +6,7 @@ class KMSKeyRotation(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure KMS have rotation policy"
-        id = "CKV_AWS_107"
+        id = "CKV_AWS_132"
         supported_resources = ['aws_kms_key']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

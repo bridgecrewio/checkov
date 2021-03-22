@@ -177,6 +177,8 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(azure_checks)):
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
+                continue  # https://github.com/bridgecrewio/checkov/pull/983
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')

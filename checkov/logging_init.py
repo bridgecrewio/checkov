@@ -9,7 +9,7 @@ def init():
     logging.basicConfig(level=LOG_LEVEL)
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
     rootLogger = logging.getLogger()
-    consoleHandler = logging.StreamHandler(sys.stdout)
+    consoleHandler = logging.StreamHandler(sys.stderr)
     consoleHandler.setFormatter(logFormatter)
     consoleHandler.setLevel(LOG_LEVEL)
     rootLogger.addHandler(consoleHandler)

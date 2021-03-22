@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: 'AWS::Glue::DataCatalogEncryptionSettings'
+    Properties:
+      CatalogId: "CatalogId"
+      DataCatalogEncryptionSettings:
+        ConnectionPasswordEncryption:
+          KmsKeyId: "KmsKeyId"
+          ReturnConnectionPasswordEncrypted: True
+        EncryptionAtRest:
+          CatalogEncryptionMode: "SSE-KMS"
+          SseAwsKmsKeyId: "SseAwsKmsKeyId"

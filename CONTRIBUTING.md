@@ -41,9 +41,18 @@ and in aggregate solve a broader issue.
 
 ### Test where it matters
 
-1. Unit: Unit tests are stored in checkov/tests/. 
+1. Unit: Unit tests, including check tests, are stored in checkov/tests/. 
 2. E2E: End-to-end tests will help us establish if the feature is in high readiness. They are not required for simple 
 or straight forward features but will help us in evaluating the PR.
+
+#### Tests for new checks
+
+When you add a new check, please write a test for it. While there are many different ways that tests have been written in the past, we have standardized on [this](https://github.com/bridgecrewio/checkov/blob/master/tests/terraform/checks/resource/aws/test_IAMAdminPolicyDocument.py) format. The key points are:
+
+* The test defines templates as strings (in this case, in separate files, but hardcoding a string is also acceptable) and parses them using the runner. The configuration should NOT be hard-coded as an object, as in [this](https://github.com/bridgecrewio/checkov/blob/master/tests/terraform/checks/resource/aws/test_ALBListenerHTTPS.py) example. The reason is that parsers sometimes produce unexpected object structures, so it is quite common that hardcoding the object allows the test to pass but causes the check to be incorrect in practice.
+* The test explicitly lists which resources should pass and which should fail. Merely checking the count of passes and failures is not enough. While rare, in the past this has resulted in tests that pass but checks that are incorrect in practice.
+
+#### Running tests
 
 Continuous integration will run these tests either as pre-submits on PRs and post-submits against master branch. 
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
