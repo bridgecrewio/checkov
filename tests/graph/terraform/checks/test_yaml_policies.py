@@ -114,6 +114,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached(self):
         self.go("AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached")
 
+    def test_EncryptedEBSVolumeOnlyConnectedToEC2s(self):
+        self.go("EncryptedEBSVolumeOnlyConnectedToEC2s")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()
