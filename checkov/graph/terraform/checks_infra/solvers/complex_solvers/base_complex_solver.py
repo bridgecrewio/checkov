@@ -13,10 +13,23 @@ class BaseComplexSolver(BaseSolver):
         super().__init__(SolverType.COMPLEX)
 
     def get_operation(self, *args, **kwargs):
-        raise NotImplementedError()
+        predicates = []
+        for i, query in enumerate(self.queries):
+            predicates.append(query.get_operation(args[0]))
+        return self._get_operation(*predicates)
 
     def _get_operation(self, *args, **kwargs):
         raise NotImplementedError()
 
+    def _get_negative_op(self, *args):
+        return not self._get_operation(args)
+
     def run(self, graph_connector):
-        raise NotImplementedError()
+        all_vertices_resource_types = [data for _, data in graph_connector.nodes(data=True) if
+                                       self.resource_type_pred(data)]
+        passed_vertices = [data for data in all_vertices_resource_types if self.get_operation(data)]
+        failed_vertices = [resource for resource in all_vertices_resource_types if resource not in passed_vertices]
+        return passed_vertices, failed_vertices
+
+    def resource_type_pred(self, v):
+        return len(self.resource_types) == 0 or v.get('resource_type') in self.resource_types
