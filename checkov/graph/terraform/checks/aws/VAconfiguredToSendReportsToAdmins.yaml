@@ -1,9 +1,7 @@
 metadata:
   name: "Ensure that VA setting 'Also send email notifications to admins and subscription owners' is set for a SQL server"
   id: "CKV2_AZURE_5"
-  guidelines: ""
   category: "GENERAL_SECURITY"
-  severity: ""
 scope:
   provider: "Azure"
 definition:

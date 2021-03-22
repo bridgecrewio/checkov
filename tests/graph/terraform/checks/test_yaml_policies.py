@@ -63,6 +63,45 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_AMRClustersNotOpenToInternet(self):
+        self.go("AMRClustersNotOpenToInternet")
+
+    def test_AutoScallingEnabledELB(self):
+        self.go("AutoScallingEnabledELB")
+
+    def test_EC2hasVPC(self):
+        self.go("EC2hasVPC")
+    
+    def test_IAMGroupHasAtLeastOneUser(self):
+        self.go("IAMGroupHasAtLeastOneUser")
+
+    def test_IAMUsersAreMembersAtLeastOneGroup(self):
+        self.go("IAMUsersAreMembersAtLeastOneGroup")
+    
+    def test_DataExplorerEncryptionUsesCustomKey(self):
+        self.go("DataExplorerEncryptionUsesCustomKey")
+
+    def test_MSQLenablesCustomerManagedKey(self):
+        self.go("MSQLenablesCustomerManagedKey")
+
+    def test_PGSQLenablesCustomerManagedKey(self):
+        self.go("PGSQLenablesCustomerManagedKey")
+
+    def test_StorageLoggingIsEnabledForBlobService(self):
+        self.go("StorageLoggingIsEnabledForBlobService")
+
+    def test_StorageLoggingIsEnabledForTableService(self):
+        self.go("StorageLoggingIsEnabledForTableService")
+
+    def test_VMHasBackUpMachine(self):
+        self.go("VMHasBackUpMachine")
+
+    def test_SubnetHasACL(self):
+        self.go("SubnetHasACL")
+
+    def test_GKEClustersAreNotUsingDefaultServiceAccount(self):
+        self.go("GKEClustersAreNotUsingDefaultServiceAccount")
+
     def test_AzureStorageAccountsUseCustomerManagedKeyForEncryption(self):
         self.go("AzureStorageAccountsUseCustomerManagedKeyForEncryption")
 

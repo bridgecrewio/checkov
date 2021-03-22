@@ -1,8 +1,7 @@
 metadata:
   name: "Ensure VPC flow logging is enabled in all VPCs"
-  guidelines: ""
-  category: "Logging"
-  severity: ""
+  category: "LOGGING"
+  id: "CKV2_AWS_11"
 scope:
   provider: "AWS"
 definition:

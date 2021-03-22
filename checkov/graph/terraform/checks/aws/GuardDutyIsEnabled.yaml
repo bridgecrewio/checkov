@@ -1,9 +1,7 @@
 metadata:
   id: "CKV2_AWS_3"
   name: "Ensure GuardDuty is enbaled to specific org/region"
-  guidelines: ""
   category: "GENERAL_SECURITY"
-  severity: ""
 scope:
   provider: "AWS"
 definition:
