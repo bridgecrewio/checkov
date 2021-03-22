@@ -1,4 +1,6 @@
 from checkov.graph.terraform.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+from functools import reduce
+from operator import and_
 
 
 class AndSolver(BaseComplexSolver):
@@ -8,5 +10,4 @@ class AndSolver(BaseComplexSolver):
         super().__init__(queries, resource_types)
 
     def _get_operation(self, *args):
-        # TODO
-        raise NotImplementedError
+        return reduce(and_, args)
