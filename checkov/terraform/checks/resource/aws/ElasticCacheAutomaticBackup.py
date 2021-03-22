@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_negative_value_check import
 class ElasticCacheAutomaticBackup(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that Amazon ElastiCache Redis clusters have automatic backup turned on"
-        id = "CKV_AWS_112"
+        id = "CKV_AWS_113"
         supported_resources = ['aws_elasticache_cluster']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
