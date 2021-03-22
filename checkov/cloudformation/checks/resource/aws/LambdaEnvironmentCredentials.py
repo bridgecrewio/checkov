@@ -18,7 +18,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 if 'Variables' in environment.keys():
                     variables = environment['Variables']
                     for value in variables.values():
-                        if string_has_secrets(str(value)):
+                        if string_has_secrets(str(value), AWS):
                             return CheckResult.FAILED
 
         return CheckResult.PASSED
