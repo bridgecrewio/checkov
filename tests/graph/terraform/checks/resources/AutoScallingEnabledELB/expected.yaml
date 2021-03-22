@@ -1,0 +1,4 @@
+pass:
+  - "aws_autoscaling_attachment.test_ok_attachment"
+fail:
+  - "aws_autoscaling_attachment.test_bad_attachment"

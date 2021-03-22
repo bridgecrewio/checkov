@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 class RDSPubliclyAccessible(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure all data stored in the RDS bucket is not public accessible"
+        name = "Ensure all data stored in RDS is not publicly accessible"
         id = "CKV_AWS_17"
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.NETWORKING]

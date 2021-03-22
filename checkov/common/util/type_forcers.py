@@ -12,6 +12,13 @@ def force_int (var):
     except:
         return None
 
+def force_float (var):
+    try:
+        if not isinstance(var, float):
+            var = float(var)
+        return var
+    except:
+        return None
 
 def convert_str_to_bool(bool_str):
     if bool_str in ['true', '"true"', 'True', '"True"']:

@@ -1,0 +1,4 @@
+pass:
+  - "aws_network_interface.network_interface_ok"
+fail:
+  - "aws_network_interface.not_ok"

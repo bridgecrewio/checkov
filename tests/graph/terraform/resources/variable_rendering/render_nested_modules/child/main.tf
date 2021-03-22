@@ -1,0 +1,3 @@
+output "myoutput" {
+  value = "bar"
+}
