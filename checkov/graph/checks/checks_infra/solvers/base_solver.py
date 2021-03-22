@@ -4,8 +4,8 @@ from abc import abstractmethod
 class BaseSolver:
     operator = ''
 
-    def __init__(self, query_type):
-        self.query_type = query_type
+    def __init__(self, solver_type):
+        self.solver_type = solver_type
 
     @abstractmethod
     def get_operation(self, *args, **kwargs):

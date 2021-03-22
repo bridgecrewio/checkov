@@ -14,7 +14,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         resource_types = []
         connected_resources_types = []
         for sub_query in self.queries:
-            if sub_query.query_type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION]:
+            if sub_query.solver_type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION]:
                 resource_types.extend(sub_query.resource_types)
                 connected_resources_types.extend(sub_query.connected_resources_types)
         resource_types = list(set(resource_types))

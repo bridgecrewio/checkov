@@ -3,7 +3,7 @@ from checkov.graph.checks.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.graph.checks.checks_infra.enums import SolverType
 from checkov.graph.terraform.checks_infra.solvers import *
 
-operators_to_attributes_query_classes = {
+operators_to_attributes_solver_classes = {
     'equals': EqualsAttributeSolver,
     'not_equals': NotEqualsAttributeSolver,
     'exists': ExistsAttributeSolver,
@@ -18,26 +18,26 @@ operators_to_attributes_query_classes = {
     'not_ending_with': NotEndingWithAttributeSolver
 }
 
-operators_to_complex_query_classes = {
+operators_to_complex_solver_classes = {
     'and': AndSolver,
     'or': OrSolver,
 }
 
-operator_to_connection_query_classes = {
+operator_to_connection_solver_classes = {
     'exists': ConnectionExistsSolver,
     'not_exists': ConnectionNotExistsSolver
 }
 
-operator_to_complex_connection_query_classes = {
+operator_to_complex_connection_solver_classes = {
     'and': AndConnectionSolver,
     'or': OrConnectionSolver
 }
 
-operator_to_filter_query_classes = {
+operator_to_filter_solver_classes = {
     'within': WithinFilterSolver,
 }
 
-condition_type_to_query_type = {
+condition_type_to_solver_type = {
     '': SolverType.ATTRIBUTE,
     'attribute': SolverType.ATTRIBUTE,
     'connection': SolverType.CONNECTION,
@@ -84,7 +84,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                 check.connected_resources_types = connected_resources_type
 
             condition_type = raw_check.get('cond_type', '')
-            check.type = condition_type_to_query_type.get(condition_type)
+            check.type = condition_type_to_solver_type.get(condition_type)
             if condition_type == '':
                 check.operator = 'any'
             else:
@@ -102,11 +102,11 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                 sub_queries_solvers.append(self.get_check_solver(sub_query))
 
         type_to_solver = {
-            SolverType.COMPLEX_CONNECTION: operator_to_complex_connection_query_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.operator),
-            SolverType.COMPLEX: operators_to_complex_query_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.resource_types),
-            SolverType.ATTRIBUTE: operators_to_attributes_query_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value),
-            SolverType.CONNECTION: operator_to_connection_query_classes.get(check.operator, lambda *args: None)(check.resource_types, check.connected_resources_types),
-            SolverType.FILTER: operator_to_filter_query_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value)
+            SolverType.COMPLEX_CONNECTION: operator_to_complex_connection_solver_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.operator),
+            SolverType.COMPLEX: operators_to_complex_solver_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.resource_types),
+            SolverType.ATTRIBUTE: operators_to_attributes_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value),
+            SolverType.CONNECTION: operator_to_connection_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.connected_resources_types),
+            SolverType.FILTER: operator_to_filter_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value)
         }
 
         solver = type_to_solver.get(check.type)
@@ -116,7 +116,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
 
 
 def get_complex_operator(raw_check):
-    for operator in operators_to_complex_query_classes.keys():
+    for operator in operators_to_complex_solver_classes.keys():
         if raw_check.get(operator):
             return operator
     return None
