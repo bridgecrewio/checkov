@@ -1,4 +1,6 @@
 import json
+import logging
+
 import yaml
 
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -38,6 +40,7 @@ def is_json(data):
     try:
         json.loads(data)
     except ValueError:
+        logging.debug(f"could not parse json data: {data}")
         return False
     return True
 
@@ -46,6 +49,7 @@ def is_yaml(data):
     try:
         yaml.safe_load(data)
     except yaml.YAMLError:
+        logging.debug(f"could not parse yaml data: {data}")
         return False
     return True
 
