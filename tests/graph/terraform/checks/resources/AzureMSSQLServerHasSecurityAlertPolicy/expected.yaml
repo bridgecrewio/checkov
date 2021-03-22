@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_sql_server.sql_server_good_1"
+  - "azurerm_sql_server.sql_server_good_2"
+fail:
+  - "azurerm_sql_server.sql_server_bad_1"
