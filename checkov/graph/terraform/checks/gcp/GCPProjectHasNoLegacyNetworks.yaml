@@ -1,11 +1,7 @@
 metadata:
   id: "CKV2_GCP_10"
   name: "Ensure legacy networks do not exist for a project"
-  category: "NETWORKING"
-  supported_resources:
-    - google_project
-scope:
-  provider: "GCP"
+  category: "Networking"
 definition:
   and:
     - cond_type: filter

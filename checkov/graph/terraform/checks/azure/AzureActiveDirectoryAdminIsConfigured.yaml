@@ -2,10 +2,6 @@ metadata:
   id: "CKV2_AZURE_7"
   name: "Ensure that Azure Active Directory Admin is configured"
   category: "GENERAL_SECURITY"
-  supported_resources:
-    - azurerm_sql_server
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

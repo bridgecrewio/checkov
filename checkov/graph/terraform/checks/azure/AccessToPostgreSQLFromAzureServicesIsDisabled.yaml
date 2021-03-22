@@ -2,10 +2,6 @@ metadata:
   id: "CKV2_AZURE_6"
   name: "Ensure 'Allow access to Azure services' for PostgreSQL Database Server is disabled"
   category: "GENERAL_SECURITY"
-  supported_resources:
-    - azurerm_sql_server
-scope:
-  provider: "Azure"
 definition:
   and:
     - cond_type: filter

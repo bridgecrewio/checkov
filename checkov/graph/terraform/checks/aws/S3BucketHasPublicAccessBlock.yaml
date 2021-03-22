@@ -2,10 +2,6 @@ metadata:
   name: "Ensure that S3 bucket has a Public Access block"
   category: "Networking"
   id: "CKV2_AWS_6"
-  supported_resources:
-    - "aws_s3_bucket"
-scope:
-  provider: "AWS"
 definition:
   and:
     - resource_types:

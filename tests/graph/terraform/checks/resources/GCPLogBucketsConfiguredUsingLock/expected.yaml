@@ -1,0 +1,11 @@
+pass:
+  - "google_logging_organization_sink.org_sink_good_1"
+  - "google_logging_folder_sink.folder_sink_good_1"
+  - "google_logging_project_sink.project_sink_good_1"
+fail:
+  - "google_logging_organization_sink.org_sink_bad_1"
+  - "google_logging_organization_sink.org_sink_bad_2"
+  - "google_logging_folder_sink.folder_sink_bad_1"
+  - "google_logging_folder_sink.folder_sink_bad_2"
+  - "google_logging_project_sink.project_sink_bad_1"
+  - "google_logging_project_sink.project_sink_bad_2"
