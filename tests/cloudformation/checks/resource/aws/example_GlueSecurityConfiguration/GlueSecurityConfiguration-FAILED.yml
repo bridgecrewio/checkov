@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      Name: Name
+      EncryptionConfiguration:
+        CloudWatchEncryption: 
+          CloudWatchEncryptionMode: DISABLED
+          KmsKeyArn: KmsKeyArn
+        JobBookmarksEncryption: 
+          JobBookmarksEncryptionMode: CSE-KMS
+          KmsKeyArn: KmsKeyArn
+        S3Encryptions: 
+          KmsKeyArn: KmsKeyArn
+          S3EncryptionMode: SSE-KMS
+  Resource1:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      Name: Name
+      EncryptionConfiguration:
+        CloudWatchEncryption: 
+          CloudWatchEncryptionMode: DISABLED
+          KmsKeyArn: KmsKeyArn
+        JobBookmarksEncryption: 
+          JobBookmarksEncryptionMode: DISABLED
+          KmsKeyArn: KmsKeyArn
+        S3Encryptions: 
+          KmsKeyArn: KmsKeyArn
+          S3EncryptionMode: DISABLED
+  Resource2:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      Name: Name
+      EncryptionConfiguration:
+        CloudWatchEncryption: 
+          CloudWatchEncryptionMode: SSE-KMS
+          KmsKeyArn: KmsKeyArn
+        JobBookmarksEncryption: 
+          JobBookmarksEncryptionMode: CSE-KMS
+          KmsKeyArn: KmsKeyArn
+  Resource3:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      Name: Name
+      EncryptionConfiguration:
+        S3Encryptions: 
+          KmsKeyArn: DISABLED
+          S3EncryptionMode: SSE-KMS
