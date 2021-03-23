@@ -259,7 +259,13 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	
 ...
 ```
+To skip multiple checks, add each as a new line.
 
+```
+  #checkov:skip=CKV_AWS_52
+  #checkov:skip=CKV_AWS_20:The bucket is a public static content host
+```
+  
 To suppress checks in Kubernetes manifests, annotations are used with the following format:
 `checkov.io/skip#: <check_id>=<suppression_comment>`
 
