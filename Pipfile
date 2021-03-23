@@ -35,7 +35,7 @@ tqdm = "*"
 update_checker = "*"
 semantic_version = "*"
 packaging = "*"
-cloudsplaining = "*"
+cloudsplaining = ">=0.3.2"
 
 [requires]
 python_version = "3.7"
