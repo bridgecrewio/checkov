@@ -56,18 +56,7 @@ class Block:
            If the attributes are not a primitive type, they are converted to strings.
            """
         base_attributes = self.get_base_attributes()
-        for attribute_key in list(self.attributes.keys()):
-            attribute_value = self.attributes[attribute_key]
-            if type(attribute_value) is list and len(attribute_value) == 1:
-                attribute_value = attribute_value[0]
-            if type(attribute_value) is dict or type(attribute_value) is list:
-                inner_attributes = get_inner_attributes(attribute_key, attribute_value)
-                base_attributes.update(inner_attributes)
-            if attribute_key == 'self':
-                base_attributes['self_'] = attribute_value
-                continue
-            else:
-                base_attributes[attribute_key] = attribute_value
+        self.get_origin_attributes(base_attributes)
 
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
@@ -91,6 +80,20 @@ class Block:
             del base_attributes['changed_attributes']
 
         return base_attributes
+
+    def get_origin_attributes(self, base_attributes):
+        for attribute_key in list(self.attributes.keys()):
+            attribute_value = self.attributes[attribute_key]
+            if type(attribute_value) is list and len(attribute_value) == 1:
+                attribute_value = attribute_value[0]
+            if type(attribute_value) is dict or type(attribute_value) is list:
+                inner_attributes = get_inner_attributes(attribute_key, attribute_value)
+                base_attributes.update(inner_attributes)
+            if attribute_key == 'self':
+                base_attributes['self_'] = attribute_value
+                continue
+            else:
+                base_attributes[attribute_key] = attribute_value
 
     def get_hash(self):
         attributes_dict = self.get_attribute_dict()

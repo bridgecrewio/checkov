@@ -1,3 +1,5 @@
+import pprint
+from typing import List, Tuple
 from unittest import TestCase
 
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -6,7 +8,7 @@ from checkov.graph.terraform.utils.utils import replace_map_attribute_access_wit
     VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards
 
 
-class Test(TestCase):
+class TestUtils(TestCase):
     def test_find_non_literal_values(self):
         aliases = {'aws': {CustomAttributes.BLOCK_TYPE: BlockType.PROVIDER}}
         str_value = 'aws.east1'
@@ -60,6 +62,14 @@ class Test(TestCase):
         actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
         self.assertEqual(expected_config, actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
 
+    def test_update_dictionary_locals(self):
+        origin_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
+        key_to_update = 'acl'
+        new_value = ['public-read']
+        expected_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
+        actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
+        self.assertEqual(expected_config, actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
+
     def test_generate_possible_strings_from_wildcards(self):
         origin_string = "a.*.b.*.c.*"
         expected_results = [
@@ -77,3 +87,82 @@ class Test(TestCase):
         results = generate_possible_strings_from_wildcards(origin_string=origin_string, max_entries=2)
         results.sort()
         self.assertEqual(expected_results, results)
+
+    def test_find_var_blocks(self):
+        cases: List[Tuple[str, List[VertexReference]]] = [
+            (
+                "${local.one}",
+                [
+                    VertexReference(BlockType.LOCALS, sub_parts=["one"], origin_value="local.one")
+                ]
+            ),
+            (
+                "${local.NAME[foo]}-${local.TAIL}${var.gratuitous_var_default}",
+                [
+                    VertexReference(BlockType.LOCALS, sub_parts=["NAME"], origin_value="local.NAME"),
+                    VertexReference(BlockType.LOCALS, sub_parts=["TAIL"], origin_value="local.TAIL"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"], origin_value="var.gratuitous_var_default"),
+                ]
+            ),
+            # Ordered returning of sub-vars and then outer var.
+            (
+                "${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+                [
+                    VertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
+                    VertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"], origin_value="local.common_data_tags"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
+                                    origin_value="var.ENVIRONMENT"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
+                                    origin_value="var.REGION"),
+                ],
+            ),
+            (
+                "${merge(${local.common_tags},${local.common_data_tags},{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
+                [
+                    VertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
+                    VertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"],
+                                    origin_value="local.common_data_tags"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
+                                    origin_value="var.ENVIRONMENT"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
+                                    origin_value="var.REGION"),
+                ],
+            ),
+            (
+                '${merge(var.tags, map("Name", "${var.name}", "data_classification", "none"))}',
+                [
+                    VertexReference(BlockType.VARIABLE, sub_parts=["tags"],
+                                    origin_value="var.tags"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["name"],
+                                    origin_value="var.name"),
+                ]
+            ),
+            (
+                '${var.metadata_http_tokens_required ? "required" : "optional"}',
+                [
+                    VertexReference(BlockType.VARIABLE, sub_parts=["metadata_http_tokens_required"],
+                                    origin_value="var.metadata_http_tokens_required"),
+                ]
+            ),
+            (
+                '${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}',
+                [
+                    VertexReference(BlockType.LOCALS, sub_parts=["NAME"],
+                                    origin_value="local.NAME"),
+                    VertexReference(BlockType.MODULE, sub_parts=["bucket", "bucket_name"],
+                                    origin_value="module.bucket.bucket_name"),
+                    VertexReference(BlockType.LOCALS, sub_parts=["TAIL"],
+                                    origin_value="local.TAIL"),
+                    VertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"],
+                                    origin_value="var.gratuitous_var_default"),
+                ]
+            ),
+        ]
+        for case in cases:
+            actual = get_referenced_vertices_in_value(value=case[0], aliases={}, resources_types=[])
+            assert actual == case[1], \
+                f"Case \"{case[0]}\" failed ❌:\n" \
+                f"  Expected: \n{pprint.pformat([str(c) for c in case[1]], indent=2)}\n\n" \
+                f"  Actual: \n{pprint.pformat([str(c) for c in actual], indent=2)}"
+            print(f"Case \"{case[0]}: ✅")
+

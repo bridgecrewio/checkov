@@ -70,10 +70,9 @@ class TestRenderer(TestCase):
         graph_manager = GraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
-        expected_output_bucket_acl = {"value": "z"}
         expected_aws_instance = {"instance_type": "bar"}
-
         self.compare_vertex_attributes(local_graph, expected_aws_instance, BlockType.RESOURCE, "aws_instance.example")
+        expected_output_bucket_acl = {"value": "z"}
         self.compare_vertex_attributes(local_graph, expected_output_bucket_acl, BlockType.OUTPUT,  "bucket_acl")
 
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
@@ -129,13 +128,8 @@ class TestRenderer(TestCase):
         graph_manager = GraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
-        expected_aws_lambda_permission = {'count': '${length([])}', 'statement_id': 'test_statement_id', 'action': 'lambda:InvokeFunction', 'function_name': 'my-func', 'principal': 'dumbeldor', 'resource_type': 'aws_lambda_permission'}
+        expected_aws_lambda_permission = {'count': 0, 'statement_id': 'test_statement_id', 'action': 'lambda:InvokeFunction', 'function_name': 'my-func', 'principal': 'dumbeldor', 'resource_type': 'aws_lambda_permission'}
 
         self.compare_vertex_attributes(local_graph, expected_aws_lambda_permission, BlockType.RESOURCE.value, "aws_lambda_permission.test_lambda_permissions")
 
-    @staticmethod
-    def find_vertex_with_block_type(local_graph, block_type):
-        for vertex in local_graph.vertices:
-            if vertex.block_type == block_type:
-                return vertex
 

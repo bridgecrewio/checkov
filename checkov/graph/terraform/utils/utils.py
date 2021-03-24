@@ -33,6 +33,9 @@ class VertexReference:
             return NotImplemented
         return self.block_type == other.block_type and self.sub_parts == other.sub_parts and self.origin_value == other.origin_value
 
+    def __str__(self):
+        return f"{self.block_type} sub_parts = {self.sub_parts}, origin = {self.origin_value}"
+
 
 def get_vertices_references(str_value, aliases, resources_types):
     vertices_references = []
@@ -118,11 +121,14 @@ def remove_function_calls_from_str(str_value):
 
 
 def remove_index_pattern_from_str(str_value):
-    return re.sub(INDEX_PATTERN, '', str_value)
+    str_value = re.sub(INDEX_PATTERN, '', str_value)
+    str_value = str_value.replace("[", " [ ")
+    str_value = str_value.replace("]", " ] ")
+    return str_value
 
 
-def remove_interpolation(str_value):
-    return re.sub(INTERPOLATION_PATTERN, ' ', str_value)
+def remove_interpolation(str_value, replace_str=' '):
+    return re.sub(INTERPOLATION_PATTERN, replace_str, str_value)
 
 
 def replace_map_attribute_access_with_dot(str_value):
@@ -250,6 +256,8 @@ def update_dictionary_attribute(config, key_to_update, new_value):
         if config.get(key_parts[0]) is not None:
             key = key_parts[0]
             if len(key_parts) == 1:
+                if isinstance(config[key], list) and not isinstance(new_value, list):
+                    new_value = [new_value]
                 config[key] = new_value
                 return config
             else:
@@ -262,7 +270,6 @@ def update_dictionary_attribute(config, key_to_update, new_value):
             config[i] = update_dictionary_attribute(config[i], key_to_update, new_value)
 
     return config
-
 
 def join_trimmed_strings(char_to_join, str_lst, num_to_trim):
     return char_to_join.join(str_lst[:len(str_lst) - num_to_trim])

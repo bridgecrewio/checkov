@@ -1,5 +1,8 @@
 from unittest import TestCase
-from checkov.graph.terraform.variable_rendering.evaluate_terraform import evaluate_terraform
+
+from checkov.graph.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
+    remove_interpolation
+from checkov.terraform.parser_utils import find_var_blocks
 
 
 class TestTerraformEvaluation(TestCase):
@@ -144,6 +147,15 @@ class TestTerraformEvaluation(TestCase):
         expected = ['postgresql-tcp', '']
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_concat_dictionaries(self):
+        input_str = "concat([{'key':'a','value':'a'},{'key':'b','value':'b'}, \"{'key':'d','value':'d'}\"],,[{'key':'c','value':'c'}],)"
+        expected = [{'key':'a','value':'a'},{'key':'b','value':'b'},"{'key':'d','value':'d'}",{'key':'c','value':'c'}]
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = 'concat([\'postgresql-tcp\'],[],[\'\'])'
+        expected = ['postgresql-tcp', '']
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
     def test_distinct(self):
         input_str = 'distinct(["a", "b", "a", "c", "d", "b"])'
         expected = ['a', 'b', 'c', 'd']
@@ -191,6 +203,17 @@ class TestTerraformEvaluation(TestCase):
         expected = {"a":"b", "c":"z","e":"f"}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_merge2(self):
+        input_str = 'merge({"a"="b", "c"="d"}, {"e"="f", "c"="z"}, {"r"="o", "t"="m"})'
+        expected = {"a":"b", "c":"z","e":"f","r":"o","t":"m"}
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_merge_multiline(self):
+        input_str = "merge(\n{'Tag1':'one','Tag2':'two'},\n{'Tag4' = 'four'},\n{'Tag2'='multiline_tag2'})"
+        expected = {'Tag1': 'one', 'Tag2': 'multiline_tag2', 'Tag4': 'four'}
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+
     def test_reverse(self):
         input_str = 'reverse([1, 2, 3])'
         expected = [3, 2, 1]
@@ -201,7 +224,54 @@ class TestTerraformEvaluation(TestCase):
         expected = ['postgresql-tcp']
         self.assertEqual(expected, evaluate_terraform(input_str))
 
-    def test_condition(self):
+    def test_condition2(self):
         input_str = 'us-west-2 == "something to produce false" ? true : false'
         expected = 'false'
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_complex_merge(self):
+        cases = [
+            ("merge(local.one, local.two)",
+             "merge(local.one, local.two)"),
+            ("merge({\"Tag4\" = \"four\"}, {\"Tag5\" = \"five\"})",
+             {"Tag4" : "four", "Tag5" : "five"}),
+            ("merge({\"a\"=\"b\"}, {\"b\"=[1,2], \"c\"=\"z\"}, {\"d\"=3})",
+             {"a":"b", "b":[1,2], "c":"z", "d":3}),
+            ('merge({\'a\': \'}, evil\'})',
+             {"a": '}, evil'}),
+            ('merge(local.common_tags,,{\'Tag4\': \'four\'},,{\'Tag2\': \'Dev\'},)',
+             'merge(local.common_tags,{\'Tag4\': \'four\'},{\'Tag2\': \'Dev\'},)')
+        ]
+        for case in cases:
+            input_str = case[0]
+            expected = input_str if case[1] is None else case[1]
+            actual = evaluate_terraform(input_str)
+            assert actual == expected, f"Case \"{input_str}\" failed. Expected: {expected}  Actual: {actual}"
+
+    def test_map_access(self):
+        input_str = '{\'module-input-bucket\':\'mapped-bucket-name\'}[module-input-bucket]-works-yay'
+        expected = 'mapped-bucket-name-works-yay'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = '{"module-input-bucket":"mapped-bucket-name"}[module-input-bucket]-works-yay'
+        expected = 'mapped-bucket-name-works-yay'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_replace_with_map(self):
+        original_str = '{\'module-input-bucket\':\'mapped-bucket-name\'}[module.bucket.name]-works-yay'
+        replaced = replace_string_value(original_str, "module.bucket.name", "module-input-bucket", keep_origin=False)
+        expected = '{\'module-input-bucket\':\'mapped-bucket-name\'}[module-input-bucket]-works-yay'
+        self.assertEqual(expected, replaced)
+
+    def test_replace_interpolation(self):
+        original_str = '${mapped-bucket-name}[module.bucket.name]-works-yay'
+        replaced = replace_string_value(original_str, "module.bucket.name", "module-input-bucket", keep_origin=False)
+        expected = 'mapped-bucket-name[module-input-bucket]-works-yay'
+        self.assertEqual(expected, replaced)
+
+    def test_remove_interpolation1(self):
+        original_str = '${merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-${local.static1}-${local.static2}\'})}'
+        x = find_var_blocks(original_str)
+        replaced = remove_interpolation(original_str)
+        expected = 'merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-local.static1-local.static2\'})'
+        self.assertEqual(expected, replaced)

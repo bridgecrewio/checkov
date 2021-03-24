@@ -57,7 +57,7 @@ class Module:
                 local_block = Block(
                     block_type=BlockType.LOCALS,
                     name=name,
-                    config=blocks_section,
+                    config={name: blocks_section[name]},
                     path=path,
                     attributes={name: blocks_section[name]},
                     source=self.source
