@@ -10,7 +10,6 @@ verify_ssl = true
 pytest = "*"
 coverage ="*"
 coverage-badge = "*"
-pipenv-setup = "*"
 GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"

@@ -103,11 +103,11 @@ class Runner(BaseRunner):
         if not definition:
             logging.debug("Empty definition, skipping run (root_folder=%s)", root_folder)
             return
-        for block_type in definition.keys():
-            if block_type in CHECK_BLOCK_TYPES:
-                self.run_block(definition[block_type], definitions_context,
-                               full_file_path, root_folder, report,
-                               scanned_file, block_type, runner_filter, None, module_referrer)
+        block_types = set(definition.keys())
+        for block_type in block_types & CHECK_BLOCK_TYPES:
+            self.run_block(definition[block_type], definitions_context,
+                           full_file_path, root_folder, report,
+                           scanned_file, block_type, runner_filter, None, module_referrer)
 
     def run_block(self, entities,
                   definition_context,

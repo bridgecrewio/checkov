@@ -49,7 +49,7 @@ setup(
         "tqdm",
         "update_checker",
         "semantic_version",
-        "packaging"
+        "packaging",
     ],
     license="Apache License 2.0",
     name="checkov",
