@@ -155,7 +155,6 @@ class LocalGraph:
                                                                                    vertex.path)
                         if dest_node_index > -1 and origin_node_index > -1:
                             if vertex_reference.block_type == BlockType.MODULE:
-                                self._create_edge(origin_node_index, dest_node_index, attribute_key)
                                 try:
                                     self._connect_module(sub_values, attribute_key, self.vertices[dest_node_index],
                                                          origin_node_index)
