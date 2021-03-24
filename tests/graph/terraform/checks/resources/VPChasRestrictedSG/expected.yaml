@@ -1,0 +1,4 @@
+pass:
+  - "aws_vpc.ok_vpc"
+fail:
+  - "aws_vpc.not_ok_vpc"

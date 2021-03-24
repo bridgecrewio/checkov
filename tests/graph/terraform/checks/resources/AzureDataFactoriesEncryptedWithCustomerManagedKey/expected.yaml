@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_data_factory.data_factory_good"
+fail:
+  - "azurerm_data_factory.data_factory_bad"

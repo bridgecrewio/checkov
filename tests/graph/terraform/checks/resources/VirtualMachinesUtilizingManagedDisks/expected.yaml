@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_virtual_machine.virtual_machine_good"
+fail:
+  - "azurerm_virtual_machine.virtual_machine_bad"

@@ -1,0 +1,12 @@
+metadata:
+  id: "NameStartingWith"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_subnet"
+  attribute: "tags.Name"
+  operator: "not_starting_with"
+  value: "first"
+

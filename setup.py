@@ -14,7 +14,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 logger = logging.getLogger(__name__)
 spec = util.spec_from_file_location(
-    "checkov.version", os.path.join("checkov", "version.py")
+    "checkov2.version", os.path.join("checkov", "version.py")
 )
 # noinspection PyUnresolvedReferences
 mod = util.module_from_spec(spec)
@@ -49,18 +49,19 @@ setup(
         "tqdm",
         "update_checker",
         "semantic_version",
-        "packaging"
+        "packaging",
+        "networkx"
     ],
     license="Apache License 2.0",
-    name="checkov",
+    name="checkov2",
     version=version,
     python_requires=">=3.7",
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
-    url="https://github.com/bridgecrewio/checkov",
+    url="https://github.com/nimrodkor/checkov",
     packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
-    scripts=["bin/checkov","bin/checkov.cmd"],
+    scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[

@@ -80,10 +80,10 @@ class Runner(BaseRunner):
 
         return report
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, external_definitions_context=None):
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, definitions_context=None):
         parser_registry.reset_definitions_context()
-        if external_definitions_context:
-            definitions_context = external_definitions_context
+        if definitions_context:
+            self.definitions_context = definitions_context
         else:
             definitions_context = {}
             for definition in self.tf_definitions.items():
@@ -95,7 +95,7 @@ class Runner(BaseRunner):
             abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
-            self.run_all_blocks(definition, definitions_context, full_file_path, root_folder, report,
+            self.run_all_blocks(definition, self.definitions_context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,

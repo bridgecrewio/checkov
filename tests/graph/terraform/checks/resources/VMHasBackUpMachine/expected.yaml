@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_virtual_machine.example_ok"
+fail:
+  - "azurerm_virtual_machine.example_not_ok"

@@ -1,0 +1,29 @@
+metadata:
+  name: "Ensure that S3 bucket has a Public Access block"
+  category: "Networking"
+  id: "CKV2_AWS_6"
+definition:
+  and:
+    - resource_types:
+        - aws_s3_bucket
+      connected_resource_types:
+        - aws_s3_bucket_public_access_block
+      operator:  exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_s3_bucket
+      operator: within
+    - cond_type: attribute
+      attribute: block_public_acls
+      value: true
+      operator: equals
+      resource_types:
+        - aws_s3_bucket_public_access_block
+    - cond_type: attribute
+      attribute: block_public_policy
+      value: true
+      operator: equals
+      resource_types:
+        - aws_s3_bucket_public_access_block
