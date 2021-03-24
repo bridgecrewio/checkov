@@ -27,7 +27,6 @@ setup(
             "pytest==5.3.1",
             "coverage",
             "coverage-badge",
-            "pipenv-setup",
             "GitPython==3.1.7",
             "bandit"
         ]
@@ -42,7 +41,7 @@ setup(
         "junit-xml",
         "dpath>=1.5.0,<2",
         "pyyaml>=5.4.1",
-        "boto3",
+        "boto3==1.17.27",
         "GitPython",
         "six==1.15.0",
         "jmespath",
