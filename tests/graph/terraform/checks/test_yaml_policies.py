@@ -153,6 +153,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_EIPAllocatedToVPCAttachedEC2(self):
         self.go("EIPAllocatedToVPCAttachedEC2")
 
+    def test_EFSAddedBackup(self):
+        self.go("EFSAddedBackup")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()
