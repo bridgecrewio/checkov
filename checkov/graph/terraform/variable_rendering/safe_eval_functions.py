@@ -3,6 +3,8 @@ import re
 from functools import reduce
 from math import ceil, floor, log
 
+from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tolist, tomap, tostring
+
 """
 This file contains a custom implementation of the builtin `eval` function.
 `eval` is not a safe function, because it can execute *every* command, 
@@ -96,6 +98,20 @@ def sort(lst):
     return lst
 
 
+def merge(*args):
+    res = {}
+    for d in args:
+        res = {**res, **d}
+    return res
+
+
+def wrap_func(f, *args):
+    res = f(*args)
+    if res == FUNCTION_FAILED:
+        raise ValueError
+    return res
+
+
 SAFE_EVAL_FUNCTIONS = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
 
@@ -145,8 +161,18 @@ SAFE_EVAL_DICT['keys'] = lambda map_input: list(map_input.keys())
 SAFE_EVAL_DICT['length'] = len
 SAFE_EVAL_DICT['list'] = lambda *args: list(args)
 SAFE_EVAL_DICT['lookup'] = lambda map_input, key, default: map_input.get(key, default)
+SAFE_EVAL_DICT['map'] = lambda *args: wrap_func(create_map, list(args))
 SAFE_EVAL_DICT['matchkeys'] = matchkeys
-SAFE_EVAL_DICT['merge'] = lambda dict1, dict2: {**dict1, **dict2}
+SAFE_EVAL_DICT['merge'] = merge
 # SAFE_EVAL_DICT['range']
 SAFE_EVAL_DICT['reverse'] = reverse
 SAFE_EVAL_DICT['sort'] = sort
+
+
+# type conversion
+SAFE_EVAL_DICT['tobool'] = lambda arg: wrap_func(tobool, arg)
+SAFE_EVAL_DICT['tolist'] = lambda *args: list(*args)
+SAFE_EVAL_DICT['tomap'] = lambda arg: wrap_func(tomap, str(arg))
+SAFE_EVAL_DICT['tonumber'] = lambda arg: arg if type(arg) in [int, float] else wrap_func(tonumber, arg)
+SAFE_EVAL_DICT['toset'] = lambda origin: set(origin)
+SAFE_EVAL_DICT['tostring'] = lambda arg: arg if isinstance(arg, str) else wrap_func(tostring, str(arg))

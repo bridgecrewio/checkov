@@ -84,9 +84,8 @@ class LocalGraph:
                             undetermined_values.append(
                                 {'module_vertex_id': module_vertex_id, 'attribute_name': attribute_name,
                                  'variable_vertex_id': variable_vertex_id})
-                        else:
-                            self.update_vertex_attribute(variable_vertex_id, 'default', attribute_value,
-                                                         module_vertex_id, attribute_name)
+                        self.update_vertex_attribute(variable_vertex_id, 'default', attribute_value,
+                                                     module_vertex_id, attribute_name)
         return undetermined_values
 
     def process_undetermined_values(self, undetermined_values):
@@ -305,7 +304,19 @@ class LocalGraph:
         res = []
         for vertex in end_vertices:
             res.extend(self.in_edges.get(vertex, []))
-        return res
+        return self.sort_edged_by_dest_out_degree(res)
+
+    def sort_edged_by_dest_out_degree(self, edges):
+        edged_by_out_degree = {}
+        for edge in edges:
+            dest_out_degree = len(self.out_edges.get(edge.dest))
+            if not edged_by_out_degree.get(dest_out_degree):
+                edged_by_out_degree[dest_out_degree] = []
+            edged_by_out_degree[dest_out_degree].append(edge)
+        sorted_edges = []
+        for degree in sorted(edged_by_out_degree.keys()):
+            sorted_edges.extend(edged_by_out_degree[degree])
+        return sorted_edges
 
     def update_vertex_attribute(self, vertex_index, attribute_key, attribute_value, change_origin_id,
                                 attribute_at_dest):
@@ -320,14 +331,24 @@ class LocalGraph:
         for vertex in self.vertices:
             changed_attributes = list(vertex.changed_attributes.keys())
             changed_attributes = filter_sub_keys(changed_attributes)
-            updated_config = deepcopy(vertex.config)
+            self.update_vertex_config(vertex, changed_attributes)
+
+    @staticmethod
+    def update_vertex_config(vertex, changed_attributes):
+        updated_config = deepcopy(vertex.config)
+        if vertex.block_type != BlockType.LOCALS:
             for name_part in vertex.name.split('.'):
                 updated_config = updated_config.get(name_part)
-            for changed_attribute in changed_attributes:
-                new_value = vertex.attributes.get(changed_attribute, None)
-                if new_value is not None:
-                    updated_config = update_dictionary_attribute(updated_config, changed_attribute, [new_value])
+        for changed_attribute in changed_attributes:
+            new_value = vertex.attributes.get(changed_attribute, None)
+            if new_value is not None:
+                if vertex.block_type == BlockType.LOCALS:
+                    changed_attribute = changed_attribute.replace(vertex.name + ".", '')
+                updated_config = update_dictionary_attribute(updated_config, changed_attribute, new_value)
 
+        if len(changed_attributes) > 0:
+            if vertex.block_type == BlockType.LOCALS:
+                updated_config = updated_config.get(vertex.name)
             update_dictionary_attribute(vertex.config, vertex.name, updated_config)
 
     def get_resources_types_in_graph(self):
