@@ -4,9 +4,11 @@ simple_types = [str, int, float, bool]
 
 
 def _is_simple_type(obj):
-    for simple_type in simple_types:
-        if isinstance(obj, simple_type) or obj == None:
-            return True
+    obj_type = type(obj)
+    if obj is None:
+        return True
+    if obj_type in simple_types:
+        return True
     return False
 
 

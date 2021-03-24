@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Resource0:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      Name: Name
+      EncryptionConfiguration:
+        CloudWatchEncryption: 
+          CloudWatchEncryptionMode: SSE-KMS
+          KmsKeyArn: KmsKeyArn
+        JobBookmarksEncryption: 
+          JobBookmarksEncryptionMode: CSE-KMS
+          KmsKeyArn: KmsKeyArn
+        S3Encryptions: 
+          KmsKeyArn: KmsKeyArn
+          S3EncryptionMode: SSE-KMS
