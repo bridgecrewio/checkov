@@ -348,8 +348,8 @@ class Parser:
             made_change = False
             for key, value in list(key_value_iterator()):       # Copy to list to allow deletion
                 new_context = f"{context}/{key}" if len(context) != 0 else key
-
-                if isinstance(value, str):
+                value_type = type(value)
+                if value_type is str:
                     altered_value = value
 
                     had_var_block_match = False
@@ -411,7 +411,7 @@ class Parser:
                         LOGGER.debug(f"Resolve: %s --> %s", value, altered_value)
                         data_map[key] = altered_value
                         made_change = True
-                elif isinstance(value, dict):
+                elif value_type is dict:
                     if self._process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path,
                                                           var_value_and_file_map,
                                                           locals_values, resource_list,
@@ -419,7 +419,7 @@ class Parser:
                                                           new_context):
                         made_change = True
 
-                elif isinstance(value, list):
+                elif value_type is list:
                     if len(value) > 0 and value[0] != value:
                         if process_items_helper(lambda: enumerate(value), value, new_context, True):
                             made_change = True
@@ -695,13 +695,13 @@ def _handle_indexing(reference: str,
         if value_is_a_tuple:
             value_tuple = value
             value = value_tuple[0]
-
-        if isinstance(value, dict):
+        value_type = type (value)
+        if value_type is dict:
             if value_is_a_tuple:
                 return value.get(reference_val), value_tuple[1]
             else:
                 return value.get(reference_val)
-        elif isinstance(value, list):
+        elif value_type is list:
             try:
                 if value_is_a_tuple:
                     return value[int(reference_val)], value_tuple[1]
@@ -841,18 +841,19 @@ def is_acceptable_module_param(value: Any) -> bool:
     unresolved var, local or module references because they can't be resolved from the module, so they need
     to be resolved prior to being passed down.
     """
-    if isinstance(value, dict):
+    value_type = type(value)
+    if value_type is dict:
         for k, v in value.items():
             if not is_acceptable_module_param(v) or not is_acceptable_module_param(k):
                 return False
         return True
-    if isinstance(value, set) or isinstance(value, list):
+    if value_type is set or value_type is list:
         for v in value:
             if not is_acceptable_module_param(v):
                 return False
         return True
 
-    if not isinstance(value, str):
+    if not value_type is str:
         return True
 
     for vbm in find_var_blocks(value):
