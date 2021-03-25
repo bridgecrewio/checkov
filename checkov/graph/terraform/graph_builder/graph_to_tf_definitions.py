@@ -2,6 +2,7 @@ import logging
 import os
 from typing import List
 
+from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
 
 
@@ -15,6 +16,8 @@ def convert_graph_vertices_to_tf_definitions(vertices: List[Block], root_folder)
             continue
 
         block_type = vertex.block_type.value
+        if block_type == BlockType.TF_VARIABLE:
+            continue
         if tf_definitions.get(block_path) is None:
             tf_definitions[block_path] = {}
         if tf_definitions.get(block_path).get(block_type) is None:

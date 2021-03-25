@@ -132,8 +132,8 @@ class TestLocalGraph(TestCase):
             [resource_type, resource_name] = decode_graph_property_value(
                 attribute_dict[CustomAttributes.ID]).split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
-                is_encrypted = json.loads(attribute_dict[CustomAttributes.ENCRYPTION])
-                details = json.loads(attribute_dict[CustomAttributes.ENCRYPTION_DETAILS])
+                is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
+                details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
                 self.assertEqual(is_encrypted, EncryptionValues.ENCRYPTED.value if resource_name.startswith("encrypted")
                                  else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
                 if is_encrypted == EncryptionValues.ENCRYPTED.value:

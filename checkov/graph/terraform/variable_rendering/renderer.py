@@ -4,7 +4,8 @@ from copy import deepcopy
 
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, run_function_multithreaded, calculate_hash, join_trimmed_strings, remove_index_pattern_from_str
+from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, run_function_multithreaded, \
+    calculate_hash, join_trimmed_strings, remove_index_pattern_from_str, extend_referenced_vertices_with_tf_vars
 from checkov.graph.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
 
 
@@ -66,6 +67,7 @@ class VariableRenderer:
 
         referenced_vertices = get_referenced_vertices_in_value(value=val_to_eval, aliases={},
                                                                resources_types=self.local_graph.get_resources_types_in_graph())
+        extend_referenced_vertices_with_tf_vars(referenced_vertices)
         modified_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(modified_vertex_attributes.get(edge.label, ''))
         origin_val = deepcopy(val_to_eval)
@@ -108,7 +110,7 @@ class VariableRenderer:
             if value is not None:
                 return value
 
-        if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.VARIABLE.value:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE.value, BlockType.TF_VARIABLE.value]:
             return attributes.get('default')
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT.value:
             return attributes.get('value')

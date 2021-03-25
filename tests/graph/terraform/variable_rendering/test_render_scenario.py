@@ -114,7 +114,6 @@ class TestRendererScenarios(TestCase):
         self.go("ternary_793")
 
     def test_tfvars(self):
-        self.skipTest("Should be supported!!")
         self.go("tfvars")
 
     def test_account_dirs_and_modules(self):

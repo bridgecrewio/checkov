@@ -308,3 +308,11 @@ def generate_possible_strings_from_wildcards(origin_string, max_entries=10):
     # if origin_string == "ingress.*.cidr_blocks", check for "ingress.cidr_blocks" too
     generated_strings.append(''.join(origin_string.split('.*')))
     return generated_strings
+
+
+def extend_referenced_vertices_with_tf_vars(referenced_vertices):
+    tfvars_to_add = []
+    for vertex_ref in referenced_vertices:
+        if vertex_ref.block_type == BlockType.VARIABLE:
+            tfvars_to_add.append(VertexReference(block_type=BlockType.TF_VARIABLE, sub_parts=vertex_ref.sub_parts, origin_value=vertex_ref.origin_value))
+    referenced_vertices.extend(tfvars_to_add)

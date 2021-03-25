@@ -1,6 +1,8 @@
 import logging
 import os
 from copy import deepcopy
+
+from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.parser import Parser
 from checkov.graph.terraform.graph_builder.graph_components.module import Module
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -28,6 +30,7 @@ class TerraformGraphParser(Parser):
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
         module = self.get_new_module(source_dir)
+        self.add_tfvars(module, source)
         module_dependency_map, tf_definitions = self.get_module_dependency_map(tf_definitions)
         copy_of_tf_definitions = deepcopy(tf_definitions)
         for file_path in copy_of_tf_definitions:
@@ -95,5 +98,14 @@ class TerraformGraphParser(Parser):
             copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
         return module_dependency_map, copy_of_tf_definitions
 
-    def get_new_module(self, source_dir):
-        return Module(source_dir)
+    @staticmethod
+    def get_new_module(source_dir):
+        return Module(source_dir, encode=False)
+
+    def add_tfvars(self, module, source):
+        if not self.var_value_and_file_map:
+            return
+        for var_name, (default, path) in self.var_value_and_file_map.items():
+            if ".tfvars" in path:
+                block = {var_name: {"default": default}}
+                module.add_blocks(BlockType.TF_VARIABLE, block, path, source)

@@ -6,7 +6,7 @@ from checkov.graph.terraform.graph_builder.graph_components.blocks import Block,
 
 
 class Module:
-    def __init__(self, source_dir):
+    def __init__(self, source_dir, encode):
         self.path = ''
         self.blocks: List[Block] = []
         self.customer_name = ''
@@ -14,6 +14,7 @@ class Module:
         self.source = ''
         self.resources_types = set()
         self.source_dir = source_dir
+        self.encode = encode
 
     def add_blocks(self, block_type, blocks, path, source):
         self.source = source
@@ -33,7 +34,8 @@ class Module:
                     config=provider_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(provider_block)
 
@@ -47,7 +49,8 @@ class Module:
                     config=variable_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(variable_block)
 
@@ -60,7 +63,8 @@ class Module:
                     config={name: blocks_section[name]},
                     path=path,
                     attributes={name: blocks_section[name]},
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(local_block)
 
@@ -75,7 +79,8 @@ class Module:
                     config=output_dict,
                     path=path,
                     attributes={'value': output_dict[name].get('value')},
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(output_block)
 
@@ -88,7 +93,8 @@ class Module:
                     config=module_dict,
                     path=path,
                     attributes=module_dict[name],
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(module_block)
 
@@ -109,7 +115,8 @@ class Module:
                         path=path,
                         attributes=attributes,
                         id=resource_type + '.' + name,
-                        source=self.source
+                        source=self.source,
+                        encode=self.encode
                     )
                     self.blocks.append(resource_block)
 
@@ -124,7 +131,8 @@ class Module:
                         path=path,
                         attributes=data_dict.get(data_type, {}).get(name, {}),
                         id=data_type + '.' + name,
-                        source=self.source
+                        source=self.source,
+                        encode=self.encode
                     )
                     self.blocks.append(data_block)
 
@@ -137,19 +145,21 @@ class Module:
                     config=terraform_dict,
                     path=path,
                     attributes={},
-                    source=self.source
+                    source=self.source,
+                    encode=self.encode
                 )
                 self.blocks.append(terraform_block)
 
     def _add_tf_var(self, blocks, path):
-        for tf_var_name in blocks:
+        for tf_var_name, attributes in blocks.items():
             tfvar_block = Block(
                 block_type=BlockType.TF_VARIABLE,
                 name=tf_var_name,
-                config=blocks[tf_var_name],
+                config={tf_var_name: attributes},
                 path=path,
-                attributes={tf_var_name: blocks[tf_var_name]},
-                source=self.source
+                attributes=attributes,
+                source=self.source,
+                encode=self.encode
             )
             self.blocks.append(tfvar_block)
 

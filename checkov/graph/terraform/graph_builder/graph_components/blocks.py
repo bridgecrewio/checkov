@@ -9,7 +9,7 @@ from checkov.graph.terraform.utils.utils import calculate_hash, decode_graph_pro
 
 
 class Block:
-    def __init__(self, name, config, path, block_type, attributes, id='', source=''):
+    def __init__(self, name, config, path, block_type, attributes, id='', source='', encode=False):
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -36,6 +36,7 @@ class Block:
 
         attributes_to_add = self._extract_inner_attributes()
         self.attributes.update(attributes_to_add)
+        self.encode = encode
 
     def _extract_inner_attributes(self):
         attributes_to_add = {}
@@ -68,10 +69,11 @@ class Block:
             sorted_breadcrumbs = dict(sorted(self.breadcrumbs.items()))
             base_attributes[CustomAttributes.RENDERING_BREADCRUMBS] = sorted_breadcrumbs
 
-        for attribute in base_attributes:
-            value_to_encode = base_attributes[attribute]
-            encoded_value = utils.encode_graph_property_value(value_to_encode)
-            base_attributes[attribute] = encoded_value
+        if self.encode:
+            for attribute in base_attributes:
+                value_to_encode = base_attributes[attribute]
+                encoded_value = utils.encode_graph_property_value(value_to_encode)
+                base_attributes[attribute] = encoded_value
 
         base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
 

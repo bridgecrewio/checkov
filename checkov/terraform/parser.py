@@ -38,6 +38,7 @@ class Parser:
         # This ensures that we don't try to double-load modules
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
         self._loaded_modules: Set[Tuple[str, int, str]] = set()
+        self.var_value_and_file_map = {}
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -281,6 +282,8 @@ class Parser:
                 # If there are more modules to load but no variables were resolved, then to a final module
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
+
+        self.var_value_and_file_map = var_value_and_file_map
 
     def _process_vars_and_locals(self, directory: str,
                                  var_value_and_file_map: Dict[str, Tuple[Any, str]],

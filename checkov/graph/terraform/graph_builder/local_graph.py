@@ -14,7 +14,7 @@ from checkov.graph.terraform.graph_builder.graph_components.generic_resource_enc
 from checkov.graph.terraform.graph_builder.utils import is_local_path
 from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, update_dictionary_attribute, \
     join_trimmed_strings, \
-    filter_sub_keys
+    filter_sub_keys, extend_referenced_vertices_with_tf_vars
 from checkov.graph.terraform.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.graph.terraform.variable_rendering.renderer import VariableRenderer
 
@@ -147,7 +147,7 @@ class LocalGraph:
                 referenced_vertices = get_referenced_vertices_in_value(value=vertex.attributes[attribute_key],
                                                                        aliases=aliases,
                                                                        resources_types=self.get_resources_types_in_graph())
-
+                extend_referenced_vertices_with_tf_vars(referenced_vertices)
                 for vertex_reference in referenced_vertices:
                     # for certain blocks such as data and resource, the block name is composed from several parts.
                     # the purpose of the loop is to avoid not finding the node if the name has several parts
