@@ -1,11 +1,7 @@
 metadata:
   id: "CKV2_AZURE_17"
   name: "Ensure that PostgreSQL server enables customer-managed key for encryption"
-  guidelines: ""
   category: "ENCRYPTION"
-  severity: ""
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

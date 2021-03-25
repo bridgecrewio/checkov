@@ -1,11 +1,7 @@
 metadata:
   id: "CKV2_AZURE_16"
   name: "Ensure that MySQL server enables customer-managed key for encryption"
-  guidelines: ""
   category: "ENCRYPTION"
-  severity: ""
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

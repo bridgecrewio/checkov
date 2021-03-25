@@ -2,8 +2,6 @@ metadata:
   name: "Ensure the default security group of every VPC restricts all traffic"
   id: "CKV2_AWS_12"
   category: "LOGGING"
-scope:
-  provider: "AWS"
 definition:
   and:
     - cond_type: filter

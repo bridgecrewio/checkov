@@ -2,8 +2,6 @@ metadata:
   name: "Ensure CloudTrail trails are integrated with CloudWatch Logs"
   id: "CKV2_AWS_10"
   category: "LOGGING"
-scope:
-  provider: "AWS"
 definition:
     and:
       - cond_type: filter

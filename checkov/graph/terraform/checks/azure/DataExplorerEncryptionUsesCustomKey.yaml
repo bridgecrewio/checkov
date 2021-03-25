@@ -1,11 +1,7 @@
 metadata:
   id: "CKV2_AZURE_11"
   name: "Ensure that Azure Data Explorer encryption at rest uses a customer-managed key"
-  guidelines: ""
   category: "ENCRYPTION"
-  severity: ""
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

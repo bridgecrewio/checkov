@@ -2,8 +2,6 @@ metadata:
   id: "CKV2_AWS_15"
   name: "Ensure that auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks."
   category: "NETWORKING"
-scope:
-  provider: "AWS"
 definition:
   and:
     - cond_type: attribute

@@ -2,8 +2,6 @@ metadata:
   id: "CKV2_AWS_21"
   name: "Ensure that all IAM users are members of at least one IAM group."
   category: "IAM"
-scope:
-  provider: "AWS"
 definition:
   and:
     - resource_types:

@@ -2,8 +2,6 @@ metadata:
   name: "Ensure that Auto Scaling is enabled on your DynamoDB tables"
   id: "CKV2_AWS_16"
   category: "GENERAL_SECURITY"
-scope:
-  provider: "AWS"
 definition:
   and:
     - cond_type: filter

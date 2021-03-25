@@ -2,8 +2,6 @@ metadata:
   id: "CKV2_AWS_7"
   name: "Ensure that Amazon EMR clusters' security groups are not open to the world"
   category: "NETWORKING"
-scope:
-  provider: "AWS"
 definition:
   and:
     - resource_types:

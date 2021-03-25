@@ -2,8 +2,6 @@ metadata:
   id: "CKV_AZURE_59"
   name: "Ensure Storage logging is enabled for Blob service for read requests"
   category: "LOGGING"
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

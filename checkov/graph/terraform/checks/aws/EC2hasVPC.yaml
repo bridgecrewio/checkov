@@ -2,8 +2,6 @@ metadata:
   id: "CKV2_AWS_17"
   name: "Ensure that EC2 instances belong to a VPC"
   category: "NETWORKING"
-scope:
-  provider: "AWS"
 definition:
   and:
     - resource_types:

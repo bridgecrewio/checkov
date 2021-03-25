@@ -2,8 +2,6 @@ metadata:
   name: "Ensure that VA setting Periodic Recurring Scans is enabled on a SQL server"
   id: "CKV2_AZURE_3"
   category: "GENERAL_SECURITY"
-scope:
-  provider: "Azure"
 definition:
     and:
         - resource_types:

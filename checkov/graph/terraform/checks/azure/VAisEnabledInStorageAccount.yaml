@@ -2,8 +2,6 @@ metadata:
   name: "Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account"
   id: "CKV2_AZURE_2"
   category: "GENERAL_SECURITY"
-scope:
-  provider: "Azure"
 definition:
   and:
     - cond_type: filter

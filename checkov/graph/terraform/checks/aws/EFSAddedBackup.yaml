@@ -2,8 +2,6 @@ metadata:
   name: "Ensure that Elastic File System (Amazon EFS) file systems are added in the backup plans of AWS Backup"
   id: "CKV2_AWS_18"
   category: "BACKUP_AND_RECOVERY"
-scope:
-  provider: "AWS"
 definition:
   and:
     - cond_type: connection

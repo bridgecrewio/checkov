@@ -2,10 +2,6 @@ metadata:
   id: "CKV2_AWS_13"
   name: "Ensure that Redshift clusters has backup plan of AWS Backup"
   category: "BACKUP_AND_RECOVERY"
-  supported_resources:
-    - aws_redshift_cluster
-scope:
-  provider: "AWS"
 definition:
   and:
     - cond_type: filter

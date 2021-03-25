@@ -1,11 +1,7 @@
 metadata:
   id: "CKV2_AZURE_12"
   name: "Ensure that virtual machines are backed up using Azure Backup"
-  guidelines: ""
   category: "BACKUP_AND_RECOVERY"
-  severity: ""
-scope:
-  provider: "Azure"
 definition:
   and:
     - resource_types:

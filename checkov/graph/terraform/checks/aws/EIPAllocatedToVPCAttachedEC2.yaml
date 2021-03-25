@@ -2,8 +2,6 @@ metadata:
   id: "CKV2_AWS_19"
   name: "Ensure that all EIP addresses allocated to a VPC are attached to EC2 instances"
   category: "NETWORKING"
-scope:
-  provider: "AWS"
 definition:
   and:
     - resource_types:

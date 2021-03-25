@@ -2,8 +2,6 @@ metadata:
   name: "Ensure the storage container storing the activity logs is not publicly accessible"
   id: "CKV2_AZURE_8"
   category: "LOGGING"
-scope:
-  provider: "Azure"
 definition:
   and:
     - cond_type: filter
