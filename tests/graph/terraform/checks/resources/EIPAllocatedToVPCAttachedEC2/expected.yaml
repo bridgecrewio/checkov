@@ -1,0 +1,4 @@
+pass:
+  - "aws_eip.ok_eip"
+fail:
+  - "aws_eip.not_ok_eip"
