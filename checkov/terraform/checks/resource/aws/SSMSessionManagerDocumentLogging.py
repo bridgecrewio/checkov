@@ -7,12 +7,12 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
+class SSMSessionManagerDocumentLogging(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Session Manager data is encrypted in transit"
-        id = "CKV_AWS_112"
+        name = "Ensure Session Manager logs are enabled and encrypted"
+        id = "CKV_AWS_113"
         supported_resources = ["aws_ssm_document"]
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.ENCRYPTION, CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -28,10 +28,15 @@ class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
                 elif doc_format == ["YAML"] and is_yaml(content):
                     inputs = yaml.safe_load(content).get("inputs", {})
 
-                if inputs and not inputs.get("kmsKeyId"):
+                if inputs:
+                    if inputs.get("s3BucketName") and inputs.get("s3EncryptionEnabled"):
+                        return CheckResult.PASSED
+                    elif inputs.get("cloudWatchLogGroupName") and inputs.get("cloudWatchEncryptionEnabled"):
+                        return CheckResult.PASSED
+
                     return CheckResult.FAILED
 
-                return CheckResult.PASSED
+                return CheckResult.UNKNOWN
 
         return CheckResult.UNKNOWN
 
@@ -54,4 +59,4 @@ def is_yaml(data):
     return True
 
 
-check = SSMSessionManagerDocumentEncryption()
+check = SSMSessionManagerDocumentLogging()

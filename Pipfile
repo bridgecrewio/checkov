@@ -35,8 +35,8 @@ tqdm = "*"
 update_checker = "*"
 semantic_version = "*"
 packaging = "*"
+cloudsplaining = ">=0.3.2"
 networkx = "*"
-cloudsplaining = "*"
 
 [requires]
 python_version = "3.7"

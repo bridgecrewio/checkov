@@ -24,9 +24,6 @@ from checkov.terraform.tag_providers import get_resource_tags
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
-logging.basicConfig(level=LOG_LEVEL)
-
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 

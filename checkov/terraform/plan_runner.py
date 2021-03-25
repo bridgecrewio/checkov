@@ -12,9 +12,6 @@ from checkov.terraform.context_parsers.registry import parser_registry
 # Allow the evaluation of empty variables
 from checkov.terraform.plan_parser import parse_tf_plan
 
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
-logging.basicConfig(level=LOG_LEVEL)
-
 
 class Runner(BaseRunner):
     check_type = "terraform_plan"
