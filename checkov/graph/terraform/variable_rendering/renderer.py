@@ -187,7 +187,7 @@ class VariableRenderer:
             if not self.replace_cache[edge.origin].get(edge.label, {}):
                 self.replace_cache[edge.origin][edge.label] = {}
             if not curr_cache:
-                self.replace_cache[edge.origin][edge.label] = {replaced_key: []}
+                self.replace_cache[edge.origin][edge.label][replaced_key] = []
             self.replace_cache[edge.origin][edge.label][replaced_key].append(new_val)
             return new_val
         else:
