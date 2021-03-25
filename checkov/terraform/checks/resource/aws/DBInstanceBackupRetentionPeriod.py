@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -13,7 +14,8 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         key = "backup_retention_period"
         if key in conf.keys():
-            if 0 < conf[key][0] <= 35:
+            period = force_int(conf[key][0])
+            if period and 0 < period <= 35:
                 return CheckResult.PASSED
             return CheckResult.FAILED
         else:
