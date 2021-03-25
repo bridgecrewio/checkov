@@ -1,3 +1,4 @@
+import logging
 import os
 from copy import deepcopy
 
@@ -143,7 +144,7 @@ class Block:
                 if nested_attributes.get(attribute_key) is not None:
                     nested_attributes[attribute_key] = value_to_update
                 else:
-                    print(f'unable to update inner attribute {attribute_key} because {e}')
+                    logging.warning(f'unable to update inner attribute {attribute_key} because {e}')
                     return e
 
     def add_module_connection(self, attribute_key, vertex_id):

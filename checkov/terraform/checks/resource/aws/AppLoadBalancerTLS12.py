@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -33,7 +34,7 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
                 return CheckResult.PASSED
             else:
                 for action in conf.get("default_action", []):
-                    for redirect in action.get("redirect", []):
+                    for redirect in force_list(action.get("redirect", [])):
                         if redirect.get("protocol", []) == ["HTTPS"]:
                             return CheckResult.PASSED
                 return CheckResult.FAILED

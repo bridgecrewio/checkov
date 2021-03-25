@@ -4,6 +4,7 @@ import logging
 import yaml
 
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import is_json
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -34,15 +35,6 @@ class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
                 return CheckResult.PASSED
 
         return CheckResult.UNKNOWN
-
-
-def is_json(data):
-    try:
-        json.loads(data)
-    except ValueError:
-        logging.debug(f"could not parse json data: {data}")
-        return False
-    return True
 
 
 def is_yaml(data):

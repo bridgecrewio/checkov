@@ -1,10 +1,14 @@
-def force_list (var):
+import json
+import logging
+
+
+def force_list(var):
     if not isinstance(var, list):
         var = [var]
     return var
 
 
-def force_int (var):
+def force_int(var):
     try:
         if not isinstance(var, int):
             var = int(var)
@@ -12,13 +16,15 @@ def force_int (var):
     except:
         return None
 
-def force_float (var):
+
+def force_float(var):
     try:
         if not isinstance(var, float):
             var = float(var)
         return var
     except:
         return None
+
 
 def convert_str_to_bool(bool_str):
     if bool_str in ['true', '"true"', 'True', '"True"']:
@@ -41,3 +47,12 @@ def force_dict(obj):
     if type(obj) == list and len(obj) > 0 and type(obj[0]) == dict:
         return obj[0]
     return None
+
+
+def is_json(data):
+    try:
+        json.loads(data)
+    except (TypeError, ValueError):
+        logging.debug(f"could not parse json data: {data}")
+        return False
+    return True

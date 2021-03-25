@@ -6,23 +6,23 @@ class GKEEnsureIntegrityMonitoring(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Integrity Monitoring for Shielded GKE Nodes is Enabled"
         check_id = "CKV_GCP_72"
-        supported_resources = ['google_container_cluster','google_container_node_pool']
+        supported_resources = ['google_container_cluster', 'google_container_node_pool']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'node_config' in conf.keys():
-            node=conf["node_config"][0]
-            if 'shielded_instance_config' in node.keys():
-                monitor=node["shielded_instance_config"][0]
+            node = conf["node_config"][0]
+            if isinstance(node, dict) and 'shielded_instance_config' in node.keys():
+                monitor = node["shielded_instance_config"][0]
                 if monitor["enable_integrity_monitoring"] == [True]:
                     return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED
             else:
-                #as default is true this is a pass 
+                # as default is true this is a pass
                 return CheckResult.PASSED
-        else:    
+        else:
             # no config is valid it could be in the the node_pool
             return CheckResult.UNKNOWN
 
