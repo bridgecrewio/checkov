@@ -1,5 +1,6 @@
 from checkov.graph.checks.checks_infra.solvers.base_solver import BaseSolver
 from checkov.graph.checks.checks_infra.enums import SolverType
+from networkx.classes.digraph import DiGraph
 
 
 class BaseConnectionSolver(BaseSolver):
@@ -13,11 +14,12 @@ class BaseConnectionSolver(BaseSolver):
         self.vertices_under_resource_types = vertices_under_resource_types or []
         self.vertices_under_connected_resources_types = vertices_under_connected_resources_types or []
 
-    def get_operation(self, *args, **kwargs):
+    def run(self, graph_connector: DiGraph):
         raise NotImplementedError()
 
-    def _get_operation(self, *args, **kwargs):
-        raise NotImplementedError()
+    def is_associated_edge(self, origin_type: str, destination_type: str):
+        return (origin_type in self.resource_types and destination_type in self.connected_resources_types) or (
+                    origin_type in self.connected_resources_types and destination_type in self.resource_types)
 
-    def run(self, graph_connector):
-        return [], []
+    def is_associated_vertex(self, vertex_type: str):
+        return vertex_type in self.resource_types or vertex_type in self.connected_resources_types

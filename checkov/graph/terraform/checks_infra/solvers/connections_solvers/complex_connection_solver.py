@@ -1,5 +1,7 @@
 from checkov.graph.terraform.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.graph.checks.checks_infra.enums import SolverType
+from networkx.classes.digraph import DiGraph
+from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
@@ -22,12 +24,22 @@ class ComplexConnectionSolver(BaseConnectionSolver):
 
         super().__init__(resource_types, connected_resources_types)
 
-    def run_query(self, graph_connector):
-        # TODO
+    def run(self, graph_connector: DiGraph):
         raise NotImplementedError
 
-    def get_operation(self, **kwargs):
-        raise NotImplementedError
+    @staticmethod
+    def filter_duplicates(checks):
+        return list({check[CustomAttributes.ID]: check for check in checks}.values())
 
-    def filter_results(self, traversal):
-        raise NotImplementedError
+    def filter_results(self, passed: list, failed: list):
+        filters = []
+        filter_queries = [sub_query for sub_query in self.queries if sub_query.solver_type == SolverType.FILTER]
+        for sub_query in filter_queries:
+            filters.append(sub_query.get_operation())
+        if filters:
+            for query_filter in filters:
+                passed = list(filter(query_filter, passed))
+                failed = list(filter(query_filter, failed))
+        passed = self.filter_duplicates(passed)
+        failed = self.filter_duplicates(failed)
+        return passed, failed

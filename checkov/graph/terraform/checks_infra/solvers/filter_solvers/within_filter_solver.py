@@ -8,6 +8,5 @@ class WithinFilterSolver(BaseFilterSolver):
         super().__init__(resource_types=resource_types,
                          query_attribute=query_attribute, query_value=query_value)
 
-    def get_operation(self, **kwargs):
-        # TODO
-        raise NotImplementedError
+    def get_operation(self, *args, **kwargs):
+        return lambda check: check.get(self.query_attribute) in self.query_value
