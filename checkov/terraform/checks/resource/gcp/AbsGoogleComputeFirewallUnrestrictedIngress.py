@@ -28,7 +28,7 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
             return False
         if isinstance(ports_list[0], list):
             ports_list = ports_list[0]
-        for port_range in ports_list[0]:
+        for port_range in ports_list:
             port = force_int(port_range)
             if port and self.port == port:
                 return True
