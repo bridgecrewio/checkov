@@ -79,13 +79,17 @@ class LocalGraph:
                     variable_dir = os.path.dirname(variable_vertex.path)
                     if self.module_dependency_map.get(variable_dir) == module_vertex.path:
                         attribute_value = module_vertex.attributes[attribute_name]
-                        if get_referenced_vertices_in_value(value=attribute_value, aliases={},
-                                                            resources_types=self.get_resources_types_in_graph()):
+                        has_var_reference = get_referenced_vertices_in_value(value=attribute_value, aliases={},
+                                                            resources_types=self.get_resources_types_in_graph())
+                        if has_var_reference:
                             undetermined_values.append(
                                 {'module_vertex_id': module_vertex_id, 'attribute_name': attribute_name,
                                  'variable_vertex_id': variable_vertex_id})
-                        self.update_vertex_attribute(variable_vertex_id, 'default', attribute_value,
-                                                     module_vertex_id, attribute_name)
+                        var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
+                        if not has_var_reference or not var_default_value or get_referenced_vertices_in_value(value=var_default_value, aliases={},
+                                                            resources_types=self.get_resources_types_in_graph()):
+                            self.update_vertex_attribute(variable_vertex_id, 'default', attribute_value,
+                                                         module_vertex_id, attribute_name)
         return undetermined_values
 
     def process_undetermined_values(self, undetermined_values):
