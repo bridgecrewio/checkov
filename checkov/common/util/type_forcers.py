@@ -1,6 +1,8 @@
 import json
 import logging
 
+import yaml
+
 
 def force_list(var):
     if not isinstance(var, list):
@@ -49,10 +51,19 @@ def force_dict(obj):
     return None
 
 
-def is_json(data):
+def is_json(data) -> bool:
     try:
-        json.loads(data)
+        parsed = json.loads(data)
+        return isinstance(parsed, dict)
     except (TypeError, ValueError):
         logging.debug(f"could not parse json data: {data}")
         return False
-    return True
+
+
+def is_yaml(data) -> bool:
+    try:
+        parsed = yaml.safe_load(data)
+        return isinstance(parsed, dict)
+    except yaml.YAMLError:
+        logging.debug(f"could not parse yaml data: {data}")
+        return False

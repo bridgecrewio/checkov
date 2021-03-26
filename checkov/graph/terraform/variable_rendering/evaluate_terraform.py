@@ -54,6 +54,9 @@ def _try_evaluate(input_str):
 
 
 def replace_string_value(original_str, str_to_replace, replaced_value, keep_origin=True):
+    if original_str is None or type(original_str) in (int, bool):
+        return original_str
+
     if type(original_str) is list:
         for i, item in enumerate(original_str):
             original_str[i] = replace_string_value(item, str_to_replace, replaced_value, keep_origin)
