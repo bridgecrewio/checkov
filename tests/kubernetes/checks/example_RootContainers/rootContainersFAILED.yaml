@@ -54,4 +54,3 @@ spec:
     command: ["/bin/sleep", "999999"]
     securityContext:
       runAsUser: 0
-

@@ -15,4 +15,3 @@ Resources:
         FromPort: 3389
         ToPort: 3389
         CidrIpv6: !Ref 'SSHLocation'
-

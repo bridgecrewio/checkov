@@ -1,7 +1,8 @@
 import logging
+
 from yaml import YAMLError
 
-from checkov.kubernetes.parser import k8_yaml, k8_json
+from checkov.kubernetes.parser import k8_json, k8_yaml
 
 try:
     from json.decoder import JSONDecodeError
@@ -23,7 +24,10 @@ def parse(filename):
             if isinstance(template, list):
                 for i in range(len(template)):
                     if isinstance(template[i], dict):
-                        if not ('apiVersion' in template[i].keys() and 'kind' in template[i].keys()):
+                        if not (
+                            "apiVersion" in template[i].keys()
+                            and "kind" in template[i].keys()
+                        ):
                             return
                     else:
                         return
@@ -33,22 +37,20 @@ def parse(filename):
             return
     except IOError as e:
         if e.errno == 2:
-            logger.error('Template file not found: %s', filename)
+            logger.error("Template file not found: %s", filename)
             return
         elif e.errno == 21:
-            logger.error('Template references a directory, not a file: %s',
-                         filename)
+            logger.error("Template references a directory, not a file: %s", filename)
             return
         elif e.errno == 13:
-            logger.error('Permission denied when accessing template file: %s',
-                         filename)
+            logger.error("Permission denied when accessing template file: %s", filename)
             return
     except UnicodeDecodeError as err:
-        logger.error('Cannot read file contents: %s', filename)
+        logger.error("Cannot read file contents: %s", filename)
         return
     except YAMLError as err:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
+            logger.debug("Cannot read file contents: %s - is it a yaml?", filename)
         return
 
     return template, template_lines

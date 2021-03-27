@@ -3,14 +3,15 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class Tiller(BaseK8Check):
-
     def __init__(self):
         name = "Ensure that Tiller (Helm v2) is not deployed"
         id = "CKV_K8S_34"
         # Location: container .image
-        supported_kind = ['containers', 'initContainers']
+        supported_kind = ["containers", "initContainers"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         return f'{conf["parent"]} - {conf["name"]}'
@@ -22,8 +23,8 @@ class Tiller(BaseK8Check):
     def is_tiller(conf):
         if "image" in conf:
             conf_image = conf["image"]
-            if isinstance(conf_image,str) and  "tiller" in conf_image:
-                    return True
+            if isinstance(conf_image, str) and "tiller" in conf_image:
+                return True
 
         if "parent_metadata" in conf:
             if "labels" in conf["parent_metadata"]:
@@ -35,5 +36,6 @@ class Tiller(BaseK8Check):
                         return True
 
         return False
+
 
 check = Tiller()

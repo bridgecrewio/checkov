@@ -1,4 +1,4 @@
-# Access worker node file system from within a pod 
+# Access worker node file system from within a pod
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

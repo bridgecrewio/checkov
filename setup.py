@@ -28,7 +28,7 @@ setup(
             "coverage",
             "coverage-badge",
             "GitPython==3.1.7",
-            "bandit"
+            "bandit",
         ]
     },
     install_requires=[
@@ -58,16 +58,16 @@ setup(
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
-    scripts=["bin/checkov","bin/checkov.cmd"],
+    packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
+    scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Security',
-        'Topic :: Software Development :: Build Tools'
-    ]
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Security",
+        "Topic :: Software Development :: Build Tools",
+    ],
 )

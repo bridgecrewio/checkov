@@ -9,62 +9,59 @@ import hcl2
 class TestHCL2LoadAssumptions(unittest.TestCase):
     def test_ternary(self):
         # Ternary and removal of parens are interesting things here
-        tf = '''
+        tf = """
         resource "aws_instance" "foo" {
           metadata_options {
             http_tokens = (var.metadata_http_tokens_required) ? "required" : "optional"
           }
-        }'''
+        }"""
         expect = {
-            "resource": [{
-                "aws_instance": {
-                    "foo": {
-                        "metadata_options": [{
-                            "http_tokens": ['${var.metadata_http_tokens_required ? "required" : "optional"}']
-                        }]
-                    }
-                }
-            }]
-        }
-        self.go(tf, expect)
-
-    def test_tfvars(self):
-        tf = '''
-        VERSIONING = true
-        CHECKOV = "awesome"
-        '''
-        expect = {
-            "VERSIONING": [True],
-            "CHECKOV": ["awesome"]
-        }
-        self.go(tf, expect)
-
-    def test_multiline_function(self):
-        tf = '''
-        locals {
-           a_string = merge(
-             local.foo,
-             {a="b"}
-           )
-        }'''
-        expect = {
-            "locals": [
+            "resource": [
                 {
-                    "a_string": ["${merge(local.foo,,{'a': 'b'},)}"]
+                    "aws_instance": {
+                        "foo": {
+                            "metadata_options": [
+                                {
+                                    "http_tokens": [
+                                        '${var.metadata_http_tokens_required ? "required" : "optional"}'
+                                    ]
+                                }
+                            ]
+                        }
+                    }
                 }
             ]
         }
         self.go(tf, expect)
 
+    def test_tfvars(self):
+        tf = """
+        VERSIONING = true
+        CHECKOV = "awesome"
+        """
+        expect = {"VERSIONING": [True], "CHECKOV": ["awesome"]}
+        self.go(tf, expect)
+
+    def test_multiline_function(self):
+        tf = """
+        locals {
+           a_string = merge(
+             local.foo,
+             {a="b"}
+           )
+        }"""
+        expect = {"locals": [{"a_string": ["${merge(local.foo,,{'a': 'b'},)}"]}]}
+        self.go(tf, expect)
+
     def test_string_with_quotes(self):
-        tf = '''
+        tf = """
         locals {
            a_string = "Quotes are \\"fun\\"!"
-        }'''
+        }"""
         expect = {
             "locals": [
                 {
-                    "a_string": ["Quotes are \\\"fun\\\"!"]
+                    "a_string": ['Quotes are \\"fun\\"!']
                     #                        __--
                     #                        |  |
                     #                backslash  quote
@@ -74,30 +71,26 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         self.go(tf, expect)
 
     def test_inner_quoting(self):
-        tf = '''
+        tf = """
         locals {
           evil_strings1 = merge({a="}, evil"})
-        }'''
-        expect = {
-            "locals": [
-                {
-                    "evil_strings1": ["${merge({'a': '}, evil'})}"]
-                }
-            ]
-        }
+        }"""
+        expect = {"locals": [{"evil_strings1": ["${merge({'a': '}, evil'})}"]}]}
         self.go(tf, expect)
 
     def test_merge_with_inner_var(self):
-        tf = '''
+        tf = """
         resource "aws_s3_bucket" "foo" {
           tags = merge(local.common_tags, local.common_data_tags, {Name = "my-thing-${var.ENVIRONMENT}-${var.REGION}"})
-        }'''
+        }"""
         expect = {
             "resource": [
                 {
                     "aws_s3_bucket": {
                         "foo": {
-                            "tags": ["${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}"]
+                            "tags": [
+                                "${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}"
+                            ]
                         }
                     }
                 }
@@ -106,17 +99,17 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         self.go(tf, expect)
 
     def test_variable_block(self):
-        tf = '''
+        tf = """
         variable "my_var" {
           type = string
           default = "my_default_value"
-        }'''
+        }"""
         expect = {
             "variable": [
                 {
                     "my_var": {
-                        "type": ["${string}"],              # NOTE: wrapped in eval markers
-                        "default": ["my_default_value"]
+                        "type": ["${string}"],  # NOTE: wrapped in eval markers
+                        "default": ["my_default_value"],
                     }
                 }
             ]
@@ -124,19 +117,19 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         self.go(tf, expect)
 
     def test_module_block(self):
-        tf = '''
+        tf = """
         module "bucket" {
           source   = "./bucket"
           name     = "module_bucket"
           BLAH     = "a value"
-        }'''
+        }"""
         expect = {
             "module": [
                 {
                     "bucket": {
                         "source": ["./bucket"],
                         "name": ["module_bucket"],
-                        "BLAH": ["a value"]
+                        "BLAH": ["a value"],
                     }
                 }
             ]
@@ -145,48 +138,40 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
 
     def test_raw_assignment(self):
         tf = 'my_var = "my_value"\n'
-        expect = {
-            "my_var": ["my_value"]
-        }
+        expect = {"my_var": ["my_value"]}
         self.go(tf, expect)
 
     def test_raw_assignment_true_string(self):
         tf = 'my_var = "true"\n'
-        expect = {
-            "my_var": ["true"]
-        }
+        expect = {"my_var": ["true"]}
         self.go(tf, expect)
 
     def test_raw_assignment_false_string(self):
         tf = 'my_var = "false"\n'
-        expect = {
-            "my_var": ["false"]
-        }
+        expect = {"my_var": ["false"]}
         self.go(tf, expect)
 
     def test_raw_assignment_1_string(self):
         tf = 'my_var = "1"\n'
-        expect = {
-            "my_var": ["1"]
-        }
+        expect = {"my_var": ["1"]}
         self.go(tf, expect)
 
     def test_raw_assignment_0_string(self):
         tf = 'my_var = "0"\n'
-        expect = {
-            "my_var": ["0"]
-        }
+        expect = {"my_var": ["0"]}
         self.go(tf, expect)
 
     def test_map_separators(self):
-        tf = '''
+        tf = """
         locals {
           INTS = tomap({"a" = 1, "b" = 2})
-        }'''
+        }"""
         expect = {
             "locals": [
                 {
-                    "INTS": ["${tomap({'a': 1, 'b': 2})}"]          # WHA?? Equals to colons? Okay...
+                    "INTS": [
+                        "${tomap({'a': 1, 'b': 2})}"
+                    ]  # WHA?? Equals to colons? Okay...
                 }
             ]
         }
@@ -194,7 +179,7 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
 
     # from the "maze_of_variables" scenario
     def test_maze_of_variables(self):
-        tf = '''
+        tf = """
         variable "gratuitous_var_default" {
           type = string
           default = "-yay"
@@ -203,19 +188,19 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         variable "input" {
           default = "module-input"
         }
-         
+
         locals {
           NAME = {
             "module-input-bucket" = "mapped-bucket-name"
           }
           TAIL = "works"
         }
-          
+
         module "bucket" {
           source   = "./bucket"
           name     = var.input
         }
-        
+
         resource "aws_s3_bucket" "example2" {
           #             resolves to: mapped-bucket-name
           #             |            resolves to: module-input-bucket
@@ -225,34 +210,28 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
           #             v            v                              v           v
           bucket = "${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}"
           # final result: mapped-bucket-name-works-yay
-        }'''
+        }"""
         expect = {
             "variable": [
                 {
                     "gratuitous_var_default": {
-                        "type": ["${string}"],              # NOTE: wrapped in eval markers
-                        "default": ["-yay"]
+                        "type": ["${string}"],  # NOTE: wrapped in eval markers
+                        "default": ["-yay"],
                     }
                 },
-                {
-                    "input": {
-                        "default": ["module-input"]
-                    }
-                }
+                {"input": {"default": ["module-input"]}},
             ],
             "locals": [
                 {
-                    "NAME": [{
-                        "module-input-bucket": "mapped-bucket-name"
-                    }],
-                    "TAIL": ["works"]
+                    "NAME": [{"module-input-bucket": "mapped-bucket-name"}],
+                    "TAIL": ["works"],
                 }
             ],
             "module": [
                 {
                     "bucket": {
                         "source": ["./bucket"],
-                        "name": ["${var.input}"]            # NOTE: wrapped in eval markers
+                        "name": ["${var.input}"],  # NOTE: wrapped in eval markers
                     }
                 }
             ],
@@ -260,34 +239,36 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                 {
                     "aws_s3_bucket": {
                         "example2": {
-                            "bucket": ["${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}"]
+                            "bucket": [
+                                "${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}"
+                            ]
                         }
                     }
                 }
-            ]
+            ],
         }
         self.go(tf, expect)
 
     @staticmethod
     def go(tf, expected_result):
         actual_result = hcl2.loads(tf)
-        assert actual_result == expected_result, "Results mismatch:\n" \
-                                                 "** EXPECTED **\n" \
-                                                 f"{json.dumps(expected_result, indent=2)}\n" \
-                                                 f"** ACTUAL **\n" \
-                                                 f"{json.dumps(actual_result, indent=2)}"
+        assert actual_result == expected_result, (
+            "Results mismatch:\n"
+            "** EXPECTED **\n"
+            f"{json.dumps(expected_result, indent=2)}\n"
+            f"** ACTUAL **\n"
+            f"{json.dumps(actual_result, indent=2)}"
+        )
 
     def test_math(self):
         tf = "four = 2 + 2"
-        expect = {
-            "four": ["${2 + 2}"]
-        }
+        expect = {"four": ["${2 + 2}"]}
         self.go(tf, expect)
 
     def test_weird_ternary_string_clipping(self):
         tf = 'bool_string_false = "false" ? "wrong" : "correct"'
         expect = {
-            "bool_string_false": ["false\" ? \"wrong\" : \"correct"]
+            "bool_string_false": ['false" ? "wrong" : "correct']
             #                     --                             --
             #                      |                             |
             #                      missing quotes on outer tokens :-(

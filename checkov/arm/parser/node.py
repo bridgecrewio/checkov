@@ -1,6 +1,7 @@
-import sys
 import logging
+import sys
 from copy import deepcopy
+
 import six
 
 LOGGER = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ def create_str_node_class(cls):
     """
     Create string node class
     """
+
     class node_class(cls):
         """Node class created based on the input class"""
 
@@ -31,12 +33,14 @@ def create_str_node_class(cls):
                 return cls.__new__(self, x)
 
             if isinstance(x, six.string_types):
-                return cls.__new__(self, x.encode('ascii', 'ignore'))
+                return cls.__new__(self, x.encode("ascii", "ignore"))
 
             return cls.__new__(self, x)
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(
+                "%s.%s is invalid" % (self.__class__.__name__, name)
+            )
 
         def __deepcopy__(self, memo):
             result = str_node(self, self.start_mark, self.end_mark)
@@ -46,7 +50,7 @@ def create_str_node_class(cls):
         def __copy__(self):
             return self
 
-    node_class.__name__ = '%s_node' % cls.__name__
+    node_class.__name__ = "%s_node" % cls.__name__
     return node_class
 
 
@@ -54,6 +58,7 @@ def create_dict_node_class(cls):
     """
     Create dynamic node class
     """
+
     class node_class(cls):
         """Node class created based on the input class"""
 
@@ -64,7 +69,7 @@ def create_dict_node_class(cls):
                 cls.__init__(self)
             self.start_mark = start_mark
             self.end_mark = end_mark
-            self.condition_functions = ['Fn::If']
+            self.condition_functions = ["Fn::If"]
 
         def __deepcopy__(self, memo):
             result = dict_node(self, self.start_mark, self.end_mark)
@@ -79,24 +84,24 @@ def create_dict_node_class(cls):
 
         def is_function_returning_object(self, mappings=None):
             """
-                Check if an object is using a function that could return an object
-                Return True when
-                    Fn::Select:
-                    - 0  # or any number
-                    - !FindInMap [mapname, key, value] # or any mapname, key, value
-                Otherwise False
+            Check if an object is using a function that could return an object
+            Return True when
+                Fn::Select:
+                - 0  # or any number
+                - !FindInMap [mapname, key, value] # or any mapname, key, value
+            Otherwise False
             """
             mappings = mappings or {}
             if len(self) == 1:
                 for k, v in self.items():
-                    if k in ['Fn::Select']:
+                    if k in ["Fn::Select"]:
                         if isinstance(v, list):
                             if len(v) == 2:
                                 p_v = v[1]
                                 if isinstance(p_v, dict):
                                     if len(p_v) == 1:
                                         for l_k in p_v.keys():
-                                            if l_k == 'Fn::FindInMap':
+                                            if l_k == "Fn::FindInMap":
                                                 return True
 
             return False
@@ -109,7 +114,7 @@ def create_dict_node_class(cls):
 
         def get_safe(self, key, default=None, path=None, type_t=()):
             """
-                Get values in format
+            Get values in format
             """
             path = path or []
             value = self.get(key, default)
@@ -129,14 +134,16 @@ def create_dict_node_class(cls):
             path = path or []
             if len(self) == 1:
                 for k, v in self.items():
-                    if k == 'Fn::If':
+                    if k == "Fn::If":
                         if isinstance(v, list):
                             if len(v) == 3:
                                 for i, if_v in enumerate(v[1:]):
                                     if isinstance(if_v, dict):
                                         # yield from if_v.items_safe(path[:] + [k, i - 1])
                                         # Python 2.7 support
-                                        for items, p in if_v.items_safe(path[:] + [k, i + 1]):
+                                        for items, p in if_v.items_safe(
+                                            path[:] + [k, i + 1]
+                                        ):
                                             if isinstance(items, type_t) or not type_t:
                                                 yield items, p
                                     elif isinstance(if_v, list):
@@ -145,7 +152,7 @@ def create_dict_node_class(cls):
                                     else:
                                         if isinstance(if_v, type_t) or not type_t:
                                             yield if_v, path[:] + [k, i + 1]
-                    elif not (k == 'Ref' and v == 'AWS::NoValue'):
+                    elif not (k == "Ref" and v == "AWS::NoValue"):
                         if isinstance(self, type_t) or not type_t:
                             yield self, path[:]
             else:
@@ -153,9 +160,11 @@ def create_dict_node_class(cls):
                     yield self, path[:]
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(
+                "%s.%s is invalid" % (self.__class__.__name__, name)
+            )
 
-    node_class.__name__ = '%s_node' % cls.__name__
+    node_class.__name__ = "%s_node" % cls.__name__
     return node_class
 
 
@@ -163,6 +172,7 @@ def create_dict_list_class(cls):
     """
     Create dynamic list class
     """
+
     class node_class(cls):
         """Node class created based on the input class"""
 
@@ -173,7 +183,7 @@ def create_dict_list_class(cls):
                 cls.__init__(self)
             self.start_mark = start_mark
             self.end_mark = end_mark
-            self.condition_functions = ['Fn::If']
+            self.condition_functions = ["Fn::If"]
 
         def __deepcopy__(self, memo):
             result = list_node([], self.start_mark, self.end_mark)
@@ -199,9 +209,11 @@ def create_dict_list_class(cls):
                         yield v, path[:] + [i]
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(
+                "%s.%s is invalid" % (self.__class__.__name__, name)
+            )
 
-    node_class.__name__ = '%s_node' % cls.__name__
+    node_class.__name__ = "%s_node" % cls.__name__
     return node_class
 
 

@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -6,9 +6,14 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure all Elasticsearch has node-to-node encryption enabled"
         id = "CKV_AWS_6"
-        supported_resources = ['aws_elasticsearch_domain']
+        supported_resources = ["aws_elasticsearch_domain"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -22,12 +27,17 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
             if isinstance(cluster_config, dict):
                 if "instance_count" not in cluster_config:
                     return CheckResult.PASSED
-                self.evaluated_keys = ['cluster_config/[0]/instance_count']
+                self.evaluated_keys = ["cluster_config/[0]/instance_count"]
                 instance_count = cluster_config["instance_count"]
                 if isinstance(instance_count, int):
                     if instance_count > 1:
-                        self.evaluated_keys.append('node_to_node_encryption/[0]/enabled')
-                        if "node_to_node_encryption" in conf.keys() and "enabled" in conf["node_to_node_encryption"][0]:
+                        self.evaluated_keys.append(
+                            "node_to_node_encryption/[0]/enabled"
+                        )
+                        if (
+                            "node_to_node_encryption" in conf.keys()
+                            and "enabled" in conf["node_to_node_encryption"][0]
+                        ):
                             if conf["node_to_node_encryption"][0]["enabled"]:
                                 return CheckResult.PASSED
                         return CheckResult.FAILED

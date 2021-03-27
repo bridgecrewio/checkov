@@ -1,10 +1,10 @@
   AWSTemplateFormatVersion: "2010-09-09"
-  Parameters: 
-    OperatorEmail: 
+  Parameters:
+    OperatorEmail:
       Description: "Email address to notify when new logs are published."
       Type: String
-  Resources: 
+  Resources:
     logGroup:
       Type: AWS::Logs::LogGroup
-      Properties: 
+      Properties:
         LogGroupName: String

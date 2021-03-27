@@ -1,5 +1,6 @@
-import logging
 import fnmatch
+import logging
+
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
@@ -9,7 +10,17 @@ class RunnerFilter(object):
     #       logically a "static" concept anyway, so this makes logical sense.
     __EXTERNAL_CHECK_IDS = set()
 
-    def __init__(self, framework='all', checks=None, skip_checks=None, download_external_modules=False, external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True, runners=None, skip_framework=None):
+    def __init__(
+        self,
+        framework="all",
+        checks=None,
+        skip_checks=None,
+        download_external_modules=False,
+        external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR,
+        evaluate_variables=True,
+        runners=None,
+        skip_framework=None,
+    ):
         if checks is None:
             checks = []
         if isinstance(checks, str):
@@ -29,12 +40,18 @@ class RunnerFilter(object):
         else:
             if isinstance(skip_framework, str):
                 if framework == "all":
-                    selected_frameworks = list(set(runners) - set(skip_framework.split(",")))
-                    self.framework = ','.join(selected_frameworks)
+                    selected_frameworks = list(
+                        set(runners) - set(skip_framework.split(","))
+                    )
+                    self.framework = ",".join(selected_frameworks)
                 else:
-                    selected_frameworks = list(set(framework.split(",")) - set(skip_framework.split(",")))
-                    self.framework = ','.join(selected_frameworks)
-        logging.info(f'Resultant set of frameworks (removing skipped frameworks): {self.framework}')
+                    selected_frameworks = list(
+                        set(framework.split(",")) - set(skip_framework.split(","))
+                    )
+                    self.framework = ",".join(selected_frameworks)
+        logging.info(
+            f"Resultant set of frameworks (removing skipped frameworks): {self.framework}"
+        )
 
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
@@ -42,13 +59,15 @@ class RunnerFilter(object):
 
     def should_run_check(self, check_id):
         if RunnerFilter.is_external_check(check_id):
-            pass        # enabled unless skipped
+            pass  # enabled unless skipped
         elif self.checks:
             if check_id in self.checks:
                 return True
             else:
                 return False
-        if self.skip_checks and any(fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks):
+        if self.skip_checks and any(
+            fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks
+        ):
             return False
         return True
 

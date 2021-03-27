@@ -1,5 +1,6 @@
-from checkov.terraform.context_parsers.base_parser import BaseContextParser
 import dpath.util
+
+from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
 
 class LocalsContextParser(BaseContextParser):
@@ -8,11 +9,13 @@ class LocalsContextParser(BaseContextParser):
         super().__init__(definition_type=definition_type)
 
     def _collect_local_values(self, local_block):
-        if isinstance(local_block,dict):
+        if isinstance(local_block, dict):
             for local_name, local_value in local_block.items():
-                local_value = local_value[0] if isinstance(local_value, list) else local_value
+                local_value = (
+                    local_value[0] if isinstance(local_value, list) else local_value
+                )
                 if type(local_value) in (int, float, bool, str, dict):
-                    dpath.new(self.context, ['assignments', local_name], local_value)
+                    dpath.new(self.context, ["assignments", local_name], local_value)
 
     def get_block_type(self):
         return self.definition_type

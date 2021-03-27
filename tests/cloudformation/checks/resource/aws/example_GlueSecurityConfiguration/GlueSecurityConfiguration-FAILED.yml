@@ -5,13 +5,13 @@ Resources:
     Properties:
       Name: Name
       EncryptionConfiguration:
-        CloudWatchEncryption: 
+        CloudWatchEncryption:
           CloudWatchEncryptionMode: DISABLED
           KmsKeyArn: KmsKeyArn
-        JobBookmarksEncryption: 
+        JobBookmarksEncryption:
           JobBookmarksEncryptionMode: CSE-KMS
           KmsKeyArn: KmsKeyArn
-        S3Encryptions: 
+        S3Encryptions:
           KmsKeyArn: KmsKeyArn
           S3EncryptionMode: SSE-KMS
   Resource1:
@@ -19,13 +19,13 @@ Resources:
     Properties:
       Name: Name
       EncryptionConfiguration:
-        CloudWatchEncryption: 
+        CloudWatchEncryption:
           CloudWatchEncryptionMode: DISABLED
           KmsKeyArn: KmsKeyArn
-        JobBookmarksEncryption: 
+        JobBookmarksEncryption:
           JobBookmarksEncryptionMode: DISABLED
           KmsKeyArn: KmsKeyArn
-        S3Encryptions: 
+        S3Encryptions:
           KmsKeyArn: KmsKeyArn
           S3EncryptionMode: DISABLED
   Resource2:
@@ -33,10 +33,10 @@ Resources:
     Properties:
       Name: Name
       EncryptionConfiguration:
-        CloudWatchEncryption: 
+        CloudWatchEncryption:
           CloudWatchEncryptionMode: SSE-KMS
           KmsKeyArn: KmsKeyArn
-        JobBookmarksEncryption: 
+        JobBookmarksEncryption:
           JobBookmarksEncryptionMode: CSE-KMS
           KmsKeyArn: KmsKeyArn
   Resource3:
@@ -44,6 +44,6 @@ Resources:
     Properties:
       Name: Name
       EncryptionConfiguration:
-        S3Encryptions: 
+        S3Encryptions:
           KmsKeyArn: DISABLED
           S3EncryptionMode: SSE-KMS

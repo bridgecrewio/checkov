@@ -2,14 +2,16 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GoogleComputeDefaultServiceAccountFullAccess import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.gcp.GoogleComputeDefaultServiceAccountFullAccess import (
+    check,
+)
 
 
 class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
-
     def test_failure_1(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_compute_instance" "default" {
               name         = "test"
               machine_type = "n1-standard-1"
@@ -18,13 +20,15 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
                 scopes = ["https://www.googleapis.com/auth/cloud-platform", "compute-ro", "storage-ro"]
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_compute_instance"]["default"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_compute_instance" "default" {
               name         = "test"
               machine_type = "n1-standard-1"
@@ -34,13 +38,15 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
                 email  =  "123456789-compute@developer.gserviceaccount.com"
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_compute_instance"]["default"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success_1(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_compute_instance" "default" {
               name         = "test"
               machine_type = "n1-standard-1"
@@ -50,13 +56,15 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
                 email  = "example@email.com"
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_compute_instance"]["default"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_compute_instance" "default" {
               name         = "gke-account"
               machine_type = "n1-standard-1"
@@ -66,20 +74,23 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
                 email  =  "123456789-compute@developer.gserviceaccount.com"
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_compute_instance"]["default"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_handle_empty(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "google_compute_instance" "broken" {
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['broken']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_compute_instance"]["broken"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

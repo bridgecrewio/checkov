@@ -1,5 +1,4 @@
 name: security
-
 on:
   pull_request:
     branches:
@@ -7,6 +6,7 @@ on:
   push:
     branches:
       - master
+
 jobs:
   bandit:
     runs-on: ubuntu-latest

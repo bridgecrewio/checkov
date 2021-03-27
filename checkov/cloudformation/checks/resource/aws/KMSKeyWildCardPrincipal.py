@@ -1,5 +1,7 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.cloudformation.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 def get_recursively(search_dict, field):
@@ -34,25 +36,30 @@ class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure KMS key policy does not contain wildcard (*) principal"
         id = "CKV_AWS_33"
-        supported_resources = ['AWS::KMS::Key']
+        supported_resources = ["AWS::KMS::Key"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def get_inspected_key(self):
-        return 'Properties/KeyPolicy/Statement/Principal'
+        return "Properties/KeyPolicy/Statement/Principal"
 
     def scan_resource_conf(self, conf):
-        if conf.get('Properties'):
-            if conf['Properties'].get('KeyPolicy'):
-                policy_block = conf['Properties']['KeyPolicy']
-                principals_list = get_recursively(policy_block, 'Principal')
+        if conf.get("Properties"):
+            if conf["Properties"].get("KeyPolicy"):
+                policy_block = conf["Properties"]["KeyPolicy"]
+                principals_list = get_recursively(policy_block, "Principal")
                 for principal in principals_list:
                     if isinstance(principal, dict):
                         for principal_key, principal_value in principal.items():
-                            if principal_value == '*':
+                            if principal_value == "*":
                                 return CheckResult.FAILED
                     else:
-                        if principal == '*':
+                        if principal == "*":
                             return CheckResult.FAILED
 
         return CheckResult.PASSED

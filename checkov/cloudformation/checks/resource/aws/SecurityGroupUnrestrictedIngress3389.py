@@ -1,4 +1,6 @@
-from checkov.cloudformation.checks.resource.aws.AbsSecurityGroupUnrestrictedIngress import AbsSecurityGroupUnrestrictedIngress
+from checkov.cloudformation.checks.resource.aws.AbsSecurityGroupUnrestrictedIngress import (
+    AbsSecurityGroupUnrestrictedIngress,
+)
 
 
 class SecurityGroupUnrestrictedIngress3389(AbsSecurityGroupUnrestrictedIngress):

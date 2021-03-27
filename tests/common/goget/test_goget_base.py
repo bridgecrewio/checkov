@@ -5,7 +5,6 @@ from tests.common.goget.local_getter import LocalGetter
 
 
 class TestBaseGetter(unittest.TestCase):
-
     def test_directory_creation(self):
         current_dir = os.getcwd()
         getter = LocalGetter(current_dir)
@@ -18,6 +17,5 @@ class TestBaseGetter(unittest.TestCase):
         os.rmdir(getter.temp_dir)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

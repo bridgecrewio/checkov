@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class DropCapabilities(BaseK8Check):
-
     def __init__(self):
         # CIS-1.3 1.7.7
         # CIS-1.5 5.2.7
@@ -11,9 +10,11 @@ class DropCapabilities(BaseK8Check):
         name = "Minimize the admission of containers with the NET_RAW capability"
         id = "CKV_K8S_28"
         # Location: container .securityContext.capabilities.drop
-        supported_kind = ['containers', 'initContainers']
+        supported_kind = ["containers", "initContainers"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         return f'{conf["parent"]} - {conf["name"]}'

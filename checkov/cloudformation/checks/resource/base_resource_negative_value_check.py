@@ -7,14 +7,26 @@ from checkov.common.models.enums import CheckResult
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+    def __init__(
+        self,
+        name,
+        id,
+        categories,
+        supported_resources,
+        missing_block_result=CheckResult.FAILED,
+    ):
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
         self.missing_block_result = missing_block_result
 
     def scan_resource_conf(self, conf, entity_type):
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:
-            path_elements = excluded_key.split('/')
+            path_elements = excluded_key.split("/")
             matches = ContextParser.search_deep_keys(path_elements[-1], conf, [])
             if len(matches) > 0:
                 for match in matches:
@@ -26,7 +38,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
 
         inspected_key = self.get_inspected_key()
         bad_values = self.get_forbidden_values()
-        path_elements = inspected_key.split('/')
+        path_elements = inspected_key.split("/")
         matches = ContextParser.search_deep_keys(path_elements[-1], conf, [])
         if len(matches) > 0:
             for match in matches:

@@ -1,5 +1,5 @@
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
@@ -8,7 +8,12 @@ class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
         id = "CKV_GCP_17"
         supported_resources = ["google_dns_managed_zone"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -24,7 +29,9 @@ class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
             # https://cloud.google.com/dns/docs/dnssec-advanced#advanced-signing-options
             if "default_key_specs" in dnssec_config:
                 for default_key_specs in dnssec_config["default_key_specs"]:
-                    if "algorithm" in default_key_specs and default_key_specs["algorithm"] == ["rsasha1"]:
+                    if "algorithm" in default_key_specs and default_key_specs[
+                        "algorithm"
+                    ] == ["rsasha1"]:
                         return CheckResult.FAILED
 
         return CheckResult.PASSED

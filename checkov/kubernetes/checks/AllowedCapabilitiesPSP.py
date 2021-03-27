@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class AllowedCapabilities(BaseK8Check):
-
     def __init__(self):
         # CIS-1.5 5.2.8
         name = "Do not allow containers with added capability"
@@ -11,15 +10,17 @@ class AllowedCapabilities(BaseK8Check):
         # https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities
         # Location: PodSecurityPolicy.spec.allowedCapabilities
         id = "CKV_K8S_24"
-        supported_kind = ['PodSecurityPolicy']
+        supported_kind = ["PodSecurityPolicy"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         if "metadata" in conf:
             if "name" in conf["metadata"]:
-                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
-        return 'PodSecurityPolicy.spec.allowedCapabilities'
+                return "PodSecurityPolicy.{}".format(conf["metadata"]["name"])
+        return "PodSecurityPolicy.spec.allowedCapabilities"
 
     def scan_spec_conf(self, conf):
         if "spec" in conf:
@@ -27,5 +28,6 @@ class AllowedCapabilities(BaseK8Check):
                 if conf["spec"]["allowedCapabilities"]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = AllowedCapabilities()

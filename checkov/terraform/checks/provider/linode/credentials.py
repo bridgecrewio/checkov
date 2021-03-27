@@ -1,17 +1,22 @@
 import re
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.provider.base_check import BaseProviderCheck
+
 from checkov.common.models.consts import linode_token_pattern
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 
 
 class LinodeCredentials(BaseProviderCheck):
-
     def __init__(self):
         name = "Ensure no hard coded Linode tokens exist in provider"
         id = "CKV_LIN_1"
-        supported_provider = ['linode']
+        supported_provider = ["linode"]
         categories = [CheckCategories.SECRETS]
-        super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_provider=supported_provider,
+        )
 
     def scan_provider_conf(self, conf):
         if self.secret_found(conf, "token", linode_token_pattern):

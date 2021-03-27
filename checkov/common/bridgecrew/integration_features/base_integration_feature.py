@@ -1,11 +1,13 @@
 import os
 from abc import ABC, abstractmethod
 
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import (
+    integration_feature_registry,
+)
 
 
 class BaseIntegrationFeature(ABC):
-    bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
+    bc_api_url = os.getenv("BC_API_URL", "https://www.bridgecrew.cloud/api/v1")
     integrations_api_url = f"{bc_api_url}/integrations/types/checkov"
     guidelines_api_url = f"{bc_api_url}/guidelines"
     onboarding_url = f"{bc_api_url}/signup/checkov"
@@ -29,4 +31,3 @@ class BaseIntegrationFeature(ABC):
     def post_scan(self, scan_reports):
         # overriding is optional
         pass
-

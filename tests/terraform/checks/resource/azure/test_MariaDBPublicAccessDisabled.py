@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.MariaDBPublicAccessDisabled import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.MariaDBPublicAccessDisabled import check
 
 
 class TestMariaDBPublicAccessDisabled(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mariadb_server" "example" {
             name                = var.server_name
             location            = var.resource_group.location
@@ -26,13 +26,15 @@ class TestMariaDBPublicAccessDisabled(unittest.TestCase):
             #test this i guess
             ssl_enforcement_enabled = false
         }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mariadb_server']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mariadb_server"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "azurerm_mariadb_server" "example" {
             name                = var.server_name
             location            = var.resource_group.location
@@ -49,11 +51,12 @@ class TestMariaDBPublicAccessDisabled(unittest.TestCase):
             #test this i guess
             ssl_enforcement_enabled = true
         }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mariadb_server']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mariadb_server"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

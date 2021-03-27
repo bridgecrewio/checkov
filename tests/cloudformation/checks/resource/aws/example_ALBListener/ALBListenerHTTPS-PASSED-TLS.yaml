@@ -16,7 +16,7 @@ Resources:
       Name: CheckovTest
       Type: 'network'
       Subnets: !Ref Subnets
-  
+
   ListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -40,8 +40,8 @@ Resources:
 
   ListenerCert:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-    Properties: 
-      Certificates: 
+    Properties:
+      Certificates:
         - CertificateArn: !Ref Certificate
       ListenerArn: !Ref ListenerHTTPS
 
@@ -64,4 +64,3 @@ Outputs:
   LoadBalancerUrl:
     Description: The URL of the ALB
     Value: !GetAtt LoadBalancer.DNSName
-

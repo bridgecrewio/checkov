@@ -4,13 +4,11 @@ import logging
 import os
 import sys
 from abc import abstractmethod
+from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple
 
 from checkov.common.checks.base_check import BaseCheck
-
-from collections import defaultdict
-
 from checkov.runner_filter import RunnerFilter
 
 
@@ -46,16 +44,16 @@ class BaseCheckRegistry(object):
 
     @staticmethod
     def _is_wildcard(entity):
-        return ('*' in entity
-                or '?' in entity
-                or ('[' in entity and ']' in entity))
+        return "*" in entity or "?" in entity or ("[" in entity and "]" in entity)
 
     def get_check_by_id(self, check_id):
         return next(
             filter(
                 lambda c: c.id == check_id,
-                chain(*self.checks.values(), *self.wildcard_checks.values())
-            ), None)
+                chain(*self.checks.values(), *self.wildcard_checks.values()),
+            ),
+            None,
+        )
 
     def all_checks(self) -> Generator[Tuple[str, BaseCheck], None, None]:
         for entity, checks in self.checks.items():
@@ -91,7 +89,9 @@ class BaseCheckRegistry(object):
 
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
 
-        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
+        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(
+            entity
+        )
 
         results = {}
 
@@ -102,23 +102,46 @@ class BaseCheckRegistry(object):
         for check in checks:
             skip_info = {}
             if skipped_checks:
-                if check.id in [x['id'] for x in skipped_checks]:
-                    skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
+                if check.id in [x["id"] for x in skipped_checks]:
+                    skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
             if runner_filter.should_run_check(check.id):
-                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                result = self.run_check(
+                    check,
+                    entity_configuration,
+                    entity_name,
+                    entity_type,
+                    scanned_file,
+                    skip_info,
+                )
                 results[check] = result
         return results
 
-    def run_check(self, check, entity_configuration, entity_name, entity_type, scanned_file, skip_info, tags=None):
-        self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-        result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
-                           entity_name=entity_name, entity_type=entity_type, skip_info=skip_info)
+    def run_check(
+        self,
+        check,
+        entity_configuration,
+        entity_name,
+        entity_type,
+        scanned_file,
+        skip_info,
+        tags=None,
+    ):
+        self.logger.debug(
+            "Running check: {} on file {}".format(check.name, scanned_file)
+        )
+        result = check.run(
+            scanned_file=scanned_file,
+            entity_configuration=entity_configuration,
+            entity_name=entity_name,
+            entity_type=entity_type,
+            skip_info=skip_info,
+        )
         return result
 
     @staticmethod
     def _directory_has_init_py(directory):
-        """ Check if a given directory contains a file named __init__.py.
+        """Check if a given directory contains a file named __init__.py.
 
         __init__.py is needed to ensure the directory is a Python module, thus
         can be imported.
@@ -130,12 +153,16 @@ class BaseCheckRegistry(object):
     @staticmethod
     def _file_can_be_imported(entry):
         """ Verify if a directory entry is a non-magic Python file."""
-        if entry.is_file() and not entry.name.startswith('__') and entry.name.endswith('.py'):
+        if (
+            entry.is_file()
+            and not entry.name.startswith("__")
+            and entry.name.endswith(".py")
+        ):
             return True
         return False
 
     def load_external_checks(self, directory, runner_filter):
-        """ Browse a directory looking for .py files to import.
+        """Browse a directory looking for .py files to import.
 
         Log an error when the directory does not contains an __init__.py or
         when a .py file has syntax error
@@ -146,28 +173,33 @@ class BaseCheckRegistry(object):
 
         with os.scandir(directory) as directory_content:
             if not self._directory_has_init_py(directory):
-                self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
+                self.logger.info(
+                    "No __init__.py found in {}. Cannot load any check here.".format(
+                        directory
+                    )
+                )
             else:
                 for entry in directory_content:
                     if self._file_can_be_imported(entry):
-                        check_name = entry.name.replace('.py', '')
+                        check_name = entry.name.replace(".py", "")
 
                         # Filter is set while loading external checks so the filter can be informed
                         # of the checks, which need to be handled specially.
                         try:
                             BaseCheckRegistry.__loading_external_checks = True
-                            self.logger.debug("Importing external check '{}'".format(check_name))
+                            self.logger.debug(
+                                "Importing external check '{}'".format(check_name)
+                            )
                             importlib.import_module(check_name)
                         except SyntaxError as e:
                             self.logger.error(
                                 "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
-                                "{error_line}:{error_column}) "
-                                    .format(
+                                "{error_line}:{error_column}) ".format(
                                     check_name=check_name,
                                     check_full_path=e.args[1][0],
                                     error_message=e.args[0],
                                     error_line=e.args[1][1],
-                                    error_column=e.args[1][2]
+                                    error_column=e.args[1][2],
                                 )
                             )
                         finally:

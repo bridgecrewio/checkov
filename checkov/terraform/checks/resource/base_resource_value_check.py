@@ -1,16 +1,30 @@
-from abc import abstractmethod
-import dpath.util
 import re
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult
+from abc import abstractmethod
+
+import dpath.util
+
 from checkov.common.models.consts import ANY_VALUE
+from checkov.common.models.enums import CheckResult
 from checkov.common.util.type_forcers import force_list
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.parser_utils import find_var_blocks
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+    def __init__(
+        self,
+        name,
+        id,
+        categories,
+        supported_resources,
+        missing_block_result=CheckResult.FAILED,
+    ):
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
         self.missing_block_result = missing_block_result
 
     @staticmethod
@@ -20,7 +34,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
+        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
 
     @staticmethod
     def _is_variable_dependant(value):
@@ -65,7 +79,9 @@ class BaseResourceValueCheck(BaseResourceCheck):
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
             for attribute in reversed(inspected_attributes):
-                for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
+                for sub_key, sub_conf in dpath.search(
+                    conf, f"**/{attribute}", yielded=True
+                ):
                     filtered_sub_key = self._filter_key_path(sub_key)
                     # Only proceed with check if full path for key is similar - not partial match
                     if inspected_attributes == filtered_sub_key:

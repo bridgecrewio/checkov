@@ -1,8 +1,9 @@
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import (
+    BaseCloudsplainingIAMCheck,
+)
 
 
 class CloudSplainingPermissionsManagement(BaseCloudsplainingIAMCheck):
-
     def __init__(self):
         name = "Ensure IAM policies does not allow permissions management / resource exposure without constraints"
         id = "CKV_AWS_109"

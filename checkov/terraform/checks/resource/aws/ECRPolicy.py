@@ -1,6 +1,6 @@
 import json
 
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -8,9 +8,14 @@ class ECRPolicy(BaseResourceCheck):
     def __init__(self):
         name = "Ensure ECR policy is not set to public"
         id = "CKV_AWS_32"
-        supported_resources = ['aws_ecr_repository_policy']
+        supported_resources = ["aws_ecr_repository_policy"]
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -21,7 +26,7 @@ class ECRPolicy(BaseResourceCheck):
         """
         if "policy" in conf.keys():
             if is_json(conf["policy"][0]):
-                if json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':
+                if json.loads(conf["policy"][0])["Statement"][0]["Principal"] == "*":
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

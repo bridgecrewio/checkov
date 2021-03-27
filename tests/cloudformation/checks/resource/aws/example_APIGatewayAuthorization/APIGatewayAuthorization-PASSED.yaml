@@ -4,21 +4,21 @@ Resources:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: OPTIONS
       AuthorizationType: NONE
   MyMethod1:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: GET
       AuthorizationType: AWS_IAM
   MyMethod2:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: GET
       AuthorizationType: CUSTOM
       AuthorizerId: MyAuthorizerID
@@ -26,7 +26,7 @@ Resources:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: GET
       AuthorizationType: NONE
       ApiKeyRequired: true

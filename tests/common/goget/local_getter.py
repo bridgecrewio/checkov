@@ -11,4 +11,3 @@ class LocalGetter(BaseGetter):
     def do_get(self):
 
         return self.temp_dir
-

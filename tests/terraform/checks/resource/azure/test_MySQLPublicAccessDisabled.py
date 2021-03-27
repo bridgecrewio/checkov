@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.MySQLPublicAccessDisabled import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.MySQLPublicAccessDisabled import check
 
 
 class TestMySQLPublicAccessDisabled(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mysql_server" "examplea" {
   name                = var.mysqlserver_name
   location            = var.resource_group.location
@@ -27,13 +27,15 @@ class TestMySQLPublicAccessDisabled(unittest.TestCase):
   infrastructure_encryption_enabled = false
     public_network_access_enabled = true
 }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['examplea']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mysql_server"]["examplea"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_missing_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mysql_server" "examplea" {
   name                = var.mysqlserver_name
   location            = var.resource_group.location
@@ -50,13 +52,15 @@ class TestMySQLPublicAccessDisabled(unittest.TestCase):
   geo_redundant_backup_enabled = false
   infrastructure_encryption_enabled = false
 }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['examplea']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mysql_server"]["examplea"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
-        
+
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "azurerm_mysql_server" "examplea" {
   name                = var.mysqlserver_name
   location            = var.resource_group.location
@@ -74,11 +78,12 @@ resource "azurerm_mysql_server" "examplea" {
   infrastructure_encryption_enabled = false
   public_network_access_enabled = false
 }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['examplea']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mysql_server"]["examplea"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

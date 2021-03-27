@@ -7,8 +7,13 @@ from checkov.serverless.checks.function.registry import function_registry
 
 class BaseFunctionCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_entities):
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
-                         block_type="serverless")
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_entities,
+            block_type="serverless",
+        )
         function_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):

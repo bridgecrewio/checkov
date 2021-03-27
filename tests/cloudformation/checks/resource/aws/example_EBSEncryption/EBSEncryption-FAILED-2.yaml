@@ -1,13 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Sample EBS Volume with EC2 instance template
-Resources: 
+Resources:
   NewVolume:
     Type: AWS::EC2::Volume
-    Properties: 
+    Properties:
       Size: 100
       AvailabilityZone: us-west-2a
       Tags:
         - Key: MyTag
           Value: TagValue
     DeletionPolicy: Snapshot
-

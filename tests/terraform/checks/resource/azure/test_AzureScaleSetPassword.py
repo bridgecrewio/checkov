@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.AzureScaleSetPassword import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.AzureScaleSetPassword import check
 
 
 class TestAzureScaleSetPassword(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "azurerm_linux_virtual_machine_scale_set" "example" {
             name                = var.scaleset_name
             resource_group_name = var.resource_group.name
@@ -20,13 +20,17 @@ class TestAzureScaleSetPassword(unittest.TestCase):
             disable_password_authentication = false
             tags = var.common_tags
         }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_linux_virtual_machine_scale_set']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0][
+            "azurerm_linux_virtual_machine_scale_set"
+        ]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "azurerm_linux_virtual_machine_scale_set" "example" {
             name                = var.scaleset_name
             resource_group_name = var.resource_group.name
@@ -42,10 +46,14 @@ class TestAzureScaleSetPassword(unittest.TestCase):
                 }
             tags = var.common_tags
         }
-                        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_linux_virtual_machine_scale_set']['example']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0][
+            "azurerm_linux_virtual_machine_scale_set"
+        ]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

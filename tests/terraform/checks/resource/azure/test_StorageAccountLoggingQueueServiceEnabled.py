@@ -2,14 +2,16 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.StorageAccountLoggingQueueServiceEnabled import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.StorageAccountLoggingQueueServiceEnabled import (
+    check,
+)
 
 
 class TestStorageAccountLoggingQueueServiceEnabled(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account" "example" {
               name                     = "example"
               resource_group_name      = data.azurerm_resource_group.example.name
@@ -17,13 +19,15 @@ class TestStorageAccountLoggingQueueServiceEnabled(unittest.TestCase):
               account_tier             = "Standard"
               account_replication_type = "GRS"
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account" "example" {
               name                     = "example"
               resource_group_name      = data.azurerm_resource_group.example.name
@@ -52,13 +56,15 @@ class TestStorageAccountLoggingQueueServiceEnabled(unittest.TestCase):
                 }
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_blobstorage(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account" "example" {
               name                     = "example"
               resource_group_name      = data.azurerm_resource_group.example.name
@@ -67,11 +73,12 @@ class TestStorageAccountLoggingQueueServiceEnabled(unittest.TestCase):
               account_replication_type = "LRS"
               account_kind             = "BlobStorage"
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

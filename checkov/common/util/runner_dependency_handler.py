@@ -3,10 +3,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RunnerDependencyHandler():
+class RunnerDependencyHandler:
     """
     Scan runners for system dependencies, disable runners with failed deps via main.py/run()
     """
+
     checkov_frameworks_unmatched_deps = []
     checkov_runner_module_names = ""
     calledGlobals = {}
@@ -35,17 +36,20 @@ class RunnerDependencyHandler():
             try:
                 self.calledGlobals[f"{runner}_runner"]().system_deps
             except:
-                logging.debug(f"{runner}_runner declares no system dependency checks required.")
+                logging.debug(
+                    f"{runner}_runner declares no system dependency checks required."
+                )
                 continue
 
             if self.calledGlobals[f"{runner}_runner"]().system_deps:
-                    result = self.calledGlobals[f"{runner}_runner"]().check_system_deps()
-                    if result is not None:
-                        self.checkov_frameworks_unmatched_deps.append(result)
-        
-        if self.checkov_frameworks_unmatched_deps:
-            logging.info(f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(self.checkov_frameworks_unmatched_deps)}")
+                result = self.calledGlobals[f"{runner}_runner"]().check_system_deps()
+                if result is not None:
+                    self.checkov_frameworks_unmatched_deps.append(result)
 
+        if self.checkov_frameworks_unmatched_deps:
+            logging.info(
+                f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(self.checkov_frameworks_unmatched_deps)}"
+            )
 
     def disable_incompatible_runners(self, skip_framework):
         """

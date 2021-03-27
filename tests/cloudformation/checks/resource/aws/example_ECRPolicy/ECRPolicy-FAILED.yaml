@@ -1,21 +1,21 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Resources: 
-  MyRepository: 
+Resources:
+  MyRepository:
     Type: AWS::ECR::Repository
-    Properties: 
+    Properties:
       RepositoryName: "test-repository"
-      RepositoryPolicyText: 
+      RepositoryPolicyText:
         Version: "2012-10-17"
-        Statement: 
-          - 
+        Statement:
+          -
             Sid: AllowPushPull
             Effect: Allow
             Principal: "*"
-            #Principal: 
-            #   AWS: 
+            #Principal:
+            #   AWS:
             #     - "arn:aws:iam::123456789012:user/Bob"
             #     - "arn:aws:iam::123456789012:user/Alice"
-            Action: 
+            Action:
               - "ecr:GetDownloadUrlForLayer"
               - "ecr:BatchGetImage"
               - "ecr:BatchCheckLayerAvailability"

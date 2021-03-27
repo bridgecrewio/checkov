@@ -1,11 +1,10 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.PasswordPolicyNumber import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.PasswordPolicyNumber import check
 
 
 class TestPasswordPolicyNumber(unittest.TestCase):
-
     def test_success(self):
         resource_conf = {
             "minimum_password_length": [15],
@@ -42,5 +41,5 @@ class TestPasswordPolicyNumber(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

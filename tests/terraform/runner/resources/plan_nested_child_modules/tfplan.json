@@ -22,7 +22,7 @@
                                   "audit"
                                ],
                                "encryption_config":[
-                                  
+
                                ],
                                "name":"test",
                                "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -58,7 +58,7 @@
                                   "audit"
                                ],
                                "encryption_config":[
-                                  
+
                                ],
                                "name":"test",
                                "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -94,7 +94,7 @@
                                   "audit"
                                ],
                                "encryption_config":[
-                                  
+
                                ],
                                "name":"test",
                                "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -139,7 +139,7 @@
                    "audit"
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "name":"test",
                 "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -165,7 +165,7 @@
                    false
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "endpoint":true,
                 "id":true,
@@ -205,7 +205,7 @@
                    "audit"
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "name":"test",
                 "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -231,7 +231,7 @@
                    false
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "endpoint":true,
                 "id":true,
@@ -271,7 +271,7 @@
                    "audit"
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "name":"test",
                 "role_arn":"arn:aws:iam::12345678912:role/test",
@@ -297,7 +297,7 @@
                    false
                 ],
                 "encryption_config":[
-                   
+
                 ],
                 "endpoint":true,
                 "id":true,

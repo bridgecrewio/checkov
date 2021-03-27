@@ -1,7 +1,9 @@
 import copy
+
+
 def convert_cloudformation_conf_to_iam_policy(conf):
     """
-        converts terraform parsed configuration to iam policy document
+    converts terraform parsed configuration to iam policy document
     """
     result = copy.deepcopy(conf)
     if "Statement" in result.keys():
@@ -11,7 +13,7 @@ def convert_cloudformation_conf_to_iam_policy(conf):
                 statement["Action"] = str(statement.pop("Action")[0])
             if "Resource" in statement:
                 resources = statement.pop("Resource")
-                if isinstance(resources,list):
+                if isinstance(resources, list):
                     statement["Resource"] = str(resources[0])
                 else:
                     statement["Resource"] = str(resources)
@@ -19,7 +21,7 @@ def convert_cloudformation_conf_to_iam_policy(conf):
                 statement["NotAction"] = str(statement.pop("NotAction")[0])
             if "NotResource" in statement:
                 not_resources = statement.pop("NotResource")
-                if isinstance(not_resources,list):
+                if isinstance(not_resources, list):
                     statement["NotResource"] = str(not_resources[0])
                 else:
                     statement["NotResource"] = str(not_resources)

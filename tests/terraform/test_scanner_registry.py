@@ -4,7 +4,6 @@ from checkov.terraform.checks.resource.registry import resource_registry as regi
 
 
 class TestScannerRegistry(unittest.TestCase):
-
     def test_num_of_scanners(self):
         scanners_counter = 0
         for key in list(registry.checks.keys()):
@@ -19,8 +18,10 @@ class TestScannerRegistry(unittest.TestCase):
                 check_id_check_class_map.setdefault(check.id, []).append(check)
 
         for check_id, check_classes in check_id_check_class_map.items():
-            self.assertEqual(len(set(check_classes)), 1,"collision on check_id={}".format(check_id))
+            self.assertEqual(
+                len(set(check_classes)), 1, "collision on check_id={}".format(check_id)
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

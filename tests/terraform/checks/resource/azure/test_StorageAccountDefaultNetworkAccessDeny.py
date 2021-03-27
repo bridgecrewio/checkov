@@ -2,14 +2,16 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.StorageAccountDefaultNetworkAccessDeny import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.StorageAccountDefaultNetworkAccessDeny import (
+    check,
+)
 
 
 class TestStorageAccountDefaultNetworkAccessDeny(unittest.TestCase):
-
     def test_failure_1(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account" "example" {
               name                     = "example"
               resource_group_name      = data.azurerm_resource_group.example.name
@@ -17,29 +19,35 @@ class TestStorageAccountDefaultNetworkAccessDeny(unittest.TestCase):
               account_tier             = "Standard"
               account_replication_type = "GRS"
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account_network_rules" "test" {
               resource_group_name  = azurerm_resource_group.test.name
               storage_account_name = azurerm_storage_account.test.name
-            
+
               default_action             = "Allow"
               ip_rules                   = ["127.0.0.1"]
               virtual_network_subnet_ids = [azurerm_subnet.test.id]
               bypass                     = ["Metrics"]
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account_network_rules']['test']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account_network_rules"][
+            "test"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_storage_account" "example" {
               name                     = "example"
               resource_group_name      = data.azurerm_resource_group.example.name
@@ -52,11 +60,12 @@ class TestStorageAccountDefaultNetworkAccessDeny(unittest.TestCase):
                 virtual_network_subnet_ids = [azurerm_subnet.example.id]
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_storage_account"]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

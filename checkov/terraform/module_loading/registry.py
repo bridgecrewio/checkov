@@ -1,39 +1,47 @@
 import logging
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
 
 
 class ModuleLoaderRegistry:
-    loaders: List = []      # List[ModuleLoader]
+    loaders: List = []  # List[ModuleLoader]
 
-    def __init__(self, download_external_modules=False, external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR):
+    def __init__(
+        self,
+        download_external_modules=False,
+        external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR,
+    ):
         self.logger = logging.getLogger(__name__)
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache = set()
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
+    def load(
+        self, current_dir: str, source: str, source_version: Optional[str]
+    ) -> ModuleContent:
         """
-Search all registered loaders for the first one which is able to load the module source type. For more
-information, see `loader.ModuleLoader.load`.
+        Search all registered loaders for the first one which is able to load the module source type. For more
+        information, see `loader.ModuleLoader.load`.
         """
         local_dir = os.path.join(current_dir, self.external_modules_folder_name, source)
-        inner_module = ''
+        inner_module = ""
         next_url = source
         last_exception = None
         while next_url:
             source = next_url
-            next_url = ''
+            next_url = ""
             if source in self.failed_urls_cache:
                 break
             for loader in self.loaders:
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
-                    content = loader.load(current_dir, source, source_version, local_dir, inner_module)
+                    content = loader.load(
+                        current_dir, source, source_version, local_dir, inner_module
+                    )
                 except Exception as e:
                     last_exception = e
                     continue

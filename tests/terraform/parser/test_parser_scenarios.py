@@ -18,7 +18,6 @@ def json_encoder(val):
 
 
 class TestParserScenarios(unittest.TestCase):
-
     def test_empty_file(self):
         self.go("empty_file")
 
@@ -79,7 +78,9 @@ class TestParserScenarios(unittest.TestCase):
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
-    def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
+    def test_list_default_622(
+        self,
+    ):  # see https://github.com/bridgecrewio/checkov/issues/622
         self.go("list_default_622")
 
     # TODO ROB - Implementation in progress
@@ -138,11 +139,15 @@ class TestParserScenarios(unittest.TestCase):
 
     @staticmethod
     def go(dir_name):
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                f"resources/parser_scenarios/{dir_name}")
+        dir_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            f"resources/parser_scenarios/{dir_name}",
+        )
         assert os.path.exists(dir_path)
 
-        expected_data = TestParserScenarios.load_expected_data("expected.json", dir_path)
+        expected_data = TestParserScenarios.load_expected_data(
+            "expected.json", dir_path
+        )
         assert expected_data is not None, f"{dir_name}: expected.json file not found"
 
         evaluation_data = TestParserScenarios.load_expected_data("eval.json", dir_path)
@@ -151,22 +156,32 @@ class TestParserScenarios(unittest.TestCase):
         actual_eval_data = {}
         errors = {}
         parser = Parser()
-        parser.parse_directory(dir_path, actual_data, actual_eval_data, errors, download_external_modules=True)
+        parser.parse_directory(
+            dir_path,
+            actual_data,
+            actual_eval_data,
+            errors,
+            download_external_modules=True,
+        )
         assert not errors, f"{dir_name}: Unexpected errors: {errors}"
         definition_string = json.dumps(actual_data, indent=2, default=json_encoder)
         definition_encoded = json.loads(definition_string)
-        assert definition_encoded == expected_data, \
-            f"{dir_name}: Data mismatch:\n" \
-            f"  Expected: \n{json.dumps(expected_data, indent=2, default=json_encoder)}\n\n" \
+        assert definition_encoded == expected_data, (
+            f"{dir_name}: Data mismatch:\n"
+            f"  Expected: \n{json.dumps(expected_data, indent=2, default=json_encoder)}\n\n"
             f"  Actual: \n{definition_string}"
+        )
 
         if evaluation_data is not None:
-            definition_string = json.dumps(actual_eval_data, indent=2, default=json_encoder)
+            definition_string = json.dumps(
+                actual_eval_data, indent=2, default=json_encoder
+            )
             definition_encoded = json.loads(definition_string)
-            assert definition_encoded == evaluation_data, \
-                f"{dir_name}: Evaluation data mismatch:\n" \
-                f"  Expected: \n{json.dumps(evaluation_data, indent=2, default=json_encoder)}\n\n" \
+            assert definition_encoded == evaluation_data, (
+                f"{dir_name}: Evaluation data mismatch:\n"
+                f"  Expected: \n{json.dumps(evaluation_data, indent=2, default=json_encoder)}\n\n"
                 f"  Actual: \n{definition_string}"
+            )
 
     @staticmethod
     def load_expected_data(source_file_name, dir_path):
@@ -181,7 +196,9 @@ class TestParserScenarios(unittest.TestCase):
         #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
         #                                    HERE       & HERE
         #
-        resolved_pattern = re.compile(r"(.+)\[(.+)#(\d+)]")   # groups:  location (1), referrer (2), index (3)
+        resolved_pattern = re.compile(
+            r"(.+)\[(.+)#(\d+)]"
+        )  # groups:  location (1), referrer (2), index (3)
 
         # Expected files should have the filenames relative to their base directory, but the parser will
         # use the absolute path. This loop with replace relative filenames with absolute.
@@ -199,10 +216,14 @@ class TestParserScenarios(unittest.TestCase):
             expected_data[new_key] = expected_data[key]
             del expected_data[key]
 
-        for resolved_list in jmespath.search("*.module[].*[].__resolved__", expected_data):
+        for resolved_list in jmespath.search(
+            "*.module[].*[].__resolved__", expected_data
+        ):
             for list_index in range(0, len(resolved_list)):
                 match = resolved_pattern.match(resolved_list[list_index])
-                assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
+                assert (
+                    match is not None
+                ), f"Unexpected module resolved data: {resolved_list[list_index]}"
                 resolved_list[list_index] = _make_module_ref_absolute(match, dir_path)
                 # print(f"{match[0]} -> {resolved_list[list_index]}")
 
@@ -220,5 +241,5 @@ def _make_module_ref_absolute(match, dir_path) -> str:
     return f"{module_location}[{module_referrer}#{match[3]}]"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -45,4 +45,3 @@ if [ -f /etc/checkov/apikey ]; then
 else
   checkov -s -d /data --framework kubernetes
 fi
-

@@ -56,7 +56,7 @@ know when it is.
 
 On release day, we will push the patch to our public repository, along
 with an updated changelog that describes the issue. The change log is
-generated automatically from commit messages. We will then issue a 
+generated automatically from commit messages. We will then issue a
 PyPI release containing the patch.
 
 At this point, we will publicise the release. This will involve

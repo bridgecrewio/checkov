@@ -5,7 +5,6 @@ from checkov.terraform.checks.resource.aws.ElasticsearchDomainLogging import che
 
 
 class TestElasticsearchDomainLogging(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {
             "domain_name": "Example",
@@ -16,15 +15,11 @@ class TestElasticsearchDomainLogging(unittest.TestCase):
     def test_success(self):
         resource_conf = {
             "domain_name": "Example",
-            "log_publishing_options": [
-                {
-                    "cloudwatch_log_group_arn": "some-arn"
-                }
-            ],
+            "log_publishing_options": [{"cloudwatch_log_group_arn": "some-arn"}],
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

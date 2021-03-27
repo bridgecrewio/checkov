@@ -1,9 +1,9 @@
 name: build
-
-on: 
+on:
   push:
     branches:
     - master
+
 jobs:
   integration-tests:
     runs-on: ubuntu-latest

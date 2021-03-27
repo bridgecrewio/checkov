@@ -39,7 +39,7 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: example/examplea
-          framework: terraform 
+          framework: terraform
 ```
 
 ## Example Results

@@ -1,13 +1,17 @@
 import unittest
 
-from checkov.common.models.enums import CheckResult
-from checkov.terraform.checks.resource.aws.ECSTaskDefinitionEFSVolumeEncryption import check
 import hcl2
 
-class TestECSTaskDefinitionEFSVolumeEncryption(unittest.TestCase):
+from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.ECSTaskDefinitionEFSVolumeEncryption import (
+    check,
+)
 
+
+class TestECSTaskDefinitionEFSVolumeEncryption(unittest.TestCase):
     def test_success_no_volume(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_ecs_task_definition" "test" {
   family                = "service"
   container_definitions = file("task-definitions/service.json")
@@ -22,13 +26,15 @@ resource "aws_ecs_task_definition" "test" {
     expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_ecs_task_definition"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_ecs_task_definition" "test" {
   family                = "service"
   container_definitions = file("task-definitions/service.json")
@@ -48,13 +54,15 @@ resource "aws_ecs_task_definition" "test" {
     }
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_ecs_task_definition"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
-        
+
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_ecs_task_definition" "test" {
   family                = "service"
   container_definitions = file("task-definitions/service.json")
@@ -73,14 +81,15 @@ resource "aws_ecs_task_definition" "test" {
     }
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_ecs_task_definition"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)           
-
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_explicit(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_ecs_task_definition" "test" {
   family                = "service"
   container_definitions = file("task-definitions/service.json")
@@ -100,10 +109,12 @@ resource "aws_ecs_task_definition" "test" {
     }
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_ecs_task_definition"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result) 
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

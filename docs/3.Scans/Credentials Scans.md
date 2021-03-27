@@ -7,13 +7,13 @@ order: 7
 
 # Credentials scans
 
-Cloud account secrets are a priceless target for an attacker to utilize cloud resources, leak data or harm the application infrastructure. 
+Cloud account secrets are a priceless target for an attacker to utilize cloud resources, leak data or harm the application infrastructure.
 
 Checkov can scan for a number of different common credentials, such as AWS access keys, Azure, service credentials, or private keys that are hard coded in a terraform code block.
 
 The list of regular expressions is available [here](https://github.com/bridgecrewio/checkov/blob/master/checkov/common/util/secrets.py), and we welcome any contributions to this list.
 
-## Example 
+## Example
 Let's assume we have the following terraform provider block:
 ```hcl-terraform
 # Snippet from  main.tf
@@ -36,13 +36,13 @@ Will result in the following output:
 
 ```bash
 
-       _               _              
+       _               _
    ___| |__   ___  ___| | _______   __
   / __| '_ \ / _ \/ __| |/ / _ \ \ / /
- | (__| | | |  __/ (__|   < (_) \ V / 
-  \___|_| |_|\___|\___|_|\_\___/ \_/  
-                                      
-version: 1.0.202 
+ | (__| | | |  __/ (__|   < (_) \ V /
+  \___|_| |_|\___|\___|_|\_\___/ \_/
+
+version: 1.0.202
 
 terraform scan results:
 

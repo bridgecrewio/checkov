@@ -2,14 +2,14 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: hello
-  labels: 
+  labels:
     app: hello
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: hello
-  template: 
+  template:
     metadata:
       labels:
         app: hello
@@ -20,5 +20,3 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsUser: 0
-
-

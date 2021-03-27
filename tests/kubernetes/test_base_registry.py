@@ -7,7 +7,6 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestRunnerFilter(unittest.TestCase):
-
     def test_run_by_id_default(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=[])
@@ -101,5 +100,5 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertTrue(instance._should_run_scan("CKV_1", config, run_filter))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

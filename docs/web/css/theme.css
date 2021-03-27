@@ -7708,7 +7708,7 @@ a:hover {
 	border: 0px;
 	background-color: #662eff;
 	background-image: linear-gradient(-231deg, #7a49ff 0%, #662eff 100%);
-	line-height: 25px;	
+	line-height: 25px;
 	color: white;
 	font-size: 14px;
 }
@@ -7748,7 +7748,7 @@ a:hover {
 }
 
 .header-bridgecrew .btns-container .link{
-	
+
 }
 
 .header-bridgecrew .btns-container .btn{
@@ -7757,8 +7757,8 @@ a:hover {
 }
 
 @media screen and (max-width: 1024px){
-	
+
 	.header-bridgecrew .btns-container{
-		display: none;	
+		display: none;
 	}
 }

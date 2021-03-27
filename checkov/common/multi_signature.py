@@ -9,18 +9,25 @@ class MultiSignatureMeta(ABCMeta):
         multi_signatures = {
             name: value
             for name, value in namespace.items()
-            if hasattr(value, "__multi_signature_wrappers__") and inspect.isfunction(value)
+            if hasattr(value, "__multi_signature_wrappers__")
+            and inspect.isfunction(value)
             # isfunction, because function is not bound yet
         }
         # search in base classes for decorated functions
         for base in bases:
             for name, value in getattr(base, "__multi_signature_methods__", {}).items():
-                if inspect.isfunction(value) and hasattr(value, "__multi_signature_wrappers__"):
-                    multi_signature_wrappers = getattr(value, "__multi_signature_wrappers__", False)
+                if inspect.isfunction(value) and hasattr(
+                    value, "__multi_signature_wrappers__"
+                ):
+                    multi_signature_wrappers = getattr(
+                        value, "__multi_signature_wrappers__", False
+                    )
                     if multi_signature_wrappers:
                         current_function = multi_signatures.get(name)
                         if current_function:
-                            current_function.__multi_signature_wrappers__.update(multi_signature_wrappers)
+                            current_function.__multi_signature_wrappers__.update(
+                                multi_signature_wrappers
+                            )
                         else:
                             multi_signatures[name] = value
 

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Resources: 
+Resources:
   myCluster:
     Type: 'AWS::EKS::Cluster'
     Properties:
@@ -15,5 +15,4 @@ Resources:
           - subnet-e7e761ac
       CloudWatch:
         ClusterLogging: True
-        # Should list the logs too... 
-
+        # Should list the logs too...

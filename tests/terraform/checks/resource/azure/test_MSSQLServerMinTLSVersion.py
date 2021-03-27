@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.MSSQLServerMinTLSVersion import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.MSSQLServerMinTLSVersion import check
 
 
 class TestMSSQLServerMinTLSVersion(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mssql_server" "examplea" {
               name                          = var.server_name
               resource_group_name           = var.resource_group.name
@@ -24,13 +24,15 @@ class TestMSSQLServerMinTLSVersion(unittest.TestCase):
               }
               tags = var.common_tags
               }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mssql_server']['examplea']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mssql_server"]["examplea"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mssql_server" "examplea" {
               name                          = var.server_name
               resource_group_name           = var.resource_group.name
@@ -45,11 +47,12 @@ class TestMSSQLServerMinTLSVersion(unittest.TestCase):
               }
               tags = var.common_tags
               }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mssql_server']['examplea']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["azurerm_mssql_server"]["examplea"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

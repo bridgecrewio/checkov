@@ -1,8 +1,9 @@
-from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.cloudformation.checks.resource.BaseCloudsplainingIAMCheck import (
+    BaseCloudsplainingIAMCheck,
+)
 
 
 class cloudsplainingWriteAccess(BaseCloudsplainingIAMCheck):
-
     def __init__(self):
         name = "Ensure IAM policies does not allow write access without constraints"
         id = "CKV_AWS_111"

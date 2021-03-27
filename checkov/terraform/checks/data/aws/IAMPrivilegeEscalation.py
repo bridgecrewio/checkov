@@ -1,8 +1,9 @@
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import (
+    BaseCloudsplainingIAMCheck,
+)
 
 
 class CloudSplainingPrivilegeEscalation(BaseCloudsplainingIAMCheck):
-
     def __init__(self):
         name = "Ensure IAM policies does not allow privilege escalation"
         id = "CKV_AWS_110"

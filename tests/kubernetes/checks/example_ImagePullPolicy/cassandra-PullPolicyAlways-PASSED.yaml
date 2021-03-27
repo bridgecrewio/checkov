@@ -59,7 +59,7 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: 
+              command:
               - /bin/sh
               - -c
               - nodetool drain
@@ -114,5 +114,3 @@ metadata:
 provisioner: k8s.io/minikube-hostpath
 parameters:
   type: pd-ssd
-
-

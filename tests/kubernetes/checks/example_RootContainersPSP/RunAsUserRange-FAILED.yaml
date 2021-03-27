@@ -50,4 +50,3 @@ spec:
       - min: 1
         max: 65535
   readOnlyRootFilesystem: false
-

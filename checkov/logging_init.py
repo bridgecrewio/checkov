@@ -1,13 +1,14 @@
-import sys
-
 import logging
 import os
+import sys
 
 
 def init():
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING").upper()
     logging.basicConfig(level=LOG_LEVEL)
-    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    logFormatter = logging.Formatter(
+        "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
+    )
     rootLogger = logging.getLogger()
     consoleHandler = logging.StreamHandler(sys.stderr)
     consoleHandler.setFormatter(logFormatter)

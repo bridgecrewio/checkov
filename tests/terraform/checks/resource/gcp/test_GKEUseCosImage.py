@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GKEUseCosImage import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.gcp.GKEUseCosImage import check
 
 
 class TestGKEUseCosImage(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
     resource "google_container_node_pool" "tfer" {
       autoscaling {
         max_node_count = "4"
@@ -67,13 +67,15 @@ class TestGKEUseCosImage(unittest.TestCase):
       version = "1.14.10-gke.36"
       zone    = "us-west1"
     }
-                    """)
-        resource_conf = hcl_res['resource'][0]['google_container_node_pool']['tfer']
+                    """
+        )
+        resource_conf = hcl_res["resource"][0]["google_container_node_pool"]["tfer"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "google_container_node_pool" "tfer" {
   autoscaling {
     max_node_count = "4"
@@ -131,11 +133,12 @@ resource "google_container_node_pool" "tfer" {
   version = "1.14.10-gke.36"
   zone    = "us-west1"
 }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_container_node_pool']['tfer']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_container_node_pool"]["tfer"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

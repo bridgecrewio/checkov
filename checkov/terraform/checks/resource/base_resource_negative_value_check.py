@@ -10,7 +10,12 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
     def __init__(self, name, id, categories, supported_resources):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         self.handle_dynamic_values(conf)

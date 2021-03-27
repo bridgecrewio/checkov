@@ -9,11 +9,11 @@ order: 4
 
 ## Scan type
 Checkov scans IaC with the context of the IaC's type. Currently, Checkov scans both Terraform and AWS CloudFormation configurations,
-and outputs a scan report for each IaC type.  
+and outputs a scan report for each IaC type.
 
 ## Scan outputs
 
-After running a ``checkov`` command on a IaC file or folder, the scan's results will print in your current session Checkov currently supports output in 3 common formats: CLI, JSON & JUnit XML. 
+After running a ``checkov`` command on a IaC file or folder, the scan's results will print in your current session Checkov currently supports output in 3 common formats: CLI, JSON & JUnit XML.
 
 
 
@@ -659,4 +659,3 @@ This print also includes detailed structured data-blocks that contain exact refe
 ## Next Steps
 
 Explore the [suppression](../2.Concepts/Suppressions.md)
-

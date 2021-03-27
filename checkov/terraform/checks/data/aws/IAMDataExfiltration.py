@@ -1,8 +1,9 @@
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import (
+    BaseCloudsplainingIAMCheck,
+)
 
 
 class CloudSplainingDataExfiltration(BaseCloudsplainingIAMCheck):
-
     def __init__(self):
         name = "Ensure IAM policies does not allow data exfiltration"
         id = "CKV_AWS_108"

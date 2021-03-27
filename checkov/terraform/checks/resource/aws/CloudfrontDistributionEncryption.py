@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -6,9 +6,14 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS"
         id = "CKV_AWS_34"
-        supported_resources = ['aws_cloudfront_distribution']
+        supported_resources = ["aws_cloudfront_distribution"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -18,9 +23,11 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "default_cache_behavior" in conf.keys():
-            self.evaluated_keys = 'default_cache_behavior/[0]/viewer_protocol_policy'
+            self.evaluated_keys = "default_cache_behavior/[0]/viewer_protocol_policy"
             if isinstance(conf["default_cache_behavior"][0], dict):
-                default_viewer_policy = conf["default_cache_behavior"][0]["viewer_protocol_policy"][0]
+                default_viewer_policy = conf["default_cache_behavior"][0][
+                    "viewer_protocol_policy"
+                ][0]
                 if default_viewer_policy == "allow-all":
                     return CheckResult.FAILED
         if "ordered_cache_behavior" in conf.keys():

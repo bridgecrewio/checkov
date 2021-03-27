@@ -1,14 +1,21 @@
 from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
 
 
 class GKENodePoolAutoRepairEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure 'Automatic node repair' is enabled for Kubernetes Clusters"
         id = "CKV_GCP_9"
-        supported_resources = ['google_container_node_pool']
+        supported_resources = ["google_container_node_pool"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def get_inspected_key(self):
         """
@@ -18,7 +25,7 @@ class GKENodePoolAutoRepairEnabled(BaseResourceValueCheck):
         :return: <CheckResult>
         """
 
-        return 'management/[0]/auto_repair/[0]'
+        return "management/[0]/auto_repair/[0]"
 
 
 check = GKENodePoolAutoRepairEnabled()

@@ -5,7 +5,6 @@ from checkov.terraform.checks.resource.aws.MSKClusterEncryption import check
 
 
 class TestMSKClusterEncryption(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {
             "name": "test-project",
@@ -89,7 +88,9 @@ class TestMSKClusterEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     # Regression test for https://github.com/bridgecrewio/checkov/issues/747
-    def test_success_encryption_in_transit_and_no_encryption_at_rest_kms_key_arn_specified(self):
+    def test_success_encryption_in_transit_and_no_encryption_at_rest_kms_key_arn_specified(
+        self,
+    ):
         resource_conf = {
             "name": "test-project",
             "encryption_info": [
@@ -107,5 +108,5 @@ class TestMSKClusterEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

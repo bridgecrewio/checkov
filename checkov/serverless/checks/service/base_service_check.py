@@ -6,8 +6,13 @@ from checkov.serverless.checks.service.registry import service_registry
 
 class BaseServiceCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_entities):
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
-                         block_type="serverless")
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_entities,
+            block_type="serverless",
+        )
         service_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):

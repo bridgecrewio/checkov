@@ -1,14 +1,15 @@
 import unittest
+
 import hcl2
 
-from checkov.terraform.checks.resource.aws.S3ProtectAgainstPolicyLockout import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.S3ProtectAgainstPolicyLockout import check
 
 
 class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket" "s3" {
         bucket = "bucket"
 
@@ -33,14 +34,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         ]
         }
         POLICY
-        }        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
+        }
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket_policy" "s3" {
         bucket = "bucket"
 
@@ -61,14 +64,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             }]
         }
         POLICY
-        }        
-                """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        }
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket_policy"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_3(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket" "s3" {
         bucket = "bucket"
 
@@ -84,14 +89,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         ]
         }
         POLICY
-        }        
-                """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
+        }
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_skip_noeffect(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket_policy" "s3" {
         bucket = "bucket"
 
@@ -113,14 +120,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        }
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket_policy"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_skip_notaction(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket_policy" "s3" {
         bucket = "bucket"
 
@@ -143,14 +152,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        }
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket_policy"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_policyobj(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket_policy" "s3" {
         bucket = "bucket"
 
@@ -173,14 +184,16 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        }
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket_policy"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_statementnotlist(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
         resource "aws_s3_bucket_policy" "s3" {
         bucket = "bucket"
 
@@ -201,11 +214,13 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
                 }
         }
         POLICY
-        }        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
+        }
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_s3_bucket_policy"]["s3"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

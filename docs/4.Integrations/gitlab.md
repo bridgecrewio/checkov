@@ -10,7 +10,7 @@ Here is a minimalistic example:
 ```yaml
 stages:
     - test
-variables: 
+variables:
   ALLOWFAILURE: true #True for AutoDevOps compatibility
 
 checkov:
@@ -30,7 +30,7 @@ checkov:
       - '**/*.yaml'
       - '**/*.json'
       - '**/*.template'
-      - '**/*.tf'      
+      - '**/*.tf'
       - '**/serverless.yml'
       - '**/serverless.yaml'
   script:
@@ -68,7 +68,7 @@ Note that in the above examples the output of the test results does not display 
 ```yaml
 stages:
     - test
-variables: 
+variables:
   ALLOWFAILURE: true #True for AutoDevOps compatibility
 
 checkov:
@@ -88,7 +88,7 @@ checkov:
       - '**/*.yaml'
       - '**/*.json'
       - '**/*.template'
-      - '**/*.tf'      
+      - '**/*.tf'
       - '**/serverless.yml'
       - '**/serverless.yaml'
   script:

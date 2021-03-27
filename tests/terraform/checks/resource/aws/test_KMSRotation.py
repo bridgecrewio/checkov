@@ -1,16 +1,15 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.KMSRotation import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.KMSRotation import check
 
 
 class TestKMSRotation(unittest.TestCase):
-
     def test_success(self):
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
-            "enable_key_rotation": [True]
+            "enable_key_rotation": [True],
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
@@ -19,7 +18,7 @@ class TestKMSRotation(unittest.TestCase):
         resource_conf = {
             "description": "KMS key 1",
             "deletion_window_in_days": 10,
-            "enable_key_rotation": [False]
+            "enable_key_rotation": [False],
         }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
@@ -33,5 +32,5 @@ class TestKMSRotation(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

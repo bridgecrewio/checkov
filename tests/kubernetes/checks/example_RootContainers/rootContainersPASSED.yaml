@@ -11,7 +11,7 @@ spec:
     image: alpine
     command: ["/bin/sleep", "999999"]
 ---
-# runAsNonRoot not set at pod, but all containers specify 
+# runAsNonRoot not set at pod, but all containers specify
 apiVersion: v1
 kind: Pod
 metadata:
@@ -24,7 +24,7 @@ spec:
     securityContext:
       runAsNonRoot: true
 ---
-# runAsNonRoot set to false at pod, but overridden as True by all containers specify 
+# runAsNonRoot set to false at pod, but overridden as True by all containers specify
 apiVersion: v1
 kind: Pod
 metadata:
@@ -39,7 +39,7 @@ spec:
     securityContext:
       runAsNonRoot: true
 ---
-# runAsNonRoot not set, runAsUser >0 defined at pod and not overridden at container 
+# runAsNonRoot not set, runAsUser >0 defined at pod and not overridden at container
 apiVersion: v1
 kind: Pod
 metadata:
@@ -52,7 +52,7 @@ spec:
     image: alpine
     command: ["/bin/sleep", "999999"]
 ---
-# runAsNonRoot not set, runAsUser >0 overridden for each container 
+# runAsNonRoot not set, runAsUser >0 overridden for each container
 apiVersion: v1
 kind: Pod
 metadata:
@@ -69,4 +69,3 @@ spec:
     command: ["/bin/sleep", "999999"]
     securityContext:
       runAsUser: 1000
-

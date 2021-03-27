@@ -76,7 +76,7 @@ Resources:
   #    VpcId: !Ref vpc
   #    GroupName: !Ref SGName
   #    SecurityGroupIngress:
-  #      - Description: 'HTTP Ingress' 
+  #      - Description: 'HTTP Ingress'
   #        FromPort: 443
   #        IpProtocol: tcp
   #        ToPort: 443

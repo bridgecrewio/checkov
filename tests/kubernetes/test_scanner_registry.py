@@ -4,7 +4,6 @@ from checkov.kubernetes.registry import registry
 
 
 class TestScannerRegistry(unittest.TestCase):
-
     def test_num_of_scanners(self):
         scanners_counter = 0
         for key in list(registry.checks.keys()):
@@ -22,5 +21,5 @@ class TestScannerRegistry(unittest.TestCase):
             self.assertEqual(len(set(check_classes)), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

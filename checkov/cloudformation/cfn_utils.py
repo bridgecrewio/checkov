@@ -16,18 +16,25 @@ def get_resource_tags(entity, registry=cfn_registry):
         return None
 
     try:
-        properties = entity_config.get('Properties')
+        properties = entity_config.get("Properties")
         if properties:
-            tags = properties.get('Tags')
+            tags = properties.get("Tags")
             if tags:
                 if type(tags) == list_node:
-                    tag_dict = {tag['Key']: str(get_entity_value_as_string(tag['Value'])) for tag in tags}
+                    tag_dict = {
+                        tag["Key"]: str(get_entity_value_as_string(tag["Value"]))
+                        for tag in tags
+                    }
                     return tag_dict
                 elif type(tags) == dict_node:
-                    tag_dict = {str(key): str(get_entity_value_as_string(value)) for key, value in tags.items() if key not in ('__startline__', '__endline__')}
+                    tag_dict = {
+                        str(key): str(get_entity_value_as_string(value))
+                        for key, value in tags.items()
+                        if key not in ("__startline__", "__endline__")
+                    }
                     return tag_dict
     except:
-        logging.warning(f'Failed to parse tags for entity {entity}')
+        logging.warning(f"Failed to parse tags for entity {entity}")
 
     return None
 
@@ -56,7 +63,7 @@ def get_entity_value_as_string(value):
         # If the value is a long-form function, then the first element is the template string (technically str_node)
         # Otherwise the dict value is the template string
         if type(value) == list:
-            if 'Join' in function:
+            if "Join" in function:
                 # Join looks like !Join [, [V1, V2, V3]]
                 join_str = str(value[0])
                 return join_str.join([str(v) for v in value[1]])
@@ -66,4 +73,3 @@ def get_entity_value_as_string(value):
             return value
     else:
         return value
-

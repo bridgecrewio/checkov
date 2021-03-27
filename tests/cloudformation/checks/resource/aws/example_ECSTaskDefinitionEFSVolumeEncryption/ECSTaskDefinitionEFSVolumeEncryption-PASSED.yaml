@@ -3,18 +3,18 @@ Resources:
   Resource0:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      ContainerDefinitions: 
+      ContainerDefinitions:
         - Name: "busybox"
           Image: "busybox"
           Cpu: 256
-          EntryPoint: 
+          EntryPoint:
             - "sh"
             - "-c"
           Memory: 512
-          Command: 
+          Command:
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
           Essential: true
-      Volumes: 
+      Volumes:
         - Name: MyVolume
           EFSVolumeConfiguration:
             FilesystemId: FilesystemId
@@ -22,32 +22,32 @@ Resources:
   Resource1:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      ContainerDefinitions: 
+      ContainerDefinitions:
         - Name: "busybox"
           Image: "busybox"
           Cpu: 256
-          EntryPoint: 
+          EntryPoint:
             - "sh"
             - "-c"
           Memory: 512
-          Command: 
+          Command:
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
           Essential: true
   Resource2:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      ContainerDefinitions: 
+      ContainerDefinitions:
         - Name: "busybox"
           Image: "busybox"
           Cpu: 256
-          EntryPoint: 
+          EntryPoint:
             - "sh"
             - "-c"
           Memory: 512
-          Command: 
+          Command:
             - "/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""
           Essential: true
-      Volumes: 
+      Volumes:
         - Name: MyVolume
           Host:
             SourcePath: "/source/path"

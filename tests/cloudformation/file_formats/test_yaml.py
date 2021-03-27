@@ -6,7 +6,6 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestYamlFileFormat(unittest.TestCase):
-
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -15,11 +14,11 @@ class TestYamlFileFormat(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir)
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 0)
-        self.assertEqual(summary['skipped'], 0)
-        self.assertEqual(summary['parsing_errors'], 0)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

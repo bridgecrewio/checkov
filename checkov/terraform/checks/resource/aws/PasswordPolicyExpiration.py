@@ -1,18 +1,25 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.type_forcers import force_int
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
 
 
 class PasswordPolicyExpiration(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure IAM password policy expires passwords within 90 days or less"
         id = "CKV_AWS_9"
-        supported_resources = ['aws_iam_account_password_policy']
+        supported_resources = ["aws_iam_account_password_policy"]
         categories = [CheckCategories.IAM]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def get_inspected_key(self):
-        return 'max_password_age'
+        return "max_password_age"
 
     def get_expected_value(self):
         return 90
@@ -24,7 +31,7 @@ class PasswordPolicyExpiration(BaseResourceValueCheck):
         :param conf: aws_iam_account_password_policy configuration
         :return: <CheckResult>
         """
-        key = 'max_password_age'
+        key = "max_password_age"
         if key in conf.keys():
             max_age = force_int(conf[key][0])
             if max_age and 0 < max_age <= 90:

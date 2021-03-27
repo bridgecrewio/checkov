@@ -3,7 +3,6 @@ from checkov.terraform.tag_providers import get_resource_tags
 
 
 class Registry(BaseCheckRegistry):
-
     def __init__(self):
         super().__init__()
 

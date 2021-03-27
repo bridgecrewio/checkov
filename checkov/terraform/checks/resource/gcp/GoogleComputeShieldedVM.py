@@ -1,14 +1,19 @@
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class GoogleComputeShieldedVM(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Compute instances are launched with Shielded VM enabled"
         id = "CKV_GCP_39"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ["google_compute_instance"]
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -18,12 +23,18 @@ class GoogleComputeShieldedVM(BaseResourceCheck):
         :return: <checkResult>
         """
 
-        if 'shielded_instance_config' in conf.keys():
-            if 'enable_vtpm' in conf['shielded_instance_config'][0] and \
-                    not conf['shielded_instance_config'][0]['enable_vtpm'][0]:
+        if "shielded_instance_config" in conf.keys():
+            if (
+                "enable_vtpm" in conf["shielded_instance_config"][0]
+                and not conf["shielded_instance_config"][0]["enable_vtpm"][0]
+            ):
                 return CheckResult.FAILED
-            if 'enable_integrity_monitoring' in conf['shielded_instance_config'][0] and \
-                    not conf['shielded_instance_config'][0]['enable_integrity_monitoring'][0]:
+            if (
+                "enable_integrity_monitoring" in conf["shielded_instance_config"][0]
+                and not conf["shielded_instance_config"][0][
+                    "enable_integrity_monitoring"
+                ][0]
+            ):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED

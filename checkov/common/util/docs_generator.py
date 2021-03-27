@@ -14,7 +14,7 @@ from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 
-ID_PARTS_PATTERN = re.compile(r'(\D*)(\d*)')
+ID_PARTS_PATTERN = re.compile(r"(\D*)(\d*)")
 
 
 def get_compare_key(c):
@@ -23,7 +23,7 @@ def get_compare_key(c):
         text, number = match.groups()
         numeric_value = int(number) if number else 0
         # count number of leading zeros
-        same_number_ordering = len(number) - len(number.lstrip('0'))
+        same_number_ordering = len(number) - len(number.lstrip("0"))
         res.append((text, numeric_value, same_number_ordering))
     return res
 
@@ -31,8 +31,13 @@ def get_compare_key(c):
 def print_checks(framework="all"):
     printable_checks_list = get_checks(framework)
     print(
-        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
-                 showindex=True))
+        tabulate(
+            printable_checks_list,
+            headers=["Id", "Type", "Entity", "Policy", "IaC"],
+            tablefmt="github",
+            showindex=True,
+        )
+    )
     print("\n\n---\n\n")
 
 
@@ -42,7 +47,9 @@ def get_checks(framework="all"):
     def add_from_repository(registry: BaseCheckRegistry, checked_type: str, iac: str):
         nonlocal printable_checks_list
         for entity, check in registry.all_checks():
-            printable_checks_list.append([check.id, checked_type, entity, check.name, iac])
+            printable_checks_list.append(
+                [check.id, checked_type, entity, check.name, iac]
+            )
 
     if framework == "terraform" or framework == "all":
         add_from_repository(resource_registry, "resource", "Terraform")
@@ -60,5 +67,5 @@ def get_checks(framework="all"):
     return sorted(printable_checks_list, key=get_compare_key)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print_checks()

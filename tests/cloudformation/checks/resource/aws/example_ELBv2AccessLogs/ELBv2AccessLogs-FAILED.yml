@@ -7,7 +7,7 @@ Resources:
       LoadBalancerAttributes:
       - Key: access_logs.s3.enabled
         Value: "false"
-      - Key: access_logs.s3.bucket 
+      - Key: access_logs.s3.bucket
         Value: MyBucket
       Subnets:
       - SubnetID0

@@ -1,15 +1,14 @@
 from dataclasses import dataclass, field
-from typing import List, Any
-
+from typing import Any, List
 
 # NOTE: These would be better as TypedDict, but that requires python 3.8 :-(
 
 
 @dataclass
 class VarReference:
-    definition_name: str               # Example: 'region'
-    definition_expression: str         # Example: '${var.region}'
-    definition_path: str               # Example: 'resource/0/aws_s3_bucket/foo-bucket/region/0'
+    definition_name: str  # Example: 'region'
+    definition_expression: str  # Example: '${var.region}'
+    definition_path: str  # Example: 'resource/0/aws_s3_bucket/foo-bucket/region/0'
 
     # Make the object subscriptable for backwards compatibility to when a simple dict was used
     def __getitem__(self, item):
@@ -28,8 +27,8 @@ class VarReference:
 
 @dataclass
 class EvaluationContext:
-    var_file: str                     # File the variable was defined in (e.g., '/tf/example.tf'
-    value: Any = None                 # Example: 'us-east-1'
+    var_file: str  # File the variable was defined in (e.g., '/tf/example.tf'
+    value: Any = None  # Example: 'us-east-1'
     definitions: List[VarReference] = field(default_factory=list)
 
     # Make the object subscriptable for backwards compatibility to when a simple dict was used

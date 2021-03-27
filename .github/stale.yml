@@ -30,15 +30,15 @@ staleLabel: stale
 
 # Comment to post when marking as stale. Set to `false` to disable
 markComment: >
-  Thanks for contributing to Checkov! 
-  We've automatically marked this issue as stale to keep our issues list tidy, 
-  because it has not had any activity for 6 months. 
-  It will be closed in 14 days if no further activity occurs. 
+  Thanks for contributing to Checkov!
+  We've automatically marked this issue as stale to keep our issues list tidy,
+  because it has not had any activity for 6 months.
+  It will be closed in 14 days if no further activity occurs.
   Commenting on this issue will remove the stale tag.
-  If you want to talk through the issue or help us understand the priority and context, 
+  If you want to talk through the issue or help us understand the priority and context,
   feel free to add a comment or join us in the Checkov slack channel at https://slack.bridgecrew.io
 
-  Thanks! 
+  Thanks!
 
 # Comment to post when removing the stale label.
 # unmarkComment: >

@@ -23,5 +23,3 @@ resource "aws_s3_bucket" "c" {
   bucket = "my-tf-test-bucket"
   acl    = "private"
 }
-
-

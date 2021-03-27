@@ -1,17 +1,22 @@
 import re
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.provider.base_check import BaseProviderCheck
+
 from checkov.common.models.consts import access_key_pattern, secret_key_pattern
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 
 
 class AWSCredentials(BaseProviderCheck):
-
     def __init__(self):
         name = "Ensure no hard coded AWS access key and secret key exists in provider"
         id = "CKV_AWS_41"
-        supported_provider = ['aws']
+        supported_provider = ["aws"]
         categories = [CheckCategories.SECRETS]
-        super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_provider=supported_provider,
+        )
 
     def scan_provider_conf(self, conf):
         """

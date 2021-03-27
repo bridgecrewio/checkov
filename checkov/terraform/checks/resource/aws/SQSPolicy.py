@@ -1,6 +1,6 @@
 import json
 
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -8,9 +8,14 @@ class SQSPolicy(BaseResourceCheck):
     def __init__(self):
         name = "Ensure SQS policy does not allow ALL (*) actions."
         id = "CKV_AWS_72"
-        supported_resources = ['aws_sqs_queue_policy']
+        supported_resources = ["aws_sqs_queue_policy"]
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -21,7 +26,7 @@ class SQSPolicy(BaseResourceCheck):
         """
         if "policy" in conf.keys():
             if is_json(conf["policy"][0]):
-                if json.loads(conf["policy"][0])['Statement'][0]['Action'] == '*':
+                if json.loads(conf["policy"][0])["Statement"][0]["Action"] == "*":
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

@@ -125,7 +125,7 @@ Resources:
       PreferredMaintenanceWindow: !Ref PreferredMaintenanceWindow
       ReplicationGroupDescription: !Ref ReplicationGroupDescription
       SecurityGroupIds:
-        - !GetAtt 
+        - !GetAtt
           - SecurityGroup
           - GroupId
       SnapshotRetentionLimit: !Ref SnapshotRetentionLimit
@@ -135,13 +135,13 @@ Resources:
 Outputs:
   RGEndpoint:
     Description: The primary endpoint location
-    Value: !Join 
+    Value: !Join
       - ''
       - - 'redis://'
-        - !GetAtt 
+        - !GetAtt
           - ReplicationGroup
           - PrimaryEndPoint.Address
         - ':'
-        - !GetAtt 
+        - !GetAtt
           - ReplicationGroup
           - PrimaryEndPoint.Port

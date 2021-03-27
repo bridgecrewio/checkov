@@ -3,7 +3,7 @@ You can integrate checkov with Bridgecrew's platform. This allows you to include
 into your Bridgecrew account.
 
 ## Setup
-First, you need to acquire a Bridgecrew issued API token. To do so, follow these steps: 
+First, you need to acquire a Bridgecrew issued API token. To do so, follow these steps:
 - Register (for free) to Bridgecrew's platform at [bridgecrew.cloud](https://www.bridgecrew.cloud/)
 - After signing in, navigate to the [integrations page](https://www.bridgecrew.cloud/integrations), and click the API Token integration:
 ![bc-api-key](bc-api-integration.png)
@@ -26,8 +26,8 @@ is currently checked out from the given branch name.
 ### Environment variables
 We strongly recommend that checkov use environment variables that enriches bridgecrew's context with CI/CD systems data.
 
-| Environment variable      | Description                               | Example 
-| ------------------------- | -----------                               | ------------------------- | 
+| Environment variable      | Description                               | Example
+| ------------------------- | -----------                               | ------------------------- |
 | BC_FROM_BRANCH            | Source branch                             | feature/foo |
 | BC_TO_BRANCH              | Target branch                             | main |
 | BC_PR_ID                  | Pull request identifier                   | 825 |
@@ -50,4 +50,4 @@ in the [incidents view](https://www.bridgecrew.cloud/incidents):
 
 ## Example usage
 The following command scans the repository identified as `foo/bar`, on branch `develop`, using a Bridgecrew API key:
-`checkov -d . --bc-api-key 84b8f259-a3dv-5c1e-9422-1bdc9aec0487 --repo-id foo/bar --branch develop` 
+`checkov -d . --bc-api-key 84b8f259-a3dv-5c1e-9422-1bdc9aec0487 --repo-id foo/bar --branch develop`

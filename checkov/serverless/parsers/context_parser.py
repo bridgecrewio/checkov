@@ -1,13 +1,20 @@
-from checkov.cloudformation.parser.node import dict_node, list_node, str_node
-from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
-    ENVIRONMENT_TOKEN, STACK_TAGS_TOKEN, TAGS_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
+from checkov.cloudformation.parser.node import dict_node, list_node, str_node
+from checkov.serverless.parsers.parser import (
+    ENVIRONMENT_TOKEN,
+    FUNCTIONS_TOKEN,
+    IAM_ROLE_STATEMENTS_TOKEN,
+    PROVIDER_TOKEN,
+    STACK_TAGS_TOKEN,
+    TAGS_TOKEN,
+)
 
 
 class ContextParser(object):
     """
     serverless functions template context parser
     """
+
     # control on inherited provider attributes to scanned functions
     # Values are the source and destination
     ENRICHED_ATTRIBUTES = [
@@ -16,7 +23,7 @@ class ContextParser(object):
         (STACK_TAGS_TOKEN, TAGS_TOKEN),
         ("runtime", "runtime"),
         ("timeout", "timeout"),
-        ("memorySize", "memorySize")
+        ("memorySize", "memorySize"),
     ]
 
     def __init__(self, sls_file, sls_template, sls_template_lines):
@@ -28,14 +35,16 @@ class ContextParser(object):
         self.provider_type = self._infer_provider_type()
 
     def extract_code_lines(self, content):
-        find_lines_result_list = list(CfnContextParser.find_lines(content, '__startline__'))
+        find_lines_result_list = list(
+            CfnContextParser.find_lines(content, "__startline__")
+        )
         if len(find_lines_result_list) >= 1:
             start_line = min(find_lines_result_list) - 1
-            end_line = max(list(CfnContextParser.find_lines(content, '__endline__')))
+            end_line = max(list(CfnContextParser.find_lines(content, "__endline__")))
 
             entity_lines_range = [start_line, end_line - 1]
 
-            entity_code_lines = self.sls_template_lines[start_line - 1: end_line - 1]
+            entity_code_lines = self.sls_template_lines[start_line - 1 : end_line - 1]
             return entity_lines_range, entity_code_lines
         return None, None
 
@@ -66,6 +75,6 @@ class ContextParser(object):
 
     def _infer_provider_type(self):
         if isinstance(self.provider_conf, dict_node):
-            return self.provider_conf.get('name')
+            return self.provider_conf.get("name")
         if isinstance(self.provider_conf, str_node):
             return self.provider_conf

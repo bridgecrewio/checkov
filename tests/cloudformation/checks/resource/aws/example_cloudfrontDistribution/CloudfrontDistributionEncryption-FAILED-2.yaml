@@ -9,7 +9,7 @@ Resources:
   # Create the bucket to contain the website HTML
   #S3Bucket:
   #  Type: 'AWS::S3::Bucket'
-  #  Properties: 
+  #  Properties:
   #    BucketName: !Sub 'website-${AWS::AccountId}'
   #    AccessControl: PublicRead
   #    WebsiteConfiguration:

@@ -18,9 +18,14 @@ class BaseModuleCheck(BaseCheck):
             checks that extend this class.
         """
         if supported_resources is None:
-            supported_resources = ['module']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="module")
+            supported_resources = ["module"]
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_resources,
+            block_type="module",
+        )
         self.supported_resources = supported_resources
         module_registry.register(self)
 

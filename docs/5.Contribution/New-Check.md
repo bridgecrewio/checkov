@@ -26,9 +26,9 @@ This guide covers all the necessary stages required to building and contributing
 1. Prerequisites
     * Install Checkov as described in the [Installation](#installation) subsection.
     * Read about check's structure and functionality in the [Prerequisites](#prerequisites) section.
-    * Identify the check's `type` and `provider`, as described [here](#check-structure). 
+    * Identify the check's `type` and `provider`, as described [here](#check-structure).
     * If available, provide the IaC configuration documentation that relates to the check, as described [here](#review-iac-configuration-documentation).
-    * Provide an example Terraform or CloudFormation configuration file, as described [here](#example-Terraform-configuration). 
+    * Provide an example Terraform or CloudFormation configuration file, as described [here](#example-Terraform-configuration).
 2. Implementation
     * Implement the check as described in the [Implementation](#implementation) section.
 3. Testing
@@ -69,19 +69,19 @@ A more specific type of check may also include additional attributes. For exampl
 
 The result of a scan should be a binary result of either `PASSED` or `FAILED`. We have also included an `UNKNOWN` option, which means that it is unknown if  the scanned configuration complied with the check. If your check could have edge cases that might not be supported by the scanner's current logic, consider support the  `UNKNOWN` option.
 
-Additionally, a check can be suppressed by Checkov on a given configuration by inserting a skip comment inside a specific configuration scope. Then, the check's result on the suppressed configuration would be `SKIPPED`.      
+Additionally, a check can be suppressed by Checkov on a given configuration by inserting a skip comment inside a specific configuration scope. Then, the check's result on the suppressed configuration would be `SKIPPED`.
 Read more about Checkov's [Suppressions](../3.Scans/resource-scans.md) for further details.
 
 ## IaC type scanner
 Identify which IaC type would be tested under the check. currently, Checkov scans either Terraform or CloudFormation configuration files.
-Place your following code under `checkov/<scanner>` folder, where `<scanner>` is either `terraform` or `cloudformation`. 
+Place your following code under `checkov/<scanner>` folder, where `<scanner>` is either `terraform` or `cloudformation`.
 
 ### Check type and provider
 
 Checks are divided first to folders grouped by their type, and are after divided by their provider.
 
-Checks should relate to a common IaC configuration type of a specific public cloud provider. 
-For example, a check that validates the encryption configuration of an S3 bucket is considered to be of type `resource`, and of `aws` provider. 
+Checks should relate to a common IaC configuration type of a specific public cloud provider.
+For example, a check that validates the encryption configuration of an S3 bucket is considered to be of type `resource`, and of `aws` provider.
 
 Identify the type and provider of the new check in order to place it correctly under the project structure.
 For example, the mentioned above check is already implemented in Checkov under `checkov/terraform/checks/resource/aws/S3Encryption.py`.
@@ -92,14 +92,14 @@ Notice that checks are divided first into folders grouped by their type, and are
 
 If available, please provide the official [Terraform](https://www.terraform.io/docs) or [CloudFormation](https://docs.aws.amazon.com/cloudformation/) documentation of the checked configuration. This helps users to better understand the check's scanned configuration and it's usage.
 
-For example, the mentioned above check's configuration documentation can be found [here](https://www.terraform.io/docs/providers/aws/r/s3_bucket.html) 
+For example, the mentioned above check's configuration documentation can be found [here](https://www.terraform.io/docs/providers/aws/r/s3_bucket.html)
 
 ### Example IaC configuration
 
 In order to develop the check, a relevant example configuration should be presented as an input to Checkov.
-Provide an example configuration (e.g. `example.tf, template.json`) that contains both passing and failing configurations with respect to 
+Provide an example configuration (e.g. `example.tf, template.json`) that contains both passing and failing configurations with respect to
 the check's logic.
-The file can be served as an input to the appropriate check's unit tests. 
+The file can be served as an input to the appropriate check's unit tests.
 
 
 
@@ -107,10 +107,10 @@ The file can be served as an input to the appropriate check's unit tests.
 
 After identifying the check's IaC type and provider, place the file containing it's code inside `checkov/<scanner>/checks/<type>/<provider>`, where `<type>` is the check's type and `<provider>` is the check's provider.
 
-A check is a class implementing an `abstract` base check class that corresponds to some provider and type. 
+A check is a class implementing an `abstract` base check class that corresponds to some provider and type.
 
-For example, all checks of `resource` type and `aws` provider are implementing the resource base check class found at 
-`checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement it's base check's abstract method named 
+For example, all checks of `resource` type and `aws` provider are implementing the resource base check class found at
+`checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement it's base check's abstract method named
 `scan_resource_conf`, which accepts as an input a dictionary of all the key-valued resource attributes, and outputs a `CheckResult`.
 
 For a full implementation example of a check, please refer the [Policies documentation](../1.Introduction/Policies.md).
@@ -121,6 +121,5 @@ For a full implementation example of a check, please refer the [Policies documen
 Assuming the implemented check's class is file is found in `checkov/terraform/checks/<type>/<provider>` directory, named `<ClassName>.py`, create an appropriate unit test file in `tests/terraform/checks/<type>/<provider>` directory, named `test_<ClassName>.py`.
 
 The test suite should cover different check results; Test if the check outputs `PASSED` on a compliant configuration,
-and test if it output `FAILED` on a non-compliant configuration. You are also encouraged to test more specific 
+and test if it output `FAILED` on a non-compliant configuration. You are also encouraged to test more specific
 components of the check, according to their complexity.
-

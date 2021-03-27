@@ -12,5 +12,3 @@ spec:
     securityContext:
       readOnlyRootFilesystem: true
   restartPolicy: Never
-
-

@@ -10,7 +10,7 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
 
   SecurityGroup:
-    Description: Security Group for ALB 
+    Description: Security Group for ALB
     Type: AWS::EC2::SecurityGroup::Id
     Default: sg-0123456789abcdefc
 
@@ -21,12 +21,12 @@ Resources:
   #    GroupDescription: 'checkov-alb-test'
   #    VpcId: !Ref VPC
   #    SecurityGroupIngress:
-  #    - Description: 'HTTP Ingress' 
+  #    - Description: 'HTTP Ingress'
   #      IpProtocol: tcp
   #      FromPort: 80
   #      ToPort: 80
   #      CidrIp: 0.0.0.0/0
-  #    - Description: 'HTTPS Ingress' 
+  #    - Description: 'HTTPS Ingress'
   #      IpProtocol: tcp
   #      FromPort: 443
   #      ToPort: 443
@@ -40,7 +40,7 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroup
       #  - !Ref ALBSecurityGroup
-  
+
   ListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -70,4 +70,3 @@ Outputs:
   LoadBalancerUrl:
     Description: The URL of the ALB
     Value: !GetAtt LoadBalancer.DNSName
-

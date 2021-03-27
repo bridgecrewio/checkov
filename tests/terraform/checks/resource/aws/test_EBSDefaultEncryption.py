@@ -12,7 +12,9 @@ class TestAppLoadBalancerTLS12(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         test_files_dir = current_dir + "/example_EBSDefaultEncryption"
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        report = runner.run(
+            root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
+        )
         summary = report.get_summary()
 
         passing_resources = {

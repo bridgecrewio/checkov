@@ -2,10 +2,12 @@ import json
 import logging
 from abc import abstractmethod
 
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import (
+    integration_feature_registry,
+)
 from checkov.common.output.report import Report
 
-OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
+OUTPUT_CHOICES = ["cli", "json", "junitxml", "github_failed_only"]
 
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
@@ -28,11 +30,24 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None):
+    def run(
+        self,
+        root_folder=None,
+        external_checks_dir=None,
+        files=None,
+        guidelines=None,
+        collect_skip_comments=True,
+        bc_integration=None,
+    ):
         for runner in self.runners:
             integration_feature_registry.run_pre_scan()
-            scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                     runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+            scan_report = runner.run(
+                root_folder,
+                external_checks_dir=external_checks_dir,
+                files=files,
+                runner_filter=self.runner_filter,
+                collect_skip_comments=collect_skip_comments,
+            )
             integration_feature_registry.run_post_scan(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
@@ -40,7 +55,7 @@ class RunnerRegistry(object):
         return self.scan_reports
 
     def print_reports(self, scan_reports, args, url=None):
-        if args.output == 'cli':
+        if args.output == "cli":
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
@@ -52,7 +67,7 @@ class RunnerRegistry(object):
                 elif args.output == "junitxml":
                     junit_reports.append(report)
                     # report.print_junit_xml()
-                elif args.output == 'github_failed_only':
+                elif args.output == "github_failed_only":
                     report.print_failed_github_md()
                 else:
                     report.print_console(is_quiet=args.quiet, is_compact=args.compact)
@@ -75,7 +90,7 @@ class RunnerRegistry(object):
             else:
                 print(json.dumps(report_jsons, indent=4))
         if args.output == "cli":
-            self.bc_platform.get_report_to_platform(args,scan_reports)
+            self.bc_platform.get_report_to_platform(args, scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         exit(exit_code)
@@ -85,7 +100,7 @@ class RunnerRegistry(object):
             return
         if self.runner_filter.framework is None:
             return
-        if self.runner_filter.framework == 'all':
+        if self.runner_filter.framework == "all":
             return
         filtered_runners = []
         for runner in self.runners:
@@ -96,6 +111,10 @@ class RunnerRegistry(object):
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
-        for record in scan_report.failed_checks + scan_report.passed_checks + scan_report.skipped_checks:
+        for record in (
+            scan_report.failed_checks
+            + scan_report.passed_checks
+            + scan_report.skipped_checks
+        ):
             if record.check_id in guidelines:
                 record.set_guideline(guidelines[record.check_id])

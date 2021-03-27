@@ -20,5 +20,3 @@ spec:
           hostPID: true
           hostIPC: true
           hostNetwork: true
- 
-

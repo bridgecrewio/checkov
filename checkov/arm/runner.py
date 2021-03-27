@@ -1,14 +1,14 @@
 import logging
 import os
 
-from checkov.arm.registry import arm_registry
+from checkov.arm.context_parser import ContextParser
 from checkov.arm.parser import parse
+from checkov.arm.parser.node import dict_node
+from checkov.arm.registry import arm_registry
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.arm.parser.node import dict_node
-from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
 
@@ -16,7 +16,14 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 class Runner(BaseRunner):
     check_type = "arm"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder,
+        external_checks_dir=None,
+        files=None,
+        runner_filter=RunnerFilter(),
+        collect_skip_comments=True,
+    ):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -39,12 +46,19 @@ class Runner(BaseRunner):
                         files_list.append(os.path.join(root, file))
 
             for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+                relative_file_path = f"/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}"
+                (
+                    definitions[relative_file_path],
+                    definitions_raw[relative_file_path],
+                ) = parse(file)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
-        definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
-        definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+        definitions = {
+            k: v for k, v in definitions.items() if v and v.__contains__("resources")
+        }
+        definitions_raw = {
+            k: v for k, v in definitions_raw.items() if k in definitions.keys()
+        }
 
         for arm_file in definitions.keys():
 
@@ -52,24 +66,37 @@ class Runner(BaseRunner):
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
             # The goal here is simply to get a valid path to the file (which arm_file does not always give).
-            if arm_file[0] == '/':
+            if arm_file[0] == "/":
                 path_to_convert = (root_folder + arm_file) if root_folder else arm_file
             else:
-                path_to_convert = (os.path.join(root_folder, arm_file)) if root_folder else arm_file
+                path_to_convert = (
+                    (os.path.join(root_folder, arm_file)) if root_folder else arm_file
+                )
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if isinstance(definitions[arm_file], dict_node) and 'resources' in definitions[arm_file].keys():
-                arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
-                logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
+            if (
+                isinstance(definitions[arm_file], dict_node)
+                and "resources" in definitions[arm_file].keys()
+            ):
+                arm_context_parser = ContextParser(
+                    arm_file, definitions[arm_file], definitions_raw[arm_file]
+                )
+                logging.debug(
+                    "Template Dump for {}: {}".format(
+                        arm_file, definitions[arm_file], indent=2
+                    )
+                )
                 arm_context_parser.evaluate_default_parameters()
 
                 # Split out nested resources from base resource
-                for resource in definitions[arm_file]['resources']:
+                for resource in definitions[arm_file]["resources"]:
                     if "parent_name" in resource.keys():
                         continue
                     nested_resources = []
-                    nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
+                    nested_resources = arm_context_parser.search_deep_keys(
+                        "resources", resource, []
+                    )
                     if nested_resources:
                         for nr in nested_resources:
                             nr_element = nr.pop()
@@ -80,25 +107,43 @@ class Runner(BaseRunner):
                                     if isinstance(new_resource, dict):
                                         new_resource["parent_name"] = resource["name"]
                                         new_resource["parent_type"] = resource["type"]
-                                        definitions[arm_file]['resources'].append(new_resource)
+                                        definitions[arm_file]["resources"].append(
+                                            new_resource
+                                        )
 
-                for resource in definitions[arm_file]['resources']:
+                for resource in definitions[arm_file]["resources"]:
                     resource_id = arm_context_parser.extract_arm_resource_id(resource)
-                    resource_name = arm_context_parser.extract_arm_resource_name(resource)
-                    entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(resource)
+                    resource_name = arm_context_parser.extract_arm_resource_name(
+                        resource
+                    )
+                    (
+                        entity_lines_range,
+                        entity_code_lines,
+                    ) = arm_context_parser.extract_arm_resource_code_lines(resource)
                     if entity_lines_range and entity_code_lines:
                         # TODO - Variable Eval Message!
                         variable_evaluations = {}
 
                         skipped_checks = ContextParser.collect_skip_comments(resource)
 
-                        results = arm_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
+                        results = arm_registry.scan(
+                            arm_file,
+                            {resource_name: resource},
+                            skipped_checks,
+                            runner_filter,
+                        )
                         for check, check_result in results.items():
-                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=arm_file,
-                                            file_line_range=entity_lines_range,
-                                            resource=resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                            record = Record(
+                                check_id=check.id,
+                                check_name=check.name,
+                                check_result=check_result,
+                                code_block=entity_code_lines,
+                                file_path=arm_file,
+                                file_line_range=entity_lines_range,
+                                resource=resource_id,
+                                evaluations=variable_evaluations,
+                                check_class=check.__class__.__module__,
+                                file_abs_path=file_abs_path,
+                            )
                             report.add_record(record=record)
         return report

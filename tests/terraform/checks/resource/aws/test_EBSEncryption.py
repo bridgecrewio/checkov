@@ -1,21 +1,23 @@
 import unittest
 
-from checkov.terraform.checks.resource.aws.EBSEncryption import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.EBSEncryption import check
 
 
 class TestEBSEncryption(unittest.TestCase):
-
     def test_failure(self):
-        resource_conf =  {'volume_id': ['${aws_ebs_volume.example.id}']}
+        resource_conf = {"volume_id": ["${aws_ebs_volume.example.id}"]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf =  {'volume_id': ['${aws_ebs_volume.example.id}'], 'encrypted': [True]}
+        resource_conf = {
+            "volume_id": ["${aws_ebs_volume.example.id}"],
+            "encrypted": [True],
+        }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

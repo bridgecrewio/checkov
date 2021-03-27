@@ -1,16 +1,30 @@
-from abc import abstractmethod
-import dpath.util
 import re
-from checkov.arm.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult
-from checkov.common.models.consts import ANY_VALUE
+from abc import abstractmethod
 
-VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
+import dpath.util
+
+from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.consts import ANY_VALUE
+from checkov.common.models.enums import CheckResult
+
+VARIABLE_DEPENDANT_REGEX = r"(?:local|var)\.[^\s]+"
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+    def __init__(
+        self,
+        name,
+        id,
+        categories,
+        supported_resources,
+        missing_block_result=CheckResult.FAILED,
+    ):
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
         self.missing_block_result = missing_block_result
 
     @staticmethod
@@ -20,7 +34,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
+        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
 
     @staticmethod
     def _is_variable_dependant(value):
@@ -57,7 +71,9 @@ class BaseResourceValueCheck(BaseResourceCheck):
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
             for attribute in reversed(inspected_attributes):
-                for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
+                for sub_key, sub_conf in dpath.search(
+                    conf, f"**/{attribute}", yielded=True
+                ):
                     filtered_sub_key = self._filter_key_path(sub_key)
                     if self._is_nesting_key(inspected_attributes, filtered_sub_key):
                         if isinstance(sub_conf, list) and len(sub_conf) == 1:

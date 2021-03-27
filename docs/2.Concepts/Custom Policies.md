@@ -10,14 +10,14 @@ order: 6
 Checkov is delivered with a  [set of built-in policies](../3.Scans/resource-scans.md) that checks for compliance and security best practices at its core.
  In addition, Checkov enables loading of extra checks, that give the user a possibility to author and execute custom policies.
 
-# Example 
+# Example
 Let's assume we have the following directory structure:
 ```text
 ├── main.tf
 ├── variables.tf
 └── outputs.tf
 ```
-And that we have a unique need to enforce bucket ACL policies only when the tag `Scope=PCI` is present.  
+And that we have a unique need to enforce bucket ACL policies only when the tag `Scope=PCI` is present.
 In other words, as security-aware engineers, we want the following bucket definition will trigger a failed check result:
 
 ```hcl-terraform
@@ -30,12 +30,12 @@ resource "aws_s3_bucket" "credit_cards_bucket" {
 
   tags = {
     Scope = "PCI",
-    
+
   }
 }
 ```
 For that we will need to add a new check to ensure PCI related S3 buckets will stay private.
-So we will create a new python folder named `my_extra_checks` containing our new check 
+So we will create a new python folder named `my_extra_checks` containing our new check
 
 ```text
 ├── main.tf
@@ -116,10 +116,10 @@ Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci 
 		82 | bucket        = local.bucket_name
 		83 | acl           = "public-read"
 		84 | force_destroy = true
-		85 | 
+		85 |
 		86 | tags = {
 		87 | Scope = "PCI",
-		88 | 
+		88 |
 		89 | }
 		90 | }
 ```

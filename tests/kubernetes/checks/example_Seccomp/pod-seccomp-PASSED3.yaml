@@ -24,4 +24,4 @@ spec:
       allowPrivilegeEscalation: false
 
 # kubectl exec -it seccomp-failed -- grep Seccomp /proc/1/status
-### This will return 'Seccomp:	 0' indicating docker running with no Seccomp 
+### This will return 'Seccomp:	 0' indicating docker running with no Seccomp

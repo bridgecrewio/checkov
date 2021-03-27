@@ -7,4 +7,3 @@ variable {
   default = "test_value"
   type    = "string"
 }
-

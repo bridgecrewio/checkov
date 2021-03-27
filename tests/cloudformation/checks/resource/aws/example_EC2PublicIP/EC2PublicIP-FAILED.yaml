@@ -4,10 +4,10 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-04169656fea786776
-      NetworkInterfaces: 
+      NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: "0"
-          GroupSet: 
+          GroupSet:
             - "myVPCEC2SecurityGroup"
           SubnetId: "PublicSubnet"
   EC2LaunchTemplateResource0:
@@ -15,9 +15,9 @@ Resources:
     Properties:
       LaunchTemplateData:
         ImageId: ami-04169656fea786776
-        NetworkInterfaces: 
+        NetworkInterfaces:
           - AssociatePublicIpAddress: true
             DeviceIndex: 0
-            Groups: 
+            Groups:
               - "myVPCEC2SecurityGroup"
             SubnetId: "PublicSubnet"

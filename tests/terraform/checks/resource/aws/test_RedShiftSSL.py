@@ -5,6 +5,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.RedShiftSSL import check
 from checkov.terraform.runner import Runner
 
+
 class TestRedShiftSSL(unittest.TestCase):
     def test(self):
         runner = Runner()
@@ -18,11 +19,11 @@ class TestRedShiftSSL(unittest.TestCase):
 
         passing_resources = {
             "aws_redshift_parameter_group.pass",
-            "aws_redshift_parameter_group.passbutbool",  
+            "aws_redshift_parameter_group.passbutbool",
         }
         failing_resources = {
             "aws_redshift_parameter_group.fail",
-            "aws_redshift_parameter_group.failasfalse"
+            "aws_redshift_parameter_group.failasfalse",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

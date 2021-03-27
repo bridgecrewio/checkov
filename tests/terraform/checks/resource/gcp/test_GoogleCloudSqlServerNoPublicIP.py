@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GoogleCloudSqlServerNoPublicIP import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.gcp.GoogleCloudSqlServerNoPublicIP import check
 
 
 class TestCloudSQLServerNoPublicIP(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""    
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
@@ -65,13 +65,17 @@ class TestCloudSQLServerNoPublicIP(unittest.TestCase):
               }
             }
 
-                """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-sqlserver12"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
@@ -126,18 +130,22 @@ class TestCloudSQLServerNoPublicIP(unittest.TestCase):
                 tier             = "db-custom-1-4096"
               }
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-sqlserver12"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"           
+            region           = "us-central1"
             settings {
                 activation_policy = "ALWAYS"
                 availability_type = "ZONAL"
@@ -167,24 +175,31 @@ class TestCloudSQLServerNoPublicIP(unittest.TestCase):
                 tier             = "db-custom-1-4096"
               }
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-sqlserver12"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_3(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
              resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"           
+            region           = "us-central1"
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-sqlserver12"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

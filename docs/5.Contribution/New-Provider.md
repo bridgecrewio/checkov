@@ -72,7 +72,7 @@ class authorized_keys(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = authorized_keys() 
+check = authorized_keys()
 ```
 
 And also add **checkov/terraform/checks/resource/linode/__init__.py** with:
@@ -94,7 +94,7 @@ This will ensure that this and any future Linode resource test are included in C
 from checkov.terraform.checks.resource.gcp import *
 from checkov.terraform.checks.resource.azure import *
 from checkov.terraform.checks.resource.github import *
-from checkov.terraform.checks.resource.linode import * 
+from checkov.terraform.checks.resource.linode import *
 ```
 
 ## Add new Provider checks

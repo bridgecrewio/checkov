@@ -2,14 +2,14 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GoogleCloudPostgreSqlLogTemp import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.gcp.GoogleCloudPostgreSqlLogTemp import check
 
 
 class TestCloudPostgreSQLLogTemp(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""    
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-pos121" {
               database_version = "POSTGRES_12"
               name             = "general-pos121"
@@ -45,13 +45,17 @@ class TestCloudPostgreSQLLogTemp(unittest.TestCase):
                 tier             = "db-custom-1-3840"
               }
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+                """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-pos121"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_12"
             name             = "general-pos121"
@@ -93,13 +97,17 @@ class TestCloudPostgreSQLLogTemp(unittest.TestCase):
                 tier             = "db-custom-1-3840"
               }
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-pos121"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_2(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_14"
             name             = "general-pos121"
@@ -141,13 +149,17 @@ class TestCloudPostgreSQLLogTemp(unittest.TestCase):
                 tier             = "db-custom-1-3840"
               }
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-pos121"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_3(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
                                     resource "google_sql_database_instance" "tfer--general-002D-pos121" {
             database_version = "POSTGRES_12"
             name             = "general-pos121"
@@ -165,11 +177,14 @@ class TestCloudPostgreSQLLogTemp(unittest.TestCase):
                 tier             = "db-custom-1-3840"
               }
             }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
+                        """
+        )
+        resource_conf = hcl_res["resource"][0]["google_sql_database_instance"][
+            "tfer--general-002D-pos121"
+        ]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

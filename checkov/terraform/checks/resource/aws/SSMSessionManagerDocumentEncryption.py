@@ -3,7 +3,7 @@ import logging
 
 import yaml
 
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -13,7 +13,12 @@ class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
         id = "CKV_AWS_112"
         supported_resources = ["aws_ssm_document"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         if conf.get("document_type") == ["Session"]:

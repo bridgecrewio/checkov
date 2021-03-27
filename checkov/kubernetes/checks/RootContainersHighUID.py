@@ -1,10 +1,8 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class RootContainersHighUID(BaseK8Check):
-
     def __init__(self):
         name = "Containers should run as a high UID to avoid host conflict"
         # runAsUser should be >= 10000 at pod spec or container level
@@ -12,31 +10,47 @@ class RootContainersHighUID(BaseK8Check):
         # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser
         # Location: *.spec.template.spec.securityContext.runAsUser
         id = "CKV_K8S_40"
-        supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
+        supported_kind = [
+            "Pod",
+            "Deployment",
+            "DaemonSet",
+            "StatefulSet",
+            "ReplicaSet",
+            "ReplicationController",
+            "Job",
+            "CronJob",
+        ]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
-
-
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         if "namespace" in conf["metadata"]:
-            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
+            return "{}.{}.{}".format(
+                conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"]
+            )
         else:
             return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
         spec = {}
 
-        if conf['kind'] == 'Pod':
+        if conf["kind"] == "Pod":
             if "spec" in conf:
                 spec = conf["spec"]
-        elif conf['kind'] == 'CronJob':
+        elif conf["kind"] == "CronJob":
             if "spec" in conf:
                 if "jobTemplate" in conf["spec"]:
                     if "spec" in conf["spec"]["jobTemplate"]:
                         if "template" in conf["spec"]["jobTemplate"]["spec"]:
-                            if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+                            if (
+                                "spec"
+                                in conf["spec"]["jobTemplate"]["spec"]["template"]
+                            ):
+                                spec = conf["spec"]["jobTemplate"]["spec"]["template"][
+                                    "spec"
+                                ]
         else:
             if "spec" in conf:
                 if "template" in conf["spec"]:
@@ -57,12 +71,12 @@ class RootContainersHighUID(BaseK8Check):
                     results["container"].append(cresults)
 
             # Evaluate pass / fail - Container values override Pod values
-                # Pod runAsUser >= 10000, no override at container (PASSED)
-                # Pod runAsUser >= 10000, override at container < 10000 (FAILED)
-                # Pod runAsUser < 10000, no override at container (FAILED)
-                # Pod runAsUser < 10000, override at container >= 10000 (PASSED)
-                # Pod runAsUser not set, container runAsUser not set or < 10000 (FAILED)
-                # Pod runAsUser not set, container runAsUser set >= 10000 (PASSED)
+            # Pod runAsUser >= 10000, no override at container (PASSED)
+            # Pod runAsUser >= 10000, override at container < 10000 (FAILED)
+            # Pod runAsUser < 10000, no override at container (FAILED)
+            # Pod runAsUser < 10000, override at container >= 10000 (PASSED)
+            # Pod runAsUser not set, container runAsUser not set or < 10000 (FAILED)
+            # Pod runAsUser not set, container runAsUser set >= 10000 (PASSED)
             if results["pod"]["runAsUser"] == "PASSED":
                 for cr in results["container"]:
                     if cr["runAsUser"] == "FAILED":
@@ -92,7 +106,9 @@ class RootContainersHighUID(BaseK8Check):
 
         return CheckResult.FAILED
 
+
 check = RootContainersHighUID()
+
 
 def check_runAsUser(spec):
     if "securityContext" in spec:
@@ -102,5 +118,3 @@ def check_runAsUser(spec):
             else:
                 return "FAILED"
     return "ABSENT"
-
-

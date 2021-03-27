@@ -1,4 +1,6 @@
-from checkov.terraform.checks.resource.aws.AbsSecurityGroupUnrestrictedIngress import AbsSecurityGroupUnrestrictedIngress
+from checkov.terraform.checks.resource.aws.AbsSecurityGroupUnrestrictedIngress import (
+    AbsSecurityGroupUnrestrictedIngress,
+)
 
 
 class SecurityGroupUnrestrictedIngress3389(AbsSecurityGroupUnrestrictedIngress):

@@ -29,5 +29,3 @@ spec:
 # touch /tmp/testfile
 # chown 100:100 /tmp/testfile	# This will fail - blocked by Seccomp
 # cat /proc/sys/kernel/seccomp/actions_avail	# This shows the available actions (on newer kernels)
-
-

@@ -2,11 +2,11 @@ import itertools
 import re
 
 # secret categories for use as constants
-AWS = 'aws'
-AZURE = 'azure'
-GCP = 'gcp'
-GENERAL = 'general'
-ALL = 'all'
+AWS = "aws"
+AZURE = "azure"
+GCP = "gcp"
+GENERAL = "general"
+ALL = "all"
 
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
@@ -14,7 +14,7 @@ ALL = 'all'
 # https://github.com/deshpandetanmay/git-secrets
 # https://github.com/msalemcode/git-secrets#options-for-register-azure
 _secrets_regexes = {
-    'azure': [
+    "azure": [
         "(\"|')?([0-9A-Fa-f]{4}-){4}[0-9A-Fa-f]{12}(\"|')?",  # client_secret
         "(\"|')?[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}(\"|')?",  # client_id and many other forms of IDs
         "(\"|')?.*[0-9a-zA-Z]{2,256}[.][o|O][n|N][m|M][i|I][c|C][r|R][o|O][s|S][o|O][f|F][t|T][.][c|C][o|O][m|M](\"|')?",
@@ -30,30 +30,34 @@ _secrets_regexes = {
         "(\"|')?.*[0-9a-zA-Z]{2,256}[.][c|C][l|L][o|O][u|U][d|D][a|A][p|P][p|P][.][n|N][e|E][t|T](\"|')?",
         "(\"|')?.*[0-9a-zA-Z]{2,256}[.][d|D][o|O][c|C][u|U][m|M][e|E][n|N][t|T][s|S][.][a|A][z|Z][u|U][r|R][e|E][.][c|C][o|O][m|M](\"|')?",
     ],
-
-    'aws': [
+    "aws": [
         "(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])",  # AWS secret access key
         "(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",  # AWS access key ID
         "(\"|')?(AWS|aws|Aws)?_?(SECRET|secret|Secret)?_?(ACCESS|access|Access)?_?(KEY|key|Key)(\"|')?\\s*(:|=>|=)\\s*(\"|')?[A-Za-z0-9/\\+=]{40}(\"|')?",
-        "(\"|')?(AWS|aws|Aws)?_?(ACCOUNT|account|Account)_?(ID|id|Id)?(\"|')?\\s*(:|=>|=)\\s*(\"|')?[0-9]{4}\\-?[0-9]{4}\\-?[0-9]{4}(\"|')?"
+        "(\"|')?(AWS|aws|Aws)?_?(ACCOUNT|account|Account)_?(ID|id|Id)?(\"|')?\\s*(:|=>|=)\\s*(\"|')?[0-9]{4}\\-?[0-9]{4}\\-?[0-9]{4}(\"|')?",
     ],
-
-    'gcp': [
-        "\bprivate_key.*\b"
-    ],
-
-    'general': [
+    "gcp": ["\bprivate_key.*\b"],
+    "general": [
         "^-----BEGIN (RSA|EC|DSA|GPP) PRIVATE KEY-----$",
-    ]
+    ],
 }
 
 # first compile each unique regex while maintaining the mapping
-_patterns = {k: [re.compile(p, re.DOTALL) for p in v] for k, v in _secrets_regexes.items()}
+_patterns = {
+    k: [re.compile(p, re.DOTALL) for p in v] for k, v in _secrets_regexes.items()
+}
 
 # now combine all the compiled patterns into one long list
-_patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
+_patterns["all"] = list(itertools.chain.from_iterable(_patterns.values()))
 
-_hash_patterns = list(map(lambda regex: re.compile(regex, re.IGNORECASE), ['^[a-f0-9]{32}$', '^[a-f0-9]{40}$']))
+_hash_patterns = list(
+    map(
+        lambda regex: re.compile(regex, re.IGNORECASE),
+        ["^[a-f0-9]{32}$", "^[a-f0-9]{40}$"],
+    )
+)
+
+
 def is_hash(s: str) -> bool:
     """
     Checks whether a string is a MD5 or SHA1 hash
@@ -82,8 +86,8 @@ def string_has_secrets(s: str, *categories) -> bool:
 
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
-    if not categories or 'all' in categories:
-        categories = ['all']
+    if not categories or "all" in categories:
+        categories = ["all"]
 
     if is_hash(s):
         return False

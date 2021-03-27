@@ -4,14 +4,14 @@ Resources:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: GET
       AuthorizationType: NONE
   MyMethod1:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       RestApiId: MyAPIID
-      ResourceId: MyResourceID 
+      ResourceId: MyResourceID
       HttpMethod: POST
       AuthorizationType: NONE
       ApiKeyRequired: false

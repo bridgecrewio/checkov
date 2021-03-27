@@ -15,5 +15,5 @@ Resources:
       Subnets:
         - subnet-6782e71e
         - subnet-e7e761ac
-      RemoteAccess: 
+      RemoteAccess:
         Ec2SshKey: SshKeyString

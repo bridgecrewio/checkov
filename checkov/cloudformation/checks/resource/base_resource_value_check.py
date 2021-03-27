@@ -6,12 +6,24 @@ from checkov.cloudformation.context_parser import ContextParser
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
 
-VARIABLE_DEPENDANT_REGEX = r'(?:Ref)\.[^\s]+'
+VARIABLE_DEPENDANT_REGEX = r"(?:Ref)\.[^\s]+"
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+    def __init__(
+        self,
+        name,
+        id,
+        categories,
+        supported_resources,
+        missing_block_result=CheckResult.FAILED,
+    ):
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
         self.missing_block_result = missing_block_result
 
     @staticmethod
@@ -21,7 +33,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
+        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
 
     @staticmethod
     def _is_variable_dependant(value):
@@ -42,7 +54,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
-        path_elements = inspected_key.split('/')
+        path_elements = inspected_key.split("/")
         matches = ContextParser.search_deep_keys(path_elements[-1], conf, [])
         if len(matches) > 0:
             for match in matches:
@@ -51,7 +63,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # those, allowing inspected_keys in checks to use the same syntax.
                 for i in range(0, len(match)):
                     if type(match[i]) == int:
-                        match[i] = f'[{match[i]}]'
+                        match[i] = f"[{match[i]}]"
 
                 if match[:-1] == path_elements:
                     # Inspected key exists

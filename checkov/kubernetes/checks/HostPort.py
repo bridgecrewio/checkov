@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class HostPort(BaseK8Check):
-
     def __init__(self):
         """
         https://kubernetes.io/docs/concepts/configuration/overview/
@@ -16,9 +15,11 @@ class HostPort(BaseK8Check):
         name = "Do not specify hostPort unless absolutely necessary"
         id = "CKV_K8S_26"
         # Location: container .ports[].hostPort
-        supported_kind = ['containers', 'initContainers']
+        supported_kind = ["containers", "initContainers"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         return f'{conf["parent"]} - {conf["name"]}'

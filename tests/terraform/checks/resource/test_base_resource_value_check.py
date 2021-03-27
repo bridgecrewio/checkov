@@ -2,13 +2,17 @@ import unittest
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
 from checkov.terraform.checks.resource.registry import resource_registry
 
 
 class TestAnyCheck(BaseResourceValueCheck):
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestAnyCheck", [], ["doesnt_matter"])
+        super().__init__(
+            "Ensure it ain't broke", "test/TestAnyCheck", [], ["doesnt_matter"]
+        )
 
     def get_inspected_key(self):
         return "foo"
@@ -19,7 +23,9 @@ class TestAnyCheck(BaseResourceValueCheck):
 
 class TestStaticCheck(BaseResourceValueCheck):
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestStaticCheck", [], ["doesnt_matter"])
+        super().__init__(
+            "Ensure it ain't broke", "test/TestStaticCheck", [], ["doesnt_matter"]
+        )
 
     def get_inspected_key(self):
         return "foo"
@@ -30,58 +36,47 @@ class TestStaticCheck(BaseResourceValueCheck):
 
 class Test(unittest.TestCase):
     def test_string_match_any(self):
-        result = self._check(TestAnyCheck(),
-                             {"foo": "bar"})
+        result = self._check(TestAnyCheck(), {"foo": "bar"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_string_match_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "bar"})
+        result = self._check(TestStaticCheck(), {"foo": "bar"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_string_mismatch_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "definitely not bar"})
+        result = self._check(TestStaticCheck(), {"foo": "definitely not bar"})
         self.assertEqual(result, CheckResult.FAILED)
 
     def test_string_contains_var_any(self):
-        result = self._check(TestAnyCheck(),
-                             {"foo": "something-${var.whatever}"})
+        result = self._check(TestAnyCheck(), {"foo": "something-${var.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_string_contains_var_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "something-${var.whatever}"})
+        result = self._check(TestStaticCheck(), {"foo": "something-${var.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_var_any(self):
-        result = self._check(TestAnyCheck(),
-                             {"foo": "${var.whatever}"})
+        result = self._check(TestAnyCheck(), {"foo": "${var.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_var_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "${var.whatever}"})
+        result = self._check(TestStaticCheck(), {"foo": "${var.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_local_any(self):
-        result = self._check(TestAnyCheck(),
-                             {"foo": "${local.whatever}"})
+        result = self._check(TestAnyCheck(), {"foo": "${local.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_local_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "${local.whatever}"})
+        result = self._check(TestStaticCheck(), {"foo": "${local.whatever}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_resource_any(self):
-        result = self._check(TestAnyCheck(),
-                             {"foo": "${aws_s3_bucket.foo.bucket}"})
+        result = self._check(TestAnyCheck(), {"foo": "${aws_s3_bucket.foo.bucket}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     def test_resource_static(self):
-        result = self._check(TestStaticCheck(),
-                             {"foo": "${aws_s3_bucket.foo.bucket}"})
+        result = self._check(TestStaticCheck(), {"foo": "${aws_s3_bucket.foo.bucket}"})
         self.assertEqual(result, CheckResult.PASSED)
 
     @staticmethod

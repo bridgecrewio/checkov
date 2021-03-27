@@ -195,4 +195,3 @@ spec:
             capabilities:
               drop:
                 - ALL
-

@@ -7,8 +7,13 @@ from checkov.terraform.checks.resource.registry import resource_registry
 
 class BaseResourceCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_resources):
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="resource")
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_resources,
+            block_type="resource",
+        )
         self.supported_resources = supported_resources
         resource_registry.register(self)
 
@@ -37,4 +42,4 @@ class BaseResourceCheck(BaseCheck):
     def handle_dynamic_values(self, conf):
         for dynamic_element in conf.get("dynamic", []):
             for element_name in dynamic_element.keys():
-                conf[element_name] = dynamic_element[element_name].get('content', [])
+                conf[element_name] = dynamic_element[element_name].get("content", [])

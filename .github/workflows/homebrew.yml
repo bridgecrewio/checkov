@@ -1,10 +1,9 @@
 name: homebrew
-
 on:
   push:
     branches:
       - 'master'
-    tags: 
+    tags:
       - '*'
 
 jobs:
@@ -31,5 +30,4 @@ jobs:
         with:
           # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
           formula: checkov
-          token: ${{ secrets.PAT_TOKEN }} 
-
+          token: ${{ secrets.PAT_TOKEN }}

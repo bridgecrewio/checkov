@@ -1,18 +1,20 @@
 import logging
 import operator
-from functools import reduce
 import re
+from functools import reduce
+
 from checkov.common.comment.enum import COMMENT_REGEX
 
+ENDLINE = "__endline__"
 
-ENDLINE = '__endline__'
+STARTLINE = "__startline__"
 
-STARTLINE = '__startline__'
 
 class ContextParser(object):
     """
     CloudFormation template context parser
     """
+
     def __init__(self, cf_file, cf_template, cf_template_lines):
         self.cf_file = cf_file
         self.cf_template = cf_template
@@ -21,24 +23,30 @@ class ContextParser(object):
     def evaluate_default_refs(self):
         # Get Parameter Defaults - Locate Refs in Template
         refs = []
-        refs.extend(self.search_deep_keys('Ref', self.cf_template, []))
+        refs.extend(self.search_deep_keys("Ref", self.cf_template, []))
 
         for ref in refs:
             refname = ref.pop()
             ref.pop()  # Get rid of the 'Ref' dict key
 
-            if 'Parameters' in self.cf_template.keys() and refname in self.cf_template[
-                'Parameters'].keys():
+            if (
+                "Parameters" in self.cf_template.keys()
+                and refname in self.cf_template["Parameters"].keys()
+            ):
                 # TODO refactor into evaluations
-                if 'Default' in self.cf_template['Parameters'][refname].keys():
+                if "Default" in self.cf_template["Parameters"][refname].keys():
                     logging.debug(
-                        "Replacing Ref {} in file {} with default parameter value: {}".format(refname, self.cf_file,
-                                                                                              self.cf_template[
-                                                                                                  'Parameters'][
-                                                                                                  refname][
-                                                                                                  'Default']))
-                    self._set_in_dict(self.cf_template, ref,
-                                      self.cf_template['Parameters'][refname]['Default'])
+                        "Replacing Ref {} in file {} with default parameter value: {}".format(
+                            refname,
+                            self.cf_file,
+                            self.cf_template["Parameters"][refname]["Default"],
+                        )
+                    )
+                    self._set_in_dict(
+                        self.cf_template,
+                        ref,
+                        self.cf_template["Parameters"][refname]["Default"],
+                    )
 
                     ## TODO - Add Variable Eval Message for Output
                     # Output in Checkov looks like this:
@@ -48,7 +56,7 @@ class ContextParser(object):
     def extract_cf_resource_id(cf_resource, cf_resource_name):
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
             return
-        if 'Type' not in cf_resource:
+        if "Type" not in cf_resource:
             # This is not a CloudFormation resource, skip
             return
         return f"{cf_resource['Type']}.{cf_resource_name}"
@@ -60,15 +68,17 @@ class ContextParser(object):
             end_line = max(list(self.find_lines(cf_resource, ENDLINE)))
 
             # start_line - 2: -1 to switch to 0-based indexing, and -1 to capture the resource name
-            entity_code_lines = self.cf_template_lines[start_line - 2: end_line - 1]
+            entity_code_lines = self.cf_template_lines[start_line - 2 : end_line - 1]
 
             # if the file did not end in a new line, and this was the last resource in the file, then we
             # trimmed off the last line
-            if (end_line - 1) < len(self.cf_template_lines) and not self.cf_template_lines[end_line - 1][1].endswith('\n'):
+            if (end_line - 1) < len(
+                self.cf_template_lines
+            ) and not self.cf_template_lines[end_line - 1][1].endswith("\n"):
                 entity_code_lines.append(self.cf_template_lines[end_line - 1])
 
             entity_code_lines = ContextParser.trim_lines(entity_code_lines)
-            entity_lines_range = [entity_code_lines[0][0],entity_code_lines[-1][0]]
+            entity_lines_range = [entity_code_lines[0][0], entity_code_lines[-1][0]]
             return entity_lines_range, entity_code_lines
         return None, None
 
@@ -88,10 +98,10 @@ class ContextParser(object):
 
     @staticmethod
     def find_lines(node, kv):
-        # Hack to allow running checkov on json templates 
+        # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker
-        if hasattr(node, 'start_mark') and kv == STARTLINE:
+        if hasattr(node, "start_mark") and kv == STARTLINE:
             yield node.start_mark.line + 1
 
         if hasattr(node, "end_mark") and kv == ENDLINE:
@@ -116,9 +126,10 @@ class ContextParser(object):
             if skip_search:
                 skipped_checks.append(
                     {
-                        'id': skip_search.group(2),
-                        'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
-                            3) else "No comment provided"
+                        "id": skip_search.group(2),
+                        "suppress_comment": skip_search.group(3)[1:]
+                        if skip_search.group(3)
+                        else "No comment provided",
                     }
                 )
         return skipped_checks
@@ -138,12 +149,20 @@ class ContextParser(object):
                     # dict and list checks
                     pathprop = pathprop[:-1]
                 if isinstance(cfn_dict[key], dict):
-                    keys.extend(ContextParser.search_deep_keys(search_text, cfn_dict[key], pathprop))
+                    keys.extend(
+                        ContextParser.search_deep_keys(
+                            search_text, cfn_dict[key], pathprop
+                        )
+                    )
                 elif isinstance(cfn_dict[key], list):
                     for index, item in enumerate(cfn_dict[key]):
                         pathproparr = pathprop[:]
                         pathproparr.append(index)
-                        keys.extend(ContextParser.search_deep_keys(search_text, item, pathproparr))
+                        keys.extend(
+                            ContextParser.search_deep_keys(
+                                search_text, item, pathproparr
+                            )
+                        )
         elif isinstance(cfn_dict, list):
             for index, item in enumerate(cfn_dict):
                 pathprop = path[:]

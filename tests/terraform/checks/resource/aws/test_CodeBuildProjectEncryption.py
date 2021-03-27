@@ -5,7 +5,6 @@ from checkov.terraform.checks.resource.aws.CodeBuildProjectEncryption import che
 
 
 class TestCodeBuildProjectEncryption(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {
             "name": "test-project",
@@ -58,5 +57,5 @@ class TestCodeBuildProjectEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

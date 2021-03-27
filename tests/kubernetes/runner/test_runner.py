@@ -1,12 +1,11 @@
 import os
 import unittest
 
-from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def test_record_relative_path_with_relative_dir(self):
 
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
@@ -19,15 +18,22 @@ class TestRunnerValid(unittest.TestCase):
         dir_rel_path = os.path.relpath(scan_dir_path)
 
         runner = Runner()
-        checks_allowlist = ['CKV_K8S_21']
-        report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+        checks_allowlist = ["CKV_K8S_21"]
+        report = runner.run(
+            root_folder=dir_rel_path,
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework="kubernetes", checks=checks_allowlist),
+        )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertTrue(
+            len(all_checks) > 0
+        )  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            self.assertEqual(
+                record.repo_file_path, f"/{dir_rel_path}{record.file_path}"
+            )
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -42,15 +48,22 @@ class TestRunnerValid(unittest.TestCase):
         dir_abs_path = os.path.abspath(scan_dir_path)
 
         runner = Runner()
-        checks_allowlist = ['CKV_K8S_21']
-        report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+        checks_allowlist = ["CKV_K8S_21"]
+        report = runner.run(
+            root_folder=dir_abs_path,
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework="kubernetes", checks=checks_allowlist),
+        )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertTrue(
+            len(all_checks) > 0
+        )  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            self.assertEqual(
+                record.repo_file_path, f"/{dir_rel_path}{record.file_path}"
+            )
 
     def test_record_relative_path_with_relative_file(self):
 
@@ -64,15 +77,21 @@ class TestRunnerValid(unittest.TestCase):
         file_rel_path = os.path.relpath(scan_file_path)
 
         runner = Runner()
-        checks_allowlist = ['CKV_K8S_21']
-        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+        checks_allowlist = ["CKV_K8S_21"]
+        report = runner.run(
+            root_folder=None,
+            external_checks_dir=None,
+            files=[file_rel_path],
+            runner_filter=RunnerFilter(framework="kubernetes", checks=checks_allowlist),
+        )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertTrue(
+            len(all_checks) > 0
+        )  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
+            self.assertEqual(record.repo_file_path, f"/{file_rel_path}")
 
     def test_record_relative_path_with_abs_file(self):
 
@@ -86,15 +105,21 @@ class TestRunnerValid(unittest.TestCase):
         file_abs_path = os.path.abspath(scan_file_path)
 
         runner = Runner()
-        checks_allowlist = ['CKV_K8S_21']
-        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+        checks_allowlist = ["CKV_K8S_21"]
+        report = runner.run(
+            root_folder=None,
+            external_checks_dir=None,
+            files=[file_abs_path],
+            runner_filter=RunnerFilter(framework="kubernetes", checks=checks_allowlist),
+        )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertTrue(
+            len(all_checks) > 0
+        )  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
+            self.assertEqual(record.repo_file_path, f"/{file_rel_path}")
 
     def test_list_metadata_annotations(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -102,8 +127,12 @@ class TestRunnerValid(unittest.TestCase):
         file_rel_path = os.path.relpath(scan_file_path)
         runner = Runner()
         try:
-            runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
-                                runner_filter=RunnerFilter(framework='kubernetes'))
+            runner.run(
+                root_folder=None,
+                external_checks_dir=None,
+                files=[file_rel_path],
+                runner_filter=RunnerFilter(framework="kubernetes"),
+            )
         except:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
@@ -111,5 +140,5 @@ class TestRunnerValid(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

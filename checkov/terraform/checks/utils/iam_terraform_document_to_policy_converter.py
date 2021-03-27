@@ -1,7 +1,9 @@
 import copy
+
+
 def convert_terraform_conf_to_iam_policy(conf):
     """
-        converts terraform parsed configuration to iam policy document
+    converts terraform parsed configuration to iam policy document
     """
     result = copy.deepcopy(conf)
     if "statement" in result.keys():

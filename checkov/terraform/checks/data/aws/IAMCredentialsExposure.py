@@ -1,8 +1,9 @@
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import (
+    BaseCloudsplainingIAMCheck,
+)
 
 
 class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
-
     def __init__(self):
         name = "Ensure IAM policies does not allow credentials exposure"
         id = "CKV_AWS_107"

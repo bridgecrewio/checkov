@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -6,34 +6,44 @@ class GoogleCloudSqlServerCrossDBOwnershipChaining(BaseResourceCheck):
     def __init__(self):
         name = "Ensure SQL database 'cross db ownership chaining' flag is set to 'off'"
         check_id = "CKV_GCP_58"
-        supported_resources = ['google_sql_database_instance']
+        supported_resources = ["google_sql_database_instance"]
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=check_id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
-            Looks for google_sql_database_instance which prevents cross ownerships on SQL DBs::
-            :param
-            conf: google_sql_database_instance
-            configuration
-            :return: < CheckResult >
+        Looks for google_sql_database_instance which prevents cross ownerships on SQL DBs::
+        :param
+        conf: google_sql_database_instance
+        configuration
+        :return: < CheckResult >
         """
-        if 'database_version' in conf.keys():
-            key = conf['database_version'][0]
-            if 'SQLSERVER' in key:
-                if 'settings' in conf.keys():
-                    for attribute in conf['settings'][0]:
-                        if attribute == 'database_flags':
-                            flags = conf['settings'][0]['database_flags']
-                            if isinstance(flags[0], list): #treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
-                                flags = conf['settings'][0]['database_flags'][0]
+        if "database_version" in conf.keys():
+            key = conf["database_version"][0]
+            if "SQLSERVER" in key:
+                if "settings" in conf.keys():
+                    for attribute in conf["settings"][0]:
+                        if attribute == "database_flags":
+                            flags = conf["settings"][0]["database_flags"]
+                            if isinstance(
+                                flags[0], list
+                            ):  # treating use cases of the following database_flags parsing (list of list of dictionaries with strings):'database_flags': [[{'name': '<key>', 'value': '<value>'}, {'name': '<key>', 'value': '<value>'}]]
+                                flags = conf["settings"][0]["database_flags"][0]
                                 for flag in flags:
-                                    if (flag['name'] == 'cross db ownership chaining') and (flag['value'] == 'on'):
+                                    if (
+                                        flag["name"] == "cross db ownership chaining"
+                                    ) and (flag["value"] == "on"):
                                         return CheckResult.FAILED
-                            else: #treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
+                            else:  # treating use cases of the following database_flags parsing (list of dictionaries with arrays): 'database_flags': [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
                                 for flag in flags:
-                                    if (flag['name'][0] == 'cross db ownership chaining') and (
-                                            flag['value'][0] == 'on'):
+                                    if (
+                                        flag["name"][0] == "cross db ownership chaining"
+                                    ) and (flag["value"][0] == "on"):
                                         return CheckResult.FAILED
         return CheckResult.PASSED
 

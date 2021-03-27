@@ -7,7 +7,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 
 class ImagePullPolicyAlways(BaseK8Check):
-
     def __init__(self):
         """
         Image pull policy should be set to always to ensure you get the correct image and imagePullSecrets are correct
@@ -19,9 +18,11 @@ class ImagePullPolicyAlways(BaseK8Check):
         name = "Image Pull Policy should be Always"
         id = "CKV_K8S_15"
         # Location: container .imagePullPolicy
-        supported_kind = ['containers', 'initContainers']
+        supported_kind = ["containers", "initContainers"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_kind
+        )
 
     def get_resource_id(self, conf):
         return f'{conf["parent"]} - {conf["name"]}'
@@ -30,10 +31,10 @@ class ImagePullPolicyAlways(BaseK8Check):
         if "image" in conf:
             # Remove the digest, if present
             image_val = conf["image"]
-            if not isinstance(image_val, str) or image_val.strip() == '':
+            if not isinstance(image_val, str) or image_val.strip() == "":
                 return CheckResult.UNKNOWN
-            if '@' in image_val:
-                image_val = image_val[0:image_val.index('@')]
+            if "@" in image_val:
+                image_val = image_val[0 : image_val.index("@")]
 
             (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
             if "imagePullPolicy" not in conf:

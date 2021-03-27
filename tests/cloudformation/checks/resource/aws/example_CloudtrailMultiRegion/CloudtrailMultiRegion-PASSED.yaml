@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Resources: 
+Resources:
   MyTrail0:
     Type: AWS::CloudTrail::Trail
-    Properties: 
+    Properties:
       IsLogging: True
       IsMultiRegionTrail: True
       S3BucketName: String

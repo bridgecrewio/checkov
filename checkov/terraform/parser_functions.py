@@ -2,7 +2,12 @@ import logging
 from typing import Any, Dict, Optional
 
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.terraform.parser_utils import (
+    eval_string,
+    split_merge_args,
+    string_to_native,
+    to_string,
+)
 
 #
 # Functions defined in this file implement terraform functions.
@@ -79,7 +84,7 @@ def tonumber(original, **_):
     except ValueError:
         return FUNCTION_FAILED
 
-    
+
 def tostring(original, **_):
     # Indicates a safe string, all good
     if original.startswith('"') and original.endswith('"'):
@@ -116,7 +121,7 @@ def toset(original, **_):
 
 def tomap(original, **_):
     # https://www.terraform.io/docs/language/functions/tomap.html
-    original = original.replace(":", "=")     # converted to colons by parser #shrug
+    original = original.replace(":", "=")  # converted to colons by parser #shrug
 
     altered_value = eval_string(original)
     if altered_value is None or not isinstance(altered_value, dict):
@@ -131,7 +136,9 @@ def map(original, **_):
     #       the issue, act like it's a list (to allow comma separation) and let the HCL
     #       parser deal with it. Then iterating the list is easy.
     converted_to_list = eval_string(f"[{original}]")
-    if converted_to_list is None or len(converted_to_list) & 1:       # none or odd number of args
+    if (
+        converted_to_list is None or len(converted_to_list) & 1
+    ):  # none or odd number of args
         return FUNCTION_FAILED
 
     new_map = {}

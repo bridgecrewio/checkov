@@ -1,5 +1,7 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceCheck,
+)
 
 
 class EBSDefaultEncryption(BaseResourceCheck):
@@ -8,7 +10,12 @@ class EBSDefaultEncryption(BaseResourceCheck):
         id = "CKV_AWS_106"
         supported_resources = ["aws_ebs_encryption_by_default"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         enabled = conf.get("enabled")

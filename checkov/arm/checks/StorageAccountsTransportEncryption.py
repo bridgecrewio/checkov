@@ -1,5 +1,5 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class StorageAccountsTransportEncryption(BaseResourceCheck):
@@ -8,14 +8,22 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         # true since API version 2019-04-01.
         name = "Ensure that 'supportsHttpsTrafficOnly' is set to 'true'"
         id = "CKV_AZURE_3"
-        supported_resources = ['Microsoft.Storage/storageAccounts']
+        supported_resources = ["Microsoft.Storage/storageAccounts"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         if "properties" in conf:
             if "supportsHttpsTrafficOnly" in conf["properties"]:
-                if str(conf["properties"]["supportsHttpsTrafficOnly"]).lower() == "true":
+                if (
+                    str(conf["properties"]["supportsHttpsTrafficOnly"]).lower()
+                    == "true"
+                ):
                     return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED
@@ -30,5 +38,6 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
             else:
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = StorageAccountsTransportEncryption()

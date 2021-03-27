@@ -7,8 +7,13 @@ from checkov.common.multi_signature import multi_signature
 
 class BaseResourceCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_resources):
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="resource")
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_resources,
+            block_type="resource",
+        )
         self.supported_resources = supported_resources
         arm_registry.register(self)
 

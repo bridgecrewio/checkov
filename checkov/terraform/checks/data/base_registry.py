@@ -2,7 +2,6 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
-
     def __init__(self):
         super().__init__()
 
@@ -12,4 +11,3 @@ class Registry(BaseCheckRegistry):
         data_object = entity[data_type]
         data_configuration = data_object[data_name]
         return data_type, data_name, data_configuration
-

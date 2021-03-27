@@ -27,6 +27,6 @@ class AbsGoogleImpersonationRoles(BaseResourceCheck):
         super().__init__(name, id, categories, supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'role' in conf and conf['role'][0] in IMPERSONATION_ROLES:
+        if "role" in conf and conf["role"][0] in IMPERSONATION_ROLES:
             return CheckResult.FAILED
         return CheckResult.PASSED

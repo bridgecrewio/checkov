@@ -1,14 +1,15 @@
 import unittest
+
 import hcl2
 
-from checkov.terraform.checks.resource.aws.EKSNodeGroupRemoteAccess import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.EKSNodeGroupRemoteAccess import check
 
 
 class TestEKSNodeGroupRemoteAccess(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_eks_node_group" "test" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "example"
@@ -25,13 +26,15 @@ resource "aws_eks_node_group" "test" {
     min_size     = 1
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_eks_node_group']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_eks_node_group"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_eks_node_group" "test" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "example"
@@ -49,13 +52,15 @@ resource "aws_eks_node_group" "test" {
     min_size     = 1
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_eks_node_group']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_eks_node_group"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success_implicit(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
 resource "aws_eks_node_group" "test" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "example"
@@ -68,13 +73,12 @@ resource "aws_eks_node_group" "test" {
     min_size     = 1
   }
 }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_eks_node_group']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_eks_node_group"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
-

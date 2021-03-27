@@ -23,5 +23,3 @@ spec:
     - name: host-fs
       mountPath: /host
   restartPolicy: Never
-
-

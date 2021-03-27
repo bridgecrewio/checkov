@@ -1,14 +1,19 @@
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class GKEPublicControlPlane(BaseResourceCheck):
     def __init__(self):
         name = "Ensure GKE Control Plane is not public"
         id = "CKV_GCP_18"
-        supported_resources = ['google_container_cluster']
+        supported_resources = ["google_container_cluster"]
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+        )
 
     def scan_resource_conf(self, conf):
         """
@@ -17,10 +22,18 @@ class GKEPublicControlPlane(BaseResourceCheck):
         :param conf: google_compute_ssl_policy configuration
         :return: <CheckResult>
         """
-        if 'master_authorized_networks_config' in conf.keys():
-            if isinstance(conf['master_authorized_networks_config'][0], dict) and 'cidr_blocks' in conf['master_authorized_networks_config'][0]:
-                for cidr_block_conf in conf['master_authorized_networks_config'][0]['cidr_blocks']:
-                    if isinstance(cidr_block_conf, dict) and '0.0.0.0/0' in cidr_block_conf['cidr_block']: # nosec
+        if "master_authorized_networks_config" in conf.keys():
+            if (
+                isinstance(conf["master_authorized_networks_config"][0], dict)
+                and "cidr_blocks" in conf["master_authorized_networks_config"][0]
+            ):
+                for cidr_block_conf in conf["master_authorized_networks_config"][0][
+                    "cidr_blocks"
+                ]:
+                    if (
+                        isinstance(cidr_block_conf, dict)
+                        and "0.0.0.0/0" in cidr_block_conf["cidr_block"]
+                    ):  # nosec
                         return CheckResult.FAILED
         return CheckResult.PASSED
 

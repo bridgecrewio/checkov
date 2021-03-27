@@ -3,23 +3,23 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  labels: 
+  labels:
     test: liveness
   name: liveness-exec
   annotations:
     checkov.io/skip1: CKV_K8S_20=I don't care about Privilege Escalation in the first container in this pod
     checkov.io/skip2: CKV_K8S_14
     checkov.io/skip3: CKV_K8S_11=I don't care about CPU limits
-spec: 
-  containers: 
+spec:
+  containers:
   - name: liveness
     image: k8s.gcr.io/busybox
     args:
     - /bin/sh
-    - -c 
+    - -c
     - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
-    livenessProbe: 
-      exec: 
+    livenessProbe:
+      exec:
         command:
         - cat
         - /tmp/healthy

@@ -6,17 +6,17 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestRegistry(unittest.TestCase):
-
     def setUp(self):
         from checkov.terraform.checks.resource.registry import resource_registry
+
         self.registry = resource_registry
 
-    @patch('os.path.exists')
+    @patch("os.path.exists")
     def test_with_init(self, mock_path_exists):
         mock_path_exists.return_value = True
         self.assertTrue(self.registry._directory_has_init_py("/foo/bar"))
 
-    @patch('os.path.exists')
+    @patch("os.path.exists")
     def test_without_init(self, mock_path_exists):
         mock_path_exists.return_value = False
         self.assertFalse(self.registry._directory_has_init_py("/foo/bar"))
@@ -28,12 +28,13 @@ class TestRegistry(unittest.TestCase):
 
         external_check_loaded = False
         external_check = None
-        for check in self.registry.checks['aws_s3_bucket']:
-            if check.__class__.__name__ == 'S3PCIPrivateACL':
+        for check in self.registry.checks["aws_s3_bucket"]:
+            if check.__class__.__name__ == "S3PCIPrivateACL":
                 external_check_loaded = True
                 external_check = check
         self.assertTrue(external_check_loaded)
-        self.registry.checks['aws_s3_bucket'].remove(external_check)
+        self.registry.checks["aws_s3_bucket"].remove(external_check)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

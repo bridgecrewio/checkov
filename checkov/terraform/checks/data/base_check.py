@@ -7,8 +7,13 @@ from checkov.terraform.checks.data.registry import data_registry
 
 class BaseDataCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_data):
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_data,
-                         block_type="data")
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_data,
+            block_type="data",
+        )
         self.supported_data = supported_data
         data_registry.register(self)
 

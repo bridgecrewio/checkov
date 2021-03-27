@@ -5,14 +5,18 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class TestCheck(BaseCheck):
-
     def __init__(self, *supported_entities, id="CKV_T_1"):
         name = "Example check"
         categories = []
         supported_entities = list(supported_entities)
         block_type = "module"
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
-                         block_type=block_type)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_entities,
+            block_type=block_type,
+        )
 
     def scan_entity_conf(self, conf, entity_type):
         pass
@@ -20,7 +24,6 @@ class TestCheck(BaseCheck):
 
 # noinspection DuplicatedCode
 class TestRunnerRegistry(unittest.TestCase):
-
     def test_add_non_wildcard(self):
         registry = BaseCheckRegistry()
         resource_1_check = TestCheck("resource_1")
@@ -175,5 +178,5 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertIn(resource_s_check, resource__checks)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

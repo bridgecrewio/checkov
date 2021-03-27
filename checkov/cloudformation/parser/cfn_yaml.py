@@ -3,18 +3,16 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
+
 import six
-from yaml import MappingNode
-from yaml import ScalarNode
-from yaml import SequenceNode
+from yaml import MappingNode, ScalarNode, SequenceNode
 from yaml.composer import Composer
-from yaml.constructor import ConstructorError
-from yaml.constructor import SafeConstructor
+from yaml.constructor import ConstructorError, SafeConstructor
 from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 
-from checkov.cloudformation.parser.node import str_node, dict_node, list_node
+from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
@@ -25,8 +23,8 @@ except ImportError:
 
     cyaml = False
 
-UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
-FN_PREFIX = 'Fn::'
+UNCONVERTED_SUFFIXES = ["Ref", "Condition"]
+FN_PREFIX = "Fn::"
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ class CfnParseError(ConstructorError):
     Error thrown when the template contains Cfn Error
     """
 
-    def __init__(self, filename, message, line_number, column_number, key=' '):
+    def __init__(self, filename, message, line_number, column_number, key=" "):
         # Call the base class constructor with the parameters it needs
         super(CfnParseError, self).__init__(message)
 
@@ -78,11 +76,15 @@ class NodeConstructor(SafeConstructor):
                 raise CfnParseError(
                     self.filename,
                     'Duplicate resource found "{}" (line {})'.format(
-                        key, key_node.start_mark.line + 1),
-                    key_node.start_mark.line, key_node.start_mark.column, key)
+                        key, key_node.start_mark.line + 1
+                    ),
+                    key_node.start_mark.line,
+                    key_node.start_mark.column,
+                    key,
+                )
             mapping[key] = value
 
-        obj, = SafeConstructor.construct_yaml_map(self, node)
+        (obj,) = SafeConstructor.construct_yaml_map(self, node)
         return dict_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_str(self, node):
@@ -91,34 +93,38 @@ class NodeConstructor(SafeConstructor):
         return str_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
-        obj, = SafeConstructor.construct_yaml_seq(self, node)
-        assert isinstance(obj, list) # nosec
-        return list_node(obj, node.start_mark, node.end_mark) # nosec
+        (obj,) = SafeConstructor.construct_yaml_seq(self, node)
+        assert isinstance(obj, list)  # nosec
+        return list_node(obj, node.start_mark, node.end_mark)  # nosec
 
     def construct_yaml_null_error(self, node):
         """Throw a null error"""
         raise CfnParseError(
             self.filename,
-            'Null value at line {0} column {1}'.format(
-                node.start_mark.line + 1, node.start_mark.column + 1),
-            node.start_mark.line, node.start_mark.column, ' ')
+            "Null value at line {0} column {1}".format(
+                node.start_mark.line + 1, node.start_mark.column + 1
+            ),
+            node.start_mark.line,
+            node.start_mark.column,
+            " ",
+        )
 
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:map',
-    NodeConstructor.construct_yaml_map)
+    u"tag:yaml.org,2002:map", NodeConstructor.construct_yaml_map
+)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:str',
-    NodeConstructor.construct_yaml_str)
+    u"tag:yaml.org,2002:str", NodeConstructor.construct_yaml_str
+)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:seq',
-    NodeConstructor.construct_yaml_seq)
+    u"tag:yaml.org,2002:seq", NodeConstructor.construct_yaml_seq
+)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:null',
-    NodeConstructor.construct_yaml_null_error)
+    u"tag:yaml.org,2002:null", NodeConstructor.construct_yaml_null_error
+)
 
 
 class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver):
@@ -144,8 +150,8 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
-        mapping['__startline__'] = node.start_mark.line + 1
-        mapping['__endline__'] = node.end_mark.line + 1
+        mapping["__startline__"] = node.start_mark.line + 1
+        mapping["__endline__"] = node.end_mark.line + 1
         return mapping
 
 
@@ -155,10 +161,10 @@ def multi_constructor(loader, tag_suffix, node):
     """
 
     if tag_suffix not in UNCONVERTED_SUFFIXES:
-        tag_suffix = '{}{}'.format(FN_PREFIX, tag_suffix)
+        tag_suffix = "{}{}".format(FN_PREFIX, tag_suffix)
 
     constructor = None
-    if tag_suffix == 'Fn::GetAtt':
+    if tag_suffix == "Fn::GetAtt":
         constructor = construct_getatt
     elif isinstance(node, ScalarNode):
         constructor = loader.construct_scalar
@@ -167,7 +173,7 @@ def multi_constructor(loader, tag_suffix, node):
     elif isinstance(node, MappingNode):
         constructor = loader.construct_mapping
     else:
-        raise 'Bad tag: !{}'.format(tag_suffix)
+        raise "Bad tag: !{}".format(tag_suffix)
 
     return dict_node({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
 
@@ -178,11 +184,11 @@ def construct_getatt(node):
     """
 
     if isinstance(node.value, (six.string_types)):
-        return list_node(node.value.split('.'), node.start_mark, node.end_mark)
+        return list_node(node.value.split("."), node.start_mark, node.end_mark)
     if isinstance(node.value, list):
         return list_node([s.value for s in node.value], node.start_mark, node.end_mark)
 
-    raise ValueError('Unexpected node type: {}'.format(type(node.value)))
+    raise ValueError("Unexpected node type: {}".format(type(node.value)))
 
 
 def loads(yaml_string, fname=None):
@@ -190,7 +196,7 @@ def loads(yaml_string, fname=None):
     Load the given YAML string
     """
     loader = MarkedLoader(yaml_string, fname)
-    loader.add_multi_constructor('!', multi_constructor)
+    loader.add_multi_constructor("!", multi_constructor)
 
     template = loader.get_single_data()
     # Convert an empty file to an empty dict
@@ -205,12 +211,13 @@ def load(filename):
     Load the given YAML file
     """
 
-    content = ''
+    content = ""
 
     with open(filename) as fp:
         content = fp.read()
         fp.seek(0)
-        file_lines = [(ind + 1, line) for (ind, line) in
-                      list(enumerate(fp.readlines()))]
+        file_lines = [
+            (ind + 1, line) for (ind, line) in list(enumerate(fp.readlines()))
+        ]
 
     return (loads(content, filename), file_lines)

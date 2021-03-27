@@ -7,7 +7,6 @@
         "Properties" : {
             "LogGroupName" : "String"
             }
-        }    
+        }
     }
     }
-  

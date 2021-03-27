@@ -5,7 +5,6 @@ from checkov.terraform.checks.resource.aws.MSKClusterLogging import check
 
 
 class TestMSKClusterLogging(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {
             "name": "test-project",
@@ -79,7 +78,7 @@ class TestMSKClusterLogging(unittest.TestCase):
                                     "enabled": [True],
                                 }
                             ],
-                        }
+                        },
                     ],
                 }
             ],
@@ -113,7 +112,7 @@ class TestMSKClusterLogging(unittest.TestCase):
                                     "enabled": [False],
                                 }
                             ],
-                        }
+                        },
                     ],
                 }
             ],
@@ -122,5 +121,5 @@ class TestMSKClusterLogging(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

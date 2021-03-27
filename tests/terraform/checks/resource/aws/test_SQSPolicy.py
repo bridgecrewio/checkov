@@ -1,15 +1,15 @@
 import unittest
+
 import hcl2
 
-from checkov.terraform.checks.resource.aws.SQSPolicy import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.aws.SQSPolicy import check
 
 
 class TestSQSPolicy(unittest.TestCase):
-
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
                     resource "aws_sqs_queue_policy" "test" {
                     queue_url = aws_sqs_queue.q.id
 
@@ -34,13 +34,15 @@ class TestSQSPolicy(unittest.TestCase):
                     }
                     POLICY
                     }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_sqs_queue_policy']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_sqs_queue_policy"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
                     resource "aws_sqs_queue_policy" "test" {
                     queue_url = aws_sqs_queue.q.id
 
@@ -65,10 +67,12 @@ class TestSQSPolicy(unittest.TestCase):
                     }
                     POLICY
                     }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_sqs_queue_policy']['test']
+        """
+        )
+        resource_conf = hcl_res["resource"][0]["aws_sqs_queue_policy"]["test"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -5,7 +5,6 @@ from checkov.terraform.checks.resource.aws.AthenaWorkgroupConfiguration import c
 
 
 class TestAthenaWorkgroupConfiguration(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {
             "name": "Example",
@@ -40,5 +39,5 @@ class TestAthenaWorkgroupConfiguration(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

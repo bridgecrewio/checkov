@@ -2,14 +2,16 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.SQLServerEmailAlertsToAdminsEnabled import check
 from checkov.common.models.enums import CheckResult
+from checkov.terraform.checks.resource.azure.SQLServerEmailAlertsToAdminsEnabled import (
+    check,
+)
 
 
 class TestSQLServerEmailAlertsToAdminsEnabled(unittest.TestCase):
-
     def test_failure(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mssql_server_security_alert_policy" "example" {
               resource_group_name        = azurerm_resource_group.example.name
               server_name                = azurerm_sql_server.example.name
@@ -22,13 +24,17 @@ class TestSQLServerEmailAlertsToAdminsEnabled(unittest.TestCase):
               ]
               retention_days = 20
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mssql_server_security_alert_policy']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0][
+            "azurerm_mssql_server_security_alert_policy"
+        ]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        hcl_res = hcl2.loads("""
+        hcl_res = hcl2.loads(
+            """
             resource "azurerm_mssql_server_security_alert_policy" "example" {
               resource_group_name        = azurerm_resource_group.example.name
               server_name                = azurerm_sql_server.example.name
@@ -40,11 +46,14 @@ class TestSQLServerEmailAlertsToAdminsEnabled(unittest.TestCase):
               email_account_admins = true
               retention_days = 20
             }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mssql_server_security_alert_policy']['example']
+                """
+        )
+        resource_conf = hcl_res["resource"][0][
+            "azurerm_mssql_server_security_alert_policy"
+        ]["example"]
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

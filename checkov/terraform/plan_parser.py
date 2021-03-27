@@ -34,7 +34,7 @@ def _hclify(obj, parent_key=None):
     ret_dict = {}
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
-    if hasattr(obj, 'start_mark') and hasattr(obj, "end_mark"):
+    if hasattr(obj, "start_mark") and hasattr(obj, "end_mark"):
         obj["start_line"] = obj.start_mark.line
         obj["end_line"] = obj.end_mark.line
     for key, value in obj.items():
@@ -57,6 +57,7 @@ def _hclify(obj, parent_key=None):
                 ret_dict[key] = [child_dict]
     return ret_dict
 
+
 def _prepare_resource_block(resource):
     """
     hclify resource if pre-conditions met.
@@ -65,17 +66,20 @@ def _prepare_resource_block(resource):
     :rtype: prepared: boolean: whether conditions met to prepare data
     """
     resource_block = {}
-    resource_block[resource['type']] = {}
+    resource_block[resource["type"]] = {}
     prepared = False
     mode = ""
-    if 'mode' in resource:
+    if "mode" in resource:
         mode = resource.get("mode")
     # Rare cases where data block appears in resources with same name as resource block and only partial values
     # and where *_module resources don't have values field
-    if mode == "managed" and 'values' in resource:
-        resource_block[resource['type']][resource.get("name", "default")] = _hclify(resource['values'])
+    if mode == "managed" and "values" in resource:
+        resource_block[resource["type"]][resource.get("name", "default")] = _hclify(
+            resource["values"]
+        )
         prepared = True
     return resource_block, prepared
+
 
 def _find_child_modules(child_modules):
     """
@@ -85,8 +89,8 @@ def _find_child_modules(child_modules):
     """
     resource_blocks = []
     for child_module in child_modules:
-        if child_module.get("child_modules",[]):
-            nested_child_modules = child_module.get("child_modules",[])
+        if child_module.get("child_modules", []):
+            nested_child_modules = child_module.get("child_modules", [])
             nested_blocks = _find_child_modules(nested_child_modules)
             for resource in nested_blocks:
                 resource_blocks.append(resource)
@@ -104,18 +108,24 @@ def parse_tf_plan(tf_plan_file):
     """
     tf_defintions = {}
     tf_defintions[tf_plan_file] = {}
-    tf_defintions[tf_plan_file]['resource'] = []
+    tf_defintions[tf_plan_file]["resource"] = []
     template, template_lines = parse(tf_plan_file)
     if not template:
         return None, None
-    for resource in template.get('planned_values', {}).get("root_module", {}).get("resources", []):
+    for resource in (
+        template.get("planned_values", {}).get("root_module", {}).get("resources", [])
+    ):
         resource_block, prepared = _prepare_resource_block(resource)
         if prepared is True:
-            tf_defintions[tf_plan_file]['resource'].append(resource_block)
-    child_modules = template.get('planned_values', {}).get("root_module", {}).get("child_modules",[])
+            tf_defintions[tf_plan_file]["resource"].append(resource_block)
+    child_modules = (
+        template.get("planned_values", {})
+        .get("root_module", {})
+        .get("child_modules", [])
+    )
     # Terraform supports modules within modules so we need to search
     # in nested modules to find all resource blocks
     resource_blocks = _find_child_modules(child_modules)
     for resource in resource_blocks:
-        tf_defintions[tf_plan_file]['resource'].append(resource)
+        tf_defintions[tf_plan_file]["resource"].append(resource)
     return tf_defintions, template_lines

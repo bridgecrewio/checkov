@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -23,7 +23,9 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
                 policy = "ssl_policy"
                 if policy in conf.keys():
                     name = str(conf[policy]).strip("['']")
-                    if name.startswith("ELBSecurityPolicy-FS-1-2") or name.startswith("ELBSecurityPolicy-TLS-1-2"):
+                    if name.startswith("ELBSecurityPolicy-FS-1-2") or name.startswith(
+                        "ELBSecurityPolicy-TLS-1-2"
+                    ):
                         return CheckResult.PASSED
                     else:
                         return CheckResult.FAILED
