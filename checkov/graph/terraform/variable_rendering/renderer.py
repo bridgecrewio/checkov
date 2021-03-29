@@ -2,10 +2,12 @@ import logging
 import os
 from copy import deepcopy
 
-from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
+from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, \
+    reserved_attribute_names
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, run_function_multithreaded, \
-    calculate_hash, join_trimmed_strings, remove_index_pattern_from_str, extend_referenced_vertices_with_tf_vars
+    calculate_hash, join_trimmed_strings, remove_index_pattern_from_str, extend_referenced_vertices_with_tf_vars, \
+    attribute_has_nested_attributes
 from checkov.graph.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
 
 
@@ -99,8 +101,7 @@ class VariableRenderer:
             self.update_evaluated_value(changed_attribute_key=edge.label,
                                         changed_attribute_value=val_to_eval, vertex=edge.origin, change_origin_id=edge.dest, attribute_at_dest=first_key_path)
 
-    @staticmethod
-    def extract_value_from_vertex(key_path, attributes):
+    def extract_value_from_vertex(self, key_path, attributes):
         for i in range(len(key_path)):
             key = join_trimmed_strings(char_to_join=".", str_lst=key_path, num_to_trim=i)
             value = attributes.get(key, None)
@@ -116,7 +117,11 @@ class VariableRenderer:
                 return value
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE.value, BlockType.TF_VARIABLE.value]:
-            return attributes.get('default')
+            default_val = attributes.get('default')
+            value = None
+            if isinstance(default_val, dict):
+                value = self.extract_value_from_vertex(key_path, default_val)
+            return default_val if not value else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT.value:
             return attributes.get('value')
         return None
@@ -202,7 +207,7 @@ class VariableRenderer:
             changed_attributes = {}
             attributes = {}
             vertex.get_origin_attributes(attributes)
-            for attribute in filter(lambda attr: attr not in reserved_attribute_names, vertex.attributes):
+            for attribute in filter(lambda attr: attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes), vertex.attributes):
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val
                 if not isinstance(lst_curr_val, list):
@@ -213,9 +218,7 @@ class VariableRenderer:
                             or attribute == 'template_body':
                         evaluated_lst.append(inner_val)
                         continue
-                    evaluated = evaluate_terraform(str(inner_val), keep_interpolations=False)
-                    if evaluated == inner_val and not isinstance(evaluated, dict):
-                        evaluated = evaluate_terraform(f'"{str(inner_val)}"', keep_interpolations=False)
+                    evaluated = self.evaluate_value(inner_val)
                     evaluated_lst.append(evaluated)
                 evaluated = evaluated_lst
                 if not isinstance(curr_val, list):
@@ -224,3 +227,23 @@ class VariableRenderer:
                     vertex.update_inner_attribute(attribute, vertex.attributes, evaluated)
                     changed_attributes[attribute] = evaluated
             self.local_graph.update_vertex_config(vertex, changed_attributes)
+
+    def evaluate_value(self, val):
+        if type(val) not in [str, list, set, dict]:
+            evaluated_val = val
+        elif isinstance(val, str):
+            evaluated_val = evaluate_terraform(val, keep_interpolations=False)
+        elif isinstance(val, list):
+            evaluated_val = []
+            for v in val:
+                evaluated_val.append(self.evaluate_value(v))
+        elif isinstance(val, set):
+            evaluated_val = set()
+            for v in val:
+                evaluated_val.add(self.evaluate_value(v))
+        else:
+            evaluated_val = {}
+            for k, v in val.items():
+                evaluated_key = self.evaluate_value(k)
+                evaluated_val[evaluated_key] = self.evaluate_value(v)
+        return evaluated_val

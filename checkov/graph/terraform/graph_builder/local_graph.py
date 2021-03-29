@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 from copy import deepcopy
 from pathlib import PurePosixPath
 
@@ -14,7 +13,7 @@ from checkov.graph.terraform.graph_builder.graph_components.generic_resource_enc
 from checkov.graph.terraform.graph_builder.utils import is_local_path
 from checkov.graph.terraform.utils.utils import get_referenced_vertices_in_value, update_dictionary_attribute, \
     join_trimmed_strings, \
-    filter_sub_keys, extend_referenced_vertices_with_tf_vars
+    filter_sub_keys, extend_referenced_vertices_with_tf_vars, attribute_has_nested_attributes
 from checkov.graph.terraform.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.graph.terraform.variable_rendering.renderer import VariableRenderer
 
@@ -143,8 +142,8 @@ class LocalGraph:
         aliases = self._get_aliases()
         for origin_node_index, vertex in enumerate(self.vertices):
             for attribute_key in vertex.attributes:
-                if attribute_key in reserved_attribute_names or self._attribute_has_nested_attributes(attribute_key,
-                                                                                                      vertex.attributes):
+                if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(attribute_key,
+                                                                                                     vertex.attributes):
                     continue
                 referenced_vertices = get_referenced_vertices_in_value(value=vertex.attributes[attribute_key],
                                                                        aliases=aliases,
@@ -188,23 +187,6 @@ class LocalGraph:
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
-
-    @staticmethod
-    def _attribute_has_nested_attributes(attribute_key, attributes):
-        """
-        :param attribute_key: key inside the  `attributes` dictionary
-        :param attributes:
-        :return: True if attribute_key has inner attributes.
-        Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
-        Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
-        """
-        copy_of_attributes = deepcopy(attributes)
-        copy_of_attributes.pop(attribute_key)
-        prefixes_with_attribute_key = [a for a in copy_of_attributes.keys() if a.startswith(attribute_key)]
-        if not any(re.findall(r'\.\d+', a) for a in prefixes_with_attribute_key):
-            # if there aro no numeric parts in the key such as key1.0.key2
-            return isinstance(attributes[attribute_key], dict)
-        return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
 
     def _connect_module(self, sub_values, attribute_key, module_node, origin_node_index):
         """

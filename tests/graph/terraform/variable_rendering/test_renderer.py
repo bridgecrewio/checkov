@@ -132,4 +132,32 @@ class TestRenderer(TestCase):
 
         self.compare_vertex_attributes(local_graph, expected_aws_lambda_permission, BlockType.RESOURCE.value, "aws_lambda_permission.test_lambda_permissions")
 
+    def test_eks(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/terraform-aws-eks-master')
+        graph_manager = GraphManager('eks', ['eks'])
+        local_graph, tf_def = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        for v in local_graph.vertices:
+            expected_v = expected_eks.get(v.block_type, {}).get(v.name)
+            if expected_v:
+                for attribute_key, expected_value in expected_v.items():
+                    actual_value = v.attributes.get(attribute_key)
+                    self.assertEqual(expected_value, actual_value,
+                                     f'error during comparing {v.block_type} in attribute key: {attribute_key}')
+
+
+    def test_dict_tfvar(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_dictionary_tfvars')
+        graph_manager = GraphManager('d', ['d'])
+        local_graph, tf_def = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        for v in local_graph.vertices:
+            expected_v = expected_provider.get(v.block_type, {}).get(v.name)
+            if expected_v:
+                for attribute_key, expected_value in expected_v.items():
+                    actual_value = v.attributes.get(attribute_key)
+                    self.assertEqual(expected_value, actual_value,
+                                     f'error during comparing {v.block_type} in attribute key: {attribute_key}')
+
+
 

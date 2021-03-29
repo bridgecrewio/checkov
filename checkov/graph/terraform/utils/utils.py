@@ -7,6 +7,7 @@ import json
 import os
 import pickle  # nosec
 import re
+from copy import deepcopy
 
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 
@@ -316,3 +317,20 @@ def extend_referenced_vertices_with_tf_vars(referenced_vertices):
         if vertex_ref.block_type == BlockType.VARIABLE:
             tfvars_to_add.append(VertexReference(block_type=BlockType.TF_VARIABLE, sub_parts=vertex_ref.sub_parts, origin_value=vertex_ref.origin_value))
     referenced_vertices.extend(tfvars_to_add)
+
+
+def attribute_has_nested_attributes(attribute_key, attributes):
+    """
+    :param attribute_key: key inside the  `attributes` dictionary
+    :param attributes:
+    :return: True if attribute_key has inner attributes.
+    Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
+    Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
+    """
+    copy_of_attributes = deepcopy(attributes)
+    copy_of_attributes.pop(attribute_key)
+    prefixes_with_attribute_key = [a for a in copy_of_attributes.keys() if a.startswith(attribute_key)]
+    if not any(re.findall(r'\.\d+', a) for a in prefixes_with_attribute_key):
+        # if there aro no numeric parts in the key such as key1.0.key2
+        return isinstance(attributes[attribute_key], dict)
+    return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)

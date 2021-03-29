@@ -1,3 +1,5 @@
+from lark import Tree
+
 expected_postgres_module = {"create": True,
                             "name": "${var.name}",
                             "use_name_prefix": True,
@@ -23,3 +25,28 @@ expected_terragoat_db_instance = {'name': 'db1',
                                   'tags': {'Name': 'test_id-acme-dev-rds',
                                             'Environment': 'test_id-acme-dev'}
                                   }
+
+
+expected_eks = {
+    "resource": {
+        "aws_eks_cluster.tf_eks": {
+            "version": ["1.19"],
+            "vpc_config": {
+                "security_group_ids": ["aws_security_group.master.id"],
+                "subnet_ids": Tree('full_splat_expr_term', ['aws_subnet.eks', 'id'])
+            },
+        }
+    }
+}
+
+
+expected_provider = {
+    "provider": {
+        "aws": {
+            "access_key": ["AKIAVAN"],
+            "secret_key": ["0CU4jk0"],
+            "region": ["us-west-2"],
+        }
+    }
+}
+

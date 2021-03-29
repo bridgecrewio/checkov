@@ -22,22 +22,6 @@ class TestLocalGraph(TestCase):
     def setUp(self) -> None:
         self.source = "TERRAFORM"
 
-    def test__attribute_has_nested_attributes_dictionary(self):
-        local_graph = LocalGraph(module={}, module_dependency_map={})
-
-        attributes = {'name': ['${var.lb_name}'], 'internal': [True], 'security_groups': ['${var.lb_security_group_ids}'], 'subnets': ['${var.subnet_id}'], 'enable_deletion_protection': [True], 'tags': {'Terraform': True, 'Environment': 'sophi-staging'}, 'resource_type': ['aws_alb'], 'tags.Terraform': True, 'tags.Environment': 'sophi-staging'}
-        self.assertTrue(local_graph._attribute_has_nested_attributes(attribute_key='tags', attributes=attributes))
-        self.assertFalse(local_graph._attribute_has_nested_attributes(attribute_key='name', attributes=attributes))
-        self.assertFalse(local_graph._attribute_has_nested_attributes(attribute_key='tags.Environment', attributes=attributes))
-
-    def test__attribute_has_nested_attributes_list(self):
-        local_graph = LocalGraph(module={}, module_dependency_map={})
-
-        attributes = {'most_recent': [True], 'filter': [{'name': 'name', 'values': ['amzn-ami-hvm-*-x86_64-gp2']}, {'name': 'owner-alias', 'values': ['amazon']}], 'filter.0': {'name': 'name', 'values': ['amzn-ami-hvm-*-x86_64-gp2']}, 'filter.0.name': 'name', 'filter.0.values': ['amzn-ami-hvm-*-x86_64-gp2'], 'filter.0.values.0': 'amzn-ami-hvm-*-x86_64-gp2', 'filter.1': {'name': 'owner-alias', 'values': ['amazon']}, 'filter.1.name': 'owner-alias', 'filter.1.values': ['amazon'], 'filter.1.values.0': 'amazon'}
-        self.assertTrue(local_graph._attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
-        self.assertTrue(local_graph._attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
-        self.assertFalse(local_graph._attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
-
     def test_update_vertices_configs_attribute_like_resource_name(self):
         config = {"resource_type": {"resource_name": {"attribute1": 1, "attribute2": 2, "resource_name": ["caution!"]}}}
         attributes = {"attribute1": 1, "attribute2": 2, "resource_name": "ok"}

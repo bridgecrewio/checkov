@@ -5,7 +5,8 @@ from unittest import TestCase
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.utils.utils import replace_map_attribute_access_with_dot, get_referenced_vertices_in_value, \
-    VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards
+    VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards, \
+    attribute_has_nested_attributes
 
 
 class TestUtils(TestCase):
@@ -165,4 +166,16 @@ class TestUtils(TestCase):
                 f"  Expected: \n{pprint.pformat([str(c) for c in case[1]], indent=2)}\n\n" \
                 f"  Actual: \n{pprint.pformat([str(c) for c in actual], indent=2)}"
             print(f"Case \"{case[0]}: ✅")
+
+    def test__attribute_has_nested_attributes_dictionary(self):
+        attributes = {'name': ['${var.lb_name}'], 'internal': [True], 'security_groups': ['${var.lb_security_group_ids}'], 'subnets': ['${var.subnet_id}'], 'enable_deletion_protection': [True], 'tags': {'Terraform': True, 'Environment': 'sophi-staging'}, 'resource_type': ['aws_alb'], 'tags.Terraform': True, 'tags.Environment': 'sophi-staging'}
+        self.assertTrue(attribute_has_nested_attributes(attribute_key='tags', attributes=attributes))
+        self.assertFalse(attribute_has_nested_attributes(attribute_key='name', attributes=attributes))
+        self.assertFalse(attribute_has_nested_attributes(attribute_key='tags.Environment', attributes=attributes))
+
+    def test__attribute_has_nested_attributes_list(self):
+        attributes = {'most_recent': [True], 'filter': [{'name': 'name', 'values': ['amzn-ami-hvm-*-x86_64-gp2']}, {'name': 'owner-alias', 'values': ['amazon']}], 'filter.0': {'name': 'name', 'values': ['amzn-ami-hvm-*-x86_64-gp2']}, 'filter.0.name': 'name', 'filter.0.values': ['amzn-ami-hvm-*-x86_64-gp2'], 'filter.0.values.0': 'amzn-ami-hvm-*-x86_64-gp2', 'filter.1': {'name': 'owner-alias', 'values': ['amazon']}, 'filter.1.name': 'owner-alias', 'filter.1.values': ['amazon'], 'filter.1.values.0': 'amazon'}
+        self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
+        self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
+        self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
 
