@@ -60,13 +60,15 @@ def replace_string_value(original_str, str_to_replace, replaced_value, keep_orig
     if type(original_str) is list:
         for i, item in enumerate(original_str):
             original_str[i] = replace_string_value(item, str_to_replace, replaced_value, keep_origin)
+            if type(replaced_value) in [int, float, bool]:
+                original_str[i] = evaluate_terraform(original_str[i])
             return original_str
 
     if str_to_replace not in original_str:
         return original_str if keep_origin else str_to_replace
 
     string_without_interpolation = remove_interpolation(original_str)
-    return string_without_interpolation.replace(str_to_replace, replaced_value).replace(' ', '')
+    return string_without_interpolation.replace(str_to_replace, str(replaced_value)).replace(' ', '')
 
 
 def remove_interpolation(original_str):

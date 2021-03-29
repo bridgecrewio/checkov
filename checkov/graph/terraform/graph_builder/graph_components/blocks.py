@@ -5,6 +5,7 @@ from copy import deepcopy
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.graph.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.graph.terraform.utils import utils
 from checkov.graph.terraform.utils.utils import calculate_hash, decode_graph_property_value, join_trimmed_strings
 
@@ -20,8 +21,14 @@ class Block:
         """
         self.name = name
         self.config = deepcopy(config)
+        self.module_dependency = ""
+        self.module_dependency_num = ""
         if path:
+            path, module_dependency, num = remove_module_dependency_in_path(path)
             self.path = os.path.realpath(path)
+            if module_dependency:
+                self.module_dependency = module_dependency
+                self.module_dependency_num = num
         else:
             self.path = path
         self.block_type = block_type
@@ -33,7 +40,7 @@ class Block:
         self.changed_attributes = {}
         self.breadcrumbs = {}
         self.module_connections = {}
-        self.source_module = -1
+        self.source_module = set()
 
         attributes_to_add = self._extract_inner_attributes()
         self.attributes.update(attributes_to_add)
@@ -104,8 +111,9 @@ class Block:
 
     def get_decoded_attribute_dict(self):
         attributes = self.get_attribute_dict()
-        for attribute_key in attributes:
-            attributes[attribute_key] = decode_graph_property_value(attributes[attribute_key])
+        if self.encode:
+            for attribute_key in attributes:
+                attributes[attribute_key] = decode_graph_property_value(attributes[attribute_key])
         return attributes
 
     def update_attribute(self, attribute_key, attribute_value, change_origin_id, previous_breadcrumbs):

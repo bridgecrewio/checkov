@@ -38,7 +38,7 @@ class Parser:
         # This ensures that we don't try to double-load modules
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
         self._loaded_modules: Set[Tuple[str, int, str]] = set()
-        self.var_value_and_file_map = {}
+        self.external_variables_data = []
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -207,6 +207,7 @@ class Parser:
 
                         default_value = var_definition.get("default")
                         if default_value is not None and isinstance(default_value, list):
+                            self.external_variables_data.append((var_name, default_value[0], file.path))
                             var_value_and_file_map[var_name] = default_value[0], file.path
 
         # Stage 2: Load vars in proper order:
@@ -224,22 +225,27 @@ class Parser:
             if not key.startswith("TF_VAR_"):
                 continue
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
+            self.external_variables_data.append((key[7:], value, f"env:{key}"))
         if hcl_tfvars:                                                      # terraform.tfvars
             data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors,
                                         clean_definitions=False)
             if data:
                 var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
         if json_tfvars:                                                     # terraform.tfvars.json
             data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
         if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
             for var_file in sorted(auto_vars_files, key=lambda e: e.name):
                 data = _load_or_die_quietly(var_file, self.out_parsing_errors)
                 if data:
                     var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                    self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
         if specified_vars:                                                  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
+            self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
 
         # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
         #                      may be a little overboard, but I don't want to just pass the entire data map down
@@ -282,8 +288,6 @@ class Parser:
                 # If there are more modules to load but no variables were resolved, then to a final module
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
-
-        self.var_value_and_file_map = var_value_and_file_map
 
     def _process_vars_and_locals(self, directory: str,
                                  var_value_and_file_map: Dict[str, Tuple[Any, str]],

@@ -14,16 +14,18 @@ def convert_graph_vertices_to_tf_definitions(vertices: List[Block], root_folder)
         if not os.path.isfile(block_path):
             print(f'tried to convert vertex to tf_definitions but its path doesnt exist: {vertex}')
             continue
-
+        tf_path = block_path
+        if vertex.module_dependency:
+            tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
         block_type = vertex.block_type.value
         if block_type == BlockType.TF_VARIABLE:
             continue
-        if tf_definitions.get(block_path) is None:
-            tf_definitions[block_path] = {}
-        if tf_definitions.get(block_path).get(block_type) is None:
-            tf_definitions.get(block_path)[block_type] = []
-        tf_definitions.get(block_path)[block_type].append(vertex.config)
-        relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
+        if tf_definitions.get(tf_path) is None:
+            tf_definitions[tf_path] = {}
+        if tf_definitions.get(tf_path).get(block_type) is None:
+            tf_definitions.get(tf_path)[block_type] = []
+        tf_definitions.get(tf_path)[block_type].append(vertex.config)
+        relative_block_path = f"/{os.path.relpath(block_path if not vertex.module_dependency else vertex.module_dependency, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
     logging.info(f'breadcrumbs = {breadcrumbs}')
     return tf_definitions, breadcrumbs

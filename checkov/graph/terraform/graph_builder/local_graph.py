@@ -77,7 +77,7 @@ class LocalGraph:
                 for variable_vertex_id in matching_variables:
                     variable_vertex = self.vertices[variable_vertex_id]
                     variable_dir = os.path.dirname(variable_vertex.path)
-                    if self.module_dependency_map.get(variable_dir) == module_vertex.path:
+                    if module_vertex.path in self.module_dependency_map.get(variable_dir):
                         attribute_value = module_vertex.attributes[attribute_name]
                         has_var_reference = get_referenced_vertices_in_value(value=attribute_value, aliases={},
                                                             resources_types=self.get_resources_types_in_graph())
@@ -117,23 +117,25 @@ class LocalGraph:
         matching module vertex as 'source_module'
         """
         block_dirs_to_modules = {}
-        for dir_name, path_to_module in self.module_dependency_map.items():
+        for dir_name, paths_to_modules in self.module_dependency_map.items():
             # for each directory, find the module vertex that imported it
             if block_dirs_to_modules.get(dir_name):
                 continue
-            module_list = self.map_path_to_module.get(path_to_module, [])
-            for module_index in module_list:
-                module_vertex = self.vertices[module_index]
-                module_vertex_dir = os.path.dirname(module_vertex.path)
-                module_source = self.vertices[module_index].attributes.get('source', [''])[0]
-                if self._get_dest_module_path(module_vertex_dir, module_source) == dir_name:
-                    block_dirs_to_modules[dir_name] = module_index
-                    break
+            for path_to_module in paths_to_modules:
+                module_list = self.map_path_to_module.get(path_to_module, [])
+                for module_index in module_list:
+                    module_vertex = self.vertices[module_index]
+                    module_vertex_dir = os.path.dirname(module_vertex.path)
+                    module_source = self.vertices[module_index].attributes.get('source', [''])[0]
+                    if self._get_dest_module_path(module_vertex_dir, module_source) == dir_name:
+                        if not block_dirs_to_modules.get(dir_name):
+                            block_dirs_to_modules[dir_name] = set()
+                        block_dirs_to_modules[dir_name].add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_index = block_dirs_to_modules.get(os.path.dirname(vertex.path), -1)
-            if module_index > -1:
+            module_index = block_dirs_to_modules.get(os.path.dirname(vertex.path), set())
+            if module_index:
                 vertex.source_module = module_index
 
     def _build_edges(self):
@@ -154,9 +156,18 @@ class LocalGraph:
                     sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
                     for i in range(len(sub_values)):
                         reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
-                        dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
-                                                                                   reference_name,
-                                                                                   vertex.path)
+                        if vertex.module_dependency:
+                            dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
+                                                                                       reference_name,
+                                                                                       vertex.module_dependency)
+                            if dest_node_index == -1:
+                                dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
+                                                                                           reference_name,
+                                                                                           vertex.path)
+                        else:
+                            dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
+                                                                                       reference_name,
+                                                                                       vertex.path)
                         if dest_node_index > -1 and origin_node_index > -1:
                             if vertex_reference.block_type == BlockType.MODULE:
                                 try:
@@ -374,11 +385,11 @@ class LocalGraph:
                     breadcrumb['module_connection'] = self._determine_if_module_connection(breadcrumbs_list, v)
                     hash_breadcrumbs.append(breadcrumb)
                 vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
-            if vertex.source_module > -1:
-                m = self.vertices[vertex.source_module]
+            if len(vertex.source_module) == 1:
+                m = self.vertices[list(vertex.source_module)[0]]
                 source_module_data = [m.get_export_data()]
-                while m.source_module > -1:
-                    m = self.vertices[m.source_module]
+                while len(m.source_module) == 1:
+                    m = self.vertices[list(m.source_module)[0]]
                     source_module_data.append(m.get_export_data())
                 source_module_data.reverse()
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data

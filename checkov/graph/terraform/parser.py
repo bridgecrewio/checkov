@@ -91,11 +91,12 @@ class TerraformGraphParser(Parser):
         module_dependency_map = {}
         copy_of_tf_definitions = {}
         for file_path in tf_definitions.keys():
-            path, module_dependency = remove_module_dependency_in_path(file_path)
+            path, module_dependency, _ = remove_module_dependency_in_path(file_path)
             dir_name = os.path.dirname(path)
             if not module_dependency_map.get(dir_name):
-                module_dependency_map[dir_name] = module_dependency
-            copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
+                module_dependency_map[dir_name] = set()
+            module_dependency_map[dir_name].add(module_dependency)
+            copy_of_tf_definitions[file_path] = deepcopy(tf_definitions[file_path])
         return module_dependency_map, copy_of_tf_definitions
 
     @staticmethod
@@ -103,9 +104,9 @@ class TerraformGraphParser(Parser):
         return Module(source_dir, encode=False)
 
     def add_tfvars(self, module, source):
-        if not self.var_value_and_file_map:
+        if not self.external_variables_data:
             return
-        for var_name, (default, path) in self.var_value_and_file_map.items():
+        for (var_name, default, path) in self.external_variables_data:
             if ".tfvars" in path:
                 block = {var_name: {"default": default}}
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)

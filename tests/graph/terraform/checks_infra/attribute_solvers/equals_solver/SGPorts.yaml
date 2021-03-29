@@ -8,5 +8,5 @@ definition:
     - "aws_security_group"
   attribute: "ingress.*.to_port"
   operator: "equals"
-  value: 8182
+  value: "8182"
 

@@ -3,7 +3,6 @@ from unittest.case import TestCase
 
 from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.graph.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.graph.terraform.graph_manager import GraphManager
 from tests.terraform.parser.test_parser_scenarios import TestParserScenarios
 
@@ -117,7 +116,6 @@ class TestRendererScenarios(TestCase):
         self.go("tfvars")
 
     def test_account_dirs_and_modules(self):
-        self.skipTest("Should be supported!!")
         self.go("account_dirs_and_modules")
 
     def test_bogus_function(self):
@@ -134,7 +132,7 @@ class TestRendererScenarios(TestCase):
         expected = load_expected(replace_expected, dir_name, resources_dir)
 
         for expected_file, expected_block_type_dict in expected.items():
-            module_removed_path, _ = remove_module_dependency_in_path(expected_file)
+            module_removed_path = expected_file
             got_file = got_tf_definitions.get(module_removed_path)
             self.assertIsNotNone(got_file)
             for expected_block_type, expected_block_type_list in expected_block_type_dict.items():

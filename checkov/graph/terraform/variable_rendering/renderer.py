@@ -91,7 +91,7 @@ class VariableRenderer:
                 evaluated_attribute_value = self.extract_value_from_vertex(key_path_in_dest_vertex,
                                                                            dest_vertex_attributes)
                 if evaluated_attribute_value is not None:
-                    val_to_eval = self.replace_value(edge, val_to_eval, replaced_key, str(evaluated_attribute_value), True)
+                    val_to_eval = self.replace_value(edge, val_to_eval, replaced_key, evaluated_attribute_value, True)
                 if not multiple_edges and val_to_eval != origin_val:
                     self.update_evaluated_value(changed_attribute_key=edge.label,
                                                 changed_attribute_value=val_to_eval, vertex=edge.origin, change_origin_id=edge.dest, attribute_at_dest=key_path_in_dest_vertex)
@@ -182,11 +182,8 @@ class VariableRenderer:
     def replace_value(self, edge, original_val, replaced_key, replaced_value, keep_origin, count=0):
         if count > 1:
             return original_val
-        if isinstance(original_val, bool) or isinstance(original_val, int):
-            new_val = original_val
-        else:
-            new_val = replace_string_value(original_str=original_val, str_to_replace=replaced_key,
-                                           replaced_value=replaced_value, keep_origin=keep_origin)
+        new_val = replace_string_value(original_str=original_val, str_to_replace=replaced_key,
+                                       replaced_value=replaced_value, keep_origin=keep_origin)
         curr_cache = self.replace_cache[edge.origin].get(edge.label, {}).get(replaced_key, [])
         # not_containing_dot = '.' not in new_val
         not_containing_dot = '.' not in str(new_val)

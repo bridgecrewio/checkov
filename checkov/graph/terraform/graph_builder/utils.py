@@ -20,7 +20,8 @@ def remove_module_dependency_in_path(path):
     module_dependency = re.findall(MODULE_DEPENDENCY_PATTERN_IN_PATH, path)
     if re.findall(MODULE_DEPENDENCY_PATTERN_IN_PATH, path):
         path = re.sub(MODULE_DEPENDENCY_PATTERN_IN_PATH, '', path)
-    return path, extract_module_dependency_path(module_dependency)
+    module_and_num = extract_module_dependency_path(module_dependency)
+    return path, module_and_num[0], module_and_num[1]
 
 
 def extract_module_dependency_path(module_dependency):
@@ -29,7 +30,7 @@ def extract_module_dependency_path(module_dependency):
     :return: the path without enclosing array and index: 'path_to_module.tf'
     """
     if not module_dependency:
-        return ''
+        return ['', '']
     if type(module_dependency) is list and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
-    return module_dependency[1:-1].split('#')[0]
+    return module_dependency[1:-1].split('#')
