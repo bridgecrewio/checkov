@@ -14,7 +14,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 logger = logging.getLogger(__name__)
 spec = util.spec_from_file_location(
-    "checkov2.version", os.path.join("checkov", "version.py")
+    "checkov.version", os.path.join("checkov", "version.py")
 )
 # noinspection PyUnresolvedReferences
 mod = util.module_from_spec(spec)
@@ -52,7 +52,7 @@ setup(
         "networkx"
     ],
     license="Apache License 2.0",
-    name="checkov2",
+    name="checkov",
     version=version,
     python_requires=">=3.7",
     description="Infrastructure as code static analysis",
