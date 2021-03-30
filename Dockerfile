@@ -1,9 +1,6 @@
-FROM python:3.8-slim-buster
+FROM python:3.8-alpine
 
-RUN apt-get update && apt install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add git
 
 RUN pip install -U checkov
-
 ENTRYPOINT ["checkov"]
