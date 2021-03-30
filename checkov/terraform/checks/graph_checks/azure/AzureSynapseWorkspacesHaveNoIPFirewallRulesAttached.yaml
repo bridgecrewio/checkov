@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_AZURE_19"
+  name: "Ensure that Azure Synapse workspaces have no IP firewall rules attached"
+  category: "NETWORKING"
+definition:
+  and:
+    - resource_types:
+        - azurerm_synapse_workspace
+      connected_resource_types:
+        - azurerm_synapse_firewall_rule
+      operator:  not_exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_synapse_workspace
+      operator: within
+

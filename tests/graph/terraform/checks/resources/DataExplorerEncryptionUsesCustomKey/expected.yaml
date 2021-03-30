@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_kusto_cluster.cluster_ok"
+fail:
+  - "azurerm_kusto_cluster.cluster_ok_not_ok"

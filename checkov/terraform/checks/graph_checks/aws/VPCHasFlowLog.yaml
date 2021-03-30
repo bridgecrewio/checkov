@@ -1,0 +1,19 @@
+metadata:
+  name: "Ensure VPC flow logging is enabled in all VPCs"
+  category: "LOGGING"
+  id: "CKV2_AWS_11"
+definition:
+  and:
+    - resource_types:
+        - aws_vpc
+      connected_resource_types:
+        - aws_flow_log
+      operator:  exists
+      attribute: networking
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_vpc
+      operator: within
+

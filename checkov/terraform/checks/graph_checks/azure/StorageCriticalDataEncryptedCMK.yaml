@@ -1,0 +1,17 @@
+metadata:
+  name: "Ensure storage for critical data are encrypted with Customer Managed Key"
+  id: "CKV2_AZURE_1"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_storage_account
+      operator: within
+    - cond_type: connection
+      resource_types:
+        - azurerm_storage_account
+      connected_resource_types:
+        - azurerm_storage_account_customer_managed_key
+      operator: exists

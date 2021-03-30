@@ -1,0 +1,17 @@
+apiVersion: apiserver.config.k8s.io/v1
+kind: AdmissionConfiguration
+metadata:
+  name: "admission-configuration-passed"
+plugins:
+  - name: ValidatingAdmissionWebhook
+    configuration:
+      apiVersion: apiserver.config.k8s.io/v1
+      kind: WebhookAdmissionConfiguration
+      kubeConfigFile: "<path-to-kubeconfig-file>"
+  - name: EventRateLimit
+    path: eventconfig.yaml
+  - name: MutatingAdmissionWebhook
+    configuration:
+      apiVersion: apiserver.config.k8s.io/v1
+      kind: WebhookAdmissionConfiguration
+      kubeConfigFile: "<path-to-kubeconfig-file>"

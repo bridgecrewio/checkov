@@ -1,32 +1,29 @@
 #!/usr/bin/env python
-import atexit
-
 import argparse
+import atexit
 import logging
 import os
 import shutil
 import sys
 from pathlib import Path
-import logging
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
-from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
+from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.terraform.runner import Runner as tf_graph_runner
+from checkov.helm.runner import Runner as helm_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
-from checkov.terraform.runner import Runner as tf_runner
-from checkov.helm.runner import Runner as helm_runner
 from checkov.version import version
 
 outer_registry = None
@@ -40,13 +37,14 @@ checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'a
 runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
 runnerDependencyHandler.validate_runner_deps()
 
+
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
     # Disable runners with missing system dependencies
     args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
-    
+
     runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
@@ -55,7 +53,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner(), sls_runner(),
+        runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(), sls_runner(),
                                          arm_runner(), tf_plan_runner(), helm_runner())
     if args.version:
         print(version)
@@ -101,7 +99,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(args.branch)
 
-            runner_registry.print_reports(scan_reports, args,url)
+            runner_registry.print_reports(scan_reports, args, url)
         return
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
@@ -112,7 +110,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(args.branch)
-        runner_registry.print_reports(scan_reports, args,url)
+        runner_registry.print_reports(scan_reports, args, url)
     else:
         print(f"{banner}")
 

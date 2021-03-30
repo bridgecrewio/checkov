@@ -1,0 +1,25 @@
+metadata:
+  name: "Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account"
+  id: "CKV2_AZURE_2"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_sql_server
+      operator: within
+    - resource_types:
+        - azurerm_sql_server
+      connected_resource_types:
+        - azurerm_mssql_server_security_alert_policy
+      operator:  exists
+      cond_type: connection
+    - cond_type: attribute
+      resource_types:
+        - "azurerm_mssql_server_security_alert_policy"
+      attribute: state
+      operator: equals
+      value: Enabled
+   
+    

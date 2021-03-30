@@ -68,11 +68,13 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         to_port = force_int(force_list(conf.get('to_port',[{-1}]))[0])
 
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
-            cidr_blocks = force_list(conf.get('cidr_blocks', [[]])[0])
+            conf_cidr_blocks = conf.get('cidr_blocks', [[]])
+            if len(conf_cidr_blocks) > 0:
+                conf_cidr_blocks = conf_cidr_blocks[0]
+            cidr_blocks = force_list(conf_cidr_blocks)
             if "0.0.0.0/0" in cidr_blocks:
                 return True
             ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [])
             if len(ipv6_cidr_blocks) > 0 and any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks[0]):
                 return True
-
         return False

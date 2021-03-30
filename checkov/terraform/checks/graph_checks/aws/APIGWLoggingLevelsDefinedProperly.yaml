@@ -1,0 +1,37 @@
+metadata:
+  id: "CKV2_AWS_4"
+  name: "Ensure API Gateway stage have logging level defined as appropiate"
+  category: "LOGGING"
+definition:
+  and:
+    - resource_types:
+        - aws_api_gateway_stage
+      connected_resource_types:
+        - aws_api_gateway_method_settings
+      operator:  exists
+      cond_type: connection
+    - or:  
+      - cond_type: "attribute"
+        resource_types: 
+          - "aws_api_gateway_method_settings"
+        attribute: "settings.logging_level"
+        operator: "equals"
+        value: "ERROR"
+      - cond_type: "attribute"
+        resource_types: 
+          - "aws_api_gateway_method_settings"
+        attribute: "settings.logging_level"
+        operator: "equals"
+        value: "INFO"
+    - cond_type: "attribute"
+      resource_types: 
+        - "aws_api_gateway_method_settings"
+      attribute: "settings.metrics_enabled"
+      operator: "equals"
+      value: true 
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_api_gateway_stage
+      operator: within
+

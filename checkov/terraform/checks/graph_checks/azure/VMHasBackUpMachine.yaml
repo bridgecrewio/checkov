@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_AZURE_12"
+  name: "Ensure that virtual machines are backed up using Azure Backup"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  and:
+    - resource_types:
+        - azurerm_virtual_machine
+      connected_resource_types:
+        - azurerm_backup_protected_vm
+      operator:  exists
+      attribute: networking
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_virtual_machine
+      operator: within
+

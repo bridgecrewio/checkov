@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_AZURE_11"
+  name: "Ensure that Azure Data Explorer encryption at rest uses a customer-managed key"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - resource_types:
+        - azurerm_kusto_cluster
+      connected_resource_types:
+        - azurerm_kusto_cluster_customer_managed_key
+      operator:  exists
+      attribute: networking
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_kusto_cluster
+      operator: within
+

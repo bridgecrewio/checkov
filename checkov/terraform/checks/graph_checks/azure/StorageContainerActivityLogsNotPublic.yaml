@@ -1,0 +1,40 @@
+metadata:
+  name: "Ensure the storage container storing the activity logs is not publicly accessible"
+  id: "CKV2_AZURE_8"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_storage_account
+      operator: within
+    - cond_type: connection
+      resource_types:
+        - azurerm_monitor_activity_log_alert
+      connected_resource_types:
+        - azurerm_storage_account
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - azurerm_monitor_activity_log_alert
+      attribute: criteria.resource_id
+      operator: exists
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - azurerm_monitor_activity_log_alert
+          attribute: enabled
+          operator: not_exists
+        - cond_type: attribute
+          resource_types:
+            - azurerm_monitor_activity_log_alert
+          attribute: enabled
+          operator: equals
+          value: 'true'
+    - cond_type: connection
+      resource_types:
+        - azurerm_storage_container
+      connected_resource_types:
+        - azurerm_storage_account
+      operator: exists
