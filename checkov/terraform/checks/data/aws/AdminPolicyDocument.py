@@ -21,7 +21,7 @@ class AdminPolicyDocument(BaseDataCheck):
         if key in conf.keys():
             for statement in conf[key]:
                 if 'actions' in statement and statement.get('effect', ['Allow'])[0] == 'Allow' and '*' in statement['actions'][0] \
-                        and '*' in statement['resources'][0]:
+                        and 'resources' in statement and '*' in statement['resources'][0]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

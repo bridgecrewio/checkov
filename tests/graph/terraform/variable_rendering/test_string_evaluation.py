@@ -2,7 +2,6 @@ from unittest import TestCase
 
 from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
-from checkov.terraform.parser_utils import find_var_blocks
 
 
 class TestTerraformEvaluation(TestCase):
@@ -14,11 +13,11 @@ class TestTerraformEvaluation(TestCase):
     def test_condition(self):
         input_str = '"2 > 0 ? bigger : smaller"'
         expected = 'bigger'
-        self.assertEqual(expected, evaluate_terraform(input_str))
+        self.assertEqual(expected, evaluate_terraform(input_str).strip())
 
         input_str = '"2 > 5 ? bigger : smaller"'
         expected = 'smaller'
-        self.assertEqual(expected, evaluate_terraform(input_str))
+        self.assertEqual(expected, evaluate_terraform(input_str).strip())
 
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
@@ -227,7 +226,7 @@ class TestTerraformEvaluation(TestCase):
     def test_condition2(self):
         input_str = 'us-west-2 == "something to produce false" ? true : false'
         expected = 'false'
-        self.assertEqual(expected, evaluate_terraform(input_str))
+        self.assertEqual(expected, evaluate_terraform(input_str).strip())
 
     def test_complex_merge(self):
         cases = [
@@ -271,7 +270,6 @@ class TestTerraformEvaluation(TestCase):
 
     def test_remove_interpolation1(self):
         original_str = '${merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-${local.static1}-${local.static2}\'})}'
-        x = find_var_blocks(original_str)
         replaced = remove_interpolation(original_str)
         expected = 'merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-local.static1-local.static2\'})'
         self.assertEqual(expected, replaced)

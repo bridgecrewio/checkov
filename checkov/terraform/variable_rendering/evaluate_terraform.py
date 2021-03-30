@@ -4,10 +4,10 @@ from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_D
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
 
-CONDITIONAL_EXPR = r'([^\s]+)\?([^\s^\:]+)\:([^\s^\:]+)'
+CONDITIONAL_EXPR = r'([^\?]+)\?([^:]+)\:([^:]+)'
 
 # {key1 = value1, key2 = value2, ...}
-MAP_REGEX = r'\{(?:\s*[\S]+\s*\=\s*[\S]+\s*\,)+(?:\s*[\S]+\s*\=\s*[\S]+\s*)\}'
+MAP_REGEX = r'\{(?:\s*[\S]+\s*\=\s*[\S]+\s*\,)*(?:\s*[\S]+\s*\=\s*[\S]+\s*)\}'
 
 # {key:val}[key]
 MAP_WITH_ACCESS = re.compile(r'(?P<d>{(?:.*?:.*?)+(,?:.*?:.*?)*})\s*(?P<access>\[[^\]]+\])')
@@ -52,7 +52,7 @@ def _try_evaluate(input_str):
 
 
 def replace_string_value(original_str, str_to_replace, replaced_value, keep_origin=True):
-    if original_str is None or type(original_str) in (int, bool, float):
+    if original_str is None or type(original_str) not in (str, list):
         return original_str
 
     if type(original_str) is list:
@@ -92,14 +92,21 @@ def strip_double_quotes(input_str):
 
 
 def evaluate_conditional_expression(input_str):
-    conditions = re.findall(CONDITIONAL_EXPR, re.sub(r'\s', '', input_str))
-    for condition in conditions:
-        if len(condition) != 3:
+    condition = re.match(CONDITIONAL_EXPR, input_str)
+    while condition:
+        groups = condition.groups()
+        if len(groups) != 3:
             return input_str
-        evaluated_condition = evaluate_terraform(condition[0])
+        evaluated_condition = evaluate_terraform(groups[0])
+        condition_substr = input_str[condition.start():condition.end()]
         if convert_to_bool(evaluated_condition):
-            return evaluate_terraform(condition[1])
-        return evaluate_terraform(condition[2])
+            true_val = str(evaluate_terraform(groups[1]))
+            input_str = input_str.replace(condition_substr, true_val)
+        else:
+            false_val = str(evaluate_terraform(groups[2]))
+            input_str = input_str.replace(condition_substr, false_val)
+        condition = re.match(CONDITIONAL_EXPR, input_str)
+
     return input_str
 
 
@@ -184,13 +191,14 @@ def evaluate_directives(input_str):
 
 def evaluate_map(input_str):
     # first replace maps ":" with "="
-    matching_maps = re.findall(MAP_REGEX, input_str)
-    for matching_map in matching_maps:
-        replaced_matching_map = matching_map.replace("=", ":")
-        input_str = input_str.replace(matching_map, replaced_matching_map)
+    all_curly_brackets = find_brackets_pairs(input_str, "{", "}")
+    for curly_match in all_curly_brackets:
+        curly_start = curly_match["start"]
+        curly_end = curly_match["end"]
+        replaced_matching_map = input_str[curly_start:curly_end+1].replace("=", ":")
+        input_str = input_str.replace(input_str[curly_start:curly_end+1], replaced_matching_map)
 
     # find map access like {a: b}[a] and extract the right value - b
-    all_curly_brackets = find_brackets_pairs(input_str, "{", "}")
     all_square_brackets = find_brackets_pairs(input_str, "[", "]")
 
     curr_square_match = 0
