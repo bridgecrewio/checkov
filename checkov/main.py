@@ -17,7 +17,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.graph.terraform.runner import Runner as tf_graph_runner
+from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init

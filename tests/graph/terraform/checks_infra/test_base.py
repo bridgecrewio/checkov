@@ -1,9 +1,9 @@
 import os
 from unittest import TestCase
 
-from checkov.graph.terraform.checks_infra.nx_checks_parser import NXGraphCheckParser
-from checkov.graph.terraform.checks_infra.registry import Registry
-from checkov.graph.terraform.runner import Runner
+from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
+from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
@@ -15,11 +15,10 @@ class TestBaseSolver(TestCase):
         self.registry = Registry(parser=NXGraphCheckParser(), checks_dir=self.checks_dir)
         self.registry.load_checks()
         self.runner = Runner(external_registries=[self.registry])
-        self.runner_filter = RunnerFilter(checks="RUN_ONLY_GRAPH")
 
-    def run_test(self, root_folder, expected_results):
+    def run_test(self, root_folder, expected_results, check_id):
         root_folder = os.path.realpath(os.path.join(self.checks_dir, root_folder))
-        report = self.runner.run(root_folder=root_folder, runner_filter=self.runner_filter)
+        report = self.runner.run(root_folder=root_folder, runner_filter=RunnerFilter(checks=[check_id]))
         verification_results = verify_report(report=report, expected_results=expected_results)
         self.assertIsNone(verification_results, verification_results)
 

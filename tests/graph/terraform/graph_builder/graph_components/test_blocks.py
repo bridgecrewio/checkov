@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import Block
 
 
 class TestBlocks(TestCase):

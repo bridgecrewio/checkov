@@ -4,9 +4,9 @@ import unittest
 import warnings
 
 import yaml
-from checkov.graph.terraform import checks
-from checkov.graph.terraform.checks_infra.nx_checks_parser import NXGraphCheckParser
-from checkov.graph.terraform.checks_infra.registry import Registry
+from checkov.terraform import checks
+from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
 
 
 class TestYamlPolicies(unittest.TestCase):

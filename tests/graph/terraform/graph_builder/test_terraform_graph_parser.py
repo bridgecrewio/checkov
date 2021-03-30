@@ -1,29 +1,29 @@
 import os
 from unittest import TestCase
 
-from checkov.graph.terraform.parser import TerraformGraphParser
+from checkov.terraform.parser import Parser
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
-class TestTerraformGraphParser(TestCase):
+class TestParser(TestCase):
     def test_bool_parsing_avoid_remove_non_existing(self):
         conf = {'test': ['Bool'], 'variable': ['aws:SecureTransport'], 'values': [['false']]}
-        config_parser = TerraformGraphParser()
+        config_parser = Parser()
         actual = config_parser._hcl_boolean_types_to_boolean(conf)
         expected = {'test': ['Bool'], 'variable': ['aws:SecureTransport'], 'values': [[False]]}
         self.assertDictEqual(expected, actual)
 
     def test_bool_parsing_sort_only_lists(self):
         conf = {'enabled_metrics': [['a', 'c', 'b'], 'b', 'a', 'c']}
-        config_parser = TerraformGraphParser()
+        config_parser = Parser()
         actual = config_parser._hcl_boolean_types_to_boolean(conf)
         expected = {'enabled_metrics': [['a', 'b', 'c'], 'a', 'b', 'c']}
         self.assertDictEqual(expected, actual)
 
     def test_bool_parsing_sort_only_lists_with_bools(self):
         conf = {'enabled_metrics': [['a', 'true', 'false'], 'b', 'true', 'false']}
-        config_parser = TerraformGraphParser()
+        config_parser = Parser()
         actual = config_parser._hcl_boolean_types_to_boolean(conf)
         expected = {'enabled_metrics': [[True, False, 'a'], True, False, 'b']}
         self.assertDictEqual(expected, actual)
@@ -32,14 +32,14 @@ class TestTerraformGraphParser(TestCase):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
         old_tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_old'
-        _, _, tf_definitions = TerraformGraphParser().parse_hcl_module(tf_dir, 'AWS')
-        _, _, old_tf_definitions = TerraformGraphParser().parse_hcl_module(old_tf_dir, 'AWS')
+        _, _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
+        _, _, old_tf_definitions = Parser().parse_hcl_module(old_tf_dir, 'AWS')
         self.assertDictEqual(tf_definitions[f'{tf_dir}/main.tf'], old_tf_definitions[f'{old_tf_dir}/main.tf'])
 
     def test_hcl_parsing_old_booleans_correctness(self):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
-        _, _, tf_definitions = TerraformGraphParser().parse_hcl_module(tf_dir, 'AWS')
+        _, _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
         expected = [
             {'aws_cloudtrail': {
                 'tfer--cashdash_trail': {'enable_log_file_validation': [True], 'enable_logging': [True], 'include_global_service_events': [True],
@@ -80,7 +80,7 @@ class TestTerraformGraphParser(TestCase):
 
     def test_hcl_parsing_sorting(self):
         source_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/tf_parsing_comparison/modifications_diff'))
-        config_parser = TerraformGraphParser()
+        config_parser = Parser()
         res = config_parser.parse_hcl_module(source_dir, 'AWS')
         expected = ['https://www.googleapis.com/auth/devstorage.read_only', 'https://www.googleapis.com/auth/logging.write',
                     'https://www.googleapis.com/auth/monitoring.write', 'https://www.googleapis.com/auth/service.management.readonly',

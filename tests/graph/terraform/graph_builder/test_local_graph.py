@@ -1,18 +1,17 @@
-import json
 import os
 from unittest import TestCase
 
-from checkov.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.graph.graph_builder.graph_components.attribute_names import EncryptionValues, EncryptionTypes
-from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.graph_builder.graph_components.blocks import Block
-from checkov.graph.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
-from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.graph.terraform.parser import TerraformGraphParser
-from checkov.graph.terraform.graph_builder.local_graph import LocalGraph
-from checkov.graph.terraform.graph_manager import GraphManager
-from checkov.graph.terraform.utils.utils import calculate_hash, decode_graph_property_value
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
+from checkov.terraform.parser import Parser
+from checkov.terraform.graph_builder.local_graph import LocalGraph
+from checkov.terraform.graph_manager import GraphManager
+from checkov.terraform.checks.utils.utils import calculate_hash, decode_graph_property_value
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -53,7 +52,7 @@ class TestLocalGraph(TestCase):
     def test_set_variables_values_from_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
-        hcl_config_parser = TerraformGraphParser()
+        hcl_config_parser = Parser()
         module, module_dependency_map, tf_definitions = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                                            source=self.source)
         local_graph = LocalGraph(module, module_dependency_map)
@@ -105,7 +104,7 @@ class TestLocalGraph(TestCase):
 
     def test_encryption_aws(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/encryption'))
-        hcl_config_parser = TerraformGraphParser()
+        hcl_config_parser = Parser()
         module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                               self.source)
         local_graph = LocalGraph(module, module_dependency_map)
@@ -134,7 +133,7 @@ class TestLocalGraph(TestCase):
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
-        hcl_config_parser = TerraformGraphParser()
+        hcl_config_parser = Parser()
         module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                               self.source)
         local_graph = LocalGraph(module, module_dependency_map)

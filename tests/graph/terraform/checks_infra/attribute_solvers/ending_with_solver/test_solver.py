@@ -17,4 +17,4 @@ class TestEndingWithSolver(TestBaseSolver):
         should_fail = ['aws_instance.with_closed_def_security_groups', 'aws_instance.with_open_security_groups', 'aws_instance.with_subnet_public', 'aws_instance.with_subnet_not_public',]
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
-        self.run_test(root_folder=root_folder, expected_results=expected_results)
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

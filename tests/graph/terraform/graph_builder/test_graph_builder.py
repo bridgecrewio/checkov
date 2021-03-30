@@ -2,10 +2,10 @@ import os
 import shutil
 from unittest import TestCase
 
-from checkov.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.graph_manager import GraphManager
-from checkov.graph.terraform.parser import external_modules_download_path
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_manager import GraphManager
+from checkov.terraform.parser import external_modules_download_path
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 

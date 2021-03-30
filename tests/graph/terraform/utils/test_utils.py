@@ -2,9 +2,9 @@ import pprint
 from typing import List, Tuple
 from unittest import TestCase
 
-from checkov.graph.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.utils.utils import replace_map_attribute_access_with_dot, get_referenced_vertices_in_value, \
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.checks.utils.utils import replace_map_attribute_access_with_dot, get_referenced_vertices_in_value, \
     VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards, \
     attribute_has_nested_attributes
 

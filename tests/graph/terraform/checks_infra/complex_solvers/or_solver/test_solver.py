@@ -15,4 +15,4 @@ class TestOrQuery(TestBaseSolver):
         should_fail = ['aws_s3_bucket.non_tag']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
-        self.run_test(root_folder=root_folder, expected_results=expected_results)
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

@@ -2,7 +2,7 @@ import json
 import os
 from unittest import TestCase
 
-from checkov.graph.terraform.runner import Runner
+from checkov.terraform.runner import Runner
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,7 +14,7 @@ class TestGraphBuilder(TestCase):
         source_files = ["pass_s3.tf", "variables.tf"]
         runner = Runner()
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
-        tf_definitions = runner.tf_runner.tf_definitions
+        tf_definitions = runner.tf_definitions
         self.assertEqual(5, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):

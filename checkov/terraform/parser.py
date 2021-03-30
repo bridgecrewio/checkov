@@ -3,28 +3,24 @@ import json
 import logging
 import os
 import re
+from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Tuple
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
 import deep_merge
 import hcl2
-import jmespath
 
 from checkov.common.runners.base_runner import filter_ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.variables.context import EvaluationContext, VarReference
-from checkov.terraform import parser_functions
+from checkov.common.variables.context import EvaluationContext
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.module import Module
+from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.terraform.parser_functions import FUNCTION_FAILED
-from checkov.terraform.parser_utils import eval_string, find_var_blocks, to_string
+from checkov.terraform.parser_utils import eval_string, find_var_blocks
 
-LOGGER = logging.getLogger(__name__)
-
-_SIMPLE_TYPES = frozenset(["string", "number", "bool"])
-
-_RESOURCE_REF_PATTERN = re.compile(r'[\d\w]+(\.[\d\w]+)+')
-
+external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 def _filter_ignored_directories(d_names):
     filter_ignored_directories(d_names)
@@ -32,7 +28,8 @@ def _filter_ignored_directories(d_names):
 
 
 class Parser:
-    def __init__(self):
+    def __init__(self, module_class=Module):
+        self.module_class = module_class
         self._parsed_directories = set()
 
         # This ensures that we don't try to double-load modules
@@ -45,7 +42,7 @@ class Parser:
               out_parsing_errors: Dict[str, Exception],
               env_vars: Mapping[str, str],
               download_external_modules: bool,
-              external_modules_download_path: str, evaluate_variables):
+              external_modules_download_path: str):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -53,7 +50,6 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
-        self.evaluate_variables = evaluate_variables
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -74,8 +70,9 @@ class Parser:
                         out_parsing_errors: Dict[str, Exception] = None,
                         env_vars: Mapping[str, str] = None,
                         download_external_modules: bool = False,
-                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR, evaluate_variables=True):
-        self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars, download_external_modules, external_modules_download_path, evaluate_variables)
+                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR):
+        self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
+                   download_external_modules, external_modules_download_path)
         self._parsed_directories.clear()
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
@@ -254,10 +251,6 @@ class Parser:
         #                      map for a particular module reference. (Might be OCD, but...)
         module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)
 
-        # Stage 3: Variable resolution round 1 - no modules yet
-        if self.evaluate_variables:
-            self._process_vars_and_locals(directory, var_value_and_file_map, module_data_retrieval)
-
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
         #          be loadable until other modules are loaded. This happens when parameters to one module
@@ -279,163 +272,12 @@ class Parser:
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
-            if self.evaluate_variables:
-                made_var_changes = self._process_vars_and_locals(directory, var_value_and_file_map,
-                                                                 module_data_retrieval)
             if not has_more_modules:
                 break       # nothing more to do
             elif not made_var_changes:
                 # If there are more modules to load but no variables were resolved, then to a final module
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
-
-    def _process_vars_and_locals(self, directory: str,
-                                 var_value_and_file_map: Dict[str, Tuple[Any, str]],
-                                 module_data_retrieval: Callable[[str], Dict[str, Any]]) -> bool:
-        locals_values = {}
-        for file_data in self.out_definitions.values():
-            file_locals = file_data.get("locals")
-            if not file_locals:
-                continue
-            for k, v in file_locals[0].items():
-                locals_values[k] = v[0] if isinstance(v, list) else v
-
-        # Processing is done in a loop to deal with chained references and the like.
-        # Loop while the data is being changed, stop when no more changes are happening.
-        # To ensure there's not some kind of oscillation, a cap of 25 passes is in place.
-        # More than a couple loops isn't normally expected.
-        # NOTE: If this approach proves to be a performance liability, a DAG will be needed.
-        loop_count = 0
-        made_change_in_any_loop = False
-        for i in range(0, 25):
-            loop_count += 1
-            logging.debug("Parser loop %d", i)
-
-            made_change = False
-            # Put out file layer here so the context works inside the loop
-            for file, file_data in self.out_definitions.items():
-                eval_context_dict = self.out_evaluations_context.get(file)
-                if eval_context_dict is None:
-                    eval_context_dict = {}
-                    self.out_evaluations_context[file] = eval_context_dict
-                    # out_evaluations_context[os.path.join(directory, file)] = {
-                    #     var_name: EvaluationContext(os.path.relpath(file.path, directory))
-                    # }
-
-                if self._process_vars_and_locals_loop(file_data,
-                                                      eval_context_dict,
-                                                      os.path.relpath(file, directory),
-                                                      var_value_and_file_map, locals_values,
-                                                      file_data.get("resource"),
-                                                      file_data.get("module"),
-                                                      module_data_retrieval,
-                                                      directory):
-                    made_change = True
-
-                if len(eval_context_dict) == 0:
-                    del self.out_evaluations_context[file]
-            made_change_in_any_loop = made_change_in_any_loop or made_change
-            if not made_change:
-                break
-        LOGGER.debug("Processing variables took %d loop iterations", loop_count)
-        return made_change_in_any_loop
-
-    def _process_vars_and_locals_loop(self, out_definitions: Dict,
-                                      eval_map_by_var_name: Dict[str, EvaluationContext], relative_file_path: str,
-                                      var_value_and_file_map: Dict[str, Tuple[Any, str]],
-                                      locals_values: Dict[str, Any],
-                                      resource_list: Optional[List[Dict[str, Any]]],
-                                      module_list: Optional[List[Dict[str, Any]]],
-                                      module_data_retrieval: Callable[[str], Dict[str, Any]],
-                                      root_directory: str,
-                                      outer_context: str = "") -> bool:
-
-        # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
-        def process_items_helper(key_value_iterator, data_map, context, allow_str_bool_translation: bool):
-            made_change = False
-            for key, value in list(key_value_iterator()):       # Copy to list to allow deletion
-                new_context = f"{context}/{key}" if len(context) != 0 else key
-
-                if isinstance(value, str):
-                    altered_value = value
-
-                    had_var_block_match = False
-
-                    # The way in which matches are processed is important as they are ordered and may contain
-                    # portions of one another. For example:
-                    #  ${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}
-                    # In this case, we expect blocks similar to this:
-                    #  1) ${var.ENVIRONMENT}
-                    #  2) ${var.REGION}
-                    #  3) ${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}
-                    # If either of the first two are replaced, we can still process the outer eval block
-                    # if the substitutions made to the earlier vars are also made to the later. That allows
-                    # knowing what the string should really look like so substitutions can be made properly.
-                    # If this proves not to work well, the other option is to abort the later (because
-                    # the full string isn't found in the value anymore) and come back to it on another
-                    # processor loop. This works... but requires another processor loop.
-                    # (If you're thinking we should make a DAG and do this properly... you're probably right.)
-                    prev_matches: List[Tuple[str, str]] = []  # original value -> replaced
-                    for match in find_var_blocks(value):
-                        # Update what's expected in the match, see comment above
-                        for prev_match in prev_matches:
-                            match.replace(prev_match[0], str(prev_match[1]))
-
-                        var_base = match.var_only
-
-                        # Expressions such as (from variable definition):
-                        #    type = string
-                        # are turned into:
-                        #    "type = ${string}"
-                        if var_base in _SIMPLE_TYPES and match.full_str == value:
-                            altered_value = var_base
-                            had_var_block_match = True
-                            prev_matches.append((match.full_str, var_base))
-                        else:
-                            replaced = _handle_single_var_pattern(var_base, var_value_and_file_map,
-                                                                  locals_values, resource_list,
-                                                                  module_list, module_data_retrieval,
-                                                                  eval_map_by_var_name,
-                                                                  new_context, value, root_directory)
-                            if replaced != var_base:
-                                if match.full_str == altered_value:
-                                    altered_value = replaced
-                                else:
-                                    replace_str = f"'{match.full_str}'"
-                                    if isinstance(replaced, str) or replace_str not in altered_value:
-                                        replace_str = match.full_str
-                                    altered_value = altered_value.replace(replace_str, str(replaced))
-                                prev_matches.append((match.full_str, replaced))
-                                had_var_block_match = True
-
-                    if not had_var_block_match:
-                        if allow_str_bool_translation and value == "true":
-                            altered_value = True
-                        elif allow_str_bool_translation and value == "false":
-                            altered_value = False
-
-                    if value != altered_value:
-                        LOGGER.debug(f"Resolve: %s --> %s", value, altered_value)
-                        data_map[key] = altered_value
-                        made_change = True
-                elif isinstance(value, dict):
-                    if self._process_vars_and_locals_loop(value, eval_map_by_var_name, relative_file_path,
-                                                          var_value_and_file_map,
-                                                          locals_values, resource_list,
-                                                          module_list, module_data_retrieval, root_directory,
-                                                          new_context):
-                        made_change = True
-
-                elif isinstance(value, list):
-                    if len(value) > 0 and value[0] != value:
-                        if process_items_helper(lambda: enumerate(value), value, new_context, True):
-                            made_change = True
-                    # Some special cases that should be pruned from datasets
-                    if value == [None] or value == [{}] or value == [[]] or len(value) == 0:
-                        del data_map[key]
-            return made_change
-
-        return process_items_helper(out_definitions.items, out_definitions, outer_context, False)
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool], module_load_context: Optional[str],
@@ -572,156 +414,98 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
+    def parse_hcl_module(self, source_dir, source, parsing_errors=None):
+        tf_definitions = {}
+        download_external_modules = os.environ.get('DOWNLOAD_EXTERNAL_MODULES', 'false').lower() == 'true'
+        self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
+                             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
+                             download_external_modules=download_external_modules,
+                             external_modules_download_path=external_modules_download_path)
+        tf_definitions = Parser._hcl_boolean_types_to_boolean(tf_definitions)
+        return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
-def _handle_single_var_pattern(orig_variable: str, var_value_and_file_map: Dict[str, Tuple[Any, str]],
-                               locals_values: Dict[str, Any],
-                               resource_list: Optional[List[Dict[str, Any]]],
-                               module_list: Optional[List[Dict[str, Any]]],
-                               module_data_retrieval: Callable[[str], Dict[str, Any]],
-                               eval_map_by_var_name: Dict[str, EvaluationContext],
-                               context, orig_variable_full, root_directory: str) -> Any:
-    ternary_info = _is_ternary(orig_variable)
-    if ternary_info:
-        return _process_ternary(orig_variable, ternary_info[0], ternary_info[1])
+    def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
+        module = self.get_new_module(source_dir)
+        self.add_tfvars(module, source)
+        module_dependency_map, tf_definitions = self.get_module_dependency_map(tf_definitions)
+        copy_of_tf_definitions = deepcopy(tf_definitions)
+        for file_path in copy_of_tf_definitions:
+            blocks = copy_of_tf_definitions.get(file_path)
+            for block_type in blocks:
+                try:
+                    module.add_blocks(block_type, blocks[block_type], file_path, source)
+                except Exception as e:
+                    logging.error(f'Failed to add block {blocks[block_type]}. Error:')
+                    logging.error(e, exc_info=True)
+        return module, module_dependency_map, tf_definitions
 
-    if orig_variable.startswith("module."):
-        if not module_list:
-            return orig_variable
+    @staticmethod
+    def _hcl_boolean_types_to_boolean(conf: dict) -> dict:
+        sorted_keys = list(conf.keys())
+        if len(conf.keys()) > 0 and all(isinstance(x, type(list(conf.keys())[0])) for x in conf.keys()):
+            sorted_keys = sorted(filter(lambda x: x is not None, conf.keys()))
+        # Create a new dict where the keys are sorted alphabetically
+        sorted_conf = {key: conf[key] for key in sorted_keys}
+        for attribute, values in sorted_conf.items():
+            if attribute is 'alias':
+                continue
+            if isinstance(values, list):
+                sorted_conf[attribute] = Parser._hcl_boolean_types_to_boolean_lst(values)
+            elif isinstance(values, dict):
+                sorted_conf[attribute] = Parser._hcl_boolean_types_to_boolean(conf[attribute])
+            elif isinstance(values, str) and values in ('true', 'false'):
+                sorted_conf[attribute] = True if values == 'true' else False
+        return sorted_conf
 
-        # Reference to module outputs, example: 'module.bucket.bucket_name'
-        ref_tokens = orig_variable.split(".")
-        if len(ref_tokens) != 3:
-            return orig_variable  # fail safe, can the length ever be something other than 3?
+    @staticmethod
+    def _hcl_boolean_types_to_boolean_lst(values: list) -> list:
+        for i in range(len(values)):
+            val = values[i]
+            if isinstance(val, dict):
+                values[i] = Parser._hcl_boolean_types_to_boolean(val)
+            elif isinstance(val, list):
+                values[i] = Parser._hcl_boolean_types_to_boolean_lst(val)
+            elif isinstance(val, str):
+                if val == 'true':
+                    values[i] = True
+                elif val == 'false':
+                    values[i] = False
+        str_values_in_lst = [val for val in values if isinstance(val, str)]
+        str_values_in_lst.sort()
+        result_values = [val for val in values if not isinstance(val, str)]
+        result_values.extend(str_values_in_lst)
+        return result_values
 
-        try:
-            ref_list = jmespath.search(f"[].{ref_tokens[1]}.{RESOLVED_MODULE_ENTRY_NAME}[]", module_list)
-            #                                ^^^^^^^^^^^^^ module name
+    @staticmethod
+    def get_module_dependency_map(tf_definitions):
+        """
+        :param tf_definitions, with paths in format 'dir/main.tf[module_dir/main.tf#0]'
+        :return module_dependency_map: mapping between directories and the location of its module definition:
+                {'dir': 'module_dir/main.tf'}
+        :return tf_definitions: with paths in format 'dir/main.tf'
+        """
+        module_dependency_map = {}
+        copy_of_tf_definitions = {}
+        for file_path in tf_definitions.keys():
+            path, module_dependency, _ = remove_module_dependency_in_path(file_path)
+            dir_name = os.path.dirname(path)
+            if not module_dependency_map.get(dir_name):
+                module_dependency_map[dir_name] = set()
+            module_dependency_map[dir_name].add(module_dependency)
+            copy_of_tf_definitions[file_path] = deepcopy(tf_definitions[file_path])
+        return module_dependency_map, copy_of_tf_definitions
 
-            if not ref_list or not isinstance(ref_list, list):
-                return orig_variable
+    @staticmethod
+    def get_new_module(source_dir):
+        return Module(source_dir, encode=False)
 
-            for ref in ref_list:
-                module_data = module_data_retrieval(ref)
-                if not module_data:
-                    continue
-
-                result = _handle_indexing(ref_tokens[2],
-                                          lambda r: jmespath.search(f"output[].{ref_tokens[2]}.value[] | [0]",
-                                                                    module_data))
-                if result:
-                    logging.debug("Resolved module ref:  %s --> %s", orig_variable, result)
-                    return result
-        except ValueError:
-            pass
-        return orig_variable
-
-    elif orig_variable == "True":
-        return True
-    elif orig_variable == "False":
-        return False
-
-    elif orig_variable.startswith("var."):
-        var_name = orig_variable[4:]
-        var_value_and_file = _handle_indexing(var_name,
-                                              lambda r: var_value_and_file_map.get(r),
-                                              value_is_a_tuple=True)
-        if var_value_and_file is not None:
-            var_value, var_file = var_value_and_file
-            eval_context = eval_map_by_var_name.get(var_name)
-            if eval_context is None:
-                eval_map_by_var_name[var_name] = EvaluationContext(os.path.relpath(var_file, root_directory),
-                                                                   var_value,
-                                                                   [VarReference(var_name,
-                                                                                 orig_variable_full,
-                                                                                 context)])
-            else:
-                eval_context.definitions.append(VarReference(var_name, orig_variable_full, context))
-            return var_value
-    elif orig_variable.startswith("local."):
-        var_value = _handle_indexing(orig_variable[6:], lambda r: locals_values.get(r))
-        if var_value is not None:
-            return var_value
-    elif orig_variable.endswith(")") and not orig_variable.startswith("(") and "(" in orig_variable:
-        # Function handling. See parser_functions for implementations.
-        paren_start = orig_variable.index("(")
-        function_name = orig_variable[:paren_start]
-        function = getattr(parser_functions,        # call from `parser_functions` script
-                           function_name,           # name of the function which will be executed
-                           function_nyi_handler)    # function (in this file) called if lookup fails
-        value_before = orig_variable[paren_start + 1: -1]
-        value_after = function(value_before,
-                               var_resolver=lambda v: _handle_single_var_pattern(v,
-                                                                                 var_value_and_file_map,
-                                                                                 locals_values,
-                                                                                 resource_list,
-                                                                                 module_list,
-                                                                                 module_data_retrieval,
-                                                                                 eval_map_by_var_name,
-                                                                                 context,
-                                                                                 v,
-                                                                                 root_directory),
-                               function_name=function_name)
-        return value_after if value_after != FUNCTION_FAILED else orig_variable
-
-    elif _RESOURCE_REF_PATTERN.match(orig_variable):
-        # Reference to resources, example: 'aws_s3_bucket.example.bucket'
-        # TODO: handle index into map/list
-        try:
-            result = jmespath.search(f"[].{orig_variable}[] | [0]", resource_list)
-        except ValueError:
-            pass
-        else:
-            if result is not None:
-                return result
-
-    return orig_variable  # fall back to no change
-
-
-def _handle_indexing(reference: str,
-                     data_source: Callable[[str], Optional[Any]],
-                     value_is_a_tuple: bool = False) -> Optional[Any]:
-    """
-
-    :param reference:           Full reference with the variable (ex: "my_list[0]")
-    :param data_source:         Data source for retrieving the variable value. Provided the variable name
-                                (ex: "my_list"), the value should be returned, if available.
-    :param value_is_a_tuple:    Indicates whether the returned value will be a tuple with the value as
-                                item 0 and the source location as item 1. This is returned for some data
-                                sources and not for others. When true, the returned value will also be a
-                                Tuple, if non-None.
-    :return:
-    """
-    if reference.endswith("]") and "[" in reference:
-        base_ref = reference[:reference.rindex("[")]
-        reference_val = reference[reference.rindex("[") + 1: -1]
-
-        value = data_source(base_ref)
-        if value is None:
-            return None
-
-        if value_is_a_tuple:
-            value_tuple = value
-            value = value_tuple[0]
-
-        if isinstance(value, dict):
-            if value_is_a_tuple:
-                return value.get(reference_val), value_tuple[1]
-            else:
-                return value.get(reference_val)
-        elif isinstance(value, list):
-            try:
-                if value_is_a_tuple:
-                    return value[int(reference_val)], value_tuple[1]
-                else:
-                    return value[int(reference_val)]
-            except ValueError as e:
-                # TODO: handle count.index correctly
-                logging.debug(f'Failed to parse index int out of {reference_val}')
-                logging.debug(e, stack_info=True)
-                return None
-    else:
-        return data_source(reference)
-
+    def add_tfvars(self, module, source):
+        if not self.external_variables_data:
+            return
+        for (var_name, default, path) in self.external_variables_data:
+            if ".tfvars" in path:
+                block = {var_name: {"default": default}}
+                module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
 def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict,
                          clean_definitions: bool = True) -> Optional[Mapping]:
@@ -745,7 +529,7 @@ Load JSON or HCL, depending on filename.
                 else:
                     return non_malformed_definitions
     except Exception as e:
-        LOGGER.debug(f'failed while parsing file {file}', exc_info=e)
+        logging.debug(f'failed while parsing file {file}', exc_info=e)
         parsing_errors[file_path] = e
         return None
 
@@ -795,37 +579,6 @@ def _remove_module_dependency_in_path(path):
     return path
 
 
-def _is_ternary(value: str) -> Optional[Tuple[int, int]]:
-    """
-    Determines whether or not the given string is *probably* a ternary operation
-    :return:        If the expression does represent a possibly-processable ternary expression, a tuple
-                    containing the index of the question mark and colon will be returned.
-    """
-    if not value:
-        return None
-    question_index = value.find("?")
-    if question_index < 1 or value.count("?") > 1:
-        return None
-    colon_index = value.find(":")
-    if colon_index < question_index or value.count(":") > 1:
-        return None
-    return question_index, colon_index
-
-
-def _process_ternary(value: str, question_index: int, colon_index: int) -> str:
-    condition = value[:question_index].strip()
-
-    # Fast & easy case is simple boolean
-    condition_lower = condition.lower()
-    if condition_lower == "true":
-        return _to_native_value(value[question_index + 1: colon_index].strip())
-    elif condition_lower == "false":
-        return _to_native_value(value[colon_index + 1:].strip())
-
-    # Otherwise, this isn't evaluated enough
-    return value
-
-
 def _safe_index(sequence_hopefully, index) -> Optional[Any]:
     try:
         return sequence_hopefully[index]
@@ -833,13 +586,6 @@ def _safe_index(sequence_hopefully, index) -> Optional[Any]:
         logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}')
         logging.debug(e, stack_info=True)
         return None
-
-
-def function_nyi_handler(original, function_name, **_):
-    logging.debug("Function '%s' is not yet implemented and will not be handled. Please file a"
-                  "feature request if it is important to your evaluation (value: '%s')",
-                  function_name, original)
-    return FUNCTION_FAILED
 
 
 def is_acceptable_module_param(value: Any) -> bool:

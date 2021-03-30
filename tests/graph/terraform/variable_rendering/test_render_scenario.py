@@ -1,10 +1,13 @@
+import json
 import os
+import re
 from unittest.case import TestCase
 
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.graph.terraform.graph_manager import GraphManager
-from tests.terraform.parser.test_parser_scenarios import TestParserScenarios
+import jmespath
+
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
+from checkov.terraform.graph_manager import GraphManager
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -141,10 +144,11 @@ class TestRendererScenarios(TestCase):
                 for expected_block_dict in expected_block_type_list:
                     for expected_block_name, expected_block_val in expected_block_dict.items():
                         if expected_block_type != BlockType.RESOURCE:
-                            found = self.match_blocks(expected_block_val, different_expected, got_block_type_list, expected_block_name)
+                            found = self.match_blocks(expected_block_val, different_expected, got_block_type_list,
+                                                      expected_block_name)
                         else:
                             found = self.match_resources(expected_block_val, different_expected, got_block_type_list,
-                                                      expected_block_name)
+                                                         expected_block_name)
                         self.assertTrue(found,
                                         f"expected to find block {expected_block_dict} from file {expected_file} in graph")
 
@@ -182,14 +186,62 @@ class TestRendererScenarios(TestCase):
 def load_expected(replace_expected, dir_name, resources_dir):
     if replace_expected:
         expected_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-        old_expected = TestParserScenarios.load_expected_data(f"{dir_name}_expected.json", expected_file_dir)
+        old_expected = load_expected_data(f"{dir_name}_expected.json", expected_file_dir)
         expected = {}
         for file_path in old_expected:
             new_file_path = file_path.replace(expected_file_dir, resources_dir)
             expected[new_file_path] = old_expected[file_path]
     else:
-        expected = TestParserScenarios.load_expected_data("expected.json", resources_dir)
+        expected = load_expected_data("expected.json", resources_dir)
     return expected
 
 
+def load_expected_data(source_file_name, dir_path):
+    expected_path = os.path.join(dir_path, source_file_name)
+    if not os.path.exists(expected_path):
+        return None
 
+    with open(expected_path, "r") as f:
+        expected_data = json.load(f)
+
+    # Convert to absolute path:   "buckets/bucket.tf[main.tf#0]"
+    #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
+    #                                    HERE       & HERE
+    #
+    resolved_pattern = re.compile(r"(.+)\[(.+)#(\d+)]")  # groups:  location (1), referrer (2), index (3)
+
+    # Expected files should have the filenames relative to their base directory, but the parser will
+    # use the absolute path. This loop with replace relative filenames with absolute.
+    keys = list(expected_data.keys())
+    for key in keys:
+        # NOTE: Sometimes keys have module referrers, sometimes they don't
+
+        match = resolved_pattern.match(key)
+        if match:
+            new_key = _make_module_ref_absolute(match, dir_path)
+        else:
+            if os.path.isabs(key):
+                continue
+            new_key = os.path.join(dir_path, key)
+        expected_data[new_key] = expected_data[key]
+        del expected_data[key]
+
+    for resolved_list in jmespath.search("*.module[].*[].__resolved__", expected_data):
+        for list_index in range(0, len(resolved_list)):
+            match = resolved_pattern.match(resolved_list[list_index])
+            assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
+            resolved_list[list_index] = _make_module_ref_absolute(match, dir_path)
+            # print(f"{match[0]} -> {resolved_list[list_index]}")
+
+    return expected_data
+
+
+def _make_module_ref_absolute(match, dir_path) -> str:
+    module_location = match[1]
+    if not os.path.isabs(module_location):
+        module_location = os.path.join(dir_path, module_location)
+
+    module_referrer = match[2]
+    if not os.path.isabs(module_referrer):
+        module_referrer = os.path.join(dir_path, module_referrer)
+    return f"{module_location}[{module_referrer}#{match[3]}]"

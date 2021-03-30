@@ -1,8 +1,8 @@
 import os
 from unittest.case import TestCase
 
-from checkov.graph.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.graph.terraform.graph_manager import GraphManager
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_manager import GraphManager
 from tests.graph.terraform.variable_rendering.expected_data import *
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
