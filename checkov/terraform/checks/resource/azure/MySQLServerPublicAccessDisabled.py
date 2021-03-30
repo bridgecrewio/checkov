@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class MySQLServerHasPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that MySQL server disables public network access"
-        id = "CKV_AZURE_132"
+        id = "CKV_AZURE_90"
         supported_resources = ['azurerm_mysql_server']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

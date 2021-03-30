@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class RDSClusterEncrypted(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that RDS global clusters are encrypted"
-        id = "CKV_AWS_149"
+        id = "CKV_AWS_140"
         supported_resources = ['aws_rds_global_cluster']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

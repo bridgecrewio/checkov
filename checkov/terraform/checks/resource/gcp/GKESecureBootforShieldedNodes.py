@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class GKESecureBootforShieldedNodes(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Secure Boot for Shielded GKE Nodes is Enabled"
-        id = "CKV_GCP_73"
+        id = "CKV_GCP_68"
         supported_resources = ['google_container_cluster', 'google_container_node_pool']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

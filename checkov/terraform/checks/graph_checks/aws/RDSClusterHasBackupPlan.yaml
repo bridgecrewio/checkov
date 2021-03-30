@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_23"
+  id: "CKV2_AWS_8"
   name: "Ensure that RDS clusters has backup plan of AWS Backup"
   category: "BACKUP_AND_RECOVERY"
 definition:

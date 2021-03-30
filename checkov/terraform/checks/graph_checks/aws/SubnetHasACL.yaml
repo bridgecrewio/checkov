@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_24"
+  id: "CKV2_AWS_1"
   name: "Ensure that all NACL are attached to subnets"
   category: "NETWORKING"
 definition:

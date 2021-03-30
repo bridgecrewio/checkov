@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_GCP_10"
+  id: "CKV2_GCP_2"
   name: "Ensure legacy networks do not exist for a project"
   category: "Networking"
 definition:

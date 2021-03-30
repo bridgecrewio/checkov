@@ -3,8 +3,9 @@ name: homebrew
 on:
   push:
     branches:
-      # Will never run! the actual default branch is master
-      - 'main-bad-main-no-branch'
+      - 'master'
+    tags:
+      - '*'
 
 jobs:
   homebrew:

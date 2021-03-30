@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class SQLServerHasPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that SQL server disables public network access"
-        id = "CKV_AZURE_131"
+        id = "CKV_AZURE_113"
         supported_resources = ['azurerm_mssql_server']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,

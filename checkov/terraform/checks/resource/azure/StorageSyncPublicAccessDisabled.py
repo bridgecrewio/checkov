@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class NetworkInterfaceEnableIPForwarding(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Azure File Sync disables public network access"
-        id = "CKV_AZURE_134"
+        id = "CKV_AZURE_64"
         supported_resources = ['azurerm_storage_sync']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,

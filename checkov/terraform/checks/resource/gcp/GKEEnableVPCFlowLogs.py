@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class GKEEnableVPCFlowLogs(BaseResourceValueCheck):
     def __init__(self):
         name = "Enable VPC Flow Logs and Intranode Visibility"
-        id = "CKV_GCP_74"
+        id = "CKV_GCP_61"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -4,6 +4,8 @@ import unittest
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner
@@ -145,15 +147,14 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(bad_checks), 0)
 
     def test_no_missing_ids(self):
-        self.skipTest(reason='Re-run once all checks are implemented')
         runner = Runner()
         unique_checks = set()
         for registry in list(runner.block_type_registries.values()):
             checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
             for check in checks:
                 unique_checks.add(check.id)
-        aws_checks = list(filter(lambda check_id: '_AWS_' in check_id, unique_checks))
-        for i in range(1, len(aws_checks)):
+        aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
+        for i in range(1, len(aws_checks) + 1):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -162,16 +163,16 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
-        gcp_checks = list(filter(lambda check_id: '_GCP_' in check_id, unique_checks))
-        for i in range(1, len(gcp_checks)):
+        gcp_checks = sorted(list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
+        for i in range(1, len(gcp_checks) + 1):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
                 continue
 
             self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
 
-        azure_checks = list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks))
-        for i in range(1, len(azure_checks)):
+        azure_checks = sorted(list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
+        for i in range(1, len(azure_checks) + 1):
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
@@ -179,6 +180,31 @@ class TestRunnerValid(unittest.TestCase):
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
+
+        graph_registry = Registry(parser=NXGraphCheckParser())
+        graph_registry.load_checks()
+        graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
+        aws_checks, gcp_checks, azure_checks = [], [], []
+        for check in graph_checks:
+            if '_AWS_' in check.id:
+                aws_checks.append(check.id)
+            elif '_GCP_' in check.id:
+                gcp_checks.append(check.id)
+            elif '_AZURE_' in check.id:
+                azure_checks.append(check.id)
+
+        for check_list in [aws_checks, gcp_checks, azure_checks]:
+            check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
+
+        for i in range(1, len(aws_checks) + 1):
+            self.assertIn(f'CKV2_AWS_{i}', aws_checks,
+                          msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
+        for i in range(1, len(gcp_checks) + 1):
+            self.assertIn(f'CKV2_GCP_{i}', gcp_checks,
+                          msg=f'The new GCP violation should have the ID "CKV2_GCP_{i}"')
+        for i in range(1, len(azure_checks) + 1):
+            self.assertIn(f'CKV2_AZURE_{i}', azure_checks,
+                          msg=f'The new Azure violation should have the ID "CKV2_AZURE_{i}"')
 
     def test_provider_uniqueness(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

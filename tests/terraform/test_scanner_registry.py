@@ -1,6 +1,8 @@
 import unittest
 
 from checkov.terraform.checks.resource.registry import resource_registry as registry
+from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
 
 
 class TestScannerRegistry(unittest.TestCase):
@@ -17,6 +19,16 @@ class TestScannerRegistry(unittest.TestCase):
         for (resource_type, checks) in registry.checks.items():
             for check in checks:
                 check_id_check_class_map.setdefault(check.id, []).append(check)
+
+        for check_id, check_classes in check_id_check_class_map.items():
+            self.assertEqual(len(set(check_classes)), 1,"collision on check_id={}".format(check_id))
+
+    def test_non_colliding_graph_check_ids(self):
+        check_id_check_class_map = {}
+        graph_registry = Registry(parser=NXGraphCheckParser())
+        graph_registry.load_checks()
+        for check in graph_registry.checks:
+            check_id_check_class_map.setdefault(check.id, []).append(check)
 
         for check_id, check_classes in check_id_check_class_map.items():
             self.assertEqual(len(set(check_classes)), 1,"collision on check_id={}".format(check_id))

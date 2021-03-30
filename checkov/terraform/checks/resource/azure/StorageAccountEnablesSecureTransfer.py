@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class StorageAccountEnablesSecureTransfer(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that storage account enables secure transfer"
-        id = "CKV_AZURE_135"
+        id = "CKV_AZURE_60"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,

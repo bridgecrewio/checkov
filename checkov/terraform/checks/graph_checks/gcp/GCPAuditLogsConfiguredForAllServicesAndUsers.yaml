@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_GCP_8"
+  id: "CKV2_GCP_5"
   name: "Ensure that Cloud Audit Logging is configured properly across all services and all users from a project"
   category: "Logging"
 definition:
