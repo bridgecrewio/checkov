@@ -3,7 +3,7 @@ name: build
 on: 
   push:
     branches:
-    - master
+      - master
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
