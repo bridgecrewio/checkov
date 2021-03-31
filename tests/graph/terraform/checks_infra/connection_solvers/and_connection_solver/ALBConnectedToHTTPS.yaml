@@ -1,0 +1,47 @@
+metadata:
+  id: "ALBConnectedToHTTPS"
+  name: "Ensure that ALB redirects HTTP requests into HTTPS ones"
+  category: "NETWORKING"
+definition:
+  and:
+  - cond_type: "filter"
+    value:
+      - "aws_lb"
+    attribute: "resource_type"
+    operator: "within"
+  - cond_type: "attribute"
+    resource_types:
+      - "aws_lb"
+    attribute: "load_balancer_type"
+    operator: "equals"
+    value: "application"
+  - or:
+    - cond_type: "connection"
+      resource_types:
+        - "aws_lb"
+      connected_resource_types:
+        - "aws_lb_listener"
+      operator: "not_exists"
+    - and:
+      - cond_type: "connection"
+        resource_types:
+          - "aws_lb"
+        connected_resource_types:
+          - "aws_lb_listener"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_lb_listener"
+        attribute: "certificate_arn"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_lb_listener"
+        attribute: "ssl_policy"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_lb_listener"
+        attribute: "protocol"
+        operator: "equals"
+        value: "HTTPS"
