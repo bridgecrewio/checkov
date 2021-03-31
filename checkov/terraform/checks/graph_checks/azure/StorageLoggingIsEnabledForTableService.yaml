@@ -21,4 +21,8 @@ definition:
       operator:  exists
       cond_type: attribute
       attribute: table_names
-
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_storage_table
+      operator: within

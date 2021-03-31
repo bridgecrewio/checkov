@@ -16,12 +16,21 @@ definition:
         - aws_instance
       connected_resource_types:
         - aws_network_interface
-    - cond_type: attribute
-      attribute: tags.Env
-      operator: equals
-      value: prod
-      resource_types:
-        - aws_instance
-        - aws_network_interface
-        - aws_subnet
-        - aws_vpc
+    - or:
+      - cond_type: attribute
+        attribute: tags.Env
+        operator: equals
+        value: prod
+        resource_types:
+          - aws_instance
+          - aws_network_interface
+          - aws_subnet
+          - aws_vpc
+      - cond_type: attribute
+        attribute: tags.Env
+        operator: not_exists
+        resource_types:
+          - aws_instance
+          - aws_network_interface
+          - aws_subnet
+          - aws_vpc

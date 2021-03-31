@@ -27,3 +27,8 @@ definition:
           - aws_elb
       attribute: health_check
       operator: exists
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_autoscaling_attachment
+      operator: within

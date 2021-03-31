@@ -19,6 +19,6 @@ definition:
     - cond_type: filter
       attribute: resource_type
       value:
-        - azurerm_mysql_server_key
+        - azurerm_mysql_server
       operator: within
 

@@ -21,4 +21,8 @@ definition:
       operator: exists
       attribute: vpc_id
       cond_type: attribute
-
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_network_interface
+      operator: within

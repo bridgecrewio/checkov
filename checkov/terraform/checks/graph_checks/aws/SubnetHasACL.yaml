@@ -32,11 +32,11 @@ definition:
         operator:  exists
         attribute: networking
         cond_type: connection
-      - cond_type: "attribute"
+      - cond_type: attribute
         resource_types: 
-          - "aws_network_acl"
-        attribute: "subnet_ids"
-        operator: "exists"
+          - aws_network_acl
+        attribute: subnet_ids
+        operator: exists
       - cond_type: filter
         attribute: resource_type
         value:
