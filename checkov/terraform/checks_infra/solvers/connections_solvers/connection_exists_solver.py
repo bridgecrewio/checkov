@@ -13,6 +13,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
     def get_operation(self, graph_connector):
         passed = []
+        failed = []
         for u, v in edge_dfs(graph_connector):
             origin_attributes = graph_connector.nodes(data=True)[u]
             opposite_vertices = None
@@ -25,7 +26,10 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
             destination_attributes = graph_connector.nodes(data=True)[v]
             if destination_attributes in opposite_vertices:
-                passed.extend([origin_attributes, destination_attributes])
+                if origin_attributes in self.excluded_vertices or destination_attributes in self.excluded_vertices:
+                    failed.extend([origin_attributes, destination_attributes])
+                else:
+                    passed.extend([origin_attributes, destination_attributes])
                 continue
 
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
@@ -39,5 +43,5 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         passed.extend([origin_attributes, output_destination])
                 except StopIteration:
                     continue
-        failed = [v for v in self.vertices_under_resource_types + self.vertices_under_connected_resources_types if v not in passed]
+        failed.extend([v for v in self.vertices_under_resource_types + self.vertices_under_connected_resources_types if v not in passed])
         return passed, failed

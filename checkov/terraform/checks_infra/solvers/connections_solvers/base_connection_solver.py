@@ -14,6 +14,7 @@ class BaseConnectionSolver(BaseSolver):
         self.connected_resources_types = connected_resources_types
         self.vertices_under_resource_types = vertices_under_resource_types or []
         self.vertices_under_connected_resources_types = vertices_under_connected_resources_types or []
+        self.excluded_vertices = []
 
     def run(self, graph_connector: DiGraph):
         self.set_vertices(graph_connector, [])
@@ -28,9 +29,10 @@ class BaseConnectionSolver(BaseSolver):
 
     def set_vertices(self, graph_connector, exclude_vertices):
         self.vertices_under_resource_types = [v for _, v in graph_connector.nodes(data=True) if
-                                              self.resource_type_pred(v, self.resource_types) and v not in exclude_vertices]
+                                              self.resource_type_pred(v, self.resource_types)]
         self.vertices_under_connected_resources_types = [v for _, v in graph_connector.nodes(data=True) if
-                                                         self.resource_type_pred(v, self.connected_resources_types) and v not in exclude_vertices]
+                                                         self.resource_type_pred(v, self.connected_resources_types)]
+        self.excluded_vertices = [v for v in self.vertices_under_resource_types + self.vertices_under_connected_resources_types if v in exclude_vertices]
 
     def get_operation(self, graph_connector):
         raise NotImplementedError
