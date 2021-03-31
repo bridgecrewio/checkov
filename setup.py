@@ -49,7 +49,8 @@ setup(
         "update_checker",
         "semantic_version",
         "packaging",
-        "networkx"
+        "networkx",
+        "dockerfile-parse"
     ],
     license="Apache License 2.0",
     name="checkov",
