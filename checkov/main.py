@@ -24,6 +24,7 @@ from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
+from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.version import version
 
 outer_registry = None
@@ -31,7 +32,7 @@ outer_registry = None
 logging_init()
 logger = logging.getLogger(__name__)
 checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
-checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm']
+checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm', 'dockerfile']
 
 # Check runners for necessary system dependencies.
 runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
@@ -54,7 +55,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry.runner_filter = runner_filter
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(), sls_runner(),
-                                         arm_runner(), tf_plan_runner(), helm_runner())
+                                         arm_runner(), tf_plan_runner(), helm_runner(),dockerfile_runner())
     if args.version:
         print(version)
         return

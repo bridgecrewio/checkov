@@ -9,6 +9,8 @@ from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.kubernetes.registry import registry as k8_registry
 from checkov.serverless.registry import sls_registry
+from checkov.dockerfile.registry import registry as dockerfile_registry
+
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
@@ -54,7 +56,9 @@ def get_checks(framework="all"):
     if framework == "kubernetes" or framework == "all":
         add_from_repository(k8_registry, "PodSecurityPolicy", "Kubernetes")
     if framework == "serverless" or framework == "all":
-        add_from_repository(sls_registry, "resource", "serverless")
+        add_from_repository(dockerfile_registry, "resource", "serverless")
+    if framework == "dockerfile" or framework == "all":
+            add_from_repository(sls_registry, "dockerfile", "dockerfile")
     if framework == "arm" or framework == "all":
         add_from_repository(arm_registry, "resource", "arm")
     return sorted(printable_checks_list, key=get_compare_key)
