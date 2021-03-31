@@ -244,7 +244,7 @@ def evaluate_list_access(input_str):
             if curr_str.isnumeric():
                 evaluated = _try_evaluate(input_str[prev_start:match["end"]+1])
                 if evaluated:
-                    input_str = input_str.replace(input_str[prev_start:match["end"]+1], evaluated)
+                    input_str = input_str.replace(input_str[prev_start:match["end"]+1], str(evaluated))
         prev_start = match["start"]
         prev_end = match["end"]
 
