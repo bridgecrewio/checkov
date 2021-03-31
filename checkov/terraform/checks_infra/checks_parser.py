@@ -47,8 +47,8 @@ condition_type_to_solver_type = {
 
 class NXGraphCheckParser(BaseGraphCheckParser):
     def parse_raw_check(self, raw_check, **kwargs) -> BaseGraphCheck:
-        policy_query = raw_check.get("definition")
-        check = self._parse_raw_check(policy_query, kwargs.get("resources_types"))
+        policy_definition = raw_check.get("definition")
+        check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
@@ -61,12 +61,12 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         if complex_operator:
             check.type = SolverType.COMPLEX
             check.operator = complex_operator
-            sub_queries = raw_check.get(complex_operator)
-            for sub_query in sub_queries:
-                check.sub_checks.append(self._parse_raw_check(sub_query, resources_types))
-            resources_types_of_sub_queries = [q.resource_types for q in check.sub_checks
+            sub_solvers = raw_check.get(complex_operator)
+            for sub_solver in sub_solvers:
+                check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
+            resources_types_of_sub_solvers = [q.resource_types for q in check.sub_checks
                                               if q is not None and q.resource_types is not None]
-            check.resource_types = list(set(sum(resources_types_of_sub_queries, [])))
+            check.resource_types = list(set(sum(resources_types_of_sub_solvers, [])))
             if any(q.type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION] for q in check.sub_checks):
                 check.type = SolverType.COMPLEX_CONNECTION
 
@@ -95,15 +95,15 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         return check
 
     def get_check_solver(self, check):
-        sub_queries_solvers = []
+        sub_solvers = []
         if check.sub_checks:
-            sub_queries_solvers = []
-            for sub_query in check.sub_checks:
-                sub_queries_solvers.append(self.get_check_solver(sub_query))
+            sub_solvers = []
+            for sub_solver in check.sub_checks:
+                sub_solvers.append(self.get_check_solver(sub_solver))
 
         type_to_solver = {
-            SolverType.COMPLEX_CONNECTION: operator_to_complex_connection_solver_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.operator),
-            SolverType.COMPLEX: operators_to_complex_solver_classes.get(check.operator, lambda *args: None)(sub_queries_solvers, check.resource_types),
+            SolverType.COMPLEX_CONNECTION: operator_to_complex_connection_solver_classes.get(check.operator, lambda *args: None)(sub_solvers, check.operator),
+            SolverType.COMPLEX: operators_to_complex_solver_classes.get(check.operator, lambda *args: None)(sub_solvers, check.resource_types),
             SolverType.ATTRIBUTE: operators_to_attributes_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value),
             SolverType.CONNECTION: operator_to_connection_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.connected_resources_types),
             SolverType.FILTER: operator_to_filter_solver_classes.get(check.operator, lambda *args: None)(check.resource_types, check.attribute, check.attribute_value)
@@ -111,7 +111,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
 
         solver = type_to_solver.get(check.type)
         if not solver:
-            raise NotImplementedError(f"query type {check.type} with operator {check.operator} is not supported")
+            raise NotImplementedError(f"solver type {check.type} with operator {check.operator} is not supported")
         return solver
 
 

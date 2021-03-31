@@ -1,4 +1,4 @@
 pass:
-  - "azurerm_mysql_server_key.ok"
+  - "azurerm_mysql_server.ok"
 fail:
   - "azurerm_mysql_server.not_ok"

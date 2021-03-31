@@ -17,7 +17,7 @@ resource "aws_lb_listener" "listener_good_1" {
   }
 }
 
-resource "aws_lb_listener" "front_end" {
+resource "aws_lb_listener" "listener_good_2" {
   load_balancer_arn = aws_lb.lb_good_2.arn
   port              = "80"
   protocol          = "HTTP"
@@ -34,7 +34,7 @@ resource "aws_lb_listener" "front_end" {
   }
 }
 
-resource "aws_lb_listener" "front_end" {
+resource "aws_lb_listener" "listener_bad_1" {
   load_balancer_arn = aws_lb.lb_bad_1.arn
   port              = "80"
   protocol          = "HTTP"

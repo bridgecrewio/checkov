@@ -2,4 +2,3 @@ pass:
   - "azurerm_sql_server.okExample"
 fail:
   - "azurerm_sql_server.badExample"
-  - "azurerm_sql_server.badExampleNotEnabled"

@@ -18,7 +18,7 @@ resource "aws_subnet" "my_subnet" {
   }
 }
 
-resource "aws_network_interface" "foo" {
+resource "aws_network_interface" "network_interface_foo" {
   subnet_id   = aws_subnet.my_subnet.id
   private_ips = ["172.16.10.100"]
 
@@ -28,7 +28,7 @@ resource "aws_network_interface" "foo" {
   }
 }
 
-resource "aws_network_interface" "goo" {
+resource "aws_network_interface" "network_interface_goo" {
   subnet_id   = aws_subnet.my_subnet.id
   private_ips = ["172.16.10.100"]
 
@@ -38,12 +38,12 @@ resource "aws_network_interface" "goo" {
   }
 }
 
-resource "aws_instance" "foo" {
+resource "aws_instance" "instance_foo" {
   ami           = "ami-005e54dee72cc1d00" # us-west-2
   instance_type = "t2.micro"
 
   network_interface {
-    network_interface_id = aws_network_interface.foo.id
+    network_interface_id = aws_network_interface.network_interface_foo.id
     device_index         = 0
   }
 
@@ -52,7 +52,7 @@ resource "aws_instance" "foo" {
   }
 }
 
-resource "aws_instance" "bar" {
+resource "aws_instance" "instance_bar" {
   ami           = "ami-005e54dee72cc1d00" # us-west-2
   instance_type = "t2.micro"
 

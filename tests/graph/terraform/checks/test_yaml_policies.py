@@ -7,6 +7,10 @@ import yaml
 from checkov.terraform import checks
 from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.models.enums import CheckResult
+from typing import List
+from checkov.terraform.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestYamlPolicies(unittest.TestCase):
@@ -164,8 +168,7 @@ class TestYamlPolicies(unittest.TestCase):
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 
-    @staticmethod
-    def go(dir_name):
+    def go(self, dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
@@ -180,7 +183,38 @@ class TestYamlPolicies(unittest.TestCase):
                     assert policy is not None
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
+                    report = get_policy_results(dir_path, policy)
+                    expected = load_yaml_data("expected.yaml", dir_path)
+
+                    expected_to_fail = expected['fail']
+                    expected_to_pass = expected['pass']
+                    self.assert_entities(expected_to_pass, report.passed_checks, True)
+                    self.assert_entities(expected_to_fail, report.failed_checks, False)
+
         assert found
+
+    def assert_entities(self, expected_entities: List[str], results: List[CheckResult], assertion: bool):
+        self.assertEqual(len(expected_entities), len(results), f"mismatch in number of results in {'passed' if assertion else 'failed'}, expected: {len(expected_entities)}, got: {len(results)}")
+        for expected_entity in expected_entities:
+            found = False
+            for check_result in results:
+                entity_id = check_result.resource
+                if entity_id == expected_entity:
+                    found = True
+                    break
+            self.assertTrue(found, f"expected to find entity {expected_entity} in {'passed' if assertion else 'failed'}")
+
+
+def get_policy_results(root_folder, policy):
+    check_id = policy['metadata']['id']
+    graph_runner = Runner()
+    report = graph_runner.run(root_folder,runner_filter=RunnerFilter(checks=[check_id]))
+    return report
+
+
+def wrap_policy(policy):
+    policy['query'] = policy['definition']
+    del policy['definition']
 
 
 def load_yaml_data(source_file_name, dir_path):

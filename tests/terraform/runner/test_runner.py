@@ -78,9 +78,9 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 2)
-        self.assertEqual(summary['skipped'], 2)
-        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(3, summary['failed'])
+        self.assertEqual(2, summary['skipped'])
+        self.assertEqual(0, summary["parsing_errors"])
 
     def test_runner_extra_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -126,8 +126,8 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 1)
-        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(2, summary['failed'])
+        self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
         runner = Runner()

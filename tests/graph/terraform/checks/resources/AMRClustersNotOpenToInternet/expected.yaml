@@ -2,4 +2,4 @@ pass:
   - "aws_emr_cluster.cluster_ok"
 fail:
   - "aws_emr_cluster.cluster_not_connected"
-  - "aws_emr_cluster.block_access_not_ok"
+  - "aws_emr_cluster.cluster_connected_to_wrong_group"

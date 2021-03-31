@@ -28,7 +28,7 @@ definition:
                 - cond_type: attribute
                   attribute: port
                   operator: not_equals
-                  value: 80
+                  value: "80"
                   resource_types:
                     - aws_lb_listener
                 - cond_type: attribute
@@ -41,7 +41,7 @@ definition:
                   - cond_type: attribute
                     attribute: port
                     operator: equals
-                    value: 80
+                    value: "80"
                     resource_types:
                       - aws_lb_listener
                   - cond_type: attribute
@@ -59,7 +59,7 @@ definition:
                   - cond_type: attribute
                     attribute: default_action.redirect.*.port
                     operator: equals
-                    value: 443
+                    value: "443"
                     resource_types:
                       - aws_lb_listener
                   - cond_type: attribute

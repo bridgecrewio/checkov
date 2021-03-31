@@ -3,4 +3,6 @@ pass:
   - "aws_network_acl.acl_ok_optionB"
 fail:
   - "aws_vpc.bad_vpc"
+  - "aws_network_acl.acl_ok_optionA"
   - "aws_network_acl.acl_bad_B"
+  - "aws_network_acl.acl_bad_A"

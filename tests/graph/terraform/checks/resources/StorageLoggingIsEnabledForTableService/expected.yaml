@@ -1,4 +1,4 @@
 pass:
-  - "azurerm_storage_account.blobExample_ok"
+  - "azurerm_storage_table.blobExample_ok"
 fail:
-  - "azurerm_storage_account.blobExample_not_ok"
+  - "azurerm_storage_table.blobExample_not_ok"
