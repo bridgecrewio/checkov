@@ -13,3 +13,15 @@ Resources:
             Resource: 'foo'
       Roles:
         - example_role
+  ExampleManagedPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 's3:Get*'
+            Resource: 'foo'
+      Roles:
+        - example_role
