@@ -21,14 +21,13 @@ class ConfigConfigurationAggregator(BaseResourceCheck):
         self.evaluated_keys = ["account_aggregation_source", "organization_aggregation_source"]
 
         if "account_aggregation_source" in conf:
-            all_regions_attr = conf.get("account_aggregation_source", {})[0].get("all_regions")
-            if all_regions_attr:
+            aggregation_source = conf.get("account_aggregation_source", {})[0]
+            if isinstance(aggregation_source, dict) and aggregation_source.get("all_regions"):
                 return CheckResult.PASSED
-            return CheckResult.FAILED
         if "organization_aggregation_source" in conf:
-            if conf.get("organization_aggregation_source", {})[0].get("all_regions"):
+            aggregation_source = conf.get("organization_aggregation_source", {})[0]
+            if isinstance(aggregation_source, dict) and aggregation_source.get("all_regions"):
                 return CheckResult.PASSED
-            return CheckResult.FAILED
         return CheckResult.FAILED
 
 
