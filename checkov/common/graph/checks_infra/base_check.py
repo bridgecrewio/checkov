@@ -1,6 +1,7 @@
 class BaseGraphCheck:
     def __init__(self):
         self.id = ''
+        self.name = ''
         self.resource_types = []
         self.connected_resources_types = []
         self.operator = ''

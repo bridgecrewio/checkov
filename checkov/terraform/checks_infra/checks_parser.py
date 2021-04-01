@@ -50,6 +50,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         policy_definition = raw_check.get("definition")
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id")
+        check.name = raw_check.get("metadata", {}).get("name")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 

@@ -7,6 +7,7 @@ from typing import Dict, Optional, Tuple
 import dpath.util
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -120,16 +121,21 @@ class Runner(BaseRunner):
             registry_results = r.run_checks(self.graph_manager.get_reader_traversal(), runner_filter)
             checks_results = {**checks_results, **registry_results}
 
-        for check_id, check_results in checks_results.items():
+        for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result['entity']
                 entity_context, entity_evaluations = self.get_entity_context_and_evaluations(entity)
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = copy.deepcopy(check_result)
+                    for skipped_check in entity_context['skipped_checks']:
+                        if skipped_check['id'] == check.id:
+                            copy_of_check_result['result'] = CheckResult.SKIPPED
+                            copy_of_check_result['suppress_comment'] = skipped_check['suppress_comment']
+                            break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
-                    record = Record(check_id=check_id,
-                                    check_name=check_id,
+                    record = Record(check_id=check.id,
+                                    check_name=check.name,
                                     check_result=copy_of_check_result,
                                     code_block=entity_context.get('code_lines'),
                                     file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
@@ -137,7 +143,7 @@ class Runner(BaseRunner):
                                                      entity_context.get('end_line')],
                                     resource=".".join(entity_context['definition_path']),
                                     evaluations=entity_evaluations,
-                                    check_class=check_id,
+                                    check_class=check.__class__.__module__,
                                     file_abs_path=os.path.abspath(full_file_path))
                     breadcrumb = breadcrumbs.get(record.file_path, {}).get(record.resource)
                     if breadcrumb:
