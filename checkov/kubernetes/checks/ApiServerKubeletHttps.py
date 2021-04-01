@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerKubeletHttps(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.4
         id = "CKV_K8S_71"
         name = "Ensure that the --kubelet-https argument is set to true"
         categories = [CheckCategories.KUBERNETES]

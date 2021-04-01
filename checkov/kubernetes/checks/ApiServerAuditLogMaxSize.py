@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAuditLogMaxSize(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.25
         id = "CKV_K8S_94"
         name = "Ensure that the --audit-log-maxsize argument is set to 100 or as appropriate"
         categories = [CheckCategories.KUBERNETES]

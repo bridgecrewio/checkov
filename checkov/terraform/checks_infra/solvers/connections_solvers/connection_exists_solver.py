@@ -1,12 +1,12 @@
+from checkov.common.graph.checks_infra.enums import Operators
 from checkov.terraform.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
-from networkx.classes.digraph import DiGraph
 from networkx import edge_dfs
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class ConnectionExistsSolver(BaseConnectionSolver):
-    operator = 'exists'
+    operator = Operators.EXISTS
 
     def __init__(self, resource_types, connected_resources_types, vertices_under_resource_types=None, vertices_under_connected_resources_types=None):
         super().__init__(resource_types, connected_resources_types, vertices_under_resource_types, vertices_under_connected_resources_types)

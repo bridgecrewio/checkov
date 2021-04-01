@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAdmissionControlAlwaysAdmit(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.11
         id = "CKV_K8S_79"
         name = "Ensure that the admission control plugin AlwaysAdmit is not set"
         categories = [CheckCategories.KUBERNETES]

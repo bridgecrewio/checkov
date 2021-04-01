@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class KubeControllerManagerServiceAccountCredentials(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.1
         id = "CKV_K8S_108"
         name = "Ensure that the --use-service-account-credentials argument is set to true"
         categories = [CheckCategories.KUBERNETES]

@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAlwaysPullImagesPlugin(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.12
         id = "CKV_K8S_80"
         name = "Ensure that the admission control plugin AlwaysPullImages is set"
         categories = [CheckCategories.KUBERNETES]

@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAuditLog(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.22
         id = "CKV_K8S_91"
         name = "Ensure that the --audit-log-path argument is set"
         categories = [CheckCategories.KUBERNETES]

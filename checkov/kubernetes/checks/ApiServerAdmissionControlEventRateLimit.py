@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAdmissionControlEventRateLimit(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.10
         id = "CKV_K8S_78"
         name = "Ensure that the admission control plugin EventRateLimit is set"
         categories = [CheckCategories.KUBERNETES]

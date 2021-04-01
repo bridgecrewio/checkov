@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAuthorizationModeRBAC(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.9
         id = "CKV_K8S_77"
         name = "Ensure that the --authorization-mode argument includes RBAC"
         categories = [CheckCategories.KUBERNETES]

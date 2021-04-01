@@ -1,11 +1,11 @@
 from networkx.classes.digraph import DiGraph
-from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.graph.checks_infra.enums import SolverType, Operators
 from checkov.terraform.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class OrConnectionSolver(ComplexConnectionSolver):
-    operator = 'or'
+    operator = Operators.OR
 
     def __init__(self, solvers, operator):
         super().__init__(solvers, operator)

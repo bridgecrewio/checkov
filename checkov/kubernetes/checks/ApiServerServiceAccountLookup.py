@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerServiceAccountLookup(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.27
         id = "CKV_K8S_96"
         name = "Ensure that the --service-account-lookup argument is set to true"
         categories = [CheckCategories.KUBERNETES]

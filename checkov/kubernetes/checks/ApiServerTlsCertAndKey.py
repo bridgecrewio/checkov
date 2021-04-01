@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerTlsCertAndKey(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.30
         id = "CKV_K8S_100"
         name = "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate"
         categories = [CheckCategories.KUBERNETES]

@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class SchedulerBindAddress(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.4.2
         id = "CKV_K8S_115"
         name = "Ensure that the --bind-address argument is set to 127.0.0.1"
         categories = [CheckCategories.KUBERNETES]

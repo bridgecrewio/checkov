@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerEtcdCertAndKey(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.29
         id = "CKV_K8S_99"
         name = "Ensure that the --etcd-certfile and --etcd-keyfile arguments are set as appropriate"
         categories = [CheckCategories.KUBERNETES]

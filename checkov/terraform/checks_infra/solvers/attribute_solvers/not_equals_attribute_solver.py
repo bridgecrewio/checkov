@@ -1,8 +1,9 @@
+from checkov.common.graph.checks_infra.enums import Operators
 from .equals_attribute_solver import EqualsAttributeSolver
 
 
 class NotEqualsAttributeSolver(EqualsAttributeSolver):
-    operator = 'not_equals'
+    operator = Operators.NOT_EQUALS
 
     def __init__(self, resource_types, attribute, value):
         super().__init__(resource_types=resource_types,

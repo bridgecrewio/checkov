@@ -5,7 +5,6 @@ import re
 
 class ApiServerRequestTimeout(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.26
         id = "CKV_K8S_95"
         name = "Ensure that the --request-timeout argument is set as appropriate"
         categories = [CheckCategories.KUBERNETES]
