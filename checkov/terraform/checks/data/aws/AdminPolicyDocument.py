@@ -1,3 +1,4 @@
+from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.data.base_check import BaseDataCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
@@ -20,9 +21,11 @@ class AdminPolicyDocument(BaseDataCheck):
         key = 'statement'
         if key in conf.keys():
             for statement in conf[key]:
-                if 'actions' in statement and statement.get('effect', ['Allow'])[0] == 'Allow' and '*' in statement['actions'][0] \
-                        and 'resources' in statement and '*' in statement['resources'][0]:
-                    return CheckResult.FAILED
+                effect = statement.get('effect', ['Allow'])
+                if not effect or effect[0] == 'Allow':
+                    if statement.get('actions') and '*' in force_list(statement['actions'][0]) \
+                        and statement.get('resources') and '*' in force_list(statement['resources'][0]):
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 
