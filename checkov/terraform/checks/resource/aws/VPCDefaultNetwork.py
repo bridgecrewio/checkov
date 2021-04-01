@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class VPCDefaultNetwork(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure there is no default VPC"
+        name = "Ensure no default VPC is planned to be provisioned"
         id = "CKV_AWS_114"
         supported_resources = ['aws_default_vpc']
         categories = [CheckCategories.NETWORKING]
@@ -13,7 +13,6 @@ class VPCDefaultNetwork(BaseResourceCheck):
         """
             Checks if there is any attempt to create a default VPC configuration :
             https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/default_vpc
-            We can improve this  with any IG, Subnet, ... addition to check the vpc it is attached to. 
             :param conf: aws_default_vpc configuration
             :return: <CheckResult>
         """

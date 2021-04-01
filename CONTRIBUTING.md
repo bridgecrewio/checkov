@@ -79,9 +79,9 @@ pipenv run python setup.py sdist bdist_wheel
 ```
 - This will create a `*.whl` package under a new folder named `dist`
 
-To install package from local directory run:
+To install package from local directory, update the release version value and run the installation:
 ```sh
-RELEASE_VERSION='1.0.865'
+RELEASE_VERSION='xxx'
 pip install dist/checkov-${RELEASE_VERSION}-py3-none-any.whl
 ```
 
