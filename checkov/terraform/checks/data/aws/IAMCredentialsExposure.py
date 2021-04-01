@@ -9,7 +9,11 @@ class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
         super().__init__(name=name, id=id)
 
     def cloudsplaining_analysis(self, policy):
-        return policy.credentials_exposure
+        excluded_actions = {
+            "ecr:GetAuthorizationToken"
+        }
+        credentials_exposure_actions = policy.credentials_exposure
+        return [x for x in credentials_exposure_actions if x not in excluded_actions]
 
 
 check = CloudSplainingCredentialsExposure()
