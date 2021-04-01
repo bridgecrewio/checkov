@@ -16,8 +16,8 @@ class GoogleProjectAdminServiceAccount(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'member' in conf.keys():
-            if re.match(USER_MANAGED_SERVICE_ACCOUNT, conf['member'][0]):
-                if re.match(ADMIN_ROLE, conf['role'][0]):
+            if re.match(USER_MANAGED_SERVICE_ACCOUNT, str(conf['member'][0])):
+                if re.match(ADMIN_ROLE, str(conf['role'][0])):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
