@@ -16,6 +16,11 @@ class TestAdminPolicyDocument(unittest.TestCase):
         scan_result = check.scan_data_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_no_effect(self):
+        resource_conf = {'version': ['2012-10-17'], 'statement': [{'actions': [['*']], 'resources': [['*']]}]}
+        scan_result = check.scan_data_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -28,6 +28,16 @@ class TestStarActionPolicyDocument(unittest.TestCase):
         scan_result = check.scan_data_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_no_effect(self):
+        resource_conf = {
+            "statement": [{
+                "actions": [["*"]],
+                "resources": [["arn:aws:s3:::my_corporate_bucket/*"]]
+            }]
+        }
+        scan_result = check.scan_data_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
