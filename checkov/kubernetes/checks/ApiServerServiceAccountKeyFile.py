@@ -5,7 +5,6 @@ import re
 
 class ApiServerServiceAccountKeyFile(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.28
         id = "CKV_K8S_97"
         name = "Ensure that the --service-account-key-file argument is set as appropriate"
         categories = [CheckCategories.KUBERNETES]

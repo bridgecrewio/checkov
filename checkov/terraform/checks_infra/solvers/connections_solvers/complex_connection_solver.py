@@ -1,15 +1,10 @@
-from abc import abstractmethod
-
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.terraform.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
-from networkx.classes.digraph import DiGraph
 
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
-    operator = ''
-
     def __init__(self, solvers, operator):
         self.solver_type = SolverType.COMPLEX_CONNECTION
         if solvers is None:

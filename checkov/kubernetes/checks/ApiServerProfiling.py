@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerProfiling(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.21
         id = "CKV_K8S_90"
         name = "Ensure that the --profiling argument is set to false"
         categories = [CheckCategories.KUBERNETES]

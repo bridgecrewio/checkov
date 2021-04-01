@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerBasicAuthFile(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.2
         id = "CKV_K8S_69"
         name = "Ensure that the --basic-auth-file argument is not set"
         categories = [CheckCategories.KUBERNETES]

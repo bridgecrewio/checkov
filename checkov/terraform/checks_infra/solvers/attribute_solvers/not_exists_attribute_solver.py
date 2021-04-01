@@ -1,8 +1,9 @@
+from checkov.common.graph.checks_infra.enums import Operators
 from .exists_attribute_solver import ExistsAttributeSolver
 
 
 class NotExistsAttributeSolver(ExistsAttributeSolver):
-    operator = 'not_exists'
+    operator = Operators.NOT_EXISTS
 
     def __init__(self, resource_types, attribute, value):
         super().__init__(resource_types=resource_types,

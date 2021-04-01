@@ -4,7 +4,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class SchedulerProfiling(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.4.1
         id = "CKV_K8S_114"
         name = "Ensure that the --profiling argument is set to false"
         categories = [CheckCategories.KUBERNETES]

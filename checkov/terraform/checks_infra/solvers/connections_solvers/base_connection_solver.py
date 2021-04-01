@@ -5,9 +5,6 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 
 class BaseConnectionSolver(BaseSolver):
-
-    operator = ''
-
     def __init__(self, resource_types, connected_resources_types, vertices_under_resource_types=None, vertices_under_connected_resources_types=None):
         super().__init__(SolverType.CONNECTION)
         self.resource_types = resource_types

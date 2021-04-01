@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerSecurityContextDenyPlugin(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.13
         id = "CKV_K8S_81"
         name = "Ensure that the admission control plugin SecurityContextDeny is set if PodSecurityPolicy is not used"
         categories = [CheckCategories.KUBERNETES]

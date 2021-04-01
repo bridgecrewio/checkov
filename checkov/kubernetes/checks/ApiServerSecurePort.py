@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerSecurePort(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.20
         id = "CKV_K8S_89"
         name = "Ensure that the --secure-port argument is not set to 0"
         categories = [CheckCategories.KUBERNETES]

@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAuditLogMaxBackup(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.24
         id = "CKV_K8S_93"
         name = "Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate"
         categories = [CheckCategories.KUBERNETES]

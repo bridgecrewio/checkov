@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerServiceAccountPlugin(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.14
         id = "CKV_K8S_82"
         name = "Ensure that the admission control plugin ServiceAccount is set"
         categories = [CheckCategories.KUBERNETES]

@@ -7,7 +7,6 @@ strongCiphers = ["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_A
 
 class ApiServerStrongCryptographicCiphers(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.35
         id = "CKV_K8S_105"
         name = "Ensure that the API Server only makes use of Strong Cryptographic Ciphers"
         categories = [CheckCategories.KUBERNETES]

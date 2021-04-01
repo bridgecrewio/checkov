@@ -1,10 +1,11 @@
+from checkov.common.graph.checks_infra.enums import Operators
 from checkov.terraform.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from functools import reduce
 from operator import and_
 
 
 class AndSolver(BaseComplexSolver):
-    operator = 'and'
+    operator = Operators.AND
 
     def __init__(self, solvers, resource_types):
         super().__init__(solvers, resource_types)

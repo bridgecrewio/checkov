@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerAuditLogMaxAge(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.23
         id = "CKV_K8S_92"
         name = "Ensure that the --audit-log-maxage argument is set to 30 or as appropriate"
         categories = [CheckCategories.KUBERNETES]

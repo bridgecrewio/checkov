@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerKubeletClientCertAndKey(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.5
         id = "CKV_K8S_72"
         name = "Ensure that the --kubelet-client-certificate and --kubelet-client-key arguments are set as appropriate"
         categories = [CheckCategories.KUBERNETES]

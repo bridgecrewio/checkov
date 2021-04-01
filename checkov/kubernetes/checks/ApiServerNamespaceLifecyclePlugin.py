@@ -3,7 +3,6 @@ from checkov.kubernetes.base_spec_check import BaseK8Check
 
 class ApiServerNamespaceLifecyclePlugin(BaseK8Check):
     def __init__(self):
-        # CIS-1.6 1.2.15
         id = "CKV_K8S_83"
         name = "Ensure that the admission control plugin NamespaceLifecycle is set"
         categories = [CheckCategories.KUBERNETES]
