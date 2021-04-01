@@ -9,6 +9,8 @@ from checkov.terraform.graph_builder.graph_components.attribute_names import Cus
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
 
+ATTRIBUTES_NO_EVAL = ['template_body', 'template']
+
 
 class VariableRenderer:
     def __init__(self, local_graph):
@@ -157,7 +159,7 @@ class VariableRenderer:
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
         """
-        evaluated_attribute_value = evaluate_terraform(f'"{str(changed_attribute_value)}"')
+        evaluated_attribute_value = str(changed_attribute_value) if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(f'"{str(changed_attribute_value)}"')
         self.local_graph.update_vertex_attribute(vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest)
 
     def evaluate_vertices_attributes(self):
@@ -214,7 +216,7 @@ class VariableRenderer:
                 evaluated_lst = []
                 for inner_val in lst_curr_val:
                     if isinstance(inner_val, str) and not any(c in inner_val for c in ["{", "}", "[", "]", "="])\
-                            or attribute == 'template_body':
+                            or attribute in ATTRIBUTES_NO_EVAL:
                         evaluated_lst.append(inner_val)
                         continue
                     evaluated = self.evaluate_value(inner_val)
