@@ -12,7 +12,6 @@ from checkov.terraform.checks.utils.iam_cloudformation_document_to_policy_conver
 
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     def __init__(self, name, id):
-        # todo: managedpolicy
         super().__init__(name=name, id=id, categories=CheckCategories.IAM, supported_resources=["AWS::IAM::Policy", "AWS::IAM::ManagedPolicy"])
 
     def scan_resource_conf(self, conf):
