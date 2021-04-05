@@ -46,3 +46,26 @@ class TestGraphBuilder(TestCase):
         self.assertEqual(len(report.failed_checks), 4)
         self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.skipped_checks), 0)
+
+    def test_module_and_variables(self):
+        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "modules-and-vars")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path)
+        self.assertLessEqual(3, len(report.failed_checks))
+        self.assertLessEqual(41, len(report.passed_checks))
+        self.assertEqual(0, len(report.skipped_checks))
+
+        found_versioning_failure = False
+
+        for record in report.failed_checks:
+            self.assertIsNotNone(record.breadcrumbs)
+            if record.check_id == 'CKV_AWS_21':
+                found_versioning_failure = True
+                bc = record.breadcrumbs.get('versioning.enabled')
+                self.assertEqual(len(bc), 1)
+                bc = bc[0]
+                self.assertEqual(bc.get('type'), 'variable')
+                self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'variables.tf')
+
+        self.assertTrue(found_versioning_failure)
+
