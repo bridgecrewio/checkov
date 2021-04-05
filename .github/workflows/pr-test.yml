@@ -53,7 +53,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v1.1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |
