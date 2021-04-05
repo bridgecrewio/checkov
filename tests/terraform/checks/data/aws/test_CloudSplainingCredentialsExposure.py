@@ -53,6 +53,27 @@ class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
         scan_result = check.scan_data_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_allowed_credential_actions(self):
+        hcl_res = hcl2.loads("""
+            data "aws_iam_policy_document" "example" {
+              statement {
+                sid = "1"
+                effect = "Allow"
+
+                actions = [
+                    "ecr:GetAuthorizationToken",
+                ]
+            
+                resources = [
+                  "*",
+                ]
+              }
+            }
+        """)
+        resource_conf = hcl_res['data'][0]['aws_iam_policy_document']['example']
+        scan_result = check.scan_data_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_deny(self):
         hcl_res = hcl2.loads("""
              data "aws_iam_policy_document" "DenyOutsideCallers" {
