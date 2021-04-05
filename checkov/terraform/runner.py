@@ -259,7 +259,7 @@ class Runner(BaseRunner):
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
-            (entity_type, _, entity_config) = registry.extract_entity_details(entity)
+            (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             for check, check_result in results.items():
                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
@@ -270,6 +270,9 @@ class Runner(BaseRunner):
                                 entity_tags=tags,
                                 caller_file_path=caller_file_path,
                                 caller_file_line_range=caller_file_line_range)
+                breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
+                if breadcrumb:
+                    record = GraphRecord(record, breadcrumb)
                 report.add_record(record=record)
 
     @staticmethod
