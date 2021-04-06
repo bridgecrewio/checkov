@@ -15,3 +15,17 @@ Resources:
         - example_role
       Users:
         - admin
+  ExampleManagedPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+      Roles:
+        - example_role
+      Users:
+        - admin
