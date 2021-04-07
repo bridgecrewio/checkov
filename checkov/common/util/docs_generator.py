@@ -16,7 +16,7 @@ from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 
-ID_PARTS_PATTERN = re.compile(r'(\D*)(\d*)')
+ID_PARTS_PATTERN = re.compile(r'([\D]*)(\d*)')
 
 
 def get_compare_key(c):
@@ -55,10 +55,12 @@ def get_checks(framework="all"):
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if framework == "kubernetes" or framework == "all":
         add_from_repository(k8_registry, "PodSecurityPolicy", "Kubernetes")
+        add_from_repository(k8_registry, "ClusterRole", "Kubernetes")
+        add_from_repository(k8_registry, "AdmissionConfiguration", "Kubernetes")
     if framework == "serverless" or framework == "all":
         add_from_repository(dockerfile_registry, "resource", "serverless")
     if framework == "dockerfile" or framework == "all":
-            add_from_repository(sls_registry, "dockerfile", "dockerfile")
+        add_from_repository(sls_registry, "dockerfile", "dockerfile")
     if framework == "arm" or framework == "all":
         add_from_repository(arm_registry, "resource", "arm")
     return sorted(printable_checks_list, key=get_compare_key)
