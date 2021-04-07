@@ -4,7 +4,7 @@ published: true
 title: What is Checkov?
 order: 1
 ---
-Checkov is a static code analysis tool for scanning IaC files for misconfigurations that could lead to security problems. Checkov includes more than 750 predefined Policies to check for common misconfiguration issues and also supports creation and contribution of of Custom Policies.
+Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of of [custom policies](../Custom%Policies/Overview.md).
 
 ## Supported IaC types
 
@@ -12,14 +12,26 @@ Checkov scans these IaC file types:
 
 * Terraform (for AWS, GCP and Azure)
 * CloudFormation
-* ARM
+* Azure Resource Manager (ARM)
 * Kubernetes
 * Docker
 
 ## Custom policies
 
-Custom policies can be created to check cloud resources based on configuration attributes (in Python or YAML and check resource composite or connection-states (in YAML). In effect, Checkov creates a cloud resource connection graph for deep misconfiguration analysis. See [Create Custom Policy - - Attribute Check and Composite](doc:create-custom-policy-yaml-attribute-check-and-composite) to learn more about custom policies.
+Custom policies can be created to check cloud resources based on configuration attributes (in [Python(../Custom%Policies/Create%Python%Policies.md)] or [YAML](../Custom%Policies/Create%YAML%Policies.md)) or connection states (in [YAML](../Custom%Policies/Create%YAML%Policies.md)). For composite policies, Checkov creates a cloud resource connection graph for deep misconfiguration analysis across resource relationships.
 
 ## Compliance with Industry Standards
 
-In addition, Checkov scans check for compliance with common industry standards such as the Center for Internet Security (CIS) and Amazon Web Services (AWS) Foundations Benchmark.
+In addition, Checkov scans for compliance with common industry standards such as the Center for Internet Security (CIS) and Amazon Web Services (AWS) Foundations Benchmark.
+
+## Integrates seamlessly with Bridgecrew
+
+Checkov integrates with advanced features in the [Bridgecew platform](https://bridgecrew.io/platform). You can sign up for a free Bridgecrew account by running Ccheckov with no arguments and following the CLI prompts, or directly via the [Bridgecrew website](https://www.bridgecrew.cloud/login/signUp). Bridgecrew extends Checkov's capabilities to provide runtime scanning and visibility, native VCS integrations, compliance benchmarking, and more.
+
+### Runtime Scanning
+Bridgecrew can validate the same Checkov IaC policies against your runtime cloud environments in AWS, Azure and Google Cloud, allowing you to find and fix issues in existing deployments and detect cloud drifts. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-2-integrate-with-cloud-provider).
+
+
+### Pull request annotations 
+Enable automated pull/merge request annotations on your repositories without having to build a CI pipeline or run scheduled checks. The Bridgecrew platform will automatically scan new pull requests and annotate them with comments for any policy violations discovered. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-3-integrate-with-code-repository).
+
