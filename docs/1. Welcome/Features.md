@@ -23,6 +23,7 @@ In running Checkov, you can also:
 * [Scan 3rd Party Terraform Modules](doc:scan-3rd-party-terraform-module-1)
 
 ## CI/CD
+In addition to integrating with your code repository, Checkov can also integrate with your automated build pipeline via CI/CD providers. When your build tests run, Checkov will scan your infrastructure as code files for misconfigurations.
 
 ### Integrate with CI/CD
 
