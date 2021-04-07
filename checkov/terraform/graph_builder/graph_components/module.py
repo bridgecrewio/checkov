@@ -1,12 +1,16 @@
+import os
 from copy import deepcopy
 from typing import List
 
+from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import Block, get_inner_attributes
 
 
 class Module:
-    def __init__(self, source_dir, encode):
+    def __init__(self, source_dir, module_dependency_map, dep_index_mapping, encode):
+        self.dep_index_mapping = dep_index_mapping
+        self.module_dependency_map = module_dependency_map
         self.path = ''
         self.blocks: List[Block] = []
         self.customer_name = ''
@@ -20,6 +24,19 @@ class Module:
         self.source = source
         if self._block_type_to_func.get(block_type):
             self._block_type_to_func[block_type].__call__(self, blocks, path)
+
+    def _add_to_blocks(self, block: Block):
+        dependencies = [dep_trail for dep_trail in self.module_dependency_map.get(os.path.dirname(block.path), [])]
+        module_dependency_num = ''
+        if not dependencies:
+            dependencies = [[]]
+        else:
+            module_dependency_num = self.dep_index_mapping.get(block.path, '')
+        for dep_trail in dependencies:
+            block = deepcopy(block)
+            block.module_dependency = unify_dependency_path(dep_trail)
+            block.module_dependency_num = module_dependency_num
+            self.blocks.append(block)
 
     def _add_provider(self, blocks, path):
         for provider_dict in blocks:
@@ -37,7 +54,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(provider_block)
+                self._add_to_blocks(provider_block)
 
     def _add_variable(self, blocks, path):
         for variable_dict in blocks:
@@ -52,7 +69,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(variable_block)
+                self._add_to_blocks(variable_block)
 
     def _add_locals(self, blocks, path):
         for blocks_section in blocks:
@@ -66,7 +83,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(local_block)
+                self._add_to_blocks(local_block)
 
     def _add_output(self, blocks, path):
         for output_dict in blocks:
@@ -82,7 +99,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(output_block)
+                self._add_to_blocks(output_block)
 
     def _add_module(self, blocks, path):
         for module_dict in blocks:
@@ -96,7 +113,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(module_block)
+                self._add_to_blocks(module_block)
 
     def _add_resource(self, blocks, path):
         for resource_dict in blocks:
@@ -118,7 +135,7 @@ class Module:
                         source=self.source,
                         encode=self.encode
                     )
-                    self.blocks.append(resource_block)
+                    self._add_to_blocks(resource_block)
 
     def _add_data(self, blocks, path):
         for data_dict in blocks:
@@ -134,7 +151,7 @@ class Module:
                         source=self.source,
                         encode=self.encode
                     )
-                    self.blocks.append(data_block)
+                    self._add_to_blocks(data_block)
 
     def _add_terraform_block(self, blocks, path):
         for terraform_dict in blocks:
@@ -148,7 +165,7 @@ class Module:
                     source=self.source,
                     encode=self.encode
                 )
-                self.blocks.append(terraform_block)
+                self._add_to_blocks(terraform_block)
 
     def _add_tf_var(self, blocks, path):
         for tf_var_name, attributes in blocks.items():
@@ -161,7 +178,7 @@ class Module:
                 source=self.source,
                 encode=self.encode
             )
-            self.blocks.append(tfvar_block)
+            self._add_to_blocks(tfvar_block)
 
     @staticmethod
     def _handle_provisioner(provisioner, attributes):

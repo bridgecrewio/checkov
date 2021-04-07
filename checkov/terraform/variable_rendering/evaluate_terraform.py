@@ -65,17 +65,17 @@ def replace_string_value(original_str, str_to_replace, replaced_value, keep_orig
     if str_to_replace not in original_str:
         return original_str if keep_origin else str_to_replace
 
-    string_without_interpolation = remove_interpolation(original_str)
+    string_without_interpolation = remove_interpolation(original_str, str_to_replace)
     return string_without_interpolation.replace(str_to_replace, str(replaced_value)).replace(' ', '')
 
 
-def remove_interpolation(original_str):
+def remove_interpolation(original_str, var_to_clean: str=None):
     # get all variable references in string
     # remove from the string all ${} or '${}' occurrences
     var_blocks = find_var_blocks(original_str)
     var_blocks.reverse()
     for block in var_blocks:
-        if block.full_str.startswith("${") and block.full_str.endswith("}"):
+        if block.full_str.startswith("${") and block.full_str.endswith("}") and (not var_to_clean or block.var_only == var_to_clean):
             full_str_start = original_str.find(block.full_str)
             full_str_end = full_str_start + len(block.full_str)
             if full_str_start > 0 and full_str_end <= len(original_str) - 2 and original_str[full_str_start-1] == "'" and original_str[full_str_start-1] == original_str[full_str_end] and "." in block.full_str:

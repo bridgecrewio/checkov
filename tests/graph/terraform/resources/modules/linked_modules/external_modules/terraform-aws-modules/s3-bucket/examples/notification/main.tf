@@ -50,27 +50,3 @@ module "lambda_function1" {
   create_package         = false
   local_existing_package = data.null_data_source.downloaded_package.outputs["filename"]
 }
-
-
-
-module "all_notifications" {
-  source = ""
-
-  bucket = module.s3_bucket.this_s3_bucket_id
-
-  # Common error - Error putting S3 notification configuration: InvalidArgument: Configuration is ambiguously defined. Cannot have overlapping suffixes in two rules if the prefixes are overlapping for the same event type.
-
-  lambda_notifications = {
-    lambda1 = {
-      function_arn  = module.lambda_function1.this_lambda_function_arn
-      function_name = module.lambda_function1.this_lambda_function_name
-      events        = ["s3:ObjectCreated:Put"]
-      filter_prefix = "prefix/"
-      filter_suffix = ".json"
-    }
-  }
-
-
-  # Creation of policy is handled outside of the module
-  create_sqs_policy = false
-}

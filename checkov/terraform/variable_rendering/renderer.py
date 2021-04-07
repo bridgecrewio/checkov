@@ -2,9 +2,10 @@ import logging
 import os
 from copy import deepcopy
 
+from lark.tree import Tree
+
 from checkov.terraform.checks.utils.utils import run_function_multithreaded, get_referenced_vertices_in_value, \
-    extend_referenced_vertices_with_tf_vars, join_trimmed_strings, remove_index_pattern_from_str, calculate_hash, \
-    attribute_has_nested_attributes
+    join_trimmed_strings, remove_index_pattern_from_str, calculate_hash, attribute_has_nested_attributes
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
@@ -15,7 +16,6 @@ ATTRIBUTES_NO_EVAL = ['template_body', 'template']
 class VariableRenderer:
     def __init__(self, local_graph):
         self.local_graph = local_graph
-        self.copy_of_local_graph = deepcopy(local_graph)
         run_async = os.environ.get('RENDER_VARIABLES_ASYNC')
         if not run_async:
             run_async = True
@@ -29,6 +29,7 @@ class VariableRenderer:
             max_workers = int(max_workers)
         self.max_workers = max_workers
         self.done_edges = []
+        self.done_edges_by_origin_vertex = {}
         self.replace_cache = [{}] * len(local_graph.vertices)
 
     def render_variables_from_local_graph(self):
@@ -50,9 +51,20 @@ class VariableRenderer:
             else:
                 for edge_group in edges_groups:
                     self._edge_evaluation_task([edge_group])
-            end_vertices_indexes = list(set([edge.origin for edge in edges_to_render]))
+            self.done_edges += edges_to_render
+            for edge in edges_to_render:
+                origin = edge.origin
+                if origin not in self.done_edges_by_origin_vertex:
+                    self.done_edges_by_origin_vertex[origin] = []
+                self.done_edges_by_origin_vertex[origin].append(edge)
+
+            for edge in edges_to_render:
+                origin_vertex_index = edge.origin
+                out_edges = self.local_graph.out_edges.get(origin_vertex_index)
+                if all(e in self.done_edges_by_origin_vertex.get(origin_vertex_index, []) for e in out_edges):
+                    end_vertices_indexes.append(origin_vertex_index)
             edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
-            edges_to_render = [edge for edge in edges_to_render if edge not in self.done_edges]
+            edges_to_render = list(set([edge for edge in edges_to_render if edge not in self.done_edges]))
             loops += 1
             if loops >= 50:
                 logging.warning(f"Reached 50 graph edge iterations, breaking. Module: {self.local_graph.module.source_dir}")
@@ -70,12 +82,26 @@ class VariableRenderer:
     def evaluate_vertex_attribute_from_edge(self, edge_list):
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
-        origin_vertex_attributes = self.copy_of_local_graph.vertices[edge.origin].attributes
+        origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ''))
 
         referenced_vertices = get_referenced_vertices_in_value(value=val_to_eval, aliases={},
                                                                resources_types=self.local_graph.get_resources_types_in_graph())
-        extend_referenced_vertices_with_tf_vars(referenced_vertices)
+        if not referenced_vertices:
+            origin_vertex = self.local_graph.vertices[edge.origin]
+            destination_vertex = self.local_graph.vertices[edge.dest]
+            if origin_vertex.block_type == BlockType.VARIABLE and destination_vertex.block_type == BlockType.MODULE:
+                self.update_evaluated_value(changed_attribute_key=edge.label,
+                                            changed_attribute_value=destination_vertex.attributes[origin_vertex.name], vertex=edge.origin,
+                                            change_origin_id=edge.dest, attribute_at_dest=edge.label)
+                return
+            if origin_vertex.block_type == BlockType.VARIABLE and destination_vertex.block_type == BlockType.TF_VARIABLE:
+                self.update_evaluated_value(changed_attribute_key=edge.label,
+                                            changed_attribute_value=destination_vertex.attributes['default'],
+                                            vertex=edge.origin,
+                                            change_origin_id=edge.dest, attribute_at_dest=edge.label)
+                return
+
         modified_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(modified_vertex_attributes.get(edge.label, ''))
         origin_val = deepcopy(val_to_eval)
@@ -98,9 +124,15 @@ class VariableRenderer:
                 if not multiple_edges and val_to_eval != origin_val:
                     self.update_evaluated_value(changed_attribute_key=edge.label,
                                                 changed_attribute_value=val_to_eval, vertex=edge.origin, change_origin_id=edge.dest, attribute_at_dest=key_path_in_dest_vertex)
+
         if multiple_edges and val_to_eval != origin_val:
             self.update_evaluated_value(changed_attribute_key=edge.label,
                                         changed_attribute_value=val_to_eval, vertex=edge.origin, change_origin_id=edge.dest, attribute_at_dest=first_key_path)
+
+        # Avoid loops on output => output edges
+        if self.local_graph.vertices[edge.origin].block_type == BlockType.OUTPUT and \
+                self.local_graph.vertices[edge.dest].block_type == BlockType.OUTPUT:
+            self.done_edges.append(edge)
 
     def extract_value_from_vertex(self, key_path, attributes):
         for i in range(len(key_path)):
@@ -213,6 +245,8 @@ class VariableRenderer:
                 lst_curr_val = curr_val
                 if not isinstance(lst_curr_val, list):
                     lst_curr_val = [lst_curr_val]
+                if len(lst_curr_val) > 0 and isinstance(lst_curr_val[0], Tree):
+                    lst_curr_val[0] = str(lst_curr_val[0])
                 evaluated_lst = []
                 for inner_val in lst_curr_val:
                     if isinstance(inner_val, str) and not any(c in inner_val for c in ["{", "}", "[", "]", "="])\

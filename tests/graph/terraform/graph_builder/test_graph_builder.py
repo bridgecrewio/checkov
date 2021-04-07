@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_manager import GraphManager
 from checkov.terraform.parser import external_modules_download_path
 
@@ -94,14 +95,13 @@ class TestGraphBuilder(TestCase):
             BlockType.VARIABLE: 5,
             BlockType.RESOURCE: 5,
             BlockType.OUTPUT: 3,
-            BlockType.MODULE: 3,
+            BlockType.MODULE: 2,
             BlockType.DATA: 1,
         }
 
         for block_type, count in expected_vertices_num_by_type.items():
             self.assertEqual(count, len(vertices_by_block_type[block_type]))
 
-        module_all_notifications = self.get_vertex_by_name_and_type(local_graph, BlockType.MODULE, 'all_notifications')
         output_this_lambda_func_arn = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT,
                                                                        'this_lambda_function_arn')
         output_this_lambda_func_name = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT,
@@ -117,12 +117,6 @@ class TestGraphBuilder(TestCase):
                         expected_label='value')
         self.check_edge(local_graph, node_from=output_this_lambda_func_name, node_to=resource_aws_lambda_function,
                         expected_label='value')
-        self.check_edge(local_graph, node_from=module_all_notifications, node_to=output_this_lambda_func_name,
-                        expected_label='lambda_notifications.lambda1.function_name')
-        self.check_edge(local_graph, node_from=module_all_notifications, node_to=output_this_lambda_func_arn,
-                        expected_label='lambda_notifications.lambda1.function_arn')
-        self.check_edge(local_graph, node_from=module_all_notifications, node_to=output_this_s3_bucket_id,
-                        expected_label='bucket')
         self.check_edge(local_graph, node_from=output_this_s3_bucket_id, node_to=resource_aws_s3_bucket_policy,
                         expected_label='value')
         self.check_edge(local_graph, node_from=output_this_s3_bucket_id, node_to=resource_aws_s3_bucket,
@@ -183,3 +177,20 @@ class TestGraphBuilder(TestCase):
                         expected_label="spec.template.spec.container.name")
         self.check_edge(local_graph, node_from=resource_kubernetes_deployment, node_to=locals_name,
                         expected_label="spec.template.spec.volume.1.config_map.name")
+
+    def test_blocks_from_local_graph_module(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
+        graph_manager = GraphManager(NetworkxConnector())
+        local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+        tf, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
+        found_results = 0
+        for key, value in tf.items():
+            if key.startswith(os.path.join(os.path.dirname(resources_dir), 's3_inner_modules', 'inner', 'main.tf')):
+                conf = value['resource'][0]['aws_s3_bucket']['inner_s3']
+                if 'stage/main' in key or 'prod/main' in key:
+                    self.assertTrue(conf['versioning'][0]['enabled'][0])
+                    found_results += 1
+                elif 'test/main' in key:
+                    self.assertFalse(conf['versioning'][0]['enabled'][0])
+                    found_results += 1
+        self.assertEqual(found_results, 3)
