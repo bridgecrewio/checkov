@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Suppressing and Skipping Policies
-order: 3
+order: 5
 ---
 Like any static-analysis tool, suppression is limited by its analysis scope.
 For example, if a resource is managed manually, or using configuration management tools, a suppression can be inserted as a simple code annotation.
