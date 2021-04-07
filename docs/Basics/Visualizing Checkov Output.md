@@ -6,7 +6,7 @@ order: 4
 ---
 
 You can integrate Checkov with Bridgecrew to view the results of Checkov scans in the Bridgecrew platform.
-![Bridgecrew Dashboard](/bridgecrew-dashboard.png)
+![Bridgecrew Dashboard](bridgecrew-dashboard.png)
 
 ## Integration
 
@@ -64,7 +64,7 @@ To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend th
 ## Bridgecrew platform view
 
 After successfully executing, scan results are persisted in [Bridgecrew](https://www.bridgecrew.cloud), and can be seen in the [Incidents screen](https://www.bridgecrew.cloud/incidents).
-![Bridgecrew Incidents screen](/bridgecrew-incidents.png)
+![Bridgecrew Incidents screen](bridgecrew-incidents.png)
 
 ## Example Usage
 
