@@ -6,29 +6,35 @@ order: 5
 ---
 
 You can integrate Checkov with Bridgecrew to view the results of Checkov scans in the Bridgecrew platform.
-![Bridgecrew Dashboard](/bridgecrew-dashboard)
+![Bridgecrew Dashboard](/bridgecrew-dashboard.png)
 
-## Integrate
+## Integration
 
-### Get an API Token
+### Get your API Token
 
 To get a Bridgecrew issued API token:
 
 1. Sign up for a free [Bridgecrew account](https://www.bridgecrew.cloud/).
-2. From the [Integrations page](https://www.bridgecrew.cloud/integrations) and select **API Token**.
+2. Navigate to the [Integrations page](https://www.bridgecrew.cloud/integrations) and select **API Token**.
 
-![API Token](api-token)
-3. Copy the API key.
+![API Token](api-token.gif)
+3. Copy the API token.
 
 ## Execution
 
-After acquiring the API key, run Checkov as follows:
+After acquiring the API token, run Checkov as follows:
 
-- `checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <branch>`
+```shell
+checkov -d <directory> --bc-api-key <key> --repo-id <repo_id> --branch <branch>
+```
+
 Or by using the `-f` file flag:
-- `checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <branch>`
 
-The table below details the arguments used when executing the API key.
+```shell
+checkov -f <file_1> <file_2> ... <file_n> --bc-api-key <key> --repo-id <repo_id> --branch <branch>
+```
+
+The table below details the arguments used when executing the API token:
 
 | Argument | Description |
 | -------- | ----------- |
@@ -38,7 +44,7 @@ The table below details the arguments used when executing the API key.
 
 ### Environment Variables
 
-We strongly recommend that Checkov use environment variables that enrich Bridgecrew's context with CI/CD systems data.
+To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend that Checkov uses environment variables.
 
 | Environment Variable | Description | Example |
 | -------- | ----------- | ----------- |
@@ -55,10 +61,10 @@ We strongly recommend that Checkov use environment variables that enrich Bridgec
 | BC_REPOSITORY_URL | Link to the GitHub repository | https://github.com/bridgecrewio/checkov/ |
 | BC_SOURCE | Name of CI system being integrated | githubActions |
 
-## Bridgecrew platform
+## Bridgecrew platform view
 
-After successfully terminating, scan results are persisted in [Bridgecrew](https://www.bridgecrew.cloud), and can be seen in the [Incidents screen](https://www.bridgecrew.cloud/incidents).
-![Bridgecrew Incidents screen](/bridgecrew-incidents)
+After successfully executing, scan results are persisted in [Bridgecrew](https://www.bridgecrew.cloud), and can be seen in the [Incidents screen](https://www.bridgecrew.cloud/incidents).
+![Bridgecrew Incidents screen](/bridgecrew-incidents.png)
 
 ## Example Usage
 
