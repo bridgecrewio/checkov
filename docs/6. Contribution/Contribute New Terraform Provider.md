@@ -1,15 +1,18 @@
-# Contributing a new Provider
-
+---
+layout: default
+published: true
+title: Contribute New Terraform Provider
+order: 2
+---
 In this example we'll add support for a new Terraform Provider, the Linode Cloud platform.
 
+## Add Resource Checks for a New Provider
 
-## Add resource checks for a new provider
+This check is going to examine resources of the type: `linode_instance`, to ensure they have the property `authorised_keys` set.
 
-This check is going to examine resources of the type: **linode_instance**, to ensure they have the property **authorised_keys** set.
+### Add a Test
 
-### Add a test
-
-First create a new folder **tests/terraform/checks/resource/linode/** and add **test_authorised_keys.py** with this:
+First create a new folder `tests/terraform/checks/resource/linode/` and add `test_authorised_keys.py` using the code below:
 
 ```python
 import unittest
@@ -44,14 +47,11 @@ if __name__ == '__main__':
     unittest.main()
 ```
 
-Add a placeholder file at **tests/terraform/checks/resource/linode/__init__.py**
+Add a placeholder file at `tests/terraform/checks/resource/linode/__init__.py`
 
-```python
-```
+### Add a Check
 
-### Add the check
-
-Create the folder **checkov/checkov/terraform/checks/resource/linode** and add **authorized_keys.py** with:
+Create the folder `checkov/checkov/terraform/checks/resource/linode` and add `authorized_keys.py`:
 
 ```python
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -75,7 +75,7 @@ class authorized_keys(BaseResourceCheck):
 check = authorized_keys() 
 ```
 
-And also add **checkov/terraform/checks/resource/linode/__init__.py** with:
+And also add `checkov/terraform/checks/resource/linode/__init__.py`:
 
 ```python
 from os.path import dirname, basename, isfile, join
@@ -84,10 +84,9 @@ modules = glob.glob(join(dirname(__file__), "*.py"))
 __all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
 ```
 
-### Include the checks
+### Include Checks
 
-In **checkov/terraform/checks/resource/__init__.py**, update include Linode resources with the entry "from checkov.terraform.checks.resource.linode import * ".
-
+In `checkov/terraform/checks/resource/__init__.py`, update include Linode resources with the entry `from checkov.terraform.checks.resource.linode import *`.
 This will ensure that this and any future Linode resource test are included in Checkov runs:
 
 ```python
@@ -97,13 +96,13 @@ from checkov.terraform.checks.resource.github import *
 from checkov.terraform.checks.resource.linode import * 
 ```
 
-## Add new Provider checks
+## Add New Provider Checks
 
-This Provider check verifies that the user hasn't added their Linode token secret to their file. Adding that to a Public repository, well that would be bad, very bad.
+This Provider check verifies that the user hasn't added their Linode secret token to their file. Adding the secret token to a Public repository would cause many problems.
 
-### Adding a test
+### Adding a Test
 
-Create the folder **tests/terraform/checks/provider/linode/** and **test_credentials.py**
+Create the folder `tests/terraform/checks/provider/linode/` and `test_credentials.py`
 
 ```python
 import unittest
@@ -129,14 +128,11 @@ if __name__ == '__main__':
     unittest.main()
 ```
 
-Then add the placeholder **tests/terraform/checks/provider/linode/__init__.py**
+Then add the placeholder `tests/terraform/checks/provider/linode/__init__.py`
 
-```python
-```
+### Add the Provider Check
 
-### Add the Provider check
-
-Create a directory **checkov/terraform/checks/provider/linode** and add **credentials.py**
+Create a directory `checkov/terraform/checks/provider/linode` and add `credentials.py`
 
 ```python
 import re
@@ -171,9 +167,8 @@ class LinodeCredentials(BaseProviderCheck):
 check = LinodeCredentials()
 ```
 
-And also **checkov/terraform/checks/provider/linode/__init__.py**
-
-Update the security constants **checkov/common/models/consts.py** with the new pattern.
+And also `checkov/terraform/checks/provider/linode/__init__.py`
+Update the security constants `checkov/common/models/consts.py` with the new pattern.
 
 ```python
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
@@ -182,7 +177,6 @@ DOCKER_IMAGE_REGEX = r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)'
 access_key_pattern = "(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])" # nosec
 secret_key_pattern = "(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])" # nosec
 linode_token_pattern ="(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])" # nosec
-
 ```
 
 ```python
@@ -193,13 +187,13 @@ modules = glob.glob(join(dirname(__file__), "*.py"))
 __all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
 ```
 
-### Include the Provider checks
+### Include the Provider Checks
 
-Update **checkov/terraform/checks/provider/__init__.py** with "from checkov.terraform.checks.provider.linode import *" making it:
+Update `checkov/terraform/checks/provider/__init__.py` with `from checkov.terraform.checks.provider.linode import *`, making it:
 
 ```python
 from checkov.terraform.checks.provider.aws import *
 from checkov.terraform.checks.provider.linode import *
 ```
 
-So there you have it, 2 new checks, one for the provider, one for your resource and a newly supported Terraform Provider.
+So there you have it! Two new checks—one for your resource and a newly supported Terraform Provider.

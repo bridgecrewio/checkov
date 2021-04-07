@@ -1,21 +1,16 @@
 ---
 layout: default
 published: true
-title: Credentials scans
-order: 7
+title: Scanning Credentials and Secrets
+order: 4
 ---
 
-# Credentials scans
+Checkov can scan for a number of different common credentials such as AWS access keys, Azure service credentials, or private keys that are hard-coded in a Terraform code block.
+See list of regular expressions [here](https://github.com/bridgecrewio/checkov/blob/master/checkov/common/util/secrets.py).
 
-Cloud account secrets are a priceless target for an attacker to utilize cloud resources, leak data or harm the application infrastructure. 
+Let’s assume we have the following Terraform provider block:
 
-Checkov can scan for a number of different common credentials, such as AWS access keys, Azure, service credentials, or private keys that are hard coded in a terraform code block.
-
-The list of regular expressions is available [here](https://github.com/bridgecrewio/checkov/blob/master/checkov/common/util/secrets.py), and we welcome any contributions to this list.
-
-## Example 
-Let's assume we have the following terraform provider block:
-```hcl-terraform
+```yaml
 # Snippet from  main.tf
 provider "aws" {
   region     = "us-west-2"
@@ -23,20 +18,19 @@ provider "aws" {
   secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 }
 ```
-As mentioned in terraform official docs [here](https://www.terraform.io/docs/providers/aws/index.html#static-credentials):
-"Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system."
 
-Running checkov to detect secrets:
+As stated in Terraform's documentation: “Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.”
 
-```bash
+Run Checkov to detect secrets:
+
+```shell
 checkov -f main.tf
 ```
 
-Will result in the following output:
+This is the output of the scan
 
-```bash
-
-       _               _              
+```text
+      _               _              
    ___| |__   ___  ___| | _______   __
   / __| '_ \ / _ \/ __| |/ / _ \ \ / /
  | (__| | | |  __/ (__|   < (_) \ V / 
@@ -57,13 +51,10 @@ Check: CKV_AWS_41: "Ensure no hard coded AWS access key and secret key exists"
 		3 |   access_key = "AKIAIOSFODNN7EXAMPLE"
 		4 |   secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 		5 | }
-
 ```
+Checkov can also detect secrets defined in lambda variables as shown in the example below.
 
-checkov can also detect secrets defined in lambda variables like the following example:
-
-```hcl-terraform
-
+```yaml
 resource "aws_lambda_function" "test_lambda" {
   filename      = "resources/lambda_function_payload.zip"
   function_name = "${local.resource_prefix.value}-analysis"
@@ -83,10 +74,9 @@ resource "aws_lambda_function" "test_lambda" {
 }
 ```
 
-or in EC2 user data:
+or in EC2 user data as shown in the example below:
 
-```hcl-terraform
-
+```yaml
 resource "aws_instance" "compute_host" {
   # ec2 have plain text secrets in user data
   ami           = "ami-04169656fea786776"
