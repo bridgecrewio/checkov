@@ -28,7 +28,6 @@ class VariableRenderer:
         else:
             max_workers = int(max_workers)
         self.max_workers = max_workers
-        self.done_edges = []
         self.done_edges_by_origin_vertex = {}
         self.replace_cache = [{}] * len(local_graph.vertices)
 
@@ -51,7 +50,6 @@ class VariableRenderer:
             else:
                 for edge_group in edges_groups:
                     self._edge_evaluation_task([edge_group])
-            self.done_edges += edges_to_render
             for edge in edges_to_render:
                 origin = edge.origin
                 if origin not in self.done_edges_by_origin_vertex:
@@ -64,7 +62,7 @@ class VariableRenderer:
                 if all(e in self.done_edges_by_origin_vertex.get(origin_vertex_index, []) for e in out_edges):
                     end_vertices_indexes.append(origin_vertex_index)
             edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
-            edges_to_render = list(set([edge for edge in edges_to_render if edge not in self.done_edges]))
+            edges_to_render = list(set([edge for edge in edges_to_render if edge not in self.done_edges_by_origin_vertex.get(edge.origin, [])]))
             loops += 1
             if loops >= 50:
                 logging.warning(f"Reached 50 graph edge iterations, breaking. Module: {self.local_graph.module.source_dir}")
@@ -132,7 +130,9 @@ class VariableRenderer:
         # Avoid loops on output => output edges
         if self.local_graph.vertices[edge.origin].block_type == BlockType.OUTPUT and \
                 self.local_graph.vertices[edge.dest].block_type == BlockType.OUTPUT:
-            self.done_edges.append(edge)
+            if edge.origin not in self.done_edges_by_origin_vertex:
+                self.done_edges_by_origin_vertex[edge.origin] = []
+            self.done_edges_by_origin_vertex[edge.origin].append(edge)
 
     def extract_value_from_vertex(self, key_path, attributes):
         for i in range(len(key_path)):
