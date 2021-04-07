@@ -2,10 +2,10 @@
 layout: default
 published: true
 title: Reviewing Scan Results
-order: 6
+order: 3
 ---
 
-The results of Checkov scans can be viewed in CLI, JSON or JUnit
+The results of Checkov scans can be viewed in CLI, JSON, or JUnit
 
 ## Scan Result Sample (CLI)
 
@@ -205,3 +205,5 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	Suppress comment: The bucket is a public static content host
 	File: /example.tf:1-25
 ```
+## Visualize Checkov output
+Read more about [sending your Checkov scan results to the Bridgecrew platform](../Basics/Visualizing%Checkov%Output.md).
