@@ -43,7 +43,7 @@ class TestGraphBuilder(TestCase):
             definitions_context = data["definitions_context"]
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertGreaterEqual(len(report.failed_checks), 4)
         self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.skipped_checks), 0)
 
@@ -62,10 +62,10 @@ class TestGraphBuilder(TestCase):
             if record.check_id == 'CKV_AWS_21':
                 found_versioning_failure = True
                 bc = record.breadcrumbs.get('versioning.enabled')
-                self.assertEqual(len(bc), 1)
+                self.assertEqual(len(bc), 2)
                 bc = bc[0]
-                self.assertEqual(bc.get('type'), 'variable')
-                self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'variables.tf')
+                self.assertEqual(bc.get('type'), 'module')
+                self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'examples/complete/main.tf')
 
         self.assertTrue(found_versioning_failure)
 

@@ -1,20 +1,21 @@
 import logging
 import os
 from copy import deepcopy
-from pathlib import PurePosixPath
 
 from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
+from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import \
     ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value, update_dictionary_attribute, \
-    join_trimmed_strings, \
-    filter_sub_keys, extend_referenced_vertices_with_tf_vars, attribute_has_nested_attributes
+    join_trimmed_strings, filter_sub_keys, attribute_has_nested_attributes
 from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.terraform.variable_rendering.renderer import VariableRenderer
+
+MODULE_RESERVED_ATTRIBUTES = ('source', 'version')
 
 
 class LocalGraph:
@@ -75,7 +76,7 @@ class LocalGraph:
                 for variable_vertex_id in matching_variables:
                     variable_vertex = self.vertices[variable_vertex_id]
                     variable_dir = os.path.dirname(variable_vertex.path)
-                    if module_vertex.path in self.module_dependency_map.get(variable_dir):
+                    if module_vertex.path in self.module_dependency_map.get(variable_dir, []):
                         attribute_value = module_vertex.attributes[attribute_name]
                         has_var_reference = get_referenced_vertices_in_value(value=attribute_value, aliases={},
                                                             resources_types=self.get_resources_types_in_graph())
@@ -120,6 +121,9 @@ class LocalGraph:
             if block_dirs_to_modules.get(dir_name):
                 continue
             for path_to_module in paths_to_modules:
+                if not path_to_module:
+                    continue
+                path_to_module = unify_dependency_path(path_to_module)
                 module_list = self.map_path_to_module.get(path_to_module, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
@@ -147,7 +151,6 @@ class LocalGraph:
                 referenced_vertices = get_referenced_vertices_in_value(value=vertex.attributes[attribute_key],
                                                                        aliases=aliases,
                                                                        resources_types=self.get_resources_types_in_graph())
-                extend_referenced_vertices_with_tf_vars(referenced_vertices)
                 for vertex_reference in referenced_vertices:
                     # for certain blocks such as data and resource, the block name is composed from several parts.
                     # the purpose of the loop is to avoid not finding the node if the name has several parts
@@ -157,15 +160,18 @@ class LocalGraph:
                         if vertex.module_dependency:
                             dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
                                                                                        reference_name,
+                                                                                       vertex.path,
                                                                                        vertex.module_dependency)
                             if dest_node_index == -1:
                                 dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
                                                                                            reference_name,
+                                                                                           vertex.path,
                                                                                            vertex.path)
                         else:
                             dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
                                                                                        reference_name,
-                                                                                       vertex.path)
+                                                                                       vertex.path,
+                                                                                       vertex.module_dependency)
                         if dest_node_index > -1 and origin_node_index > -1:
                             if vertex_reference.block_type == BlockType.MODULE:
                                 try:
@@ -178,6 +184,32 @@ class LocalGraph:
                             else:
                                 self._create_edge(origin_node_index, dest_node_index, attribute_key)
                             break
+
+            if vertex.block_type == BlockType.MODULE:
+                target_path = vertex.path
+                if vertex.module_dependency != '':
+                    target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+                target_variables = list(filter(lambda v: self.vertices[v].module_dependency == target_path,
+                                               self.vertices_by_block_type.get(BlockType.VARIABLE, {})))
+                for attribute, value in vertex.attributes.items():
+                    if attribute in MODULE_RESERVED_ATTRIBUTES:
+                        continue
+                    target_variable = None
+                    for v in target_variables:
+                        if self.vertices[v].name == attribute:
+                            target_variable = v
+                            break
+                    if target_variable is not None:
+                        self._create_edge(target_variable, origin_node_index, 'default')
+            elif vertex.block_type == BlockType.TF_VARIABLE:
+                if vertex.module_dependency != '':
+                    target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+                # Assuming the tfvars file is in the same directory as the variables file (best practice)
+                target_variables = list(filter(lambda v: os.path.dirname(self.vertices[v].path) == os.path.dirname(vertex.path),
+                                               self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])))
+                if len(target_variables) == 1:
+                    self._create_edge(target_variables[0], origin_node_index, 'default')
+
 
     def _create_edge(self, origin_vertex_index, dest_vertex_index, label):
         if origin_vertex_index == dest_vertex_index:
@@ -229,33 +261,19 @@ class LocalGraph:
                     break
         return os.path.realpath(dest_module_path)
 
-    def _find_vertex_index_relative_to_path(self, block_type, name, path):
-        origin_path = PurePosixPath(os.path.realpath(path))
-        relative_vertices = {}
+    def _find_vertex_index_relative_to_path(self, block_type, name, block_path, module_path):
+        relative_vertices = []
         possible_vertices = self.vertices_block_name_map.get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
-            if vertex.name == name:
-                vertex_dir = os.path.dirname(vertex.path)
-                paths_key_in_cache = f'{origin_path} {vertex_dir}'
-                if paths_key_in_cache in self.relative_paths_cache:
-                    found_path = self.relative_paths_cache[paths_key_in_cache]
-                    if found_path:
-                        relative_vertices[vertex_index] = found_path
-                else:
-                    try:
-                        found_path = origin_path.relative_to(os.path.realpath(vertex_dir))
-                        relative_vertices[vertex_index] = found_path
-                        self.relative_paths_cache[paths_key_in_cache] = found_path
-                    except ValueError:
-                        self.relative_paths_cache[paths_key_in_cache] = None
+            if vertex.module_dependency == module_path:
+                relative_vertices.append(vertex_index)
 
-        relevant_vertices_indexes = list(relative_vertices.keys())
-        if len(list(relative_vertices.keys())) == 1:
-            return list(relative_vertices.keys())[0]
-        return self._find_vertex_with_longest_path_match(relevant_vertices_indexes, path)
+        if len(relative_vertices) == 1:
+            return relative_vertices[0]
+        return self._find_vertex_with_longest_path_match(relative_vertices, block_path)
 
-    def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes, origin_path):
+    def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes, origin_path) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ''
         for vertex_index in relevant_vertices_indexes:

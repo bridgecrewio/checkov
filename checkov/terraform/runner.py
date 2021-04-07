@@ -79,7 +79,8 @@ class Runner(BaseRunner):
                 root_folder = os.path.abspath(root_folder)
 
                 local_graph, tf_definitions = \
-                    self.graph_manager.build_graph_from_source_directory(root_folder, self.graph_class,
+                    self.graph_manager.build_graph_from_source_directory(root_folder,
+                                                                         local_graph_class=self.graph_class,
                                                                          parsing_errors=parsing_errors)
             elif files:
                 files = [os.path.abspath(file) for file in files]
@@ -107,12 +108,12 @@ class Runner(BaseRunner):
 
         report.add_parsing_errors(parsing_errors.keys())
 
-        graph_report = self.get_graph_checks_report(root_folder, self.breadcrumbs, runner_filter)
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
         merge_reports(report, graph_report)
 
         return report
 
-    def get_graph_checks_report(self, root_folder, breadcrumbs, runner_filter: RunnerFilter):
+    def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         registry = Registry(parser=NXGraphCheckParser())
         report = Report(self.check_type)
         checks_results = {}
@@ -145,7 +146,7 @@ class Runner(BaseRunner):
                                     evaluations=entity_evaluations,
                                     check_class=check.__class__.__module__,
                                     file_abs_path=os.path.abspath(full_file_path))
-                    breadcrumb = breadcrumbs.get(record.file_path, {}).get(record.resource)
+                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                     if breadcrumb:
                         record = GraphRecord(record, breadcrumb)
 

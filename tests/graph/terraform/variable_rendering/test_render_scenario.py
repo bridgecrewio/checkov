@@ -5,6 +5,7 @@ from unittest.case import TestCase
 
 import jmespath
 
+from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_manager import GraphManager
@@ -126,6 +127,8 @@ class TestRendererScenarios(TestCase):
         self.go("bogus_function")
 
     def go(self, dir_name, different_expected=None, replace_expected=False):
+        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
+        os.environ['LOG_LEVEL'] = 'INFO'
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../../terraform/parser/resources/parser_scenarios', dir_name))
@@ -242,6 +245,14 @@ def _make_module_ref_absolute(match, dir_path) -> str:
         module_location = os.path.join(dir_path, module_location)
 
     module_referrer = match[2]
-    if not os.path.isabs(module_referrer):
+    if PATH_SEPARATOR in module_referrer:
+        module_referrer_fixed = []
+        if '#' in module_referrer:
+            module_referrer = module_referrer[:-2]
+        for ref in module_referrer.split(PATH_SEPARATOR):
+            if not os.path.isabs(ref):
+                module_referrer_fixed.append(os.path.join(dir_path, ref))
+        module_referrer = unify_dependency_path(module_referrer_fixed)
+    else:
         module_referrer = os.path.join(dir_path, module_referrer)
     return f"{module_location}[{module_referrer}#{match[3]}]"

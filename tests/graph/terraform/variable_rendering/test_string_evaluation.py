@@ -265,7 +265,7 @@ class TestTerraformEvaluation(TestCase):
     def test_replace_interpolation(self):
         original_str = '${mapped-bucket-name}[module.bucket.name]-works-yay'
         replaced = replace_string_value(original_str, "module.bucket.name", "module-input-bucket", keep_origin=False)
-        expected = 'mapped-bucket-name[module-input-bucket]-works-yay'
+        expected = '${mapped-bucket-name}[module-input-bucket]-works-yay'
         self.assertEqual(expected, replaced)
 
     def test_remove_interpolation1(self):

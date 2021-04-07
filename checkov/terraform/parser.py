@@ -13,6 +13,7 @@ import hcl2
 from checkov.common.runners.base_runner import filter_ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.variables.context import EvaluationContext
+from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
@@ -21,6 +22,7 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
 from checkov.terraform.parser_utils import eval_string, find_var_blocks
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
+
 
 def _filter_ignored_directories(d_names):
     filter_ignored_directories(d_names)
@@ -155,7 +157,7 @@ class Parser:
         var_value_and_file_map: Dict[str, Tuple[Any, str]] = {}
         hcl_tfvars: Optional[os.DirEntry] = None
         json_tfvars: Optional[os.DirEntry] = None
-        auto_vars_files: Optional[List[os.DirEntry]] = None      # lazy creation
+        auto_vars_files: Optional[List[os.DirEntry]] = None  # lazy creation
         for file in os.scandir(directory):
             # Ignore directories and hidden files
             try:
@@ -186,7 +188,7 @@ class Parser:
             else:
                 continue
 
-            if not data:        # failed loads or empty files
+            if not data:  # failed loads or empty files
                 continue
 
             self.out_definitions[file.path] = data
@@ -218,29 +220,29 @@ class Parser:
         #               their filenames.
         #          Overriding everything else, variables form `specified_vars`, which are considered
         #          directly set.
-        for key, value in self.env_vars.items():                                 # env vars
+        for key, value in self.env_vars.items():  # env vars
             if not key.startswith("TF_VAR_"):
                 continue
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
             self.external_variables_data.append((key[7:], value, f"env:{key}"))
-        if hcl_tfvars:                                                      # terraform.tfvars
+        if hcl_tfvars:  # terraform.tfvars
             data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors,
                                         clean_definitions=False)
             if data:
                 var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
-        if json_tfvars:                                                     # terraform.tfvars.json
+        if json_tfvars:  # terraform.tfvars.json
             data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-        if auto_vars_files:                                                 # *.auto.tfvars / *.auto.tfvars.json
+        if auto_vars_files:  # *.auto.tfvars / *.auto.tfvars.json
             for var_file in sorted(auto_vars_files, key=lambda e: e.name):
                 data = _load_or_die_quietly(var_file, self.out_parsing_errors)
                 if data:
                     var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
                     self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
-        if specified_vars:                                                  # specified
+        if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
 
@@ -261,7 +263,7 @@ class Parser:
         #          parameters don't resolve. So, if we hit a spot where resolution doesn't change anything
         #          and there are still modules to be loaded, they will be forced on the next pass.
         force_final_module_load = False
-        for i in range(0, 10):      # circuit breaker - no more than 10 loops
+        for i in range(0, 10):  # circuit breaker - no more than 10 loops
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
@@ -273,7 +275,7 @@ class Parser:
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
             if not has_more_modules:
-                break       # nothing more to do
+                break  # nothing more to do
             elif not made_var_changes:
                 # If there are more modules to load but no variables were resolved, then to a final module
                 # load, forcing things through without complete resolution.
@@ -401,7 +403,7 @@ class Parser:
                                 del self.out_definitions[key]
                                 if new_key not in resolved_loc_list:
                                     resolved_loc_list.append(new_key)
-                            resolved_loc_list.sort()        # For testing, need predictable ordering
+                            resolved_loc_list.sort()  # For testing, need predictable ordering
 
                             deep_merge.merge(all_module_definitions, module_definitions)
                     except Exception as e:
@@ -425,9 +427,9 @@ class Parser:
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
-        module = self.get_new_module(source_dir)
+        module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
+        module = self.get_new_module(source_dir, module_dependency_map, dep_index_mapping)
         self.add_tfvars(module, source)
-        module_dependency_map, tf_definitions = self.get_module_dependency_map(tf_definitions)
         copy_of_tf_definitions = deepcopy(tf_definitions)
         for file_path in copy_of_tf_definitions:
             blocks = copy_of_tf_definitions.get(file_path)
@@ -477,6 +479,47 @@ class Parser:
         return result_values
 
     @staticmethod
+    def get_next_vertices(evaluated_files: list, unevaluated_files: list) -> (list, list):
+        """
+        This function implements a lazy separation of levels for the evaluated files. It receives the evaluated
+        files, and returns 2 lists:
+        1. The next level of files - files from the unevaluated_files which have no unresolved dependency (either
+            no dependency or all dependencies were evaluated).
+        2. unevaluated - files which have yet to be evaluated, and still have pending dependencies
+
+        Let's say we have this dependency tree:
+        a -> b
+        x -> b
+        y -> c
+        z -> b
+        b -> c
+        c -> d
+
+        The first run will return [a, y, x, z] as the next level since all of them have no dependencies
+        The second run with the evaluated being [a, y, x, z] will return [b] as the next level.
+        Please mind that [c] has some resolved dependencies (from y), but has unresolved dependencies from [b].
+        The third run will return [c], and the fourth will return [d].
+        """
+        next_level, unevaluated, do_not_eval_yet = [], [], []
+        for key in unevaluated_files:
+            found = False
+            for eval_key in evaluated_files:
+                if eval_key in key:
+                    found = True
+                    break
+            if not found:
+                do_not_eval_yet.append(key.split('[')[0])
+                unevaluated.append(key)
+            else:
+                next_level.append(key)
+
+        move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
+        for k in move_to_uneval:
+            next_level.remove(k)
+            unevaluated.append(k)
+        return next_level, unevaluated
+
+    @staticmethod
     def get_module_dependency_map(tf_definitions):
         """
         :param tf_definitions, with paths in format 'dir/main.tf[module_dir/main.tf#0]'
@@ -486,18 +529,46 @@ class Parser:
         """
         module_dependency_map = {}
         copy_of_tf_definitions = {}
-        for file_path in tf_definitions.keys():
-            path, module_dependency, _ = remove_module_dependency_in_path(file_path)
-            dir_name = os.path.dirname(path)
-            if not module_dependency_map.get(dir_name):
-                module_dependency_map[dir_name] = set()
-            module_dependency_map[dir_name].add(module_dependency)
+        dep_index_mapping = {}
+        definitions_keys = list(tf_definitions.keys())
+        origin_keys = list(filter(lambda k: not k.endswith(']'), definitions_keys))
+        unevaluated_keys = list(filter(lambda k: k.endswith(']'), definitions_keys))
+        for file_path in origin_keys:
+            dir_name = os.path.dirname(file_path)
+            module_dependency_map[dir_name] = [[]]
             copy_of_tf_definitions[file_path] = deepcopy(tf_definitions[file_path])
-        return module_dependency_map, copy_of_tf_definitions
+
+        next_level, unevaluated_keys = Parser.get_next_vertices(origin_keys, unevaluated_keys)
+        while next_level:
+            for file_path in next_level:
+                path, module_dependency, module_dependency_num = remove_module_dependency_in_path(file_path)
+                dir_name = os.path.dirname(path)
+                current_deps = deepcopy(module_dependency_map[os.path.dirname(module_dependency)])
+                for dep in current_deps:
+                    dep.append(module_dependency)
+                if dir_name not in module_dependency_map:
+                    module_dependency_map[dir_name] = current_deps
+                elif current_deps not in module_dependency_map[dir_name]:
+                    module_dependency_map[dir_name] += current_deps
+                copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
+                origin_keys.append(path)
+                dep_index_mapping[path] = module_dependency_num
+            next_level, unevaluated_keys = Parser.get_next_vertices(origin_keys, unevaluated_keys)
+        for key, dep_trails in module_dependency_map.items():
+            hashes = set()
+            deduped = []
+            for trail in dep_trails:
+                hash = unify_dependency_path(trail)
+                if hash in hashes:
+                    continue
+                hashes.add(hash)
+                deduped.append(trail)
+            module_dependency_map[key] = deduped
+        return module_dependency_map, copy_of_tf_definitions, dep_index_mapping
 
     @staticmethod
-    def get_new_module(source_dir):
-        return Module(source_dir, encode=False)
+    def get_new_module(source_dir, module_dependency_map, dep_index_mapping):
+        return Module(source_dir, module_dependency_map, dep_index_mapping, encode=False)
 
     def add_tfvars(self, module, source):
         if not self.external_variables_data:
@@ -506,6 +577,7 @@ class Parser:
             if ".tfvars" in path:
                 block = {var_name: {"default": default}}
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
+
 
 def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict,
                          clean_definitions: bool = True) -> Optional[Mapping]:

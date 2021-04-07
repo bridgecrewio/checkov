@@ -33,7 +33,7 @@ expected_eks = {
             "version": ["1.19"],
             "vpc_config": {
                 "security_group_ids": ["aws_security_group.master.id"],
-                "subnet_ids": Tree('full_splat_expr_term', ['aws_subnet.eks', 'id'])
+                "subnet_ids": "Tree('full_splat_expr_term', ['aws_subnet.eks', 'id'])"
             },
         }
     }
