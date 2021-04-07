@@ -5,7 +5,7 @@ title: Quick Start
 order: 3
 ---
 This Quick Start guide shows how to install Checkov, run a scan, and analyze the results.
-For more advanced configuration, see the [CLI Reference](/cli-command-reference) and the rest of this documentation.
+For more advanced configuration, see the [CLI Reference](../Basics/CLI%Command%Reference.md) and the rest of this documentation.
 
 ## Install Checkov from PyPI
 
@@ -152,22 +152,24 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 ## Visualizing scan output
 
-In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free account on Bridgecrew Cloud. See [Visualizing Scan Results](doc:visualizing-scan-results).
+In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](../Basics/Visualizing%Checkov%Output.md).
+
 ![Visualizing Scan Output with Bridgecrew](visualizing-scan-output.gif)
 
 ## Integrations
 
-You can also integrate Checkov with:
+In addition to integrating with your code repository, Checkov can also integrate with your automated build pipeline via CI/CD providers. When your build tests run, Checkov will scan your infrastructure as code files for misconfigurations.
+You can integrate Checkov with:
 
-* [Jenkins](/jenkins)
-* [Bitbucket Cloud Pipelines](/bitbucket-cloud-pipelines)
-* [Github Actions](/github-actions)
-* [Gitlab CLI](/gitlab-cli)
-* [Kubernetes](/kubernetes)
-* [Terraform Plans](/scan-terraform-plan)  
+* [Jenkins](../Integrations/Jenkins.md)
+* [Bitbucket Cloud Pipelines](../Integrations/Bitbucket%Cloud%Pipelines.md)
+* [GitHub Actions](../Integrations/GitHub%Actions.md)
+* [GitLab CLI](../Integrations/GitLab%CLI.md)
+* [Kubernetes](../Integrations/Kubernetes.md)
+* [Terraform Plans](../Integrations/Terraform%Plans.md)
 
 ## Add-ons
 
-Check out the  [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov).
+To get realtime IaC scanning and in-line fixes directly from your IDE, check out the [Checkov Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov).
 
 _An upcoming release of Checkov will include support for IntelliJ IDE._
