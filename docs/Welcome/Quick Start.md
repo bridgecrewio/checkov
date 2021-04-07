@@ -154,7 +154,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](../Basics/Visualizing%Checkov%Output.md).
 
-![Visualizing Scan Output with Bridgecrew](visualizing-scan-output.gif)
+![Visualizing Scan Output with Bridgecrew](visualizing-scan-results.gif)
 
 ## Integrations
 
