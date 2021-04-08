@@ -60,6 +60,7 @@ jobs:
           pipenv run pytest integration_tests
       - name: Run unit tests
         run: |
+          pipenv install --dev
           pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
           pipenv run python -m coverage html
