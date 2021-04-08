@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Jenkins
-order: 1
+nav_order: 1
 ---
 
 # Integrate Checkov with Jenkins

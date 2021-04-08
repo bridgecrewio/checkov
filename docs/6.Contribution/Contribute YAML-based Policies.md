@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribute YAML-based Policies
-order: 3
+nav_order: 3
 ---
 
 # Contributing YAML-based Custom Policies

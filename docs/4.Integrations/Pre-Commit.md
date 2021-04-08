@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Integrate Checkov with Pre-Commit
-order: 6
+nav_order: 6
 ---
 
 # Pre-Commit

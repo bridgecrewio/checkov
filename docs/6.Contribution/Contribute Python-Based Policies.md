@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribute Python-Based Policies
-order: 2
+nav_order: 2
 ---
 
 # Contributing Python-based Custom Policies
