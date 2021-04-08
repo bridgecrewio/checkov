@@ -4,15 +4,17 @@ published: true
 title: Contribution Overview
 order: 1
 ---
-Checkov users are encouraged to contribute their custom checks, or *Policies* to help increase our existing IaC coverage.
-Our aim is to help close gaps in real-world hardening, assessments, auditing and forensics. In other words, a new check should reflect a policy you think should be globally accepted when provisioning and changing infrastructure.
 
-The main steps in contributing new Policies are:
+#Overview
+Checkov users are encouraged to contribute their custom Policies to help increase our existing IaC coverage.
+Our aim is to help close gaps in real-world hardening, assessments, auditing and forensics. In other words, we specifically encourage contribution of new Policies that you think should be globally accepted when provisioning and changing infrastructure.
 
-1. Implementation
-2. Testing
-3. Pull Request
 
+The main aspects of contributing new Policies are:
+  * Preparing the prerequisites
+  * Creating and Testing the Custom Policy (either YAML or Python format)
+  * Pull Request
+ 
 ## Scripted Guide
 
 ### Contribution Stages
