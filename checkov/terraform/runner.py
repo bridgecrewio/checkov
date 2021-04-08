@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 import dpath.util
 
@@ -35,7 +35,7 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-
+graph_registry = Registry(parser=NXGraphCheckParser())
 
 class Runner(BaseRunner):
     check_type = "terraform"
@@ -68,9 +68,7 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                resource_registry.load_external_checks(directory, runner_filter)
+        self.load_external_checks(external_checks_dir, runner_filter)
 
         if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
             self.tf_definitions = {}
@@ -113,11 +111,16 @@ class Runner(BaseRunner):
 
         return report
 
+    def load_external_checks(self, external_checks_dir: List[str], runner_filter: RunnerFilter):
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                resource_registry.load_external_checks(directory)
+                graph_registry.load_external_checks(directory)
+
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
-        registry = Registry(parser=NXGraphCheckParser())
         report = Report(self.check_type)
         checks_results = {}
-        for r in self.external_registries + [registry]:
+        for r in self.external_registries + [graph_registry]:
             r.load_checks()
             registry_results = r.run_checks(self.graph_manager.get_reader_traversal(), runner_filter)
             checks_results = {**checks_results, **registry_results}

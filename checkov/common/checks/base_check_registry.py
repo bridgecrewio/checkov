@@ -42,7 +42,8 @@ class BaseCheckRegistry(object):
 
         for entity in check.supported_entities:
             checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
-            checks[entity].append(check)
+            if not any(c.id == check.id for c in checks[entity]):
+                checks[entity].append(check)
 
     @staticmethod
     def _is_wildcard(entity):
@@ -134,7 +135,7 @@ class BaseCheckRegistry(object):
             return True
         return False
 
-    def load_external_checks(self, directory, runner_filter):
+    def load_external_checks(self, directory):
         """ Browse a directory looking for .py files to import.
 
         Log an error when the directory does not contains an __init__.py or

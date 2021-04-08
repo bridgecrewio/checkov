@@ -25,7 +25,7 @@ class TestRegistry(unittest.TestCase):
     def test_registry_external_check_load(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         external_dir = current_dir + "/example_external_dir/extra_checks"
-        self.registry.load_external_checks(external_dir, RunnerFilter())
+        self.registry.load_external_checks(external_dir)
 
         external_check_loaded = False
         external_check = None

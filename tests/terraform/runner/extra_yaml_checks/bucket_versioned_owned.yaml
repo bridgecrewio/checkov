@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_CUSTOM_1"
+  name: "Ensure bucket has versioning and owner tag"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_s3_bucket"
+      attribute: "tags.Owner"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_s3_bucket"
+      attribute: "versioning.enabled"
+      operator: "equals"
+      value: "true"
