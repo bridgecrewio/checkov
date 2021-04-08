@@ -4,9 +4,11 @@ published: true
 title: YAML Custom Policies
 order: 3
 ---
-Custom Policies created in code (in YAML) support checking a resource’s connection-state and the use of complex AND/OR logic.
+Custom policies created in YAML support checking a resource’s connection state and the use of complex AND/OR logic.
 
-A YAML-based Custom Policy for Checkov consists of sections for the **Metadata** and **Policy Definition**.
+A YAML-based custom policy for Checkov consists of sections for the **Metadata** and **Policy Definition**.
+
+![](policy-definition.png)
 
 ### Metadata
 
@@ -28,34 +30,32 @@ The possible values for category are:
 * SECRETS
 * KUBERNETES
 
-## Policy Definition
+### Policy Definition
 
-A Policy Definition consists of:
+The policy definition consists of:
 
-* **Definition Block(s)**- either *Attribute Block(s)* or *Connection State Block(s)* or both
+* **Definition Block(s)** - either *Attribute Block(s)* or *Connection State Block(s)* or both
 * **Logical Operator(s)** (optional)
 * **Filter**(optional)
-![](policy-definition)
+
 
 ## Types of Definition Blocks
 
-* **Attribute** - The policy describes resources with a certain configuration as defined by a configuration **attribute** and its value (per Terraform), or by the presence/absence of an attribute.
-* **Connection State** - The policy describes resources in a particular **Connection State**; either connected or not connected to another type of resource (for example, a security group).
+* **Attribute Blocks:** The policy describes resources with a certain configuration as defined by a configuration **attribute** and its value (per Terraform), or by the presence/absence of an attribute.
+* **Connection State Blocks** - The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
 
 #### Using AND/OR Logic
-A policy definition may include multiple blocks (**Attribute**, **Connection State** or both), associated by **AND/OR** logic.
+A policy definition may include multiple blocks (**Attribute**, **Connection state** or both), associated by **AND/OR** logic.
 
-## Attribute Block
+## Attribute Blocks
 
-### Overview
+An **Attribute Block** in a policy's definition indicates that a resource will be non-compliant if a certain configuration attribute does not have a specified value or if it exists/doesn't exist.
 
-An **Attribute Block** in a policy's definition, indicates that a resource will be non-compliant if a certain configuration attribute does not have a specified value, or if it exists/doesn't exist.
+Bridgecrew's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
 
-Bridgecrew's Custom Policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both buildtime and runtime resources and for all supported cloud providers.
+### Attribute Block Example
 
-### Attribute - Example
-
-The Attribute Block in the Definition in the example below is used to ensure that a proper backup policy is configured for Redshift clusters.
+The Attribute Block in the `definition` in the example below is used to ensure that a proper back-up policy is configured for Redshift clusters:
 
 ```yaml
 definition:
@@ -103,7 +103,7 @@ In the example presented in the table below, in order to be compliant, `aws_lb` 
 |`aws_lb` `aws_elb` | `aws_security_group` `aws_default_security_group` |
 
 
-### Connection State - Example
+### Connection State Example
 
 The Connection State Block below indicates that to be compliant with the policy, resources of type `aws_lb` or of type `aws_elb` must be connected to either a resource of type `aws_security_group` or a resource of type `aws_default_security_group`.
 
@@ -119,14 +119,14 @@ definition:
        operator: "exists"
 ```
 
-### Connection State: Operators
+### Connection State Condition: Operators
 
 | Operator | Value |
 | ----- | ----- |
 | Exists | `exists` |
 | Not Exists | `not_exists` |
 
-### Connection State: Keys and Values
+### Connection State Condition: Keys and Values
 
 | Key | Type | Values |
 | ----- | ----- | ----- |
@@ -137,10 +137,10 @@ definition:
 
 ## Filters
 
-Filters can be used to limit the types of resources relevant to a condition. Filters are most commonly used for Connection Blocks (for Attribute Blocks you can easily limit the resource type with the resource_type parameter).
-For example, you may want to enforce a policy only for a specific resource type (or types) from specific groups defined in the conditions. Filters are available only for AND logic, at the top level.
+Filters can be used to limit the types of resources relevant to a condition. Filters are most commonly used for Connection Blocks (for Attribute Blocks you can easily limit the resource type with the `resource_type` parameter).
+For example, you may want to enforce a policy only for a specific resource type (or types) from specific groups defined in the conditions. Filters are available only for AND logic at the top level.
 
-### Filter - Example
+### Filter Example
 
 The Custom Policy in this example ensures that all ELBs are attached to security groups as shown in the table below. In line with best practices, connections of this nature should be defined using the `security_groups` key.
 
@@ -166,9 +166,9 @@ defintion:
         operator: "exists"
 ```
 
-The condition above uses AND logic. See [additional examples](doc:custom-policy-examples-1) for complex logic in policy definitions.
+*Note: The condition above uses AND logic. See [additional examples](../Custom%Policies/Examples.md) for complex logic in policy definitions.*
 
-#### Using AND/OR Logic
+### Using AND/OR Logic
 
 The Bridgecrew platform allows you to combine definition blocks using AND/OR operators.
 
@@ -176,7 +176,7 @@ The Bridgecrew platform allows you to combine definition blocks using AND/OR ope
 * Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources.
 Every other logical operator applies within a collection. For example, you can use AND/OR logic in a collection of key-value pairs.
 
-### Example
+#### Example
 
 The logic in the policy definition shown below is:
 `AND[block 1,block 2,OR[block 3,block 4]]`.
@@ -192,4 +192,4 @@ defintion:
                    - #block 4
 ```
 
-[See all examples of Custom Policies in code](doc:custom-policy-examples-1)
+[See all examples of Custom Policies in code](../Custom%Policies/Examples.md)
