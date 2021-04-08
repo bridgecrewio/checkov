@@ -5,6 +5,8 @@ title: Reviewing Scan Results
 order: 5
 ---
 
+# Reviewing Scan Results
+
 The results of Checkov scans can be viewed in CLI, JSON, or JUnit
 
 ## Scan Result Sample (CLI)
