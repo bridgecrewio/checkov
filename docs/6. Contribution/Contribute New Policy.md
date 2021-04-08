@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribute New Policy
-order: 1
+order: 2
 ---
 Checkov users are encouraged to contribute their custom checks, or *Policies* to help increase our existing IaC coverage.
 Our aim is to help close gaps in real-world hardening, assessments, auditing and forensics. In other words, a new check should reflect a policy you think should be globally accepted when provisioning and changing infrastructure.
