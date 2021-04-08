@@ -689,7 +689,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        extra_checks_dir_paths = [current_dir + "/extra_checks", current_dir + "/extra_checks"]
+        extra_checks_dir_paths = [current_dir + "/extra_checks", current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_paths, RunnerFilter())
         found = 0
         for resource_type in scanner.supported_resources:
