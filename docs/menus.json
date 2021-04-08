@@ -1,46 +1,30 @@
 {
   "utility": [
     {
-      "label": "Other Projects",
-      "url": "https://www.google.com",
-      "target": "_blank",
-      "submenu": [
-        {
-          "label": "Submenu Item 1",
-          "url": "https://www.facebook.com",
-          "target": "_self"
-        },
-        {
-          "label": "Submenu Item 2",
-          "url": "https://www.twitter.com",
-          "target": "_blank"
-        }
-      ]
-    },
-    {
       "label": "About Bridgecrew by Prisma Cloud",
-      "url": "https://bridgecrew.io",
+      "url": "https://bridgecrew.io/?utm_source=checkovio&utm_medium=organic_oss&utm_campaign=checkov",
       "target": "_self",
       "submenu": false
     }
   ],
   "main": [
     {
-      "label": "Other Projects",
-      "url": "https://github.com/bridgecrewio/terragoat/",
-      "target": "_blank",
-      "submenu": [
-        {
-          "label": "TerraGoat",
-          "url": "https://github.com/bridgecrewio/terragoat/",
-          "target": "_self"
-        },
-        {
-          "label": "AirIAM",
-          "url": "https://airiam.io",
-          "target": "_blank"
-        }
-      ]
+      "label": "Overview",
+      "url": "/1.Welcome/What%20is%20Checkov.html",
+      "target": "_self",
+      "submenu": false
+    },
+    {
+      "label": "Docs",
+      "url": "/1.Welcome/Quick%20Start.html",
+      "target": "_self",
+      "submenu": false
+    },
+    {
+      "label": "Download",
+      "url": "/2.Basics/Installing%20Checkov.html",
+      "target": "_self",
+      "submenu": false
     }
   ]
 }
