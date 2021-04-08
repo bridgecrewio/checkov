@@ -46,7 +46,8 @@ Enable automated pull/merge request annotations on your repositories without hav
 
 ### Repository Badges
 
-Dynamic git repository badges to show compliance targets or currently failing policies.
+Dynamic git repository badges to show compliance targets or currently failing policies. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/code-repository-badges).
+
 
 ![Readme Badges](readme-badges.png)
 
