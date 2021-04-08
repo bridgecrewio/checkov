@@ -169,7 +169,7 @@ defintion:
         operator: "exists"
 ```
 
-*Note: The condition above uses AND logic. See [additional examples](../Custom%Policies/Examples.md) for complex logic in policy definitions.*
+*Note: The condition above uses AND logic. See [additional examples](https://www.checkov.io/3.Custom%20Policies/Examples.html) for complex logic in policy definitions.*
 
 ### Using AND/OR Logic
 
@@ -195,4 +195,4 @@ defintion:
                    - #block 4
 ```
 
-[See all examples of Custom Policies in code](../3.Custom%20Policies/Examples.md)
+[See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
