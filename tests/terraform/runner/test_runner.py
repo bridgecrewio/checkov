@@ -634,7 +634,9 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         graph_registry.load_checks()
         base_len = len(graph_registry.checks)
-        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        extra_checks_dir_path = current_dir + "/extra_yaml_checks"
+        runner.load_external_checks([extra_checks_dir_path], RunnerFilter())
         self.assertEqual(len(graph_registry.checks), base_len + 1)
         self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
         self.assertEqual(graph_registry.checks[base_len].name, 'Ensure bucket has versioning and owner tag')
@@ -643,11 +645,13 @@ class TestRunnerValid(unittest.TestCase):
     def test_loading_external_checks_yaml_multiple_times(self):
         runner = Runner()
         base_len = len(graph_registry.checks)
-        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
+        runner.load_external_checks(extra_checks_dir_path, RunnerFilter())
         self.assertEqual(len(graph_registry.checks), base_len + 1)
         self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
         self.assertEqual(graph_registry.checks[base_len].name, 'Ensure bucket has versioning and owner tag')
-        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        runner.load_external_checks(extra_checks_dir_path, RunnerFilter())
         self.assertEqual(len(graph_registry.checks), base_len + 1)
         self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
         graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
@@ -655,7 +659,9 @@ class TestRunnerValid(unittest.TestCase):
     def test_loading_external_checks_python(self):
         runner = Runner()
         from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
-        runner.load_external_checks(['extra_checks'], RunnerFilter())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        extra_checks_dir_paths = [current_dir + "/extra_checks"]
+        runner.load_external_checks(extra_checks_dir_paths, RunnerFilter())
         found = 0
         for resource_type in scanner.supported_resources:
             checks = resource_registry.checks[resource_type]
@@ -666,7 +672,9 @@ class TestRunnerValid(unittest.TestCase):
     def test_loading_external_checks_python_multiple_times(self):
         runner = Runner()
         from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
-        runner.load_external_checks(['extra_checks', 'extra_checks'], RunnerFilter())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        extra_checks_dir_paths = [current_dir + "/extra_checks", current_dir + "/extra_checks"]
+        runner.load_external_checks(extra_checks_dir_paths, RunnerFilter())
         found = 0
         for resource_type in scanner.supported_resources:
             checks = resource_registry.checks[resource_type]
@@ -680,7 +688,9 @@ class TestRunnerValid(unittest.TestCase):
     def test_loading_external_checks_python_and_yaml(self):
         runner = Runner()
         from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
-        runner.load_external_checks(['extra_checks', 'extra_yaml_checks'], RunnerFilter())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        extra_checks_dir_paths = [current_dir + "/extra_checks", current_dir + "/extra_checks"]
+        runner.load_external_checks(extra_checks_dir_paths, RunnerFilter())
         found = 0
         for resource_type in scanner.supported_resources:
             checks = resource_registry.checks[resource_type]
