@@ -208,4 +208,4 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 	File: /example.tf:1-25
 ```
 ## Visualize Checkov output
-Read more about [sending your Checkov scan results to the Bridgecrew platform](../Basics/Visualizing%Checkov%Output.md).
+Read more about [sending your Checkov scan results to the Bridgecrew platform](../2.Basics/Visualizing%20Checkov%20Output.md).
