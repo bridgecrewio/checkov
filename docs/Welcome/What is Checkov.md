@@ -5,7 +5,7 @@ title: What is Checkov?
 order: 1
 ---
 
-# What is Checkov
+# What is Checkov?
 
 Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of of [custom policies](../3.Custom%20Policies/Overview.md).
 
