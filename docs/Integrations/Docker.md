@@ -1,11 +1,9 @@
 ---
-title: "Docker"
-slug: "docker"
-hidden: false
-createdAt: "2021-03-22T15:29:46.762Z"
-updatedAt: "2021-03-22T16:10:18.384Z"
+layout: default
+published: true
+title: Using Checkov with Docker
+order: 7
 ---
-#Using Checkov with Docker
 
 ```coffeescript
 docker pull bridgecrew/checkov
