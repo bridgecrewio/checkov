@@ -5,6 +5,8 @@ title: Integrate Checkov with Kubernetes
 order: 5
 ---
 
+# Integrate Checkov with Kubernetes
+
 Checkov is built to scan static code and is typically used at build time.  However, resources running in a Kubernetes cluster
 can be described in the same way as at build-time.  This allows Checkov to run in a cluster with read-only access and report
 on the same violations.  
