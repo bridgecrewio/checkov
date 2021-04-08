@@ -4,6 +4,9 @@ published: true
 title: Feature Descriptions
 order: 4
 ---
+
+# Feature Descriptions
+
 With Checkov you can:
 
 * Run a variety of scan types
@@ -12,15 +15,15 @@ With Checkov you can:
 
 ## Running Checkov
 
-With Checkov you can scan a repository, branch, folder, or a single file with attribute-based misconfigurations or connection state errors. See [CLI Command Reference](../Basics/CLI%Command%Reference.md).
+With Checkov you can scan a repository, branch, folder, or a single file with attribute-based misconfigurations or connection state errors. See [CLI Command Reference](../Basics/CLI%20Command%20Reference.md).
 
 When running Checkov, you can also:
 
-* [Review scan results](../Basics/Reviewing%Scan%Results.md)
-* [Suppress or skip](../Basics/Suppressing%and%Skipping%Policies.md)
-* [Scan credentials and secrets](../Basics/Scanning%Credentials%and%Secrets.md)
+* [Review scan results](../Basics/Reviewing%20Scan%20Results.md)
+* [Suppress or skip](../Basics/Suppressing%20and%20Skipping%20Policies.md)
+* [Scan credentials and secrets](../Basics/Scanning%20Credentials%20and%20Secrets.md)
 * [Scan Kubernetes clusters](../Integrations/Kubernetes.md)
-* [Scan Terraform plan output and 3rd party modules](../Integrations/Terraform%Plans.md)
+* [Scan Terraform plan output and 3rd party modules](../Integrations/Terraform%20Scanning.md)
 
 ## Integrating with CI/CD
 In addition to integrating with your code repository, Checkov can also integrate with your automated build pipeline via CI/CD providers. When your build tests run, Checkov will scan your infrastructure as code files for misconfigurations and you can review the output directly in your CI pipeline.
@@ -32,11 +35,11 @@ In addition to integrating with your code repository, Checkov can also integrate
 
 ## Custom Policies
 
-* [Create custom Python attribute policies](../Custom%Policies/Create%Python%Policies.md)
-* [Create custom YAML attribute and composite policies](../Custom%Policies/Create%YAML%Policies.md)
-* [Custom policy examples](../Custom%Policies/Examples.md)
-* [Share custom policies across repos](../Custom%Policies/Sharing%Custom%Policies.md)
+* [Create custom Python attribute policies](../Custom%20Policies/Create%20Python%20Policies.md)
+* [Create custom YAML attribute and composite policies](../Custom%20Policies/Create%20YAML%20Policies.md)
+* [Custom policy examples](../Custom%20Policies/Examples.md)
+* [Share custom policies across repos](../Custom%Policies/Sharing%20Custom%20Policies.md)
 
 ## Contribution
-* [Contribute New Provider](../Contribution/Contribute%New%Provider.md)
-* [Contribute New Policy](../Contribution/Contribute%New%Policy.md)
+* [Contribute New Provider](../Contribution/Contribute%20New%20Provider.md)
+* [Contribute New Policy](../Contribution/Contribute%20New%20Policy.md)
