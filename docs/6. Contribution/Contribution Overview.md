@@ -5,7 +5,8 @@ title: Contribution Overview
 order: 1
 ---
 
-## Overview
+# Contribution Overview
+
 Checkov users are encouraged to contribute their custom Policies to help increase our existing IaC coverage.
 Our aim is to help close gaps in real-world hardening, assessments, auditing and forensics. In other words, we specifically encourage contribution of new Policies that you think should be globally accepted when provisioning and changing infrastructure.
 
@@ -18,7 +19,7 @@ The main aspects of contributing new Policies are:
 
 ### Installation
 
-First, make sure you installed and configured Checkov correctly. If you are unsure, go back and read the Getting Started.
+First, make sure you installed and configured Checkov correctly. If you are unsure, go back and read the [Installing Checkov documentation](../2.Basics/Installing%20Checkov.md).
 
 Preferably by now you have either scanned a folder containing Terraform state-files or went ahead and integrated Checkov as part of your CI/CD pipeline.
 
@@ -42,7 +43,7 @@ A more specific type of Custom Policy may also include additional attributes. Fo
 The result of a scan should be a binary result of either PASSED or FAILED. We have also included an UNKNOWN option, which means that it is unknown if the scanned configuration complied with the check. If your check could have edge cases that might not be supported by the scanner’s current logic, consider support the UNKNOWN option.
 
 Additionally, a Policy can be suppressed by Checkov on a given configuration by inserting a skip comment inside a specific configuration scope. Then, the result for that Policy would be SKIPPED.
-For further details, see [Suppressions](ref:suppressions).
+For further details, see [Suppressions](../2.Basics/Suppressing%20and%20Skipping%20Policies.md).
 
 ### IaC Type Scanner
 
@@ -72,8 +73,8 @@ For example, the documentation for the Custom Policy mentioned above is [here](h
 In order to develop the Custom Policy, a relevant example configuration should be presented as an input to Checkov. Provide a sample configuration (e.g., `example.tf`, `template.json`) that contains both passing and failing configurations with respect to the Custom Policy's logic. The file can be served as an input to the appropriate Custom Policy's unit tests.
 
 ## Creating and Testing the Custom Policy
-  * See [Create Custom Policy - Python - Attribute Check](doc:create-custom-policy-python-attribute-check) and [Contribute Python-Based Policies](doc:contribute-python-based-policies).
-  * See [Create Custom Policy - YAML - Attribute Check and Composite](doc:create-custom-policy-yaml-attribute-check-and-composite) and [Contribute - YAML-based Policies](doc:contribute-yaml-based-policies).
+  * See [Create Python Policies](../3.Custom%20Policies/Create%20Python%20Policies.md) and [Contribute Python-Based Policies](../6.Contribution/Contribute%20Python-Based%20Policies.md).
+  * See [Create Python Policies](../3.Custom%20Policies/Create%20Python%20Policies.md) and [Contribute YAML-Based Policies](../6.Contribution/Contribute%20YAML-Based%20Policies.md).
 
 ## Pull Request
 Open a PR that contains the implementation code and testing suite, with the following information:
@@ -93,7 +94,7 @@ After identifying the check's IaC type and provider, place the file containing i
 A check is a class that implements an `abstract` base check class that corresponds to a particular provider and type.
 For example, all checks with the type `resource` and the provider `aws` implement the resource base check class found at `checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement the abstract method of its base check, named `scan_resource_conf`. The input for this is a dictionary of all the key-valued resource attributes, and the output is a `CheckResult`.
 
-For an example of a full implementation of a check, please refer to the [Policy Documentation](doc:custom-policies).
+For an example of a full implementation of a check, please refer to the [Custom Policy Documentation](../3.Custom%Policies/Overview.md).
 
 ## Testing
 
