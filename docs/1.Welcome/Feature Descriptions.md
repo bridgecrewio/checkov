@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Feature Descriptions
-order: 4
+nav_order: 4
 ---
 
 # Feature Descriptions

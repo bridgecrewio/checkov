@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Terms and Concepts
-order: 2
+nav_order: 2
 ---
 
 # Terms and Concepts

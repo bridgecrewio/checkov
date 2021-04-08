@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Quick Start
-order: 3
+nav_order: 3
 ---
 
 # Quick Start

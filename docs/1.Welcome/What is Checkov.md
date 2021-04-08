@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: What is Checkov?
-order: 1
+nav_order: 1
 ---
 
 # What is Checkov?
