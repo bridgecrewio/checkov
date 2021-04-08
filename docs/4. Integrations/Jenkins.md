@@ -1,8 +1,6 @@
 # Integrate Checkov with Jenkins
 
-Checkov was built to help developers avoid common misconfigurations as they build robust infrastructure-as-code. This simple integration into Jenkins will result in build failures whenever developers create and modify infrastructure as code monitored by Checkov.
-
-To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
+This simple integration into Jenkins will result in build failures whenever developers create and modify infrastructure as code monitored by Checkov. To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
 
 
 
