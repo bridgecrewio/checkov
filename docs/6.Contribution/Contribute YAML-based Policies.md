@@ -7,7 +7,7 @@ nav_order: 3
 
 # Contributing YAML-based Custom Policies
 
-1. Define a policy as described [here](../3.Custom%20Policies/YAML%20Custom%20Policies.md).
+1. Define a policy as described [here](https://www.checkov.io/3.Custom%20Policies/YAML%20Custom%20Policies.html).
 2. Create a branch under the `checkov2` fork (will be changed + the URLs after merge) - `https://github.com/nimrodkor/checkov`
 3. Add `<policy_name>.yaml` file to `https://github.com/nimrodkor/checkov/tree/master/checkov/graph/terraform/checks` inside the relevant provider folder that matches your current policy.
 

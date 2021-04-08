@@ -8,7 +8,7 @@ nav_order: 3
 # Quick Start
 
 This Quick Start guide shows how to install Checkov, run a scan, and analyze the results.
-For more advanced configuration, see the [CLI Reference](../2.Basics/CLI%20Command%20Reference.md) and the rest of this documentation.
+For more advanced configuration, see the [CLI Reference](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html) and the rest of this documentation.
 
 ## Install Checkov from PyPI
 
@@ -155,7 +155,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 ## Visualizing scan output
 
-In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](../2.Basics/Visualizing%20Checkov%20Output.md).
+In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](https://www.checkov.io/2.Basics/Visualizing%20Checkov%20Output.html).
 
 ![Visualizing Scan Output with Bridgecrew](visualizing-scan-results.gif)
 
@@ -164,12 +164,12 @@ In addition to the various formats for seeing scan results (for example, CLI), y
 In addition to integrating with your code repository, Checkov can also integrate with your automated build pipeline via CI/CD providers. When your build tests run, Checkov will scan your infrastructure as code files for misconfigurations.
 You can integrate Checkov with:
 
-* [Jenkins](../4.Integrations/Jenkins.md)
-* [Bitbucket Cloud Pipelines](../4.Integrations/Bitbucket%20Cloud%20Pipelines.md)
-* [GitHub Actions](../4.Integrations/GitHub%20Actions.md)
-* [GitLab CLI](../4.Integrations/GitLab%20CLI.md)
-* [Kubernetes](../4.Integrations/Kubernetes.md)
-* [Terraform Plans and Third-Party Modules](../4.Integrations/Terraform%20Scanning.md)
+* [Jenkins](https://www.checkov.io/4.Integrations/Jenkins.html)
+* [Bitbucket Cloud Pipelines](https://www.checkov.io/4.Integrations/Bitbucket%20Cloud%20Pipelines.html)
+* [GitHub Actions](https://www.checkov.io/4.Integrations/GitHub%20Actions.html)
+* [GitLab CLI](https://www.checkov.io/4.Integrations/GitLab%20CLI.html)
+* [Kubernetes](https://www.checkov.io/4.Integrations/Kubernetes.html)
+* [Terraform Plans and Third-Party Modules](https://www.checkov.io/4.Integrations/Terraform%20Scanning.html)
 
 ## Add-ons
 
