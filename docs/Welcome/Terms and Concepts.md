@@ -9,7 +9,7 @@ order: 2
 
 **Policy:** Security policies define various aspects of your cloud configuration that impact the overall security of the environment. For example, multi-factor authentication should be enabled for the root account. A resource that is not in the state defined in a policy is non-compliant and will appear in scan results.
 
-**Composite Policy:** A composite, or connection-state is one in which Checkov looks for resources, or types of resources that are or are not connected to other resources. For example, it may be essential for certain resource types to be connected to security groups; or it may be important that certain resource types are not connected to other resources with public access. On each scan, Checkov creates a virtual connection graph based on Composite Policies. Learn more about [creating composite policies in YAML format](../Custom%Policies/Create%20YAML%20Policies.md).
+**Composite Policy:** A composite, or connection-state is one in which Checkov looks for resources, or types of resources that are or are not connected to other resources. For example, it may be essential for certain resource types to be connected to security groups; or it may be important that certain resource types are not connected to other resources with public access. On each scan, Checkov creates a virtual connection graph based on Composite Policies. Learn more about [creating composite policies in YAML format](../Custom%20Policies/Create%20YAML%20Policies.md).
 
 **Incident:** Upon each scan, Checkov creates Incidents for each case of non-conformance to a Policy.
 
