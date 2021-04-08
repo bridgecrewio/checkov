@@ -5,6 +5,8 @@ title: Visualizing Checkov Output
 order: 6
 ---
 
+# Visualizing Checkov Output in Bridgecrew
+
 You can integrate Checkov with Bridgecrew to view the results of Checkov scans in the Bridgecrew platform.
 ![Bridgecrew Dashboard](bridgecrew-dashboard.png)
 
