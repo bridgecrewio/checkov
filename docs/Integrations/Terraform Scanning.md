@@ -4,6 +4,9 @@ published: true
 title: Terraform Scanning
 order: 8
 ---
+
+# Terraform Plan and External Terraform Module Scanning
+
 ## Evaluate Checkov Policies on Terraform Plan
 Checkov supports the evaluation of policies on resources declared in `.tf` files. It can also be used to evaluate `terraform plan` expressed in a json file. Plan evaluation provides Checkov additional dependencies and context that can result in a more complete scan result. Since Terraform plan files may contain arguments (like secrets) that are injected dynamically, it is advised to run a plan evaluation using Checkov in a secure CI/CD pipeline setting.
 
