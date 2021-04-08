@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Integrate Checkov with Kubernetes
+title: Kubernetes
 order: 5
 ---
 
