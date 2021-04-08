@@ -6,11 +6,13 @@ nav_order: 1
 
 # dockerfile resource scans (auto generated)
 
-|    | Id         | Type       | Entity         | Policy                                                                              | IaC        |
-|----|------------|------------|----------------|-------------------------------------------------------------------------------------|------------|
-|  0 | CKV_AWS_1  | dockerfile | serverless_aws | Ensure IAM policies that allow full "*-*" administrative privileges are not created | dockerfile |
-|  1 | CKV_AWS_41 | dockerfile | serverless_aws | Ensure no hard coded AWS access key and secret key exists in provider               | dockerfile |
-|  2 | CKV_AWS_49 | dockerfile | serverless_aws | Ensure no IAM policies documents allow "*" as a statement's actions                 | dockerfile |
+|    | Id           | Type       | Entity   | Policy                                                                   | IaC        |
+|----|--------------|------------|----------|--------------------------------------------------------------------------|------------|
+|  0 | CKV_DOCKER_1 | dockerfile | EXPOSE   | Ensure port 22 is not exposed                                            | dockerfile |
+|  1 | CKV_DOCKER_2 | dockerfile | *        | Ensure that HEALTHCHECK instructions have been added to container images | dockerfile |
+|  2 | CKV_DOCKER_3 | dockerfile | *        | Ensure that a user for the container has been created                    | dockerfile |
+|  3 | CKV_DOCKER_4 | dockerfile | ADD      | Ensure that COPY is used instead of ADD in Dockerfiles                   | dockerfile |
+|  4 | CKV_DOCKER_5 | dockerfile | RUN      | Ensure update instructions are not use alone in the Dockerfile           | dockerfile |
 
 
 ---
