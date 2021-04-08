@@ -7,7 +7,7 @@ order: 5
 
 # Sharing Custom Policies
 
-[Custom Policies](../3.Custom%Policies/Overview.md) can be reused across multiple projects. 
+[Custom Policies](../3.Custom%20Policies/Custom%20Policies%20Overview.md) can be reused across multiple projects. 
 
 You can download a git repository containing custom checks: 
 
