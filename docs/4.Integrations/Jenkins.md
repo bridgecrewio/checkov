@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Integrate Checkov with Jenkins
+title: Jenkins
 order: 1
 ---
 
