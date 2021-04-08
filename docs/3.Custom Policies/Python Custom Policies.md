@@ -10,7 +10,7 @@ nav_order: 2
 Custom Policies created in code (in Python) support checking the state of a resource’s attributes.
 A Python-based Custom Policy for Checkov consists of sections for Metadata and Policy Definition.
 
-Read also how to [create custom YAML Policies for attribute and composite scanning](../3.Custom%20Policies/YAML%20Custom%20Policies.md).
+Read also how to [create custom YAML Policies for attribute and composite scanning](https://www.checkov.io/3.Custom%20Policies/Python%20Custom%20Policies.html).
 
 ## Writing a Python custom Checkov policy
 
