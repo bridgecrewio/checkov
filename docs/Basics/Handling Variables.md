@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Handling Variables
-order: 8
+order: 7
 ---
 
 Checkov supports the evaluation of variables found in Terraform expressions.
