@@ -4,6 +4,9 @@ published: true
 title: YAML Custom Policies
 order: 3
 ---
+
+# Create Custom Policy - YAML - Attribute Check and Composite
+
 Custom policies created in YAML support checking a resource’s connection state and the use of complex AND/OR logic.
 
 A YAML-based custom policy for Checkov consists of sections for the **Metadata** and **Policy Definition**.
