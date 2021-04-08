@@ -1,0 +1,36 @@
+metadata:
+  id: AndComplexConnection
+scope:
+  provider: AWS
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - aws_network_interface
+        - aws_instance
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      operator: exists
+      resource_types:
+        - aws_instance
+      connected_resource_types:
+        - aws_network_interface
+    - or:
+      - cond_type: attribute
+        attribute: tags.Env
+        operator: equals
+        value: prod
+        resource_types:
+          - aws_instance
+          - aws_network_interface
+          - aws_subnet
+          - aws_vpc
+      - cond_type: attribute
+        attribute: tags.Env
+        operator: not_exists
+        resource_types:
+          - aws_instance
+          - aws_network_interface
+          - aws_subnet
+          - aws_vpc

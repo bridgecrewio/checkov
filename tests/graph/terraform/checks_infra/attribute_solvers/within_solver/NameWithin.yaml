@@ -1,0 +1,14 @@
+metadata:
+  id: "NameWithin"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_subnet"
+  attribute: "tags.Name"
+  operator: "within"
+  value:
+    - "first-tf-example"
+    - "third-tf-example"
+

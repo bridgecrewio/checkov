@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AZURE_15"
+  name: "Ensure that Azure data factories are encrypted with a customer-managed key"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_data_factory
+      operator: within
+    - cond_type: connection
+      operator: exists
+      resource_types:
+        - azurerm_data_factory
+      connected_resource_types:
+        - azurerm_data_factory_linked_service_key_vault

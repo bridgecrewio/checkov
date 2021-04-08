@@ -1,0 +1,43 @@
+metadata:
+  id: "CKV2_AZURE_14"
+  name: "Ensure that Unattached disks are encrypted"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_virtual_machine
+      operator: within
+    - or:
+      - resource_types:
+          - azurerm_virtual_machine
+        connected_resource_types:
+          - azurerm_managed_disk
+        operator:  not_exists
+        cond_type: connection
+      - and:
+        - resource_types:
+            - azurerm_virtual_machine
+          connected_resource_types:
+            - azurerm_managed_disk
+          operator:  exists
+          cond_type: connection
+        - or:
+            - cond_type: attribute
+              operator: exists
+              attribute: disk_encryption_set_id
+              resource_types:
+                - azurerm_managed_disk
+            - and:
+                - cond_type: attribute
+                  operator: exists
+                  attribute: encryption_settings
+                  resource_types:
+                    - azurerm_managed_disk
+                - cond_type: attribute
+                  operator: not_equals
+                  attribute: encryption_settings.enabled
+                  value: false
+                  resource_types:
+                    - azurerm_managed_disk

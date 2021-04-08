@@ -1,0 +1,4 @@
+pass:
+  - "aws_ebs_volume.ebs_good"
+fail:
+  - "aws_ebs_volume.ebs_bad"

@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_storage_account.ok_storage_account"
+fail:
+  - "azurerm_storage_account.not_ok_storage_account"

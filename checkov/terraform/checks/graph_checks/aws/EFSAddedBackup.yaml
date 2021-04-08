@@ -1,0 +1,18 @@
+metadata:
+  name: "Ensure that Elastic File System (Amazon EFS) file systems are added in the backup plans of AWS Backup"
+  id: "CKV2_AWS_18"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  and:
+    - cond_type: connection
+      resource_types:
+        - aws_backup_selection
+      connected_resource_types:
+        - aws_efs_file_system
+        - aws_backup_plan
+      operator: exists
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_efs_file_system
+      operator: within

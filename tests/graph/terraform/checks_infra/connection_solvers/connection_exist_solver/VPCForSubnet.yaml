@@ -1,0 +1,12 @@
+metadata:
+  id: "VPCForSubnet"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "connection"
+  resource_types:
+    - "aws_subnet"
+  connected_resource_types:
+    - "aws_vpc"
+  operator: "exists"
+

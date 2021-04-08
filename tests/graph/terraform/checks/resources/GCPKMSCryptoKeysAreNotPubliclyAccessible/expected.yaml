@@ -1,0 +1,8 @@
+pass:
+  - "google_kms_crypto_key.key_good_1"
+  - "google_kms_crypto_key.key_good_2"
+fail:
+  - "google_kms_crypto_key.key_bad_1"
+  - "google_kms_crypto_key.key_bad_2"
+  - "google_kms_crypto_key.key_bad_3"
+  - "google_kms_crypto_key.key_bad_4"
