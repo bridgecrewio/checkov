@@ -73,7 +73,7 @@ For example, the documentation for the Custom Policy mentioned above is [here](h
 In order to develop the Custom Policy, a relevant example configuration should be presented as an input to Checkov. Provide a sample configuration (e.g., `example.tf`, `template.json`) that contains both passing and failing configurations with respect to the Custom Policy's logic. The file can be served as an input to the appropriate Custom Policy's unit tests.
 
 ## Creating and Testing the Custom Policy
-  * See [Create Python Policies](../3.Custom%20Policies/Create%20Python%20Policies.md) and [Contribute Python-Based Policies](../6.Contribution/Contribute%20Python-Based%20Policies.md).
+  * See [Create Python Policies](../3.Custom%20Policies/Python%20Custom%20Policies.md) and [Contribute Python-Based Policies](../6.Contribution/Contribute%20Python-Based%20Policies.md).
   * See [Create YAML Policies](../3.Custom%20Policies/YAML%20Custom%20Policies.md) and [Contribute YAML-Based Policies](../6.Contribution/Contribute%20YAML-Based%20Policies.md).
 
 ## Pull Request
