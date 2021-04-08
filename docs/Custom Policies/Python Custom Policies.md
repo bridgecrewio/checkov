@@ -5,9 +5,14 @@ title: Python Custom Policies
 order: 2
 ---
 
-Custom policies created in Python can be used to identify resources' attributes that may be misconfigured or missing correct configuration.
+# Create Custom Policy - Python - Attribute Check
 
-### Writing a Python custom Checkov policy
+Custom Policies created in code (in Python) support checking the state of a resource’s attributes.
+A Python-based Custom Policy for Checkov consists of sections for Metadata and Policy Definition.
+
+Read also how to [Create custom YAML Policies for attribute and composite scanning](../3.Custom%20Policies/Create%20YAML%20Policies.md).
+
+## Writing a Python custom Checkov policy
 
 Specify a `name`, `ID`, `relevant resources` and `categories`.
 
