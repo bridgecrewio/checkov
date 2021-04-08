@@ -5,6 +5,8 @@ title: Integrate Checkov with Pre-Commit
 order: 6
 ---
 
+# Integrate Checkov with Pre-Commit
+
 To use Checkov with [pre-commit](https://pre-commit.com), just add the following to your local repo's `.pre-commit-config.yaml` file:
 
 ```yaml
