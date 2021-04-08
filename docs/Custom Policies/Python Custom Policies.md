@@ -5,6 +5,8 @@ title: Python Custom Policies
 order: 2
 ---
 
+Custom policies created in Python can be used to identify resources' attributes that may be misconfigured or missing correct configuration.
+
 ### Writing a Python custom Checkov policy
 
 Specify a `name`, `ID`, `relevant resources` and `categories`.
