@@ -4,6 +4,9 @@ published: true
 title: Quick Start
 order: 3
 ---
+
+# Quick Start
+
 This Quick Start guide shows how to install Checkov, run a scan, and analyze the results.
 For more advanced configuration, see the [CLI Reference](../Basics/CLI%Command%Reference.md) and the rest of this documentation.
 
