@@ -20,7 +20,10 @@ class Registry(BaseRegistry):
             os.path.join(os.path.dirname(os.path.dirname(__file__)), "checks", "graph_checks")
 
     def load_checks(self):
-        for root, d_names, f_names in os.walk(self.checks_dir):
+        self._load_checks_from_dir(self.checks_dir)
+
+    def _load_checks_from_dir(self, dir: str):
+        for root, d_names, f_names in os.walk(dir):
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
@@ -29,8 +32,11 @@ class Registry(BaseRegistry):
                         check_yaml = yaml.safe_load(f)
                         check_json = json.loads(json.dumps(check_yaml))
                         check = self.parser.parse_raw_check(check_json, resources_types=self._get_resource_types(check_json))
-                        if len([c for c in self.checks if check.id == c.id]) == 0:
+                        if not any([c for c in self.checks if check.id == c.id]):
                             self.checks.append(check)
+
+    def load_external_checks(self, dir: str):
+        self._load_checks_from_dir(dir)
 
     @staticmethod
     def _get_resource_types(check_json):

@@ -135,7 +135,7 @@ class BaseCheckRegistry(object):
             return True
         return False
 
-    def load_external_checks(self, directory, runner_filter):
+    def load_external_checks(self, directory):
         """ Browse a directory looking for .py files to import.
 
         Log an error when the directory does not contains an __init__.py or
