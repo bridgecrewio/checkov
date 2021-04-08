@@ -5,7 +5,7 @@ title: Python Custom Policies
 order: 2
 ---
 
-## Writing a Python custom Checkov policy
+### Writing a Python custom Checkov policy
 
 Specify a `name`, `ID`, `relevant resources` and `categories`.
 
@@ -63,7 +63,7 @@ def scan_resource_conf(self, conf):
 check = RDSEncryption()
 ```
 
-## Run a New Scan
+### Run a new scan
 
 To run a scan with the new policy, use the ```checkov``` command.
 
@@ -162,7 +162,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
 scanner = S3PCIPrivateACL()
 ```
 
-2. With the new custom check in place, run Checkov and verify the results:
+2. With the new custom check in place, run Checkov:
 
 ```python
 # install from pypi using pip
@@ -172,8 +172,7 @@ pip install checkov
 # select an input folder that contains your terraform files and enable loading of extra checks
 checkov -d . --external-checks-dir my_extra_checks
 ```
-
-### Result
+Verify the results:
 
 ```python
 Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
