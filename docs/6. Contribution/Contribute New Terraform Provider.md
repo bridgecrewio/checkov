@@ -4,6 +4,9 @@ published: true
 title: Contribute New Terraform Provider
 order: 4
 ---
+
+# Contribute New Terraform Provider
+
 In this example we'll add support for a new Terraform Provider, the Linode Cloud platform.
 
 ## Add Resource Checks for a New Provider
