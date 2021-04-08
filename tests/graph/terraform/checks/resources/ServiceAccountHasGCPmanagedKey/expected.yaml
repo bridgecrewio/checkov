@@ -1,0 +1,4 @@
+pass:
+  - "google_service_account.account_ok"
+fail:
+  - "google_service_account.account_bad"

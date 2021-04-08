@@ -1,0 +1,23 @@
+metadata:
+  id: "CKV2_AZURE_18"
+  name: "Ensure that Storage Accounts use customer-managed key for encryption"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_storage_account
+      operator: within
+    - cond_type: connection
+      operator: exists
+      resource_types:
+        - azurerm_storage_account
+      connected_resource_types:
+        - azurerm_storage_account_customer_managed_key
+    - cond_type: attribute
+      operator: not_equals
+      attribute: key_vault_id
+      resource_types:
+        - azurerm_storage_account_customer_managed_key
+      value: ""

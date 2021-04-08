@@ -1,0 +1,34 @@
+metadata:
+  id: "CKV2_AWS_15"
+  name: "Ensure that auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks."
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+          - aws_autoscaling_group
+      attribute: health_check_type
+      operator: equals
+      value: "ELB"
+    - resource_types:
+        - aws_autoscaling_group
+      connected_resource_types:
+        - aws_autoscaling_attachment
+      operator:  exists
+      cond_type: connection
+    - resource_types:
+        - aws_elb
+      connected_resource_types:
+        - aws_autoscaling_attachment
+      operator:  exists
+      cond_type: connection
+    - cond_type: attribute
+      resource_types:
+          - aws_elb
+      attribute: health_check
+      operator: exists
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_autoscaling_attachment
+      operator: within

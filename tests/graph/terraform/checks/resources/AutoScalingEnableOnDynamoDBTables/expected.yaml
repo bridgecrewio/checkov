@@ -1,0 +1,4 @@
+pass:
+  - "aws_appautoscaling_policy.ok_connect_dynamo_table"
+fail:
+  - "aws_appautoscaling_policy.not_ok_connect_dynamo_table"

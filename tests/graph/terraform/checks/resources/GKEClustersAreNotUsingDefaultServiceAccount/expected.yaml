@@ -1,0 +1,4 @@
+pass:
+  - "google_project_default_service_accounts.ok"
+fail:
+  - "google_project_default_service_accounts.not_ok"

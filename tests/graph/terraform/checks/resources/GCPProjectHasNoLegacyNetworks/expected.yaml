@@ -1,0 +1,5 @@
+pass:
+  - "google_project.project_good_1"
+  - "google_project.project_good_2"
+fail:
+  - "google_project.project_bad_1"

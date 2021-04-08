@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_storage_table.blobExample_ok"
+fail:
+  - "azurerm_storage_table.blobExample_not_ok"

@@ -1,0 +1,23 @@
+metadata:
+  id: "CKV2_AWS_7"
+  name: "Ensure that Amazon EMR clusters' security groups are not open to the world"
+  category: "NETWORKING"
+definition:
+  and:
+    - resource_types:
+        - aws_emr_cluster
+      connected_resource_types:
+        - aws_security_group
+      operator:  exists
+      cond_type: connection
+    - cond_type: "attribute"
+      resource_types: 
+        - "aws_security_group"
+      attribute: "ingress.*.cidr_blocks"
+      operator: "not_contains"
+      value: "0.0.0.0/0"
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_emr_cluster
+      operator: within

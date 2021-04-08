@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_mssql_server_security_alert_policy.okExample"
+fail:
+  - "azurerm_mssql_server_security_alert_policy.badExampleNotEnabled"
+

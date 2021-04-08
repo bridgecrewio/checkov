@@ -15,6 +15,7 @@ class TestOutputSorting(unittest.TestCase):
             ['CKV_K8S_15', '', '', '', ''],
             ['CKV_K8S_9', '', '', '', ''],
             ['CKV_K8S_2', '', '', '', ''],
+            ['CKV2_K8S_2', '', '', '', ''],
             ['CKV_AZURE_11', '', '', '', ''],
             ['CKV_AZURE_32', '', '', '', ''],
             ['CKV_GIT_1', '', '', '', ''],
@@ -30,6 +31,7 @@ class TestOutputSorting(unittest.TestCase):
         ]
         sorted_check_ids = sorted(check_ids, key=get_compare_key)
         self.assertEqual(sorted_check_ids, [
+            ['CKV2_K8S_2', '', '', '', ''],
             ['CKV_AWS_1', '', '', '', ''],
             ['CKV_AWS_20', '', '', '', ''],
             ['CKV_AZURE_10', '', '', '', ''],

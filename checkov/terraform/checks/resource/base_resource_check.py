@@ -35,6 +35,11 @@ class BaseResourceCheck(BaseCheck):
         return wrapper
 
     def handle_dynamic_values(self, conf):
-        for dynamic_element in conf.get("dynamic", []):
+        for dynamic_element in conf.get("dynamic", {}):
+            if isinstance(dynamic_element, str):
+                try:
+                    dynamic_element = json.loads(dynamic_element)
+                except Exception:
+                    dynamic_element = {}
             for element_name in dynamic_element.keys():
                 conf[element_name] = dynamic_element[element_name].get('content', [])
