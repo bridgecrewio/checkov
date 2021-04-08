@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Suppressing and Skipping Policies
-order: 3
+nav_order: 3
 ---
 
 # Suppressing/skipping

@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Reviewing Scan Results
-order: 5
+nav_order: 5
 ---
 
 # Reviewing Scan Results
