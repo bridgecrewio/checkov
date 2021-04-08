@@ -7,7 +7,7 @@ class CodeBuildEncrypted(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure that CodeBuild projects are encrypted"
-        id = "CKV_AWS_150"
+        id = "CKV_AWS_147"
         supported_resources = ['aws_codebuild_project']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

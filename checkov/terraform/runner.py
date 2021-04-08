@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 import dpath.util
 
@@ -19,6 +19,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.common.graph.checks_infra.yaml_registry import yaml_registry
 from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -68,9 +69,7 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                resource_registry.load_external_checks(directory, runner_filter)
+        self.load_external_checks(external_checks_dir, runner_filter)
 
         if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
             self.tf_definitions = {}
@@ -112,6 +111,12 @@ class Runner(BaseRunner):
         merge_reports(report, graph_report)
 
         return report
+
+    def load_external_checks(self, external_checks_dir: List[str], runner_filter: RunnerFilter):
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                resource_registry.load_external_checks(directory, runner_filter)
+                yaml_registry.load_external_checks(directory, runner_filter)
 
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         registry = Registry(parser=NXGraphCheckParser())

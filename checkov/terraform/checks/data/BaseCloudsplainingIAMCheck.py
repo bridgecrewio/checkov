@@ -12,7 +12,7 @@ from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter i
 
 class BaseCloudsplainingIAMCheck(BaseDataCheck):
     def __init__(self, name, id):
-        super().__init__(name=name, id=id, categories=CheckCategories.IAM, supported_data=['aws_iam_policy_document'])
+        super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_data=['aws_iam_policy_document'])
 
     def scan_data_conf(self, conf):
         key = 'statement'

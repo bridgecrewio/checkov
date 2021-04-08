@@ -42,7 +42,8 @@ class BaseCheckRegistry(object):
 
         for entity in check.supported_entities:
             checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
-            checks[entity].append(check)
+            if not any(c.id == check.id for c in checks[entity]):
+                checks[entity].append(check)
 
     @staticmethod
     def _is_wildcard(entity):

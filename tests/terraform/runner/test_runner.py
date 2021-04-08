@@ -3,12 +3,11 @@ import unittest
 
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner
+from checkov.terraform.runner import Runner, yaml_registry, resource_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -77,7 +76,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(isinstance(report_json, str))
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
-        # self.assertEqual(report.get_exit_code(), 0)
+        self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(3, summary['failed'])
@@ -94,7 +93,6 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
-        resource_registry.checks["aws_s3_bucket"]
         for check in resource_registry.checks["aws_s3_bucket"]:
             if check.id == "CUSTOM_AWS_1":
                 resource_registry.checks["aws_s3_bucket"].remove(check)
@@ -209,7 +207,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_provider_uniqueness(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/many_providers"
-        tf_file = f"{valid_dir_path}/main.tf"
         runner = Runner()
         result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(checks='CKV_AWS_41'))
@@ -577,7 +574,7 @@ class TestRunnerValid(unittest.TestCase):
                               external_checks_dir=None,
                               runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
 
-        self.assertEqual(len(report.failed_checks), 2)  # 2 bucket failures
+        self.assertEqual(len(report.failed_checks), 4)  # 2 bucket failures
         self.assertEqual(len(report.passed_checks), 0)
 
         found_inside = False
@@ -605,6 +602,68 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertTrue(found_inside)
         self.assertTrue(found_outside)
+
+    def test_loading_external_checks_yaml(self):
+        runner = Runner()
+        self.assertEqual(len(yaml_registry.checks), 0)
+        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        self.assertEqual(len(yaml_registry.checks), 1)
+        self.assertEqual(yaml_registry.checks[0].id, 'CKV2_CUSTOM_1')
+        self.assertEqual(yaml_registry.checks[0].name, 'Ensure bucket has versioning and owner tag')
+        yaml_registry.checks = []
+
+    def test_loading_external_checks_yaml_multiple_times(self):
+        runner = Runner()
+        self.assertEqual(len(yaml_registry.checks), 0)
+        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        self.assertEqual(len(yaml_registry.checks), 1)
+        self.assertEqual(yaml_registry.checks[0].id, 'CKV2_CUSTOM_1')
+        self.assertEqual(yaml_registry.checks[0].name, 'Ensure bucket has versioning and owner tag')
+        runner.load_external_checks(['extra_yaml_checks'], RunnerFilter())
+        self.assertEqual(len(yaml_registry.checks), 1)
+        self.assertEqual(yaml_registry.checks[0].id, 'CKV2_CUSTOM_1')
+        self.assertEqual(yaml_registry.checks[0].name, 'Ensure bucket has versioning and owner tag')
+        yaml_registry.checks = []
+
+    def test_loading_external_checks_python(self):
+        runner = Runner()
+        from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
+        runner.load_external_checks(['extra_checks'], RunnerFilter())
+        found = 0
+        for resource_type in scanner.supported_resources:
+            checks = resource_registry.checks[resource_type]
+            self.assertIn(scanner, checks)
+            found += 1
+        self.assertEqual(found, len(scanner.supported_resources))
+
+    def test_loading_external_checks_python_multiple_times(self):
+        runner = Runner()
+        from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
+        runner.load_external_checks(['extra_checks', 'extra_checks'], RunnerFilter())
+        found = 0
+        for resource_type in scanner.supported_resources:
+            checks = resource_registry.checks[resource_type]
+            self.assertIn(scanner, checks)
+            instances = list(filter(lambda c: c.id == scanner.id, checks))
+            self.assertEqual(len(instances), 1)
+            found += 1
+
+        self.assertEqual(found, len(scanner.supported_resources))
+
+    def test_loading_external_checks_python_and_yaml(self):
+        runner = Runner()
+        from tests.terraform.runner.extra_checks.S3EnvironmentCheck import scanner
+        runner.load_external_checks(['extra_checks', 'extra_yaml_checks'], RunnerFilter())
+        found = 0
+        for resource_type in scanner.supported_resources:
+            checks = resource_registry.checks[resource_type]
+            self.assertIn(scanner, checks)
+            found += 1
+        self.assertEqual(found, len(scanner.supported_resources))
+        self.assertEqual(len(yaml_registry.checks), 1)
+        self.assertEqual(yaml_registry.checks[0].id, 'CKV2_CUSTOM_1')
+        self.assertEqual(yaml_registry.checks[0].name, 'Ensure bucket has versioning and owner tag')
+        yaml_registry.checks = []
 
     def tearDown(self):
         parser_registry.definitions_context = {}
