@@ -13,7 +13,7 @@ A Custom Policy is a class implementing an abstract base class that corresponds 
 
 For example, all Custom Policies of **resource** type and **aws **provider implement the resource base class found at `checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement its base abstract method named `scan_resource_conf`, which accepts as an input a dictionary of all the key-valued resource attributes, and outputs a CheckResult.
 
-Define a policy as described [here](../3.Custom%20Policies/Create%20Python%20Policies.md).
+Define a policy as described [here](../3.Custom%20Policies/Python%20Custom%20Policies.md).
 
 ## Example
 `checkov/terraform/checks/resource/aws/APIGatewayCacheEnable.py`
