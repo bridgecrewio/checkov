@@ -8,7 +8,7 @@ order: 3
 # Quick Start
 
 This Quick Start guide shows how to install Checkov, run a scan, and analyze the results.
-For more advanced configuration, see the [CLI Reference](../Basics/CLI%Command%Reference.md) and the rest of this documentation.
+For more advanced configuration, see the [CLI Reference](../Basics/CLI%20Command%20Reference.md) and the rest of this documentation.
 
 ## Install Checkov from PyPI
 
@@ -155,7 +155,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 ## Visualizing scan output
 
-In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](../Basics/Visualizing%Checkov%Output.md).
+In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](../Basics/Visualizing%20Checkov%20Output.md).
 
 ![Visualizing Scan Output with Bridgecrew](visualizing-scan-results.gif)
 
@@ -165,11 +165,11 @@ In addition to integrating with your code repository, Checkov can also integrate
 You can integrate Checkov with:
 
 * [Jenkins](../Integrations/Jenkins.md)
-* [Bitbucket Cloud Pipelines](../Integrations/Bitbucket%Cloud%Pipelines.md)
-* [GitHub Actions](../Integrations/GitHub%Actions.md)
-* [GitLab CLI](../Integrations/GitLab%CLI.md)
+* [Bitbucket Cloud Pipelines](../Integrations/Bitbucket%20Cloud%20Pipelines.md)
+* [GitHub Actions](../Integrations/GitHub%20Actions.md)
+* [GitLab CLI](../Integrations/GitLab%20CLI.md)
 * [Kubernetes](../Integrations/Kubernetes.md)
-* [Terraform Plans](../Integrations/Terraform%Plans.md)
+* [Terraform Plans](../Integrations/Terraform%20Plans.md)
 
 ## Add-ons
 
