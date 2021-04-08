@@ -1,8 +1,11 @@
-# Integrate Checkov with Jenkins
+---
+layout: default
+published: true
+title: Integrate with Jenkins
+order: 4
+---
 
 This simple integration into Jenkins will result in build failures whenever developers create and modify infrastructure as code monitored by Checkov. To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
-
-
 
 ## Tutorial
 
