@@ -4,9 +4,10 @@ published: true
 title: Python Custom Policies
 order: 2
 ---
-## Writing a New Python Policy
 
-A policy needs to specify *name*, *ID*, *relevant resources* and *categories*.
+## Writing a Python custom Checkov policy
+
+Specify a `name`, `ID`, `relevant resources` and `categories`.
 
 | Parameter | Description | Example/Comments |
 | -------- | -------- | -------- |
@@ -16,7 +17,7 @@ A policy needs to specify *name*, *ID*, *relevant resources* and *categories*.
 | ``supported_resources`` | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
 | ``categories`` | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc. |  |
 
-**Note for Supported Resources Parameter:** If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all terraform resources.
+**Note for Supported Resources Parameter:** If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all Terraform resources.
 
 The following example produces a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
 1. Create a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``.
@@ -192,4 +193,4 @@ Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci 
 		90 | }
 ```
 
-**Attention:** Policies can not share the same file name. If two policies with the same file name exist, only the first one will be loaded."
+**Attention:** Policies cannot share the same file name. If two policies with the same file name exist, only the first one will be loaded.
