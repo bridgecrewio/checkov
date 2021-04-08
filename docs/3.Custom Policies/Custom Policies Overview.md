@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Custom Policies Overview
-order: 1
+nav_order: 1
 ---
 
 # Custom Policies Overview

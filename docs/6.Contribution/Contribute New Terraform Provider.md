@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribute New Terraform Provider
-order: 4
+nav_order: 4
 ---
 
 # Contribute New Terraform Provider

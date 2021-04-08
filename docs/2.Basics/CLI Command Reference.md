@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: CLI Command Reference
-order: 2
+nav_order: 2
 ---
 
 # CLI Command Reference

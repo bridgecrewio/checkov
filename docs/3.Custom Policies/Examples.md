@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Custom YAML Policies Examples
-order: 4
+nav_order: 4
 ---
 
 # Examples - YAML-Based Custom Policies

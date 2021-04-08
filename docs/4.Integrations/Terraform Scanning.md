@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Terraform Scanning
-order: 8
+nav_order: 8
 ---
 
 # Terraform Plan and External Terraform Module Scanning

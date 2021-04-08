@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Github Actions
-order: 3
+nav_order: 3
 ---
 
 # Integrate Checkov with Github Actions

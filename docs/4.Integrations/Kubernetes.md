@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Kubernetes
-order: 5
+nav_order: 5
 ---
 
 # Integrate Checkov with Kubernetes

@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Visualizing Checkov Output
-order: 6
+nav_order: 6
 ---
 
 # Visualizing Checkov Output in Bridgecrew

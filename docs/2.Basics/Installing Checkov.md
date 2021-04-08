@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Installing Checkov
-order: 1
+nav_order: 1
 ---
 Installing Checkov is quick and straightforward—just install, configure input, and scan.
 

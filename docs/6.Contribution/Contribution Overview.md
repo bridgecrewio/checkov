@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribution Overview
-order: 1
+nav_order: 1
 ---
 
 # Contribution Overview

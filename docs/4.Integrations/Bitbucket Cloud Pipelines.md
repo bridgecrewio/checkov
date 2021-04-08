@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Bitbucket Cloud Pipelines
-order: 2
+nav_order: 2
 ---
 
 # Integrate Checkov with Bitbucket Cloud Pipelines

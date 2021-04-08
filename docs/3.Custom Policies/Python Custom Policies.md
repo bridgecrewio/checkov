@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Python Custom Policies
-order: 2
+nav_order: 2
 ---
 
 # Create Custom Policy - Python - Attribute Check
