@@ -1,12 +1,19 @@
+---
+layout: default
+published: true
+title: Integrate Checkov with Github Actions
+order: 3
+---
+
 # Integrate Checkov with Github Actions
 
-You can integrate Checkov into Github Actions. This provides a simple, automatic way of applying policies to your Terraform code both during merge request review and as part of any build process.
+Integrating Checkov into GitHub Actions provides a simple, automatic way of applying policies to your Terraform code both during pull request review and as part of any build process.
 
-## Use a checkov action from the marketplace
+## Use a Checkov Action from the Marketplace
 
-go to https://github.com/bridgecrewio/checkov-action and use a pre-made action!
+Check out our [pre-made action](https://github.com/bridgecrewio/checkov-action).
 
-## Create your own action: Basic Set-up
+## Create Your Own Action: Basic Set-up
 
 Add a new step in the `workflow.yml`.
 
@@ -44,13 +51,13 @@ jobs:
 
 ## Example Results
 
-Any time after you push your code to Github, it will run this job. If Checkov finds any issues, it will fail the build.
+Any time after you push your code to GitHub, it will run your job. If Checkov finds any errors, it will fail the build. 
 
 ### Action Failure
 
-In the original examples code, the file **aws_efs_file_system.sharedstore.tf**
+In the original examples code, the file **aws_efs_file_system.sharedstore.tf** is not set to encrypted:
 
-```terraform
+```python
 resource "aws_efs_file_system" "sharedstore" {
   creation_token = var.efs["creation_token"]
 
@@ -66,7 +73,7 @@ resource "aws_efs_file_system" "sharedstore" {
 }
 ```
 
-Is not set to be encrypted. This will fail a Checkov test:
+This will fail a Checkov test:
 
 ![Actions Failure](actions_failure.png)
 
@@ -75,8 +82,4 @@ Is not set to be encrypted. This will fail a Checkov test:
 The previous error can be fixed by setting the value of encryption to **true**.
 ![Actions success](actions_success.png)
 
-## Further Reading
-
-For more details on using Python in Github Actions <https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions>.
-
-The test code sample: <https://github.com/JamesWoolfenden/terraform-aws-appsync/blob/master/.github/workflows/master.yml>
+[Read more details on using Python in GitHub Actions.](https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions)
