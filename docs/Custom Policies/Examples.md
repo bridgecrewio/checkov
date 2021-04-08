@@ -4,6 +4,9 @@ published: true
 title: Custom YAML Policies Examples
 order: 4
 ---
+
+# Examples - YAML-Based Custom Policies
+
 ## Basic Query - One Attribute Block
 
 ```yaml
