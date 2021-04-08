@@ -58,9 +58,9 @@ def get_checks(framework="all"):
         add_from_repository(k8_registry, "ClusterRole", "Kubernetes")
         add_from_repository(k8_registry, "AdmissionConfiguration", "Kubernetes")
     if framework == "serverless" or framework == "all":
-        add_from_repository(dockerfile_registry, "resource", "serverless")
+        add_from_repository(sls_registry, "resource", "serverless")
     if framework == "dockerfile" or framework == "all":
-        add_from_repository(sls_registry, "dockerfile", "dockerfile")
+        add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if framework == "arm" or framework == "all":
         add_from_repository(arm_registry, "resource", "arm")
     return sorted(printable_checks_list, key=get_compare_key)
