@@ -58,9 +58,25 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-      - name: Run unit tests
+  bump-version:
+    needs: [integration-tests]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+      - name: Install dependencies
         run: |
           pipenv install --dev
+          pipenv run pip install pytest
+          pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install --upgrade pip==20.2
+          pipenv run pip install dist/checkov-*
+      - name: Test with pytest
+        run: |
           pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
           pipenv run python -m coverage html
@@ -113,7 +129,7 @@ jobs:
           gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
 
   publish-package:
-    needs: integration-tests
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
