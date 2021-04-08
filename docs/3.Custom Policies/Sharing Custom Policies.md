@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Sharing Custom Policies
-order: 5
+nav_order: 5
 ---
 
 # Sharing Custom Policies

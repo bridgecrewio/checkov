@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: YAML Custom Policies
-order: 3
+nav_order: 3
 ---
 
 # Create Custom Policy - YAML - Attribute Check and Composite
