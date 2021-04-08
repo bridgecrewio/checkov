@@ -1,4 +1,9 @@
-# Integrate Checkov with Bitbucket Cloud Pipelines
+---
+layout: default
+published: true
+title: Integrate Checkov with Bitbucket Cloud Pipelines
+order: 2
+---
 
 You can integrate checkov into your Bitbucket Cloud pipelines. This provides a simple, automatic way of applying policies to your Terraform code both during merge request review and as part of your build process.
 
