@@ -1,0 +1,12 @@
+metadata:
+  id: "NoNetworkInterfaceForInstance"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "connection"
+  resource_types:
+    - "aws_instance"
+  connected_resource_types:
+    - "aws_network_interface"
+  operator: "not_exists"
+

@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AWS_8"
+  name: "Ensure that RDS clusters has backup plan of AWS Backup"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_rds_cluster
+      operator: within
+    - cond_type: connection
+      resource_types:
+        - aws_rds_cluster
+      connected_resource_types:
+        - aws_backup_selection
+      operator: exists

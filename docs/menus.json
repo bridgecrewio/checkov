@@ -1,0 +1,31 @@
+{
+  "utility": [
+    {
+      "label": "About Bridgecrew by Prisma Cloud",
+      "url": "https://bridgecrew.io/?utm_source=checkovio&utm_medium=organic_oss&utm_campaign=checkov",
+      "target": "_self",
+      "submenu": false
+    }
+  ],
+  "main": [
+    {
+      "label": "Overview",
+      "url": "/1.Welcome/What%20is%20Checkov.html",
+      "target": "_self",
+      "submenu": false
+    },
+    {
+      "label": "Docs",
+      "url": "/1.Welcome/Quick%20Start.html",
+      "target": "_self",
+      "submenu": false
+    },
+    {
+      "label": "Download",
+      "url": "/2.Basics/Installing%20Checkov.html",
+      "target": "_self",
+      "submenu": false
+    }
+  ]
+}
+

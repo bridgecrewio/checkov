@@ -2,6 +2,9 @@ from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsp
 
 
 class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
+    excluded_actions = {
+        "ecr:GetAuthorizationToken"
+    }
 
     def __init__(self):
         name = "Ensure IAM policies does not allow credentials exposure"
@@ -9,7 +12,11 @@ class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
         super().__init__(name=name, id=id)
 
     def cloudsplaining_analysis(self, policy):
-        return policy.credentials_exposure
+        credentials_exposure_actions = policy.credentials_exposure
+        return [
+            x for x in credentials_exposure_actions
+            if x not in CloudSplainingCredentialsExposure.excluded_actions
+        ]
 
 
 check = CloudSplainingCredentialsExposure()

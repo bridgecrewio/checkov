@@ -1,0 +1,35 @@
+metadata:
+  id: "CKV2_AZURE_21"
+  name: "Ensure Storage logging is enabled for Blob service for read requests"
+  category: "LOGGING"
+definition:
+  and:
+    - resource_types:
+        - azurerm_storage_container
+      connected_resource_types:
+        - azurerm_storage_account
+      operator: exists
+      cond_type: connection
+    - resource_types:
+        - azurerm_storage_account
+      connected_resource_types:
+        - azurerm_log_analytics_storage_insights
+      operator:  exists
+      cond_type: connection
+    - resource_types:
+        - azurerm_log_analytics_storage_insights
+      operator:  exists
+      cond_type: attribute
+      attribute: blob_container_names
+    - resource_types:
+        - azurerm_storage_container
+      operator:  equals
+      cond_type: attribute
+      attribute: container_access_type
+      value: "blob"
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_storage_container
+      operator: within
+

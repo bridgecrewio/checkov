@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_AZURE_16"
+  name: "Ensure that MySQL server enables customer-managed key for encryption"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - resource_types:
+        - azurerm_mysql_server
+      connected_resource_types:
+        - azurerm_mysql_server_key
+      operator:  exists
+      cond_type: connection
+    - resource_types:
+        - azurerm_mysql_server_key
+      connected_resource_types:
+        - azurerm_key_vault_key
+      operator:  exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_mysql_server
+      operator: within
+

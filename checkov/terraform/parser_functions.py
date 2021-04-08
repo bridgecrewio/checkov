@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Dict, List
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
@@ -134,9 +134,13 @@ def map(original, **_):
     if converted_to_list is None or len(converted_to_list) & 1:       # none or odd number of args
         return FUNCTION_FAILED
 
+    return create_map(converted_to_list)
+
+
+def create_map(lst: List):
     new_map = {}
-    for i in range(0, len(converted_to_list), 2):
-        new_map[converted_to_list[i]] = converted_to_list[i + 1]
+    for i in range(0, len(lst), 2):
+        new_map[lst[i]] = lst[i + 1]
     return _check_map_type_consistency(new_map)
 
 

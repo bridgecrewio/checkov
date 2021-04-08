@@ -18,16 +18,21 @@ jobs:
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
 
   unit-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: [3.7, 3.8, 3.9]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python }}
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
+          pipenv --python ${{ matrix.python }}
           pipenv install --dev
       - name: Unit tests
         env:
@@ -38,16 +43,21 @@ jobs:
           pipenv run python -m coverage html
 
   integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: [3.7, 3.8, 3.9]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python }}
       - uses: azure/setup-helm@v1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |
+          pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install --upgrade pip==20.2
@@ -75,16 +85,13 @@ jobs:
           path: 'kubernetes-goat'
       - name: Create checkov reports
         run: |
-          pipenv run checkov -s -d terragoat/terraform/ -o json > checkov_report_terragoat.json
+          pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
           pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
-          pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json          
-          pipenv run checkov -s  --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
+          pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
+          pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
           pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
 
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-
-
-

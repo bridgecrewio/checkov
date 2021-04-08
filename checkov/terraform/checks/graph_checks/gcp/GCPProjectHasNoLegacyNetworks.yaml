@@ -1,0 +1,39 @@
+metadata:
+  id: "CKV2_GCP_2"
+  name: "Ensure legacy networks do not exist for a project"
+  category: "Networking"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_project
+      operator: within
+    - or:
+        - resource_types:
+            - google_compute_network
+          connected_resource_types:
+            - google_project
+          operator: not_exists
+          attribute: project_id
+          cond_type: connection
+        - and:
+            - resource_types:
+                - google_compute_network
+              connected_resource_types:
+                - google_project
+              operator: exists
+              attribute: project_id
+              cond_type: connection
+            - or:
+                - resource_types:
+                    - google_compute_network
+                  operator: not_exists
+                  attribute: auto_create_subnetworks
+                  cond_type: attribute
+                - resource_types:
+                    - google_compute_network
+                  operator: equals
+                  value: false
+                  attribute: auto_create_subnetworks
+                  cond_type: attribute

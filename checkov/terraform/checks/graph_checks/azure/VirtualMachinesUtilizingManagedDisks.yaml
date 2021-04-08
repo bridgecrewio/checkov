@@ -1,0 +1,21 @@
+metadata:
+  name: "Ensure Virtual Machines are utilizing Managed Disks"
+  category: "GENERAL_SECURITY"
+  id: "CKV2_AZURE_9"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_virtual_machine
+      operator: within
+    - cond_type: attribute
+      attribute: storage_os_disk.managed_disk_type
+      operator: exists
+      resource_types:
+        - azurerm_virtual_machine
+    - cond_type: attribute
+      operator: not_exists
+      attribute: storage_os_disk.vhd_uri
+      resource_types:
+        - azurerm_virtual_machine

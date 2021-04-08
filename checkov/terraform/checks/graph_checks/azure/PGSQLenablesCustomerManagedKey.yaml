@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_AZURE_17"
+  name: "Ensure that PostgreSQL server enables customer-managed key for encryption"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - resource_types:
+        - azurerm_postgresql_server
+      connected_resource_types:
+        - azurerm_postgresql_server_key
+      operator:  exists
+      cond_type: connection
+    - resource_types:
+        - azurerm_postgresql_server_key
+      connected_resource_types:
+        - azurerm_key_vault_key
+      operator:  exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_postgresql_server_key
+      operator: within
+

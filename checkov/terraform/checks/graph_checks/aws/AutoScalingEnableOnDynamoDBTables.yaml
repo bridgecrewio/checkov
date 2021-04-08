@@ -1,0 +1,32 @@
+metadata:
+  name: "Ensure that Auto Scaling is enabled on your DynamoDB tables"
+  id: "CKV2_AWS_16"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_appautoscaling_policy
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - aws_appautoscaling_target
+      attribute: scalable_dimension
+      operator: contains
+      value: table
+    - cond_type: attribute
+      resource_types:
+        - aws_appautoscaling_target
+      attribute: service_namespace
+      operator: equals
+      value: dynamodb
+    - cond_type: connection
+      resource_types:
+        - aws_appautoscaling_policy
+      connected_resource_types:
+        - aws_appautoscaling_target
+      operator: exists
+
+
+

@@ -1,0 +1,45 @@
+metadata:
+  name: "Ensure that VA setting Periodic Recurring Scans is enabled on a SQL server"
+  id: "CKV2_AZURE_4"
+  category: "GENERAL_SECURITY"
+definition:
+      and:
+        - resource_types:
+          - azurerm_sql_server
+          connected_resource_types:
+          - azurerm_mssql_server_security_alert_policy
+          operator:  exists
+          cond_type: connection
+        - cond_type: attribute
+          resource_types:
+            - "azurerm_mssql_server_security_alert_policy"
+          attribute: state
+          operator: equals
+          value: Enabled
+        - resource_types:
+            - azurerm_mssql_server_security_alert_policy
+          connected_resource_types:
+            - azurerm_mssql_server_vulnerability_assessment
+          operator:  exists
+          cond_type: connection
+        - or :
+          - cond_type: attribute
+            resource_types:
+              - azurerm_mssql_server_vulnerability_assessment
+            attribute: 'recurring_scans.email_subscription_admins'
+            operator:  equals
+            value: true
+          - cond_type: attribute
+            resource_types:
+              - azurerm_mssql_server_vulnerability_assessment
+            attribute: 'recurring_scans.emails'
+            operator:  exists
+        - cond_type: filter
+          attribute: resource_type
+          value:
+            - azurerm_mssql_server_security_alert_policy
+          operator: within
+        
+       
+
+  

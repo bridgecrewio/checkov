@@ -23,7 +23,7 @@ class TestLocalsContextParser(unittest.TestCase):
         assignments = definitions_context[os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/main.tf']['locals']['assignments']
         self.assertIsNotNone(assignments)
 
-        expected_assignments = {'dummy_with_dash': '${format("-%s",dummy_1)}', 'dummy_with_comma': '${format(":%s",dummy_1)}', 'bucket_name': 'MyBucket'}
+        expected_assignments = {'dummy_with_dash': '${format("-%s",var.dummy_1)}', 'dummy_with_comma': '${format(":%s",var.dummy_1)}', 'bucket_name': '${var.bucket_name}'}
 
         for k, v in assignments.items():
             self.assertEqual(expected_assignments[k], v)

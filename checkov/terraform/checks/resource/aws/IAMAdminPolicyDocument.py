@@ -16,7 +16,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'policy' in conf.keys():
             try:
-                policy_block = json.loads(conf['policy'][0])
+                policy_block = conf['policy'][0]
                 if 'Statement' in policy_block.keys():
                     for statement in force_list(policy_block['Statement']):
                         if 'Action' in statement:

@@ -5,7 +5,7 @@
         "mydb": {
           "source": ["../../../modules/db"],
           "DB_INSTANCE_TYPE": ["db.t3.small"],
-          "ENGINE_VERSION": ["11"],
+          "ENGINE_VERSION": [11],
           "ENCRYPTED": [true],
           "__resolved__": [
             "modules/db/db.tf[envs/myaccount/us-east-1/main.tf#0]",
@@ -37,12 +37,12 @@
       },
       {
         "ENGINE_VERSION": {
-          "default": ["9.5"]
+          "default": [11]
         }
       },
       {
         "DB_INSTANCE_TYPE": {
-          "default": ["db.t3.medium"]
+          "default": ["db.t3.small"]
         }
       },
       {
@@ -58,7 +58,7 @@
             "name": ["my_db"],
             "instance_class": ["db.t3.small"],
             "engine": ["postgres"],
-            "engine_version": ["11"],
+            "engine_version": [11],
             "storage_type": ["gp2"],
             "deletion_protection": [true],
             "storage_encrypted": [true]
@@ -73,7 +73,7 @@
         "mydb": {
           "source": ["../../../modules/db"],
           "DB_INSTANCE_TYPE": ["db.t9.mega"],
-          "ENGINE_VERSION": ["11"],
+          "ENGINE_VERSION": [11],
           "ENCRYPTED": [true],
           "__resolved__": [
             "modules/db/db.tf[envs/myotheraccount/us-east-1/main.tf#0]",
@@ -105,12 +105,12 @@
       },
       {
         "ENGINE_VERSION": {
-          "default": ["9.5"]
+          "default": [11]
         }
       },
       {
         "DB_INSTANCE_TYPE": {
-          "default": ["db.t3.medium"]
+          "default": ["db.t9.mega"]
         }
       },
       {
@@ -126,7 +126,7 @@
             "name": ["my_db"],
             "instance_class": ["db.t9.mega"],
             "engine": ["postgres"],
-            "engine_version": ["11"],
+            "engine_version": [11],
             "storage_type": ["gp2"],
             "deletion_protection": [true],
             "storage_encrypted": [true]

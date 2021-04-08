@@ -1,0 +1,19 @@
+metadata:
+  name: "Ensure that Security Groups are attached to EC2 instances or elastic network interfaces (ENIs)"
+  id: "CKV2_AWS_5"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_security_group
+      operator: within
+    - resource_types:
+      - aws_security_group
+      connected_resource_types:
+        - aws_instance
+        - aws_network_interface
+      operator:  exists
+      attribute: networking
+      cond_type: connection

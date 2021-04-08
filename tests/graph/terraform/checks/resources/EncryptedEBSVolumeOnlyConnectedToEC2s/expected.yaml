@@ -1,0 +1,8 @@
+pass:
+  - "aws_ebs_volume.ok_ebs1"
+  - "aws_ebs_volume.ok_ebs2"
+
+
+fail:
+  - "aws_ebs_volume.not_ok_ebs1"
+  - "aws_ebs_volume.not_ok_ebs2"

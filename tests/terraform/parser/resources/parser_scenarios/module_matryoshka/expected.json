@@ -18,7 +18,7 @@
       }
     ]
   },
-  "bucket1/bucket2/bucket3/bucket.tf[bucket1/bucket2/bucket.tf#0]": {
+  "bucket1/bucket2/bucket3/bucket.tf[buckets.tf->bucket1/bucket.tf->bucket1/bucket2/bucket.tf#0#0]": {
     "resource": [
       {
         "aws_s3_bucket": {
@@ -30,7 +30,7 @@
       }
     ]
   },
-  "bucket1/bucket2/bucket.tf[bucket1/bucket.tf#0]": {
+  "bucket1/bucket2/bucket.tf[buckets.tf->bucket1/bucket.tf#0]": {
     "module": [
       {
         "bucket3": {
