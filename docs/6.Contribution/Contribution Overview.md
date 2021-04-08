@@ -74,7 +74,7 @@ In order to develop the Custom Policy, a relevant example configuration should b
 
 ## Creating and Testing the Custom Policy
   * See [Create Python Policies](../3.Custom%20Policies/Python%20Custom%20Policies.md) and [Contribute Python-Based Policies](../6.Contribution/Contribute%20Python-Based%20Policies.md).
-  * See [Create YAML Policies](../3.Custom%20Policies/YAML%20Custom%20Policies.md) and [Contribute YAML-Based Policies](../6.Contribution/Contribute%20YAML-Based%20Policies.md).
+  * See [Create YAML Policies](../3.Custom%20Policies/YAML%20Custom%20Policies.md) and [Contribute YAML-Based Policies](../6.Contribution/Contribute%20YAML-based%20Policies.md).
 
 ## Pull Request
 Open a PR that contains the implementation code and testing suite, with the following information:
