@@ -1,8 +1,11 @@
-# Integrate Checkov with pre-commit
+---
+layout: default
+published: true
+title: Integrate Checkov with Pre-Commit
+order: 6
+---
 
-## Pre-commit Setup
-
-To use checkov with [pre-commit](https://pre-commit.com), just add the following to your local repo's `.pre-commit-config.yaml` file. Make sure to change rev: to be either a git commit sha or tag of checkov containing `.pre-commit-hooks.yaml`.
+To use Checkov with [pre-commit](https://pre-commit.com), just add the following to your local repo's `.pre-commit-config.yaml` file:
 
 ```yaml
 - repo: https://github.com/bridgecrewio/checkov.git
@@ -11,9 +14,11 @@ To use checkov with [pre-commit](https://pre-commit.com), just add the following
     - id: checkov
 ```
 
-## How to add custom parameters
+Make sure to change `rev:` to be either a git commit sha or tag of checkov containing `.pre-commit-hooks.yaml`.
 
-You can provide arguments to `checkov` using the args property.  For example, the following will print checkov output, and proceed regardless of success/failure to the next pre-commit check.
+## Adding Custom Parameters
+
+You can use the `args` property to input arguments to Checkov. In the example below, Checkov output will be printed, and then Checkov will proceed to the next pre-commit check *regardless of success/failure*.
 
 ```yaml
 repos:
