@@ -5,99 +5,86 @@ title: Contribution Overview
 order: 1
 ---
 
-#Overview
+## Overview
 Checkov users are encouraged to contribute their custom Policies to help increase our existing IaC coverage.
 Our aim is to help close gaps in real-world hardening, assessments, auditing and forensics. In other words, we specifically encourage contribution of new Policies that you think should be globally accepted when provisioning and changing infrastructure.
-
 
 The main aspects of contributing new Policies are:
   * Preparing the prerequisites
   * Creating and Testing the Custom Policy (either YAML or Python format)
   * Pull Request
- 
-## Scripted Guide
-
-### Contribution Stages
-
-1. Prerequisites
-    * Install Checkov as described in the [Installation](#installation) subsection.
-    * Read about the structure and functionality of checks in the [Prerequisites](#prerequisites) section.
-    * Identify the `type` and `provider` of the check, as described [here](#check-structure).
-    * If available, provide the IaC configuration documentation that relates to the check, as described [here](#review-iac-configuration-documentation).
-    * Provide an example Terraform or CloudFormation configuration file, as described [here](#example-Terraform-configuration).
-2. Implementation
-    * Implement the check as described in the [Implementation](#implementation) section.
-3. Testing
-    * Provide a unit test suite of the check as described in the [Testing](#testing) section.
-4. Pull Request
-    * Open a PR that contains the implementation code and testing suite, with the following information:
-        * Check `id`.
-        * Check `name`.
-        * The check's IaC type.
-        * Check type and provider.
-        * IaC configuration documentation (If available).
-        * Example Terraform configuration file.
-        * Any additional information that would help other members to better understand the check.
 
 ## Prerequisites
 
 ### Installation
 
-First, make sure you have correctly installed and configured Checkov. If you are unsure, go back and reread [Installing Checkov](doc:installing-checkov).
-By now you should have either scanned a folder containing Terraform state-files or integrated Checkov as part of your CI/CD pipeline.
+First, make sure you installed and configured Checkov correctly. If you are unsure, go back and read the Getting Started.
 
-### Check Structure
+Preferably by now you have either scanned a folder containing Terraform state-files or went ahead and integrated Checkov as part of your CI/CD pipeline.
 
-Each check includes the following mandatory properties:
-[block:parameters]
-{
-  "data": {
-    "h-0": "Property",
-    "h-1": "Description",
-    "h-2": "Example/Comments",
-    "0-0": "``name``",
-    "0-1": "The unique purpose of a new check. It should ideally specify the positive desired outcome of the policy.",
-    "1-0": "``id``",
-    "1-1": "A mandatory unique identifier of a policy.\nPolicies written by Checkov maintainers follow the following convention ``CKV_providerType_serialNumber``.",
-    "1-2": "`CKV_AWS_9`\n`CKV_GCP_12`",
-    "2-0": "``categories``",
-    "2-1": "A categorization of a scan.",
-    "2-2": "This is usually helpful when producing compliance reports, pipeline analytics and health metrics. \nCheck out our existing categories before creating a new one."
-  },
-  "cols": 3,
-  "rows": 3
-}
-[/block]
-When contributing a new check, the `id`'s serial number should rise incrementally as `x+1`, where `x` is the serial number of the latest check implemented by that provider.
-More specific types of check may also include additional attributes. For example, a check that scans a Terraform resource configuration also contains the `supported_resources` attribute, which is a list of the supported resource types of the check.
+### Custom Policy Structure
 
-### Check Result
+Each check consists of the following mandatory properties:
 
-The result of a scan should be a binary result of either `PASSED` or `FAILED`. We have also included an `UNKNOWN` option, which means that it is unknown if the scanned configuration complied with the check. If your check could have edge cases that might not be supported by the scanner's current logic, consider supporting the `UNKNOWN` option.
-Additionally, a check can be suppressed by Checkov on a given configuration by inserting a skip comment inside a specific configuration scope. Then, the check's result on the suppressed configuration would be `SKIPPED`.
-Read more about Checkov's [Suppressions](doc:suppress) for further details.
+**name:** A new Custom Policy's unique purpose. It should ideally specify the positive desired outcome of the policy.
 
-## IaC Type Scanner
+**ID:** A mandatory unique identifier of a policy. Policies written by Checkov maintainers follow the following convention: **CKV_providerType_serialNumber**. (e.g., CKV_AWS_9 , CKV_GCP_12)
+
+**Categories:** A categorization of a scan. This is usually helpful when producing compliance reports, pipeline analytics and health metrics. Check out our existing categories before creating a new one.
+
+When contributing a Custom Policy, please increment the ID number to be x+1, where x is the serial number of the latest implemented Custom Policy, with respect to its provider (e.g., AWS).
+
+A more specific type of Custom Policy may also include additional attributes. For example, a check that scans a Terraform resource configuration also contains the supported_resources attribute, which is a list of the supported resource types of the check.
+
+
+### Result
+
+The result of a scan should be a binary result of either PASSED or FAILED. We have also included an UNKNOWN option, which means that it is unknown if the scanned configuration complied with the check. If your check could have edge cases that might not be supported by the scanner’s current logic, consider support the UNKNOWN option.
+
+Additionally, a Policy can be suppressed by Checkov on a given configuration by inserting a skip comment inside a specific configuration scope. Then, the result for that Policy would be SKIPPED.
+For further details, see [Suppressions](ref:suppressions).
+
+### IaC Type Scanner
 
 Identify which IaC type the check will test. Currently, Checkov can scan either Terraform or CloudFormation configuration files.
 Place your code in the `checkov/<scanner>` folder, where `<scanner>` is either `terraform` or `cloudformation`.
 
-### Check Type and Provider
+Identify which IaC type will be tested under the Custom Policy. Currently, Checkov scans either Terraform or CloudFormation configuration files. Place your code in the `checkov/<scanner>` folder, where `<scanner>` is either terraform or cloudformation.
 
-Checks are initially divided into folders grouped by type, and then by provider.
-Checks should relate to a common IaC configuration type of a specific public cloud provider. For example, a check that validates the encryption configuration of an S3 bucket is considered to be of the type `resource`, and of the provider `aws`.
+### Custom Policy Type and Provider
 
-Identify the type and provider of the new check to ensure it is correctly placed in the project structure. For example, the above-mentioned check is already implemented in Checkov under `checkov/terraform/checks/resource/aws/S3Encryption.py`.
-Note again that checks are divided into folders grouped first by type, and then by provider.
+Custom Policies are divided first into folders grouped by type, and then grouped by provider.
+
+Custom Policies should relate to a common IaC configuration type of a specific public cloud provider. For example, a Custom Policy that validates the encryption configuration of an S3 bucket is considered to be of type `resource`, and of `aws` provider.
+
+Identify the type and provider of the new Custom Policy in order to place it correctly under the project structure. For example, the mentioned above check is already implemented in Checkov under `checkov/terraform/checks/resource/aws/S3Encryption.py`.
+
+Notice that Custom Policies are divided into folders grouped by type, and then grouped provider.
 
 ### Review IaC Configuration Documentation
 
-If available, please provide the official [Terraform](https://www.terraform.io/docs) or [CloudFormation](https://docs.aws.amazon.com/cloudformation/) documentation of the checked configuration. This makes it easier for users to understand the scanned configuration of the check, and how to use it.
-For example, the configuration documentation for the check described above can be found [here](https://www.terraform.io/docs/providers/aws/r/s3_bucket.html).
+If available, please provide the official Terraform or CloudFormation documentation of the checked configuration. This helps users to better understand the Custom Policy's scanned configuration and usage.
 
-### Example IaC Configuration
+For example, the documentation for the Custom Policy mentioned above is [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket).
 
-In order to develop the check, present a relevant example configuration (e.g. `example.tf, template.json`) as an input to Checkov. The example should include configurations that both pass and fail according to the check's logic. You can serve the file as an input to the appropriate check's unit tests.
+### Sample IaC Configuration
+
+In order to develop the Custom Policy, a relevant example configuration should be presented as an input to Checkov. Provide a sample configuration (e.g., `example.tf`, `template.json`) that contains both passing and failing configurations with respect to the Custom Policy's logic. The file can be served as an input to the appropriate Custom Policy's unit tests.
+
+## Creating and Testing the Custom Policy
+  * See [Create Custom Policy - Python - Attribute Check](doc:create-custom-policy-python-attribute-check) and [Contribute Python-Based Policies](doc:contribute-python-based-policies).
+  * See [Create Custom Policy - YAML - Attribute Check and Composite](doc:create-custom-policy-yaml-attribute-check-and-composite) and [Contribute - YAML-based Policies](doc:contribute-yaml-based-policies).
+
+## Pull Request
+Open a PR that contains the implementation code and testing suite, with the following information:
+
+  * Custom Policy `id`.
+  * Custom Policy `name`.
+  * Custom Policy IaC type.
+  * Custom Policy type and provider.
+  * IaC configuration documentation (If available).
+  * Sample Terraform configuration file.
+  * Any additional information that would help other members to better understand the check.
 
 ## Implementation
 
