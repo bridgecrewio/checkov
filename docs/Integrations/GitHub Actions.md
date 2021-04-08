@@ -47,13 +47,13 @@ jobs:
           framework: terraform 
 ```
 
-### Example Results
+## Example Results
 
-Any time after you push your code to GitHub, it will run your job. 
+Any time after you push your code to GitHub, it will run your job. If Checkov finds any errors, it will fail the build. 
 
 ### Action Failure
 
-If Checkov finds any errors, it will fail the build. In the original examples code, the file **aws_efs_file_system.sharedstore.tf** is not set to encrypted:
+In the original examples code, the file **aws_efs_file_system.sharedstore.tf** is not set to encrypted:
 
 ```python
 resource "aws_efs_file_system" "sharedstore" {
