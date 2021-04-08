@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Contribute New Terraform Provider
-order: 2
+order: 4
 ---
 In this example we'll add support for a new Terraform Provider, the Linode Cloud platform.
 
