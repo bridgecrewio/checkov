@@ -5,6 +5,8 @@ title: Handling Variables
 order: 7
 ---
 
+# Handling Variables
+
 Checkov supports the evaluation of variables found in Terraform expressions.
 Variables are declared in `.tf` files where each variable has an identifying name, description, and optional default value.
 Checkov collects the default values of variables and assigns them to their corresponding references in Terraform expressions.
