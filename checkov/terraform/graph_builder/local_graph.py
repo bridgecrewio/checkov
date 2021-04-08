@@ -266,7 +266,7 @@ class LocalGraph:
         possible_vertices = self.vertices_block_name_map.get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
-            if vertex.module_dependency == module_path:
+            if vertex.module_dependency == module_path and os.path.dirname(vertex.path) == os.path.dirname(block_path):
                 relative_vertices.append(vertex_index)
 
         if len(relative_vertices) == 1:
