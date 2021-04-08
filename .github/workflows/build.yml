@@ -101,20 +101,20 @@ jobs:
           for i in cloudformation terraform kubernetes serverless arm dockerfile all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
-            echo "---" > $scansdoc
-            echo "layout: default" >> $scansdoc
-            echo "title: $i resource scans" >> $scansdoc
-            echo "nav_order: 1" >> $scansdoc
-            echo "---" >> $scansdoc
-            echo "" >> $scansdoc
-            echo "# $i resource scans (auto generated)" >> $scansdoc
-            echo "" >> $scansdoc
-            pipenv run python checkov/main.py --list --framework "$i" >> $scansdoc
-            git commit --reuse-message=HEAD@{1} $scansdoc || echo "No changes to commit"
+            echo "---" > "$scansdoc"
+            echo "layout: default" >> "$scansdoc"
+            echo "title: $i resource scans" >> "$scansdoc"
+            echo "nav_order: 1" >> "$scansdoc"
+            echo "---" >> "$scansdoc"
+            echo "" >> "$scansdoc"
+            echo "# $i resource scans (auto generated)" >> "$scansdoc"
+            echo "" >> "$scansdoc"
+            pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
+            git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
 
           done
           pipenv run python checkov/main.py --list --framework cloudformation >> "docs/5.Policy Index/serverless.md"
-          git commit --reuse-message=HEAD@{1} $scansdoc || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
 
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
