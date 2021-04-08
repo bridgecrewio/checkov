@@ -5,6 +5,8 @@ title: Integrate Checkov with GitLab CI
 order: 4
 ---
 
+# Integrate Checkov with GitLab CI
+
 Integrating Checkov into your GitLab CI pipelines provides a simple, automatic way of applying policies to your Terraform code both during merge request review and as part of your build process.
 
 ## Basic Setup
@@ -105,4 +107,4 @@ checkov:
 ```
 
 See the [GitLab CI documentation](https://docs.gitlab.com/ee/ci/) for additional information.
-The there is also a working example of using GitLab CI with Checkov [here](https://gitlab.com/guided-explorations/ci-cd-plugin-extensions/checkov-iac-sast.  This example shows how to use the same Checkov YAML file as an includable extension so that all your jobs reuse the same job definition.
+The there is also a working example of using GitLab CI with Checkov [here](https://gitlab.com/guided-explorations/ci-cd-plugin-extensions/checkov-iac-sast).  This example shows how to use the same Checkov YAML file as an includable extension so that all your jobs reuse the same job definition.
