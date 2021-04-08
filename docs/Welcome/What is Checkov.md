@@ -21,7 +21,7 @@ Checkov scans these IaC file types:
 
 ## Custom policies
 
-Custom policies can be created to check cloud resources based on configuration attributes (in [Python(../3.Custom%20Policies/Create%20Python%20Policies.md)] or [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)) or connection states (in [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)). For composite policies, Checkov creates a cloud resource connection graph for deep misconfiguration analysis across resource relationships.
+Custom policies can be created to check cloud resources based on configuration attributes (in [Python](../3.Custom%20Policies/Create%20Python%20Policies.md) or [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)) or connection states (in [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)). For composite policies, Checkov creates a cloud resource connection graph for deep misconfiguration analysis across resource relationships.
 
 ## Compliance with Industry Standards
 
