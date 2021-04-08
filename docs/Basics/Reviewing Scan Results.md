@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Reviewing Scan Results
-order: 3
+order: 5
 ---
 
 The results of Checkov scans can be viewed in CLI, JSON, or JUnit
