@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Custom YAML Policies Examples
-order: 5
+order: 4
 ---
 ## Basic Query - One Attribute Block
 
