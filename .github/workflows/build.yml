@@ -113,7 +113,10 @@ jobs:
             git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
 
           done
-          pipenv run python checkov/main.py --list --framework cloudformation >> "docs/5.Policy Index/serverless.md"
+
+          #add cloudformation scans to serverless
+          export scansdoc="docs/5.Policy Index/serverless.md"
+          pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
           git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
 
           ## update python version
