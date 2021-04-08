@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Integrate Checkov with GitLab CI
+title: GitLab CI
 order: 4
 ---
 

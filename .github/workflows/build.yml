@@ -58,20 +58,7 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-  bump-version:
-    needs: [integration-tests]
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
-        run: |
-          pipenv install --dev
-      - name: Test with pytest
+      - name: Run unit tests
         run: |
           pipenv run python -m coverage run -m pytest tests
           pipenv run python -m coverage report
@@ -92,18 +79,24 @@ jobs:
 
           ## update docs
           export PYTHONPATH='.'
-          export scansdoc=docs/3.Scans/resource-scans.md
-          echo "---" > $scansdoc
-          echo "layout: default" >> $scansdoc
-          echo "title: Resource scans" >> $scansdoc
-          echo "nav_order: 1" >> $scansdoc
-          echo "---" >> $scansdoc
-          echo "" >> $scansdoc
-          echo "# Resource scans (auto generated)" >> $scansdoc
-          echo "" >> $scansdoc
           git pull
-          pipenv run python ./checkov/common/util/docs_generator.py >> $scansdoc
 
+          for i in cloudformation terraform kubernetes serverless arm dockerfile all
+          do
+            export scansdoc="docs/5.Policy Index/$i.md"
+            echo "---" > $scansdoc
+            echo "layout: default" >> $scansdoc
+            echo "title: $i resource scans" >> $scansdoc
+            echo "nav_order: 1" >> $scansdoc
+            echo "---" >> $scansdoc
+            echo "" >> $scansdoc
+            echo "# $i resource scans (auto generated)" >> $scansdoc
+            echo "" >> $scansdoc
+            pipenv run python checkov/main.py --list --framework "$i" >> $scansdoc
+            git commit --reuse-message=HEAD@{1} $scansdoc || echo "No changes to commit"
+
+          done
+          pipenv run python checkov/main.py --list --framework cloudformation >> "docs/5.Policy Index/serverless.md"
           git commit --reuse-message=HEAD@{1} $scansdoc || echo "No changes to commit"
 
           ## update python version
@@ -119,7 +112,7 @@ jobs:
           gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
 
   publish-package:
-    needs: bump-version
+    needs: integration-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master

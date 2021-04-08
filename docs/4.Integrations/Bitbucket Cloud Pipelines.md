@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Integrate Checkov with Bitbucket Cloud Pipelines
+title: Bitbucket Cloud Pipelines
 order: 2
 ---
 

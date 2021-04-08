@@ -7,7 +7,7 @@ order: 1
 
 # What is Checkov?
 
-Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of of [custom policies](../3.Custom%20Policies/Overview.md).
+Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of of [custom policies](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
 
 ## Supported IaC types
 
@@ -21,7 +21,7 @@ Checkov scans these IaC file types:
 
 ## Custom policies
 
-Custom policies can be created to check cloud resources based on configuration attributes (in [Python](../3.Custom%20Policies/Create%20Python%20Policies.md) or [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)) or connection states (in [YAML](../3.Custom%20Policies/Create%20YAML%20Policies.md)). For composite policies, Checkov creates a cloud resource connection graph for deep misconfiguration analysis across resource relationships.
+Custom policies can be created to check cloud resources based on configuration attributes (in [Python](../3.Custom%20Policies/Python%20Custom%20Policies.md) or [YAML](../3.Custom%20Policies/YAML%20Custom%20Policies.md) or connection states (in [YAML](../3.Custom%20Policies/YAML%20Custom%20Policies.md)). For composite policies, Checkov creates a cloud resource connection graph for deep misconfiguration analysis across resource relationships.
 
 ## Compliance with Industry Standards
 

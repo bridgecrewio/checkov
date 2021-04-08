@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Using Checkov with Docker
+title: Docker
 order: 7
 ---
 
