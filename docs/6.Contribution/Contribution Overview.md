@@ -66,7 +66,7 @@ Notice that Custom Policies are divided into folders grouped by type, and then g
 
 If available, please provide the official Terraform or CloudFormation documentation of the checked configuration. This helps users to better understand the Custom Policy's scanned configuration and usage.
 
-For example, the documentation for the Custom Policy mentioned above is [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket).
+For example, the documentation for the Custom Policy mentioned above is [here](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
 
 ### Sample IaC Configuration
 
