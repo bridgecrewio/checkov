@@ -7,7 +7,7 @@ nav_order: 3
 
 # Create Custom Policy - YAML - Attribute Check and Composite
 
-Custom policies created in YAML support checking a resource’s connection state and the use of complex AND/OR logic. Read also how to [create custom Python Policies for attribute scanning](../3.Custom%20Policies/Python%20Custom%20Policies.md).
+Custom policies created in YAML support checking a resource’s connection state and the use of complex AND/OR logic. Read also how to [create custom Python Policies for attribute scanning](https://www.checkov.io/3.Custom%20Policies/Python%20Custom%20Policies.html).
 
 A YAML-based custom policy for Checkov consists of sections for the **Metadata** and **Policy Definition**.
 
