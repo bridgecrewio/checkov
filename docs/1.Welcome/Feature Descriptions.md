@@ -35,7 +35,7 @@ In addition to integrating with your code repository, Checkov can also integrate
 
 ## Custom Policies
 
-* [Create custom Python attribute policies](../3.Custom%20Policies/Create%20Python%20Policies.md)
-* [Create custom YAML attribute and composite policies](../3.Custom%20Policies/Create%20YAML%20Policies.md)
+* [Create custom Python attribute policies](../3.Custom%20Policies/Python%20Custom%20Policies.md)
+* [Create custom YAML attribute and composite policies](../3.Custom%20Policies/YAML%20Custom%20Policies.md)
 * [Custom policy examples](../3.Custom%20Policies/Examples.md)
-* [Share custom policies across repos](../3.Custom%20Policies/Sharing%20Custom%20Policies.md)
+* [Share custom policies across repos](../3.Custom%20Policies/Examples.md)
