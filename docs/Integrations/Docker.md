@@ -5,6 +5,8 @@ title: Using Checkov with Docker
 order: 7
 ---
 
+# Using Checkov with Docker
+
 ```coffeescript
 docker pull bridgecrew/checkov
 docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
