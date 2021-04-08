@@ -86,18 +86,3 @@ Open a PR that contains the implementation code and testing suite, with the foll
   * IaC configuration documentation (If available).
   * Sample Terraform configuration file.
   * Any additional information that would help other members to better understand the check.
-
-## Implementation
-
-After identifying the check's IaC type and provider, place the file containing its code inside the folder `checkov/<scanner>/checks/<type>/<provider>`, where `<type>` is the check's type and `<provider>` is the check's provider.
-
-A check is a class that implements an `abstract` base check class that corresponds to a particular provider and type.
-For example, all checks with the type `resource` and the provider `aws` implement the resource base check class found at `checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement the abstract method of its base check, named `scan_resource_conf`. The input for this is a dictionary of all the key-valued resource attributes, and the output is a `CheckResult`.
-
-For an example of a full implementation of a check, please refer to the [Custom Policy Documentation](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
-
-## Testing
-
-To test the check, create an appropriate unit test file. Assuming the class file for your check is located in the directory `checkov/terraform/checks/<type>/<provider>`, and is named `<ClassName>.py`, you would the unit test file in the directory `tests/terraform/checks/<type>/<provider>` , and name it `test_<ClassName>.py`.
-
-The test suite should cover different check results; Test if the check outputs `PASSED` on a compliant configuration, and test if it outputs `FAILED` on a non-compliant configuration. You are also encouraged to test more specific components of the check, according to their complexity.
