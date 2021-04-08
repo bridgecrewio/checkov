@@ -94,7 +94,7 @@ After identifying the check's IaC type and provider, place the file containing i
 A check is a class that implements an `abstract` base check class that corresponds to a particular provider and type.
 For example, all checks with the type `resource` and the provider `aws` implement the resource base check class found at `checkov/terraform/checks/resource/base_check.py`. The resource check needs to implement the abstract method of its base check, named `scan_resource_conf`. The input for this is a dictionary of all the key-valued resource attributes, and the output is a `CheckResult`.
 
-For an example of a full implementation of a check, please refer to the [Custom Policy Documentation](../3.Custom%Policies/Overview.md).
+For an example of a full implementation of a check, please refer to the [Custom Policy Documentation](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
 
 ## Testing
 
