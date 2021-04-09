@@ -45,7 +45,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     args = parser.parse_args(argv)
     # Disable runners with missing system dependencies
     args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
-
+    logger.debug('hello')
+    logger.debug(args.download_external_modules)
     runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
                                  external_modules_download_path=args.external_modules_download_path,
@@ -173,7 +174,7 @@ def add_parser_args(parser):
                         action='store_true')
     parser.add_argument('--download-external-modules',
                         help="download external terraform modules from public git repositories and terraform registry",
-                        default=False)
+                        default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False))
     parser.add_argument('--external-modules-download-path',
                         help="set the path for the download external terraform modules",
                         default=DEFAULT_EXTERNAL_MODULES_DIR)

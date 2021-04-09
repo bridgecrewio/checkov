@@ -79,6 +79,7 @@ class Runner(BaseRunner):
                 local_graph, tf_definitions = \
                     self.graph_manager.build_graph_from_source_directory(root_folder,
                                                                          local_graph_class=self.graph_class,
+                                                                         download_external_modules=runner_filter.download_external_modules,
                                                                          parsing_errors=parsing_errors)
             elif files:
                 files = [os.path.abspath(file) for file in files]
