@@ -174,7 +174,7 @@ def encode_graph_property_value(value):
         value = str(value).lower()
     elif isinstance(value, (float, int)):
         value = str(value)
-    return json.dumps(value, indent=4)
+    return json.dumps(value, indent=4, default=str)
 
 
 def decode_graph_property_value(value, leave_str=False):
