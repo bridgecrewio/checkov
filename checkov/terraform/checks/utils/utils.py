@@ -180,7 +180,7 @@ def encode_graph_property_value(value):
 def decode_graph_property_value(value, leave_str=False):
     if type(value) not in (str, bytes, bytearray):
         return value
-    if 'python' in value:
+    if 'python_object' in value:
         raise Exception(f'checkov does not allow arbitrary code execution, found here: {value}')
     if value.startswith('"') and value.endswith('"'):
         value = value[1:-1]
