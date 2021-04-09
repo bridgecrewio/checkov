@@ -1,16 +1,13 @@
-import base64
-import builtins
 import concurrent.futures
 import hashlib
-import io
 import json
+import logging
 import os
-import pickle  # nosec
 import re
 from copy import deepcopy
 
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 BLOCK_TYPES_STRINGS = ['var', 'local', 'module', 'data']
 FUNC_CALL_PREFIX_PATTERN = r'([.a-zA-Z]+)\('
@@ -57,7 +54,8 @@ def get_vertices_references(str_value, aliases, resources_types):
                 suspected_block_type = word_sub_parts[0]
                 if suspected_block_type in BLOCK_TYPES_STRINGS:
                     # matching cases like 'var.x'
-                    vertex_reference = VertexReference(block_type=suspected_block_type, sub_parts=word_sub_parts[1:], origin_value=w)
+                    vertex_reference = VertexReference(block_type=suspected_block_type, sub_parts=word_sub_parts[1:],
+                                                       origin_value=w)
                     if vertex_reference not in vertices_references:
                         vertices_references.append(vertex_reference)
                     continue
@@ -86,10 +84,7 @@ def block_type_str_to_enum(block_type_str):
         return BlockType.VARIABLE
     if block_type_str == 'local':
         return BlockType.LOCALS
-    try:
-        return BlockType(block_type_str)
-    except Exception:
-        return None
+    return BlockType(block_type_str)
 
 
 def block_type_enum_to_str(block_type):
@@ -144,20 +139,25 @@ def replace_map_attribute_access_with_dot(str_value):
     return '.'.join(new_split)
 
 
-DEFAULT_CLEANUP_FUNCTIONS = [remove_function_calls_from_str, remove_index_pattern_from_str, replace_map_attribute_access_with_dot, remove_interpolation]
+DEFAULT_CLEANUP_FUNCTIONS = [remove_function_calls_from_str, remove_index_pattern_from_str,
+                             replace_map_attribute_access_with_dot, remove_interpolation]
 
 
-def get_referenced_vertices_in_value(value, aliases, resources_types, cleanup_functions=DEFAULT_CLEANUP_FUNCTIONS):
+def get_referenced_vertices_in_value(value, aliases, resources_types, cleanup_functions=None):
+    if cleanup_functions is None:
+        cleanup_functions = DEFAULT_CLEANUP_FUNCTIONS
     references_vertices = []
     value_type = type(value)
 
     if value_type is list:
         for sub_value in value:
-            references_vertices += get_referenced_vertices_in_value(sub_value, aliases, resources_types, cleanup_functions)
+            references_vertices += get_referenced_vertices_in_value(sub_value, aliases, resources_types,
+                                                                    cleanup_functions)
 
     if value_type is dict:
         for sub_key in value:
-            references_vertices += get_referenced_vertices_in_value(value[sub_key], aliases, resources_types, cleanup_functions)
+            references_vertices += get_referenced_vertices_in_value(value[sub_key], aliases, resources_types,
+                                                                    cleanup_functions)
 
     if value_type is str:
         if cleanup_functions:
@@ -174,54 +174,25 @@ def encode_graph_property_value(value):
         value = str(value).lower()
     elif isinstance(value, (float, int)):
         value = str(value)
-    return json.dumps(value, cls=PythonObjectEncoder, indent=4)
+    return json.dumps(value, indent=4, default=str)
 
 
 def decode_graph_property_value(value, leave_str=False):
-    try:
-        if type(value) is str and value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
-        if not leave_str:
-            if value.isnumeric():
-                value = int(value)
-            value = json.loads(value, object_hook=as_python_object)
+    if type(value) not in (str, bytes, bytearray):
         return value
-    except (ValueError, AttributeError):
-        try:
-            if type(value) in [str, bytes, bytearray]:
+    if 'python' in value:
+        raise Exception(f'checkov does not allow arbitrary code execution, found here: {value}')
+    if value.startswith('"') and value.endswith('"'):
+        value = value[1:-1]
+    if not leave_str:
+        if value.isnumeric():
+            value = int(value)
+        else:
+            try:
                 value = json.loads(value)
-            return value
-        except ValueError:
-            pass
-
-    finally:
-        return value
-
-
-class RestrictedUnpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        # Only allow safe classes from builtins.
-        if module == "builtins" or module.startswith("lark."):
-            return getattr(builtins, name)
-        # Forbid everything else.
-        raise pickle.UnpicklingError("global '%s.%s' is forbidden" %
-                                     (module, name))
-
-def restricted_loads(s):
-    """Helper function analogous to pickle.loads()."""
-    return RestrictedUnpickler(io.BytesIO(s)).load()
-
-
-class PythonObjectEncoder(json.JSONEncoder):
-    def default(self, obj):
-        return {'_python_object':
-                base64.b64encode(pickle.dumps(obj)).decode('utf-8') }
-
-
-def as_python_object(dct):
-    if '_python_object' in dct:
-        return restricted_loads(base64.b64decode(dct['_python_object']))
-    return dct
+            except (ValueError, AttributeError):
+                logging.debug(f'Failed to decode graph value {value}')
+    return value
 
 
 def calculate_hash(data):
@@ -271,6 +242,7 @@ def update_dictionary_attribute(config, key_to_update, new_value):
 
     return config
 
+
 def join_trimmed_strings(char_to_join, str_lst, num_to_trim):
     return char_to_join.join(str_lst[:len(str_lst) - num_to_trim])
 
@@ -281,6 +253,7 @@ def filter_sub_keys(key_list):
         if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
             filtered_key_list.append(key)
     return filtered_key_list
+
 
 def generate_possible_strings_from_wildcards(origin_string, max_entries=10):
     max_entries = int(os.environ.get("MAX_WILDCARD_ARR_SIZE", max_entries))
@@ -300,7 +273,7 @@ def generate_possible_strings_from_wildcards(origin_string, max_entries=10):
         new_generated_strings = []
         for s in generated_strings:
             before_wildcard = s[:wildcard_index]
-            after_wildcard = s[wildcard_index+1:]
+            after_wildcard = s[wildcard_index + 1:]
             for i in range(max_entries):
                 new_generated_strings.append(before_wildcard + str(i) + after_wildcard)
         generated_strings = new_generated_strings

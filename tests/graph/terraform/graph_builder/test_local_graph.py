@@ -41,7 +41,7 @@ class TestLocalGraph(TestCase):
                                                                           render_variables=True)
         edges_hash = []
         for e in local_graph.edges:
-            edge_hash = calculate_hash(e)
+            edge_hash = calculate_hash({"origin": e.origin, "dest": e.dest, "label": e.label})
             if edge_hash in edges_hash:
                 origin = local_graph.vertices[e.origin]
                 dest = local_graph.vertices[e.dest]
