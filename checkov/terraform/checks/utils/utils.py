@@ -181,7 +181,7 @@ def decode_graph_property_value(value, leave_str=False):
     if type(value) not in (str, bytes, bytearray):
         return value
     if 'python' in value:
-        raise Exception(f'Identified malicious code in {value}')
+        raise Exception(f'checkov does not allow arbitrary code execution, found here: {value}')
     if value.startswith('"') and value.endswith('"'):
         value = value[1:-1]
     if not leave_str:
