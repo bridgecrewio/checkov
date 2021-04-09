@@ -1,6 +1,7 @@
 FROM python:3.8-alpine
 
-RUN apk update && apk add git
+RUN apk update && apk add --no-cache git util-linux
 
-RUN pip install -U checkov
+RUN pip install --no-cache-dir -U checkov
+
 ENTRYPOINT ["checkov"]

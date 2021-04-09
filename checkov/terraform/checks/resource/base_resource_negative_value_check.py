@@ -9,8 +9,9 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources):
+    def __init__(self, name, id, categories, supported_resources, missing_attribute_result=CheckResult.PASSED):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        self.missing_attribute_result = missing_attribute_result
 
     def scan_resource_conf(self, conf):
         self.handle_dynamic_values(conf)
@@ -32,8 +33,10 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
                 value = value[0]
             if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED
+            else:
+                return CheckResult.PASSED
 
-        return CheckResult.PASSED
+        return self.missing_attribute_result
 
     @abstractmethod
     def get_inspected_key(self):

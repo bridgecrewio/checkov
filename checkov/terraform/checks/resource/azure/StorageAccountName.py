@@ -21,7 +21,7 @@ class StorageAccountName(BaseResourceCheck):
         :param conf: azurerm_storage_account configuration
         :return: <CheckResult>
         """
-        return CheckResult.PASSED if conf.get('name') and re.findall(STO_NAME_REGEX, conf['name'][0]) else CheckResult.FAILED
+        return CheckResult.PASSED if conf.get('name') and re.findall(STO_NAME_REGEX, str(conf['name'][0])) else CheckResult.FAILED
 
 
 check = StorageAccountName()

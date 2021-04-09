@@ -1,0 +1,31 @@
+metadata:
+  name: "Ensure that only encrypted EBS volumes are attached to EC2 instances"
+  category: "ENCRYPTION"
+  id: "CKV2_AWS_2"
+definition:
+  and:
+    - or:
+      - cond_type: "connection"
+        resource_types:
+          - "aws_volume_attachment"
+        connected_resource_types:
+          - "aws_ebs_volume"
+        operator: "not_exists"
+      - and:
+          - cond_type: "attribute"
+            resource_types:
+              - "aws_ebs_volume"
+            attribute: "encrypted"
+            operator: "equals"
+            value: true
+          - cond_type: "connection"
+            resource_types:
+              - "aws_volume_attachment"
+            connected_resource_types:
+              - "aws_ebs_volume"
+            operator: "exists"
+    - cond_type: "filter"
+      attribute: "resource_type"
+      value:
+        - "aws_ebs_volume"
+      operator: "within"

@@ -1,0 +1,16 @@
+{
+  "colon.tf": {
+    "variable": [
+      {
+        "tags": {
+          "default": [[]],
+          "type": [
+            "list(object({'key': 'string', 'value': 'string', 'propagate_at_launch': 'bool'}))"
+          ]
+        }
+      }
+    ]
+  }
+}
+
+

@@ -24,7 +24,11 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
         return CheckResult.PASSED
 
     def _is_port_in_range(self, ports_list):
-        for port_range in ports_list[0]:
+        if len(ports_list) == 0:
+            return False
+        if isinstance(ports_list[0], list):
+            ports_list = ports_list[0]
+        for port_range in ports_list:
             port = force_int(port_range)
             if port and self.port == port:
                 return True

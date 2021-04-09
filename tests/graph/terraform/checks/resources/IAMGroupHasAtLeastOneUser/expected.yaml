@@ -1,0 +1,4 @@
+pass:
+  - "aws_iam_group_membership.ok_group"
+fail:
+  - "aws_iam_group_membership.bad_group"

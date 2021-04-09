@@ -32,7 +32,7 @@ class Runner(BaseRunner):
         parsing_errors = {}
         if external_checks_dir:
             for directory in external_checks_dir:
-                resource_registry.load_external_checks(directory, runner_filter)
+                resource_registry.load_external_checks(directory)
 
         if root_folder:
             files = [] if not files else files

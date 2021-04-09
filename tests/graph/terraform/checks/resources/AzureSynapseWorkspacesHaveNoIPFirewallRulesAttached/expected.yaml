@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_synapse_workspace.workspace_good"
+fail:
+  - "azurerm_synapse_workspace.workspace_bad"

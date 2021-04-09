@@ -1,0 +1,28 @@
+metadata:
+  id: "CKV2_GCP_5"
+  name: "Ensure that Cloud Audit Logging is configured properly across all services and all users from a project"
+  category: "Logging"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_project
+      operator: within
+    - resource_types:
+        - google_project
+      connected_resource_types:
+        - google_project_iam_audit_config
+      operator:  exists
+      cond_type: connection
+    - cond_type: attribute
+      resource_types:
+        - google_project_iam_audit_config
+      attribute: "audit_log_config.*.exempted_members"
+      operator: not_exists
+    - cond_type: attribute
+      resource_types:
+        - google_project_iam_audit_config
+      attribute: service
+      operator: equals
+      value: "allServices"

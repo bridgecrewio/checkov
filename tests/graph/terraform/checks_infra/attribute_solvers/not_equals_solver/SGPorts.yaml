@@ -1,0 +1,12 @@
+metadata:
+  id: "SGPorts"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_security_group"
+  attribute: "ingress.*.to_port"
+  operator: "not_equals"
+  value: 8182
+

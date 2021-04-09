@@ -49,6 +49,8 @@ setup(
         "update_checker",
         "semantic_version",
         "packaging",
+        "networkx",
+        "dockerfile-parse"
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -57,9 +59,9 @@ setup(
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
-    url="https://github.com/bridgecrewio/checkov",
+    url="https://github.com/nimrodkor/checkov",
     packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
-    scripts=["bin/checkov","bin/checkov.cmd"],
+    scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[

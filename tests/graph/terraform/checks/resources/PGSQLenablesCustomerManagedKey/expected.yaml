@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_postgresql_server_key.ok"
+fail:
+  - "azurerm_postgresql_server_key.not_ok"

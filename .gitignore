@@ -57,6 +57,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.external_modules/
 
 # Translations
 *.mo

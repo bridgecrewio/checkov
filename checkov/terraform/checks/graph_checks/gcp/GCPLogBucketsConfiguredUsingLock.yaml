@@ -1,0 +1,38 @@
+metadata:
+  id: "CKV2_GCP_4"
+  name: "Ensure that retention policies on log buckets are configured using Bucket Lock"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_logging_organization_sink
+        - google_logging_folder_sink
+        - google_logging_project_sink
+      operator: within
+    - or:
+      - cond_type: connection
+        operator: not_exists
+        resource_types:
+          - google_logging_organization_sink
+          - google_logging_project_sink
+          - google_logging_folder_sink
+        connected_resource_types:
+          - google_storage_bucket
+      - and:
+          - cond_type: connection
+            operator: exists
+            resource_types:
+              - google_logging_organization_sink
+              - google_logging_project_sink
+              - google_logging_folder_sink
+            connected_resource_types:
+              - google_storage_bucket
+          - cond_type: attribute
+            attribute: "retention_policy.is_locked"
+            value: true
+            operator: equals
+            resource_types:
+              - google_storage_bucket
+
