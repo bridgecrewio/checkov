@@ -416,7 +416,7 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
-    def parse_hcl_module(self, source_dir, source, download_external_modules, parsing_errors=None):
+    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None):
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
