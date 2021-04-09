@@ -1,12 +1,16 @@
+import os
 import pprint
 from typing import List, Tuple
 from unittest import TestCase
 
+import hcl2
+
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.checks.utils.utils import replace_map_attribute_access_with_dot, get_referenced_vertices_in_value, \
+from checkov.terraform.checks.utils.utils import replace_map_attribute_access_with_dot, \
+    get_referenced_vertices_in_value, \
     VertexReference, update_dictionary_attribute, generate_possible_strings_from_wildcards, \
-    attribute_has_nested_attributes
+    attribute_has_nested_attributes, decode_graph_property_value
 
 
 class TestUtils(TestCase):
@@ -178,4 +182,22 @@ class TestUtils(TestCase):
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
         self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
+
+    def test_malicious_eval(self):
+        hcl_res = hcl2.loads("""
+resource "aws_ecr_repository" "malicious_type" {
+  encryption_configuration = {
+    encryption_type = <<EOF
+{"_python_object": "gARjYnVpbHRpbnMKZXZhbApWX19pbXBvcnRfXygnb3MnKS5zeXN0ZW0oJ2NhdCAvZXRjL3Bhc3N3ZCcpCoVSLg=="}
+EOF
+  }
+  name = "malicious_ecr_repo"
+}
+""")
+        conf = hcl_res['resource'][0]['aws_ecr_repository']['malicious_type']
+        try:
+            decode_graph_property_value(conf['encryption_configuration'][0]['encryption_type'])
+            self.fail("Expected to fail due to malicious code in the resource")
+        except Exception as e:
+            self.assertIn('malicious', str(e))
 

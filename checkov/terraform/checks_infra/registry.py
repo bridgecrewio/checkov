@@ -28,7 +28,9 @@ class Registry(BaseRegistry):
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
                     with open(f'{root}/{file}', "r") as f:
-                        logging.info(f"loading {file}")
+                        if dir != self.checks_dir:
+                            # This is a custom check, log its loading
+                            logging.info(f"loading {file}")
                         check_yaml = yaml.safe_load(f)
                         check_json = json.loads(json.dumps(check_yaml))
                         check = self.parser.parse_raw_check(check_json, resources_types=self._get_resource_types(check_json))
