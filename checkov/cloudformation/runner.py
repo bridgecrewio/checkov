@@ -25,7 +25,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                cfn_registry.load_external_checks(directory, runner_filter)
+                cfn_registry.load_external_checks(directory)
 
         if files:
             for file in files:

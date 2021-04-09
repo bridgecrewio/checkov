@@ -95,7 +95,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                registry.load_external_checks(directory, runner_filter)
+                registry.load_external_checks(directory)
 
         chart_directories = self.find_chart_directories(root_folder, files)
 
