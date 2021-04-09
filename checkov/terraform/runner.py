@@ -68,7 +68,7 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
-        self.load_external_checks(external_checks_dir, runner_filter)
+        self.load_external_checks(external_checks_dir)
 
         if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
             self.tf_definitions = {}
@@ -111,7 +111,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def load_external_checks(self, external_checks_dir: List[str], runner_filter: RunnerFilter):
+    def load_external_checks(self, external_checks_dir: List[str]):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
