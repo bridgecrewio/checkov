@@ -59,26 +59,26 @@ class TestS3BucketObjectLock(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-     #def test_dynamic_value(self):
-         #hcl_res = hcl2.loads("""
-             #resource "aws_s3_bucket" "test" {
-               #count         = local.enabled ? 1 : 0
-               #bucket        = module.this.id
-               #acl           = "private"
-               #tags          = module.this.tags
-#
-               #dynamic "object_lock_configuration" {
-                 #for_each = var.s3_bucket_encryption_enabled ? [1] : []
-#
-                 #content {
-                     #object_lock_enabled = "Enabled"
-                   #}
-                 #}
-               #}
-         #""")
-         #resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['test']
-         #scan_result = check.scan_resource_conf(conf=resource_conf)
-         #self.assertEqual(CheckResult.PASSED, scan_result)
+     def test_dynamic_value(self):
+         hcl_res = hcl2.loads("""
+             resource "aws_s3_bucket" "test" {
+               count         = local.enabled ? 1 : 0
+               bucket        = module.this.id
+               acl           = "private"
+               tags          = module.this.tags
+
+               dynamic "object_lock_configuration" {
+                 for_each = var.s3_bucket_encryption_enabled ? [1] : []
+
+                 content {
+                     object_lock_enabled = "Enabled"
+                   }
+                 }
+               }
+         """)
+         resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['test']
+         scan_result = check.scan_resource_conf(conf=resource_conf)
+         self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':
