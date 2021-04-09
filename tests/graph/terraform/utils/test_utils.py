@@ -199,5 +199,5 @@ EOF
             decode_graph_property_value(conf['encryption_configuration'][0]['encryption_type'])
             self.fail("Expected to fail due to malicious code in the resource")
         except Exception as e:
-            self.assertIn('malicious', str(e))
+            self.assertIn('arbitrary code execution', str(e))
 
