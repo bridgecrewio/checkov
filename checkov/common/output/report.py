@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 from colorama import init
-from junit_xml import TestCase, TestSuite
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
@@ -113,7 +113,7 @@ class Report:
         print(xml_string)
 
     def get_junit_xml_string(self, ts):
-        return TestSuite.to_xml_string(ts)
+        return to_xml_report_string(ts)
 
     def print_failed_github_md(self):
         result = []
@@ -127,19 +127,19 @@ class Report:
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = record.check_name
+            check_fullname = record.check_id + ' - ' + record.check_name
 
-            test_name = "{} {} {}".format(self.check_type, check_name, record.resource)
+            test_name = "{}/{} {}".format(self.check_type, check_fullname, record.resource)
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
             if record.check_result['result'] == CheckResult.FAILED:
                 test_case.add_failure_info(
-                    "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
+                    "Resource '{}' failed in check '{}'".format(record.resource, check_fullname))
             if record.check_result['result'] == CheckResult.SKIPPED:
                 test_case.add_skipped_info(
-                    "Resource \"{}\" skipped in check \"{}\"\n Suppress comment: {}".format(record.resource, check_name,
+                    "Resource '{}' skipped in check '{}'\n Suppress comment: {}".format(record.resource, check_fullname,
                                                                                             record.check_result[
                                                                                                 'suppress_comment']))
-            test_cases[check_name].append(test_case)
+            test_cases[check_fullname].append(test_case)
         for key in test_cases.keys():
             test_suites.append(
                 TestSuite(name=key, test_cases=test_cases[key], package=test_cases[key][0].classname))
@@ -147,4 +147,3 @@ class Report:
 
     def print_json(self):
         print(self.get_json())
-
