@@ -27,9 +27,9 @@ class ReferenceLatestTag(BaseDockerfileCheck):
                         stages.append(multi_stage[2])
 
                     if ":" not in base_image and base_image not in stages:
-                        return CheckResult.FAILED, contents[0]
+                        return CheckResult.FAILED, content
                     elif base_image.endswith(":latest"):
-                        return CheckResult.FAILED, contents[0]
+                        return CheckResult.FAILED, content
         return CheckResult.PASSED, None
 
 

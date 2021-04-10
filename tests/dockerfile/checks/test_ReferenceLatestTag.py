@@ -18,7 +18,8 @@ class TestMaintainerExists(unittest.TestCase):
         conf = dfp_group_by_instructions(dfp)[0]
         scan_result = check.scan_entity_conf(conf)
 
-        self.assertEqual((CheckResult.FAILED), scan_result[0])
+        self.assertEqual(CheckResult.FAILED, scan_result[0])
+        self.assertEqual("alpine", scan_result[1]["value"])
 
     def test_failure_latest_version_tag(self):
         dfp = DockerfileParser()
@@ -30,7 +31,8 @@ class TestMaintainerExists(unittest.TestCase):
         conf = dfp_group_by_instructions(dfp)[0]
         scan_result = check.scan_entity_conf(conf)
 
-        self.assertEqual((CheckResult.FAILED), scan_result[0])
+        self.assertEqual(CheckResult.FAILED, scan_result[0])
+        self.assertEqual("alpine:latest", scan_result[1]["value"])
 
     def test_success(self):
         dfp = DockerfileParser()
