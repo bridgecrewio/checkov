@@ -16,7 +16,7 @@ class NetworkWatcherFlowLogPeriod(BaseResourceCheck):
             retention_block = conf['retention_policy'][0]
             if retention_block['enabled'][0]:
                 retention_in_days = force_int(retention_block['days'][0])
-                if retention_in_days and retention_in_days >= 90:
+                if retention_in_days is not None and (retention_in_days == 0 or retention_in_days >= 90):
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
