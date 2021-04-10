@@ -15,7 +15,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
         tf_definitions = runner.tf_definitions
-        self.assertEqual(6, len(report.failed_checks))
+        self.assertEqual(7, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):
                 s3_bucket_config = definitions['resource'][0]['aws_s3_bucket']['bucket_with_versioning']
@@ -28,8 +28,8 @@ class TestGraphBuilder(TestCase):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         runner = Runner()
         report = runner.run(root_folder=resources_path)
-        self.assertEqual(5, len(report.failed_checks))
-        self.assertEqual(7, len(report.passed_checks))
+        self.assertEqual(6, len(report.failed_checks))
+        self.assertEqual(6, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
     def test_run_persistent_data(self):
@@ -44,7 +44,7 @@ class TestGraphBuilder(TestCase):
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
         self.assertGreaterEqual(len(report.failed_checks), 4)
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_module_and_variables(self):
@@ -52,7 +52,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(root_folder=resources_path)
         self.assertLessEqual(3, len(report.failed_checks))
-        self.assertLessEqual(40, len(report.passed_checks))
+        self.assertLessEqual(39, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
         found_versioning_failure = False

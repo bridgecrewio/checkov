@@ -79,7 +79,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(7, summary['failed'])
         self.assertEqual(2, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -154,7 +154,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
