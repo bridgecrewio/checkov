@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM policy
+Resources:
+  AdminAllow:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+      Roles:
+        - example_role
+      Users:
+        - admin
+  PermissionsWildcard0:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 'iam:ChangePassword'
+            Resource: '*'
+      Roles:
+        - example_role
+      Users:
+        - admin
+  PermissionsWildcard1:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:PutBucketAcl'
+            Resource: '*'
+      Roles:
+        - example_role
+      Users:
+        - admin
