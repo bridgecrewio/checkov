@@ -12,7 +12,7 @@ class TestIAMPermisionsManagement(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/Cloudsplaining/IAMPermissionsManagement"
+        test_files_dir = current_dir + "/Cloudsplaining_IAMPermissionsManagement"
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         self.assertEqual(report.failed_checks[0].check_id, check.id)
