@@ -28,7 +28,7 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if file in DOCKER_FILE_MASK:
+                if os.path.basename(file) in DOCKER_FILE_MASK:
                     (definitions[file], definitions_raw[file]) = parse(file)
 
         if root_folder:
