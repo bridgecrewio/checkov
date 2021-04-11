@@ -21,7 +21,7 @@ from checkov.terraform.checks_infra.registry import Registry as GraphRegistry, B
 tf_graph_registry = GraphRegistry(parser=NXGraphCheckParser())
 tf_graph_registry.load_checks()
 
-ID_PARTS_PATTERN = re.compile(r'(.*)_(.+)_(\d+)')
+ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
 
 def get_compare_key(c):
