@@ -36,7 +36,7 @@ class ShareHostPID(BaseK8Check):
                             if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
-            spec = self.get_inner_spec(conf)
+            spec = self.get_inner_entry(conf, "spec")
         if spec:
             if "hostPID" in spec:
                 if spec["hostPID"]:

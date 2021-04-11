@@ -34,8 +34,8 @@ class BaseK8Check(BaseCheck):
         return wrapper
 
     @staticmethod
-    def get_inner_spec(conf):
+    def get_inner_entry(conf, entry_name):
         spec = {}
         if conf.get("spec") and conf.get("spec").get("template"):
-            spec = conf.get("spec").get("template").get("spec", {})
+            spec = conf.get("spec").get("template").get(entry_name, {})
         return spec
