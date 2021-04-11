@@ -1,6 +1,7 @@
 import logging
 import os
 from copy import deepcopy
+from typing import Union
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -132,28 +133,31 @@ class Block:
                 attribute_value = {attribute_key_parts[len(attribute_key_parts)-1 - i]: attribute_value}
                 self.changed_attributes[key] = previous_breadcrumbs
 
-    def update_inner_attribute(self, attribute_key, nested_attributes, value_to_update):
+    def update_inner_attribute(self, attribute_key: str, nested_attributes: Union[list, dict], value_to_update):
         split_key = attribute_key.split('.')
-        curr_key = split_key[0]
-        if curr_key.isnumeric():
-            curr_key = int(curr_key)
-        if type(nested_attributes) is dict and nested_attributes.get(attribute_key):
-            nested_attributes[attribute_key] = value_to_update
-        if type(nested_attributes) is list and type(curr_key) is not int:
-            for inner in nested_attributes:
-                self.update_inner_attribute(curr_key, inner, value_to_update)
-        elif len(split_key) == 1:
-            nested_attributes[curr_key] = value_to_update
-        else:
-            try:
-                self.update_inner_attribute('.'.join(split_key[1:]), nested_attributes[curr_key],
-                                            value_to_update)
-            except Exception as e:
-                if nested_attributes.get(attribute_key) is not None:
-                    nested_attributes[attribute_key] = value_to_update
+        i = 1
+        curr_key = '.'.join(split_key[0:i])
+        if type(nested_attributes) is list:
+            if curr_key.isnumeric():
+                curr_key = int(curr_key)
+                if not isinstance(nested_attributes[curr_key], dict):
+                    nested_attributes[curr_key] = value_to_update
                 else:
-                    logging.warning(f'unable to update inner attribute {attribute_key} because {e}')
-                    return e
+                    self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+            else:
+                for inner in nested_attributes:
+                    self.update_inner_attribute(curr_key, inner, value_to_update)
+        elif type(nested_attributes) is dict:
+            while curr_key not in nested_attributes and i <= len(split_key):
+                i += 1
+                curr_key = '.'.join(split_key[0:i])
+            if nested_attributes.get(attribute_key):
+                nested_attributes[attribute_key] = value_to_update
+
+            if len(split_key) == 1:
+                nested_attributes[curr_key] = value_to_update
+            else:
+                self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)
 
     def add_module_connection(self, attribute_key, vertex_id):
         if not self.module_connections.get(attribute_key):
