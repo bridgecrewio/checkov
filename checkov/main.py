@@ -10,6 +10,8 @@ from pathlib import Path
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -112,6 +114,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(args.branch)
         runner_registry.print_reports(scan_reports, args, url)
+    elif args.docker_image:
+        if args.repo_id is None:
+            parser.error("--bc-api-key argument is required when using --docker-image")
+        image_scanner.scan(args.bc_api_key, args.docker_image)
     else:
         print(f"{banner}")
 
@@ -159,6 +165,7 @@ def add_parser_args(parser):
     parser.add_argument('-s', '--soft-fail',
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
+    parser.add_argument('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add_argument('--repo-id',
                         help='Identity string of the repository, with form <repo_owner>/<repo_name>')
     parser.add_argument('-b', '--branch',
