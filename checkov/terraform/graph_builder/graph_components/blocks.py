@@ -1,6 +1,7 @@
 import logging
 import os
 from copy import deepcopy
+from typing import Union
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -132,7 +133,7 @@ class Block:
                 attribute_value = {attribute_key_parts[len(attribute_key_parts)-1 - i]: attribute_value}
                 self.changed_attributes[key] = previous_breadcrumbs
 
-    def update_inner_attribute(self, attribute_key, nested_attributes: dict, value_to_update):
+    def update_inner_attribute(self, attribute_key, nested_attributes: Union[list, dict], value_to_update):
         split_key = attribute_key.split('.')
         curr_key = split_key[0]
         if curr_key.isnumeric():
