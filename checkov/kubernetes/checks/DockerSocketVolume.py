@@ -39,10 +39,8 @@ class DockerSocketVolume(BaseK8Check):
                             if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
-            if "spec" in conf:
-                if "template" in conf["spec"]:
-                    if "spec" in conf["spec"]["template"]:
-                        spec = conf["spec"]["template"]["spec"]
+            inner_spec = self.get_inner_entry(conf, "spec")
+            spec = inner_spec if inner_spec else spec
 
         # Evaluate volumes
         if spec:
