@@ -17,7 +17,9 @@ class EKSSecretsEncryption(BaseResourceCheck):
         :param conf: AWS::EKS::Cluster configuration
         :return: <CheckResult>
         """
-        if 'secrets' in conf.get('Properties', {}).get('EncryptionConfig', {}).get('Resources', {}):
+        encryption_config = list(conf.get('Properties', {}).get('EncryptionConfig', []))
+        encryption_config_resources = [p["Resources"] for p in encryption_config if "Resources" in p]
+        if isinstance(encryption_config_resources, list) and any('secrets' in r for r in encryption_config_resources):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
