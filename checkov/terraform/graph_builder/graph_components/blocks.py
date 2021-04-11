@@ -132,7 +132,7 @@ class Block:
                 attribute_value = {attribute_key_parts[len(attribute_key_parts)-1 - i]: attribute_value}
                 self.changed_attributes[key] = previous_breadcrumbs
 
-    def update_inner_attribute(self, attribute_key, nested_attributes, value_to_update):
+    def update_inner_attribute(self, attribute_key, nested_attributes: dict, value_to_update):
         split_key = attribute_key.split('.')
         curr_key = split_key[0]
         if curr_key.isnumeric():
@@ -144,7 +144,7 @@ class Block:
                 self.update_inner_attribute(curr_key, inner, value_to_update)
         elif len(split_key) == 1:
             nested_attributes[curr_key] = value_to_update
-        else:
+        elif type(nested_attributes[curr_key]) in (dict, list):
             try:
                 self.update_inner_attribute('.'.join(split_key[1:]), nested_attributes[curr_key],
                                             value_to_update)
