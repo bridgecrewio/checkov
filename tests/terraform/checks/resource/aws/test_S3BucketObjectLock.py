@@ -44,6 +44,22 @@ class TestS3BucketObjectLock(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_no_param(self):
+        hcl_res = hcl2.loads("""
+                resource "aws_s3_bucket" "test" {
+                      bucket = "my-tf-test-bucket"
+                      acl    = "private"
+                    
+                      tags = {
+                        Name        = "My bucket"
+                        Environment = "Dev"
+                      }
+                }
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_dynamic_value_object_lock(self):
         hcl_res = hcl2.loads("""
             resource "aws_s3_bucket" "test" {
