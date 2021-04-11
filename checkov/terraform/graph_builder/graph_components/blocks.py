@@ -135,7 +135,11 @@ class Block:
 
     def update_inner_attribute(self, attribute_key, nested_attributes: Union[list, dict], value_to_update):
         split_key = attribute_key.split('.')
-        curr_key = split_key[0]
+        i = 1
+        curr_key = '.'.join(split_key[0:i])
+        while curr_key not in nested_attributes and i <= len(split_key):
+            i += 1
+            curr_key = '.'.join(split_key[0:i])
         if curr_key.isnumeric():
             curr_key = int(curr_key)
         if type(nested_attributes) is dict and nested_attributes.get(attribute_key):
@@ -145,9 +149,9 @@ class Block:
                 self.update_inner_attribute(curr_key, inner, value_to_update)
         elif len(split_key) == 1:
             nested_attributes[curr_key] = value_to_update
-        elif type(nested_attributes[curr_key]) in (dict, list):
+        elif type(nested_attributes.get(curr_key)) in (dict, list):
             try:
-                self.update_inner_attribute('.'.join(split_key[1:]), nested_attributes[curr_key],
+                self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key],
                                             value_to_update)
             except Exception as e:
                 if nested_attributes.get(attribute_key) is not None:

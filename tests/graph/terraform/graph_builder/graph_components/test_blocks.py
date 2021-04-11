@@ -134,3 +134,26 @@ class TestBlocks(TestCase):
         err = block.update_inner_attribute(attribute_key="labels.app.kubernetes.io/name", nested_attributes=attributes,
                                            value_to_update="dummy value")
         self.assertEqual(None, err)
+
+    def test_update_complex_key2(self):
+        config = {}
+        attributes = {'var.owning_account': {'route_to': None, 'route_to_cidr_blocks': '${local.allowed_cidrs}',
+                                             'static_routes': None, 'subnet_ids': '${local.own_vpc.private_subnet_ids}',
+                                             'subnet_route_table_ids': '${local.own_vpc.private_route_table_ids}',
+                                             'transit_gateway_vpc_attachment_id': None,
+                                             'vpc_cidr': '${local.own_vpc.vpc_cidr}',
+                                             'vpc_id': '${local.own_vpc.vpc_id}'}}
+        block = Block(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
+                      attributes=attributes)
+        value_to_update = "test"
+        err = block.update_inner_attribute(attribute_key="var.owning_account.vpc_cidr", nested_attributes=attributes,
+                                           value_to_update=value_to_update)
+        self.assertEqual(None, err)
+        self.assertDictEqual(block.attributes,
+                             {'var.owning_account': {'route_to': None, 'route_to_cidr_blocks': '${local.allowed_cidrs}',
+                                                     'static_routes': None,
+                                                     'subnet_ids': '${local.own_vpc.private_subnet_ids}',
+                                                     'subnet_route_table_ids': '${local.own_vpc.private_route_table_ids}',
+                                                     'transit_gateway_vpc_attachment_id': None,
+                                                     'vpc_cidr': 'test',
+                                                     'vpc_id': '${local.own_vpc.vpc_id}'}})
