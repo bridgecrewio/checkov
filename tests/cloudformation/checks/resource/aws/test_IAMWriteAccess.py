@@ -1,18 +1,18 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.IAMPermissionsManagement import check
+from checkov.cloudformation.checks.resource.aws.IAMWriteAccess import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestIAMPermisionsManagement(unittest.TestCase):
+class TestIAMWriteAccess(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/Cloudsplaining_IAMPermissionsManagement"
+        test_files_dir = current_dir + "/Cloudsplaining_IAMWriteAccess"
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         self.assertEqual(report.failed_checks[0].check_id, check.id)

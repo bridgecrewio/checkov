@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM policy
+Resources:
+  NotWriteScoped:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:Get*'
+            Resource: 
+            - 'foo'
+      Roles:
+        - example_role
+  NotWriteWildcard:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:Get*'
+            Resource: 
+            - '*'
+      Roles:
+        - example_role
+  AdminDeny:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action: '*'
+            Resource: '*'
+      Roles:
+        - example_role
+  WriteScoped:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:PutObject'
+            Resource: 
+            - 'foo'
+      Roles:
+        - example_role
+      Users:
+        - admin

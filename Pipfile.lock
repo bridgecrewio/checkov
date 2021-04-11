@@ -88,11 +88,11 @@
         },
         "cloudsplaining": {
             "hashes": [
-                "sha256:a5ca8d32f7ed1c585e5e9aea5efed334c855e7b2c2577b67bb9137e38bea8081",
-                "sha256:ddf3a23ab9c66bd5d16f47bcda09bf4e47b4eab60fd341cf0e6732b0cf5598c9"
+                "sha256:29fcbe85b5dc8b0eaf76cfeb30d31d9c83feecdec1839c8a1bbdc7f747a1e173",
+                "sha256:c7e3bfdb51e21ceb3e480d83f0920b9602996b0038d4869e8ccf0318d3256c61"
             ],
             "index": "pypi",
-            "version": "==0.4.0"
+            "version": "==0.4.1"
         },
         "colorama": {
             "hashes": [
@@ -285,11 +285,11 @@
         },
         "policy-sentry": {
             "hashes": [
-                "sha256:0ffb7e4c47500d8156fd2891449e06bd0af1076ac5d819aefb83b330ad7b0c95",
-                "sha256:630200439a58efc4233a097422b4830c6cafa4c85778293baf8443884aadb7ea"
+                "sha256:110d84ab5bf177018f9403475e76b4527cfb8bd3213bc0947e79060c3ddfe151",
+                "sha256:19d6f2ec1c5395d29071fbecb61109b4c0602b55ee290fdc04f7725604cabbf8"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==0.11.8"
+            "version": "==0.11.9"
         },
         "pyparsing": {
             "hashes": [
