@@ -32,6 +32,21 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_runner_failing_check_with_file_path(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_file_path = current_dir + "/resources/expose_port/fail/Dockerfile"
+        runner = Runner()
+        report = runner.run(
+            files=[valid_file_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework="all", checks=["CKV_DOCKER_1"]),
+        )
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
     def test_runner_passing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/pass"

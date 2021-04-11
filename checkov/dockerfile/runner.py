@@ -15,7 +15,7 @@ DOCKER_FILE_MASK = [DOCKERFILE_FILENAME]
 class Runner(BaseRunner):
     check_type = "dockerfile"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
+    def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
@@ -28,7 +28,7 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if file in DOCKER_FILE_MASK:
+                if os.path.basename(file) in DOCKER_FILE_MASK:
                     (definitions[file], definitions_raw[file]) = parse(file)
 
         if root_folder:
