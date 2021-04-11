@@ -57,7 +57,8 @@ class Seccomp(BaseK8Check):
                             if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["metadata"]
         else:
-            metadata = self.get_inner_entry(conf, "metadata")
+            inner_metadata = self.get_inner_entry(conf, "metadata")
+            metadata = inner_metadata if inner_metadata else metadata
 
         if metadata:
             if metadata.get('annotations'):
