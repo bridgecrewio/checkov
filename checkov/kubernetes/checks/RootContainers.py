@@ -40,10 +40,7 @@ class RootContainers(BaseK8Check):
                             if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
-            if "spec" in conf:
-                if "template" in conf["spec"]:
-                    if "spec" in conf["spec"]["template"]:
-                        spec = conf["spec"]["template"]["spec"]
+            spec = self.get_inner_spec(conf)
 
         # Collect results
         if spec:
@@ -53,7 +50,7 @@ class RootContainers(BaseK8Check):
             results["pod"]["runAsNonRoot"] = check_runAsNonRoot(spec)
             results["pod"]["runAsUser"] = check_runAsUser(spec)
 
-            if "containers" in spec:
+            if spec.get("containers"):
                 for c in spec["containers"]:
                     cresults = {}
                     cresults["runAsNonRoot"] = check_runAsNonRoot(c)
