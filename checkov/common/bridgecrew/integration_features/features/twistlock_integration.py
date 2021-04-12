@@ -12,8 +12,7 @@ from checkov.common.util.http_utils import get_auth_header, extract_error_messag
 class TwistLockIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=11)
-        # self.twistlock_base_url = f"{self.bc_api_url}/vulnerabilities/twistlock"
-        self.twistlock_base_url = f"http://localhost:3009/api/v1/vulnerabilities/twistlock"
+        self.twistlock_base_url = f"{self.bc_api_url}/vulnerabilities/twistlock"
 
     def is_valid(self):
         return False
