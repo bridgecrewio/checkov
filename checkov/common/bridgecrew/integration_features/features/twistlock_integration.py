@@ -12,27 +12,33 @@ from checkov.common.util.http_utils import get_auth_header, extract_error_messag
 class TwistLockIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=11)
-        self.twistlock_base_url = f"{self.bc_api_url}/vulnerabilities/twistlock"
+        # self.twistlock_base_url = f"{self.bc_api_url}/vulnerabilities/twistlock"
+        self.twistlock_base_url = f"http://localhost:3009/api/v1/vulnerabilities/twistlock"
+
+    def is_valid(self):
+        return False
+
+    def get_bc_api_key(self):
+        return self.bc_integration.bc_api_key
 
     def get_proxy_address(self):
         return f"{self.twistlock_base_url}/proxy"
 
-    def get_download_link(self):
+    def get_download_link(self, os_type):
         headers = merge_dicts(
             get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
             get_auth_header(self.bc_integration.bc_api_key)
         )
-
-        response = requests.request('GET', f"{self.twistlock_base_url}/download-link", headers=headers)
+        response = requests.request('GET', f"{self.twistlock_base_url}/download-link?os={os_type}", headers=headers)
 
         if response.status_code != 200:
             error_message = extract_error_message(response)
-            raise Exception(f'Get twistlock download link request failed with response code {response.status_code}: {error_message}')
+            raise Exception(f'Get TwistLock download link request failed with response code {response.status_code}: {error_message}')
 
-        logging.debug(f'Response from twistlock download link endpoint: {response.content}')
+        logging.debug(f'Response from TwistLock download link endpoint: {response.content}')
 
-        download_link = json.loads(response.content) if response.content else None
-        return download_link.data
+        download_link_result = json.loads(response.content) if response.content else None
+        return download_link_result['data']
 
 
 integration = TwistLockIntegration(bc_integration)

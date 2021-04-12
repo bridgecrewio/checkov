@@ -118,7 +118,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if args.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
             return
-        image_scanner.scan(args.bc_api_key, args.docker_image)
+        image_scanner.scan(args.docker_image)
     else:
         print(f"{banner}")
 
