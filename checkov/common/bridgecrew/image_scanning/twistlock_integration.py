@@ -33,6 +33,11 @@ class TwistLockIntegration:
         logging.debug(f'Response from TwistLock download link endpoint: {response.content}')
 
         download_link_result = json.loads(response.content) if response.content else None
-        return download_link_result['data']
+        download_link = download_link_result['data']
+
+        if not download_link.startswith('https://'):
+            raise Exception(f'Invalid URL received from TwistLock download endpoint {download_link}')
+
+        return download_link
 
 twistlock_integration = TwistLockIntegration()
