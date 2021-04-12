@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class VPCDefaultNetwork(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no default VPC is planned to be provisioned"
-        id = "CKV_AWS_114"
+        id = "CKV_AWS_148"
         supported_resources = ['aws_default_vpc']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
