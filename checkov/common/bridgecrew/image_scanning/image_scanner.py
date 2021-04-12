@@ -16,8 +16,7 @@ class ImageScanner:
         twistlock_download_link = twistlock_integration.get_download_link(os_type)
         logging.debug(f'TwistLock CLI download link: {twistlock_download_link}')
 
-        urllib.request.urlretrieve(twistlock_download_link,
-                                   TWISTLOCK_CLI_FILE_NAME)  # nosec - validated the URL in the integration
+        urllib.request.urlretrieve(twistlock_download_link, TWISTLOCK_CLI_FILE_NAME)  # nosec - validated the URL in the integration
         st = os.stat(TWISTLOCK_CLI_FILE_NAME)
         os.chmod(TWISTLOCK_CLI_FILE_NAME, st.st_mode | stat.S_IEXEC)
         logging.debug('TwistLock CLI downloaded and set execute permission successfully')
