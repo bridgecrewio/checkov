@@ -115,8 +115,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             url = bc_integration.commit_repository(args.branch)
         runner_registry.print_reports(scan_reports, args, url)
     elif args.docker_image:
-        if args.repo_id is None:
+        if args.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
+            return
         image_scanner.scan(args.bc_api_key, args.docker_image)
     else:
         print(f"{banner}")

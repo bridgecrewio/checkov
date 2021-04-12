@@ -72,8 +72,10 @@ class FixesIntegration(BaseIntegrationFeature):
             'errors': errors
         }
 
-        headers = merge_dicts(get_default_post_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-                              get_auth_header(self.bc_integration.bc_api_key))
+        headers = merge_dicts(
+            get_default_post_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
+            get_auth_header(self.bc_integration.bc_api_key)
+        )
 
         response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
 
