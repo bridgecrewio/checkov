@@ -5,8 +5,7 @@ import os
 import stat
 import urllib.request
 
-from checkov.common.bridgecrew.integration_features.features.twistlock_integration import \
-    integration as twistlock_integration
+from checkov.common.bridgecrew.image_scanning.twistlock_integration import twistlock_integration
 
 TWISTLOCK_CLI_FILE_NAME = 'twistcli'
 
