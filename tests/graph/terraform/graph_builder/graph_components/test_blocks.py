@@ -157,3 +157,17 @@ class TestBlocks(TestCase):
                                                      'transit_gateway_vpc_attachment_id': None,
                                                      'vpc_cidr': 'test',
                                                      'vpc_id': '${local.own_vpc.vpc_id}'}})
+
+    def test_update_inner_attribute_bad_index(self):
+        config = {'aws_security_group': {
+            'test': {}}}
+
+        nested_attributes = {'provisioner/remote-exec.connection': {'private_key': '${file(var.ssh_key_path)}', 'user': 'ec2-user'}, 'provisioner/remote-exec.connection.private_key': '${file(var.ssh_key_path)}', 'provisioner/remote-exec.connection.user': 'ec2-user', 'provisioner/remote-exec.inline': ['command'], 'provisioner/remote-exec.inline.0': 'command0', 'provisioner/remote-exec.inline.1': 'command1', 'provisioner/remote-exec.inline.2': 'command2', 'provisioner/remote-exec.inline.3': 'command3', 'provisioner/remote-exec.inline.4': 'command4'}
+        block = Block(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
+                      attributes=nested_attributes)
+
+        block.update_inner_attribute(attribute_key='provisioner/remote-exec.inline.3', nested_attributes=nested_attributes,
+                                     value_to_update='new_command_3')
+
+        self.assertEqual('new_command_3', block.attributes['provisioner/remote-exec.inline.3'],
+                         f"failed to update provisioner/remote-exec.inline.3, got {block.attributes['provisioner/remote-exec.inline.3']}")
