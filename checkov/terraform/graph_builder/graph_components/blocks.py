@@ -152,12 +152,11 @@ class Block:
             while curr_key not in nested_attributes and i <= len(split_key):
                 i += 1
                 curr_key = '.'.join(split_key[0:i])
-            if nested_attributes.get(attribute_key):
+            if attribute_key in nested_attributes.keys():
                 nested_attributes[attribute_key] = value_to_update
-
             if len(split_key) == 1:
                 nested_attributes[curr_key] = value_to_update
-            else:
+            elif curr_key in nested_attributes.keys():
                 self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)
 
     def add_module_connection(self, attribute_key, vertex_id):
