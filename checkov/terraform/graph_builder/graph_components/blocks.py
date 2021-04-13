@@ -140,10 +140,11 @@ class Block:
         if type(nested_attributes) is list:
             if curr_key.isnumeric():
                 curr_key = int(curr_key)
-                if not isinstance(nested_attributes[curr_key], dict):
-                    nested_attributes[curr_key] = value_to_update
-                else:
-                    self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+                if curr_key < len(nested_attributes):
+                    if not isinstance(nested_attributes[curr_key], dict):
+                        nested_attributes[curr_key] = value_to_update
+                    else:
+                        self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)
             else:
                 for inner in nested_attributes:
                     self.update_inner_attribute(curr_key, inner, value_to_update)
