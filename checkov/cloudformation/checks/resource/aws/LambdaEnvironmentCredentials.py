@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.secrets import string_has_secrets, AWS
+from checkov.common.util.secrets import string_has_secrets, AWS, GENERAL
 
 class LambdaEnvironmentCredentials(BaseResourceCheck):
     def __init__(self):
