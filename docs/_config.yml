@@ -13,6 +13,7 @@ google_analytics: UA-156134275-1
 plugins:
   - jekyll-redirect-from
   - jekyll-remote-theme
+  - jekyll-get-json
 
 jekyll_get_json:
   - data: menus
