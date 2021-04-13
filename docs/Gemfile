@@ -18,7 +18,6 @@ group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
   gem "jekyll-redirect-from"
   gem "jekyll-remote-theme"
-  gem "jekyll-get-json", "~> 1.0"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
