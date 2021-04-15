@@ -51,15 +51,3 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     @abstractmethod
     def cloudsplaining_analysis(self, policy):
         raise NotImplementedError()
-    
-    # def cloudsplaining_scan(self, cf_policy_document):
-    #     converted_policy_document = convert_cloudformation_conf_to_iam_policy(cf_policy_document)
-    #     key = 'Statement'
-    #     if key in converted_policy_document:
-    #         policy = PolicyDocument(converted_policy_document)
-    #         violations = self.cloudsplaining_analysis(policy)
-    #         if violations:
-    #             logging.debug("detailed cloudsplainging finding: {}",json.dumps(violations))
-    #             return False
-    #     return True
-
