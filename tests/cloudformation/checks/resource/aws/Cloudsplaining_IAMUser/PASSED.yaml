@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09""
+AWSTemplateFormatVersion: "2010-09-09"
 Description: IAM Users with multiple policies
 Resources:
   NotPermissionsScopedAndWildcard:
