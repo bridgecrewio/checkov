@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Description: IAM Roles with multiple policies
 Resources:
   PolicyOnePassPolicyTwoFailAdmin:
@@ -16,7 +16,7 @@ Resources:
       Policies:
       - PolicyName: a
         PolicyDocument:
-          Version: 2012-10-17
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action: 
@@ -25,7 +25,7 @@ Resources:
               - 'foo'
       - PolicyName: b
         PolicyDocument:
-          Version: 2012-10-17
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action: '*'
@@ -45,7 +45,7 @@ Resources:
       Policies:
       - PolicyName: a
         PolicyDocument:
-          Version: 2012-10-17
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action: 
@@ -53,7 +53,7 @@ Resources:
               Resource: '*'
       - PolicyName: b
         PolicyDocument:
-          Version: 2012-10-17
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action: 
