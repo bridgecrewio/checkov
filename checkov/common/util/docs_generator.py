@@ -4,7 +4,7 @@ import re
 
 from tabulate import tabulate
 
-from checkov.arm.registry import arm_registry
+from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.kubernetes.registry import registry as k8_registry
@@ -62,7 +62,8 @@ def get_checks(framework="all"):
     if framework == "dockerfile" or framework == "all":
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if framework == "arm" or framework == "all":
-        add_from_repository(arm_registry, "resource", "arm")
+        add_from_repository(arm_resource_registry, "resource", "arm")
+        add_from_repository(arm_parameter_registry, "parameter", "arm")
     return sorted(printable_checks_list, key=get_compare_key)
 
 
