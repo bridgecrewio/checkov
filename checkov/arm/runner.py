@@ -1,7 +1,7 @@
 import logging
 import os
 
-from checkov.arm.registry import arm_registry
+from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                arm_registry.load_external_checks(directory)
+                arm_resource_registry.load_external_checks(directory)
 
         if files:
             for file in files:
@@ -92,8 +92,8 @@ class Runner(BaseRunner):
 
                         skipped_checks = ContextParser.collect_skip_comments(resource)
 
-                        results = arm_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
+                        results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
+                                                             runner_filter)
                         for check, check_result in results.items():
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=arm_file,
@@ -101,4 +101,27 @@ class Runner(BaseRunner):
                                             resource=resource_id, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                             report.add_record(record=record)
+
+            if isinstance(definitions[arm_file], dict_node) and 'parameters' in definitions[arm_file].keys():
+                arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
+                parameters = definitions[arm_file]['parameters']
+                for parameter_name, parameter_details in parameters.items():
+                    # TODO - Variable Eval Message!
+                    variable_evaluations = {}
+
+                    resource_id = f'parameter.{parameter_name}'
+                    resource_name = parameter_name
+                    entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(parameter_details)
+
+                    if entity_lines_range and entity_code_lines:
+                        skipped_checks = ContextParser.collect_skip_comments(parameter_details)
+                        results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
+                        for check, check_result in results.items():
+                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                            code_block=entity_code_lines, file_path=arm_file,
+                                            file_line_range=entity_lines_range,
+                                            resource=resource_id, evaluations=variable_evaluations,
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                            report.add_record(record=record)
+
         return report

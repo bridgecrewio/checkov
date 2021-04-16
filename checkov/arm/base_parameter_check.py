@@ -1,16 +1,16 @@
 from abc import abstractmethod
 
-from checkov.arm.registry import arm_resource_registry
+from checkov.arm.registry import arm_parameter_registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.multi_signature import multi_signature
 
 
-class BaseResourceCheck(BaseCheck):
+class BaseParameterCheck(BaseCheck):
     def __init__(self, name, id, categories, supported_resources):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="resource")
+                         block_type="parameter")
         self.supported_resources = supported_resources
-        arm_resource_registry.register(self)
+        arm_parameter_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):
         return self.scan_resource_conf(conf, entity_type)
