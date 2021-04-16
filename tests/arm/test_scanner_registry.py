@@ -1,20 +1,20 @@
 import unittest
 
-from checkov.arm.registry import arm_registry
+from checkov.arm.registry import arm_resource_registry
 
 
 class TestScannerRegistry(unittest.TestCase):
 
     def test_num_of_scanners(self):
         scanners_counter = 0
-        for key in list(arm_registry.checks.keys()):
-            scanners_counter += len(arm_registry.checks[key])
+        for key in list(arm_resource_registry.checks.keys()):
+            scanners_counter += len(arm_resource_registry.checks[key])
 
         self.assertGreater(scanners_counter, 0)
 
     def test_non_colliding_check_ids(self):
         check_id_check_class_map = {}
-        for (resource_type, checks) in arm_registry.checks.items():
+        for (resource_type, checks) in arm_resource_registry.checks.items():
             for check in checks:
                 check_id_check_class_map.setdefault(check.id, []).append(check)
 
