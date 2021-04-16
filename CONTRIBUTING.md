@@ -58,22 +58,39 @@ Continuous integration will run these tests either as pre-submits on PRs and pos
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
 
 To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
+If you are using conda, create a new environment with Python 3.7.10 version:
 ```sh
+conda create -n python37 --m python=3.7.10
+conda activate python37
+```
+Then, we need pipenv installation and run the tests and coverage modules 
+```sh
+pip install pipenv
 pipenv install --dev
 pipenv run python -m coverage run -m pytest tests
 ```
 
 ### Build package locally
-To build package locally run the following on Checkov root folder:
+Change the version number on the file with your version : `<checkov>/checkov/version.py`
+To build package locally run the following on `<checkov>` root folder:
+
 ```sh
 pipenv run python setup.py sdist bdist_wheel
 ```
 - This will create a `*.whl` package under a new folder named `dist`
 
-To install package from local directory run:
+To install package from local directory, update the release version value and run the installation:
 ```sh
+RELEASE_VERSION='xxx'
 pip install dist/checkov-${RELEASE_VERSION}-py3-none-any.whl
 ```
+
+### Test the package
+First verify you have the right version installed:
+```sh
+checkov --version
+```
+Then, optionally, you can run on a terraform file/directory with your success and failure test scenarios.
 
 ### Documentation is awesome
 

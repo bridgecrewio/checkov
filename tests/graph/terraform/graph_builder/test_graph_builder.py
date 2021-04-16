@@ -123,13 +123,13 @@ class TestGraphBuilder(TestCase):
                         expected_label='value')
 
     def test_build_graph_with_linked_registry_modules(self):
-        os.environ['DOWNLOAD_EXTERNAL_MODULES'] = 'true'
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/modules/registry_security_group_inner_module'))
 
         graph_manager = GraphManager(NetworkxConnector())
         local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir,
-                                                                                      render_variables=True)
+                                                                                      render_variables=True,
+                                                                                      download_external_modules=True)
 
         outputs_vpcs = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT, 'this_security_group_vpc_id',
                                                         multiple=True)

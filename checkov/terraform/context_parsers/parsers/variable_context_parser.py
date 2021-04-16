@@ -15,7 +15,8 @@ class VariableContextParser(BaseContextParser):
                 if 'default' in values.keys():
                     for key, value in values.items():
                         if isinstance(value, list) and len(value) == 1:
-                            value = values['default'][0]
+                            default_value = values['default']
+                            value = default_value if len(default_value) == 0 else default_value[0]
                             if type(value) in (int, float, bool, str):
                                 dpath.new(self.context, ['assignments', variable_name], value)
 

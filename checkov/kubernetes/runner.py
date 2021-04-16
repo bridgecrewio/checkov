@@ -87,7 +87,7 @@ class Runner(BaseRunner):
                         continue
 
                     # Skip entity without metadata["name"]
-                    if "metadata" in entity_conf:
+                    if entity_conf.get("metadata"):
                         if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
                             continue
                     else:
@@ -134,14 +134,14 @@ class Runner(BaseRunner):
 
                     entity_conf = definitions[k8_file][i]
 
-                    if entity_conf["kind"] == "List":
+                    if entity_conf["kind"] == "List" or not entity_conf.get("kind"):
                         continue
 
                     if isinstance(entity_conf["kind"], int):
                         continue
                     # Skip entity without metadata["name"] or parent_metadata["name"]
                     if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
-                        if "metadata" in entity_conf:
+                        if entity_conf.get("metadata"):
                             if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
                                 continue
                         else:

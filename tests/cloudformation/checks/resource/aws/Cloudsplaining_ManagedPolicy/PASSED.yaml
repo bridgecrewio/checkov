@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM policy
+Resources:
+  NotPermissionsScoped:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:Get*'
+            Resource: 
+            - 'foo'
+      Roles:
+        - example_role
+  NotPermissionsWildcard:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 's3:Get*'
+            Resource: 
+            - '*'
+      Roles:
+        - example_role
+  AdminDeny:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action: '*'
+            Resource: '*'
+      Roles:
+        - example_role
+  PermissionsScoped:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - 'iam:ChangePassword'
+            Resource: 
+            - 'foo'
+      Roles:
+        - example_role
+      Users:
+        - admin

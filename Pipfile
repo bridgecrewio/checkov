@@ -34,7 +34,7 @@ tqdm = "*"
 update_checker = "*"
 semantic_version = "*"
 packaging = "*"
-cloudsplaining = ">=0.3.2"
+cloudsplaining = ">=0.4.1"
 networkx = "*"
 dockerfile-parse ="*"
 

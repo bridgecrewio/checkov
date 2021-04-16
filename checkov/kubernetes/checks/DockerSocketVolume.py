@@ -39,16 +39,14 @@ class DockerSocketVolume(BaseK8Check):
                             if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
-            if "spec" in conf:
-                if "template" in conf["spec"]:
-                    if "spec" in conf["spec"]["template"]:
-                        spec = conf["spec"]["template"]["spec"]
+            inner_spec = self.get_inner_entry(conf, "spec")
+            spec = inner_spec if inner_spec else spec
 
         # Evaluate volumes
         if spec:
             if "volumes" in spec and spec.get("volumes"):
                 for v in spec["volumes"]:
-                    if "hostPath" in v:
+                    if v.get("hostPath"):
                         if "path" in v["hostPath"]:
                             if v["hostPath"]["path"] == "/var/run/docker.sock":
                                 return CheckResult.FAILED

@@ -173,7 +173,7 @@ def add_parser_args(parser):
                         action='store_true')
     parser.add_argument('--download-external-modules',
                         help="download external terraform modules from public git repositories and terraform registry",
-                        default=False)
+                        default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False))
     parser.add_argument('--external-modules-download-path',
                         help="set the path for the download external terraform modules",
                         default=DEFAULT_EXTERNAL_MODULES_DIR)
