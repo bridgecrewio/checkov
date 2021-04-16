@@ -4,7 +4,9 @@ import os
 from abc import abstractmethod
 from typing import List
 
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import (
+    integration_feature_registry,
+)
 from checkov.common.output.report import Report
 from checkov.common.util import data_structures_utils
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -13,7 +15,7 @@ from checkov.terraform.parser import Parser
 
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
+OUTPUT_CHOICES = ["cli", "json", "junitxml", "github_failed_only", "sarif"]
 
 
 class RunnerRegistry(object):
@@ -33,26 +35,48 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, repo_root_for_plan_enrichment=None) -> List[Report]:
+    def run(
+        self,
+        root_folder=None,
+        external_checks_dir=None,
+        files=None,
+        guidelines=None,
+        collect_skip_comments=True,
+        repo_root_for_plan_enrichment=None,
+    ) -> List[Report]:
         for runner in self.runners:
             integration_feature_registry.run_pre_runner()
-            scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                     runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+            scan_report = runner.run(
+                root_folder,
+                external_checks_dir=external_checks_dir,
+                files=files,
+                runner_filter=self.runner_filter,
+                collect_skip_comments=collect_skip_comments,
+            )
             integration_feature_registry.run_post_runner(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
-                enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
-                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
-                scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+                enriched_resources = RunnerRegistry.get_enriched_resources(
+                    repo_root_for_plan_enrichment
+                )
+                scan_report = Report("terraform_plan").enrich_plan_report(
+                    scan_report, enriched_resources
+                )
+                scan_report = Report("terraform_plan").handle_skipped_checks(
+                    scan_report, enriched_resources
+                )
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, config, url=None, created_baseline_path=None, baseline=None):
-        if config.output == 'cli':
+    def print_reports(
+        self, scan_reports, config, url=None, created_baseline_path=None, baseline=None
+    ):
+        if config.output == "cli":
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
+        sarif_reports = []
         junit_reports = []
         for report in scan_reports:
             if not report.is_empty():
@@ -61,13 +85,25 @@ class RunnerRegistry(object):
                 elif config.output == "junitxml":
                     junit_reports.append(report)
                     # report.print_junit_xml()
-                elif config.output == 'github_failed_only':
+                elif config.output == "github_failed_only":
                     report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
+                elif config.output == "sarif":
+                    sarif_reports.append(report)
                 else:
-                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path, baseline=baseline, use_bc_ids=config.output_bc_ids)
+                    report.print_console(
+                        is_quiet=config.quiet,
+                        is_compact=config.compact,
+                        created_baseline_path=created_baseline_path,
+                        baseline=baseline,
+                        use_bc_ids=config.output_bc_ids,
+                    )
                     if url:
                         print("More details: {}".format(url))
-            exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
+            exit_codes.append(
+                report.get_exit_code(
+                    config.soft_fail, config.soft_fail_on, config.hard_fail_on
+                )
+            )
         if config.output == "junitxml":
             if len(junit_reports) == 1:
                 junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
@@ -78,13 +114,18 @@ class RunnerRegistry(object):
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
                 master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
+        if config.output == "sarif":
+            master_report = Report(None)
+            for report in sarif_reports:
+                master_report.failed_checks += report.failed_checks
+            master_rget_sarif_jsonjsonjsonjsonjsonjsonjson()
         if config.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
-        #if config.output == "cli":
-            #bc_integration.get_report_to_platform(config,scan_reports)
+        # if config.output == "cli":
+        # bc_integration.get_report_to_platform(config,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
@@ -94,7 +135,7 @@ class RunnerRegistry(object):
             return
         if self.runner_filter.framework is None:
             return
-        if self.runner_filter.framework == 'all':
+        if self.runner_filter.framework == "all":
             return
         filtered_runners = []
         for runner in self.runners:
@@ -109,7 +150,11 @@ class RunnerRegistry(object):
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
-        for record in scan_report.failed_checks + scan_report.passed_checks + scan_report.skipped_checks:
+        for record in (
+            scan_report.failed_checks
+            + scan_report.passed_checks
+            + scan_report.skipped_checks
+        ):
             if record.check_id in guidelines:
                 record.set_guideline(guidelines[record.check_id])
 
@@ -125,7 +170,9 @@ class RunnerRegistry(object):
 
         enriched_resources = {}
         for full_file_path, definition in tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
+            definitions_context = parser_registry.enrich_definitions_context(
+                (full_file_path, definition)
+            )
             abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
             scanned_file = os.path.relpath(abs_scanned_file, repo_root)
             for block_type, block_value in definition.items():
@@ -148,6 +195,6 @@ class RunnerRegistry(object):
                             "entity_code_lines": entity_code_lines,
                             "entity_lines_range": entity_lines_range,
                             "scanned_file": scanned_file,
-                            "skipped_checks": skipped_checks
+                            "skipped_checks": skipped_checks,
                         }
         return enriched_resources
