@@ -5,7 +5,7 @@ from checkov.arm.base_parameter_check import BaseParameterCheck
 class SecureStringParameterNoHardcodedValue(BaseParameterCheck):
     def __init__(self):
         name = "SecureString parameter should not have hardcoded default values"
-        id = "CKV_AZURE_987"
+        id = "CKV_AZURE_131"
         supported_resources = ['secureString']
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
