@@ -2,13 +2,13 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.KeyVaultAllowsFirewallRulesSettings import check
+from checkov.terraform.checks.resource.azure.KeyVaultEnablesFirewallRulesSettings import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestKeyVaultAllowsFirewallRulesSettings(unittest.TestCase):
+class TestKeyVaultEnablesFirewallRulesSettings(unittest.TestCase):
 
-    def test_failure(self):
+    def test_failure_missing(self):
         hcl_res = hcl2.loads("""
                 resource "azurerm_key_vault" "example" {
                   name                        = "examplekeyvault"
@@ -43,7 +43,7 @@ class TestKeyVaultAllowsFirewallRulesSettings(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_failure2(self):
+    def test_success(self):
         hcl_res = hcl2.loads("""
                 resource "azurerm_key_vault" "example" {
                   name                        = "examplekeyvault"
@@ -79,9 +79,9 @@ class TestKeyVaultAllowsFirewallRulesSettings(unittest.TestCase):
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_key_vault']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_success(self):
+    def test_fail_allow(self):
         hcl_res = hcl2.loads("""
                 resource "azurerm_key_vault" "example" {
                   name                        = "examplekeyvault"
@@ -117,7 +117,7 @@ class TestKeyVaultAllowsFirewallRulesSettings(unittest.TestCase):
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_key_vault']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':

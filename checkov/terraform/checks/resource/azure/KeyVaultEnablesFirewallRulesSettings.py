@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class KeyVaultAllowsFirewallRulesSettings(BaseResourceValueCheck):
+class KeyVaultEnablesFirewallRulesSettings(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that key vault allows firewall rules settings"
         id = "CKV_AZURE_109"
@@ -14,7 +14,7 @@ class KeyVaultAllowsFirewallRulesSettings(BaseResourceValueCheck):
         return "network_acls/[0]/default_action"
 
     def get_expected_value(self):
-        return "allow"
+        return "deny"
 
 
-check = KeyVaultAllowsFirewallRulesSettings()
+check = KeyVaultEnablesFirewallRulesSettings()
