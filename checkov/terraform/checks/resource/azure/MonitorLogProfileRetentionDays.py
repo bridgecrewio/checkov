@@ -12,6 +12,8 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        if not conf.get('retention_policy'):
+            return CheckResult.FAILED
         if conf['retention_policy'][0]['enabled'][0]:
             if 'days' in conf['retention_policy'][0] and force_int(conf['retention_policy'][0]['days'][0]) >= 365:
                 return CheckResult.PASSED

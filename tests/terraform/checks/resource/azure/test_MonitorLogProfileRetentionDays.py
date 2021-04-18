@@ -77,6 +77,25 @@ class TestMonitorLogProfileRetentionDays(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_failure_missing(self):
+        hcl_res = hcl2.loads("""
+           resource "azurerm_monitor_log_profile" "example" {
+              name = "default"
+              categories = [
+                "Action",
+                "Delete",
+                "Write",
+              ]
+              locations = [
+                "westus",
+                "global",
+              ]
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_monitor_log_profile']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
