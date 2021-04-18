@@ -14,6 +14,7 @@ nav_order: 1
 |  3 | CKV_DOCKER_4 | dockerfile | ADD        | Ensure that COPY is used instead of ADD in Dockerfiles                   | dockerfile |
 |  4 | CKV_DOCKER_5 | dockerfile | RUN        | Ensure update instructions are not use alone in the Dockerfile           | dockerfile |
 |  5 | CKV_DOCKER_6 | dockerfile | MAINTAINER | Ensure that LABEL maintainer is used instead of MAINTAINER (deprecated)  | dockerfile |
+|  6 | CKV_DOCKER_8 | dockerfile | USER       | Ensure the last USER is not root                                         | dockerfile |
 
 
 ---
