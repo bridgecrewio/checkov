@@ -184,6 +184,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
+            if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125'):
+                # These checks were removed because they were duplicates
+                continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
                 continue
