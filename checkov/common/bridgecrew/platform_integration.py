@@ -41,12 +41,6 @@ SIGNUP_HEADER = {
     'Content-Type': 'application/json;charset=UTF-8'
 }
 
-try:
-    http = urllib3.ProxyManager(os.environ['https_proxy'])
-except KeyError:
-    http = urllib3.PoolManager()
-
-
 class BcPlatformIntegration(object):
     def __init__(self):
         self.bc_api_key = read_key()
@@ -73,6 +67,13 @@ class BcPlatformIntegration(object):
         self.ckv_to_bc_id_mapping = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
+        self.setup_http_manager()
+
+    def setup_http_manager(self):
+        try:
+            http = urllib3.ProxyManager(os.environ['https_proxy'])
+        except KeyError:
+            http = urllib3.PoolManager()
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
                                      source_version=None):
@@ -122,7 +123,7 @@ class BcPlatformIntegration(object):
         self.platform_integration_configured = True
 
     def get_s3_role(self, bc_api_key, repo_id):
-        request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
+        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
         response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
@@ -130,7 +131,7 @@ class BcPlatformIntegration(object):
                 raise BridgecrewAuthError()
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
-                request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
+                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                        headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
                 response = json.loads(request.data.decode("utf8"))
 
@@ -187,7 +188,7 @@ class BcPlatformIntegration(object):
         request = None
         try:
 
-            request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
+            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
                                                     "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
                                                     "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
@@ -255,7 +256,7 @@ class BcPlatformIntegration(object):
             logging.debug(f"Skipped mapping API call")
             return {}
         try:
-            request = http.request("GET", self.guidelines_api_url)
+            request = self.http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")
