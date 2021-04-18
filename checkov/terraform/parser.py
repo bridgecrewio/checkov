@@ -345,6 +345,9 @@ class Parser:
                     if not source or not isinstance(source, list):
                         continue
                     source = source[0]
+                    if not isinstance(source, str):
+                        logging.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
+                        continue
 
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
