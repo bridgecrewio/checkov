@@ -355,12 +355,10 @@ class LocalGraph:
             start = 0
             end = 1
             while end <= len(parts):
-                name = '.'.join(parts[start:end])
-                if name in updated_config:
+                cur_key = '.'.join(parts[start:end])
+                if cur_key in updated_config:
+                    updated_config = updated_config[cur_key]
                     start = end
-                    updated_config = updated_config[name]
-                else:
-                    start += 1
                 end += 1
         for changed_attribute in changed_attributes:
             new_value = vertex.attributes.get(changed_attribute, None)
