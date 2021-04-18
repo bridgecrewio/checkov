@@ -91,6 +91,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
 
     if args.directory:
+        exit_codes = []
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
@@ -100,8 +101,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(args.branch)
 
-            runner_registry.print_reports(scan_reports, args, url)
-        return
+            exit_codes.append(runner_registry.print_reports(scan_reports, args, url))
+
+        exit_code = 1 if 1 in exit_codes else 0
+        return exit_code
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
                                            guidelines=guidelines, bc_integration=bc_integration)
@@ -111,7 +114,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(args.branch)
-        runner_registry.print_reports(scan_reports, args, url)
+        return runner_registry.print_reports(scan_reports, args, url)
     else:
         print(f"{banner}")
 

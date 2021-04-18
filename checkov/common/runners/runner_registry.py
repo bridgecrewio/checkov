@@ -78,7 +78,7 @@ class RunnerRegistry(object):
             self.bc_platform.get_report_to_platform(args,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
-        exit(exit_code)
+        return exit_code
 
     def filter_runner_framework(self):
         if not self.runner_filter:
