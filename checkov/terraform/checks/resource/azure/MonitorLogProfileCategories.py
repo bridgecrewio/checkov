@@ -1,6 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
-from checkov.common.util.type_forcers import force_int
 
 
 class MonitorLogProfileRetentionDays(BaseResourceCheck):
@@ -13,7 +12,9 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         categories = ['Write', 'Delete', 'Action']
-        if all(category in conf['categories'][0] for category in categories):
+        res_categories = conf.get('categories')
+        if isinstance(res_categories, list) and res_categories and \
+                all(category in conf['categories'][0] for category in categories):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
