@@ -43,6 +43,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
+
+    # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
+    # Allow the user to specify a CA bundle to be used by both libraries.
+    bc_integration.setup_http_manager(args.ca_certificate)
+
     # Disable runners with missing system dependencies
     args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
 
@@ -183,7 +188,9 @@ def add_parser_args(parser):
     parser.add_argument('--evaluate-variables',
                         help="evaluate the values of variables and locals",
                         default=True)
-
+    parser.add_argument('-ca', '--ca-certificate',
+                        help='custom CA bundle file',
+                        default=os.environ.get('BC_CA_BUNDLE', None))
 
 def get_external_checks_dir(args):
     external_checks_dir = args.external_checks_dir
