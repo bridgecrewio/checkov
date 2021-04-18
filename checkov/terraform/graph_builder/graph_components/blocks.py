@@ -214,10 +214,13 @@ def get_inner_attributes(attribute_key, attribute_value):
         inner_attributes[attribute_key] = [None] * len(attribute_value) if type(attribute_value) is list else {}
         iterator = range(len(attribute_value)) if type(attribute_value) is list else list(attribute_value.keys())
         for key in iterator:
-            inner_key = f'{attribute_key}.{key}'
-            inner_value = attribute_value[key]
-            inner_attributes.update(get_inner_attributes(inner_key, inner_value))
-            inner_attributes[attribute_key][key] = inner_attributes[inner_key]
+            if key != '':
+                inner_key = f'{attribute_key}.{key}'
+                inner_value = attribute_value[key]
+                inner_attributes.update(get_inner_attributes(inner_key, inner_value))
+                inner_attributes[attribute_key][key] = inner_attributes[inner_key]
+            else:
+                del attribute_value[key]
     else:
         inner_attributes[attribute_key] = attribute_value
     return inner_attributes
