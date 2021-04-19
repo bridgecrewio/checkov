@@ -21,6 +21,7 @@ class BaseContextParser(ABC):
     context = {}
 
     def __init__(self, definition_type):
+        #bc_integration.setup_http_manager()
         self.logger = logging.getLogger("{}".format(self.__module__))
         if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")

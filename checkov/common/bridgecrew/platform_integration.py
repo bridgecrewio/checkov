@@ -67,13 +67,15 @@ class BcPlatformIntegration(object):
         self.ckv_to_bc_id_mapping = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
-        self.setup_http_manager(os.getenv('BC_CA_BUNDLE', None))
+        self.http = None
 
-    def setup_http_manager(self, ca_certificate=None):
+    def setup_http_manager(self, ca_certificate=os.getenv('BC_CA_BUNDLE', None)):
         """
         bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         """
+        if self.http:
+            return
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:

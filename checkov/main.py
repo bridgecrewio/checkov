@@ -189,8 +189,7 @@ def add_parser_args(parser):
                         help="evaluate the values of variables and locals",
                         default=True)
     parser.add_argument('-ca', '--ca-certificate',
-                        help='custom CA bundle file',
-                        default=os.environ.get('BC_CA_BUNDLE', None))
+                        help='custom CA (bundle) file', default=None)
 
 def get_external_checks_dir(args):
     external_checks_dir = args.external_checks_dir
