@@ -1,34 +1,31 @@
+import os
 import unittest
 
-from dockerfile_parse import DockerfileParser
-
-from checkov.common.models.enums import CheckResult
 from checkov.dockerfile.checks.MaintainerExists import check
-from checkov.dockerfile.parser import dfp_group_by_instructions
+from checkov.dockerfile.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestMaintainerExists(unittest.TestCase):
-    def test_failure(self):
-        dfp = DockerfileParser()
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        dfp.content = """
-        From  base
-        MAINTAINER checkov
-        """
+        test_files_dir = current_dir + "/example_MaintainerExists"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
+        failing_resources = {"/failure/Dockerfile.MAINTAINER"}
 
-        self.assertEqual((CheckResult.FAILED), scan_result[0])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success(self):
-        dfp = DockerfileParser()
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-        dfp.content = """\
-        From  base
-        """
+        self.assertEqual(failing_resources, failed_check_resources)
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
 
-        self.assertEqual((CheckResult.PASSED, None), scan_result)
+if __name__ == "__main__":
+    unittest.main()

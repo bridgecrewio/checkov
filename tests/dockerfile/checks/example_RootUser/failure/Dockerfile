@@ -1,0 +1,3 @@
+FROM base
+
+USER root
