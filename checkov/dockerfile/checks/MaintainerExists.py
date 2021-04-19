@@ -11,10 +11,7 @@ class MaintainerExists(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        for instruction, content in conf.items():
-            if instruction == "MAINTAINER":
-                return CheckResult.FAILED, content[0]
-        return CheckResult.PASSED, None
+        return CheckResult.FAILED, conf[0]
 
 
 check = MaintainerExists()

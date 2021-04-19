@@ -1,39 +1,34 @@
+import os
 import unittest
 
-from dockerfile_parse import DockerfileParser
-
-from checkov.common.models.enums import CheckResult
 from checkov.dockerfile.checks.RootUser import check
-from checkov.dockerfile.parser import dfp_group_by_instructions
+from checkov.dockerfile.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
-class TestUserExists(unittest.TestCase):
-    def test_failure(self):
-        dfp = DockerfileParser()
+class TestRootUser(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        dfp.content = """
-        FROM base
-        USER root
-        """
+        test_files_dir = current_dir + "/example_RootUser"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
+        passing_resources = {"/success/Dockerfile.USER"}
+        failing_resources = {"/failure/Dockerfile.USER"}
 
-        self.assertEqual(CheckResult.FAILED, scan_result[0])
-        self.assertEqual("root", scan_result[1]["value"])
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success(self):
-        dfp = DockerfileParser()
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-        dfp.content = """
-        FROM base
-        USER root
-        COPY test.sh /test.sh
-        USER checkov
-        """
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
 
-        self.assertEqual(CheckResult.PASSED, scan_result[0])
-        self.assertEqual("checkov", scan_result[1]["value"])
+if __name__ == "__main__":
+    unittest.main()

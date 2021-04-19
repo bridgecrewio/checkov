@@ -11,16 +11,11 @@ class RootUser(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        contents = conf.get("USER")
+        last_user = conf[-1]
+        if last_user["value"] == "root":
+            return CheckResult.FAILED, last_user
 
-        if contents:
-            last_user = contents[-1]
-            if last_user["value"] == "root":
-                return CheckResult.FAILED, last_user
-
-            return CheckResult.PASSED, last_user
-
-        return CheckResult.UNKNOWN, None
+        return CheckResult.PASSED, last_user
 
 
 check = RootUser()
