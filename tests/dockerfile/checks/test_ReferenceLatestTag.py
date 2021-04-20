@@ -1,63 +1,37 @@
+import os
 import unittest
 
-from dockerfile_parse import DockerfileParser
-
-from checkov.common.models.enums import CheckResult
 from checkov.dockerfile.checks.ReferenceLatestTag import check
-from checkov.dockerfile.parser import dfp_group_by_instructions
+from checkov.dockerfile.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
-class TestMaintainerExists(unittest.TestCase):
-    def test_failure_default_version_tag(self):
-        dfp = DockerfileParser()
+class TestReferenceLatestTag(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        dfp.content = """
-        FROM alpine
-        """
+        test_files_dir = current_dir + "/example_ReferenceLatestTag"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
+        passing_resources = {"/success/Dockerfile.", "/success_multi_stage/Dockerfile."}
+        failing_resources = {
+            "/failure_default_version_tag/Dockerfile.FROM",
+            "/failure_latest_version_tag/Dockerfile.FROM",
+        }
 
-        self.assertEqual(CheckResult.FAILED, scan_result[0])
-        self.assertEqual("alpine", scan_result[1]["value"])
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_failure_latest_version_tag(self):
-        dfp = DockerfileParser()
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-        dfp.content = """
-        FROM alpine:latest
-        """
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
 
-        self.assertEqual(CheckResult.FAILED, scan_result[0])
-        self.assertEqual("alpine:latest", scan_result[1]["value"])
-
-    def test_success(self):
-        dfp = DockerfileParser()
-
-        dfp.content = """
-        FROM alpine:3
-        """
-
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
-
-        self.assertEqual((CheckResult.PASSED, None), scan_result)
-
-    def test_success_multi_stage(self):
-        dfp = DockerfileParser()
-
-        dfp.content = """
-        FROM alpine:3 as base
-        COPY test.sh /test.sh
-        
-        FROM base
-        LABEL maintainer=checkov
-        """
-
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf)
-
-        self.assertEqual((CheckResult.PASSED, None), scan_result)
+if __name__ == "__main__":
+    unittest.main()
