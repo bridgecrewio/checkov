@@ -15,6 +15,7 @@ class BaseIntegrationFeature(ABC):
 
     def __init__(self, bc_integration, order):
         self.bc_integration = bc_integration
+        bc_integration.setup_http_manager()
         self.order = order
         integration_feature_registry.register(self)
 
