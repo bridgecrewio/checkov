@@ -229,7 +229,7 @@ class BcPlatformIntegration(object):
     def _persist_file(self, full_file_path, relative_file_path):
         tries = 4
         curr_try = 0
-        file_object_key = os.path.join(self.repo_path, relative_file_path)
+        file_object_key = os.path.join(self.repo_path, relative_file_path).replace("\\", "/")
         while curr_try < tries:
             try:
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
