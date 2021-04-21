@@ -21,7 +21,7 @@ class KubeControllerManagerBlockProfiles(BaseK8Check):
                         value = command.split("=")[1]
                         if value == 'false':
                             return CheckResult.PASSED
-            return CheckResult.FAILED
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
