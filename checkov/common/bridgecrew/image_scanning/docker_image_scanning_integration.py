@@ -17,7 +17,7 @@ class DockerImageScanningIntegration:
         return bc_integration.bc_api_key
 
     def get_proxy_address(self):
-        return f"{self.docker_image_scanning_base_url}/twistcli-proxy"
+        return f"{self.docker_image_scanning_base_url}/twistcli/proxy"
 
     def download_twistcli(self, cli_file_name):
         os_type = platform.system().lower()
@@ -25,7 +25,7 @@ class DockerImageScanningIntegration:
             get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
             get_auth_header(bc_integration.bc_api_key)
         )
-        response = requests.request('GET', f"{self.docker_image_scanning_base_url}/download-twistcli?os={os_type}", headers=headers)
+        response = requests.request('GET', f"{self.docker_image_scanning_base_url}/twistcli/download?os={os_type}", headers=headers)
         open(cli_file_name, 'wb').write(response.content)
         st = os.stat(cli_file_name)
         os.chmod(cli_file_name, st.st_mode | stat.S_IEXEC)
