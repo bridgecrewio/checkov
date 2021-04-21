@@ -11,7 +11,7 @@ class ImageScanner:
         docker_image_scanning_integration.download_twistcli(TWISTCLI_FILE_NAME)
 
         command_args = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file results.json {docker_image_id}".split()
-        subprocess.run(command_args, stdout=subprocess.DEVNULL)  # nosec
+        subprocess.run(command_args)  # nosec
         logging.debug(f'TwistCLI ran successfully on image {docker_image_id}')
 
 
