@@ -118,7 +118,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if args.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
             return
-        image_scanner.scan(args.docker_image)
+        if args.dockerfile_path is None:
+            parser.error("--dockerfile-path argument is required when using --docker-image")
+            return
+        image_scanner.scan(args.docker_image, args.dockerfile_path)
     else:
         print(f"{banner}")
 
@@ -167,6 +170,7 @@ def add_parser_args(parser):
                         help='Runs checks but suppresses error code', action='store_true')
     parser.add_argument('--bc-api-key', help='Bridgecrew API key')
     parser.add_argument('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
+    parser.add_argument('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
     parser.add_argument('--repo-id',
                         help='Identity string of the repository, with form <repo_owner>/<repo_name>')
     parser.add_argument('-b', '--branch',
