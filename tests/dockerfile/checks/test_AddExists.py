@@ -1,23 +1,31 @@
+import os
 import unittest
 
-from dockerfile_parse import DockerfileParser
-
-from checkov.common.models.enums import CheckResult
 from checkov.dockerfile.checks.AddExists import check
-from checkov.dockerfile.parser import dfp_group_by_instructions
+from checkov.dockerfile.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestAddExists(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        dfp = DockerfileParser()
-        dfp.content = """\
-        From  base
-        LABEL foo="bar baz"
-        ADD http://example.com/package.zip /temp
-        USER  me"""
-        conf = dfp_group_by_instructions(dfp)[0]
-        scan_result = check.scan_entity_conf(conf['ADD'])
+        test_files_dir = current_dir + "/example_AddExists"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-        self.assertEqual((CheckResult.FAILED), scan_result[0])
+        failing_resources = {"/failure/Dockerfile.ADD"}
 
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
+    unittest.main()

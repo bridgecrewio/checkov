@@ -17,19 +17,17 @@ class ReferenceLatestTag(BaseDockerfileCheck):
     def scan_entity_conf(self, conf):
         stages = []
 
-        for instruction, contents in conf.items():
-            if instruction == "FROM":
-                for content in contents:
-                    base_image = content["value"]
-                    multi_stage = re.match(MULTI_STAGE_PATTERN, base_image)
-                    if multi_stage:
-                        base_image = multi_stage[1]
-                        stages.append(multi_stage[2])
+        for content in conf:
+            base_image = content["value"]
+            multi_stage = re.match(MULTI_STAGE_PATTERN, base_image)
+            if multi_stage:
+                base_image = multi_stage[1]
+                stages.append(multi_stage[2])
 
-                    if ":" not in base_image and base_image not in stages:
-                        return CheckResult.FAILED, content
-                    elif base_image.endswith(":latest"):
-                        return CheckResult.FAILED, content
+            if ":" not in base_image and base_image not in stages:
+                return CheckResult.FAILED, content
+            elif base_image.endswith(":latest"):
+                return CheckResult.FAILED, content
         return CheckResult.PASSED, None
 
 
