@@ -201,4 +201,4 @@ def get_external_checks_dir(args):
 
 
 if __name__ == '__main__':
-    run()
+    exit(run())
