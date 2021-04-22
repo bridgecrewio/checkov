@@ -17,8 +17,7 @@ class WildcardRoles(BaseK8Check):
             return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
 
     def scan_spec_conf(self, conf):
-        if "rules" in conf:
-            #print(conf)
+        if isinstance(conf.get("rules"), list) and len(conf.get("rules")) > 0:
             if "apiGroups" in conf["rules"][0]:
                 if any("*" in s for s in conf["rules"][0]["apiGroups"]):
                     return CheckResult.FAILED

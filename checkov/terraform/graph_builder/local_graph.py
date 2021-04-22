@@ -351,8 +351,15 @@ class LocalGraph:
     def update_vertex_config(vertex, changed_attributes):
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
-            for name_part in vertex.name.split('.'):
-                updated_config = updated_config.get(name_part)
+            parts = vertex.name.split('.')
+            start = 0
+            end = 1
+            while end <= len(parts):
+                cur_key = '.'.join(parts[start:end])
+                if cur_key in updated_config:
+                    updated_config = updated_config[cur_key]
+                    start = end
+                end += 1
         for changed_attribute in changed_attributes:
             new_value = vertex.attributes.get(changed_attribute, None)
             if new_value is not None:

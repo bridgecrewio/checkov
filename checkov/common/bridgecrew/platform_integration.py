@@ -41,12 +41,6 @@ SIGNUP_HEADER = {
     'Content-Type': 'application/json;charset=UTF-8'
 }
 
-try:
-    http = urllib3.ProxyManager(os.environ['https_proxy'])
-except KeyError:
-    http = urllib3.PoolManager()
-
-
 class BcPlatformIntegration(object):
     def __init__(self):
         self.bc_api_key = read_key()
@@ -73,6 +67,26 @@ class BcPlatformIntegration(object):
         self.ckv_to_bc_id_mapping = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
+        self.http = None
+
+    def setup_http_manager(self, ca_certificate=os.getenv('BC_CA_BUNDLE', None)):
+        """
+        bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
+        :param ca_certificate: an optional CA bundle to be used by both libraries.
+        """
+        if self.http:
+            return
+        if ca_certificate:
+            os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
+            try:
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED', ca_certs=ca_certificate)
+            except KeyError:
+                self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
+        else:
+            try:
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'])
+            except KeyError:
+                self.http = urllib3.PoolManager()
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
                                      source_version=None):
@@ -122,7 +136,7 @@ class BcPlatformIntegration(object):
         self.platform_integration_configured = True
 
     def get_s3_role(self, bc_api_key, repo_id):
-        request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
+        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
         response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
@@ -130,7 +144,7 @@ class BcPlatformIntegration(object):
                 raise BridgecrewAuthError()
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
-                request = http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
+                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                        headers={"Authorization": bc_api_key, "Content-Type": "application/json"})
                 response = json.loads(request.data.decode("utf8"))
 
@@ -187,7 +201,7 @@ class BcPlatformIntegration(object):
         request = None
         try:
 
-            request = http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
+            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
                                                     "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
                                                     "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
@@ -215,7 +229,7 @@ class BcPlatformIntegration(object):
     def _persist_file(self, full_file_path, relative_file_path):
         tries = 4
         curr_try = 0
-        file_object_key = os.path.join(self.repo_path, relative_file_path)
+        file_object_key = os.path.join(self.repo_path, relative_file_path).replace("\\", "/")
         while curr_try < tries:
             try:
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
@@ -255,7 +269,7 @@ class BcPlatformIntegration(object):
             logging.debug(f"Skipped mapping API call")
             return {}
         try:
-            request = http.request("GET", self.guidelines_api_url)
+            request = self.http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")

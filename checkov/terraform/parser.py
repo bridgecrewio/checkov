@@ -345,6 +345,9 @@ class Parser:
                     if not source or not isinstance(source, list):
                         continue
                     source = source[0]
+                    if not isinstance(source, str):
+                        logging.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
+                        continue
 
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
@@ -448,7 +451,7 @@ class Parser:
         # Create a new dict where the keys are sorted alphabetically
         sorted_conf = {key: conf[key] for key in sorted_keys}
         for attribute, values in sorted_conf.items():
-            if attribute is 'alias':
+            if attribute == 'alias':
                 continue
             if isinstance(values, list):
                 sorted_conf[attribute] = Parser._hcl_boolean_types_to_boolean_lst(values)

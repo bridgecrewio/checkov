@@ -1,7 +1,7 @@
 import logging
 import os
 
-from checkov.arm.registry import arm_registry
+from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -24,7 +24,7 @@ class Runner(BaseRunner):
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
-                arm_registry.load_external_checks(directory)
+                arm_resource_registry.load_external_checks(directory)
 
         if files:
             for file in files:
@@ -59,46 +59,70 @@ class Runner(BaseRunner):
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if isinstance(definitions[arm_file], dict_node) and 'resources' in definitions[arm_file].keys():
+            if isinstance(definitions[arm_file], dict_node):
                 arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
                 logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
-                arm_context_parser.evaluate_default_parameters()
 
-                # Split out nested resources from base resource
-                for resource in definitions[arm_file]['resources']:
-                    if "parent_name" in resource.keys():
-                        continue
-                    nested_resources = []
-                    nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
-                    if nested_resources:
-                        for nr in nested_resources:
-                            nr_element = nr.pop()
-                            if nr_element:
-                                for element in nr_element:
-                                    new_resource = {}
-                                    new_resource = element
-                                    if isinstance(new_resource, dict):
-                                        new_resource["parent_name"] = resource["name"]
-                                        new_resource["parent_type"] = resource["type"]
-                                        definitions[arm_file]['resources'].append(new_resource)
+                if 'resources' in definitions[arm_file].keys():
+                    arm_context_parser.evaluate_default_parameters()
 
-                for resource in definitions[arm_file]['resources']:
-                    resource_id = arm_context_parser.extract_arm_resource_id(resource)
-                    resource_name = arm_context_parser.extract_arm_resource_name(resource)
-                    entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(resource)
-                    if entity_lines_range and entity_code_lines:
+                    # Split out nested resources from base resource
+                    for resource in definitions[arm_file]['resources']:
+                        if "parent_name" in resource.keys():
+                            continue
+                        nested_resources = []
+                        nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
+                        if nested_resources:
+                            for nr in nested_resources:
+                                nr_element = nr.pop()
+                                if nr_element:
+                                    for element in nr_element:
+                                        new_resource = {}
+                                        new_resource = element
+                                        if isinstance(new_resource, dict):
+                                            new_resource["parent_name"] = resource["name"]
+                                            new_resource["parent_type"] = resource["type"]
+                                            definitions[arm_file]['resources'].append(new_resource)
+
+                    for resource in definitions[arm_file]['resources']:
+                        resource_id = arm_context_parser.extract_arm_resource_id(resource)
+                        resource_name = arm_context_parser.extract_arm_resource_name(resource)
+                        entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(resource)
+                        if entity_lines_range and entity_code_lines:
+                            # TODO - Variable Eval Message!
+                            variable_evaluations = {}
+
+                            skipped_checks = ContextParser.collect_skip_comments(resource)
+
+                            results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
+                                                                 runner_filter)
+                            for check, check_result in results.items():
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                                code_block=entity_code_lines, file_path=arm_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=resource_id, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                report.add_record(record=record)
+
+                if 'parameters' in definitions[arm_file].keys():
+                    parameters = definitions[arm_file]['parameters']
+                    for parameter_name, parameter_details in parameters.items():
                         # TODO - Variable Eval Message!
                         variable_evaluations = {}
 
-                        skipped_checks = ContextParser.collect_skip_comments(resource)
+                        resource_id = f'parameter.{parameter_name}'
+                        resource_name = parameter_name
+                        entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(parameter_details)
 
-                        results = arm_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                    runner_filter)
-                        for check, check_result in results.items():
-                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=arm_file,
-                                            file_line_range=entity_lines_range,
-                                            resource=resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path)
-                            report.add_record(record=record)
+                        if entity_lines_range and entity_code_lines:
+                            skipped_checks = ContextParser.collect_skip_comments(parameter_details)
+                            results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
+                            for check, check_result in results.items():
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                                code_block=entity_code_lines, file_path=arm_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=resource_id, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                                report.add_record(record=record)
+
         return report

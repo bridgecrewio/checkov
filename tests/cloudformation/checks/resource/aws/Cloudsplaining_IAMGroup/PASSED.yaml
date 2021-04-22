@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: IAM Groups with multiple policies
+Resources:
+  NotPermissionsScopedAndWildcard:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      Policies:
+      - PolicyName: a
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 
+              - 's3:Get*'
+              Resource: 
+              - 'foo'
+      - PolicyName: b
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 
+              - 's3:Get*'
+              Resource: 
+              - '*'        
+  AdminDenyAndPermissionsScoped:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      Policies:
+      - PolicyName: a
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Deny
+              Action: '*'
+              Resource: '*'
+      - PolicyName: b
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 
+              - 'iam:ChangePassword'
+              Resource: 
+              - 'foo'

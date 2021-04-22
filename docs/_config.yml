@@ -4,7 +4,7 @@ site_author: Bridgecrew
 repo_url: "https://github.com/bridgecrewio/checkov/"
 
 edit_on_github: true
-github_docs_folder: false
+github_docs_folder: true
 sticky_navigation: true
 prev_next_buttons_location: both
 search_enabled: false
@@ -13,7 +13,8 @@ google_analytics: UA-156134275-1
 plugins:
   - jekyll-redirect-from
   - jekyll-remote-theme
+  - jekyll-get-json
 
 jekyll_get_json:
   - data: menus
-    json: 'menus.json'
+    json: './menus.json'

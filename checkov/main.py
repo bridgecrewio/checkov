@@ -45,6 +45,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
+
+    # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
+    # Allow the user to specify a CA bundle to be used by both libraries.
+    bc_integration.setup_http_manager(args.ca_certificate)
+
     # Disable runners with missing system dependencies
     args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
 
@@ -93,6 +98,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
 
     if args.directory:
+        exit_codes = []
         for root_folder in args.directory:
             file = args.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
@@ -102,8 +108,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(args.branch)
 
-            runner_registry.print_reports(scan_reports, args, url)
-        return
+            exit_codes.append(runner_registry.print_reports(scan_reports, args, url))
+
+        exit_code = 1 if 1 in exit_codes else 0
+        return exit_code
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
                                            guidelines=guidelines, bc_integration=bc_integration)
@@ -113,7 +121,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(args.branch)
-        runner_registry.print_reports(scan_reports, args, url)
+        return runner_registry.print_reports(scan_reports, args, url)
     elif args.docker_image:
         if args.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
@@ -192,7 +200,8 @@ def add_parser_args(parser):
     parser.add_argument('--evaluate-variables',
                         help="evaluate the values of variables and locals",
                         default=True)
-
+    parser.add_argument('-ca', '--ca-certificate',
+                        help='custom CA (bundle) file', default=None)
 
 def get_external_checks_dir(args):
     external_checks_dir = args.external_checks_dir
@@ -204,4 +213,4 @@ def get_external_checks_dir(args):
 
 
 if __name__ == '__main__':
-    run()
+    exit(run())
