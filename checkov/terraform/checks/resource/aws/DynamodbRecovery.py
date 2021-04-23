@@ -13,5 +13,8 @@ class DynamodbRecovery(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "point_in_time_recovery/[0]/enabled"
 
+    def get_expected_values(self):
+        return [self.get_expected_value(), 'true']  # terraformer exports this as the string 'true'
+
 
 check = DynamodbRecovery()
