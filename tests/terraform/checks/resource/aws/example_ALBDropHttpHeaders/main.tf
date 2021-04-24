@@ -60,3 +60,12 @@ resource "aws_lb" "default" {
   name               = "nlb"
   subnets            = var.public_subnet_ids
 }
+
+resource "aws_lb" "gateway" {
+  load_balancer_type = "gateway"
+  name               = "glb"
+
+  subnet_mapping {
+    subnet_id = var.subnet_id
+  }
+}
