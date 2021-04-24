@@ -55,8 +55,19 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 12)
+        self.assertEqual(report.get_summary()["failed"], 15)
         self.assertEqual(report.get_summary()["passed"], 0)
+
+        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        expected_failed_check_ids = {
+            "CKV_AWS_37",
+            "CKV_AWS_38",
+            "CKV_AWS_39",
+            "CKV_AWS_58",
+            "CKV_AWS_151",
+        }
+
+        assert failed_check_ids == expected_failed_check_ids
 
     def test_runner_root_module_resources_no_values(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -74,8 +85,19 @@ class TestRunnerValid(unittest.TestCase):
         # 4 checks fail on test data for single eks resource as of present
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
-        self.assertEqual(report.get_summary()["failed"], 4)
+        self.assertEqual(report.get_summary()["failed"], 5)
         self.assertEqual(report.get_summary()["passed"], 0)
+
+        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        expected_failed_check_ids = {
+            "CKV_AWS_37",
+            "CKV_AWS_38",
+            "CKV_AWS_39",
+            "CKV_AWS_58",
+            "CKV_AWS_151",
+        }
+
+        assert failed_check_ids == expected_failed_check_ids
 
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
@@ -101,8 +123,19 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 4)
+        self.assertEqual(report.get_summary()["failed"], 5)
         self.assertEqual(report.get_summary()["passed"], 0)
+
+        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        expected_failed_check_ids = {
+            "CKV_AWS_37",
+            "CKV_AWS_38",
+            "CKV_AWS_39",
+            "CKV_AWS_58",
+            "CKV_AWS_151",
+        }
+
+        assert failed_check_ids == expected_failed_check_ids
 
     def test_runner_root_dir(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
