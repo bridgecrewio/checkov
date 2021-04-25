@@ -1,14 +1,13 @@
-from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 
 
 class SecretManagerSecretEncrypted(BaseResourceValueCheck):
-
     def __init__(self):
-        name = "Ensure that Secret Manager secret is encrypted using KMS"
-        id = "CKV_AWS_152"
-        supported_resources = ['aws_secretsmanager_secret']
+        name = "Ensure that Secrets Manager secret is encrypted using KMS"
+        id = "CKV_AWS_149"
+        supported_resources = ["aws_secretsmanager_secret"]
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -16,7 +15,7 @@ class SecretManagerSecretEncrypted(BaseResourceValueCheck):
         return ANY_VALUE
 
     def get_inspected_key(self):
-        return 'kms_key_id'
+        return "kms_key_id"
 
 
 check = SecretManagerSecretEncrypted()
