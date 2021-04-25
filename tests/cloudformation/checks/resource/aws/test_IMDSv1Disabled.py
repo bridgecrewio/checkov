@@ -16,7 +16,12 @@ class TestIMDSv1Disabled(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        self.assertEqual(report.failed_checks[0].check_id, check.id)
+        for record in report.failed_checks:
+            self.assertEqual(record.check_id, check.id)
+        
+        for record in report.passed_checks:
+            self.assertEqual(record.check_id, check.id)
+
         self.assertEqual(summary['passed'], 2)
         self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 0)
