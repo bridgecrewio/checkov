@@ -51,12 +51,12 @@ class DockerImageScanningIntegration:
             'publishedDate': (datetime.now() - timedelta(days=x['publishedDays'])).isoformat()
         }, twistcli_scan_result['results'][0]['vulnerabilities']))
         payload = {
-            'sourceId': bc_integration.repo_id;
-            'dockerImageName': docker_image_name;
-            'dockerFilePath': dockerfile_path;
-            'dockerFileContent': dockerfile_content;
-            'sourceType': bc_integration.bc_source;
-            'vulnerabilities': vulnerabilities;
+            'sourceId': bc_integration.repo_id,
+            'dockerImageName': docker_image_name,
+            'dockerFilePath': dockerfile_path,
+            'dockerFileContent': dockerfile_content,
+            'sourceType': bc_integration.bc_source,
+            'vulnerabilities': vulnerabilities
         }
         response = requests.request('POST', f"{self.docker_image_scanning_base_url}/twistcli/report", headers=headers, json=payload)
 
