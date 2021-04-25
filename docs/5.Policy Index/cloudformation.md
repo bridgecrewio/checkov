@@ -105,9 +105,6 @@ nav_order: 1
 | 94 | CKV_AWS_111 | resource | AWS::IAM::Group                           | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 | 95 | CKV_AWS_111 | resource | AWS::IAM::Role                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 | 96 | CKV_AWS_111 | resource | AWS::IAM::User                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
-| 97 | CKV_AWS_113 | resource | aws_lb                                    | Ensure that Load Balancer has deletion protection enabled                                                                                                                                                | Cloudformation |
-| 98 | CKV_AWS_113 | resource | aws_alb                                   | Ensure that Load Balancer has deletion protection enabled                                                                                                                                                | Cloudformation |
-| 99 | CKV_AWS_152 | resource | aws_secretsmanager_secret                 | Ensure that Secret Manager secret is encrypted using KMS                                                                                                                                                 | Cloudformation |
 
 
 ---
