@@ -1,119 +1,44 @@
+import os
 import unittest
-import hcl2
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.ELBv2AccessLogs import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestELBAccessLogs(unittest.TestCase):
+class TestELBv2AccessLogs(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure_lb_1(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_lb" "test" {
-            name               = "test-lb-tf"
+        test_files_dir = current_dir + "/example_ELBv2AccessLogs"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_lb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_lb.enabled",
+            "aws_alb.enabled",
+        }
+        failing_resources = {
+            "aws_lb.default",
+            "aws_alb.default",
+            "aws_lb.only_bucket",
+            "aws_alb.only_bucket",
+            "aws_lb.disabled",
+            "aws_alb.disabled",
+        }
 
-    def test_failure_lb_2(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_lb" "test" {
-            name               = "test-lb-tf"
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-              enabled = false
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_lb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 6)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_failure_lb_3(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_lb" "test" {
-            name               = "test-lb-tf"
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_lb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)        
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
-    def test_failure_alb_1(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_alb" "test" {
-            name               = "test-lb-tf"
 
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_alb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_alb_2(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_alb" "test" {
-            name               = "test-lb-tf"
-
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-              enabled = false
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_alb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_alb_3(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_alb" "test" {
-            name               = "test-lb-tf"
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_alb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success_lb(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_lb" "test" {
-            name               = "test-lb-tf"
-
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-              enabled = true
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_lb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_alb(self):
-        hcl_res = hcl2.loads("""
-          resource "aws_alb" "test" {
-            name               = "test-lb-tf"
-
-            access_logs {
-              bucket  = aws_s3_bucket.lb_logs.bucket
-              enabled = true
-            }
-          }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_alb']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,7 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
+
 
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts
 
@@ -16,9 +18,11 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if "apiVersion" in conf:
             # Fail if apiVersion < 2017 as you could not set networkAcls
-            year = int(conf["apiVersion"][0:4])
+            year = force_int(conf["apiVersion"][0:4])
 
-            if year < 2017:
+            if year is None:
+                return CheckResult.UNKNOWN
+            elif year < 2017:
                 return CheckResult.FAILED
 
         if "properties" in conf:
@@ -27,5 +31,6 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
                     if conf["properties"]["networkAcls"]["defaultAction"] == "Deny":
                         return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = StorageAccountDefaultNetworkAccessDeny()

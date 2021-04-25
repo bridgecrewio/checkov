@@ -1,71 +1,91 @@
 # pass
 
 resource "aws_lb" "enabled" {
-  internal           = false
-  load_balancer_type = "application"
-  name               = "alb"
+  load_balancer_type = "network"
+  name               = "nlb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = true
+  access_logs {
+    bucket  = var.bucket_name
+    enabled = true
+  }
 }
 
 resource "aws_alb" "enabled" {
-  internal           = false
   load_balancer_type = "application"
   name               = "alb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = true
+  access_logs {
+    bucket  = var.bucket_name
+    enabled = true
+  }
 }
 
 # failure
 
 resource "aws_lb" "default" {
-  internal           = false
-  load_balancer_type = "application"
-  name               = "alb"
-  subnets            = var.public_subnet_ids
-}
-
-resource "aws_alb" "default" {
-  internal           = false
-  load_balancer_type = "application"
-  name               = "alb"
-  subnets            = var.public_subnet_ids
-}
-
-resource "aws_lb" "disabled" {
-  internal           = false
-  load_balancer_type = "application"
-  name               = "alb"
-  subnets            = var.public_subnet_ids
-
-  drop_invalid_header_fields = false
-}
-
-resource "aws_alb" "disabled" {
-  internal           = false
-  load_balancer_type = "application"
-  name               = "alb"
-  subnets            = var.public_subnet_ids
-
-  drop_invalid_header_fields = false
-}
-
-# unknown
-
-resource "aws_lb" "network" {
-  internal           = false
   load_balancer_type = "network"
   name               = "nlb"
   subnets            = var.public_subnet_ids
 }
 
+resource "aws_alb" "default" {
+  load_balancer_type = "application"
+  name               = "alb"
+  subnets            = var.public_subnet_ids
+}
+
+resource "aws_lb" "only_bucket" {
+  load_balancer_type = "network"
+  name               = "nlb"
+  subnets            = var.public_subnet_ids
+
+  access_logs {
+    bucket = var.bucket_name
+  }
+}
+
+resource "aws_alb" "only_bucket" {
+  load_balancer_type = "application"
+  name               = "alb"
+  subnets            = var.public_subnet_ids
+
+  access_logs {
+    bucket = var.bucket_name
+  }
+}
+
+resource "aws_lb" "disabled" {
+  load_balancer_type = "network"
+  name               = "nlb"
+  subnets            = var.public_subnet_ids
+
+  access_logs {
+    bucket  = var.bucket_name
+    enabled = false
+  }
+}
+
+resource "aws_alb" "disabled" {
+  load_balancer_type = "application"
+  name               = "alb"
+  subnets            = var.public_subnet_ids
+
+  access_logs {
+    bucket  = var.bucket_name
+    enabled = false
+  }
+}
+
+# unknown
+
 resource "aws_lb" "gateway" {
+  name = "glb"
   load_balancer_type = "gateway"
-  name               = "glb"
 
   subnet_mapping {
     subnet_id = var.subnet_id
   }
 }
+

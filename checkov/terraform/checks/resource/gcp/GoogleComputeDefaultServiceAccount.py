@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 import re
 
-DEFAULT_SERVICE_ACCOUNT = re.compile('\d+-compute@developer\.gserviceaccount\.com')
+DEFAULT_SERVICE_ACCOUNT = re.compile(r'\d+-compute@developer\.gserviceaccount\.com')
 
 
 class GoogleComputeDefaultServiceAccount(BaseResourceCheck):

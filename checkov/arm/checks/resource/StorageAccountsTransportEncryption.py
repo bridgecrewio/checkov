@@ -1,5 +1,6 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
 
 
 class StorageAccountsTransportEncryption(BaseResourceCheck):
@@ -23,12 +24,15 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         # Use default if supportsHttpsTrafficOnly is not set
         if "apiVersion" in conf:
             # Default for apiVersion 2019 and newer is supportsHttpsTrafficOnly = True
-            year = int(conf["apiVersion"][0:4])
+            year = force_int(conf["apiVersion"][0:4])
 
-            if year < 2019:
+            if year is None:
+                return CheckResult.UNKNOWN
+            elif year < 2019:
                 return CheckResult.FAILED
             else:
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = StorageAccountsTransportEncryption()

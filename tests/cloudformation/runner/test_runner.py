@@ -1,5 +1,8 @@
+import dis
+import inspect
 import os
 import unittest
+from pathlib import Path
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.parser import parse
@@ -147,6 +150,27 @@ class TestRunnerValid(unittest.TestCase):
 
         for name, value in tags.items():
             self.assertEqual(entity_tags[name], value)
+
+    def test_wrong_check_imports(self):
+        wrong_imports = ["arm", "dockerfile", "helm", "kubernetes", "serverless", "terraform"]
+        ignore_files = ["BaseCloudsplainingIAMCheck.py"]
+        check_imports = []
+
+        checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
+        for file in checks_path.rglob("*.py"):
+            if file.name in ignore_files:
+                continue
+
+            with file.open() as f:
+                instructions = dis.get_instructions(f.read())
+                import_names = [instr.argval for instr in instructions if "IMPORT_NAME" == instr.opname]
+
+                for import_name in import_names:
+                    wrong_import = next((import_name for x in wrong_imports if x in import_name), None)
+                    if wrong_import:
+                        check_imports.append({file.name: wrong_import})
+
+        assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
     def tearDown(self):
         pass
