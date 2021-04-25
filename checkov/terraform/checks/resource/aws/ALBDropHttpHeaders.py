@@ -11,7 +11,7 @@ class ALBDropHttpHeaders(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get("load_balancer_type") == ["network"]:
+        if conf.get("load_balancer_type") in (["gateway"], ["network"]):
             return CheckResult.UNKNOWN
         return super().scan_resource_conf(conf)
 
