@@ -37,6 +37,7 @@ packaging = "*"
 cloudsplaining = ">=0.4.1"
 networkx = "*"
 dockerfile-parse ="*"
+dataclasses = {version = "*", markers="python_version < '3.7'"}
 
 [requires]
-python_version = "3.7"
+python_version = ">=3.6"
