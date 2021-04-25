@@ -50,7 +50,8 @@ setup(
         "semantic_version",
         "packaging",
         "networkx",
-        "dockerfile-parse"
+        "dockerfile-parse",
+        "docker"
     ],
     license="Apache License 2.0",
     name="checkov",
