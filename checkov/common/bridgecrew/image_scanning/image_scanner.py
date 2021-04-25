@@ -1,10 +1,12 @@
 import logging
 import subprocess  # nosec
 import docker
+import json
 
 from checkov.common.bridgecrew.image_scanning.docker_image_scanning_integration import docker_image_scanning_integration
 
 TWISTCLI_FILE_NAME = 'twistcli'
+DOCKER_IMAGE_SCAN_RESULT_FILE_NAME = 'docker-image-scan-results.json'
 
 
 def _get_docker_image_name(docker_image_id):
@@ -34,9 +36,14 @@ class ImageScanner:
         dockerfile_content = _get_dockerfile_content(dockerfile_path)
         docker_image_scanning_integration.download_twistcli(TWISTCLI_FILE_NAME)
 
-        command_args = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file results.json {docker_image_id}".split()
+        command_args = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file {DOCKER_IMAGE_SCAN_RESULT_FILE_NAME} {docker_image_id}".split()
         subprocess.run(command_args)  # nosec
         logging.debug(f'TwistCLI ran successfully on image {docker_image_id}')
+
+        with open(DOCKER_IMAGE_SCAN_RESULT_FILE_NAME) as docker_image_scan_result_file:
+            scan_result = json.load(docker_image_scan_result_file)
+
+        docker_image_scanning_integration.report_results(docker_image_name, dockerfile_path, dockerfile_content, twistcli_scan_result=scan_result)
 
 
 image_scanner = ImageScanner()
