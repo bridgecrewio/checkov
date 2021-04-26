@@ -55,7 +55,7 @@ class TestTerraformEvaluation(TestCase):
         expected = {"authority":"terraform.io", "scheme" : "https"}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
-        input_str = 'regex("(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "2019-02-01")'
+        input_str = 'regex(r"(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "2019-02-01")'
         expected = ["2019","02","01"]
         self.assertEqual(expected, evaluate_terraform(input_str))
 
@@ -273,3 +273,20 @@ class TestTerraformEvaluation(TestCase):
         replaced = remove_interpolation(original_str)
         expected = 'merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-local.static1-local.static2\'})'
         self.assertEqual(expected, replaced)
+
+    def test_jsonencode(self):
+        cases = [
+            ("jsonencode(['a', 42, true, null])", ["a", 42, True, None]),
+            ("jsonencode({'a': 'b'})", {"a": "b"}),
+            ("jsonencode({'a' = 'b'})", {"a": "b"}),
+            ("jsonencode({'a' = 42})", {"a": 42}),
+            ("jsonencode({'a' = true})", {"a": True}),
+            ("jsonencode({'a' = false})", {"a": False}),
+            ("jsonencode({'a' = null})", {"a": None}),
+            ("jsonencode({'a' = ['b', 'c']})", {"a": ["b", "c"]}),
+            ("jsonencode({'a' = jsonencode(['b', 'c'])})", {"a": ["b", "c"]}),
+        ]
+
+        for input_str, expected in cases:
+            with self.subTest(input_str):
+                assert evaluate_terraform(input_str) == expected

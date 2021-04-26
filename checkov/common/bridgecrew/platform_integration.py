@@ -25,7 +25,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.version import version as checkov_version
 
-EMAIL_PATTERN = "[^@]+@[^@]+\.[^@]+"
+EMAIL_PATTERN = r"[^@]+@[^@]+\.[^@]+"
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
 

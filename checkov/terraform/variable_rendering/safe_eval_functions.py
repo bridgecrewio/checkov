@@ -176,3 +176,6 @@ SAFE_EVAL_DICT['tomap'] = lambda arg: wrap_func(tomap, str(arg))
 SAFE_EVAL_DICT['tonumber'] = lambda arg: arg if type(arg) in [int, float] else wrap_func(tonumber, arg)
 SAFE_EVAL_DICT['toset'] = lambda origin: set(origin)
 SAFE_EVAL_DICT['tostring'] = lambda arg: arg if isinstance(arg, str) else wrap_func(tostring, str(arg))
+
+# encoding
+SAFE_EVAL_DICT['jsonencode'] = lambda arg: arg

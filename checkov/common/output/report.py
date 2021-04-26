@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 from colorama import init
-from junit_xml import TestCase, TestSuite
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
@@ -113,7 +113,7 @@ class Report:
         print(xml_string)
 
     def get_junit_xml_string(self, ts):
-        return TestSuite.to_xml_string(ts)
+        return to_xml_report_string(ts)
 
     def print_failed_github_md(self):
         result = []
