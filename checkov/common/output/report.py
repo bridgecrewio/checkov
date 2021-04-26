@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 from colorama import init
-from junit_xml import TestCase, TestSuite, to_xml_report_string
+from junit_xml import TestCase, TestSuite
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
