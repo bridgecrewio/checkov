@@ -36,6 +36,7 @@ def evaluate_terraform(input_str, keep_interpolations=True):
     evaluated_value = evaluate_directives(evaluated_value)
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
+    evaluated_value = evaluate_json_types(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
     return evaluated_value if callable(second_evaluated_value) else second_evaluated_value
@@ -125,6 +126,14 @@ def evaluate_compare(input_str):
                 return apply_binary_op(evaluate_terraform(a), evaluate_terraform(b), op)
             except TypeError or SyntaxError:
                 return input_str
+
+    return input_str
+
+
+def evaluate_json_types(input_str: str) -> str:
+    # https://www.terraform.io/docs/language/functions/jsonencode.html
+    if input_str.startswith("jsonencode("):
+        return input_str.replace("true", "True").replace("false", "False").replace("null", "None")
 
     return input_str
 
