@@ -1,62 +1,39 @@
+import os
 import unittest
-import hcl2
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.ElasticCacheAutomaticBackup import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestElasticCacheAutomaticBackup(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_elasticache_cluster" "example" {
-                  cluster_id           = "cluster-example"
-                  engine               = "redis"
-                  node_type            = "cache.m4.large"
-                  num_cache_nodes      = 1
-                  parameter_group_name = "default.redis3.2"
-                  engine_version       = "3.2.10"
-                  port                 = 6379
-                  snapshot_retention_limit = 0
-                }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_elasticache_cluster']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_ElasticCacheAutomaticBackup"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_elasticache_cluster" "example" {
-                  cluster_id           = "cluster-example"
-                  engine               = "redis"
-                  node_type            = "cache.m4.large"
-                  num_cache_nodes      = 1
-                  parameter_group_name = "default.redis3.2"
-                  engine_version       = "3.2.10"
-                  port                 = 6379
-                }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_elasticache_cluster']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_elasticache_cluster.enabled",
+        }
+        failing_resources = {
+            "aws_elasticache_cluster.default",
+            "aws_elasticache_cluster.disabled",
+        }
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_elasticache_cluster" "example" {
-                  cluster_id           = "cluster-example"
-                  engine               = "redis"
-                  node_type            = "cache.m4.large"
-                  num_cache_nodes      = 1
-                  parameter_group_name = "default.redis3.2"
-                  engine_version       = "3.2.10"
-                  port                 = 6379
-                  snapshot_retention_limit = 5
-                }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_elasticache_cluster']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
