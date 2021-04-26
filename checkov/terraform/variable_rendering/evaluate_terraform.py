@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_DICT
 # condition ? true_val : false_val -> (condition, true_val, false_val)
@@ -130,9 +131,9 @@ def evaluate_compare(input_str):
     return input_str
 
 
-def evaluate_json_types(input_str: str) -> str:
+def evaluate_json_types(input_str: Any) -> str:
     # https://www.terraform.io/docs/language/functions/jsonencode.html
-    if input_str.startswith("jsonencode("):
+    if isinstance(input_str, str) and input_str.startswith("jsonencode("):
         return input_str.replace("true", "True").replace("false", "False").replace("null", "None")
 
     return input_str
