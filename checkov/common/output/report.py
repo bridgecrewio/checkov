@@ -113,8 +113,8 @@ class Report:
         print(xml_string)
 
     def get_junit_xml_string(self, ts):
-        return to_xml_report_string(ts)
-
+        return TestSuite.to_xml_string(ts)
+        
     def print_failed_github_md(self):
         result = []
         for record in self.failed_checks:
