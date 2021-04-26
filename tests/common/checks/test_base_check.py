@@ -6,6 +6,8 @@ from checkov.common.models.enums import CheckResult
 
 
 class TestCheckTypeNotInSignature(BaseCheck):
+    # for pytest not to collect this class as tests
+    __test__ = False
 
     def __init__(self):
         name = "Example check"

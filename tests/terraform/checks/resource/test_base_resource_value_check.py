@@ -7,6 +7,9 @@ from checkov.terraform.checks.resource.registry import resource_registry
 
 
 class TestAnyCheck(BaseResourceValueCheck):
+    # for pytest not to collect this class as tests
+    __test__ = False
+
     def __init__(self):
         super().__init__("Ensure it ain't broke", "test/TestAnyCheck", [], ["doesnt_matter"])
 
@@ -18,6 +21,9 @@ class TestAnyCheck(BaseResourceValueCheck):
 
 
 class TestStaticCheck(BaseResourceValueCheck):
+    # for pytest not to collect this class as tests
+    __test__ = False
+
     def __init__(self):
         super().__init__("Ensure it ain't broke", "test/TestStaticCheck", [], ["doesnt_matter"])
 
