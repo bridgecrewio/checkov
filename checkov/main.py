@@ -64,7 +64,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     if args.version:
         print(version)
         return
-    if args.bc_api_key:
+
+    if args.bc_api_key == '':
+        parser.error('The --bc-api-key flag was specified but the value was blank. If this value was passed as a secret, you may need to double check the mapping.')
+    elif args.bc_api_key:
+        logger.debug(f'Using API key ending with {args.bc_api_key[-8:]}')
+
         if args.repo_id is None:
             parser.error("--repo-id argument is required when using --bc-api-key")
         if len(args.repo_id.split('/')) != 2:
@@ -82,6 +87,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         except Exception as e:
             logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token and try again.', exc_info=True)
             return
+    else:
+        logger.debug('No API key found. Scanning locally only.')
 
     guidelines = {}
     if not args.no_guide:
