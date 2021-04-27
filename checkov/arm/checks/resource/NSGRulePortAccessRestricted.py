@@ -14,7 +14,7 @@ import re
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.network/networksecuritygroups/securityrules
 
 INTERNET_ADDRESSES = ["*", "0.0.0.0", "<nw>/0", "/0", "internet", "any"] # nosec
-PORT_RANGE = re.compile('\d+-\d+')
+PORT_RANGE = re.compile(r"\d+-\d+")
 
 class NSGRulePortAccessRestricted(BaseResourceCheck):
     def __init__(self, name, check_id, port):

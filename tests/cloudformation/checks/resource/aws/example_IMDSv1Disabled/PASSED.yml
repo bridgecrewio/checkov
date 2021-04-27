@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  IMDSv1Disabled:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: IMDSv1Disabled
+      LaunchTemplateData:
+        DisableApiTermination: true
+        ImageId: ami-04d5cc9b88example
+        InstanceType: t2.micro
+        KeyName: MyKeyPair
+        MetadataOptions:
+          HttpEndpoint: disabled
+  IMDSv2Enabled:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: IMDSv1Disabled
+      LaunchTemplateData:
+        DisableApiTermination: true
+        ImageId: ami-04d5cc9b88example
+        InstanceType: t2.micro
+        KeyName: MyKeyPair
+        MetadataOptions:
+          HttpTokens: required

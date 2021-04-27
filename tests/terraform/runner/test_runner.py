@@ -1,5 +1,8 @@
+import inspect
 import os
 import unittest
+import dis
+from pathlib import Path
 
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
@@ -180,7 +183,7 @@ class TestRunnerValid(unittest.TestCase):
             for check in checks:
                 unique_checks.add(check.id)
         aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(aws_checks) + 1):
+        for i in range(1, len(aws_checks) + 1 + 4):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -189,6 +192,9 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
+                continue
+            if f"CKV_AWS_{i}" == "CKV_AWS_152":
+                # TODO: remove when a new check with this number is added
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
@@ -704,6 +710,23 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(graph_registry.checks[-1].id, CUSTOM_GRAPH_CHECK_ID)
         self.assertEqual(graph_registry.checks[-1].name, 'Ensure bucket has versioning and owner tag')
         graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
+
+    def test_wrong_check_imports(self):
+        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
+        check_imports = []
+
+        checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
+        for file in checks_path.rglob("*.py"):
+            with file.open() as f:
+                instructions = dis.get_instructions(f.read())
+                import_names = [instr.argval for instr in instructions if "IMPORT_NAME" == instr.opname]
+
+                for import_name in import_names:
+                    wrong_import = next((import_name for x in wrong_imports if x in import_name), None)
+                    if wrong_import:
+                        check_imports.append({file.name: wrong_import})
+
+        assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
     def tearDown(self):
         parser_registry.definitions_context = {}

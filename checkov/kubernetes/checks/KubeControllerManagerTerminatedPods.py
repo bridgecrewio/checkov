@@ -23,7 +23,7 @@ class KubeControllerManagerTerminatedPods(BaseK8Check):
                             return CheckResult.PASSED
                         else:
                             return CheckResult.FAILED
-            return CheckResult.FAILED
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 

@@ -5,6 +5,8 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class TestCheck(BaseCheck):
+    # for pytest not to collect this class as tests
+    __test__ = False
 
     def __init__(self, *supported_entities, id="CKV_T_1"):
         name = "Example check"

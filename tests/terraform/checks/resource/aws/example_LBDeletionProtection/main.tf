@@ -6,7 +6,7 @@ resource "aws_lb" "enabled" {
   name               = "alb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = true
+  enable_deletion_protection = true
 }
 
 resource "aws_alb" "enabled" {
@@ -15,7 +15,7 @@ resource "aws_alb" "enabled" {
   name               = "alb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = true
+  enable_deletion_protection = true
 }
 
 # failure
@@ -40,7 +40,7 @@ resource "aws_lb" "disabled" {
   name               = "alb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = false
+  enable_deletion_protection = false
 }
 
 resource "aws_alb" "disabled" {
@@ -49,23 +49,5 @@ resource "aws_alb" "disabled" {
   name               = "alb"
   subnets            = var.public_subnet_ids
 
-  drop_invalid_header_fields = false
-}
-
-# unknown
-
-resource "aws_lb" "network" {
-  internal           = false
-  load_balancer_type = "network"
-  name               = "nlb"
-  subnets            = var.public_subnet_ids
-}
-
-resource "aws_lb" "gateway" {
-  load_balancer_type = "gateway"
-  name               = "glb"
-
-  subnet_mapping {
-    subnet_id = var.subnet_id
-  }
+  enable_deletion_protection = false
 }

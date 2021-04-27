@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 import re
 
-PORT_RANGE = re.compile('\d+-\d+')
+PORT_RANGE = re.compile(r'\d+-\d+')
 
 
 class SQLServerNoPublicAccess(BaseResourceCheck):

@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 # Default Compute -compute@developer.gserviceaccount.com
 # Default App Spot @appspot.gserviceaccount.com
-DEFAULT_SA = re.compile(".*-compute@developer\.gserviceaccount\.com|.*@appspot\.gserviceaccount\.com")
+DEFAULT_SA = re.compile(r".*-compute@developer\.gserviceaccount\.com|.*@appspot\.gserviceaccount\.com")
 
 
 class AbsGoogleIAMMemberDefaultServiceAccount(BaseResourceCheck):

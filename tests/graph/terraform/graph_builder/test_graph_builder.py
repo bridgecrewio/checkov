@@ -131,7 +131,7 @@ class TestGraphBuilder(TestCase):
                                                                                       render_variables=True,
                                                                                       download_external_modules=True)
 
-        outputs_vpcs = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT, 'this_security_group_vpc_id',
+        outputs_vpcs = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT, 'security_group_vpc_id',
                                                         multiple=True)
         resource_flow_log = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE,
                                                              'aws_flow_log.related_flow_log')
