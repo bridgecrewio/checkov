@@ -6,13 +6,24 @@ class ElasticCacheAutomaticBackup(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that Amazon ElastiCache Redis clusters have automatic backup turned on"
         id = "CKV_AWS_134"
-        supported_resources = ['aws_elasticache_cluster']
+        supported_resources = ["aws_elasticache_cluster"]
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_attribute_result=CheckResult.FAILED)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_attribute_result=CheckResult.FAILED,
+        )
+
+    def scan_resource_conf(self, conf):
+        if conf.get("engine") == ["memcached"]:
+            return CheckResult.UNKNOWN
+
+        return super().scan_resource_conf(conf)
 
     def get_inspected_key(self):
-        return 'snapshot_retention_limit'
+        return "snapshot_retention_limit"
 
     def get_forbidden_values(self):
         return [0]
