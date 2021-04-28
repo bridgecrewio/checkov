@@ -179,7 +179,9 @@ jobs:
         id: get_version
         run: |
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          echo ::set-env name=RELEASE_MAJOR_VERSION::$(echo $checkov_major_version)
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: Publish to Registry
@@ -188,7 +190,7 @@ jobs:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: "latest,${{ env.RELEASE_VERSION }}"
+          tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
     runs-on: ubuntu-latest
     needs: publish-package
@@ -197,7 +199,9 @@ jobs:
       - name: update checkov-k8s version
         run: |
           checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
           echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          echo ::set-env name=RELEASE_MAJOR_VERSION::$(echo $checkov_major_version)
           echo $RELEASE_VERSION
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
@@ -207,5 +211,5 @@ jobs:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: "latest,${{ env.RELEASE_VERSION }}"
+          tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
