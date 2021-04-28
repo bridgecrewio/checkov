@@ -4,6 +4,10 @@ locals {
   bucket_name          = var.bucket_name
 }
 
+variable "user_exists" {
+  default = false
+}
+
 resource "aws_cognito_user_group" "user_group" {
   name         = "${var.customer_name}_group"
   description  = "${var.customer_name} user group"
