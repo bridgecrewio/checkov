@@ -21,7 +21,7 @@ def _get_docker_image_name(docker_image_id):
 def _get_dockerfile_content(dockerfile_path):
     try:
         with open(dockerfile_path) as f:
-            return f.readlines()
+            return f.read()
     except FileNotFoundError as e:
         logging.error(f"Path to Dockerfile is invalid\n{e}")
         raise e
