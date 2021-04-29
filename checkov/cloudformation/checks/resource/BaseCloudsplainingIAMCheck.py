@@ -30,7 +30,8 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
             # Scan all policies
             for policy in policy_conf:
                 policy_doc_key = 'PolicyDocument'
-                if policy_doc_key in policy.keys():
+                if isinstance(policy, dict) and policy_doc_key in policy.keys():
+                    # When using unresolved Cfn functions, policy is an str
                     policy_doc = policy[policy_doc_key]
                     try:
                         converted_policy_doc = convert_cloudformation_conf_to_iam_policy(policy_doc)
