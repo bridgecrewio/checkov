@@ -93,7 +93,11 @@ def strip_double_quotes(input_str):
     return input_str
 
 
-def evaluate_conditional_expression(input_str):
+def evaluate_conditional_expression(input_str: str) -> str:
+    variable_ref = re.match(r"^\${(.*)}$", input_str)
+    if variable_ref:
+        input_str = variable_ref.groups()[0]
+
     condition = re.match(CONDITIONAL_EXPR, input_str)
     while condition:
         groups = condition.groups()
