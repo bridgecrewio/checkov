@@ -49,6 +49,7 @@ class BcPlatformIntegration(object):
         self.credentials = None
         self.repo_path = None
         self.repo_id = None
+        self.repo_branch = None
         self.skip_fixes = False
         self.skip_suppressions = False
         self.timestamp = None
@@ -89,7 +90,7 @@ class BcPlatformIntegration(object):
                 self.http = urllib3.PoolManager()
 
     def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
-                                     source_version=None):
+                                     source_version=None, repo_branch=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
@@ -98,6 +99,7 @@ class BcPlatformIntegration(object):
         """
         self.bc_api_key = bc_api_key
         self.repo_id = repo_id
+        self.repo_branch = repo_branch
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
         if source:
