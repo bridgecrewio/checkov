@@ -28,7 +28,7 @@ class TestELBAccessLogs(unittest.TestCase):
             } 
         """)
         resource_conf = hcl_res['resource'][0]['aws_dynamodb_table']['basic-dynamodb-table']
-        scan_result = check.scan_resource_conf(conf=resource_conf, entity_type=None)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure2(self):
@@ -48,7 +48,7 @@ class TestELBAccessLogs(unittest.TestCase):
             } 
         """)
         resource_conf = hcl_res['resource'][0]['aws_dynamodb_table']['basic-dynamodb-table']
-        scan_result = check.scan_resource_conf(conf=resource_conf, entity_type=None)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
@@ -72,7 +72,7 @@ class TestELBAccessLogs(unittest.TestCase):
             } 
         """)
         resource_conf = hcl_res['resource'][0]['aws_dynamodb_table']['basic-dynamodb-table']
-        scan_result = check.scan_resource_conf(conf=resource_conf, entity_type=None)
+        scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
 

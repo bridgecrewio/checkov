@@ -361,7 +361,7 @@ class TestRunnerValid(unittest.TestCase):
                 categories = []
                 super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-            def scan_resource_conf(self, conf, entity_type):
+            def scan_entity_conf(self, conf, entity_type):
                 if entity_type == 'type_1':
                     test_self.assertIn('a', conf)
                     test_self.assertEqual([1], conf['a'])
@@ -372,6 +372,9 @@ class TestRunnerValid(unittest.TestCase):
                     test_self.fail(f'Unexpected entity_type: {entity_type}. Expected type_1 or type_2, because no '
                                    f'other resources are defined in the files inside of {test_dir}.')
                 return CheckResult.PASSED
+
+            def scan_resource_conf(self, conf):
+                pass
 
         check = ResourceCheck()
 

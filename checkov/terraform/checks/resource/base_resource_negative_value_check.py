@@ -1,19 +1,27 @@
 from abc import abstractmethod
+from typing import List, Dict, Any, Optional
 
 import dpath
 
 from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_attribute_result=CheckResult.PASSED):
+    def __init__(
+        self,
+        name: str,
+        id: str,
+        categories: List[CheckCategories],
+        supported_resources: List[str],
+        missing_attribute_result: CheckResult = CheckResult.PASSED,
+    ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         self.handle_dynamic_values(conf)
 
         excluded_key = self.get_excluded_key()
@@ -39,31 +47,31 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         return self.missing_attribute_result
 
     @abstractmethod
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         """
         :return: JSONPath syntax path of the checked attribute
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def get_forbidden_values(self):
+    def get_forbidden_values(self) -> List[Any]:
         """
         Returns a list of vulnerable values for the inspected key, governed by provider best practices
         """
         raise NotImplementedError()
 
-    def get_excluded_key(self):
+    def get_excluded_key(self) -> Optional[str]:
         """
         :return: JSONPath syntax path of the an attribute that provides exclusion condition for the inspected key
         """
         return None
 
-    def check_excluded_condition(self, value):
+    def check_excluded_condition(self, value: str) -> bool:
         """
         :param:  value: value for  excluded_key
         :return: True if the value should exclude the check from failing if the inspected key has a bad value
         """
         return False
 
-    def get_evaluated_keys(self):
+    def get_evaluated_keys(self) -> List[str]:
         return force_list(self.get_inspected_key())
