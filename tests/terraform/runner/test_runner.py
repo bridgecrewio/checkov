@@ -183,7 +183,7 @@ class TestRunnerValid(unittest.TestCase):
             for check in checks:
                 unique_checks.add(check.id)
         aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(aws_checks) + 1 + 4):
+        for i in range(1, len(aws_checks) + 4):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -192,9 +192,6 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
-                continue
-            if f"CKV_AWS_{i}" == "CKV_AWS_152":
-                # TODO: remove when a new check with this number is added
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
