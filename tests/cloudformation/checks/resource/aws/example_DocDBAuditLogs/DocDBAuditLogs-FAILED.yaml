@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  DocDBParameterGroupDefault:
+    Type: AWS::DocDB::DBClusterParameterGroup
+    Properties: 
+      Description: docdb cluster parameter group
+      Family: docdb4.0
+      Name: test
+      Parameters: 
+        ttl_monitor: "enabled"
+  DocDBParameterGroupDisabled:
+    Type: AWS::DocDB::DBClusterParameterGroup
+    Properties:
+      Description: docdb cluster parameter group
+      Family: docdb4.0
+      Name: test
+      Parameters:
+        audit_logs: "disabled"

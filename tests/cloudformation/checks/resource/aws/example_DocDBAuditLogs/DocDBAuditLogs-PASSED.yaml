@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  DocDBParameterGroupEnabled:
+    Type: AWS::DocDB::DBClusterParameterGroup
+    Properties: 
+      Description: docdb cluster parameter group
+      Family: docdb4.0
+      Name: test
+      Parameters: 
+        audit_logs: "enabled"
