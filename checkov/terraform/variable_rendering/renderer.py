@@ -191,7 +191,9 @@ class VariableRenderer:
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
         """
-        evaluated_attribute_value = str(changed_attribute_value) if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(f'"{str(changed_attribute_value)}"')
+        str_to_evaluate = str(changed_attribute_value) if changed_attribute_key in ATTRIBUTES_NO_EVAL else f'"{str(changed_attribute_value)}"'
+        str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
+        evaluated_attribute_value = str_to_evaluate if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(str_to_evaluate)
         self.local_graph.update_vertex_attribute(vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest)
 
     def evaluate_vertices_attributes(self):
