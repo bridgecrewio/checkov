@@ -37,15 +37,15 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
  ## Features
 
- * [Over 750 built-in policies](docs/3.Scans/resource-scans.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
+ * [Over 1000 built-in policies](docs/5.Policy Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
  * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Dockerfile, Serverless framework and ARM template files.
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
- * Detects [AWS credentials](docs/3.Scans/Credentials%20Scans.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
+ * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
- * Policies support evaluation of [variables](docs/2.Concepts/Evaluations.md) to their optional default value.
- * Supports in-line [suppression](docs/2.Concepts/Suppressions.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
-* [Output](docs/1.Introduction/Results.md) currently available as CLI, JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
+ * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
+* [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 
@@ -174,7 +174,7 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 	 Failed for resource: aws_s3_bucket.sls_deployment_bucket_name       
 ```
 
-Start using Checkov by reading the [Getting Started](docs/1.Introduction/Getting%20Started.md) page.
+Start using Checkov by reading the [Getting Started](docs/1.Welcome/Quick%20Start.md) page.
 
 ### Using Docker
 
@@ -230,7 +230,7 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 
 `checkov:skip=<check_id>:<suppression_comment>`
 
-* `<check_id>` is one of the [available check scanners](docs/3.Scans/resource-scans.md)
+* `<check_id>` is one of the [available check scanners](docs/5.Policy Index/all.md)
 * `<suppression_comment>` is an optional suppression reason to be included in the output
 
 #### Example
@@ -314,7 +314,7 @@ Contribution is welcomed!
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/5.Contribution/New-Check.md).
+Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/6.Contribution/Contribution%20Overview.md).
 
 ## Disclaimer
 `checkov` does not save, publish or share with anyone any identifiable customer information.  
