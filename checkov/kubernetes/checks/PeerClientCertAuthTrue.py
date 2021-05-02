@@ -21,8 +21,9 @@ class PeerClientCertAuthTrue(BaseK8Check):
         if conf.get("metadata")['name'] == 'etcd':
             containers = conf.get('spec')['containers']
             for container in containers:
-                if '--peer-client-cert-auth=true' not in container['args']:
-                    return CheckResult.FAILED
+                if container.get("args") is not None:
+                    if '--peer-client-cert-auth=true' not in container['args']:
+                        return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN
 
