@@ -1,11 +1,10 @@
 name: homebrew
 
 on:
-  push:
-    branches:
-      - 'master'
-    tags:
-      - '*'
+  workflow_run:
+    workflows: ["build"]
+    types:
+      - completed
 
 jobs:
   homebrew:
