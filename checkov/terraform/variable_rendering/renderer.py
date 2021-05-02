@@ -196,7 +196,6 @@ class VariableRenderer:
         evaluated_attribute_value = str_to_evaluate if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(str_to_evaluate)
         self.local_graph.update_vertex_attribute(vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest)
 
-
     def evaluate_vertices_attributes(self):
         for vertex in self.local_graph.vertices:
             decoded_attributes = vertex.get_decoded_attribute_dict()
