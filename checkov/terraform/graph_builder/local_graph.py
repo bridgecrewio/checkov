@@ -5,7 +5,7 @@ from copy import deepcopy
 from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomTerraformAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import \
     ENCRYPTION_BY_RESOURCE_TYPE
@@ -107,7 +107,7 @@ class LocalGraph:
         aliases = {}
         for vertex in self.vertices:
             if 'alias' in vertex.attributes:
-                aliases[vertex.name] = {CustomAttributes.BLOCK_TYPE: vertex.block_type}
+                aliases[vertex.name] = {CustomTerraformAttributes.BLOCK_TYPE: vertex.block_type}
         return aliases
 
     def get_module_vertices_mapping(self):
@@ -398,7 +398,7 @@ class LocalGraph:
                     m = self.vertices[list(m.source_module)[0]]
                     source_module_data.append(m.get_export_data())
                 source_module_data.reverse()
-                vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
+                vertex.breadcrumbs[CustomTerraformAttributes.SOURCE_MODULE] = source_module_data
 
     @staticmethod
     def _determine_if_module_connection(breadcrumbs_list, vertex_in_breadcrumbs):
@@ -424,6 +424,6 @@ class LocalGraph:
             if encryption_conf:
                 is_encrypted, reason = encryption_conf.is_encrypted(attributes)
                 # TODO: Does not support possible dependency (i.e. S3 Object being encrypted due to S3 Bucket config)
-                vertex.attributes[CustomAttributes.ENCRYPTION] = \
+                vertex.attributes[CustomTerraformAttributes.ENCRYPTION] = \
                     EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value
-                vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = reason
+                vertex.attributes[CustomTerraformAttributes.ENCRYPTION_DETAILS] = reason

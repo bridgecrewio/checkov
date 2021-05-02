@@ -1,5 +1,8 @@
 import copy
-def convert_terraform_conf_to_iam_policy(conf):
+from typing import Dict, List, Any
+
+
+def convert_terraform_conf_to_iam_policy(conf: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
     """
         converts terraform parsed configuration to iam policy document
     """
