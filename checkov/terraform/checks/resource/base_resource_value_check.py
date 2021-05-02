@@ -1,29 +1,38 @@
 from abc import abstractmethod
+from typing import List, Dict, Any
+
 import dpath.util
 import re
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.parser_utils import find_var_blocks
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
+    def __init__(
+        self,
+        name: str,
+        id: str,
+        categories: List[CheckCategories],
+        supported_resources: List[str],
+        missing_block_result: CheckResult = CheckResult.FAILED,
+    ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
         self.missing_block_result = missing_block_result
 
     @staticmethod
-    def _filter_key_path(path):
+    def _filter_key_path(path: str) -> List[str]:
         """
         Filter an attribute path to contain only named attributes by dropping array indices from the path)
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
+        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
 
     @staticmethod
-    def _is_variable_dependant(value):
+    def _is_variable_dependant(value: Any) -> bool:
         if not isinstance(value, str):
             return False
         if "${" not in value:
@@ -34,7 +43,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         return False
 
     @staticmethod
-    def _is_nesting_key(inspected_attributes, key):
+    def _is_nesting_key(inspected_attributes: List[str], key: List[str]) -> bool:
         """
         Resolves whether a key is a subset of the inspected nesting attributes
         :param inspected_attributes: list of nesting attributes
@@ -43,7 +52,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         return any([x in key for x in inspected_attributes])
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         self.handle_dynamic_values(conf)
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
@@ -65,7 +74,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             # Look for the configuration in a bottom-up fashion
             inspected_attributes = self._filter_key_path(inspected_key)
             for attribute in reversed(inspected_attributes):
-                for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
+                for sub_key, sub_conf in dpath.search(conf, f"**/{attribute}", yielded=True):
                     filtered_sub_key = self._filter_key_path(sub_key)
                     # Only proceed with check if full path for key is similar - not partial match
                     if inspected_attributes == filtered_sub_key:
@@ -81,13 +90,13 @@ class BaseResourceValueCheck(BaseResourceCheck):
         return self.missing_block_result
 
     @abstractmethod
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         """
         :return: JSONPath syntax path of the checked attribute
         """
         raise NotImplementedError()
 
-    def get_expected_values(self):
+    def get_expected_values(self) -> List[Any]:
         """
         Override the method with the list of acceptable values if the check has more than one possible expected value, given
         the inspected key
@@ -95,11 +104,11 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         return [self.get_expected_value()]
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         """
         Returns the default expected value, governed by provider best practices
         """
         return True
 
-    def get_evaluated_keys(self):
+    def get_evaluated_keys(self) -> List[str]:
         return force_list(self.get_inspected_key())

@@ -10,7 +10,7 @@ class S3EnvironmentCheck(BaseResourceCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf, entity_type):
+    def scan_resource_conf(self, conf):
         if conf.get("tags") and isinstance(conf['tags'][0], dict):
             env = conf["tags"][0].get("Environment",{})
             if env in ["Developemnt","Staging","Production"]:

@@ -1,12 +1,25 @@
 import json
 import logging
+from typing import TypeVar, List, overload, Union
 
 import yaml
 
+T = TypeVar("T")
 
-def force_list(var):
+
+@overload
+def force_list(var: List[T]) -> List[T]:
+    ...
+
+
+@overload
+def force_list(var: T) -> List[T]:
+    ...
+
+
+def force_list(var: Union[T, List[T]]) -> List[T]:
     if not isinstance(var, list):
-        var = [var]
+        return [var]
     return var
 
 
@@ -29,9 +42,9 @@ def force_float(var):
 
 
 def convert_str_to_bool(bool_str):
-    if bool_str in ['true', '"true"', 'True', '"True"']:
+    if bool_str in ["true", '"true"', "True", '"True"']:
         return True
-    elif bool_str in ['false', '"false"', 'False', '"False"']:
+    elif bool_str in ["false", '"false"', "False", '"False"']:
         return False
     else:
         return bool_str
