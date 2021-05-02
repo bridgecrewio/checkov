@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyDocDB:
+  DocDBDefault:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      MasterUsername: name
+      MasterUserPassword: password
+  DocDBDisabled:
     Type: AWS::DocDB::DBCluster
     Properties:
       MasterUsername: name

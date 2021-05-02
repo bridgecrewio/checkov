@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyDocDBParamGroup:
+  DocDBParameterGroupDisabled:
     Type: AWS::DocDB::DBClusterParameterGroup
     Properties: 
       Description: docdb cluster parameter group

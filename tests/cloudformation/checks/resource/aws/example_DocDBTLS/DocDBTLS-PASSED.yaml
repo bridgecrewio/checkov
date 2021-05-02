@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyDocDBParamGroup0:
+  DocDBParameterGroupEnabled:
     Type: AWS::DocDB::DBClusterParameterGroup
     Properties: 
       Description: docdb cluster parameter group
@@ -9,7 +9,7 @@ Resources:
       Parameters: 
         tls: "enabled"
         ttl_monitor: "enabled"
-  MyDocDBParamGroup1:
+  DocDBParameterGroupDefault:
     Type: AWS::DocDB::DBClusterParameterGroup
     Properties: 
       Description: docdb cluster parameter group
