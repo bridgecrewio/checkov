@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Resources:
-  NeptuneDBCluster1:
+  NeptuneDBClusterDefault:
     Type: "AWS::Neptune::DBCluster"
     Properties:
       DBClusterIdentifier: DBClusterIdentifier
-  NeptuneDBCluster2:
+  NeptuneDBClusterEmpty:
     Type: "AWS::Neptune::DBCluster"
     Properties:
       DBClusterIdentifier: DBClusterIdentifier
