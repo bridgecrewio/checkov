@@ -1,20 +1,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyDocDB0:
+  DocDBProfiler:
     Type: AWS::DocDB::DBCluster
     Properties:
       MasterUsername: name
       MasterUserPassword: password
       StorageEncrypted: false
       EnableCloudwatchLogsExports: ["profiler"]
-  MyDocDB1:
+  DocDBAudit:
     Type: AWS::DocDB::DBCluster
     Properties:
       MasterUsername: name
       MasterUserPassword: password
       StorageEncrypted: false
       EnableCloudwatchLogsExports: ["audit"]
-  MyDocDB2:
+  DocDBDefault:
     Type: AWS::DocDB::DBCluster
     Properties:
       MasterUsername: name

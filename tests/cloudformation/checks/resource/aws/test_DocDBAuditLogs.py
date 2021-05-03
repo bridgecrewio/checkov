@@ -1,34 +1,33 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.DocDBLogging import check
+from checkov.cloudformation.checks.resource.aws.DocDBAuditLogs import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestDocDBLogging(unittest.TestCase):
+class TestDocDBAuditLogs(unittest.TestCase):
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_DocDBLogging"
+        test_files_dir = current_dir + "/example_DocDBAuditLogs"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "AWS::DocDB::DBCluster.DocDBEnabled",
+            "AWS::DocDB::DBClusterParameterGroup.DocDBParameterGroupEnabled",
         }
         failing_resources = {
-            "AWS::DocDB::DBCluster.DocDBDefault",
-            "AWS::DocDB::DBCluster.DocDBAudit",
-            "AWS::DocDB::DBCluster.DocDBProfiler",
+            "AWS::DocDB::DBClusterParameterGroup.DocDBParameterGroupDefault",
+            "AWS::DocDB::DBClusterParameterGroup.DocDBParameterGroupDisabled",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
