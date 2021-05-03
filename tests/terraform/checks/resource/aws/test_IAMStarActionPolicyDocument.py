@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.aws.IAMStarActionPolicyDocument import ch
 from checkov.common.models.enums import CheckResult
 
 
-class TestAdminPolicyDocument(unittest.TestCase):
+class TestIAMStarActionPolicyDocument(unittest.TestCase):
 
     def test_success(self):
         resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
