@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.IAMAdminPolicyDocument import check
 from checkov.terraform.runner import Runner
 
 
-class TestAdminPolicyDocument(unittest.TestCase):
+class TestIAMAdminPolicyDocument(unittest.TestCase):
 
     def test(self):
         runner = Runner()
