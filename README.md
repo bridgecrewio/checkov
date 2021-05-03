@@ -37,7 +37,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
  ## Features
 
- * [Over 1000 built-in policies](docs/5.Policy Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
+ * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
  * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Dockerfile, Serverless framework and ARM template files.
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
