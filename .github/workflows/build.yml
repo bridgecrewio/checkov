@@ -217,7 +217,7 @@ jobs:
       - name: Get release version
         id: get_version
         run: |
-          checkov_version=${{ env.RELEASE_VERSION }}
+          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
           echo $micro_version
           ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
@@ -226,8 +226,8 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: release homebrew
-        uses: dawidd6/action-homebrew-bump-formula@v3.8.0
-#        if: env.ZERO_IF_SHOULD_RELEASE == 0
+        uses: dawidd6/action-homebrew-bump-formula@v3.7.0
+        if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           formula: checkov
           token: ${{ secrets.PAT_TOKEN }}
