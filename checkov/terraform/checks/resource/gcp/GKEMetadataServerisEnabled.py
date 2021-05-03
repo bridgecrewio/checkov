@@ -13,7 +13,7 @@ class GKEMetadataServerisEnabled(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'node_config/[0]/workload_metadata_config/[0]/node_metadata'
 
-    def get_expected_values(self):
+    def get_expected_value(self):
         return "GKE_METADATA_SERVER"
 
 
