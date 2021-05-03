@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from checkov.common.graph.graph_builder import CustomAttributes, props
+from checkov.common.graph.graph_builder import CustomAttributes as CommonCustomAttributes, props
 
 
 @dataclass
-class CustomTerraformAttributes(CustomAttributes):
+class CustomAttributes(CommonCustomAttributes):
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
 
 
-reserved_attribute_names = props(CustomTerraformAttributes)
+reserved_attribute_names = props(CustomAttributes)

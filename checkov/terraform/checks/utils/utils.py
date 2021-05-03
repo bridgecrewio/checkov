@@ -8,7 +8,7 @@ from copy import deepcopy
 from typing import Union, List, Any, Dict, Optional, Callable
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomTerraformAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
@@ -110,10 +110,10 @@ def get_vertex_reference_from_alias(
 ) -> Optional[VertexReference]:
     block_type = ""
     if block_type_str in aliases:
-        block_type = aliases[block_type_str][CustomTerraformAttributes.BLOCK_TYPE]
+        block_type = aliases[block_type_str][CustomAttributes.BLOCK_TYPE]
     aliased_provider = ".".join(val)
     if aliased_provider in aliases:
-        block_type = aliases[aliased_provider][CustomTerraformAttributes.BLOCK_TYPE]
+        block_type = aliases[aliased_provider][CustomAttributes.BLOCK_TYPE]
     if block_type:
         return VertexReference(block_type=block_type, sub_parts=val, origin_value="")
     return None

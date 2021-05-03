@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomTerraformAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import Block
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -113,10 +113,10 @@ class TestLocalGraph(TestCase):
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = decode_graph_property_value(
-                attribute_dict[CustomTerraformAttributes.ID]).split(".")
+                attribute_dict[CustomAttributes.ID]).split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
-                is_encrypted = attribute_dict[CustomTerraformAttributes.ENCRYPTION]
-                details = attribute_dict[CustomTerraformAttributes.ENCRYPTION_DETAILS]
+                is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
+                details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
                 self.assertEqual(is_encrypted, EncryptionValues.ENCRYPTED.value if resource_name.startswith("encrypted")
                                  else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
                 if is_encrypted == EncryptionValues.ENCRYPTED.value:
@@ -127,8 +127,8 @@ class TestLocalGraph(TestCase):
                 else:
                     self.assertEqual(details, "")
             else:
-                self.assertIsNone(attribute_dict.get(CustomTerraformAttributes.ENCRYPTION))
-                self.assertIsNone(attribute_dict.get(CustomTerraformAttributes.ENCRYPTION_DETAILS))
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION))
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION_DETAILS))
 
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
