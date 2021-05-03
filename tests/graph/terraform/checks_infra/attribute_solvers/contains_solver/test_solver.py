@@ -36,3 +36,12 @@ class TestContainsSolver(TestBaseSolver):
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_contains_dict(self):
+        root_folder = '../../../resources/tag_includes'
+        check_id = "TagIncludes"
+        should_pass = ['aws_instance.some_instance', 'aws_subnet.acme_subnet']
+        should_fail = ['aws_s3_bucket.acme_s3_bucket']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

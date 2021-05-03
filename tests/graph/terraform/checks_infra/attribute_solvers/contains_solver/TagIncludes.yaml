@@ -1,0 +1,11 @@
+metadata:
+  id: "TagIncludes"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "all"
+  attribute: "tags"
+  operator: "contains"
+  value: "acme"
