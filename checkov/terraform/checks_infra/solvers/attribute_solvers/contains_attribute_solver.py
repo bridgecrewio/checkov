@@ -1,3 +1,5 @@
+import json
+
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.terraform.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
@@ -10,5 +12,7 @@ class ContainsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex, attribute):
-        return self.value in vertex.get(attribute, [])
-
+        att = vertex.get(attribute, '')
+        if not isinstance(att, str):
+            att = json.dumps(att)
+        return self.value in att
