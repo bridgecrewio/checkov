@@ -72,9 +72,6 @@ jobs:
         run: |
           pipenv install --dev
           pipenv run pip install pytest
-          pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install --upgrade pip==20.2
-          pipenv run pip install dist/checkov-*
       - name: Test with pytest
         run: |
           pipenv run python -m coverage run -m pytest tests
@@ -220,8 +217,7 @@ jobs:
       - name: Get release version
         id: get_version
         run: |
-          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
-          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
+          checkov_version=${{ env.RELEASE_VERSION }}
           micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
           echo $micro_version
           ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
@@ -231,7 +227,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - name: release homebrew
         uses: dawidd6/action-homebrew-bump-formula@v3.8.0
-        if: env.ZERO_IF_SHOULD_RELEASE == 0
+#        if: env.ZERO_IF_SHOULD_RELEASE == 0
         with:
           formula: checkov
           token: ${{ secrets.PAT_TOKEN }}
