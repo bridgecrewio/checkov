@@ -27,8 +27,6 @@ setup(
             "pytest==5.3.1",
             "coverage",
             "coverage-badge",
-            "GitPython==3.1.7",
-            "bandit"
         ]
     },
     install_requires=[
