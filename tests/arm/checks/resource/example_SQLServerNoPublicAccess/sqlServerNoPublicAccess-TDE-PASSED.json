@@ -92,8 +92,8 @@
           "apiVersion": "2015-05-01-preview",
           "location": "[parameters('location')]",
           "properties": {
-            "endIpAddress": "10.255.255.255",
-            "startIpAddress": "10.0.0.0"
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
           },
           "dependsOn": [
             "[variables('sqlServerName')]"

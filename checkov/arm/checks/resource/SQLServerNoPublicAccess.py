@@ -23,8 +23,10 @@ class SQLServerNoPublicAccess(BaseResourceCheck):
                                 resource["type"] == "firewallRules" or \
                                 resource["type"] == "firewallrules":
                             if "properties" in resource:
-                                if "startIpAddress" in resource["properties"] and \
-                                        resource["properties"]["startIpAddress"] in ['0.0.0.0', '0.0.0.0/0']:  # nosec
+                                if ("startIpAddress" in resource["properties"] and  # nosec
+                                        resource["properties"]["startIpAddress"] in ['0.0.0.0', '0.0.0.0/0'] and
+                                        "endIpAddress" in resource["properties"] and
+                                        resource["properties"]["endIpAddress"] == '255.255.255.255'):
                                     return CheckResult.FAILED
         return CheckResult.PASSED
 
