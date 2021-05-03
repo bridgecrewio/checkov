@@ -38,12 +38,14 @@ class LocalGraph:
         self._build_edges()
         self.calculate_encryption_attribute()
         if render_variables:
+            logging.info('Rendering variables')
             renderer = VariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.process_undetermined_values(undetermined_values)
 
     def _create_vertices(self):
+        logging.info('Creating vertices')
         self.vertices = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
@@ -141,6 +143,7 @@ class LocalGraph:
                 vertex.source_module = module_index
 
     def _build_edges(self):
+        logging.info('Creating edges')
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
         for origin_node_index, vertex in enumerate(self.vertices):

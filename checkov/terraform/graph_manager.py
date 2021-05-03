@@ -1,3 +1,5 @@
+import logging
+
 from checkov.terraform.graph_builder.local_graph import LocalGraph
 from checkov.terraform.parser import Parser
 
@@ -10,9 +12,11 @@ class GraphManager:
     def build_graph_from_source_directory(self, source_dir, render_variables=True, local_graph_class=LocalGraph,
                                           parsing_errors=None, download_external_modules=False):
         parser = Parser()
+        logging.info('Parsing HCL files in source dir')
         module, module_dependency_map, tf_definitions = \
             parser.parse_hcl_module(source_dir, self.source, download_external_modules, parsing_errors)
 
+        logging.info('Building graph from parsed module')
         local_graph = local_graph_class(module, module_dependency_map)
         local_graph.build_graph(render_variables=render_variables)
 

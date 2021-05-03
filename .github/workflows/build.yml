@@ -231,3 +231,4 @@ jobs:
         with:
           formula: checkov
           token: ${{ secrets.PAT_TOKEN }}
+          tag: ${{ env.RELEASE_VERSION }}
