@@ -22,11 +22,25 @@ class TestIAMRoleAllowsPublicAssume(unittest.TestCase):
         for record in report.passed_checks:
             self.assertEqual(record.check_id, check.id)
 
+        passing_resources = {
+            "AWS::IAM::Role.ServiceRole",
+            "AWS::IAM::Role.DenyIgnore",
+        }
+
+        failing_resources = {
+            "AWS::IAM::Role.AWSStarPrincipal",
+            "AWS::IAM::Role.AWSStarPrincipalInList",
+        }
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
         self.assertEqual(summary['passed'], 2)
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 if __name__ == '__main__':
     unittest.main()
