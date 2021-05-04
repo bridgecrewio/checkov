@@ -14,7 +14,7 @@ class KeyVaultEnablesFirewallRulesSettings(BaseResourceValueCheck):
         return "network_acls/[0]/default_action"
 
     def get_expected_value(self):
-        return "deny"
+        return "Deny"
 
 
 check = KeyVaultEnablesFirewallRulesSettings()
