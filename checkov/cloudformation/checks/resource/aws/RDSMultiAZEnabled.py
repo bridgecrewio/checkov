@@ -9,8 +9,7 @@ class RDSMultiAZEnabled(BaseResourceValueCheck):
         id = "CKV_AWS_154"
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.NETWORKING]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
         return 'Properties/MultiAZ'
