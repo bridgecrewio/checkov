@@ -61,7 +61,7 @@ jobs:
           pipenv run pip install --upgrade pip==21.1.1
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install dist/checkov-*.tar.gz
+          pipenv run pip install dist/checkov-*.whl
       - name: Clone Terragoat - vulnerable terraform
         uses: actions/checkout@master
         with:
@@ -93,8 +93,6 @@ jobs:
           pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
           pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
           pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
-
-          pipenv run checkov -s --framework terraform -d terragoat/terraform/
 
       - name: Run integration tests
         run: |
