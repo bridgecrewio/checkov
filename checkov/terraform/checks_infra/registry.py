@@ -25,6 +25,10 @@ class Registry(BaseRegistry):
 
     def _load_checks_from_dir(self, directory: str):
         dir = os.path.expanduser(directory)
+
+        checks_dir_content = os.listdir(os.path.dirname(dir))
+        self.logger.info(f'Checks dir contents: {checks_dir_content}')
+
         self.logger.info("Loading external checks from {}".format(dir))
         for root, d_names, f_names in os.walk(dir):
             self.logger.info(f'Searching through {d_names} and {f_names}')
