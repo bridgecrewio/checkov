@@ -1,0 +1,2 @@
+recursive-include checkov/terraform/checks/graph_checks *.yaml
+recursive-include checkov/terraform/checks/graph_checks *.yml
