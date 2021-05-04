@@ -29,8 +29,8 @@ class TestCheckovJsonReport(unittest.TestCase):
         with open(report_path) as json_file:
             data = json.load(json_file)
             for check_result in data["results"]["passed_checks"]:
-                self.assertNotEquals(check_result["check_id"], "CKV_AWS_33")
-                self.assertNotEquals(check_result["check_id"], "CKV_AWS_41")
+                self.assertNotEqual(check_result["check_id"], "CKV_AWS_33")
+                self.assertNotEqual(check_result["check_id"], "CKV_AWS_41")
                 if check_result["check_id"].startswith('CKV2'):
                     checkov2_graph_findings += 1
         self.assertGreater(checkov2_graph_findings, 20)

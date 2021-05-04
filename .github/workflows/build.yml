@@ -47,6 +47,8 @@ jobs:
           clean: false
           path: 'kubernetes-goat'
       - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
         run: |
           pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
