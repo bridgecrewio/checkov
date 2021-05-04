@@ -18,11 +18,14 @@ class Registry(BaseRegistry):
         self.parser = parser
         self.checks_dir = checks_dir if checks_dir else \
             os.path.join(os.path.dirname(os.path.dirname(__file__)), "checks", "graph_checks")
+        self.logger = logging.getLogger(__name__)
 
     def load_checks(self):
         self._load_checks_from_dir(self.checks_dir)
 
-    def _load_checks_from_dir(self, dir: str):
+    def _load_checks_from_dir(self, directory: str):
+        dir = os.path.expanduser(directory)
+        self.logger.debug("Loading external checks from {}".format(dir))
         for root, d_names, f_names in os.walk(dir):
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
