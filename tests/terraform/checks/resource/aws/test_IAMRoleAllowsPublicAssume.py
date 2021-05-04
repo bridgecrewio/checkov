@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.aws.IAMRoleAllowsPublicAssume import chec
 from checkov.common.models.enums import CheckResult
 
 
-class TestIAMRoleAllowAssumeFromAccount(unittest.TestCase):
+class TestIAMRoleAllowsPublicAssume(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""

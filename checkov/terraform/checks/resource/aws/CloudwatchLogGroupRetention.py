@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.consts import ANY_VALUE
 
 
-class cloudwatchLogGroupRetention(BaseResourceValueCheck):
+class CloudwatchLogGroupRetention(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure cloudwatch log groups specify retention days"
         id = "CKV_AWS_66"
@@ -18,4 +18,4 @@ class cloudwatchLogGroupRetention(BaseResourceValueCheck):
         return ANY_VALUE
 
 
-check = cloudwatchLogGroupRetention()
+check = CloudwatchLogGroupRetention()
