@@ -32,32 +32,28 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
-#      - name: Clone Cfngoat - vulnerable cloudformation
-#        uses: actions/checkout@v2
-#        with:
-#          repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          clean: false
-#          path: 'cfngoat'
-#      - name: Clone Kubernetes-goat - vulnerable kubernetes
-#        uses: actions/checkout@v2
-#        with:
-#          repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          clean: false
-#          path: 'kubernetes-goat'
+      - name: Clone Cfngoat - vulnerable cloudformation
+        uses: actions/checkout@v2
+        with:
+          repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'cfngoat'
+      - name: Clone Kubernetes-goat - vulnerable kubernetes
+        uses: actions/checkout@v2
+        with:
+          repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'kubernetes-goat'
       - name: Create checkov reports
-        env:
-          LOG_LEVEL: INFO
         run: |
-#          pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
-#          pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
-#          pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
-#          pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
-#          pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
-#          pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
-
-          pipenv run checkov -d terragoat/terraform --framework terraform
+          pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
+          pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
+          pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
+          pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
+          pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
+          pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
 
       - name: Run integration tests
         run: |
