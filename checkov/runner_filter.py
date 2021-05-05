@@ -3,6 +3,7 @@ import fnmatch
 from typing import Set, Optional, Union, List
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.config import parse_config
 
 
 class RunnerFilter(object):
@@ -22,6 +23,7 @@ class RunnerFilter(object):
         runners: Optional[List[str]] = None,
         skip_framework: Optional[str] = None,
     ) -> None:
+
         if checks is None:
             checks = []
         if isinstance(checks, str):

@@ -11,6 +11,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.config.parse_config import read_config
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -51,6 +52,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     # Disable runners with missing system dependencies
     args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
+
+    # check for the config file and read in params
+    # pass that in to the runner_filter
+    # inline params will override the config file
+    config = read_config()
 
     runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
                                  download_external_modules=convert_str_to_bool(args.download_external_modules),
@@ -100,6 +106,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     if args.list:
         print_checks(framework=args.framework)
         return
+
+    # Applying appropriate overrides from checkov config.yaml file.
+    if config.get("soft_fail"):
+        args.soft_fail = True
+
     external_checks_dir = get_external_checks_dir(args)
     url = None
 
