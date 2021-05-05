@@ -57,6 +57,8 @@ jobs:
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |
+          ls -la
+          cat Manifest.in
           pipenv --python ${{ matrix.python }}
           pipenv run pip install --upgrade pip==21.1.1
           pipenv run pip install pytest
