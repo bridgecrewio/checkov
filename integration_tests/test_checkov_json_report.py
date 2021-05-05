@@ -23,17 +23,17 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = current_dir + "/../checkov_report_kubernetes-goat-helm.json"
         self.validate_report(report_path)
 
-    # def test_checkov_report_terragoat_with_skip(self):
-    #     report_path = current_dir + "/../checkov_report_terragoat_with_skip.json"
-    #     checkov2_graph_findings = 0
-    #     with open(report_path) as json_file:
-    #         data = json.load(json_file)
-    #         for check_result in data["results"]["passed_checks"]:
-    #             self.assertNotEqual(check_result["check_id"], "CKV_AWS_33")
-    #             self.assertNotEqual(check_result["check_id"], "CKV_AWS_41")
-    #             if check_result["check_id"].startswith('CKV2'):
-    #                 checkov2_graph_findings += 1
-    #     self.assertGreater(checkov2_graph_findings, 20)
+    def test_checkov_report_terragoat_with_skip(self):
+        report_path = current_dir + "/../checkov_report_terragoat_with_skip.json"
+        checkov2_graph_findings = 0
+        with open(report_path) as json_file:
+            data = json.load(json_file)
+            for check_result in data["results"]["passed_checks"]:
+                self.assertNotEqual(check_result["check_id"], "CKV_AWS_33")
+                self.assertNotEqual(check_result["check_id"], "CKV_AWS_41")
+                if check_result["check_id"].startswith('CKV2'):
+                    checkov2_graph_findings += 1
+        self.assertGreater(checkov2_graph_findings, 5)
 
     def validate_report(self, report_path):
         with open(report_path) as json_file:
