@@ -62,6 +62,8 @@ setup(
     author_email="meet@bridgecrew.io",
     url="https://github.com/nimrodkor/checkov",
     packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
+    include_package_data=True,
+    package_data = {'': ['*.yaml', '*.yml']},
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
     long_description_content_type="text/markdown",
