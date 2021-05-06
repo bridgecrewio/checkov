@@ -52,7 +52,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(root_folder=resources_path)
         self.assertLessEqual(3, len(report.failed_checks))
-        self.assertLessEqual(34, len(report.passed_checks))
+        self.assertLessEqual(13, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
         found_versioning_failure = False
