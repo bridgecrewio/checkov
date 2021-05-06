@@ -1,0 +1,10 @@
+Resources:
+  MyDBDisabled:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb-disabled'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+      MultiAZ: false
