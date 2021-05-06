@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 
-from checkov.common.graph.graph_builder import CustomAttributes, props
+from checkov.common.graph.graph_builder import CustomAttributes as CommonCustomAttributes, props
 
 
 @dataclass
-class CustomAttributes(CustomAttributes):
-    SOURCE_MODULE = "source_module_"
+class CustomAttributes(CommonCustomAttributes):
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
 
