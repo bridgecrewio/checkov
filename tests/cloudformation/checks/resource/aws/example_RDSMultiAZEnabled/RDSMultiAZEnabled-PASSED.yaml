@@ -1,8 +1,8 @@
 Resources:
-  MyDB:
+  MyDBEnabled:
     Type: 'AWS::RDS::DBInstance'
     Properties:
-      DBName: 'mydb'
+      DBName: 'mydb-enabled'
       DBInstanceClass: 'db.t3.micro'
       Engine: 'mysql'
       MasterUsername: 'master'

@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 class RDSMultiAZEnabled(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure that RDS instances have multi_az enabled"
+        name = "Ensure that RDS instances have Multi-AZ enabled"
         id = "CKV_AWS_154"
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.NETWORKING]
