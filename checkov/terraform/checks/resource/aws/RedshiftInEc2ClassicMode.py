@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class RedshiftInEc2ClassicMode(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Redshift is not deployed outside of a VPC"
-        id = "CKV_AWS_153"
+        id = "CKV_AWS_154"
         supported_resources = ['aws_redshift_cluster']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
