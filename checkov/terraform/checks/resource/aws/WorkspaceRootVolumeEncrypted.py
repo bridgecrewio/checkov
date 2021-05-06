@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class WorkspaceRootVolumeEncrypted(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Workspace root volumes are encrypted"
-        id = "CKV_AWS_154"
+        id = "CKV_AWS_156"
         supported_resources = ['aws_workspaces_workspace']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
