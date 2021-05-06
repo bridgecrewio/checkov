@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Example
+Resources:
+  ServiceRole2:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument: |
+          {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "ec2.amazonaws.com"
+                }
+              }
+            ]
+          }
+  DenyIgnore2:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument: |
+          {
+           "Statement": [
+             {
+               "Action": "sts:AssumeRole",
+               "Effect": "Deny",
+               "Principal": {
+                 "AWS": "*"
+               }
+             }
+           ]
+          }
