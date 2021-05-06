@@ -3,26 +3,51 @@ metadata:
   name: "Ensure that all EIP addresses allocated to a VPC are attached to EC2 instances"
   category: "NETWORKING"
 definition:
-  and:
-    - resource_types:
-      - aws_eip
-      connected_resource_types:
-        - aws_instance
-      operator:  exists
-      cond_type: connection
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - aws_eip
-      operator: within
-    - cond_type: attribute
-      resource_types:
-        - aws_eip
-      attribute: vpc
-      operator: equals
-      value: true
-    - cond_type: attribute
-      resource_types:
-        - aws_eip
-      attribute: instance
-      operator: exists
+  or:
+    - and:
+      - resource_types:
+          - aws_eip
+        connected_resource_types:
+          - aws_instance
+        operator:  exists
+        cond_type: connection
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_eip
+        operator: within
+      - cond_type: attribute
+        resource_types:
+          - aws_eip
+        attribute: vpc
+        operator: equals
+        value: true
+      - cond_type: attribute
+        resource_types:
+          - aws_eip
+        attribute: instance
+        operator: exists
+    - and:
+      - resource_types:
+          - aws_eip_association
+        connected_resource_types:
+          - aws_instance
+          - aws_eip
+        operator: exists
+        cond_type: connection
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_eip
+        operator: within
+      - cond_type: attribute
+        resource_types:
+          - aws_eip
+        attribute: vpc
+        operator: equals
+        value: true
+      - cond_type: attribute
+        resource_types:
+          - aws_eip_association
+        attribute: instance_id
+        operator: exists
