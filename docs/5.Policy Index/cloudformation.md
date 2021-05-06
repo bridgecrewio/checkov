@@ -109,6 +109,7 @@ nav_order: 1
 |  98 | CKV_AWS_111 | resource | AWS::IAM::Group                           | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 |  99 | CKV_AWS_111 | resource | AWS::IAM::Role                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 | 100 | CKV_AWS_111 | resource | AWS::IAM::User                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
+| 101 | CKV_AWS_157 | resource | AWS::RDS::DBInstance                      | Ensure that RDS instances have Multi-AZ enabled                                                                                                                                                          | Cloudformation |
 
 
 ---
