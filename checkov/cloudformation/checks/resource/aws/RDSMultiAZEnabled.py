@@ -6,7 +6,7 @@ class RDSMultiAZEnabled(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure that RDS instances have Multi-AZ enabled"
-        id = "CKV_AWS_154"
+        id = "CKV_AWS_157"
         supported_resources = ['AWS::RDS::DBInstance']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
