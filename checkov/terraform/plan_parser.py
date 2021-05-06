@@ -69,12 +69,16 @@ def _hclify(obj: dict_node, conf: Optional[dict_node] = None, parent_key: Option
 
 
 def _prepare_resource_block(resource: dict_node, conf: Optional[dict_node]) -> Tuple[Dict[str, Dict[str, Any]], bool]:
+    """hclify resource if pre-conditions met.
+
+    :param resource: tf planned_values resource block
+    :param conf: tf configuration resource block
+
+    :returns:
+        - resource_block: a list of strings representing the header columns
+        - prepared: whether conditions met to prepare data
     """
-    hclify resource if pre-conditions met.
-    :type: resource: dict: tf resource block
-    :rtype: resource_block: dict: hclifyed if conditions met
-    :rtype: prepared: boolean: whether conditions met to prepare data
-    """
+
     resource_block: Dict[str, Dict[str, Any]] = {}
     resource_block[resource["type"]] = {}
     prepared = False
