@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Example
+Resources:
+  AWSStarPrincipal2:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          |
+          {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": "*"
+                }
+              }
+            ]
+          }
+
+  AWSStarPrincipalInList2:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          |
+          {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": ["arn:aws:iam::123456789101:root", "*"]
+                }
+              }
+            ]
+          }

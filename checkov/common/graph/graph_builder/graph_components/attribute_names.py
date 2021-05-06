@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List, Any
 
 
 @dataclass
@@ -18,8 +19,8 @@ class CustomAttributes:
     SOURCE_MODULE = "source_module_"
 
 
-def props(cls):
-    return [i for i in cls.__dict__.keys() if i[:1] != '_']
+def props(cls: Any) -> List[str]:
+    return [i for i in cls.__dict__.keys() if i[:1] != "_"]
 
 
 reserved_attribute_names = props(CustomAttributes)
