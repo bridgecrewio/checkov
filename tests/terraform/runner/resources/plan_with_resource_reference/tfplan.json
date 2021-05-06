@@ -1,0 +1,243 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.12.25",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_cloudwatch_log_group.audit",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "audit",
+                    "provider_name": "aws",
+                    "schema_version": 0,
+                    "values": {
+                        "kms_key_id": null,
+                        "name": "audit",
+                        "name_prefix": null,
+                        "retention_in_days": 0,
+                        "tags": null
+                    }
+                },
+                {
+                    "address": "aws_cloudwatch_log_group.es_application",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "es_application",
+                    "provider_name": "aws",
+                    "schema_version": 0,
+                    "values": {
+                        "kms_key_id": null,
+                        "name": "es_application",
+                        "name_prefix": null,
+                        "retention_in_days": 0,
+                        "tags": null
+                    }
+                },
+                {
+                    "address": "aws_elasticsearch_domain.es",
+                    "mode": "managed",
+                    "type": "aws_elasticsearch_domain",
+                    "name": "es",
+                    "provider_name": "aws",
+                    "schema_version": 0,
+                    "values": {
+                        "cluster_config": [
+                            {
+                                "dedicated_master_count": null,
+                                "dedicated_master_enabled": false,
+                                "dedicated_master_type": null,
+                                "instance_count": 1,
+                                "instance_type": "r5.large.elasticsearch",
+                                "warm_count": null,
+                                "warm_enabled": null,
+                                "warm_type": null,
+                                "zone_awareness_config": [],
+                                "zone_awareness_enabled": null
+                            }
+                        ],
+                        "cognito_options": [],
+                        "domain_endpoint_options": [
+                            {
+                                "custom_endpoint": null,
+                                "custom_endpoint_certificate_arn": null,
+                                "custom_endpoint_enabled": false,
+                                "enforce_https": true
+                            }
+                        ],
+                        "domain_name": "test",
+                        "elasticsearch_version": "7.0",
+                        "encrypt_at_rest": [{"enabled": true}],
+                        "log_publishing_options": [
+                            {"enabled": true, "log_type": "AUDIT_LOGS"},
+                            {"enabled": true, "log_type": "ES_APPLICATION_LOGS"}
+                        ],
+                        "snapshot_options": [],
+                        "tags": null,
+                        "timeouts": null,
+                        "vpc_options": [{"security_group_ids": null, "subnet_ids": ["subnet-efc0c6a2"]}]
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "aws_cloudwatch_log_group.audit",
+            "mode": "managed",
+            "type": "aws_cloudwatch_log_group",
+            "name": "audit",
+            "provider_name": "aws",
+            "change": {
+                "actions": ["create"],
+                "before": null,
+                "after": {
+                    "kms_key_id": null,
+                    "name": "audit",
+                    "name_prefix": null,
+                    "retention_in_days": 0,
+                    "tags": null
+                },
+                "after_unknown": {"arn": true, "id": true}
+            }
+        },
+        {
+            "address": "aws_cloudwatch_log_group.es_application",
+            "mode": "managed",
+            "type": "aws_cloudwatch_log_group",
+            "name": "es_application",
+            "provider_name": "aws",
+            "change": {
+                "actions": ["create"],
+                "before": null,
+                "after": {
+                    "kms_key_id": null,
+                    "name": "es_application",
+                    "name_prefix": null,
+                    "retention_in_days": 0,
+                    "tags": null
+                },
+                "after_unknown": {"arn": true, "id": true}
+            }
+        },
+        {
+            "address": "aws_elasticsearch_domain.es",
+            "mode": "managed",
+            "type": "aws_elasticsearch_domain",
+            "name": "es",
+            "provider_name": "aws",
+            "change": {
+                "actions": ["create"],
+                "before": null,
+                "after": {
+                    "cluster_config": [
+                        {
+                            "dedicated_master_count": null,
+                            "dedicated_master_enabled": false,
+                            "dedicated_master_type": null,
+                            "instance_count": 1,
+                            "instance_type": "r5.large.elasticsearch",
+                            "warm_count": null,
+                            "warm_enabled": null,
+                            "warm_type": null,
+                            "zone_awareness_config": [],
+                            "zone_awareness_enabled": null
+                        }
+                    ],
+                    "cognito_options": [],
+                    "domain_endpoint_options": [
+                        {
+                            "custom_endpoint": null,
+                            "custom_endpoint_certificate_arn": null,
+                            "custom_endpoint_enabled": false,
+                            "enforce_https": true
+                        }
+                    ],
+                    "domain_name": "test",
+                    "elasticsearch_version": "7.0",
+                    "encrypt_at_rest": [{"enabled": true}],
+                    "log_publishing_options": [
+                        {"enabled": true, "log_type": "AUDIT_LOGS"},
+                        {"enabled": true, "log_type": "ES_APPLICATION_LOGS"}
+                    ],
+                    "snapshot_options": [],
+                    "tags": null,
+                    "timeouts": null,
+                    "vpc_options": [{"security_group_ids": null, "subnet_ids": ["subnet-efc0c6a2"]}]
+                },
+                "after_unknown": {
+                    "access_policies": true,
+                    "advanced_options": true,
+                    "advanced_security_options": true,
+                    "arn": true,
+                    "cluster_config": [{"zone_awareness_config": []}],
+                    "cognito_options": [],
+                    "domain_endpoint_options": [{"tls_security_policy": true}],
+                    "domain_id": true,
+                    "ebs_options": true,
+                    "encrypt_at_rest": [{"kms_key_id": true}],
+                    "endpoint": true,
+                    "id": true,
+                    "kibana_endpoint": true,
+                    "log_publishing_options": [{"cloudwatch_log_group_arn": true}, {"cloudwatch_log_group_arn": true}],
+                    "node_to_node_encryption": true,
+                    "snapshot_options": [],
+                    "vpc_options": [{"availability_zones": true, "subnet_ids": [false], "vpc_id": true}]
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {"aws": {"name": "aws", "expressions": {"region": {"constant_value": "eu-central-1"}}}},
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_cloudwatch_log_group.audit",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "audit",
+                    "provider_config_key": "aws",
+                    "expressions": {"name": {"constant_value": "audit"}},
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_cloudwatch_log_group.es_application",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "es_application",
+                    "provider_config_key": "aws",
+                    "expressions": {"name": {"constant_value": "es_application"}},
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_elasticsearch_domain.es",
+                    "mode": "managed",
+                    "type": "aws_elasticsearch_domain",
+                    "name": "es",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "cluster_config": [{"instance_type": {"constant_value": "r5.large.elasticsearch"}}],
+                        "domain_endpoint_options": [{"enforce_https": {"constant_value": true}}],
+                        "domain_name": {"constant_value": "test"},
+                        "elasticsearch_version": {"constant_value": "7.0"},
+                        "encrypt_at_rest": [{"enabled": {"constant_value": true}}],
+                        "log_publishing_options": [
+                            {
+                                "cloudwatch_log_group_arn": {"references": ["aws_cloudwatch_log_group.audit"]},
+                                "enabled": {"constant_value": true},
+                                "log_type": {"constant_value": "AUDIT_LOGS"}
+                            },
+                            {
+                                "cloudwatch_log_group_arn": {"references": ["aws_cloudwatch_log_group.es_application"]},
+                                "enabled": {"constant_value": true},
+                                "log_type": {"constant_value": "ES_APPLICATION_LOGS"}
+                            }
+                        ],
+                        "vpc_options": [{"subnet_ids": {"constant_value": ["subnet-efc0c6a2"]}}]
+                    },
+                    "schema_version": 0
+                }
+            ]
+        }
+    }
+}
