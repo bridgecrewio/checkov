@@ -1,6 +1,9 @@
 import inspect
 from abc import ABCMeta
 from functools import update_wrapper
+from typing import Callable, Any, TypeVar, Dict, List
+
+T = TypeVar("T")
 
 
 class MultiSignatureMeta(ABCMeta):
@@ -41,9 +44,7 @@ class MultiSignatureMeta(ABCMeta):
                 setattr(cls, name, wrapper)
             else:
                 # unknown implementation
-                raise NotImplementedError(
-                    f"The signature {arguments} for {name} is not supported."
-                )
+                raise NotImplementedError(f"The signature {arguments} for {name} is not supported.")
 
         return cls
 
@@ -57,15 +58,17 @@ class multi_signature:
     This class extends :class:`ABCMeta` so it supports abstract base classes.
     """
 
-    def __init__(self):
-        self.__wrappers__ = {}
+    def __init__(self) -> None:
+        self.__wrappers__: Dict[Any, Callable[..., T]] = {}
 
-    def __call__(self, fn):
+    def __call__(self, fn: Callable[..., T]) -> Callable[..., T]:
         fn.add_signature = self.add_signature
         fn.__multi_signature_wrappers__ = self.__wrappers__
         return fn
 
-    def add_signature(self, *, args, varargs=None, varkw=None):
+    def add_signature(
+        self, *, args: List[str], varargs: Any = None, varkw: Any = None
+    ) -> Callable[[Callable[..., T]], Callable[..., T]]:
         """
         Registers a new wrapper for the decorated function.
 
@@ -102,7 +105,7 @@ class multi_signature:
         >>>         return wrapper
         """
 
-        def wrapper(fn):
+        def wrapper(fn: Callable[..., T]) -> Callable[..., T]:
             self.__wrappers__[(tuple(args), varargs, varkw)] = fn
             return fn
 
