@@ -13,7 +13,7 @@ class AthenaWorkgroupEncryption(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "encryption_configuration/[0]/encryption_option"
+        return "configuration/[0]/result_configuration/[0]/encryption_configuration/[0]/encryption_option"
 
     def get_expected_value(self):
         return ANY_VALUE

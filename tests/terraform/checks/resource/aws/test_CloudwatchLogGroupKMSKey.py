@@ -1,32 +1,38 @@
+import os
 import unittest
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.CloudwatchLogGroupKMSKey import check
-import hcl2
+from checkov.terraform.runner import Runner
 
+class CloudwatchLogGroupKMSKey(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-class TestCloudwatchLogGroupKMSKey(unittest.TestCase):
+        test_files_dir = current_dir + "/example_CloudwatchLogGroupKMSKey"
+        report = runner.run(
+            root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
+        )
+        summary = report.get_summary()
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_cloudwatch_log_group" "test" {
-                  retention_in_days = 1
-                }
-            """)
-        resource_conf = hcl_res['resource'][0]['aws_redshift_cluster']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_cloudwatch_log_group.pass",
+        }
+        failing_resources = {
+            "aws_cloudwatch_log_group.fail",
+        }
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_cloudwatch_log_group" "test" {
-                  retention_in_days = 1
-                  kms_key_id         = "someKey"
-                }
-            """)
-        resource_conf = hcl_res['resource'][0]['aws_cloudwatch_log_group']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == "__main__":
