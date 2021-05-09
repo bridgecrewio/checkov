@@ -28,8 +28,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GuardDutyIsEnabled(self):
         self.go("GuardDutyIsEnabled")
 
-    def test_SGToEC2AndENI(self):
-        self.go("SGToEC2AndENI")
+    def test_SGAttachedToResource(self):
+        self.go("SGAttachedToResource")
 
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
