@@ -1,11 +1,15 @@
 from abc import abstractmethod
+from typing import List, Optional, Dict, Any
 
 from checkov.common.checks.base_check import BaseCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.module.registry import module_registry
 
 
 class BaseModuleCheck(BaseCheck):
-    def __init__(self, name, id, categories, supported_resources=None):
+    def __init__(
+        self, name: str, id: str, categories: List[CheckCategories], supported_resources: Optional[List[str]] = None
+    ) -> None:
         """
         Base class for terraform module call related checks.
 
@@ -18,16 +22,17 @@ class BaseModuleCheck(BaseCheck):
             checks that extend this class.
         """
         if supported_resources is None:
-            supported_resources = ['module']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="module")
+            supported_resources = ["module"]
+        super().__init__(
+            name=name, id=id, categories=categories, supported_entities=supported_resources, block_type="module"
+        )
         self.supported_resources = supported_resources
         module_registry.register(self)
 
-    def scan_entity_conf(self, conf, entity_type):
+    def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
         # entity_type is always 'module'
         return self.scan_module_conf(conf)
 
     @abstractmethod
-    def scan_module_conf(self, conf):
+    def scan_module_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         raise NotImplementedError()

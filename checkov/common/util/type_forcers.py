@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import TypeVar, List, overload, Union
+from typing import TypeVar, List, overload, Union, Optional, Any, Dict
 
 import yaml
 
@@ -23,19 +23,19 @@ def force_list(var: Union[T, List[T]]) -> List[T]:
     return var
 
 
-def force_int(var):
+def force_int(var: Any) -> Optional[int]:
     try:
         if not isinstance(var, int):
-            var = int(var)
+            return int(var)
         return var
     except:
         return None
 
 
-def force_float(var):
+def force_float(var: Any) -> Optional[float]:
     try:
         if not isinstance(var, float):
-            var = float(var)
+            return float(var)
         return var
     except:
         return None
@@ -50,21 +50,21 @@ def convert_str_to_bool(bool_str):
         return bool_str
 
 
-def force_dict(obj):
+def force_dict(obj: Any) -> Optional[Dict[str, Any]]:
     """
     If the specified object is a dict, returns the object. If the object is a list of length 1 or more, and the first
     element is a dict, returns the first element. Else returns None.
     :param obj:
     :return:
     """
-    if type(obj) == dict:
+    if isinstance(obj, dict):
         return obj
-    if type(obj) == list and len(obj) > 0 and type(obj[0]) == dict:
+    if isinstance(obj, list) and len(obj) > 0 and isinstance(obj[0], dict):
         return obj[0]
     return None
 
 
-def is_json(data) -> bool:
+def is_json(data: str) -> bool:
     try:
         parsed = json.loads(data)
         return isinstance(parsed, dict)
@@ -73,7 +73,7 @@ def is_json(data) -> bool:
         return False
 
 
-def is_yaml(data) -> bool:
+def is_yaml(data: str) -> bool:
     try:
         parsed = yaml.safe_load(data)
         return isinstance(parsed, dict)
