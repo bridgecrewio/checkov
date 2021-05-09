@@ -1,0 +1,20 @@
+metadata:
+  id: "CKV2_AWS_22"
+  name: "Ensure an IAM User does not have access to the console"
+  category: "IAM"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_iam_user
+      operator: within
+    - resource_types:
+        - aws_iam_user
+      connected_resource_types:
+        - aws_iam_user_login_profile
+      operator: not_exists
+      cond_type: connection
+
+   
+
