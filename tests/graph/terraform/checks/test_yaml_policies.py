@@ -112,6 +112,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 
+    def test_IAMUserHasNoConsoleAccess(self):
+        self.go("IAMUserHasNoConsoleAccess")
+
     def test_IAMUsersAreMembersAtLeastOneGroup(self):
         self.go("IAMUsersAreMembersAtLeastOneGroup")
 
