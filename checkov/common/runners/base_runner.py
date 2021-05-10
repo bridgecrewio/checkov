@@ -1,11 +1,14 @@
 import os
+import re
 from abc import ABC, abstractmethod
 
 from checkov.runner_filter import RunnerFilter
 
 IGNORED_DIRECTORIES_ENV = os.getenv('CKV_IGNORED_DIRECTORIES', "node_modules,.terraform,.serverless")
+EXCLUDED_PATHS_REGEXP = os.getenv('CKV_EXCLUDED_PATHS_REGEXP', "") + ","
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
+excluded_paths_regex = [re.compile(e) for e in EXCLUDED_PATHS_REGEXP.split(",")]
 
 
 class BaseRunner(ABC):
@@ -17,4 +20,5 @@ class BaseRunner(ABC):
 
 
 def filter_ignored_directories(d_names):
-    [d_names.remove(d) for d in list(d_names) if d in ignored_directories or d.startswith(".")]
+    [d_names.remove(d) for d in list(d_names) if d in ignored_directories or d.startswith(".")
+     or any(re.match(exp, d) for exp in excluded_paths_regex)]
