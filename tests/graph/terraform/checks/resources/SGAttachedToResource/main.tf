@@ -86,6 +86,22 @@ resource "aws_instance" "pass_ec2" {
   security_groups = [aws_security_group.pass_ec2.id]
 }
 
+resource "aws_security_group" "pass_ec2_autoscaling" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_launch_configuration" "pass_ec2_autoscaling" {
+  image_id        = "data.aws_ami.ubuntu.id"
+  instance_type   = "t3.micro"
+  security_groups = [aws_security_group.pass_ec2_autoscaling.id]
+}
+
 # ECS
 
 resource "aws_security_group" "pass_ecs" {

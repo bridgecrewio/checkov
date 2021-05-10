@@ -4,6 +4,7 @@ pass:
   - "aws_security_group.pass_dms"
   - "aws_security_group.pass_docdb"
   - "aws_security_group.pass_ec2"
+  - "aws_security_group.pass_ec2_autoscaling"
   - "aws_security_group.pass_ecs"
   - "aws_security_group.pass_efs"
   - "aws_security_group.pass_eks"

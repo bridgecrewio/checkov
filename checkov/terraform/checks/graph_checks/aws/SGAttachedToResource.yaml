@@ -26,6 +26,7 @@ definition:
         - aws_elb
         - aws_instance
         - aws_lambda_function
+        - aws_launch_configuration
         - aws_lb
         - aws_mq_broker
         - aws_msk_cluster
