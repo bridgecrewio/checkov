@@ -21,7 +21,7 @@ class KubletEventCapture(BaseK8Check):
             if "kubelet" in conf["command"]:
                 for cmd in conf["command"]:
                     if "=" in cmd:
-                        [key, value] = cmd.split("=")
+                        [key, value, *_] = cmd.split("=")
                         if key == "--event-qps":
                             if int(value) > 5:
                                 return CheckResult.FAILED
