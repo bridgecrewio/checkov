@@ -17,6 +17,7 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 
 * `<check_id>` is one of the available check scanners.
 * `<suppression_comment>` is an optional suppression reason to be included in the output.
+* Ensure that the comment is using quotation marks, like so -> "This is a comment."
 
 ### Example
 The following comment skips the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
@@ -25,7 +26,7 @@ In the example, the bucket is configured with a public read access; Adding the s
 ```python
 resource "aws_s3_bucket" "foo-bucket" {
   region        = var.region
-    #checkov:skip=CKV_AWS_20:The bucket is a public static content host
+    #checkov:skip=CKV_AWS_20:"The bucket is a public static content host"
   bucket        = local.bucket_name
   force_destroy = true
   acl           = "public-read"
