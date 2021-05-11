@@ -309,14 +309,26 @@ class TestTerraformEvaluation(TestCase):
         evaluated = evaluate_terraform(input_str)
         self.assertEqual(input_str, evaluated)
 
-    def test_block_console_output(self):
-        input_str = """"
-        (lambda fc=(lambda n: [c for c in ().__class__.__bases__[0].__subclasses__()
-    if c.__name__ == n][0]): fc("function")(fc("code")(0,0,0,0,"KABOOM",(),
-    (),(),"","",0,""),{})())()
-        """
+    def test_block_segmentation_fault(self):
+        # in this test, the following code is causing segmentation fault if evaluated
+        input_str = """
+(lambda fc=(
+    lambda n: [
+        c for c in
+            ().__class__.__bases__[0].__subclasses__()
+            if c.__name__ == n
+        ][0]
+    ):
+    fc("function")(
+        fc("code")(
+            0,0,0,0,0,b'test',(),(),(),"","",0,b'test'
+        ),{}
+    )()
+)()
+"""
         try:
             evaluate_terraform(input_str)
+            self.fail("expected to raise BuiltinError")
+        except BuiltinError as e:
+            print(e)
             pass
-        except Exception:
-            self.fail(f"code shouldn't execute and raise exceptions")

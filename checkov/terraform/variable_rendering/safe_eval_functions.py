@@ -197,10 +197,9 @@ class BuiltinError(ValueError):
 
 
 def evaluate(input_str):
-    code = compile(input_str, "<string>", "eval")
-    for name in code.co_names:
-        if name in builtins_names:
-            err_msg = f"got a builtin name in string value! builtin found: {name}, origin string: {input_str}"
+    for builtin_name in builtins_names:
+        if builtin_name in input_str:
+            err_msg = f"got a builtin name in string value! builtin found: {builtin_name}, origin string: {input_str}"
             raise BuiltinError(err_msg)
     return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
 
