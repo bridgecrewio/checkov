@@ -1,11 +1,9 @@
-import ast
 import re
-from copy import deepcopy
 from typing import Any
 
-from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_DICT, evaluate
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
+from checkov.terraform.variable_rendering.safe_eval_functions import evaluate
 
 CONDITIONAL_EXPR = r'([^\?]+)\?([^:]+)\:([^:]+)'
 
@@ -47,15 +45,9 @@ def evaluate_terraform(input_str, keep_interpolations=True):
 
 def _try_evaluate(input_str):
     try:
-        # t = ast.literal_eval(temp)
-        # res = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
-        # # print(f"1: t = {t}, res = {res}")
         return evaluate(input_str)
     except Exception:
         try:
-            # t = ast.literal_eval(f'"{temp}"')
-            # res = eval(f'"{input_str}"', {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
-            # # print(f"2: t = {t}, res = {res}")
             return evaluate(f'"{input_str}"')
         except Exception:
             return input_str

@@ -292,8 +292,25 @@ class TestTerraformEvaluation(TestCase):
             with self.subTest(input_str):
                 assert evaluate_terraform(input_str) == expected
 
-    def test_block_python_code(self):
+    def test_block_file_write(self):
         temp_file_path = "/tmp/file_shouldnt_create"
         input_str = "[x for x in {}.__class__.__bases__[0].__subclasses__() if x.__name__ == 'catch_warnings'][0]()._module.__builtins__['__import__']('os').system('date >> /tmp/file_shouldnt_create')"
         evaluate_terraform(input_str)
         self.assertFalse(os.path.exists(temp_file_path))
+
+    def test_block_math_expr(self):
+        input_str = "__import__('math').sqrt(25)"
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str, evaluated)
+
+    def test_block_console_output(self):
+        input_str = """"
+        (lambda fc=(lambda n: [c for c in ().__class__.__bases__[0].__subclasses__()
+    if c.__name__ == n][0]): fc("function")(fc("code")(0,0,0,0,"KABOOM",(),
+    (),(),"","",0,""),{})())()
+        """
+        try:
+            evaluate_terraform(input_str)
+            pass
+        except Exception:
+            self.fail(f"code shouldn't execute and raise exceptions")
