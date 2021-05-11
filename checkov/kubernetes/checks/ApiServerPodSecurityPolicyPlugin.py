@@ -19,7 +19,7 @@ class ApiServerPodSecurityPolicyPlugin(BaseK8Check):
                     if cmd == "--enable-admission-plugins":
                         return CheckResult.FAILED  
                     if "=" in cmd:
-                        [field,value] = cmd.split("=")
+                        [field,value,*_] = cmd.split("=")
                         if field == "--enable-admission-plugins":
                             if "PodSecurityPolicy" not in value:
                                 return CheckResult.FAILED                            

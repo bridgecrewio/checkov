@@ -18,7 +18,7 @@ class ControllerManagerBindAddress(BaseK8Check):
             if "kube-controller-manager" in conf["command"]:
                 for cmd in conf["command"]:
                     if "=" in cmd:
-                        [key, value] = cmd.split("=")
+                        [key, value, *_] = cmd.split("=")
                         if key == "--bind-address" and value == "127.0.0.1":
                             return CheckResult.PASSED
                 return CheckResult.FAILED
