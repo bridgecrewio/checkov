@@ -1,9 +1,9 @@
 import re
 from typing import Any
 
-from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_DICT
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
+from checkov.terraform.variable_rendering.safe_eval_functions import evaluate, BuiltinError
 
 CONDITIONAL_EXPR = r'([^\?]+)\?([^:]+)\:([^:]+)'
 
@@ -45,10 +45,14 @@ def evaluate_terraform(input_str, keep_interpolations=True):
 
 def _try_evaluate(input_str):
     try:
-        return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+        return evaluate(input_str)
+    except BuiltinError:
+        raise
     except Exception:
         try:
-            return eval(f'"{input_str}"', {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+            return evaluate(f'"{input_str}"')
+        except BuiltinError:
+            raise
         except Exception:
             return input_str
 
@@ -106,10 +110,10 @@ def evaluate_conditional_expression(input_str: str) -> str:
         evaluated_condition = evaluate_terraform(groups[0])
         condition_substr = input_str[condition.start():condition.end()]
         if convert_to_bool(evaluated_condition):
-            true_val = str(evaluate_terraform(groups[1]))
+            true_val = str(evaluate_terraform(groups[1])).strip()
             input_str = input_str.replace(condition_substr, true_val)
         else:
-            false_val = str(evaluate_terraform(groups[2]))
+            false_val = str(evaluate_terraform(groups[2])).strip()
             input_str = input_str.replace(condition_substr, false_val)
         condition = re.match(CONDITIONAL_EXPR, input_str)
 
