@@ -1,4 +1,0 @@
-pass:
-  - "aws_security_group.ok_sg"
-fail:
-  - "aws_security_group.not_ok_sg"
