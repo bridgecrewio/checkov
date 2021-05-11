@@ -188,7 +188,7 @@ def get_allowed_functions():
 
 
 # get all builtin python names containing underscores
-builtins_names = filter(lambda b: "__" in b, dir(__builtins__))
+builtins_names = list(filter(lambda b: "__" in b, dir(__builtins__)))
 
 
 class BuiltinError(ValueError):
