@@ -69,7 +69,6 @@ class BcPlatformIntegration(object):
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http = None
-        self.customer_name = ""
         self.excluded_paths = []
 
     def setup_http_manager(self, ca_certificate=os.getenv('BC_CA_BUNDLE', None)):
@@ -114,7 +113,6 @@ class BcPlatformIntegration(object):
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
-                self.customer_name = self.repo_path.split("/")[1]
                 self.timestamp = self.repo_path.split("/")[-1]
                 self.credentials = response["creds"]
                 self.s3_client = boto3.client("s3",
@@ -174,6 +172,7 @@ class BcPlatformIntegration(object):
 
         for root_path, d_names, f_names in os.walk(root_dir):
             if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
+                # no need to persist files from excluded directories
                 logging.info(f"skipping persisting excluded directory {root_path}")
                 continue
             for file_path in f_names:
@@ -420,9 +419,7 @@ class BcPlatformIntegration(object):
     def get_excluded_paths(self):
         repo_settings_api_url = os.path.join(self.bc_api_url, "vcs/settings/scheme")
         try:
-            fields = {"customerName": self.customer_name, "fullRepoName": self.repo_id}
             request = self.http.request("GET", repo_settings_api_url,
-                                        fields=fields,
                                         headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
             if 'scannedFiles' in response:
