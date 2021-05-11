@@ -8,3 +8,4 @@ Please send a PR with your company name and @githubhandle.
 1. [Bridgecrew](https://bridgecrew.io/) [[@schosterbarak](https://github.com/schosterbarak)]
 1. [Nationwide Building Society](https://www.nationwide.co.uk/) [[@njgibbon](https://github.com/njgibbon)]
 1. [globaldatanet](https://globaldatanet.com/) [[@gruebel](https://github.com/gruebel)]
+1. [Steamhaus](https://www.steamhaus.co.uk/) [[@bilco105](https://github.com/bilco105)]
