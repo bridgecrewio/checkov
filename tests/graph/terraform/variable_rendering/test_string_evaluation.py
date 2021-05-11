@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
+from checkov.terraform.variable_rendering.safe_eval_functions import BuiltinError
 
 
 class TestTerraformEvaluation(TestCase):
@@ -295,8 +296,13 @@ class TestTerraformEvaluation(TestCase):
     def test_block_file_write(self):
         temp_file_path = "/tmp/file_shouldnt_create"
         input_str = "[x for x in {}.__class__.__bases__[0].__subclasses__() if x.__name__ == 'catch_warnings'][0]()._module.__builtins__['__import__']('os').system('date >> /tmp/file_shouldnt_create')"
-        evaluate_terraform(input_str)
-        self.assertFalse(os.path.exists(temp_file_path))
+        try:
+            evaluate_terraform(input_str)
+            self.fail("expected to raise BuiltinError")
+        except BuiltinError as e:
+            print(e)
+            self.assertFalse(os.path.exists(temp_file_path))
+            pass
 
     def test_block_math_expr(self):
         input_str = "__import__('math').sqrt(25)"
