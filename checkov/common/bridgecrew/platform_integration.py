@@ -70,6 +70,7 @@ class BcPlatformIntegration(object):
         self.platform_integration_configured = False
         self.http = None
         self.customer_name = ""
+        self.excluded_paths = []
 
     def setup_http_manager(self, ca_certificate=os.getenv('BC_CA_BUNDLE', None)):
         """
@@ -138,7 +139,6 @@ class BcPlatformIntegration(object):
         self.get_id_mapping()
 
         self.platform_integration_configured = True
-        self.get_excluded_paths()
 
     def get_s3_role(self, bc_api_key, repo_id):
         request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
@@ -173,6 +173,9 @@ class BcPlatformIntegration(object):
             return
 
         for root_path, d_names, f_names in os.walk(root_dir):
+            if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
+                logging.info(f"skipping persisting excluded directory {root_path}")
+                continue
             for file_path in f_names:
                 _, file_extension = os.path.splitext(file_path)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
@@ -415,30 +418,24 @@ class BcPlatformIntegration(object):
                 sleep(1)
 
     def get_excluded_paths(self):
-        # const
-        # repoSettingSchema = await this.settingsMgrApiLambda.invoke('vcsSettings/getScheme',
-        #                                                            {customerName, fullRepoName});
-        request = None
-        response = None
+        repo_settings_api_url = os.path.join(self.bc_api_url, "vcs/settings/scheme")
         try:
-
-            request = self.http.request("GET", os.path.join(self.bc_api_url, "vcs/settings/scheme"),
-                                   body=json.dumps({"customerName": self.customer_name, "fullRepoName": self.repo_id}),
-                                   headers={"Authorization": self.bc_api_key, "Content-Type": "text/plain"})
+            fields = {"customerName": self.customer_name, "fullRepoName": self.repo_id}
+            request = self.http.request("GET", repo_settings_api_url,
+                                        fields=fields,
+                                        headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
             response = json.loads(request.data.decode("utf8"))
-            url = response.get("url", None)
-            return url
+            if 'scannedFiles' in response:
+                for section in response.get('scannedFiles').get('sections'):
+                    if self.repo_id in section.get('repos') and section.get('rule').get('excludePaths'):
+                        self.excluded_paths.extend(section.get('rule').get('excludePaths'))
+            return self.excluded_paths
         except HTTPError as e:
-            logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
+            logging.error(f"Failed to get vcs settings for repo {self.repo_path}\n{e}")
             raise e
         except JSONDecodeError as e:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
+            logging.error(f"Response of {repo_settings_api_url} is not a valid JSON\n{e}")
             raise e
-        finally:
-            if request.status == 201 and response["result"] == "Success":
-                logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
-            else:
-                raise Exception(f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
 
 bc_integration = BcPlatformIntegration()

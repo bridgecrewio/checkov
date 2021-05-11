@@ -24,8 +24,8 @@ from checkov.terraform.parser_utils import eval_string, find_var_blocks
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
-def _filter_ignored_directories(d_names):
-    filter_ignored_directories(d_names)
+def _filter_ignored_directories(d_names, excluded_paths):
+    filter_ignored_directories(d_names, excluded_paths)
     [d_names.remove(d) for d in list(d_names) if d in [default_ml_registry.external_modules_folder_name]]
 
 
@@ -44,7 +44,8 @@ class Parser:
               out_parsing_errors: Dict[str, Exception],
               env_vars: Mapping[str, str],
               download_external_modules: bool,
-              external_modules_download_path: str):
+              external_modules_download_path: str,
+              excluded_paths: Optional[List[str]] = None):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -59,6 +60,7 @@ class Parser:
             self.out_parsing_errors = {}
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
+        self.excluded_paths = excluded_paths
 
     def _check_process_dir(self, directory):
         if directory not in self._parsed_directories:
@@ -72,13 +74,13 @@ class Parser:
                         out_parsing_errors: Dict[str, Exception] = None,
                         env_vars: Mapping[str, str] = None,
                         download_external_modules: bool = False,
-                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR):
+                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+                        excluded_paths: Optional[List[str]] = None):
         self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
-                   download_external_modules, external_modules_download_path)
+                   download_external_modules, external_modules_download_path, excluded_paths)
         self._parsed_directories.clear()
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
-
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d))
 
     @staticmethod
@@ -118,7 +120,7 @@ class Parser:
 
         if include_sub_dirs:
             for sub_dir, d_names, f_names in os.walk(self.directory):
-                _filter_ignored_directories(d_names)
+                _filter_ignored_directories(d_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
                     self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
                                             keys_referenced_as_modules)
@@ -419,16 +421,16 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
-    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None):
+    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None, excluded_paths: List[str]=None):
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
-                             external_modules_download_path=external_modules_download_path)
+                             external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths)
         tf_definitions = Parser._hcl_boolean_types_to_boolean(tf_definitions)
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
-    def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source):
+    def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
         module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
         module = self.get_new_module(source_dir, module_dependency_map, dep_index_mapping)
         self.add_tfvars(module, source)

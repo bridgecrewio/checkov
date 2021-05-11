@@ -64,7 +64,7 @@ class Runner(BaseRunner):
                 if "node_modules" in d_names:
                     d_names.remove("node_modules")
 
-                filter_ignored_directories(d_names)
+                filter_ignored_directories(d_names, runner_filter.excluded_paths)
                 for file in f_names:
                     if file in SLS_FILE_MASK:
                         full_path = os.path.join(root, file)
