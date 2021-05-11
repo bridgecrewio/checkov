@@ -1,5 +1,7 @@
+import ast
 import itertools
 import re
+import sys
 from functools import reduce
 from math import ceil, floor, log
 
@@ -179,3 +181,26 @@ SAFE_EVAL_DICT['tostring'] = lambda arg: arg if isinstance(arg, str) else wrap_f
 
 # encoding
 SAFE_EVAL_DICT['jsonencode'] = lambda arg: arg
+
+
+def get_allowed_functions():
+    return list(SAFE_EVAL_DICT.keys())
+
+
+def evaluate(input_str):
+    # ast.parse(input_str, filename='<unknown>', mode='exec')
+    # code = compile(input_string, "<string>", "eval")
+    ok = True
+    code = compile(input_str, "<string>", "eval")
+    for name in code.co_names:
+        if name not in list(SAFE_EVAL_DICT.keys()):
+            ok = False
+            print(f"found bad name {name}, in builtin? {name in sys.builtin_module_names}")
+            break
+    if not ok:
+        return input_str
+    return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    # for allowed_func in list(SAFE_EVAL_DICT.keys()):
+    #     if input_str.startswith(f"{allowed_func}(") and input_str.endswith(")"):
+    #         return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+    # return ast.literal_eval(input_str)

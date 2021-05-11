@@ -1,7 +1,9 @@
+import ast
 import re
+from copy import deepcopy
 from typing import Any
 
-from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_DICT
+from checkov.terraform.variable_rendering.safe_eval_functions import SAFE_EVAL_DICT, evaluate
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
 
@@ -45,10 +47,16 @@ def evaluate_terraform(input_str, keep_interpolations=True):
 
 def _try_evaluate(input_str):
     try:
-        return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+        # t = ast.literal_eval(temp)
+        # res = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+        # # print(f"1: t = {t}, res = {res}")
+        return evaluate(input_str)
     except Exception:
         try:
-            return eval(f'"{input_str}"', {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+            # t = ast.literal_eval(f'"{temp}"')
+            # res = eval(f'"{input_str}"', {"__builtins__": None}, SAFE_EVAL_DICT) # nosec
+            # # print(f"2: t = {t}, res = {res}")
+            return evaluate(f'"{input_str}"')
         except Exception:
             return input_str
 
@@ -106,10 +114,10 @@ def evaluate_conditional_expression(input_str: str) -> str:
         evaluated_condition = evaluate_terraform(groups[0])
         condition_substr = input_str[condition.start():condition.end()]
         if convert_to_bool(evaluated_condition):
-            true_val = str(evaluate_terraform(groups[1]))
+            true_val = str(evaluate_terraform(groups[1])).strip()
             input_str = input_str.replace(condition_substr, true_val)
         else:
-            false_val = str(evaluate_terraform(groups[2]))
+            false_val = str(evaluate_terraform(groups[2])).strip()
             input_str = input_str.replace(condition_substr, false_val)
         condition = re.match(CONDITIONAL_EXPR, input_str)
 

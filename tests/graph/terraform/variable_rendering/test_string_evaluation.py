@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 
 from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
@@ -290,3 +291,9 @@ class TestTerraformEvaluation(TestCase):
         for input_str, expected in cases:
             with self.subTest(input_str):
                 assert evaluate_terraform(input_str) == expected
+
+    def test_block_python_code(self):
+        temp_file_path = "/tmp/file_shouldnt_create"
+        input_str = "[x for x in {}.__class__.__bases__[0].__subclasses__() if x.__name__ == 'catch_warnings'][0]()._module.__builtins__['__import__']('os').system('date >> /tmp/file_shouldnt_create')"
+        evaluate_terraform(input_str)
+        self.assertFalse(os.path.exists(temp_file_path))
