@@ -3,7 +3,7 @@ from typing import Any
 
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
-from checkov.terraform.variable_rendering.safe_eval_functions import evaluate, BuiltinError
+from checkov.terraform.variable_rendering.safe_eval_functions import evaluate, PythonCodeError
 
 CONDITIONAL_EXPR = r'([^\?]+)\?([^:]+)\:([^:]+)'
 
@@ -46,12 +46,12 @@ def evaluate_terraform(input_str, keep_interpolations=True):
 def _try_evaluate(input_str):
     try:
         return evaluate(input_str)
-    except BuiltinError:
+    except PythonCodeError:
         raise
     except Exception:
         try:
             return evaluate(f'"{input_str}"')
-        except BuiltinError:
+        except PythonCodeError:
             raise
         except Exception:
             return input_str
