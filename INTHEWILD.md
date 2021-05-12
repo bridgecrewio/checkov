@@ -9,3 +9,4 @@ Please send a PR with your company name and @githubhandle.
 1. [Nationwide Building Society](https://www.nationwide.co.uk/) [[@njgibbon](https://github.com/njgibbon)]
 1. [globaldatanet](https://globaldatanet.com/) [[@gruebel](https://github.com/gruebel)]
 1. [Steamhaus](https://www.steamhaus.co.uk/) [[@bilco105](https://github.com/bilco105)]
+1. [Jim Smith](https://www.linkedin.com/in/mr-j-smith/) [[@jimsmith](https://github.com/jimsmith)]
