@@ -67,18 +67,21 @@ jobs:
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           clean: false
+          token: ''
           path: 'terragoat'
       - name: Clone Cfngoat - vulnerable cloudformation
         uses: actions/checkout@master
         with:
           repository: bridgecrewio/cfngoat  # clone https://github.com/bridgecrewio/cfngoat/
           clean: false
+          token: ''
           path: 'cfngoat'
       - name: Clone Kubernetes-goat - vulnerable kubernetes
         uses: actions/checkout@master
         with:
           repository: madhuakula/kubernetes-goat  # clone https://github.com/madhuakula/kubernetes-goat
           clean: false
+          token: ''
           path: 'kubernetes-goat'
       - name: Create checkov reports
         env:
