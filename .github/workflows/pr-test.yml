@@ -67,7 +67,7 @@ jobs:
       - name: Clone Cfngoat - vulnerable cloudformation
         run: git clone https://github.com/bridgecrewio/cfngoat
       - name: Clone Kubernetes-goat - vulnerable kubernetes
-        run: git clone https://github.com/bridgecrewio/kubernetes-goa
+        run: git clone https://github.com/bridgecrewio/kubernetes-goat
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
