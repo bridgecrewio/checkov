@@ -118,6 +118,19 @@ class TestCfnYaml(unittest.TestCase):
 
         self.assertEqual(ContextParser.trim_lines(test5), [])
 
+    def test_parameter_import_lines(self):
+        # check that when a parameter is imported into a resource, the line numbers of the resource are preserved
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file = f'{current_dir}/cfn_with_ref.yaml'
+        definitions, definitions_raw = parse(file)
+
+        cf_context_parser = ContextParser(file, definitions, definitions_raw)
+        resource = definitions['Resources']['ElasticsearchDomain']
+        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(resource)
+        self.assertEqual(entity_lines_range[0], 10)
+        self.assertEqual(entity_lines_range[1], 20)
+
+
 
 if __name__ == '__main__':
     unittest.main()
