@@ -1,7 +1,6 @@
 import itertools
-import itertools
+import logging
 import re
-import sys
 from functools import reduce
 from math import ceil, floor, log
 
@@ -183,18 +182,9 @@ SAFE_EVAL_DICT['tostring'] = lambda arg: arg if isinstance(arg, str) else wrap_f
 SAFE_EVAL_DICT['jsonencode'] = lambda arg: arg
 
 
-def get_allowed_functions():
-    return list(SAFE_EVAL_DICT.keys())
-
-
-class PythonCodeError(ValueError):
-    # Create a custom error class for usage in python builtins
-    pass
-
-
 def evaluate(input_str):
     if "__" in input_str:
-        err_msg = f"got a substring with double underscore, which is not allowed. origin string: {input_str}"
-        raise PythonCodeError(err_msg)
+        logging.warning(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
+        return input_str
     return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
 

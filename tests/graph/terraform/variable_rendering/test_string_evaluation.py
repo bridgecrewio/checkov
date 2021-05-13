@@ -3,7 +3,6 @@ from unittest import TestCase
 
 from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
-from checkov.terraform.variable_rendering.safe_eval_functions import PythonCodeError
 
 
 class TestTerraformEvaluation(TestCase):
@@ -296,43 +295,28 @@ class TestTerraformEvaluation(TestCase):
     def test_block_file_write(self):
         temp_file_path = "/tmp/file_shouldnt_create"
         input_str = "[x for x in {}.__class__.__bases__[0].__subclasses__() if x.__name__ == 'catch_warnings'][0]()._module.__builtins__['__import__']('os').system('date >> /tmp/file_shouldnt_create')"
-        try:
-            evaluate_terraform(input_str)
-            self.fail("expected to raise PythonCodeError")
-        except PythonCodeError as e:
-            print(e)
-            self.assertFalse(os.path.exists(temp_file_path))
-            pass
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str, evaluated)
+        self.assertFalse(os.path.exists(temp_file_path))
 
     def test_block_file_write2(self):
         temp_file_path = "/tmp/file_shouldnt_create_vuln"
         input_str = "(lambda: [x for x in {}.__class__.__bases__[0].__subclasses__() if x.__name__ == 'catch_warnings'][0]()._module.__builtins__['__import__']('os').system('date >> /tmp/file_shouldnt_create_vuln'))()"
-        try:
-            evaluate_terraform(input_str)
-            self.fail("expected to raise PythonCodeError")
-        except PythonCodeError as e:
-            print(e)
-            self.assertFalse(os.path.exists(temp_file_path))
-            pass
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str, evaluated)
+        self.assertFalse(os.path.exists(temp_file_path))
 
     def test_block_file_write_lower(self):
         temp_file_path = "/tmp/file_shouldnt_create"
         input_str = "[x for x in parsint.__bases__[0].__subclasses__()][134]()._module.__builtins__['__IMPORT__'.lower()]('os').system('date >> /tmp/file_shouldnt_create')"
-        try:
-            ret = evaluate_terraform(input_str)
-            self.fail("expected to raise PythonCodeError")
-        except PythonCodeError as e:
-            print(e)
-            self.assertFalse(os.path.exists(temp_file_path))
-            pass
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str, evaluated)
+        self.assertFalse(os.path.exists(temp_file_path))
 
     def test_block_math_expr(self):
         input_str = "__import__('math').sqrt(25)"
-        try:
-            evaluate_terraform(input_str)
-            self.fail("expected to raise PythonCodeError")
-        except PythonCodeError as e:
-            pass
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str, evaluated)
 
     def test_block_segmentation_fault(self):
         # in this test, the following code is causing segmentation fault if evaluated
@@ -351,9 +335,5 @@ class TestTerraformEvaluation(TestCase):
     )()
 )()
 """
-        try:
-            evaluate_terraform(input_str)
-            self.fail("expected to raise PythonCodeError")
-        except PythonCodeError as e:
-            print(e)
-            pass
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(input_str.replace("\n", ""), evaluated)
