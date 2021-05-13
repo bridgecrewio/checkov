@@ -1,4 +1,6 @@
 pass:
-  - "aws_network_interface.network_interface_ok"
+  - "aws_instance.pass_attachment"
+  - "aws_instance.pass_instance_network"
+  - "aws_instance.pass_instance_subnet"
 fail:
-  - "aws_network_interface.network_interface_not_ok"
+  - "aws_instance.fail"
