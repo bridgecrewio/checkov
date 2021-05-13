@@ -155,11 +155,18 @@ class ContextParser(object):
     def _set_in_dict(self, data_dict, map_list, value):
         v = self._get_from_dict(data_dict, map_list[:-1])
         # save the original marks so that we do not copy in the line numbers of the parameter element
-        start = v.start_mark
-        end = v.end_mark
+        # but not all ref types will have these attributes
+        start = None
+        end = None
+        if hasattr(v, 'start_mark'):
+            start = v.start_mark
+            end = v.end_mark
+
         v[map_list[-1]] = value
-        v[map_list[-1]].start_mark = start
-        v[map_list[-1]].end_mark = end
+
+        if hasattr(v[map_list[-1]], 'start_mark') and start and end:
+            v[map_list[-1]].start_mark = start
+            v[map_list[-1]].end_mark = end
 
     @staticmethod
     def _get_from_dict(data_dict, map_list):
