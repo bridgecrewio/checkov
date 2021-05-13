@@ -10,6 +10,10 @@ resource "aws_lb" "lb_good_3" {
 resource "aws_lb" "lb_bad_1" {
 }
 
+resource "aws_lb" "lb_bad_2" {
+}
+
+
 resource "aws_lb_listener" "listener_good_1" {
   load_balancer_arn = aws_lb.lb_good_1.arn
   port = "443"
@@ -63,3 +67,14 @@ resource "aws_lb_listener" "listener_bad_1" {
     type = "some-action"
   }
 }
+
+resource "aws_lb_listener" "listener_bad_2" {
+  load_balancer_arn = aws_lb.lb_bad_2.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "some-action"
+  }
+}
+
