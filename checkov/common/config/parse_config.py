@@ -13,7 +13,8 @@ class ConfigParser:
 
     def compute_args(self, config_file):
         # TODO:
-        #   bc_api_key --> Needs to be ignored.
+        #   If checks are specified, skip check cannot be used.
+        #   bc_api_key --> Needs to be ignored. --> Done.
         #   branch='master' --> Defaults to 'master'
         #   ca_certificate
         #   check
@@ -28,7 +29,7 @@ class ConfigParser:
         #   external_modules_download_path='.external_modules' --> Defaults to .external_modules
         #   file
         #   framework='all' --> Defaults to all.
-        #   list
+        #   list --> Ignore. --> Done.
         #   no_guide
         #   output='cli' --> Defaults to cli.
         #   quiet
@@ -38,11 +39,13 @@ class ConfigParser:
         #   skip_framework
         #   skip_suppressions
         #   soft_fail --> Done.
-        #   version --> Needs to be ignored.
+        #   version --> Needs to be ignored. --> Done.
         config = self._read_config(config_file)
         for arg in vars(self.args):
             # If the arg is None or False, check config file and set it in the args Namespace.
-            if not getattr(self.args, arg):
+            if arg in ["version", "bc_api_key", "list"]:
+                self.logger.debug(f"Ignoring '{arg}' from config file.")
+            elif not getattr(self.args, arg):
                 if arg in config:
                     setattr(self.args, arg, config.get(arg))
 

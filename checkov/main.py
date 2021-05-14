@@ -11,6 +11,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.config.checkov_config import CheckovConfig
 from checkov.common.config.parse_config import ConfigParser
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
@@ -19,6 +20,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.compute_config import compute_config
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -46,10 +48,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     add_parser_args(parser)
     args = parser.parse_args(argv)
 
-    ckv_config_parser = ConfigParser(args)
-    ckv_config_file = ckv_config_parser.find_config_file()
-    if ckv_config_file is not None:
-        ckv_config_parser.compute_args(ckv_config_file)
+    config = compute_config(args)
+    # ckv_config_parser = ConfigParser(args)
+    # ckv_config_file = ckv_config_parser.find_config_file()
+    # if ckv_config_file is not None:
+    #     ckv_config_parser.compute_args(ckv_config_file)
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
