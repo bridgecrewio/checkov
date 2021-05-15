@@ -29,7 +29,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(root_folder=resources_path)
         self.assertEqual(5, len(report.failed_checks))
-        self.assertEqual(7, len(report.passed_checks))
+        self.assertEqual(6, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
     def test_run_persistent_data(self):
@@ -44,7 +44,7 @@ class TestGraphBuilder(TestCase):
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
         self.assertGreaterEqual(len(report.failed_checks), 4)
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_module_and_variables(self):
@@ -52,7 +52,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(root_folder=resources_path)
         self.assertLessEqual(3, len(report.failed_checks))
-        self.assertLessEqual(13, len(report.passed_checks))
+        self.assertLessEqual(12, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
         found_versioning_failure = False
