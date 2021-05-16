@@ -14,3 +14,4 @@ Please send a PR with your company name and @githubhandle.
 1. [Palo Alto Networks](https://www.paloaltonetworks.com/) [[@jameswoolfenden](https://github.com/JamesWoolfenden)]
 1. [Appvia](https://www.appvia.io/) [[@abdelhegazi](https://github.com/abdelhegazi)]
 1. [Square](https://squareup.com/) [[@ac-square](https://github.com/ac-square), [@santoshankr](https://github.com/santoshankr)]
+1. [Madhu Akula](https://madhuakula.com/) [[@madhuakula](https://github.com/madhuakula)]
