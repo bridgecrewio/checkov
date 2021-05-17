@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  RedshiftParameterGroupEnabled:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: parameter group
+      ParameterGroupFamily: redshift-1.0
+      Parameters:
+        - ParameterName: "require_ssl"
+          ParameterValue: "true"
