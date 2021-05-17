@@ -56,13 +56,20 @@ def get_option_string_to_variable_mapping(parser):
 
 def find_config_file(args):
     """
+    If --config is specified, return that.
     If the directory argument is not None, look for the .checkov/config.yaml file there.
     If the directory is not specified check if the config file is present in the current working directory.
     If the cwd does not have the config file, check if the config file is present in the home directory.
     Check for cwd always - have it lower priority than -d
     If there's a -d, but no config file there, then check cwd
-    TODO: Take in config file path via cli arg.
+    :param args: Args Namespace.
+    :return: Path to config file if found. Else returns None.
     """
+    if args.config:
+        if os.path.exists(args.config):
+            return args.config
+        else:
+            raise FileNotFoundError("Config file at {} does not exist!".format(args.config))
     if args.directory:
         for root_folder in args.directory:
             config_file = config_file_path(root_folder)

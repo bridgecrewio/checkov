@@ -213,6 +213,7 @@ def add_parser_args(parser):
                         default=True)
     parser.add_argument('-ca', '--ca-certificate',
                         help='custom CA (bundle) file', default=None)
+    parser.add_argument('--config', help='Path to the Checkov config YAML file', default=None)
 
 
 def get_external_checks_dir(config):

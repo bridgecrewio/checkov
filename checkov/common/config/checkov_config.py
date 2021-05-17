@@ -3,7 +3,7 @@ import yaml
 
 class CheckovConfig:
 
-    def __init__(self, branch='master', ca_certificate=None, check=None, compact=False, directory=None,
+    def __init__(self, branch='master', ca_certificate=None, check=None, compact=False, config=None, directory=None,
                  docker_image=None, dockerfile_path=None, download_external_modules=False,
                  evaluate_variables=True, external_checks_dir=None, external_checks_git=None,
                  external_modules_download_path='.external_modules', file=None, framework='all', no_guide=None,
@@ -13,6 +13,7 @@ class CheckovConfig:
         self.ca_certificate = ca_certificate
         self.check = check
         self.compact = compact
+        self.config = config
         self.directory = directory
         self.docker_image = docker_image
         self.dockerfile_path = dockerfile_path
