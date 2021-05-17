@@ -9,7 +9,7 @@ class CheckovConfig:
                  external_modules_download_path=None, file=None, framework=None, no_guide=None,
                  output=None, quiet=None, repo_id=None, skip_check=None, skip_fixes=None,
                  skip_framework=None, skip_suppressions=None, soft_fail=None):
-        self.branch = branch  # = 'master'
+        self.branch = branch
         self.ca_certificate = ca_certificate
         self.check = check
         self.compact = compact
@@ -17,14 +17,14 @@ class CheckovConfig:
         self.docker_image = docker_image
         self.dockerfile_path = dockerfile_path
         self.download_external_modules = download_external_modules
-        self.evaluate_variables = evaluate_variables  # = True
+        self.evaluate_variables = evaluate_variables
         self.external_checks_dir = external_checks_dir
         self.external_checks_git = external_checks_git
-        self.external_modules_download_path = external_modules_download_path  # = '.external_modules'
+        self.external_modules_download_path = external_modules_download_path
         self.file = file
-        self.framework = framework  # = 'all'
+        self.framework = framework
         self.no_guide = no_guide
-        self.output = output  # = 'cli'
+        self.output = output
         self.quiet = quiet
         self.repo_id = repo_id
         self.skip_check = skip_check

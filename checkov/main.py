@@ -11,8 +11,6 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
-from checkov.common.config.checkov_config import CheckovConfig
-from checkov.common.config.parse_config import ConfigParser
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -47,13 +45,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
-
-    config = compute_config(args)
-    # ckv_config_parser = ConfigParser(args)
-    # ckv_config_file = ckv_config_parser.find_config_file()
-    # if ckv_config_file is not None:
-    #     ckv_config_parser.compute_args(ckv_config_file)
-
+    config = compute_config(args, parser, argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(args.ca_certificate)

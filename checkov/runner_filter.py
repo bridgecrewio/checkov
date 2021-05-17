@@ -3,7 +3,6 @@ import fnmatch
 from typing import Set, Optional, Union, List
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.config import parse_config
 
 
 class RunnerFilter(object):
