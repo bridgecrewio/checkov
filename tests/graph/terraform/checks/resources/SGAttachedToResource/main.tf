@@ -1,5 +1,29 @@
 # pass
 
+# Batch
+
+resource "aws_security_group" "pass_batch" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_batch_compute_environment" "pass_batch" {
+  service_role = "aws_iam_role.batch.arn"
+  type         = "MANAGED"
+
+  compute_resources {
+    max_vcpus          = 16
+    security_group_ids = [aws_security_group.pass_batch.id]
+    subnets            = ["aws_subnet.this.id"]
+    type               = "FARGATE"
+  }
+}
+
 # CodeBuild
 
 resource "aws_security_group" "pass_codebuild" {
@@ -86,7 +110,7 @@ resource "aws_instance" "pass_ec2" {
   security_groups = [aws_security_group.pass_ec2.id]
 }
 
-resource "aws_security_group" "pass_ec2_autoscaling" {
+resource "aws_security_group" "pass_ec2_client_vpn" {
   ingress {
     description = "TLS from VPC"
     from_port   = 443
@@ -96,10 +120,42 @@ resource "aws_security_group" "pass_ec2_autoscaling" {
   }
 }
 
-resource "aws_launch_configuration" "pass_ec2_autoscaling" {
+resource "aws_ec2_client_vpn_network_association" "pass_ec2_client_vpn" {
+  client_vpn_endpoint_id = "aws_ec2_client_vpn_endpoint.this.id"
+  subnet_id              = "aws_subnet.this.id"
+  security_groups        = [aws_security_group.pass_ec2_client_vpn.id]
+}
+
+resource "aws_security_group" "pass_ec2_launch_config" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_launch_configuration" "pass_ec2_launch_config" {
   image_id        = "data.aws_ami.ubuntu.id"
   instance_type   = "t3.micro"
-  security_groups = [aws_security_group.pass_ec2_autoscaling.id]
+  security_groups = [aws_security_group.pass_ec2_launch_config.id]
+}
+
+resource "aws_security_group" "pass_ec2_launch_template" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_launch_template" "pass_ec2_launch_template" {
+  image_id               = "data.aws_ami.ubuntu.id"
+  instance_type          = "t3.micro"
+  vpc_security_group_ids = [aws_security_group.pass_ec2_launch_template.id]
 }
 
 # ECS
@@ -477,6 +533,25 @@ resource "aws_sagemaker_notebook_instance" "pass_sagemaker" {
   name            = "sagemaker"
   role_arn        = "aws_iam_role.sagemaker.arn"
   security_groups = [aws_security_group.pass_sagemaker.id]
+}
+
+# VPC
+
+resource "aws_security_group" "pass_vpc_endpoint" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_vpc_endpoint" "pass_vpc_endpoint" {
+  vpc_id             = "aws_vpc.this.id"
+  service_name       = "com.amazonaws.us-west-2.s3"
+  vpc_endpoint_type  = "Interface"
+  security_group_ids = [aws_security_group.pass_vpc_endpoint.id]
 }
 
 # fail
