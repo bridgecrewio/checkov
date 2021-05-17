@@ -48,15 +48,15 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     config = compute_config(args, parser, argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
-    bc_integration.setup_http_manager(args.ca_certificate)
+    bc_integration.setup_http_manager(config.ca_certificate)
 
     # Disable runners with missing system dependencies
-    args.skip_framework = runnerDependencyHandler.disable_incompatible_runners(args.skip_framework)
+    config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
 
-    runner_filter = RunnerFilter(framework=args.framework, skip_framework=args.skip_framework, checks=args.check, skip_checks=args.skip_check,
-                                 download_external_modules=convert_str_to_bool(args.download_external_modules),
-                                 external_modules_download_path=args.external_modules_download_path,
-                                 evaluate_variables=convert_str_to_bool(args.evaluate_variables), runners=checkov_runners)
+    runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check, skip_checks=config.skip_check,
+                                 download_external_modules=convert_str_to_bool(config.download_external_modules),
+                                 external_modules_download_path=config.external_modules_download_path,
+                                 evaluate_variables=convert_str_to_bool(config.evaluate_variables), runners=checkov_runners)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -72,9 +72,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     elif args.bc_api_key:
         logger.debug(f'Using API key ending with {args.bc_api_key[-8:]}')
 
-        if args.repo_id is None:
+        if config.repo_id is None:
             parser.error("--repo-id argument is required when using --bc-api-key")
-        if len(args.repo_id.split('/')) != 2:
+        if len(config.repo_id.split('/')) != 2:
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
 
@@ -93,54 +93,54 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         logger.debug('No API key found. Scanning locally only.')
 
     guidelines = {}
-    if not args.no_guide:
+    if not config.no_guide:
         guidelines = bc_integration.get_guidelines()
-    if args.check and args.skip_check:
+    if config.check and config.skip_check:
         parser.error("--check and --skip-check can not be applied together. please use only one of them")
         return
     if args.list:
-        print_checks(framework=args.framework)
+        print_checks(framework=config.framework)
         return
 
-    external_checks_dir = get_external_checks_dir(args)
+    external_checks_dir = get_external_checks_dir(config)
     url = None
 
-    if args.directory:
+    if config.directory:
         exit_codes = []
-        for root_folder in args.directory:
-            file = args.file
+        for root_folder in config.directory:
+            file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file, guidelines=guidelines, bc_integration=bc_integration)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
-                url = bc_integration.commit_repository(args.branch)
+                url = bc_integration.commit_repository(config.branch)
 
-            exit_codes.append(runner_registry.print_reports(scan_reports, args, url))
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url))
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
-    elif args.file:
-        scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
+    elif config.file:
+        scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            guidelines=guidelines, bc_integration=bc_integration)
         if bc_integration.is_integration_configured():
-            files = [os.path.abspath(file) for file in args.file]
+            files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder)
             bc_integration.persist_scan_results(scan_reports)
-            url = bc_integration.commit_repository(args.branch)
-        return runner_registry.print_reports(scan_reports, args, url)
-    elif args.docker_image:
-        if args.bc_api_key is None:
+            url = bc_integration.commit_repository(config.branch)
+        return runner_registry.print_reports(scan_reports, config, url)
+    elif config.docker_image:
+        if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
             return
-        if args.dockerfile_path is None:
+        if config.dockerfile_path is None:
             parser.error("--dockerfile-path argument is required when using --docker-image")
             return
-        if args.branch is None:
+        if config.branch is None:
             parser.error("--branch argument is required when using --docker-image")
             return
-        image_scanner.scan(args.docker_image, args.dockerfile_path)
+        image_scanner.scan(config.docker_image, config.dockerfile_path)
     else:
         print(f"{banner}")
 
@@ -214,10 +214,11 @@ def add_parser_args(parser):
     parser.add_argument('-ca', '--ca-certificate',
                         help='custom CA (bundle) file', default=None)
 
-def get_external_checks_dir(args):
-    external_checks_dir = args.external_checks_dir
-    if args.external_checks_git:
-        git_getter = GitGetter(args.external_checks_git[0])
+
+def get_external_checks_dir(config):
+    external_checks_dir = config.external_checks_dir
+    if config.external_checks_git:
+        git_getter = GitGetter(config.external_checks_git[0])
         external_checks_dir = [git_getter.get()]
         atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
     return external_checks_dir

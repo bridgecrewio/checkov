@@ -20,7 +20,6 @@ def compute_config(args, parser, argv):
         file_config = CheckovConfig.from_yaml(config_path)
         return combine_config(args_config, file_config, argv, get_option_string_to_variable_mapping(parser))
     else:
-        print(args_config)
         return args_config
 
 
@@ -34,71 +33,25 @@ def combine_config(args_config, file_config, argv, option_string_to_variable_map
     :param file_config: CheckovConfig object from configuration file.
     :param argv: List of CLI arguments passed in by user.
     :param option_string_to_variable_mapping: Mapping of the option strings to the argument variables.
-           Example: {'-d': 'directory', '--directory': 'directory', '-f': 'file', '--file': 'file'}
     :return: Combined CheckovConfig object.
     """
     # It is necessary to determine which arguments were supplied in the cli since that value will override the config
     # file. Therefore we need to check sys.argv for what the user typed.
-    if not option_string_to_variable_mapping:
-        for attr, val in option_string_to_variable_mapping:
+    if option_string_to_variable_mapping:
+        for attr, val in option_string_to_variable_mapping.items():
             if attr in argv:
-                args_config.__setattr__(val, args_config.__getattribute__(attr))
-
-    for attr, val in args_config.__dict__.items():
-        # If the args_config values are default, check file_config.
-        # There are 4 default types for arguments - None, bool, str, list
-
-        # If args_config has default None values, check file_config.
-        if val is None:
-            if file_config.__getattribute__(attr) is not None:
-                args_config.__setattr__(attr, file_config.__getattribute__(attr))
-                print('Modified {} from {} to {}'.format(attr, val, args_config.__getattribute__(attr)))
-
-        # If args_config has default values for boolean attributes and the attributes are not passed in argv,
-        # check file_config.
-        elif isinstance(val, bool):
-            if is_bool_default(attr, val) and attr not in option_string_to_variable_mapping.values():
-                if file_config.__getattribute__(attr) is not None:
-                    args_config.__setattr__(attr, file_config.__getattribute__(attr))
-                    print('Modified {} from {} to {}'.format(attr, val, args_config.__getattribute__(attr)))
-
-        # If args_config has default values for string / list attributes and the attributes are not passed in argv,
-        # check file_config.
-        elif isinstance(val, (str, list)):
-            if is_str_list_default(attr, val) and attr not in option_string_to_variable_mapping.values():
-                if file_config.__getattribute__(attr) is not None:
-                    args_config.__setattr__(attr, file_config.__getattribute__(attr))
-                    print('Modified {} from {} to {}'.format(attr, val, args_config.__getattribute__(attr)))
-    return args_config
+                file_config.__setattr__(val, args_config.__getattribute__(val))
+    return file_config
 
 
 def get_option_string_to_variable_mapping(parser):
-    # The ArgumentParser library does not have a method to get original option string names from the parser object.
+    # The ArgumentParser library does not have a method to get option string names from the parser object.
     # However, this can be done by looking at the '_option_string_actions' field in the parser object.
+    # Example: {'-d': 'directory', '--directory': 'directory', '-f': 'file', '--file': 'file'}
     option_string_to_variable_mapping = {}
     for key in vars(parser)['_option_string_actions'].keys():
         option_string_to_variable_mapping[key] = vars(parser)['_option_string_actions'][key].dest
     return option_string_to_variable_mapping
-
-
-def is_bool_default(attr, val):
-    # Return 'True' if the attribute has default value.
-    if attr == 'evaluate_variables' and val:
-        return True
-    elif attr != 'evaluate_variables' and not val:
-        return True
-    return False
-
-
-def is_str_list_default(attr, val):
-    # Return 'True' if the attribute has default value.
-    if attr == 'branch' and val == 'master':
-        return True
-    if attr == 'framework' and val == 'all':
-        return True
-    if attr == 'external_modules_download_path' and val == '.external_modules':
-        return True
-    return False
 
 
 def find_config_file(args):

@@ -39,27 +39,27 @@ class RunnerRegistry(object):
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, args, url=None):
-        if args.output == 'cli':
+    def print_reports(self, scan_reports, config, url=None):
+        if config.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
         junit_reports = []
         for report in scan_reports:
             if not report.is_empty():
-                if args.output == "json":
-                    report_jsons.append(report.get_dict(is_quiet=args.quiet))
-                elif args.output == "junitxml":
+                if config.output == "json":
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet))
+                elif config.output == "junitxml":
                     junit_reports.append(report)
                     # report.print_junit_xml()
-                elif args.output == 'github_failed_only':
+                elif config.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=args.quiet, is_compact=args.compact)
+                    report.print_console(is_quiet=config.quiet, is_compact=config.compact)
                     if url:
                         print("More details: {}".format(url))
-            exit_codes.append(report.get_exit_code(args.soft_fail))
-        if args.output == "junitxml":
+            exit_codes.append(report.get_exit_code(config.soft_fail))
+        if config.output == "junitxml":
             if len(junit_reports) == 1:
                 junit_reports[0].print_junit_xml()
             else:
@@ -69,13 +69,13 @@ class RunnerRegistry(object):
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
                 master_report.print_junit_xml()
-        if args.output == "json":
+        if config.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
-        if args.output == "cli":
-            self.bc_platform.get_report_to_platform(args,scan_reports)
+        if config.output == "cli":
+            self.bc_platform.get_report_to_platform(config, scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code

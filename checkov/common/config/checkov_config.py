@@ -3,11 +3,11 @@ import yaml
 
 class CheckovConfig:
 
-    def __init__(self, branch=None, ca_certificate=None, check=None, compact=None, directory=None,
-                 docker_image=None, dockerfile_path=None, download_external_modules=None,
-                 evaluate_variables=None, external_checks_dir=None, external_checks_git=None,
-                 external_modules_download_path=None, file=None, framework=None, no_guide=None,
-                 output=None, quiet=None, repo_id=None, skip_check=None, skip_fixes=None,
+    def __init__(self, branch='master', ca_certificate=None, check=None, compact=False, directory=None,
+                 docker_image=None, dockerfile_path=None, download_external_modules=False,
+                 evaluate_variables=True, external_checks_dir=None, external_checks_git=None,
+                 external_modules_download_path='.external_modules', file=None, framework='all', no_guide=None,
+                 output='cli', quiet=None, repo_id=None, skip_check=None, skip_fixes=None,
                  skip_framework=None, skip_suppressions=None, soft_fail=None):
         self.branch = branch
         self.ca_certificate = ca_certificate
