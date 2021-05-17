@@ -1,17 +1,23 @@
+from collections import defaultdict
 import logging
 import json
 import logging
 import os
 
+from checkov.common.models.enums import CheckResult
+from checkov.common.util import dict_utils
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.runner import Runner as tf_runner
+from checkov.terraform.parser import Parser
 from checkov.terraform.context_parsers.registry import parser_registry
 # Allow the evaluation of empty variables
 from checkov.terraform.plan_parser import parse_tf_plan
 
+CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 
 class Runner(BaseRunner):
     check_type = "terraform_plan"
@@ -65,7 +71,11 @@ class Runner(BaseRunner):
 
         report.add_parsing_errors(parsing_errors.keys())
 
-        return report
+        enriched_resources = self.get_enriched_resources(report, '/Users/acotenoff/Development/tf-acotenoff-test/')
+        reports = self.enrich_plan_records(report, enriched_resources)
+        #reports = self.handle_skipped_checks(reports_without_skipped, enriched_resources)
+
+        return reports
 
     def check_tf_definition(self, report, runner_filter,
                             ):
@@ -113,3 +123,58 @@ class Runner(BaseRunner):
                     entity_context['code_lines'] = self.template_lines[entity_context['start_line']:entity_context['end_line']]
                     return entity_context
         return entity_context
+
+    def get_enriched_resources(self, reports, repo_root):
+        parser = Parser()
+        tf_definitions = {}
+        parsing_errors = {}
+        Parser.parse_directory(
+            parser,
+            directory=repo_root,  # assume plan file is in the repo-root
+            out_definitions=tf_definitions,
+            out_parsing_errors=parsing_errors,
+        )
+
+        enriched_resources = defaultdict(dict)
+        for definition in tf_definitions.items():
+            definitions_context = parser_registry.enrich_definitions_context(definition)
+
+        for full_file_path, definition in tf_definitions.items():
+            abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
+            scanned_file = os.path.relpath(abs_scanned_file, repo_root)
+            for block_type in definition.keys():
+                if block_type in CHECK_BLOCK_TYPES:
+                    for entity in definition[block_type]:
+                        context_parser = parser_registry.context_parsers[block_type]
+                        definition_path = context_parser.get_entity_context_path(entity)
+                        entity_id = ".".join(definition_path)
+                        entity_context_path = [block_type] + definition_path
+                        entity_context = dict_utils.getInnerDict(
+                            definitions_context[full_file_path], entity_context_path
+                        )
+                        entity_lines_range = [
+                            entity_context.get("start_line"),
+                            entity_context.get("end_line"),
+                        ]
+                        entity_code_lines = entity_context.get("code_lines")
+                        enriched_resources[entity_id] = {
+                            "entity_code_lines": entity_code_lines,
+                            "entity_lines_range": entity_lines_range,
+                            "scanned_file": scanned_file,
+                        }
+
+        return enriched_resources
+
+
+    def enrich_plan_records(self, report, enriched_resources):
+        # This enriches reports with the appropriate filepath, line numbers, and codeblock
+        for record in report.failed_checks:
+            if record.resource in enriched_resources:
+                record.file_path = enriched_resources[record.resource]["scanned_file"]
+                record.file_line_range = enriched_resources[record.resource][
+                    "entity_lines_range"
+                ]
+                record.code_block = enriched_resources[record.resource][
+                    "entity_code_lines"
+                ]
+        return report
