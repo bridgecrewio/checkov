@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_VPCHasRestrictedSG(self):
+        self.go("VPCHasRestrictedSG")
+
     def test_APIGWLoggingLevelsDefinedProperly(self):
         self.go("APIGWLoggingLevelsDefinedProperly")
 

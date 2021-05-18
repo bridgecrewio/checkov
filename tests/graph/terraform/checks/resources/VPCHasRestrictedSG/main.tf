@@ -2,12 +2,20 @@ resource "aws_vpc" "not_ok_vpc" {
   cidr_block = "10.0.0.0/16"
 }
 
+resource "aws_vpc" "not_ok_vpc_2" {
+  cidr_block = "10.0.0.0/16"
+}
+
 resource "aws_vpc" "ok_vpc" {
   cidr_block = "10.0.0.0/16"
 }
 
 resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.ok_vpc.id
+}
+
+resource "aws_default_security_group" "default_2" {
+  vpc_id = aws_vpc.not_ok_vpc_2.id
 
   ingress {
     protocol  = "-1"
