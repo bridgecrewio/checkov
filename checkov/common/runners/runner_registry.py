@@ -47,8 +47,9 @@ class RunnerRegistry(object):
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
                 enriched_resources = RunnerRegistry.get_enriched_resources(scan_report, repo_root_for_plan_enrichment)
-                enriched_report = RunnerRegistry.enrich_plan_records(scan_report, enriched_resources)
-                self.scan_reports.append(enriched_report)
+                enriched_report = RunnerRegistry.enrich_plan_report(scan_report, enriched_resources)
+                enriched_report_with_skipped = RunnerRegistry.handle_skipped_checks(enriched_report, enriched_resources)
+                self.scan_reports.append(enriched_report_with_skipped)
             else:
                 self.scan_reports.append(scan_report)
         return self.scan_reports
@@ -148,16 +149,17 @@ class RunnerRegistry(object):
                             entity_context.get("end_line"),
                         ]
                         entity_code_lines = entity_context.get("code_lines")
+                        skipped_checks = entity_context.get("skipped_checks")
                         enriched_resources[entity_id] = {
                             "entity_code_lines": entity_code_lines,
                             "entity_lines_range": entity_lines_range,
                             "scanned_file": scanned_file,
+                            "skipped_checks": skipped_checks
                         }
-
         return enriched_resources
 
     @staticmethod
-    def enrich_plan_records(report, enriched_resources):
+    def enrich_plan_report(report, enriched_resources):
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
             if record.resource in enriched_resources:
@@ -168,4 +170,18 @@ class RunnerRegistry(object):
                 record.code_block = enriched_resources[record.resource][
                     "entity_code_lines"
                 ]
+        return report
+
+    @staticmethod
+    def handle_skipped_checks(report, enriched_resources):
+        records_to_skip = []
+        for record in report.failed_checks:
+            resource_skips = enriched_resources[record.resource]["skipped_checks"]
+            for skip in resource_skips:
+                if record.check_id in skip["id"]: 
+                    # Remove and re-add the record to make Checkov mark it as skipped
+                    report.failed_checks.remove(record)
+                    record.check_result["result"] = CheckResult.SKIPPED
+                    record.check_result["suppress_comment"] = skip["suppress_comment"]
+                    report.add_record(record)
         return report
