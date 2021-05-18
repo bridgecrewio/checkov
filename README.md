@@ -146,6 +146,8 @@ terraform show -json tf.plan | jq '.' > tf.json
 ```
 Scan result would be much user friendly.
 
+Alternatively, specify the repo root of the hcl files used to generate the plan file, using the `--repo-root-for-plan-enrichment` flag, to enrich the output with the appropriate file path, line numbers, and codeblock of the resource. An added benefit is that check suppressions will also be handled accordingly.
+
 ```sh
 checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
