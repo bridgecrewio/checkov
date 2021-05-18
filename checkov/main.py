@@ -44,7 +44,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Infrastructure as code static analysis')
     add_parser_args(parser)
     args = parser.parse_args(argv)
-
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(args.ca_certificate)
@@ -120,7 +119,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return exit_code
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
-                                           guidelines=guidelines, bc_integration=bc_integration)
+                                           guidelines=guidelines, bc_integration=bc_integration,
+                                           repo_root_for_plan_enrichment=args.repo_root_for_plan_enrichment)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -211,6 +211,8 @@ def add_parser_args(parser):
                         default=True)
     parser.add_argument('-ca', '--ca-certificate',
                         help='custom CA (bundle) file', default=None)
+    parser.add_argument('--repo-root-for-plan-enrichment',
+                        help='Directory containing the hcl code used to generate a given plan file. Use with -f.', dest="repo_root_for_plan_enrichment")
 
 def get_external_checks_dir(args):
     external_checks_dir = args.external_checks_dir

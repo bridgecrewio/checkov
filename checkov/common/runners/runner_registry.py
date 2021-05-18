@@ -1,10 +1,19 @@
 import json
 import logging
+import os
 from abc import abstractmethod
+from collections import defaultdict
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
+from checkov.common.util import dict_utils
+from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.runner import Runner as tf_runner
+from checkov.terraform.parser import Parser
 
+
+CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -28,7 +37,7 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None, repo_root_for_plan_enrichment=None):
         for runner in self.runners:
             integration_feature_registry.run_pre_scan()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
@@ -36,7 +45,12 @@ class RunnerRegistry(object):
             integration_feature_registry.run_post_scan(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
-            self.scan_reports.append(scan_report)
+            if repo_root_for_plan_enrichment:
+                enriched_resources = RunnerRegistry.get_enriched_resources(scan_report, repo_root_for_plan_enrichment)
+                enriched_report = RunnerRegistry.enrich_plan_records(scan_report, enriched_resources)
+                self.scan_reports.append(enriched_report)
+            else:
+                self.scan_reports.append(scan_report)
         return self.scan_reports
 
     def print_reports(self, scan_reports, args, url=None):
@@ -99,3 +113,59 @@ class RunnerRegistry(object):
         for record in scan_report.failed_checks + scan_report.passed_checks + scan_report.skipped_checks:
             if record.check_id in guidelines:
                 record.set_guideline(guidelines[record.check_id])
+
+    @staticmethod
+    def get_enriched_resources(report, repo_root):
+        parser = Parser()
+        tf_definitions = {}
+        parsing_errors = {}
+        Parser.parse_directory(
+            parser,
+            directory=repo_root,  # assume plan file is in the repo-root
+            out_definitions=tf_definitions,
+            out_parsing_errors=parsing_errors,
+        )
+
+        enriched_resources = defaultdict(dict)
+        for definition in tf_definitions.items():
+            definitions_context = parser_registry.enrich_definitions_context(definition)
+
+        for full_file_path, definition in tf_definitions.items():
+            abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
+            scanned_file = os.path.relpath(abs_scanned_file, repo_root)
+            for block_type in definition.keys():
+                if block_type in CHECK_BLOCK_TYPES:
+                    for entity in definition[block_type]:
+                        context_parser = parser_registry.context_parsers[block_type]
+                        definition_path = context_parser.get_entity_context_path(entity)
+                        entity_id = ".".join(definition_path)
+                        entity_context_path = [block_type] + definition_path
+                        entity_context = dict_utils.getInnerDict(
+                            definitions_context[full_file_path], entity_context_path
+                        )
+                        entity_lines_range = [
+                            entity_context.get("start_line"),
+                            entity_context.get("end_line"),
+                        ]
+                        entity_code_lines = entity_context.get("code_lines")
+                        enriched_resources[entity_id] = {
+                            "entity_code_lines": entity_code_lines,
+                            "entity_lines_range": entity_lines_range,
+                            "scanned_file": scanned_file,
+                        }
+
+        return enriched_resources
+
+    @staticmethod
+    def enrich_plan_records(report, enriched_resources):
+        # This enriches reports with the appropriate filepath, line numbers, and codeblock
+        for record in report.failed_checks:
+            if record.resource in enriched_resources:
+                record.file_path = enriched_resources[record.resource]["scanned_file"]
+                record.file_line_range = enriched_resources[record.resource][
+                    "entity_lines_range"
+                ]
+                record.code_block = enriched_resources[record.resource][
+                    "entity_code_lines"
+                ]
+        return report
