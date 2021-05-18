@@ -1,26 +1,26 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.RedshiftClusterEncryption import check
+from checkov.cloudformation.checks.resource.aws.RedShiftSSL import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestRedshiftClusterEncryption(unittest.TestCase):
+class TestRedShiftSSL(unittest.TestCase):
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_RedshiftClusterEncryption"
+        test_files_dir = current_dir + "/example_RedShiftSSL"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "AWS::Redshift::Cluster.RedshiftClusterEnabled",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupEnabled",
         }
         failing_resources = {
-            "AWS::Redshift::Cluster.RedshiftClusterDefault",
-            "AWS::Redshift::Cluster.RedshiftClusterDisabled",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDefault",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDisabled",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
