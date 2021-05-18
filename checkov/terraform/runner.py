@@ -167,6 +167,14 @@ class Runner(BaseRunner):
         if dpath.search(self.definitions_context.get(full_file_path), entity_context_path):
             entity_context = dpath.get(self.definitions_context[full_file_path], entity_context_path)
             entity_context['definition_path'] = definition_path
+        else:
+            dc_keys = self.definitions_context.keys()
+            try:
+                dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
+                entity_context = dpath.get(self.definitions_context[dc_key], entity_context_path)
+                entity_context['definition_path'] = definition_path
+            except StopIteration:
+                logging.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
