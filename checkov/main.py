@@ -85,6 +85,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         skip_fixes=args.skip_fixes,
                                                         skip_suppressions=args.skip_suppressions,
                                                         source=source, source_version=source_version, repo_branch=args.branch)
+            excluded_paths = bc_integration.get_excluded_paths()
+            runner_filter.excluded_paths = excluded_paths
         except Exception as e:
             logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token and try again.', exc_info=True)
             return
