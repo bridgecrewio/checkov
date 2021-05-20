@@ -117,11 +117,9 @@ class RunnerRegistry(object):
 
     @staticmethod
     def get_enriched_resources(report, repo_root):
-        parser = Parser()
         tf_definitions = {}
         parsing_errors = {}
-        Parser.parse_directory(
-            parser,
+        Parser().parse_directory(
             directory=repo_root,  # assume plan file is in the repo-root
             out_definitions=tf_definitions,
             out_parsing_errors=parsing_errors,
