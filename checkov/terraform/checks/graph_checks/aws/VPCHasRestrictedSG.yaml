@@ -16,50 +16,48 @@ definition:
       - "aws_default_security_group"
       operator: "exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "ingress.to_port"
-      operator: "equals"
-      value: "0"
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "ingress.from_port"
-      operator: "equals"
-      value: 0
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "ingress.self"
-      operator: "equals"
-      value: "true"
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "egress.to_port"
-      operator: "equals"
-      value: 0
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "egress.from_port"
-      operator: "equals"
-      value: 0
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "egress.cidr_blocks"
-      operator: "equals"
-      value: "0.0.0.0/0"
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "egress.protocol"
-      operator: "equals"
-      value: -1
+      operator: "not_exists"
     - cond_type: "attribute"
-      resource_types: 
+      resource_types:
         - "aws_default_security_group"
       attribute: "ingress.protocol"
-      operator: "equals"
-      value: -1
+      operator: "not_exists"
+    - cond_type: "connection"
+      resource_types:
+        - "aws_default_security_group"
+      connected_resource_types:
+        - "aws_security_group_rule"
+      operator: "not_exists"
