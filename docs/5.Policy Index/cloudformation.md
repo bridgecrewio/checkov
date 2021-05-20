@@ -111,6 +111,7 @@ nav_order: 1
 | 100 | CKV_AWS_111 | resource | AWS::IAM::Role                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 | 101 | CKV_AWS_111 | resource | AWS::IAM::User                            | Ensure IAM policies does not allow write access without constraints                                                                                                                                      | Cloudformation |
 | 102 | CKV_AWS_157 | resource | AWS::RDS::DBInstance                      | Ensure that RDS instances have Multi-AZ enabled                                                                                                                                                          | Cloudformation |
+| 103 | CKV_AWS_160 | resource | AWS::Timestream::Database                 | Ensure that Timestream database is encrypted with KMS CMK                                                                                                                                                | Cloudformation |
 
 
 ---
