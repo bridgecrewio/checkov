@@ -55,3 +55,9 @@ definition:
         - "aws_default_security_group"
       attribute: "ingress.protocol"
       operator: "not_exists"
+    - cond_type: "connection"
+      resource_types:
+        - "aws_default_security_group"
+      connected_resource_types:
+        - "aws_security_group_rule"
+      operator: "not_exists"
