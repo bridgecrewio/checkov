@@ -128,10 +128,8 @@ class RunnerRegistry(object):
         )
 
         enriched_resources = defaultdict(dict)
-        for definition in tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context(definition)
-
         for full_file_path, definition in tf_definitions.items():
+            definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
             abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
             scanned_file = os.path.relpath(abs_scanned_file, repo_root)
             for block_type, block_value in definition.items():
