@@ -39,3 +39,14 @@ resource "aws_instance" "ec2_assoc" {
 resource "aws_eip" "ok_eip_assoc" {
   vpc = true
 }
+
+# via aws_nat_gateway
+
+resource "aws_eip" "ok_eip_nat" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "ok_eip_nat" {
+  allocation_id = aws_eip.ok_eip_nat.id
+  subnet_id     = "aws_subnet.public.id"
+}
