@@ -134,9 +134,9 @@ class RunnerRegistry(object):
         for full_file_path, definition in tf_definitions.items():
             abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
             scanned_file = os.path.relpath(abs_scanned_file, repo_root)
-            for block_type in definition.keys():
+            for block_type, block_value in definition.items():
                 if block_type in CHECK_BLOCK_TYPES:
-                    for entity in definition[block_type]:
+                    for entity in block_value:
                         context_parser = parser_registry.context_parsers[block_type]
                         definition_path = context_parser.get_entity_context_path(entity)
                         entity_id = ".".join(definition_path)
