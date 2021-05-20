@@ -162,14 +162,11 @@ class RunnerRegistry(object):
     def enrich_plan_report(report, enriched_resources):
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
-            if record.resource in enriched_resources:
-                record.file_path = enriched_resources[record.resource]["scanned_file"]
-                record.file_line_range = enriched_resources[record.resource][
-                    "entity_lines_range"
-                ]
-                record.code_block = enriched_resources[record.resource][
-                    "entity_code_lines"
-                ]
+            enriched_resource = enriched_resources.get(record.resource)
+            if enriched_resource:
+                record.file_path = enriched_resource["scanned_file"]
+                record.file_line_range = enriched_resource["entity_lines_range"]
+                record.code_block = enriched_resource["entity_code_lines"]
         return report
 
     @staticmethod
