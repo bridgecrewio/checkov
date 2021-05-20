@@ -10,7 +10,7 @@ class KMSKeyWildcardPrincipal(BaseResourceCheck):
         name = "Ensure KMS key policy does not contain wildcard (*) principal"
         id = "CKV_AWS_33"
         supported_resources = ['aws_kms_key']
-        categories = [CheckCategories.IAM]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
