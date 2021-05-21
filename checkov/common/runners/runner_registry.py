@@ -45,7 +45,7 @@ class RunnerRegistry(object):
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
-                enriched_resources = RunnerRegistry.get_enriched_resources(scan_report, repo_root_for_plan_enrichment)
+                enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
                 enriched_report = RunnerRegistry.enrich_plan_report(scan_report, enriched_resources)
                 enriched_report_with_skipped = RunnerRegistry.handle_skipped_checks(enriched_report, enriched_resources)
                 self.scan_reports.append(enriched_report_with_skipped)
@@ -115,7 +115,7 @@ class RunnerRegistry(object):
                 record.set_guideline(guidelines[record.check_id])
 
     @staticmethod
-    def get_enriched_resources(report, repo_root):
+    def get_enriched_resources(repo_root):
         tf_definitions = {}
         parsing_errors = {}
         Parser().parse_directory(
