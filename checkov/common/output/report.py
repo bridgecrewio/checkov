@@ -148,3 +148,27 @@ class Report:
     def print_json(self):
         print(self.get_json())
 
+    @staticmethod
+    def enrich_plan_report(report, enriched_resources):
+        # This enriches reports with the appropriate filepath, line numbers, and codeblock
+        for record in report.failed_checks:
+            enriched_resource = enriched_resources.get(record.resource)
+            if enriched_resource:
+                record.file_path = enriched_resource["scanned_file"]
+                record.file_line_range = enriched_resource["entity_lines_range"]
+                record.code_block = enriched_resource["entity_code_lines"]
+        return report
+
+    @staticmethod
+    def handle_skipped_checks(report, enriched_resources):
+        records_to_skip = []
+        for record in report.failed_checks:
+            resource_skips = enriched_resources[record.resource]["skipped_checks"]
+            for skip in resource_skips:
+                if record.check_id in skip["id"]: 
+                    # Remove and re-add the record to make Checkov mark it as skipped
+                    report.failed_checks.remove(record)
+                    record.check_result["result"] = CheckResult.SKIPPED
+                    record.check_result["suppress_comment"] = skip["suppress_comment"]
+                    report.add_record(record)
+        return report
