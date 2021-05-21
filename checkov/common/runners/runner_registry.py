@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from abc import abstractmethod
-from collections import defaultdict
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.models.enums import CheckResult
