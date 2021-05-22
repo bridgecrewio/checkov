@@ -28,7 +28,7 @@ def force_int(var: Any) -> Optional[int]:
         if not isinstance(var, int):
             return int(var)
         return var
-    except:
+    except Exception:
         return None
 
 
@@ -37,11 +37,11 @@ def force_float(var: Any) -> Optional[float]:
         if not isinstance(var, float):
             return float(var)
         return var
-    except:
+    except Exception:
         return None
 
 
-def convert_str_to_bool(bool_str):
+def convert_str_to_bool(bool_str: Union[bool, str]) -> Union[bool, str]:
     if bool_str in ["true", '"true"', "True", '"True"']:
         return True
     elif bool_str in ["false", '"false"', "False", '"False"']:

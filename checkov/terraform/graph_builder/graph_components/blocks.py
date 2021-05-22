@@ -1,7 +1,7 @@
 import logging
 import os
 from copy import deepcopy
-from typing import Union
+from typing import Union, Dict, Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -91,7 +91,7 @@ class Block:
 
         return base_attributes
 
-    def get_origin_attributes(self, base_attributes):
+    def get_origin_attributes(self, base_attributes: Dict[str, Any]) -> None:
         for attribute_key in list(self.attributes.keys()):
             attribute_value = self.attributes[attribute_key]
             if type(attribute_value) is list and len(attribute_value) == 1:

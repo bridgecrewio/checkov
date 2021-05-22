@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Union, Any
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
@@ -61,7 +61,7 @@ def concat(original, var_resolver, **_):
     return merged_list
 
 
-def tobool(original, **_):
+def tobool(original: Union[bool, str], **_: Any) -> Union[bool, str]:
     # https://www.terraform.io/docs/configuration/functions/tobool.html
     bool_value = convert_str_to_bool(original)
     return bool_value if isinstance(bool_value, bool) else FUNCTION_FAILED
