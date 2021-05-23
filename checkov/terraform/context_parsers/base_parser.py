@@ -70,7 +70,7 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
-        line_without_whitespace = "".join(line[1].split())
+        line_without_whitespace = "".join(line.split())
         return 'checkov:skip=' in line_without_whitespace or 'bridgecrew:skip=' in line_without_whitespace
 
     def _collect_skip_comments(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
