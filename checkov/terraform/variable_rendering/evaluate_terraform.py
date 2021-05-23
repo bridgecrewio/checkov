@@ -200,6 +200,9 @@ def evaluate_directives(input_str):
     evaluated_string_parts = []
     for str_part in matching_directives:
         evaluated_string_parts.append(evaluate_terraform(str_part))
+
+    # Handle evaluation results which are integer / boolean
+    evaluated_string_parts = [v if isinstance(v, str) else str(v) for v in evaluated_string_parts]
     return ''.join(evaluated_string_parts)
 
 
