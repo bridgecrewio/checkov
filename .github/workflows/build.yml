@@ -29,7 +29,13 @@ jobs:
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
       - name: Clone Terragoat - vulnerable terraform
-        run: git clone https://github.com/bridgecrewio/terragoat
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+          run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
         run: git clone https://github.com/bridgecrewio/cfngoat
       - name: Clone Kubernetes-goat - vulnerable kubernetes
