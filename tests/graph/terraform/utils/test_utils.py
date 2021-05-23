@@ -201,14 +201,3 @@ EOF
         except Exception as e:
             self.assertIn('arbitrary code execution', str(e))
 
-    def test_decode_numeric_string(self):
-        s = "01234"
-        expected = "01234"
-
-        self.assertEqual(expected, decode_graph_property_value(s))
-
-        s = "1234"
-        expected = 1234
-        self.assertEqual(expected, decode_graph_property_value(s))
-
-
