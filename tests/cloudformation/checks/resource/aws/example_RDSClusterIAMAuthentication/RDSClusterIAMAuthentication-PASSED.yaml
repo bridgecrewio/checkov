@@ -1,0 +1,8 @@
+Resources:
+  Enabled:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      Engine: 'aurora'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+      EnableIAMDatabaseAuthentication: true

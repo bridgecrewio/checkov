@@ -1,0 +1,14 @@
+Resources:
+  Default:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      Engine: 'aurora'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+  Disabled:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      Engine: 'aurora'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+      EnableIAMDatabaseAuthentication: false
