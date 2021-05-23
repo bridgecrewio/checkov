@@ -594,6 +594,7 @@ Load JSON or HCL, depending on filename.
     file_name = os.path.basename(file_path)
 
     try:
+        logging.debug(f"Parsing {file_path}")
         with open(file, "r") as f:
             if file_name.endswith(".json"):
                 return json.load(f)
@@ -605,7 +606,7 @@ Load JSON or HCL, depending on filename.
                 else:
                     return non_malformed_definitions
     except Exception as e:
-        logging.debug(f'failed while parsing file {file}', exc_info=e)
+        logging.debug(f'failed while parsing file {file_path}', exc_info=e)
         parsing_errors[file_path] = e
         return None
 
