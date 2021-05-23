@@ -22,14 +22,18 @@ class AdminPolicyDocument(BaseDataCheck):
         """
 
         for statement in conf.get("statement", []):
-            if (
-                statement.get("effect", ["Allow"]) == ["Allow"]
-                and statement.get("actions")
-                and "*" in force_list(statement["actions"][0])
-                and statement.get("resources")
-                and "*" in force_list(statement["resources"][0])
-            ):
-                return CheckResult.FAILED
+            if not isinstance(statement, list):
+                statement = [statement]
+            for stmt in statement:
+                if (
+                    isinstance(stmt, dict)
+                    and stmt.get("effect", ["Allow"]) == ["Allow"]
+                    and stmt.get("actions")
+                    and "*" in force_list(stmt["actions"][0])
+                    and stmt.get("resources")
+                    and "*" in force_list(stmt["resources"][0])
+                ):
+                    return CheckResult.FAILED
 
         return CheckResult.PASSED
 
