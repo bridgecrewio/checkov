@@ -206,7 +206,7 @@ def decode_graph_property_value(value: Any, leave_str: bool = False) -> Any:
     if value.startswith('"') and value.endswith('"'):
         value = value[1:-1]
     if not leave_str:
-        if value.isnumeric() and not value.startswith("0"):
+        if value.isnumeric():
             value = int(value)
         else:
             try:
