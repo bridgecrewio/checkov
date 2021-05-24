@@ -164,7 +164,8 @@ class BaseContextParser(ABC):
         for i, entity_block in enumerate(definition_blocks):
             entity_context_path = self.get_entity_context_path(entity_block)
             for line_num, line in potential_block_start_lines:
-                line_tokens = [x for x in line.replace('"', "").replace('{', " ").split()]
+                line_tokens = line.split() if '{' not in line else line.split('{')[0].split()
+                line_tokens = [x.replace('"', '') for x in line_tokens]
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
                     logging.debug(f'created context for {" ".join(entity_context_path)}')
                     start_line = line_num
