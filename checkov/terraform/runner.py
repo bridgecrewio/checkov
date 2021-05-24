@@ -162,19 +162,18 @@ class Runner(BaseRunner):
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
-        entity_context = None
         entity_context_path = [block_type] + definition_path
-        if dpath.search(self.definitions_context.get(full_file_path), entity_context_path):
-            entity_context = dpath.get(self.definitions_context[full_file_path], entity_context_path)
-            entity_context['definition_path'] = definition_path
-        else:
+        entity_context = self.definitions_context.get(full_file_path, {})
+        if not entity_context:
             dc_keys = self.definitions_context.keys()
-            try:
-                dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
-                entity_context = dpath.get(self.definitions_context[dc_key], entity_context_path)
-                entity_context['definition_path'] = definition_path
-            except StopIteration:
-                logging.debug(f"Did not find context for key {full_file_path}")
+            dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
+            entity_context = self.definitions_context.get(dc_key, {})
+        try:
+            for k in entity_context_path:
+                entity_context = entity_context[k]
+            entity_context['definition_path'] = definition_path
+        except StopIteration:
+            logging.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
