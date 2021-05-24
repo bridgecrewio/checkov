@@ -1,6 +1,7 @@
 import logging
 import os
 from copy import deepcopy
+from typing import List, Optional, Union
 
 from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
@@ -335,8 +336,14 @@ class LocalGraph:
             sorted_edges.extend(edged_by_out_degree[degree])
         return sorted_edges
 
-    def update_vertex_attribute(self, vertex_index, attribute_key, attribute_value, change_origin_id,
-                                attribute_at_dest):
+    def update_vertex_attribute(
+            self,
+            vertex_index: int,
+            attribute_key: str,
+            attribute_value: List[str],
+            change_origin_id: int,
+            attribute_at_dest: Optional[Union[str, List[str]]]
+    ) -> None:
         previous_breadcrumbs = []
         attribute_at_dest = self.vertices[change_origin_id].find_attribute(attribute_at_dest)
         if attribute_at_dest:

@@ -23,7 +23,7 @@ MAP_ATTRIBUTE_PATTERN = r"\[\"([^\d\W]\w*)\"\]"
 
 class VertexReference:
     def __init__(self, block_type: Union[str, BlockType], sub_parts: List[str], origin_value: str) -> None:
-        self.block_type = block_type_str_to_enum(block_type) if type(block_type) is str else block_type
+        self.block_type: BlockType = block_type_str_to_enum(block_type) if isinstance(block_type, str) else block_type
         self.sub_parts = sub_parts
         self.origin_value = origin_value
 
