@@ -164,11 +164,11 @@ class Runner(BaseRunner):
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
         entity_context = self.definitions_context.get(full_file_path, {})
-        if not entity_context:
-            dc_keys = self.definitions_context.keys()
-            dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
-            entity_context = self.definitions_context.get(dc_key, {})
         try:
+            if not entity_context:
+                dc_keys = self.definitions_context.keys()
+                dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
+                entity_context = self.definitions_context.get(dc_key, {})
             for k in entity_context_path:
                 entity_context = entity_context[k]
             entity_context['definition_path'] = definition_path
