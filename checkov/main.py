@@ -43,7 +43,8 @@ runnerDependencyHandler.validate_runner_deps()
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     parser = configargparse.ArgParser(description='Infrastructure as code static analysis',
-                                      config_file_parser_class=configargparse.YAMLConfigFileParser)
+                                      config_file_parser_class=configargparse.YAMLConfigFileParser,
+                                      formatter_class=configargparse.ArgumentDefaultsRawHelpFormatter)
     add_parser_args(parser)
     config = parser.parse_args(argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
@@ -66,9 +67,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(),
                                          sls_runner(),
                                          arm_runner(), tf_plan_runner(), helm_runner(), dockerfile_runner())
-    if config.version:
-        print(version)
-        return
 
     if config.bc_api_key == '':
         parser.error(
@@ -159,7 +157,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
 def add_parser_args(parser):
     parser.add('-v', '--version',
-               help='version', action='store_true')
+               help='version', action='version', version=version)
     parser.add('-d', '--directory', action='append',
                help='IaC root directory (can not be used together with --file).')
     parser.add('-f', '--file', action='append',
