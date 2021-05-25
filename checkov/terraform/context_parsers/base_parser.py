@@ -151,6 +151,13 @@ class BaseContextParser(ABC):
     def get_block_type(self) -> str:
         return self.definition_type
 
+    @staticmethod
+    def _clean_line(line: str):
+        res = line.replace('"', ' ')
+        if '"{' in res:
+            res = res.split('{')[0]
+        return res
+
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Enrich the context of a Terraform block
@@ -164,8 +171,8 @@ class BaseContextParser(ABC):
         for i, entity_block in enumerate(definition_blocks):
             entity_context_path = self.get_entity_context_path(entity_block)
             for line_num, line in potential_block_start_lines:
-                line_tokens = line.split() if '{' not in line else line.split('{')[0].split()
-                line_tokens = [x.replace('"', '') for x in line_tokens]
+                line_str = self._clean_line(line)
+                line_tokens = line_str.split()
                 if self._is_block_signature(line_num, line_tokens, entity_context_path):
                     logging.debug(f'created context for {" ".join(entity_context_path)}')
                     start_line = line_num
