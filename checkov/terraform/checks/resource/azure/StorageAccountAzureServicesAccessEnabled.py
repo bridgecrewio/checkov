@@ -19,7 +19,7 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
             # have access --> Pass
             if network_conf[0]['default_action'][0] == 'Allow':
                 return CheckResult.PASSED
-            elif 'bypass' in network_conf[0]:
+            elif network_conf[0].get('bypass'):
                 if 'AzureServices' in network_conf[0]['bypass'][0]:
                     return CheckResult.PASSED
                 return CheckResult.FAILED
