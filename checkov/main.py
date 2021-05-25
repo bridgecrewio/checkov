@@ -11,6 +11,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
@@ -42,9 +43,10 @@ runnerDependencyHandler.validate_runner_deps()
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
+    default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = configargparse.ArgParser(description='Infrastructure as code static analysis',
-                                      config_file_parser_class=configargparse.YAMLConfigFileParser,
-                                      formatter_class=configargparse.ArgumentDefaultsRawHelpFormatter)
+                                      default_config_files=default_config_paths,
+                                      config_file_parser_class=configargparse.YAMLConfigFileParser)
     add_parser_args(parser)
     config = parser.parse_args(argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
@@ -103,11 +105,15 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     if config.check and config.skip_check:
         if any(item in runner_filter.checks for item in runner_filter.skip_checks):
-            parser.error("The check id's specified for '--check' and '--skip-check' must be mutually exclusive.")
+            parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
             return
 
     if config.list:
         print_checks(framework=config.framework)
+        return
+
+    if config.show_config:
+        print(parser.format_values())
         return
 
     external_checks_dir = get_external_checks_dir(config)
@@ -224,7 +230,12 @@ def add_parser_args(parser):
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='custom CA (bundle) file', default=None)
-    parser.add('--config-file', is_config_file=True, help='Path to the Checkov configuration YAML file', default=None)
+    parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
+    parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
+                                       'the given path', is_write_out_config_file_arg=True, default=None)
+    parser.add('--show-config', help='prints all args and config settings and where they came from '
+                                     '(eg. commandline, config file, environment variable or default)',
+               action='store_true',  default=None)
 
 
 def get_external_checks_dir(config):
