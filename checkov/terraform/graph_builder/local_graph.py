@@ -38,7 +38,7 @@ class LocalGraph:
         undetermined_values = self._set_variables_values_from_modules()
         self._build_edges()
         self.calculate_encryption_attribute()
-        if False:
+        if render_variables:
             logging.info('Rendering variables')
             renderer = VariableRenderer(self)
             renderer.render_variables_from_local_graph()
@@ -145,7 +145,6 @@ class LocalGraph:
 
     def _build_edges(self):
         logging.info('Creating edges')
-        return
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
         for origin_node_index, vertex in enumerate(self.vertices):
