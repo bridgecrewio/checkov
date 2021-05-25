@@ -14,8 +14,8 @@ class RunnerFilter(object):
     def __init__(
         self,
         framework: str = "all",
-        checks: Union[str, List[str], None] = None,
-        skip_checks: Union[str, List[str], None] = None,
+        checks: Union[List[str], None] = None,
+        skip_checks: Union[List[str], None] = None,
         download_external_modules: bool = False,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         evaluate_variables: bool = True,
@@ -25,15 +25,15 @@ class RunnerFilter(object):
 
         if checks is None:
             checks = []
-        if isinstance(checks, str):
-            self.checks = checks.split(",")
+        if isinstance(checks, list) and len(checks) == 1:
+            self.checks = checks[0].split(",")
         else:
             self.checks = checks
 
         if skip_checks is None:
             skip_checks = []
-        if isinstance(skip_checks, str):
-            self.skip_checks = skip_checks.split(",")
+        if isinstance(skip_checks, list) and len(skip_checks) == 1:
+            self.skip_checks = skip_checks[0].split(",")
         else:
             self.skip_checks = skip_checks
 

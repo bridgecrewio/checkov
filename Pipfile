@@ -38,6 +38,7 @@ cloudsplaining = ">=0.4.1"
 networkx = "*"
 dockerfile-parse ="*"
 docker = "*"
+configargparse = "*"
 
 [requires]
 python_version = "3.7"
