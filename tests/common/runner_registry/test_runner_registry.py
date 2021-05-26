@@ -78,7 +78,7 @@ class TestRunnerRegistry(unittest.TestCase):
                 "CKV_AWS_28"
             }
             enriched_data = set([(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks])
-            expected_enriched_paths = {
+            expected_enriched_data = {
                 (
                     "iam.tf",  
                     (1, 19), 
@@ -154,7 +154,7 @@ class TestRunnerRegistry(unittest.TestCase):
         assert failed_check_ids == expected_failed_check_ids
         assert len(skipped_check_ids) == 2
         assert skipped_check_ids == expected_skipped_check_ids
-        assert enriched_data == expected_enriched_paths
+        assert enriched_data == expected_enriched_data
 
 
 
