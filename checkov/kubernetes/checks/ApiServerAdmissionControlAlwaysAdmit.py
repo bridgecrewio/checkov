@@ -13,13 +13,13 @@ class ApiServerAdmissionControlAlwaysAdmit(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command"):
             if "kube-apiserver" in conf["command"]:
                 for cmd in conf["command"]:
                     if cmd == "--enable-admission-plugins":
                         return CheckResult.FAILED
                     if "=" in cmd:
-                        [field,value] = cmd.split("=")
+                        [field,value,*_] = cmd.split("=")
                         if field == "--enable-admission-plugins":
                             if "AlwaysAdmit" == value:
                                 return CheckResult.FAILED

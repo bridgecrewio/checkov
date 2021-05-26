@@ -33,7 +33,7 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names)
+                filter_ignored_directories(d_names, runner_filter.excluded_paths)
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in CF_POSSIBLE_ENDINGS:

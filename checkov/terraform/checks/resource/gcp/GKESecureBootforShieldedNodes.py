@@ -15,7 +15,7 @@ class GKESecureBootforShieldedNodes(BaseResourceValueCheck):
             node = conf["node_config"][0]
             if isinstance(node, dict) and 'shielded_instance_config' in node:
                 monitor = node["shielded_instance_config"][0]
-                if monitor["enable_secure_boot"] == [True]:
+                if monitor.get("enable_secure_boot", None) == [True]:
                     return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED

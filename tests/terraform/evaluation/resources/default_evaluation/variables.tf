@@ -43,6 +43,6 @@ variable "dummy_1" {
   default = "dummy_1"
 }
 
-variable "user_exists" {
+variable"user_exists"{
   default = false
 }

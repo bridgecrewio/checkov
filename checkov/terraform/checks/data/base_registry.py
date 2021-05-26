@@ -1,15 +1,15 @@
+from typing import Dict, Any, Tuple, List
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
-
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def extract_entity_details(self, entity):
-        data_type = list(entity.keys())[0]
-        data_name = list(list(entity.values())[0].keys())[0]
-        data_object = entity[data_type]
-        data_configuration = data_object[data_name]
+    def extract_entity_details(
+        self, entity: Dict[str, Dict[str, Dict[str, List[Dict[str, Any]]]]]
+    ) -> Tuple[str, str, Dict[str, List[Dict[str, Any]]]]:
+        data_type, data_object = next(iter(entity.items()))
+        data_name, data_configuration = next(iter(data_object.items()))
         return data_type, data_name, data_configuration
-

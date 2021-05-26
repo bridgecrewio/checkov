@@ -1,0 +1,45 @@
+metadata:
+  name: "Ensure that Security Groups are attached to an other resource"
+  id: "CKV2_AWS_5"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_security_group
+      operator: within
+    - resource_types:
+        - aws_security_group
+      connected_resource_types:
+        - aws_alb
+        - aws_batch_compute_environment
+        - aws_codebuild_project
+        - aws_db_instance
+        - aws_dms_replication_instance
+        - aws_docdb_cluster
+        - aws_ec2_client_vpn_network_association
+        - aws_ecs_service
+        - aws_efs_mount_target
+        - aws_eks_cluster
+        - aws_eks_node_group
+        - aws_elasticache_cluster
+        - aws_elasticsearch_domain
+        - aws_elb
+        - aws_instance
+        - aws_lambda_function
+        - aws_launch_configuration
+        - aws_launch_template
+        - aws_lb
+        - aws_mq_broker
+        - aws_msk_cluster
+        - aws_mwaa_environment
+        - aws_neptune_cluster
+        - aws_network_interface
+        - aws_rds_cluster
+        - aws_redshift_cluster
+        - aws_sagemaker_notebook_instance
+        - aws_vpc_endpoint
+      operator:  exists
+      attribute: networking
+      cond_type: connection

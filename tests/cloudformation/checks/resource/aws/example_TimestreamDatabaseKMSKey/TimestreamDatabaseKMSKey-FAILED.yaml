@@ -1,0 +1,6 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  TimestreamDatabaseDefault:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: timestream

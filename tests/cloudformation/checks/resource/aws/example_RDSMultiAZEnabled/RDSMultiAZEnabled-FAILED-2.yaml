@@ -1,0 +1,9 @@
+Resources:
+  MyDBDefault:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb-default'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'

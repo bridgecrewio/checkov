@@ -1,5 +1,5 @@
 Resources:
-  myCluster:
+  RedshiftClusterEnabled:
     Type: "AWS::Redshift::Cluster"
     Properties:
       DBName: "mydb"

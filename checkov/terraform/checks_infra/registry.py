@@ -25,15 +25,15 @@ class Registry(BaseRegistry):
 
     def _load_checks_from_dir(self, directory: str):
         dir = os.path.expanduser(directory)
-        self.logger.debug("Loading external checks from {}".format(dir))
+        self.logger.info("Loading external checks from {}".format(dir))
         for root, d_names, f_names in os.walk(dir):
+            self.logger.info(f'Searching through {d_names} and {f_names}')
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
                     with open(f'{root}/{file}', "r") as f:
                         if dir != self.checks_dir:
-                            # This is a custom check, log its loading
-                            logging.info(f"loading {file}")
+                            self.logger.info(f"loading {file}")
                         check_yaml = yaml.safe_load(f)
                         check_json = json.loads(json.dumps(check_yaml))
                         check = self.parser.parse_raw_check(check_json, resources_types=self._get_resource_types(check_json))

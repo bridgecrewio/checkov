@@ -27,7 +27,7 @@ class Runner(BaseRunner):
     system_deps = True
 
     @staticmethod
-    def find_chart_directories(root_folder, files):
+    def find_chart_directories(root_folder, files, excluded_paths):
         chart_directories = []
         if files:
             logging.info('Running with --file argument; checking for Helm Chart.yaml files')
@@ -37,7 +37,7 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names)
+                filter_ignored_directories(d_names, excluded_paths)
                 if 'Chart.yaml' in f_names:
                     chart_directories.append(root)
 
@@ -97,7 +97,7 @@ class Runner(BaseRunner):
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
 
-        chart_directories = self.find_chart_directories(root_folder, files)
+        chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
 
         report = Report(self.check_type)
     

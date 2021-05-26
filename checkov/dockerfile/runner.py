@@ -33,7 +33,7 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names)
+                filter_ignored_directories(d_names, runner_filter.excluded_paths)
                 for file in f_names:
                     if file in DOCKER_FILE_MASK:
                         files_list.append(os.path.join(root, file))

@@ -10,4 +10,4 @@ class EqualsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex, attribute):
-        return vertex.get(attribute) == self.value
+        return str(vertex.get(attribute)) == str(self.value)

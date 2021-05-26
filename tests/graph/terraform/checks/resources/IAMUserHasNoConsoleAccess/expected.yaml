@@ -1,0 +1,4 @@
+pass:
+  - "aws_iam_user.pass"
+fail:
+  - "aws_iam_user.fail"

@@ -1,7 +1,7 @@
 import logging
 import os
 from copy import deepcopy
-from typing import Union
+from typing import Union, Dict, Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -91,7 +91,7 @@ class Block:
 
         return base_attributes
 
-    def get_origin_attributes(self, base_attributes):
+    def get_origin_attributes(self, base_attributes: Dict[str, Any]) -> None:
         for attribute_key in list(self.attributes.keys()):
             attribute_value = self.attributes[attribute_key]
             if type(attribute_value) is list and len(attribute_value) == 1:
@@ -154,7 +154,7 @@ class Block:
                 curr_key = '.'.join(split_key[0:i])
             if attribute_key in nested_attributes.keys():
                 nested_attributes[attribute_key] = value_to_update
-            if len(split_key) == 1:
+            if len(split_key) == 1 and len(curr_key) > 0:
                 nested_attributes[curr_key] = value_to_update
             elif curr_key in nested_attributes.keys():
                 self.update_inner_attribute('.'.join(split_key[i:]), nested_attributes[curr_key], value_to_update)

@@ -22,14 +22,17 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_VPCHasRestrictedSG(self):
+        self.go("VPCHasRestrictedSG")
+
     def test_APIGWLoggingLevelsDefinedProperly(self):
         self.go("APIGWLoggingLevelsDefinedProperly")
 
     def test_GuardDutyIsEnabled(self):
         self.go("GuardDutyIsEnabled")
 
-    def test_SGToEC2AndENI(self):
-        self.go("SGToEC2AndENI")
+    def test_SGAttachedToResource(self):
+        self.go("SGAttachedToResource")
 
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
@@ -111,6 +114,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
+
+    def test_IAMUserHasNoConsoleAccess(self):
+        self.go("IAMUserHasNoConsoleAccess")
 
     def test_IAMUsersAreMembersAtLeastOneGroup(self):
         self.go("IAMUsersAreMembersAtLeastOneGroup")
