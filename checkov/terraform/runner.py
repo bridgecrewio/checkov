@@ -170,7 +170,11 @@ class Runner(BaseRunner):
                 dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
                 entity_context = self.definitions_context.get(dc_key, {})
             for k in entity_context_path:
-                entity_context = entity_context[k]
+                if k in entity_context:
+                    entity_context = entity_context[k]
+                else:
+                    logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
+                    return None, None
             entity_context['definition_path'] = definition_path
         except StopIteration:
             logging.debug(f"Did not find context for key {full_file_path}")
