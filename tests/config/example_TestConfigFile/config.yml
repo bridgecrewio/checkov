@@ -1,0 +1,29 @@
+---
+ca-certificate: "----- BEGIN CERTIFICATE ----- <KEY> ----- END CERTIFICATE -----"
+compact: True
+directory:
+  - 'test-dir'
+docker-image: 'sample-image'
+dockerfile-path: 'Dockerfile'
+download-external-modules: True
+evaluate-variables: False
+external-checks-dir: 'sample-dir'
+external-checks-git:
+  - 'sample-github-url'
+external-modules-download-path: '.external_modules'
+file: 'sample.tf'
+framework: 'all'
+no-guide: True
+output: 'cli'
+quiet: True
+repo-id: 'bridgecrew/sample-repo'
+skip-check:
+  - "CKV_DOCKER_3,CKV_DOCKER_2"
+skip-fixes: True
+skip-framework: 'dockerfile'
+skip-suppressions: True
+soft-fail: True
+branch: "master"
+check:
+  - "CKV_DOCKER_1"
+

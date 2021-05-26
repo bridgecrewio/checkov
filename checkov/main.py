@@ -235,7 +235,7 @@ def add_parser_args(parser):
                                        'the given path', is_write_out_config_file_arg=True, default=None)
     parser.add('--show-config', help='prints all args and config settings and where they came from '
                                      '(eg. commandline, config file, environment variable or default)',
-               action='store_true',  default=None)
+               action='store_true', default=None)
 
 
 def get_external_checks_dir(config):
