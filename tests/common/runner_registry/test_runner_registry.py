@@ -149,7 +149,6 @@ class TestRunnerRegistry(unittest.TestCase):
                 )
             }       
 
-        assert len(report.passed_checks) == 0
         assert len(failed_check_ids) == 3
         assert failed_check_ids == expected_failed_check_ids
         assert len(skipped_check_ids) == 2
