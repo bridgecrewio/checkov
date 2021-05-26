@@ -64,7 +64,7 @@ class Runner(BaseRunner):
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
         report.add_parsing_errors(parsing_errors.keys())
-        
+
         return report
 
     def check_tf_definition(self, report, runner_filter,
