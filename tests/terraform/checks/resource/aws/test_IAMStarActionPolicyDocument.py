@@ -8,8 +8,7 @@ class TestIAMStarActionPolicyDocument(unittest.TestCase):
 
     def test_success(self):
         resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'],
-                         'policy': [{'Version': '2012-10-17', 'Statement': [
-                             {'Action': ['ec2:Describe*'], 'Effect': 'Allow', 'Resource': 'abc*'}]}]}
+                         'policy': ['{"Version": "2012-10-17", "Statement": [{"Action": ["ec2:Describe*"], "Effect": "Allow", "Resource": "abc*"}]}']}
         scan_result = check.scan_entity_conf(conf=resource_conf, entity_type='aws_iam_policy')
         self.assertEqual(CheckResult.PASSED, scan_result)
 

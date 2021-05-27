@@ -1,5 +1,6 @@
 import json
 import logging
+from json import JSONDecodeError
 from typing import TypeVar, List, overload, Union, Optional, Any, Dict
 
 import yaml
@@ -80,3 +81,16 @@ def is_yaml(data: str) -> bool:
     except yaml.YAMLError:
         logging.debug(f"could not parse yaml data: {data}")
         return False
+
+
+def extract_policy_dict(policy: Union[dict, str]) -> Optional[dict]:
+    if isinstance(policy, dict):
+        return policy
+    if isinstance(policy, str):
+        try:
+            policy_dict = json.loads(policy)
+            return policy_dict
+        except JSONDecodeError:
+            return None
+
+    return None
