@@ -1,4 +1,6 @@
 pass:
-  - "aws_appautoscaling_policy.ok_connect_dynamo_table"
+  - "aws_dynamodb_table.pass"
+  - "aws_dynamodb_table.pass_on_demand"
 fail:
-  - "aws_appautoscaling_policy.not_ok_connect_dynamo_table"
+  - "aws_dynamodb_table.fail"
+  - "aws_dynamodb_table.fail_no_policy"
