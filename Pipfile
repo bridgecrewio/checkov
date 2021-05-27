@@ -34,11 +34,11 @@ tqdm = "*"
 update_checker = "*"
 semantic_version = "*"
 packaging = "*"
-cloudsplaining = ">=0.4.3"
+cloudsplaining = ">=0.4.1"
 networkx = "*"
 dockerfile-parse ="*"
 docker = "*"
-configargparse = "*"
+detect_secrets = "*"
 
 [requires]
 python_version = "3.7"
