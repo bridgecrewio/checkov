@@ -15,7 +15,7 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get('assume_role_policy'):
             try:
-                assume_role_block = extract_policy_dict(conf['policy'][0])
+                assume_role_block = extract_policy_dict(conf['assume_role_policy'][0])
                 if assume_role_block and 'Statement' in assume_role_block.keys():
                     for statement in assume_role_block['Statement']:
                         if 'Effect' in statement and statement['Effect'] == 'Deny':

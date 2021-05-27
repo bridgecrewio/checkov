@@ -17,7 +17,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get('assume_role_policy') and isinstance(conf['assume_role_policy'][0], str):
             try:
-                assume_role_block = extract_policy_dict(conf['policy'][0])
+                assume_role_block = extract_policy_dict(conf['assume_role_policy'][0])
                 if assume_role_block and 'Statement' in assume_role_block.keys():
                     if 'Principal' in assume_role_block['Statement'][0]:
                         if 'AWS' in assume_role_block['Statement'][0]['Principal']:
