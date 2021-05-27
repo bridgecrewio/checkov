@@ -1,5 +1,5 @@
 ---
-# Source: microservice-skeleton/templates/pod_disruption_budget.yaml
+# Source: a/templates/pod_disruption_budget.yaml
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -13,7 +13,7 @@ spec:
       app: a
 
 ---
-# Source: microservice-skeleton/templates/service.yaml
+# Source: a/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -36,10 +36,10 @@ spec:
     app: a
 
 ---
-# Source: microservice-skeleton/templates/deployment.yaml
+# Source: a/templates/deployment.yaml
 ---
 
 ---
-# Source: microservice-skeleton/templates/cron_job.yaml
+# Source: a/templates/cron_job.yaml
 
 
