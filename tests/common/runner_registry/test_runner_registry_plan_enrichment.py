@@ -12,7 +12,8 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
     def test_enrichment_of_plan_report(self):
         allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
-        runner_registry = RunnerRegistry(banner, RunnerFilter(checks=allowed_checks), tf_plan_runner())
+        runner_registry = RunnerRegistry(banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"),
+                                         tf_plan_runner())
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         repo_root = current_dir + "/plan_with_hcl_for_enrichment/"
