@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 def parse(filename):
     template = None
     template_lines = None
+    valid_templates = []
     try:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             (template, template_lines) = k8_yaml.load(filename)
@@ -21,12 +22,9 @@ def parse(filename):
             (template, template_lines) = k8_json.load(filename)
         if template:
             if isinstance(template, list):
-                for i in range(len(template)):
-                    if isinstance(template[i], dict):
-                        if not ('apiVersion' in template[i].keys() and 'kind' in template[i].keys()):
-                            return
-                    else:
-                        return
+                for t in template:
+                    if t and isinstance(t, dict) and 'apiVersion' in t.keys() and 'kind' in t.keys():
+                        valid_templates.append(t)
             else:
                 return
         else:
@@ -51,4 +49,4 @@ def parse(filename):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
         return
 
-    return template, template_lines
+    return valid_templates, template_lines
