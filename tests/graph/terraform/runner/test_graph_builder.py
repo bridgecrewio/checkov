@@ -58,7 +58,8 @@ class TestGraphBuilder(TestCase):
         found_versioning_failure = False
 
         for record in report.failed_checks:
-            self.assertIsNotNone(record.breadcrumbs)
+            if record.check_id != 'CKV_AWS_40':
+                self.assertIsNotNone(record.breadcrumbs)
             if record.check_id == 'CKV_AWS_21':
                 found_versioning_failure = True
                 bc = record.breadcrumbs.get('versioning.enabled')
