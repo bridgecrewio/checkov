@@ -45,8 +45,8 @@ class RunnerRegistry(object):
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
                 enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
-                enriched_report = Report(None).enrich_plan_report(scan_report, enriched_resources)
-                enriched_report_with_skipped = Report(None).handle_skipped_checks(enriched_report, enriched_resources)
+                enriched_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+                enriched_report_with_skipped = Report("terraform_plan").handle_skipped_checks(enriched_report, enriched_resources)
                 self.scan_reports.append(enriched_report_with_skipped)
             else:
                 self.scan_reports.append(scan_report)
