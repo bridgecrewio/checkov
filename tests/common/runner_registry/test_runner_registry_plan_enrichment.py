@@ -18,6 +18,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         repo_root = current_dir + "/plan_with_hcl_for_enrichment/"
         valid_plan_path = repo_root + "tfplan.json"
+        print("scanning {} repo_root {}".format(valid_plan_path,repo_root))
 
         reports = runner_registry.run(
             repo_root_for_plan_enrichment=repo_root,
@@ -25,6 +26,8 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         )
 
         report = reports[0]
+        report.print_console()
+
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         skipped_check_ids = set([c.check_id for c in report.skipped_checks])
         expected_failed_check_ids = {
