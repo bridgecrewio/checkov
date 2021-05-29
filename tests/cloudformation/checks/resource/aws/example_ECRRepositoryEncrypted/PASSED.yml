@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  KMSEncryption:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "test"
+      EncryptionConfiguration:
+        EncryptionType: "KMS"
+        KmsKey: "KeyID"
