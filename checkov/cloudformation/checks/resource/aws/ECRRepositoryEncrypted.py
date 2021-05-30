@@ -7,7 +7,7 @@ class ECRRepositoryEncrypted(BaseResourceValueCheck):
         name = "Ensure that ECR repositories are encrypted using KMS"
         id = "CKV_AWS_136"
         supported_resources = ["AWS::ECR::Repository"]
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
