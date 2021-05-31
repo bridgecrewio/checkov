@@ -295,7 +295,18 @@ class VariableRenderer:
             replaced_value=replaced_value,
             keep_origin=keep_origin,
         )
-        return new_val
+        curr_cache = self.replace_cache[edge.origin].get(edge.label, {}).get(replaced_key, [])
+        # not_containing_dot = '.' not in new_val
+        not_containing_dot = "." not in str(new_val)
+        if not_containing_dot or new_val not in curr_cache or (len(curr_cache) > 0 and curr_cache[-1] != new_val):
+            if not self.replace_cache[edge.origin].get(edge.label, {}):
+                self.replace_cache[edge.origin][edge.label] = {}
+            if not curr_cache:
+                self.replace_cache[edge.origin][edge.label][replaced_key] = []
+            self.replace_cache[edge.origin][edge.label][replaced_key].append(new_val)
+            return new_val
+        else:
+            return self.replace_value(edge, original_val, replaced_key, replaced_value, not keep_origin, count + 1)
 
     def evaluate_non_rendered_values(self) -> None:
         for vertex in self.local_graph.vertices:
