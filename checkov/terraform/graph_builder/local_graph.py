@@ -244,9 +244,7 @@ class LocalGraph:
                 block_name_in_other_module, [])
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
-                if os.path.dirname(vertex.path) == dest_module_path and \
-                        (vertex.module_dependency == module_node.module_dependency or # The vertex is in the same file
-                         os.path.abspath(vertex.module_dependency) == os.path.abspath(module_node.path)): # The vertex is in the correct dependency path
+                if os.path.dirname(vertex.path) == dest_module_path:
                     self._create_edge(origin_node_index, vertex_index, attribute_key)
                     self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break

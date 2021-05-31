@@ -32,7 +32,6 @@ class TestCloudfrontDistributionLogging(unittest.TestCase):
 
     @pytest.mark.skip("Need to handle null variables")
     def test_null_var_651(self):
-        self.skipTest("Need to handle null variables")
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = os.path.join(current_dir,
                                       "../../../parser/resources/parser_scenarios/null_variables_651")
