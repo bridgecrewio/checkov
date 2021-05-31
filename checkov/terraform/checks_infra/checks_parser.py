@@ -73,10 +73,8 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             resource_type = raw_check.get("resource_types", [])
             if (
                 not resource_type
-                or isinstance(resource_type, str)
-                and resource_type.lower() == "all"
-                or isinstance(resource_type, list)
-                and resource_type[0].lower() == "all"
+                or (isinstance(resource_type, str) and resource_type.lower() == "all")
+                or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types
             else:

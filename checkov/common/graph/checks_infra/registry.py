@@ -21,11 +21,8 @@ class BaseRegistry:
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         check_results = {}
         for check in self.checks:
-            if (
-                runner_filter.checks
-                and check.id not in runner_filter.checks
-                or runner_filter.skip_checks
-                and not runner_filter.should_run_check(check.id)
+            if (runner_filter.checks and check.id not in runner_filter.checks) or (
+                runner_filter.skip_checks and not runner_filter.should_run_check(check.id)
             ):
                 continue
             passed, failed = check.run(graph_connector)

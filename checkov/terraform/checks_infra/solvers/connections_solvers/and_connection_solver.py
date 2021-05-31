@@ -16,11 +16,6 @@ class AndConnectionSolver(ComplexConnectionSolver):
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed, failed = self.run_attribute_solvers(graph_connector)
-        passed = [
-            p
-            for p in passed
-            if p[CustomAttributes.ID] not in [f[CustomAttributes.ID] for f in failed]
-        ]
 
         for connection_solver in self.get_sorted_connection_solvers():
             connection_solver.set_vertices(graph_connector, failed)
