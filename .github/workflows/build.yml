@@ -30,7 +30,6 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
-          token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
       - name: Clone Cfngoat - vulnerable cloudformation
