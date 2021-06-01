@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  ImageScanFalse:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "test"
+      ImageScanningConfiguration:
+        ScanOnPush: false
+  ImageScanNotSet:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "test"
+
