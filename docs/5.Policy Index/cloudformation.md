@@ -113,6 +113,9 @@ nav_order: 1
 | 102 | CKV_AWS_136 | resource | AWS::ECR::Repository                      | Ensure that ECR repositories are encrypted using KMS                                                                                                                                                     | Cloudformation |
 | 103 | CKV_AWS_157 | resource | AWS::RDS::DBInstance                      | Ensure that RDS instances have Multi-AZ enabled                                                                                                                                                          | Cloudformation |
 | 104 | CKV_AWS_160 | resource | AWS::Timestream::Database                 | Ensure that Timestream database is encrypted with KMS CMK                                                                                                                                                | Cloudformation |
+| 105 | CKV_AWS_161 | resource | AWS::RDS::DBInstance                      | Ensure RDS database has IAM authentication enabled                                                                                                                                                       | Cloudformation |
+| 106 | CKV_AWS_162 | resource | AWS::RDS::DBCluster                       | Ensure RDS cluster has IAM authentication enabled                                                                                                                                                        | Cloudformation |
+| 107 | CKV_AWS_163 | resource | AWS::ECR::Repository                      | Ensure ECR image scanning on push is enabled                                                                                                                                                             | Cloudformation |
 
 
 ---
