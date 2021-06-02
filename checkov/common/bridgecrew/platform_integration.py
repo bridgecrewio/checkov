@@ -370,7 +370,7 @@ class BcPlatformIntegration(object):
         return bc_api_token, response
 
     def _upload_run(self, args, scan_reports):
-        print(Style.BRIGHT + colored("Successfully configured Bridgecrew.cloud...", 'green',
+        print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
@@ -380,8 +380,7 @@ class BcPlatformIntegration(object):
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! Your Bridgecrew dashboard is available here: https://bridgecrew.cloud \n"
-            "Login information should be in your email inbox", 'green', attrs=['bold']) + Style.RESET_ALL)
+            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n", 'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _create_bridgecrew_account(self, email, org):
         """
