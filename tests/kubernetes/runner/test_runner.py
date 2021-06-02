@@ -127,6 +127,19 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_parse_with_empty_blocks(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "example_multiple.yaml")
+        file_rel_path = os.path.relpath(scan_file_path)
+        runner = Runner()
+        try:
+            report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
+                       runner_filter=RunnerFilter(framework='kubernetes'))
+            # just check that something was parsed and scanned
+            self.assertGreater(len(report.failed_checks) + len(report.passed_checks), 0)
+        except:
+            self.assertTrue(False, "Could not run K8 runner on configuration")
+
     def tearDown(self):
         pass
 

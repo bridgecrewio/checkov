@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'INTHEWILD.md'
+      - 'README.md'
 jobs:
   integration-tests:
     strategy:

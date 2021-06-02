@@ -145,7 +145,6 @@ If you have installed `jq` you can convert json file into multiple lines with th
 terraform show -json tf.plan | jq '.' > tf.json 
 ```
 Scan result would be much user friendly.
-
 ```sh
 checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
@@ -160,6 +159,10 @@ Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 
 ```
 
+Alternatively, specify the repo root of the hcl files used to generate the plan file, using the `--repo-root-for-plan-enrichment` flag, to enrich the output with the appropriate file path, line numbers, and codeblock of the resource(s). An added benefit is that check suppressions will be handled accordingly.
+```sh
+checkov -f tf.json --repo-root-for-plan-enrichment /user/path/to/iac/code
+```
 
 
 ### Scan result sample (CLI)

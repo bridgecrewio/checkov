@@ -1,0 +1,31 @@
+Resources:
+  DefaultMysql:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+  DefaultPostgres:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'postgres'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+  DisabledMysql:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+      EnableIAMDatabaseAuthentication: false
+  DisabledPostgres:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'postgres'
+      MasterUsername: 'username'
+      MasterUserPassword: 'password'
+      EnableIAMDatabaseAuthentication: false

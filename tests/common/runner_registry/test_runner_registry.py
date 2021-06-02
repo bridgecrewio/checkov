@@ -1,11 +1,13 @@
-import os
 import unittest
+
+import os
 
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_runner
 
 
@@ -50,7 +52,6 @@ class TestRunnerRegistry(unittest.TestCase):
             self.assertEqual(report.skipped_checks, [])
             self.assertEqual(report.passed_checks, [])
         return runner_registry
-
 
 if __name__ == '__main__':
     unittest.main()

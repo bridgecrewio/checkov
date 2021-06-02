@@ -1,7 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_list, extract_policy_dict
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.type_forcers import force_list
-import json
 
 
 class IAMStarActionPolicyDocument(BaseResourceCheck):
@@ -16,14 +15,14 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'policy' in conf.keys():
             try:
-                policy_block = conf['policy'][0]
-                if 'Statement' in policy_block.keys():
+                policy_block = extract_policy_dict(conf['policy'][0])
+                if policy_block and 'Statement' in policy_block.keys():
                     for statement in force_list(policy_block['Statement']):
                         if 'Action' in statement and \
                                 statement.get('Effect', ['Allow']) == 'Allow' and \
                                 '*' in force_list(statement['Action']):
                             return CheckResult.FAILED
-            except: # nosec
+            except:  # nosec
                 pass
         return CheckResult.PASSED
 

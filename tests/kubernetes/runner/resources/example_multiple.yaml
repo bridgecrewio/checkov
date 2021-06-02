@@ -1,0 +1,45 @@
+---
+# Source: a/templates/pod_disruption_budget.yaml
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: a
+  namespace: a
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: a
+
+---
+# Source: a/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: a
+  labels:
+    app: a
+    owner: core
+    helm.sh/chart: a-0.0.0
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Tiller
+    version: "a"
+    CostProduct: a
+    CostTech: "k8s"
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  selector:
+    app: a
+
+---
+# Source: a/templates/deployment.yaml
+---
+
+---
+# Source: a/templates/cron_job.yaml
+
+

@@ -3,30 +3,40 @@ metadata:
   id: "CKV2_AWS_16"
   category: "GENERAL_SECURITY"
 definition:
-  and:
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - aws_appautoscaling_policy
-      operator: within
+  or:
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_dynamodb_table
+        operator: within
+      - cond_type: connection
+        resource_types:
+          - aws_dynamodb_table
+        connected_resource_types:
+          - aws_appautoscaling_target
+        operator: exists
+      - cond_type: connection
+        resource_types:
+          - aws_appautoscaling_target
+        connected_resource_types:
+          - aws_appautoscaling_policy
+        operator: exists
+      - cond_type: attribute
+        resource_types:
+          - aws_dynamodb_table
+        attribute: billing_mode
+        operator: equals
+        value: PROVISIONED
+      - cond_type: attribute
+        resource_types:
+          - aws_appautoscaling_target
+        attribute: service_namespace
+        operator: equals
+        value: dynamodb
     - cond_type: attribute
       resource_types:
-        - aws_appautoscaling_target
-      attribute: scalable_dimension
-      operator: contains
-      value: table
-    - cond_type: attribute
-      resource_types:
-        - aws_appautoscaling_target
-      attribute: service_namespace
+        - aws_dynamodb_table
+      attribute: billing_mode
       operator: equals
-      value: dynamodb
-    - cond_type: connection
-      resource_types:
-        - aws_appautoscaling_policy
-      connected_resource_types:
-        - aws_appautoscaling_target
-      operator: exists
-
-
-
+      value: PAY_PER_REQUEST

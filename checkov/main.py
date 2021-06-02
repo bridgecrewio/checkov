@@ -139,7 +139,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
-                                           guidelines=guidelines, bc_integration=bc_integration)
+                                           guidelines=guidelines, bc_integration=bc_integration,
+                                           repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -233,6 +234,9 @@ def add_parser_args(parser):
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
+    parser.add('--repo-root-for-plan-enrichment',
+               help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
+               dest="repo_root_for_plan_enrichment")
     parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
     parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
                                        'the given path', is_write_out_config_file_arg=True, default=None)

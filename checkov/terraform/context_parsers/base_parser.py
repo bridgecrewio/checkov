@@ -101,8 +101,16 @@ class BaseContextParser(ABC):
             skipped_checks = []
             entity_context_path = self.get_entity_context_path(entity_block)
             entity_context = self.context
+            found = True
             for k in entity_context_path:
-                entity_context = entity_context[k]
+                if k in entity_context:
+                    entity_context = entity_context[k]
+                else:
+                    logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
+                    found = False
+                    break
+            if not found:
+                continue
             for (skip_check_line_num, skip_check) in comments:
                 if entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
                     if bc_id_mapping and skip_check["id"] in bc_id_mapping:
