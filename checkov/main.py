@@ -47,7 +47,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
                                default_config_files=default_config_paths,
-                               config_file_parser_class=configargparse.YAMLConfigFileParser)
+                               config_file_parser_class=configargparse.YAMLConfigFileParser,
+                               add_env_var_help=True)
     add_parser_args(parser)
     config = parser.parse_args(argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
@@ -70,6 +71,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(),
                                          sls_runner(),
                                          arm_runner(), tf_plan_runner(), helm_runner(), dockerfile_runner())
+
+    if config.show_config:
+        print(parser.format_values())
+        return
 
     if config.bc_api_key == '':
         parser.error(
@@ -112,10 +117,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     if config.list:
         print_checks(framework=config.framework)
-        return
-
-    if config.show_config:
-        print(parser.format_values())
         return
 
     external_checks_dir = get_external_checks_dir(config)
@@ -204,7 +205,7 @@ def add_parser_args(parser):
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('-s', '--soft-fail',
                help='Runs checks but suppresses error code', action='store_true')
-    parser.add('--bc-api-key', help='Bridgecrew API key')
+    parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
     parser.add('--repo-id',
@@ -223,15 +224,15 @@ def add_parser_args(parser):
                action='store_true')
     parser.add('--download-external-modules',
                help="download external terraform modules from public git repositories and terraform registry",
-               default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False))
+               default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False), env_var='DOWNLOAD_EXTERNAL_MODULES')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
-               default=DEFAULT_EXTERNAL_MODULES_DIR)
+               default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
     parser.add('--evaluate-variables',
                help="evaluate the values of variables and locals",
                default=True)
     parser.add('-ca', '--ca-certificate',
-               help='custom CA (bundle) file', default=None)
+               help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
     parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
     parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
                                        'the given path', is_write_out_config_file_arg=True, default=None)
