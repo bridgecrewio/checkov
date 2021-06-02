@@ -11,8 +11,8 @@ class TestCheckovConfig(unittest.TestCase):
         # Report to be generated using following command:
         # checkov -d path/to/terragoat --config-file \
         # path/to/checkov/integration_tests/example_config_files/config.yaml \
-        # > path/to/checkov/checkov_report_terragoat.json
-        report_path = current_dir + "/../checkov_report_terragoat.json"
+        # > path/to/checkov/checkov_config_report_terragoat.json
+        report_path = current_dir + "/../checkov_config_report_terragoat.json"
         with open(report_path) as json_file:
             data = json.load(json_file)
             self.assertEqual(data["summary"]["parsing_errors"], 0,
