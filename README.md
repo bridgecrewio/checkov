@@ -347,7 +347,9 @@ soft-fail: true
 Users can also use the `--show-config` flag to view all the args and settings and where they came from i.e. commandline, config file, environment variable or default. For example:
 ```sh
 checkov --show-config
-
+```
+Will display:
+```sh
 Command Line Args:   --show-config
 Environment Variables:
   BC_API_KEY:        your-api-key
