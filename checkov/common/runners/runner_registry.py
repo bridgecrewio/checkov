@@ -35,7 +35,13 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
+<<<<<<< Updated upstream
     def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None, repo_root_for_plan_enrichment=None):
+=======
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None):
+        if bc_integration:
+            self.bc_platform = bc_integration
+>>>>>>> Stashed changes
         for runner in self.runners:
             integration_feature_registry.run_pre_scan()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
