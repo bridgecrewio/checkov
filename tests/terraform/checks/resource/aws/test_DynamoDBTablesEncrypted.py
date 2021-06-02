@@ -31,7 +31,7 @@ class TestELBAccessLogs(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_failure2(self):
+    def test_default_pass(self):
         hcl_res = hcl2.loads("""
             resource "aws_dynamodb_table" "basic-dynamodb-table" {
               name           = "GameScores"
@@ -49,7 +49,7 @@ class TestELBAccessLogs(unittest.TestCase):
         """)
         resource_conf = hcl_res['resource'][0]['aws_dynamodb_table']['basic-dynamodb-table']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
