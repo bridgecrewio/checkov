@@ -11,6 +11,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
@@ -44,9 +45,9 @@ runnerDependencyHandler.validate_runner_deps()
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
-    parser = configargparse.ArgParser(description='Infrastructure as code static analysis',
-                                      default_config_files=default_config_paths,
-                                      config_file_parser_class=configargparse.YAMLConfigFileParser)
+    parser = ExtArgumentParser(description='Infrastructure as code static analysis',
+                               default_config_files=default_config_paths,
+                               config_file_parser_class=configargparse.YAMLConfigFileParser)
     add_parser_args(parser)
     config = parser.parse_args(argv)
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
