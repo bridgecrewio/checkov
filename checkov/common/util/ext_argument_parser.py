@@ -27,9 +27,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             config_items = self.get_items_for_config_file_output(
                 self._source_to_settings, parsed_namespace)
             # convert check and skip_check to list
-            if config_items['check']:
+            if 'check' in config_items.keys():
                 config_items['check'] = config_items['check'][0].split(",")
-            if config_items['skip-check']:
+            if 'skip-check' in config_items.keys():
                 config_items['skip-check'] = config_items['skip-check'][0].split(",")
             # convert strings to booleans
             for k in config_items.keys():
