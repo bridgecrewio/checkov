@@ -32,8 +32,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         skipped_check_ids = set([c.check_id for c in report.skipped_checks])
         expected_failed_check_ids = {
             "CKV_AWS_19",
-            "CKV_AWS_63",
-            "CKV_AWS_119"
+            "CKV_AWS_63"
         }
         expected_skipped_check_ids = {
             "CKV_AWS_20",
@@ -90,24 +89,6 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
                     (15, '  }\n'),
                     (16, '  provider = aws.current_region\n'),
                     (17, '}')
-                )
-            ),
-            (
-                "dynamodb.tf",
-                (1, 12),
-                (
-                    (1, 'resource "aws_dynamodb_table" "cross-environment-violations" {\n'),
-                    (2, '  # checkov:skip=CKV_AWS_28: ignoring backups for now\n'),
-                    (3, '  name           = "CrossEnvironmentViolations"\n'),
-                    (4, '  read_capacity  = 20\n'),
-                    (5, '  write_capacity = 20\n'),
-                    (6, '  hash_key       = "id"\n'),
-                    (7, '  attribute {\n'),
-                    (8, '    name = "id"\n'),
-                    (9, '    type = "S"\n'),
-                    (10, '  }\n'),
-                    (11, '  provider = aws.current_region\n'),
-                    (12, '}')
                 )
             )
         }
