@@ -127,7 +127,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         for root_folder in config.directory:
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file, guidelines=guidelines, bc_integration=bc_integration)
+                                               files=file, guidelines=guidelines)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)

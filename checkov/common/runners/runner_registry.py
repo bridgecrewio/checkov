@@ -14,8 +14,7 @@ from checkov.terraform.parser import Parser
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-
+from checkov.common.bridgecrew.platform_integration import bc_integration
 
 class RunnerRegistry(object):
     runners = []
@@ -29,13 +28,12 @@ class RunnerRegistry(object):
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
-        self.bc_platform = BcPlatformIntegration()
 
     @abstractmethod
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, bc_integration=None, repo_root_for_plan_enrichment=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, repo_root_for_plan_enrichment=None):
         for runner in self.runners:
             integration_feature_registry.run_pre_scan()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
@@ -88,7 +86,7 @@ class RunnerRegistry(object):
             else:
                 print(json.dumps(report_jsons, indent=4))
         if config.output == "cli":
-            self.bc_platform.get_report_to_platform(config, scan_reports)
+            bc_integration.get_report_to_platform(config,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
