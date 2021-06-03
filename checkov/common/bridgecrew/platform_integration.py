@@ -288,28 +288,54 @@ class BcPlatformIntegration(object):
 
     def onboarding(self):
         if not self.bc_api_key:
-            print(Style.BRIGHT + colored("Visualize and collaborate on security issues with Bridgecrew! \n", 'blue',
-                                         attrs=['bold']) + colored(
-                "Bridgecrew's dashboard allows automation of future checks, Pull Request scanning and "
-                "auto-comments, automatic remidiation PR's and more! \n Plus it's free for 100 cloud resources and a "
-                "great way to visualize and collaborate on Checkov results. For more information on dashboard integration, see: http://bridge.dev/checkov-dashboard \n \n To instantly see future Checkov scans in the "
-                "platform, Press y! \n",
-                'yellow') + Style.RESET_ALL)
-            reply = self._input_visualize_results()
+            print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
+                                         attrs=['bold'])  + colored(
+                u"\u2022 " + "Command line docker Image scanning\n"
+                u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
+                u"\u2022 " + "Auto-fix remediation suggestions\n"
+                u"\u2022 " + "Enabling of VS Code Plugin\n"
+                u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
+                u"\u2022 " + "Integration with GitHub for:\n"
+                "\t" + u"\u25E6 " + "\tAutomated Pull Request scanning\n"
+                "\t" + u"\u25E6 " + "\tAuto remediation PR generation\n"
+                u"\u2022 " + "Integration with up to 100 cloud resources for:\n"
+                "\t" + u"\u25E6 " + "\tAutomated cloud resource checks\n"
+                "\t" + u"\u25E6 " + "\tResource drift detection\n"
+                "\n"           
+                "\n" + "and much more...",'yellow') + 
+                colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
+                "To Level-up, press 'y'... \n",
+                'cyan') + Style.RESET_ALL)
+            reply = self._input_levelup_results()
             if reply[:1] == 'y':
-                print(Style.BRIGHT + colored("\nEmail Address? \n", 'blue', attrs=['bold']))
+                print(Style.BRIGHT + colored("\nOk, let’s get you started on creating your free account! \n"
+                "\nEnter your email address to begin: ",'green', attrs=['bold']) + colored(" // This will be used as your login at https://bridgecrew.cloud.\n", 'green'))
                 if not self.bc_api_key:
                     email = self._input_email()
+                    print(Style.BRIGHT + colored("\nLooks good!"
+                    "\nNow choose an Organisation Name: ",'green', attrs=['bold']) + colored(" // This will enable collaboration with others who you can add to your team.\n", 'green'))
                     org = self._input_orgname()
-
+                    print(Style.BRIGHT + colored("\nAmazing!"
+                    "\nWe are now generating a personal API key to immediately enable some new features… ",'green', attrs=['bold']))
+ 
                     bc_api_token, response = self.get_api_token(email, org)
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
-                        print('\n Saving API key to {}'.format(bridgecrew_file))
-                        print(Style.BRIGHT + colored(
-                            "\n Checkov Dashboard configured, opening https://bridgecrew.cloud, check your inbox for login details! \n",
-                            'blue', attrs=['bold']))
+                        print(Style.BRIGHT + colored("\nComplete!",'green', attrs=['bold']))
+                        print('\nSaving API key to {}'.format(bridgecrew_file))
+                        print(Style.BRIGHT + colored("\nCheckov will automatically check this location for a key.  If you forget it you’ll find it here\nhttps://bridgecrew.cloud/integrations/api-token\n\n",'green'))
                         persist_key(self.bc_api_key)
+                        print(Style.BRIGHT + colored("Checkov Dashboard is configured, opening https://bridgecrew.cloud to explore your new powers.", 'green', attrs=['bold']))
+                        print(Style.BRIGHT + colored("FYI - check your inbox for login details! \n", 'green'))
+
+                        print(Style.BRIGHT + colored("Congratulations! You’ve just super-sized your Checkov!  Why not test-drive image scanning now:",'cyan')) 
+
+                        print(Style.BRIGHT + colored("\ncheckov --docker-image ubuntu --dockerfile-path /Users/bob/workspaces/bridgecrew/Dockerfile --repo-id bob/test --branch master\n",'white'))
+
+                        print(Style.BRIGHT + colored("Or download our VS Code plugin:  https://github.com/bridgecrewio/checkov-vscode \n", 'cyan',attrs=['bold']))                  
+
+                        print(Style.BRIGHT + colored( "Interested in contributing to Checkov as an open source developer.  We thought you’d never ask.  Check us out at: \nhttps://github.com/bridgecrewio/checkov/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22 \n", 'white', attrs=['bold']))   
+                       
                     else:
                         print(
                             Style.BRIGHT + colored("\nCould not create account, please try again on your next scan! \n",
@@ -344,7 +370,7 @@ class BcPlatformIntegration(object):
         return bc_api_token, response
 
     def _upload_run(self, args, scan_reports):
-        print(Style.BRIGHT + colored("Sucessfully configured Bridgecrew.cloud...", 'green',
+        print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
@@ -354,8 +380,7 @@ class BcPlatformIntegration(object):
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! Your Bridgecrew dashboard is available here: https://bridgecrew.cloud \n"
-            "Login information should be in your email inbox", 'green', attrs=['bold']) + Style.RESET_ALL)
+            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n", 'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _create_bridgecrew_account(self, email, org):
         """
@@ -382,7 +407,7 @@ class BcPlatformIntegration(object):
         while not valid:
             result = str(
                 input(
-                    'Organization name (this will create an account with matching identifier): ')).lower().strip()  # nosec
+                    'Organization name: ')).lower().strip()  # nosec
             # remove spaces and special characters
             result = ''.join(e for e in result if e.isalnum())
             if result:
@@ -398,10 +423,19 @@ class BcPlatformIntegration(object):
                 valid = True
         return result
 
+    def _input_levelup_results(self):
+        valid = False
+        result = None
+        while not valid:
+            result = str(input('Level up? (y/n): ')).lower().strip()  # nosec
+            if result[:1] in ["y", "n"]:
+                valid = True
+        return result
+
     def _input_email(self):
         valid_email = False
         while not valid_email:
-            email = str(input('E-Mail:')).lower().strip()  # nosec
+            email = str(input('E-Mail: ')).lower().strip()  # nosec
             if re.search(EMAIL_PATTERN, email):
                 valid_email = True
             else:
