@@ -121,8 +121,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return exit_code
     elif args.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=args.file,
-                                           guidelines=guidelines, bc_integration=bc_integration,
-                                           repo_root_for_plan_enrichment=args.repo_root_for_plan_enrichment)
+                                           guidelines=guidelines, repo_root_for_plan_enrichment=args.repo_root_for_plan_enrichment)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in args.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
