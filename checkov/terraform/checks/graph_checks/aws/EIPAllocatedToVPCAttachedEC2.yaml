@@ -51,3 +51,21 @@ definition:
           - aws_eip_association
         attribute: instance_id
         operator: exists
+    - and:
+      - resource_types:
+          - aws_eip
+        connected_resource_types:
+          - aws_nat_gateway
+        operator: exists
+        cond_type: connection
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_eip
+        operator: within
+      - cond_type: attribute
+        resource_types:
+          - aws_eip
+        attribute: vpc
+        operator: equals
+        value: true
