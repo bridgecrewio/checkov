@@ -48,7 +48,7 @@ class DockerImageScanningIntegration:
             'vector': x.get('vector'),
             'description': x.get('description'),
             'riskFactors': x.get('riskFactors'),
-            'publishedDate': (datetime.now() - timedelta(days=x['publishedDays'])).isoformat()
+            'publishedDate': (datetime.now() - timedelta(days=x.get('publishedDays', 0))).isoformat()
         }, twistcli_scan_result['results'][0]['vulnerabilities']))
         payload = {
             'sourceId': bc_integration.repo_id,
