@@ -16,14 +16,17 @@ class AndConnectionSolver(ComplexConnectionSolver):
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed, failed = self.run_attribute_solvers(graph_connector)
+        failed_ids = [f[CustomAttributes.ID] for f in failed]
+        passed = [p for p in passed if p[CustomAttributes.ID] not in failed_ids]
 
         for connection_solver in self.get_sorted_connection_solvers():
             connection_solver.set_vertices(graph_connector, failed)
             passed_solver, failed_solver = connection_solver.get_operation(graph_connector)
             passed.extend(passed_solver)
             failed.extend(failed_solver)
+            failed_ids.extend([f[CustomAttributes.ID] for f in failed_solver])
 
-        passed = [p for p in passed if p[CustomAttributes.ID] not in [f[CustomAttributes.ID] for f in failed]]
+        passed = [p for p in passed if p[CustomAttributes.ID] not in failed_ids]
 
         return self.filter_results(passed, failed)
 

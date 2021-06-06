@@ -19,7 +19,7 @@ class BaseComplexSolver(BaseSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError()
 
-    def _get_negative_op(self, *args: Any) -> bool:
+    def _get_negative_op(self, *args: Any) -> Any:
         return not self._get_operation(args)
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
