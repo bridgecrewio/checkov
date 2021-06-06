@@ -145,8 +145,6 @@ class TestGraphBuilder(TestCase):
 
         self.check_edge(local_graph, node_from=resource_flow_log, node_to=output_this_security_group_vpc_id_inner,
                         expected_label='vpc_id')
-        self.check_edge(local_graph, node_from=output_this_security_group_vpc_id_inner,
-                        node_to=output_this_security_group_vpc_id_outer, expected_label='value')
         self.check_edge(local_graph, node_from=output_this_security_group_vpc_id_outer,
                         node_to=resource_security_group_this, expected_label='value')
         self.check_edge(local_graph, node_from=output_this_security_group_vpc_id_outer,

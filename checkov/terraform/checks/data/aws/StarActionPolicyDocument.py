@@ -21,13 +21,16 @@ class StarActionPolicyDocument(BaseDataCheck):
         :return: <CheckResult>
         """
 
-        for statement in conf.get("statement", []):
-            if (
-                statement.get("effect", ["Allow"]) == ["Allow"]
-                and statement.get("actions")
-                and "*" in force_list(statement["actions"][0])
-            ):
-                return CheckResult.FAILED
+        for statements in conf.get("statement", []):
+            statements = force_list(statements)
+            for statement in statements:
+                if (
+                    isinstance(statement, dict)
+                    and statement.get("effect", ["Allow"]) == ["Allow"]
+                    and statement.get("actions")
+                    and "*" in force_list(statement["actions"][0])
+                ):
+                    return CheckResult.FAILED
 
         return CheckResult.PASSED
 
