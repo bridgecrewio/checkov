@@ -46,8 +46,10 @@ class ImageScanner:
                 scan_result = json.load(docker_image_scan_result_file)
 
             docker_image_scanning_integration.report_results(docker_image_name, dockerfile_path, dockerfile_content, twistcli_scan_result=scan_result)
+            logging.info(f'Docker image scanning results reported to the platform')
 
             os.remove(TWISTCLI_FILE_NAME)
+            logging.info(f'twistcli file removed')
         except Exception as e:
             logging.error(f"Failed to scan docker image\n{e}")
             raise e

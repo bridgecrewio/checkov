@@ -39,7 +39,7 @@ class DockerImageScanningIntegration:
         )
         vulnerabilities = list(map(lambda x: {
             'cveId': x['id'],
-            'status': x['status'],
+            'status': x.get('status', 'open'),
             'severity': x['severity'],
             'packageName': x['packageName'],
             'packageVersion': x['packageVersion'],
