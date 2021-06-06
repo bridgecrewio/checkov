@@ -1,0 +1,3 @@
+variable "input" {
+  type = string
+}
