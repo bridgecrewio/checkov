@@ -48,6 +48,7 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
+
 #   bump-version:
 #     needs: [integration-tests]
 #     runs-on: macos-latest
