@@ -23,10 +23,13 @@ class RunnerFilter(object):
         skip_framework: Optional[str] = None,
         excluded_directories: Optional[List[str]] = None
     ) -> None:
+
         if checks is None:
             checks = []
         if isinstance(checks, str):
             self.checks = checks.split(",")
+        elif isinstance(checks, list) and len(checks) == 1:
+            self.checks = checks[0].split(",")
         else:
             self.checks = checks
 
@@ -34,6 +37,8 @@ class RunnerFilter(object):
             skip_checks = []
         if isinstance(skip_checks, str):
             self.skip_checks = skip_checks.split(",")
+        elif isinstance(skip_checks, list) and len(skip_checks) == 1:
+            self.skip_checks = skip_checks[0].split(",")
         else:
             self.skip_checks = skip_checks
 

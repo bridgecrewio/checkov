@@ -51,7 +51,8 @@ setup(
         "packaging",
         "networkx",
         "dockerfile-parse",
-        "docker"
+        "docker",
+        "configargparse"
     ],
     license="Apache License 2.0",
     name="checkov",

@@ -102,6 +102,14 @@
             "index": "pypi",
             "version": "==0.4.4"
         },
+        "configargparse": {
+            "hashes": [
+                "sha256:6df537158f28c5ef2e8a8146781833abbc6cb7fca81b1b55d18808ce3439235e",
+                "sha256:eaff53ff3627c3e412392bd4a703d4c39e3425a953557f4ef69a20f03358c26f"
+            ],
+            "index": "pypi",
+            "version": "==1.4.1"
+        },
         "contextlib2": {
             "hashes": [
                 "sha256:01f490098c18b19d2bd5bb5dc445b2054d2fa97f09a4280ba2c5f3c394c8162e",

@@ -303,6 +303,70 @@ Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
 
 If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
+### Configuration using a config file
+
+Checkov can be configured using a YAML configuration file. By default, checkov looks for a `.checkov.yaml` or `.checkov.yml` file in the following places in order of precedence:
+* Directory against which checkov is run. (`--directory`)
+* Current working directory where checkov is called.
+* User's home directory.
+
+Users can also pass in the path to a config file via the command line. In this case, the other config files will be ignored. For example:
+```sh
+checkov --config-file path/to/config.yaml
+```
+Users can also create a config file using the `--create-config` command, which takes the current command line args and writes them out to a given path. For example:
+```sh
+checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --no-guide --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-fixes --skip-framework dockerfile --skip-suppressions --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
+```
+Will create a `config.yaml` file which looks like this:
+```yaml
+branch: develop
+check:
+  - CKV_DOCKER_1
+compact: true
+directory:
+  - test-dir
+docker-image: sample-image
+dockerfile-path: Dockerfile
+download-external-modules: true 
+evaluate-variables: true 
+external-checks-dir: 
+  - sample-dir 
+external-modules-download-path: .external_modules 
+framework: all 
+no-guide: true 
+output: cli 
+quiet: true 
+repo-id: bridgecrew/sample-repo 
+skip-check: 
+  - CKV_DOCKER_3 
+  - CKV_DOCKER_2 
+skip-fixes: true 
+skip-framework: dockerfile 
+skip-suppressions: true 
+soft-fail: true
+```
+
+Users can also use the `--show-config` flag to view all the args and settings and where they came from i.e. commandline, config file, environment variable or default. For example:
+```sh
+checkov --show-config
+```
+Will display:
+```sh
+Command Line Args:   --show-config
+Environment Variables:
+  BC_API_KEY:        your-api-key
+Config File (/Users/sample/.checkov.yml):
+  soft-fail:         False
+  branch:            master
+  skip-check:        ['CKV_DOCKER_3', 'CKV_DOCKER_2']
+Defaults:
+  --output:          cli
+  --framework:       all
+  --download-external-modules:False
+  --external-modules-download-path:.external_modules
+  --evaluate-variables:True
+```
 ## Alternatives
 
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline) for secured basline.
