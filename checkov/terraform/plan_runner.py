@@ -59,7 +59,7 @@ class Runner(BaseRunner):
                         continue
                     self.tf_definitions = tf_definitions
                     self.template_lines = template_lines
-                    self.check_tf_definition(report, runner_filter)
+                    self.check_tf_definition(report,root_folder, runner_filter)
                 else:
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
@@ -67,11 +67,11 @@ class Runner(BaseRunner):
 
         return report
 
-    def check_tf_definition(self, report, runner_filter,
+    def check_tf_definition(self, report,root_folder, runner_filter,
                             ):
 
         for full_file_path, definition in self.tf_definitions.items():
-            scanned_file = f"/{os.path.relpath(full_file_path)}"
+            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
