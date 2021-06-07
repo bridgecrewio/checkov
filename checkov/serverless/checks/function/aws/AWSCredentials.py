@@ -18,7 +18,7 @@ class AWSCredentials(BaseFunctionCheck):
         """
         see: https://www.terraform.io/docs/providers/aws/index.html#static-credentials
         """
-        if conf.get(ENVIRONMENT_TOKEN):
+        if conf.get(ENVIRONMENT_TOKEN) and isinstance(conf[ENVIRONMENT_TOKEN], dict):
             env_variables_strings = {key: value for key, value in conf.get(ENVIRONMENT_TOKEN).items() if
                                      isinstance(value, str)}
             for env_var_value in env_variables_strings.values():

@@ -139,7 +139,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
-                                           guidelines=guidelines, bc_integration=bc_integration,
+                                           guidelines=guidelines,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
