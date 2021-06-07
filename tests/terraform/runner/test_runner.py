@@ -194,9 +194,6 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
                 continue
-            if f'CKV_AWS_{i}' == 'CKV2_AWS_17':
-                # CKV2_AWS_17 was overly keen and those resources it checks are created bt default
-                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
@@ -232,6 +229,9 @@ class TestRunnerValid(unittest.TestCase):
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
         for i in range(1, len(aws_checks) + 1):
+            if f'CKV_AWS_{i}' == 'CKV2_AWS_17':
+                # CKV2_AWS_17 was overly keen and those resources it checks are created by default
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
