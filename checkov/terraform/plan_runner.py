@@ -59,7 +59,7 @@ class Runner(BaseRunner):
                         continue
                     self.tf_definitions = tf_definitions
                     self.template_lines = template_lines
-                    self.check_tf_definition(report,root_folder, runner_filter)
+                    self.check_tf_definition(report, root_folder, runner_filter)
                 else:
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
@@ -67,7 +67,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def check_tf_definition(self, report,root_folder, runner_filter,
+    def check_tf_definition(self, report, root_folder, runner_filter,
                             ):
 
         for full_file_path, definition in self.tf_definitions.items():
@@ -76,10 +76,10 @@ class Runner(BaseRunner):
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], full_file_path, report, scanned_file,
-                                   block_type, runner_filter)
+                                   block_type, runner_filter, root_folder)
 
     def run_block(self, entities, full_file_path, report, scanned_file, block_type,
-                  runner_filter=None):
+                  runner_filter=None, root_folder=None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -97,7 +97,8 @@ class Runner(BaseRunner):
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, evaluations=entity_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=full_file_path)
+                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,
+                                    root_folder=root_folder)
                     report.add_record(record=record)
 
     def get_entity_context(self, definition_path, full_file_path):
@@ -110,6 +111,7 @@ class Runner(BaseRunner):
                     resource_defintion = resource[resource_type][resource_name]
                     entity_context['start_line'] = resource_defintion['start_line'][0]
                     entity_context['end_line'] = resource_defintion['end_line'][0]
-                    entity_context['code_lines'] = self.template_lines[entity_context['start_line']:entity_context['end_line']]
+                    entity_context['code_lines'] = self.template_lines[
+                                                   entity_context['start_line']:entity_context['end_line']]
                     return entity_context
         return entity_context

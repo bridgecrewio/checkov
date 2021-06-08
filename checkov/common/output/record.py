@@ -17,8 +17,8 @@ class Record:
     code_block = ""
     file_path = ""
     file_line_range = []
-    caller_file_path = None           # When created from a module
-    caller_file_line_range = None     #
+    caller_file_path = None  # When created from a module
+    caller_file_line_range = None  #
     resource = ""
     guideline = None
     fixed_definition = None
@@ -26,7 +26,7 @@ class Record:
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class, file_abs_path, entity_tags=None,
-                 caller_file_path=None, caller_file_line_range=None):
+                 caller_file_path=None, caller_file_line_range=None, root_folder=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -39,7 +39,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
-        self.repo_file_path = f'/{os.path.relpath(file_abs_path)}' # matches file paths given in the BC platform.
+        self.repo_file_path = f'/{os.path.relpath(file_abs_path, os.path.abspath(root_folder))}' if root_folder else f'/{os.path.relpath(file_abs_path)}'  # matches file paths given in the BC platform.
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations
