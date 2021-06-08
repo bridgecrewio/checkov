@@ -20,14 +20,13 @@ class Record:
     caller_file_path = None  # When created from a module
     caller_file_line_range = None  #
     resource = ""
-    root_folder = ""
     guideline = None
     fixed_definition = None
     entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path, entity_tags=None,
-                 caller_file_path=None, caller_file_line_range=None, root_folder=None):
+                 evaluations, check_class, file_abs_path, repo_file_path, entity_tags=None,
+                 caller_file_path=None, caller_file_line_range=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -40,8 +39,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
-        self.root_folder = root_folder
-        self.repo_file_path = f'/{os.path.relpath(file_abs_path, os.path.abspath(root_folder))}' if root_folder else f'/{os.path.relpath(file_abs_path)}'  # matches file paths given in the BC platform.
+        self.repo_file_path = repo_file_path  # matches file paths given in the BC platform.
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations
@@ -93,7 +91,8 @@ class Record:
         check_message = colored("Check: {}: \"{}\"\n".format(self.check_id, self.check_name), "white")
         guideline_message = ''
         if self.guideline:
-            guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
+            guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue',
+                                                                     attrs=['underline']) + Style.RESET_ALL
         file_details = colored(
             "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])),
             "magenta")

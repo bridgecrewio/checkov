@@ -76,10 +76,10 @@ class Runner(BaseRunner):
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], full_file_path, report, scanned_file,
-                                   block_type, runner_filter, root_folder)
+                                   block_type, runner_filter)
 
     def run_block(self, entities, full_file_path, report, scanned_file, block_type,
-                  runner_filter=None, root_folder=None):
+                  runner_filter=None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -97,8 +97,7 @@ class Runner(BaseRunner):
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, evaluations=entity_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,
-                                    root_folder=root_folder)
+                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,repo_file_path=scanned_file)
                     report.add_record(record=record)
 
     def get_entity_context(self, definition_path, full_file_path):
