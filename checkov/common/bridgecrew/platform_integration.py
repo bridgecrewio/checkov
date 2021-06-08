@@ -357,6 +357,34 @@ class BcPlatformIntegration(object):
             if self.is_integration_configured():
                 self._upload_run(args, scan_reports)
 
+# Added this to generate a default repo_id for cli scans for upload to the platform 
+# whilst also persisting a cli repo_id into the object
+    def persist_bc_api_key(self, args):
+        if args.bc_api_key:
+            self.bc_api_key=args.bc_api_key
+        else: 
+            # get the key from file
+            self.bc_api_key=read_key()
+        return self.bc_api_key    
+
+# Added this to generate a default repo_id for cli scans for upload to the platform 
+# whilst also persisting a cli repo_id into the object
+    def persist_repo_id(self, args):
+        if args.repo_id is None:
+            if BC_FROM_BRANCH:
+                self.repo_id = BC_FROM_BRANCH
+            if args.directory:
+                basename = path.basename(os.path.abspath(args.directory[0]))
+                self.repo_id = "cli_repo/" + basename
+            if args.file:
+                # Get the base path of the file based on it's absolute path
+                basename = os.path.basename(os.path.dirname(os.path.abspath(args.file[0])))
+                self.repo_id = "cli_repo/" + basename
+ 
+        else: 
+            self.repo_id=args.repo_id
+        return self.repo_id    
+
     def get_repository(self, args):
         if BC_FROM_BRANCH:
             return BC_FROM_BRANCH
