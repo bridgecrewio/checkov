@@ -6,9 +6,7 @@ import subprocess #nosec
 import tempfile
 from functools import reduce
 import shutil
-import json
 
-from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -16,7 +14,6 @@ from checkov.helm.registry import registry
 from checkov.runner_filter import RunnerFilter
 
 import yaml
-import asyncio
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 

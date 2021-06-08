@@ -202,7 +202,7 @@ class Runner(BaseRunner):
                                     resource="complete",  # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, repo_file_path=sls_file)
                     report.add_record(record=record)
 
         return report

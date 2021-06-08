@@ -37,6 +37,7 @@ dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 graph_registry = Registry(parser=NXGraphCheckParser())
 
+
 class Runner(BaseRunner):
     check_type = "terraform"
 
@@ -65,7 +66,8 @@ class Runner(BaseRunner):
         self.definitions_context = definitions_context
         self.breadcrumbs = breadcrumbs
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
+            collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
@@ -80,7 +82,8 @@ class Runner(BaseRunner):
                     self.graph_manager.build_graph_from_source_directory(root_folder,
                                                                          local_graph_class=self.graph_class,
                                                                          download_external_modules=runner_filter.download_external_modules,
-                                                                         parsing_errors=parsing_errors, excluded_paths=runner_filter.excluded_paths)
+                                                                         parsing_errors=parsing_errors,
+                                                                         excluded_paths=runner_filter.excluded_paths)
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -99,7 +102,8 @@ class Runner(BaseRunner):
                 raise Exception("Root directory was not specified, files were not specified")
 
             self.graph_manager.save_graph(local_graph)
-            self.tf_definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
+            self.tf_definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices,
+                                                                                             root_folder)
         else:
             logging.info(f"Scanning root folder using existing tf_definitions")
 
@@ -222,7 +226,7 @@ class Runner(BaseRunner):
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
-            entity_id = ".".join(definition_path)       # example: aws_s3_bucket.my_bucket
+            entity_id = ".".join(definition_path)  # example: aws_s3_bucket.my_bucket
 
             caller_file_path = None
             caller_file_line_range = None
@@ -231,7 +235,7 @@ class Runner(BaseRunner):
                 referrer_id = self._find_id_for_referrer(full_file_path,
                                                          self.tf_definitions)
                 if referrer_id:
-                    entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
+                    entity_id = f"{referrer_id}.{entity_id}"  # ex: module.my_module.aws_s3_bucket.my_bucket
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
@@ -286,7 +290,7 @@ class Runner(BaseRunner):
                                 check_class=check.__class__.__module__, file_abs_path=absolut_scanned_file_path,
                                 entity_tags=tags,
                                 caller_file_path=caller_file_path,
-                                caller_file_line_range=caller_file_line_range)
+                                caller_file_line_range=caller_file_line_range, repo_file_path=scanned_file)
                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
                 if breadcrumb:
                     record = GraphRecord(record, breadcrumb)

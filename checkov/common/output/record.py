@@ -25,7 +25,7 @@ class Record:
     entity_tags = None
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
-                 evaluations, check_class, file_abs_path, entity_tags=None,
+                 evaluations, check_class, file_abs_path, repo_file_path, entity_tags=None,
                  caller_file_path=None, caller_file_line_range=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -39,7 +39,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
-        self.repo_file_path = file_path  # matches file paths given in the BC platform.
+        self.repo_file_path = repo_file_path  # matches file paths given in the BC platform.
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations
