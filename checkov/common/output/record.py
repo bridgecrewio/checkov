@@ -20,6 +20,7 @@ class Record:
     caller_file_path = None  # When created from a module
     caller_file_line_range = None  #
     resource = ""
+    root_folder = ""
     guideline = None
     fixed_definition = None
     entity_tags = None
@@ -39,6 +40,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
+        self.root_folder = root_folder
         self.repo_file_path = f'/{os.path.relpath(file_abs_path, os.path.abspath(root_folder))}' if root_folder else f'/{os.path.relpath(file_abs_path)}'  # matches file paths given in the BC platform.
         self.file_line_range = file_line_range
         self.resource = resource
