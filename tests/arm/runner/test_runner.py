@@ -28,9 +28,9 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
-        # for record in all_checks:
-        #     # no need to join with a '/' because the CFN runner adds it to the start of the file path
-        #     self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+        for record in all_checks:
+            # no need to join with a '/' because the CFN runner adds it to the start of the file path
+            self.assertEqual(record.repo_file_path, record.file_path)
 
     def test_record_relative_path_with_abs_dir(self):
 
