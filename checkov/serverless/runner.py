@@ -40,7 +40,8 @@ SINGLE_ITEM_SECTIONS = [
 class Runner(BaseRunner):
     check_type = "serverless"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
+            collect_skip_comments=True):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
@@ -127,7 +128,9 @@ class Runner(BaseRunner):
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                            entity_tags=tags,
+                                            repo_file_path=sls_file)
                             report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
@@ -144,7 +147,7 @@ class Runner(BaseRunner):
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         variable_evaluations = {}
-                        if token == "functions": #nosec
+                        if token == "functions":  # nosec
                             # "Enriching" copies things like "environment" and "stackTags" down into the
                             # function data from the provider block since logically that's what serverless
                             # does. This allows checks to see what the complete data would be.
@@ -157,7 +160,8 @@ class Runner(BaseRunner):
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                            entity_tags=tags,repo_file_path=sls_file)
                             report.add_record(record=record)
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
@@ -178,7 +182,8 @@ class Runner(BaseRunner):
                                     code_block=entity_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                    entity_tags=tags,repo_file_path=sls_file)
                     report.add_record(record=record)
 
             # "Complete" checks
@@ -192,12 +197,13 @@ class Runner(BaseRunner):
                 tags = cfn_utils.get_resource_tags(entity, complete_registry)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=[],              # Don't show, could be large
+                                    code_block=[],  # Don't show, could be large
                                     file_path=sls_file,
                                     file_line_range=entity_lines_range,
-                                    resource="complete",        # Weird, not sure what to put where
+                                    resource="complete",  # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, entity_tags=tags)
+                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                    entity_tags=tags,repo_file_path=sls_file)
                     report.add_record(record=record)
 
         return report
