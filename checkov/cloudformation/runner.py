@@ -86,7 +86,7 @@ class Runner(BaseRunner):
                                                 code_block=entity_code_lines, file_path=cf_file,
                                                 file_line_range=entity_lines_range, resource=resource_id,
                                                 evaluations=variable_evaluations,check_class=check.__class__.__module__,
-                                                file_abs_path=file_abs_path, entity_tags=tags,repo_file_path=cf_file)
+                                                file_abs_path=file_abs_path, entity_tags=tags)
                                 report.add_record(record=record)
         return report
 

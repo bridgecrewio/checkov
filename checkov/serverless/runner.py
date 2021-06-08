@@ -129,8 +129,7 @@ class Runner(BaseRunner):
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags,
-                                            repo_file_path=sls_file)
+                                            entity_tags=tags)
                             report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
@@ -161,7 +160,7 @@ class Runner(BaseRunner):
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags,repo_file_path=sls_file)
+                                            entity_tags=tags,)
                             report.add_record(record=record)
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
@@ -183,7 +182,7 @@ class Runner(BaseRunner):
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags,repo_file_path=sls_file)
+                                    entity_tags=tags)
                     report.add_record(record=record)
 
             # "Complete" checks
@@ -203,7 +202,7 @@ class Runner(BaseRunner):
                                     resource="complete",  # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags,repo_file_path=sls_file)
+                                    entity_tags=tags)
                     report.add_record(record=record)
 
         return report
