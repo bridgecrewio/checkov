@@ -25,12 +25,12 @@ class Tiller(BaseK8Check):
             if isinstance(conf_image,str) and  "tiller" in conf_image:
                     return True
 
-        if "parent_metadata" in conf:
-            if "labels" in conf["parent_metadata"]:
-                if "app" in conf["parent_metadata"]["labels"]:
+        if conf["parent_metadata"]:
+            if conf["parent_metadata"].get("labels"):
+                if conf["parent_metadata"]["labels"].get("app"):
                     if conf["parent_metadata"]["labels"]["app"] == "helm":
                         return True
-                elif "name" in conf["parent_metadata"]["labels"]:
+                elif conf["parent_metadata"]["labels"].get("name"):
                     if conf["parent_metadata"]["labels"]["name"] == "tiller":
                         return True
 
