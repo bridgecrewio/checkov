@@ -161,10 +161,12 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir):
+    def persist_repository(self, root_dir, files=None):
         """
-        Persist the repository found on root_dir path to Bridgecrew's platform
-        :param root_dir: Absolute path of the directory containing the repository root level
+        Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
+        that are specified will be persisted.
+        :param files: Absolute path of the files passed in the --file flag.
+        :param root_dir: Absolute path of the directory containing the repository root level.
         """
 
         if not self.use_s3_integration:
@@ -180,7 +182,12 @@ class BcPlatformIntegration(object):
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
                     full_file_path = os.path.join(root_path, file_path)
                     relative_file_path = os.path.relpath(full_file_path, root_dir)
-                    self._persist_file(full_file_path, relative_file_path)
+                    if not files:
+                        # upload every file since -f was not used.
+                        self._persist_file(full_file_path, relative_file_path)
+                    elif full_file_path in files:
+                        # upload only the files specified in -f.
+                        self._persist_file(full_file_path, relative_file_path)
 
     def persist_scan_results(self, scan_reports):
         """
