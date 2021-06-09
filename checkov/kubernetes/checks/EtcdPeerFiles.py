@@ -17,7 +17,7 @@ class EtcdPeerFiles(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        keys, values = extract_commands(conf) if conf.get("command") else [], []
+        keys, values = extract_commands(conf)
 
         if "etcd" in keys:
             if '--peer-cert-file' in keys and '--peer-key-file' in keys:

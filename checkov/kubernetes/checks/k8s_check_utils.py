@@ -3,6 +3,8 @@ from typing import List
 
 def extract_commands(conf: dict) -> (List[str], List[str]):
     commands: List[str] = conf.get("command")
+    if not commands:
+        return [], []
     values = []
     keys = []
     for cmd in commands:

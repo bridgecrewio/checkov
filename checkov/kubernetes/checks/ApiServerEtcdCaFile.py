@@ -15,7 +15,7 @@ class ApiServerEtcdCaFile(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        keys, values = extract_commands(conf) if conf.get("command") else [], []
+        keys, values = extract_commands(conf)
 
         if "kube-apiserver" in keys:
             if '--etcd-ca-file' not in keys:

@@ -18,7 +18,7 @@ class KubeletReadOnlyPort(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        keys, values = extract_commands(conf) if conf.get("command") else [], []
+        keys, values = extract_commands(conf)
 
         if "kubelet" in keys:
             if '--read-only-port' in keys and values[keys.index('--read-only-port')] == "0":

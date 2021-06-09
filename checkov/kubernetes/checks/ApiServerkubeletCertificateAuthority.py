@@ -16,7 +16,7 @@ class ApiServerkubeletCertificateAuthority(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        keys, values = extract_commands(conf) if conf.get("command") else [], []
+        keys, values = extract_commands(conf)
 
         if "kube-apiserver" in keys and '--kubelet-certificate-authority' not in keys:
             return CheckResult.FAILED
