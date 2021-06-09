@@ -17,8 +17,7 @@ class KMSRotation(BaseResourceValueCheck):
         # Only symmetric keys support auto rotation. The attribute is optional and defaults to symmetric.
         spec = conf.get('customer_master_key_spec')
         if not spec or 'SYMMETRIC_DEFAULT' in spec:
-            res = super().scan_resource_conf(conf)
-            return res
+            return super().scan_resource_conf(conf)
         else:
             return CheckResult.PASSED
 
