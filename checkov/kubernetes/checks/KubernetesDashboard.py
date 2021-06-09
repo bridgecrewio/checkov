@@ -25,7 +25,7 @@ class KubernetesDashboard(BaseK8Check):
         else:
             return CheckResult.FAILED
         if "parent_metadata" in conf:
-            if "labels" in conf["parent_metadata"]:
+            if conf["parent_metadata"].get("labels"):
                 if "app" in conf["parent_metadata"]["labels"]:
                     if conf["parent_metadata"]["labels"]["app"] == "kubernetes-dashboard":
                         return CheckResult.FAILED

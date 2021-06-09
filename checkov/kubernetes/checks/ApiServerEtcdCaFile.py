@@ -1,6 +1,6 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.base_spec_check import BaseK8Check
+from checkov.kubernetes.checks.k8s_check_utils import extract_commands
 
 
 class ApiServerEtcdCaFile(BaseK8Check):
@@ -15,18 +15,7 @@ class ApiServerEtcdCaFile(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}'
 
     def scan_spec_conf(self, conf):
-        keys=[]
-        values=[]
-        if "command" in conf:
-            for cmd in conf["command"]:
-                if "=" in cmd:
-                    firstEqual = cmd.index("=")
-                    [key, value] = [cmd[:firstEqual], cmd[firstEqual+1:]]
-                    keys.append(key)
-                    values.append(value)
-                else:
-                    keys.append(cmd)
-                    values.append(None)
+        keys, values = extract_commands(conf) if conf.get("command") else [], []
 
         if "kube-apiserver" in keys:
             if '--etcd-ca-file' not in keys:
@@ -35,4 +24,4 @@ class ApiServerEtcdCaFile(BaseK8Check):
         return CheckResult.PASSED
 
 
-check =  ApiServerEtcdCaFile()
+check = ApiServerEtcdCaFile()
