@@ -1,36 +1,43 @@
+import os
 import unittest
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.KMSRotation import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestKMSRotation(unittest.TestCase):
 
-    def test_success(self):
-        resource_conf = {
-            "description": "KMS key 1",
-            "deletion_window_in_days": 10,
-            "enable_key_rotation": [True]
-        }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        resource_conf = {
-            "description": "KMS key 1",
-            "deletion_window_in_days": 10,
-            "enable_key_rotation": [False]
-        }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_KMSRotation"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure_on_missing_property(self):
-        resource_conf = {
-            "description": "KMS key 1",
-            "deletion_window_in_days": 10,
+        passing_resources = {
+            "aws_kms_key.pass1",
+            "aws_kms_key.pass2",
+            "aws_kms_key.pass3",
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        failing_resources = {
+            "aws_kms_key.fail1",
+            "aws_kms_key.fail2",
+            "aws_kms_key.fail3",
+            "aws_kms_key.fail4",
+        }
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':

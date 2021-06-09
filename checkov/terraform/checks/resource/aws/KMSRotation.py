@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class KMSRotation(BaseResourceValueCheck):
@@ -12,6 +12,14 @@ class KMSRotation(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return "enable_key_rotation"
+
+    def scan_resource_conf(self, conf):
+        # Only symmetric keys support auto rotation. The attribute is optional and defaults to symmetric.
+        spec = conf.get('customer_master_key_spec')
+        if not spec or 'SYMMETRIC_DEFAULT' in spec:
+            return super().scan_resource_conf(conf)
+        else:
+            return CheckResult.PASSED
 
 
 check = KMSRotation()
