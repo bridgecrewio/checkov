@@ -7,17 +7,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
 
 class TestJunitReport(unittest.TestCase):
-
-    def test_valid_junit_xml_output(self):
-
-        report_path = current_dir + "/../../../checkov_report_terragoat.xml"
-        tree = ET.parse(report_path)
-        root = tree.getroot()
-        self.assertEqual(root.attrib['errors'], '0')
 
     def test_valid_passing_valid_testcases(self):
         record1 = Record(check_id='CKV_AWS_21',
