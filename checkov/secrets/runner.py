@@ -71,7 +71,7 @@ class Runner(BaseRunner):
                     check_name=secret.type,
                     check_result=result,
                     code_block=[(secret.line_number, line_text)],
-                    file_path=secret.filename,
+                    file_path=f'{secret.filename}:{secret.secret_hash}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.filename,
                     check_class=None,
