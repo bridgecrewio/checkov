@@ -43,6 +43,7 @@ class Report:
             "failed": len(self.failed_checks),
             "skipped": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
+            "resource_count": self._count_resources(),
             "checkov_version": version
         }
 
@@ -147,6 +148,13 @@ class Report:
 
     def print_json(self):
         print(self.get_json())
+
+    def _count_resources(self):
+        unique_resources = set()
+        for record in self.passed_checks + self.failed_checks:
+            unique_resources.add(record.file_path + '.' + record.resource)
+        return len(unique_resources)
+
 
     @staticmethod
     def enrich_plan_report(report, enriched_resources):

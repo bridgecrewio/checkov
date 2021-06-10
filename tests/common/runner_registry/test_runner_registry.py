@@ -22,6 +22,23 @@ class TestRunnerRegistry(unittest.TestCase):
         for report in reports:
             self.assertGreater(len(report.passed_checks), 1)
 
+    def test_resource_counts(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files_dir = current_dir + "/example_multi_iac"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
+        counts_by_type = {
+            'kubernetes': 13,
+            'terraform': 3,
+            'cloudformation': 3
+        }
+
+        for report in reports:
+            self.assertEqual(counts_by_type[report.check_type], report.get_summary()['resource_count'])
+
     def test_empty_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_empty_tf"
