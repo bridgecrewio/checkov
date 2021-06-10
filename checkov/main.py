@@ -149,7 +149,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            bc_integration.persist_repository(root_folder)
+            bc_integration.persist_repository(root_folder, files)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url)
