@@ -85,8 +85,8 @@ class RunnerRegistry(object):
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
-        if config.output == "cli":
-            bc_integration.get_report_to_platform(config,scan_reports)
+        #if config.output == "cli":
+            #bc_integration.get_report_to_platform(config,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
