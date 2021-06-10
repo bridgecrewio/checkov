@@ -7,12 +7,14 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
 
 class TestJunitReport(unittest.TestCase):
 
     def test_valid_junit_xml_output(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        report_path = current_dir + "/../checkov_report_terragoat.xml"
+
+        report_path = current_dir + "/../../../checkov_report_terragoat.xml"
         tree = ET.parse(report_path)
         root = tree.getroot()
         self.assertEqual(root.attrib['errors'], '0')
