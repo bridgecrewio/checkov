@@ -155,7 +155,6 @@ class Report:
             unique_resources.add(record.file_path + '.' + record.resource)
         return len(unique_resources)
 
-
     @staticmethod
     def enrich_plan_report(report, enriched_resources):
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
