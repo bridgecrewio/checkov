@@ -1,3 +1,4 @@
+import os.path
 from time import sleep
 
 import boto3
@@ -172,21 +173,22 @@ class BcPlatformIntegration(object):
         if not self.use_s3_integration:
             return
 
-        for root_path, d_names, f_names in os.walk(root_dir):
-            if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
-                # no need to persist files from excluded directories
-                logging.info(f"skipping persisting excluded directory {root_path}")
-                continue
-            for file_path in f_names:
-                _, file_extension = os.path.splitext(file_path)
+        if files:
+            for f in files:
+                _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    full_file_path = os.path.join(root_path, file_path)
-                    relative_file_path = os.path.relpath(full_file_path, root_dir)
-                    if not files:
-                        # upload every file since -f was not used.
-                        self._persist_file(full_file_path, relative_file_path)
-                    elif full_file_path in files:
-                        # upload only the files specified in -f.
+                    self._persist_file(f, os.path.relpath(f, root_dir))
+        else:
+            for root_path, d_names, f_names in os.walk(root_dir):
+                if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
+                    # no need to persist files from excluded directories
+                    logging.info(f"skipping persisting excluded directory {root_path}")
+                    continue
+                for file_path in f_names:
+                    _, file_extension = os.path.splitext(file_path)
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS:
+                        full_file_path = os.path.join(root_path, file_path)
+                        relative_file_path = os.path.relpath(full_file_path, root_dir)
                         self._persist_file(full_file_path, relative_file_path)
 
     def persist_scan_results(self, scan_reports):
