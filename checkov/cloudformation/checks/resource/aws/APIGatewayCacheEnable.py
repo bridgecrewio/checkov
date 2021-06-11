@@ -4,6 +4,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 
 class APIGatewayCacheEnable(BaseResourceValueCheck):
+    
     def __init__(self):
         name = "Ensure API Gateway caching is enabled"
         id = "CKV_AWS_120"
