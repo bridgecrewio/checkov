@@ -34,6 +34,32 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_0_0(self):
+        hcl_res = hcl2.loads("""
+        resource "aws_security_group" "bar-sg" {
+          name   = "sg-bar"
+          vpc_id = aws_vpc.main.id
+
+          ingress {
+            from_port = 0
+            to_port   = 0
+            protocol  = "tcp"
+            cidr_blocks = ["192.168.0.0/16", "0.0.0.0/0"]
+            description = "foo"
+          }
+
+          egress {
+            from_port = 0
+            to_port   = 0
+            protocol  = "-1"
+            cidr_blocks = ["0.0.0.0/0"]
+          }
+        }  
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_security_group']['bar-sg']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_failure_ipv6(self):
         hcl_res = hcl2.loads("""
         resource "aws_security_group" "bar-sg" {
