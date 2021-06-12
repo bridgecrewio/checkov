@@ -1,4 +1,6 @@
 import re
+from typing import List
+
 from packaging import version
 VERSION_REGEX = re.compile(r'^(?P<operator>=|!=|>=|>|<=|<|~>)*(?P<version>.+)$')
 
@@ -33,7 +35,7 @@ class VersionConstraint:
         return res
 
 
-def get_version_constraints(raw_version):
+def get_version_constraints(raw_version: str) -> List[VersionConstraint]:
     """
     :param raw_version: A string representation of a version, e.g: "~> v1.2.3"
     :return: VersionConstraint instance
@@ -47,7 +49,7 @@ def get_version_constraints(raw_version):
     return version_constraints
 
 
-def order_versions_in_descending_order(versions_strings):
+def order_versions_in_descending_order(versions_strings: List[str]) -> List[str]:
     """
     :param versions_strings: array of string versions: ["v1.2.3", "v1.2.4"...]
     :return: A sorted array of versions in descending order
