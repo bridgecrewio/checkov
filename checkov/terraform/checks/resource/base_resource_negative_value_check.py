@@ -7,6 +7,8 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value
+from checkov.terraform.checks_infra.resources_types import resources_types
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
@@ -39,6 +41,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
+            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=resources_types.get("aws")):
+                return CheckResult.UNKNOWN
             if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED
             else:
