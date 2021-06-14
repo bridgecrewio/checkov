@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 from colorama import init
-from junit_xml import TestCase, TestSuite
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
@@ -114,7 +114,7 @@ class Report:
         print(xml_string)
 
     def get_junit_xml_string(self, ts):
-        return TestSuite.to_xml_string(ts)
+        return to_xml_report_string(ts)
         
     def print_failed_github_md(self):
         result = []
@@ -128,18 +128,21 @@ class Report:
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = record.check_name
+            check_name = f'{record.check_id}/{record.check_name}'
 
-            test_name = "{} {} {}".format(self.check_type, check_name, record.resource)
+            test_name = f'{self.check_type} {check_name} {record.resource}'
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
             if record.check_result['result'] == CheckResult.FAILED:
-                test_case.add_failure_info(
-                    "Resource \"{}\" failed in check \"{}\"".format(record.resource, check_name))
+                if record.file_path and record.file_line_range:
+                    test_case.add_failure_info(
+                        f'Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range}')
+                else:
+                    test_case.add_failure_info(
+                        f'Resource {record.resource} failed in check {check_name}')
             if record.check_result['result'] == CheckResult.SKIPPED:
                 test_case.add_skipped_info(
-                    "Resource \"{}\" skipped in check \"{}\"\n Suppress comment: {}".format(record.resource, check_name,
-                                                                                            record.check_result[
-                                                                                                'suppress_comment']))
+                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]}')
+
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(
