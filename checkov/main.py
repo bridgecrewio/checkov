@@ -38,10 +38,6 @@ checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
                    'dockerfile']
 
-# Check runners for necessary system dependencies.
-runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
-runnerDependencyHandler.validate_runner_deps()
-
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
@@ -61,7 +57,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
     # Disable runners with missing system dependencies
-    config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
+    # Check runners for necessary system dependencies.
+    # runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, config.framework, config.skip_framework, globals())
+    # runnerDependencyHandler.validate_runner_deps()
+    # config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
@@ -76,6 +75,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(),
                                          sls_runner(),
                                          arm_runner(), tf_plan_runner(), helm_runner(), dockerfile_runner())
+
+    runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
+    runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
         print(parser.format_values())

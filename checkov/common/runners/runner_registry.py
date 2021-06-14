@@ -24,7 +24,7 @@ class RunnerRegistry(object):
     def __init__(self, banner, runner_filter, *runners):
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
-        self.runners = runners
+        self.runners = list(runners)
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
@@ -104,6 +104,9 @@ class RunnerRegistry(object):
                 filtered_runners.append(runner)
         self.runners = filtered_runners
         return
+
+    def remove_runner(self, runner):
+        del self.runners[self.runners.index(runner)]
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
