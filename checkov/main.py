@@ -56,12 +56,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
     config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
-    # Disable runners with missing system dependencies
-    # Check runners for necessary system dependencies.
-    # runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, config.framework, config.skip_framework, globals())
-    # runnerDependencyHandler.validate_runner_deps()
-    # config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
-
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
