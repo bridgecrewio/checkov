@@ -62,7 +62,7 @@ class Runner(BaseRunner):
             logging.info(f'Scanning file {file} for secrets')
             for secret in scan_file(file):
                 line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
-                if line_text.split()[0] == 'git_commit':
+                if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
                 result = self.search_for_suppression(root_folder, secret) or {'result': CheckResult.FAILED}
                 check_id = SECRET_TYPE_TO_ID[secret.type]
