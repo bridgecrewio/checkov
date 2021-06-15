@@ -70,9 +70,9 @@ class Runner(BaseRunner):
                                       "suppress_comment": f"Secret scan {skipped_check} is skipped"},
                         file_path=file,
                         file_abs_path=os.path.abspath(file),
-                        check_class=None,
-                        code_block=None,
-                        file_line_range=None,
+                        check_class="",
+                        code_block="",
+                        file_line_range=[0,0],
                         evaluations=None,
                         resource=file
                     ))
