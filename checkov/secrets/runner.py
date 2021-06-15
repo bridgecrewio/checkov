@@ -72,7 +72,7 @@ class Runner(BaseRunner):
                         file_abs_path=os.path.abspath(file),
                         check_class="",
                         code_block="",
-                        file_line_range=[0,0],
+                        file_line_range=[0, 0],
                         evaluations=None,
                         resource=file
                     ))
