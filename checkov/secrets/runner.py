@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from typing import Optional
-
+from copy import deepcopy
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.scan import scan_file
 from detect_secrets.core.usage import initialize_plugin_settings
@@ -15,7 +15,6 @@ from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
 from checkov.runner_filter import RunnerFilter
 import linecache
-
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
@@ -47,6 +46,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
+        inv_secret_map = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
         report = Report(self.check_type)
         initialize_plugin_settings(None)
         # Implement non IaC files (including .terraform dir)
@@ -61,12 +61,37 @@ class Runner(BaseRunner):
         logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
         for file in files_to_scan:
             logging.info(f'Scanning file {file} for secrets')
+            if runner_filter.skip_checks:
+                for skipped_check in runner_filter.skip_checks:
+                    report.add_record(Record(
+                        check_id=skipped_check,
+                        check_name=inv_secret_map[skipped_check],
+                        check_result={'result': CheckResult.SKIPPED,
+                                      "suppress_comment": f"Secret scan {skipped_check} is skipped"},
+                        file_path=file,
+                        file_abs_path=os.path.abspath(file),
+                        check_class=None,
+                        code_block=None,
+                        file_line_range=None,
+                        evaluations=None,
+                        resource=file
+                    ))
+            try:
+                next(iter(deepcopy(scan_file)(file)))
+            except StopIteration:
+                result = {'result': CheckResult.PASSED}
+                continue
             for secret in scan_file(file):
+                check_id = SECRET_TYPE_TO_ID[secret.type]
+                if not runner_filter.should_run_check(check_id):
+                    result = {'result': CheckResult.SKIPPED}
+                else:
+                    result = {'result': CheckResult.FAILED}
+                check_id = SECRET_TYPE_TO_ID[secret.type]
                 line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
-                result = self.search_for_suppression(root_folder, secret) or {'result': CheckResult.FAILED}
-                check_id = SECRET_TYPE_TO_ID[secret.type]
+                result = self.search_for_suppression(root_folder, secret) or result
                 report.add_record(Record(
                     check_id=check_id,
                     check_name=secret.type,
