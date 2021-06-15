@@ -63,15 +63,17 @@ jobs:
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
       - name: Clone Terragoat - vulnerable terraform
-        run: git clone https://github.com/bridgecrewio/terragoat
+        run: git clone https://github.com/bridgecrewio/terragoat && echo pwd && ls
       - name: Clone Cfngoat - vulnerable cloudformation
-        run: git clone https://github.com/bridgecrewio/cfngoat
+        run: git clone https://github.com/bridgecrewio/cfngoat && echo pwd && ls
       - name: Clone Kubernetes-goat - vulnerable kubernetes
         run: git clone https://github.com/madhuakula/kubernetes-goat
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
         run: |
+          pwd
+          ls
           pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
           pipenv run checkov -s -d cfngoat/ -o json > checkov_report_cfngoat.json
           pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
