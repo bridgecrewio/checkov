@@ -89,11 +89,10 @@ class Runner(BaseRunner):
                     result = {'result': CheckResult.SKIPPED}
                 else:
                     result = {'result': CheckResult.FAILED}
-                check_id = SECRET_TYPE_TO_ID[secret.type]
-                line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
-                if line_text != "" and line_text.split()[0] == 'git_commit':
-                    continue
-                result = self.search_for_suppression(root_folder, secret) or result
+                    line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
+                    if line_text != "" and line_text.split()[0] == 'git_commit':
+                        continue
+                    result = self.search_for_suppression(root_folder, secret) or result
                 report.add_record(Record(
                     check_id=check_id,
                     check_name=secret.type,
