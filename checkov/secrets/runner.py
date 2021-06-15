@@ -6,8 +6,9 @@ from typing import Optional
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.scan import scan_file
 from detect_secrets.core.usage import initialize_plugin_settings
-
+from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -50,12 +51,12 @@ class Runner(BaseRunner):
         initialize_plugin_settings(None)
         # Implement non IaC files (including .terraform dir)
         files_to_scan = files or []
-        excluded_paths = (runner_filter.excluded_paths or []) + ['node_modules', '.terraform']
+        excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_directories(d_names, excluded_paths)
                 for file in f_names:
-                    if file not in PROHIBITED_FILES and file.split('.')[-1] in ('tf', 'json', 'yml', 'yaml'):
+                    if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                         files_to_scan.append(os.path.join(root, file))
         logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
         for file in files_to_scan:
