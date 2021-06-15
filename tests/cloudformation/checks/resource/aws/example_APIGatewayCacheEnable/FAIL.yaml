@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  CacheDefault:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: test
+      Description: test
+      RestApiId: test
+      DeploymentId: test
+  CacheFalse:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: test
+      Description: test
+      RestApiId: test
+      CacheClusterEnabled: false
