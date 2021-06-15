@@ -10,7 +10,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/terraform"
+        valid_dir_path = current_dir + "/resources/cfn"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all'))
@@ -22,7 +22,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_passing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/terraform"
+        valid_dir_path = current_dir + "/resources/cfn"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
@@ -34,7 +34,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_skip_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/terraform"
+        valid_dir_path = current_dir + "/resources/cfn"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all',checks=['CKV_SECRET_6']))
