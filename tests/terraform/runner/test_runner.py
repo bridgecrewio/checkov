@@ -744,34 +744,69 @@ class TestRunnerValid(unittest.TestCase):
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line']==7
 
-    def test_resource_value_doesnt_exist(self):
-        resources_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                      "resources", "resource_value_without_var")
-        source_files = ["main.tf", "variables.tf"]
-        runner = Runner()
+    def test_resource_values_dont_exist(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
         checks_allow_list = ['CKV_AWS_21']
-        report = runner.run(root_folder=None, external_checks_dir=None,
-                            files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
-                                                       checks=checks_allow_list, skip_checks=['CUSTOM_AWS_1']))
-
-        self.assertEqual(len(report.passed_checks), 1)
-        self.assertEqual(len(report.failed_checks), 1)
-
-    def test_resource_negative_value_doesnt_exist(self):
-        resources_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                      "resources", "resource_negative_value_without_var")
+        skip_checks = ['CUSTOM_AWS_1']
         source_files = ["main.tf", "variables.tf"]
 
         runner = Runner()
-        checks_allow_list = ['CKV_AWS_57']
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
                             runner_filter=RunnerFilter(framework='terraform',
-                                                       checks=checks_allow_list, skip_checks=['CUSTOM_AWS_1']))
+                                                       checks=checks_allow_list, skip_checks=skip_checks))
 
         self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.failed_checks), 1)
+
+    def test_resource_values_do_exist(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
+        checks_allow_list = ['CKV_AWS_21']
+        skip_checks = ['CUSTOM_AWS_1']
+        source_files = ["main.tf", "variables.tf", "variables_unscoped.tf"]
+
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None,
+                            files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
+                            runner_filter=RunnerFilter(framework='terraform',
+                                                       checks=checks_allow_list, skip_checks=skip_checks))
+
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 3)
+
+    def test_resource_negative_values_dont_exist(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_negative_value_without_var")
+        checks_allow_list = ['CKV_AWS_57']
+        skip_checks = ['CUSTOM_AWS_1']
+        source_files = ["main.tf", "variables.tf"]
+
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None,
+                            files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
+                            runner_filter=RunnerFilter(framework='terraform',
+                                                       checks=checks_allow_list, skip_checks=skip_checks))
+
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 1)
+
+    def test_resource_negative_values_do_exist(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_negative_value_without_var")
+        checks_allow_list = ['CKV_AWS_57']
+        skip_checks = ['CUSTOM_AWS_1']
+        source_files = ["main.tf", "variables.tf", "variables_unscoped.tf"]
+
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None,
+                            files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
+                            runner_filter=RunnerFilter(framework='terraform',
+                                                       checks=checks_allow_list, skip_checks=skip_checks))
+
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 3)
 
     def tearDown(self):
         parser_registry.definitions_context = {}

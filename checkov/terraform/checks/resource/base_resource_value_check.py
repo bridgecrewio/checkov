@@ -71,7 +71,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 return CheckResult.PASSED
             if value in expected_values:
                 return CheckResult.PASSED
-            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=resources_types.get("aws")):
+            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
+                # we don't provide resources_types as we want to stay provider agnostic
                 return CheckResult.UNKNOWN
             return CheckResult.FAILED
         else:

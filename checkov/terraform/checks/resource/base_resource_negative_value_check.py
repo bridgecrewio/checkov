@@ -41,7 +41,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=resources_types.get("aws")):
+            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
+                # we don't provide resources_types as we want to stay provider agnostic
                 return CheckResult.UNKNOWN
             if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED

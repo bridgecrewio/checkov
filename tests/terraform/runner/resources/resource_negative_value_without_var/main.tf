@@ -10,7 +10,8 @@ resource "aws_s3_bucket" "failed_bucket" {
   acl    = var.public_read_write_acl
 }
 
-# unknown
+### variables not in scope or dont exist ###
+
 resource "aws_s3_bucket" "unknown_acl_bucket" {
   bucket = "unknown_acl_bucket"
   acl    = var.var_doesnt_exist
@@ -34,4 +35,14 @@ resource "aws_s3_bucket" "unknown_acl_bucket_4" {
 resource "aws_s3_bucket" "unknown_acl_bucket_5" {
   bucket = "unknown_acl_bucket_5"
   acl    = local.unscoped_public_read_write_acl
+}
+
+resource "aws_s3_bucket" "unknown_data_acl_bucket" {
+  bucket = "unknown_acl_bucket"
+  acl    = data.doesnt_exist
+}
+
+resource "aws_s3_bucket" "unknown_data_acl_bucket" {
+  bucket = "unknown_acl_bucket"
+  acl    = module.doesnt_exist
 }
