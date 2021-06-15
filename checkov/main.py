@@ -43,6 +43,11 @@ checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'a
 runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
 runnerDependencyHandler.validate_runner_deps()
 
+USE_SECRETS_RUNNER = os.environ.get("CHECKOV_USE_DETECT_SECRETS", "FALSE")
+DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
+                   sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
+                   dockerfile_runner())
+
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
@@ -69,9 +74,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(),
-                                         sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
-                                         dockerfile_runner(), secrets_runner())
+        if USE_SECRETS_RUNNER.upper() == "FALSE":
+            runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
+        else:
+            runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_runner())
+
+
     if config.show_config:
         print(parser.format_values())
         return
