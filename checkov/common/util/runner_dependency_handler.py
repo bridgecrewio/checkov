@@ -14,7 +14,6 @@ class RunnerDependencyHandler():
         RunnerDependencyHandler
         :param runner_registry: a populated runner registry
         """
-        # if frameworks:
         self.runner_registry = runner_registry
 
     def validate_runner_deps(self):
