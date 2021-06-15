@@ -52,7 +52,8 @@ setup(
         "networkx",
         "dockerfile-parse",
         "docker",
-        "configargparse"
+        "configargparse",
+        "detect-secrets"
     ],
     license="Apache License 2.0",
     name="checkov",

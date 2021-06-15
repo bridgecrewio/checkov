@@ -21,6 +21,7 @@ from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.runner import Runner as tf_graph_runner
+from checkov.secrets.runner import Runner as secrets_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
@@ -36,11 +37,16 @@ logging_init()
 logger = logging.getLogger(__name__)
 checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile']
+                   'dockerfile', 'secrets']
 
 # Check runners for necessary system dependencies.
 runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
 runnerDependencyHandler.validate_runner_deps()
+
+USE_SECRETS_RUNNER = os.environ.get("CHECKOV_USE_DETECT_SECRETS", "FALSE")
+DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
+                   sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
+                   dockerfile_runner())
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
@@ -73,9 +79,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_graph_runner(), cfn_runner(), k8_runner(),
-                                         sls_runner(),
-                                         arm_runner(), tf_plan_runner(), helm_runner(), dockerfile_runner())
+        if USE_SECRETS_RUNNER.upper() == "FALSE":
+            runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
+        else:
+            runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_runner())
+
 
     if config.show_config:
         print(parser.format_values())
