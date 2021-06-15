@@ -60,6 +60,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
+    
+    # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
+    config.repo_id=bc_integration.persist_repo_id(config)
+    # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
+    config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
     # Disable runners with missing system dependencies
     config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
@@ -152,7 +157,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            bc_integration.persist_repository(root_folder)
+            bc_integration.persist_repository(root_folder, files)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url)

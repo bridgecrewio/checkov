@@ -1,3 +1,4 @@
+import os.path
 from time import sleep
 
 import boto3
@@ -161,26 +162,34 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir):
+    def persist_repository(self, root_dir, files=None):
         """
-        Persist the repository found on root_dir path to Bridgecrew's platform
-        :param root_dir: Absolute path of the directory containing the repository root level
+        Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
+        that are specified will be persisted.
+        :param files: Absolute path of the files passed in the --file flag.
+        :param root_dir: Absolute path of the directory containing the repository root level.
         """
 
         if not self.use_s3_integration:
             return
 
-        for root_path, d_names, f_names in os.walk(root_dir):
-            if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
-                # no need to persist files from excluded directories
-                logging.info(f"skipping persisting excluded directory {root_path}")
-                continue
-            for file_path in f_names:
-                _, file_extension = os.path.splitext(file_path)
+        if files:
+            for f in files:
+                _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    full_file_path = os.path.join(root_path, file_path)
-                    relative_file_path = os.path.relpath(full_file_path, root_dir)
-                    self._persist_file(full_file_path, relative_file_path)
+                    self._persist_file(f, os.path.relpath(f, root_dir))
+        else:
+            for root_path, d_names, f_names in os.walk(root_dir):
+                if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
+                    # no need to persist files from excluded directories
+                    logging.info(f"skipping persisting excluded directory {root_path}")
+                    continue
+                for file_path in f_names:
+                    _, file_extension = os.path.splitext(file_path)
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS:
+                        full_file_path = os.path.join(root_path, file_path)
+                        relative_file_path = os.path.relpath(full_file_path, root_dir)
+                        self._persist_file(full_file_path, relative_file_path)
 
     def persist_scan_results(self, scan_reports):
         """
@@ -356,6 +365,34 @@ class BcPlatformIntegration(object):
                 self.setup_bridgecrew_credentials(bc_api_key=self.bc_api_key, repo_id=repo_id)
             if self.is_integration_configured():
                 self._upload_run(args, scan_reports)
+
+# Added this to generate a default repo_id for cli scans for upload to the platform 
+# whilst also persisting a cli repo_id into the object
+    def persist_bc_api_key(self, args):
+        if args.bc_api_key:
+            self.bc_api_key=args.bc_api_key
+        else: 
+            # get the key from file
+            self.bc_api_key=read_key()
+        return self.bc_api_key    
+
+# Added this to generate a default repo_id for cli scans for upload to the platform 
+# whilst also persisting a cli repo_id into the object
+    def persist_repo_id(self, args):
+        if args.repo_id is None:
+            if BC_FROM_BRANCH:
+                self.repo_id = BC_FROM_BRANCH
+            if args.directory:
+                basename = path.basename(os.path.abspath(args.directory[0]))
+                self.repo_id = "cli_repo/" + basename
+            if args.file:
+                # Get the base path of the file based on it's absolute path
+                basename = os.path.basename(os.path.dirname(os.path.abspath(args.file[0])))
+                self.repo_id = "cli_repo/" + basename
+ 
+        else: 
+            self.repo_id=args.repo_id
+        return self.repo_id    
 
     def get_repository(self, args):
         if BC_FROM_BRANCH:
