@@ -14,7 +14,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all'))
-        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 3)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
@@ -37,8 +37,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/terraform"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
-        self.assertEqual(len(report.skipped_checks), 1)
+                            runner_filter=RunnerFilter(framework='all',checks=['CKV_SECRET_6']))
+        self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.passed_checks, [])
