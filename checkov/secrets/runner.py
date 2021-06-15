@@ -79,6 +79,7 @@ class Runner(BaseRunner):
             try:
                 next(iter(deepcopy(scan_file)(file)))
             except StopIteration:
+                # TODO decide how to make the file pass
                 result = {'result': CheckResult.PASSED}
                 continue
             for secret in scan_file(file):
