@@ -8,6 +8,8 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.parser_utils import find_var_blocks
+from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value
+from checkov.terraform.checks_infra.resources_types import resources_types
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -69,6 +71,9 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 return CheckResult.PASSED
             if value in expected_values:
                 return CheckResult.PASSED
+            if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
+                # we don't provide resources_types as we want to stay provider agnostic
+                return CheckResult.UNKNOWN
             return CheckResult.FAILED
         else:
             # Look for the configuration in a bottom-up fashion
