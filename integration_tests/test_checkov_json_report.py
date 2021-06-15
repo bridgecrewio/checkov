@@ -9,19 +9,19 @@ class TestCheckovJsonReport(unittest.TestCase):
 
     def test_terragoat_report(self):
         report_path = current_dir + "/../checkov_report_terragoat.json"
-        self.validate_report(report_path)
+        self.validate_report(os.path.abspath(report_path))
 
     def test_cfngoat_report(self):
         report_path = current_dir + "/../checkov_report_cfngoat.json"
-        self.validate_report(report_path)
+        self.validate_report(os.path.abspath(report_path))
 
     def test_k8goat_report(self):
         report_path = current_dir + "/../checkov_report_kubernetes-goat.json"
-        self.validate_report(report_path)
+        self.validate_report(os.path.abspath(report_path))
 
     def test_k8goat_report(self):
         report_path = current_dir + "/../checkov_report_kubernetes-goat-helm.json"
-        self.validate_report(report_path)
+        self.validate_report(os.path.abspath(report_path))
 
     def test_checkov_report_terragoat_with_skip(self):
         report_path = current_dir + "/../checkov_report_terragoat_with_skip.json"
