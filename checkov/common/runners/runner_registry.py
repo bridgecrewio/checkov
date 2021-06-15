@@ -106,7 +106,8 @@ class RunnerRegistry(object):
         return
 
     def remove_runner(self, runner):
-        del self.runners[self.runners.index(runner)]
+        if runner in self.runners:
+            self.runners.remove(runner)
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report, guidelines):
