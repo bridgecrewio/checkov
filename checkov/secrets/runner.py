@@ -63,19 +63,20 @@ class Runner(BaseRunner):
             logging.info(f'Scanning file {file} for secrets')
             if runner_filter.skip_checks:
                 for skipped_check in runner_filter.skip_checks:
-                    report.add_record(Record(
-                        check_id=skipped_check,
-                        check_name=inv_secret_map[skipped_check],
-                        check_result={'result': CheckResult.SKIPPED,
-                                      "suppress_comment": f"Secret scan {skipped_check} is skipped"},
-                        file_path=file,
-                        file_abs_path=os.path.abspath(file),
-                        check_class="",
-                        code_block="",
-                        file_line_range=[0, 0],
-                        evaluations=None,
-                        resource=file
-                    ))
+                    if skipped_check in inv_secret_map:
+                        report.add_record(Record(
+                            check_id=skipped_check,
+                            check_name=inv_secret_map[skipped_check],
+                            check_result={'result': CheckResult.SKIPPED,
+                                          "suppress_comment": f"Secret scan {skipped_check} is skipped"},
+                            file_path=file,
+                            file_abs_path=os.path.abspath(file),
+                            check_class="",
+                            code_block="",
+                            file_line_range=[0, 0],
+                            evaluations=None,
+                            resource=file
+                        ))
             try:
                 next(iter(deepcopy(scan_file)(file)))
             except StopIteration:
