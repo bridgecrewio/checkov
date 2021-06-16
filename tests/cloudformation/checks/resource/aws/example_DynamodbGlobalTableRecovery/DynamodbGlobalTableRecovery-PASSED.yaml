@@ -31,8 +31,9 @@ Resources:
           KeyType: RANGE
       TableName: MyGT
       Replicas:
-         PointInTimeRecoverySpecification:
-           PointInTimeRecoveryEnabled: true
+        - PointInTimeRecoverySpecification:
+            PointInTimeRecoveryEnabled: true
+          Region: eu-west-2
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 

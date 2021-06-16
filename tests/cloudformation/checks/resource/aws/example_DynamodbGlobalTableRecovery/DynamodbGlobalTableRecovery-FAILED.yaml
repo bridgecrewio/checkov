@@ -31,8 +31,9 @@ Resources:
           KeyType: RANGE
       TableName: MyGT
       Replicas:
-         PointInTimeRecoverySpecification:
-           PointInTimeRecoveryEnabled: false
+        - PointInTimeRecoverySpecification:
+            PointInTimeRecoveryEnabled: false
+          Region: eu-west-2
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 
@@ -64,6 +65,8 @@ Resources:
         - AttributeName: SK
           KeyType: RANGE
       TableName: MyGT
+      Replicas:
+        - Region: eu-west-2
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 
