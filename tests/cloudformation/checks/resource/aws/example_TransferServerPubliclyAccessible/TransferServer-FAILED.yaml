@@ -24,3 +24,24 @@ Resources:
       LoggingRole:
         Fn::GetAtt: CloudWatchLoggingRole.Arn
 
+  TransferServer1:
+    Type: AWS::Transfer::Server
+    Properties:
+      Domain: S3
+      SecurityPolicyName: "TransferSecurityPolicy-2020-06"
+      IdentityProviderDetails:
+        InvocationRole:
+          Fn::GetAtt: TransferIdentityProviderRole.Arn
+        Url:
+          Fn::Join:
+            - ''
+            - - https://
+              - Ref: CustomIdentityProviderApi
+              - .execute-api.
+              - Ref: AWS::Region
+              - .amazonaws.com/
+              - Ref: ApiStage
+      IdentityProviderType: API_GATEWAY
+      LoggingRole:
+        Fn::GetAtt: CloudWatchLoggingRole.Arn
+
