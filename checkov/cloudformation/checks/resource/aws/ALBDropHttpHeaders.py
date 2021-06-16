@@ -15,27 +15,28 @@ class ALBDropHttpHeaders(BaseResourceCheck):
         # alb is default loadbalancer type if not explicitly set
         alb = True
 
-        if 'Properties' in conf.keys():
-            properties = conf['Properties']
-            if 'Type' in properties.keys():
-                lb_type = properties['Type']
-                if lb_type != 'application':
-                    alb = False
+        properties = conf.get("Properties")
+        lb_type = properties.get("Type")
+        if lb_type != None and lb_type != 'application':
+            print(lb_type)
+            alb = False
 
-           # If lb is alb then drop headers must be present and true 
-            if alb == True:
-                if 'LoadBalancerAttributes' in properties.keys():
-                    lb_attributes = properties['LoadBalancerAttributes']
-                    if isinstance(lb_attributes, list):
-                        for item in lb_attributes:
-                            if 'Key' in item.keys() and 'Value' in item.keys():
-                                key = item['Key']
-                                value = item['Value']
-                                if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
-                                    return CheckResult.PASSED
-                return CheckResult.FAILED
+        # If lb is alb then drop headers must be present and true 
+        if alb:
+            lb_attributes = properties.get('LoadBalancerAttributes', {})
+            if isinstance(lb_attributes, list):
+                for item in lb_attributes:
+                    key = item.get('Key')
+                    value = item.get('Value')
+                    #print(key)
+                    #print(value)
+                    if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
+                        return CheckResult.PASSED
+            return CheckResult.FAILED
 
-        return CheckResult.PASSED
+        # if lb is not alb then check is not valid
+        print("well there ya go")
+        return CheckResult.UNKNOWN
 
 
 check = ALBDropHttpHeaders()

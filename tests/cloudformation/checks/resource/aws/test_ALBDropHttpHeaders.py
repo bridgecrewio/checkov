@@ -34,6 +34,8 @@ class TestALBDropHttpHeaders(unittest.TestCase):
             "AWS::ElasticLoadBalancingV2::LoadBalancer.FailKeyNotExist",
         }
 
+        # 2 Unknown resources are tested which are properly silently ignored
+
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
