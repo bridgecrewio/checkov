@@ -2,11 +2,12 @@ import logging
 import os
 import re
 from typing import Optional
-from copy import deepcopy
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.scan import scan_file
-from detect_secrets.core.usage import initialize_plugin_settings
+from detect_secrets import SecretsCollection
 from checkov.common.runners.base_runner import ignored_directories
+from detect_secrets.settings import transient_settings
+from detect_secrets.settings import default_settings
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
@@ -47,66 +48,88 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
         inv_secret_map = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
-        report = Report(self.check_type)
-        initialize_plugin_settings(None)
-        # Implement non IaC files (including .terraform dir)
-        files_to_scan = files or []
-        excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names, excluded_paths)
-                for file in f_names:
-                    if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
-                        files_to_scan.append(os.path.join(root, file))
-        logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
-        for file in files_to_scan:
-            logging.info(f'Scanning file {file} for secrets')
-            if runner_filter.skip_checks:
-                for skipped_check in runner_filter.skip_checks:
-                    if skipped_check in inv_secret_map:
-                        report.add_record(Record(
-                            check_id=skipped_check,
-                            check_name=inv_secret_map[skipped_check],
-                            check_result={'result': CheckResult.SKIPPED,
-                                          "suppress_comment": f"Secret scan {skipped_check} is skipped"},
-                            file_path=file,
-                            file_abs_path=os.path.abspath(file),
-                            check_class="",
-                            code_block="",
-                            file_line_range=[0, 0],
-                            evaluations=None,
-                            resource=file
-                        ))
-            try:
-                next(iter(deepcopy(scan_file)(file)))
-            except StopIteration:
-                # TODO decide how to make the file pass
-                result = {'result': CheckResult.PASSED}
-                continue
-            for secret in scan_file(file):
-                check_id = SECRET_TYPE_TO_ID[secret.type]
-                if not runner_filter.should_run_check(check_id):
-                    result = {'result': CheckResult.SKIPPED}
-                else:
-                    result = {'result': CheckResult.FAILED}
-                    line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
-                    if line_text != "" and line_text.split()[0] == 'git_commit':
-                        continue
-                    result = self.search_for_suppression(root_folder, secret) or result
-                report.add_record(Record(
-                    check_id=check_id,
-                    check_name=secret.type,
-                    check_result=result,
-                    code_block=[(secret.line_number, line_text)],
-                    file_path=f'{secret.filename}:{secret.secret_hash}',
-                    file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.filename,
-                    check_class=None,
-                    evaluations=None,
-                    file_abs_path=os.path.abspath(secret.filename)
-                ))
+        secrets = SecretsCollection()
+        with default_settings():
+        # with transient_settings({
+        #     # Only run scans with only these plugins.
+        #     # This format is the same as the one that is saved in the generated baseline.
+        #     # 'plugins_used': [
+        #     #     # Example of configuring a built-in plugin
+        #     #     {
+        #     #         'name': 'Base64HighEntropyString',
+        #     #         'limit': 5.0,
+        #     #     }
+        #     # ],
+        #
+        #     # We can also specify whichever additional filters we want.
+        #     # This is an example of using the function `is_identified_by_ML_model` within the
+        #     # local file `./private-filters/example.py`.
+        #     # 'filters_used': [
+        #     #     {
+        #     #         'path': 'file://private-filters/example.py::is_identified_by_ML_model',
+        #     #     },
+        #     # ]
+        # }) as settings:
+            # If we want to make any further adjustments to the created settings object (e.g.
+            # disabling default filters), we can do so as such.
+            # settings.disable_filters(
+            #     'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+            #     'detect_secrets.filters.heuristic.is_likely_id_string',
+            # )
+            report = Report(self.check_type)
+            # Implement non IaC files (including .terraform dir)
+            files_to_scan = files or []
+            excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories
+            if root_folder:
+                for root, d_names, f_names in os.walk(root_folder):
+                    filter_ignored_directories(d_names, excluded_paths)
+                    for file in f_names:
+                        if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                            files_to_scan.append(os.path.join(root, file))
+            logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+            for file in files_to_scan:
+                logging.info(f'Scanning file {file} for secrets')
+                if runner_filter.skip_checks:
+                    for skipped_check in runner_filter.skip_checks:
+                        if skipped_check in inv_secret_map:
+                            report.add_record(Record(
+                                check_id=skipped_check,
+                                check_name=inv_secret_map[skipped_check],
+                                check_result={'result': CheckResult.SKIPPED,
+                                              "suppress_comment": f"Secret scan {skipped_check} is skipped"},
+                                file_path=file,
+                                file_abs_path=os.path.abspath(file),
+                                check_class="",
+                                code_block="",
+                                file_line_range=[0, 0],
+                                evaluations=None,
+                                resource=file
+                            ))
+                secrets.scan_file(file)
+                for secret in secrets.__iter__():
+                    check_id = SECRET_TYPE_TO_ID[secret.type]
+                    if not runner_filter.should_run_check(check_id):
+                        result = {'result': CheckResult.SKIPPED}
+                    else:
+                        result = {'result': CheckResult.FAILED}
+                        line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
+                        if line_text != "" and line_text.split()[0] == 'git_commit':
+                            continue
+                        result = self.search_for_suppression(root_folder, secret) or result
+                    report.add_record(Record(
+                        check_id=check_id,
+                        check_name=secret.type,
+                        check_result=result,
+                        code_block=[(secret.line_number, line_text)],
+                        file_path=f'{secret.filename}:{secret.secret_hash}',
+                        file_line_range=[secret.line_number, secret.line_number + 1],
+                        resource=secret.filename,
+                        check_class=None,
+                        evaluations=None,
+                        file_abs_path=os.path.abspath(secret.filename)
+                    ))
 
-        return report
+            return report
 
     @staticmethod
     def search_for_suppression(root_folder: str, secret: PotentialSecret) -> Optional[dict]:
