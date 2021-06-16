@@ -5,10 +5,10 @@ from checkov.common.models.consts import ANY_VALUE
 
 class BackupVaultEncrypted(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Backup Vault server-side encryption is enabled."
+        name = "Ensure Backup Vault is encrypted at rest using KMS CMK"
         id = "CKV_AWS_165"
         supported_resources = ['aws_backup_vault']
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
