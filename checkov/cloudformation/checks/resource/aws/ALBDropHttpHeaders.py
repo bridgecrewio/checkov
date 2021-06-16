@@ -12,9 +12,9 @@ class ALBDropHttpHeaders(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        # alb is default loadbalancer type if not explicitly set
+        # ALB is default loadbalancer type if not explicitly set
         alb = True
-
+        
         properties = conf.get("Properties")
         lb_type = properties.get("Type")
         if lb_type != None and lb_type != 'application':
@@ -31,7 +31,7 @@ class ALBDropHttpHeaders(BaseResourceCheck):
                         return CheckResult.PASSED
             return CheckResult.FAILED
 
-        # if lb is not alb then check is not valid
+        # If lb is not alb then check is not valid
         return CheckResult.UNKNOWN
 
 
