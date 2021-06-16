@@ -1,35 +1,38 @@
+import os
 import unittest
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.TransferServerIsPublic import check
-import hcl2
+from checkov.terraform.runner import Runner
 
 
-class TestTransferServerIsPublic(unittest.TestCase):
+class TestBackupVaultEncrypted(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_transfer_server" "example" {
-                    endpoint_type = "PUBLIC"
+        test_files_dir = current_dir + "/example_TransferServerIsPublic"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-                    protocols   = ["SFTP"]
-                }
-            """)
-        resource_conf = hcl_res['resource'][0]['aws_transfer_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_transfer_server.example_vpc",
+        }
+        failing_resources = {
+            "aws_transfer_server.example_public",
+            "aws_transfer_server.example",
+        }
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_transfer_server" "example" {
-                    endpoint_type = "VPC"
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-                    protocols   = ["SFTP"]
-                }
-            """)
-        resource_conf = hcl_res['resource'][0]['aws_transfer_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == "__main__":
