@@ -1,8 +1,9 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class ALBDropHttpHeaders(BaseResourceValueCheck):
+class ALBDropHttpHeaders(BaseResourceCheck):
+
     def __init__(self):
         name = "Ensure that ALB drops HTTP headers"
         id = "CKV_AWS_131"
@@ -12,12 +13,16 @@ class ALBDropHttpHeaders(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf):
         if 'Properties' in conf.keys():
-            if 'SnapshotIdentifier' in conf['Properties'].keys() or 'SourceDBClusterIdentifier' in conf['Properties'].keys():
-                return CheckResult.UNKNOWN
-        return super().scan_resource_conf(conf)
-
-    def get_inspected_key(self):
-        return 'Properties/StorageEncrypted'
+            properties = conf['Properties']
+            if 'Type' in properties.keys():
+                lb_type = properties['Type']
+                if lb_type == 'application':
+                    if 'LoadBalancerAttributes' in properties.keys():
+                        lb_attributes = properties['LoadBalancerAttributes']
+                        if isinstance(lb_attributes, list):
+                            for item in lb_attributes:
+                                print item
+        return CheckResult.PASSED
 
 
 check = ALBDropHttpHeaders()
