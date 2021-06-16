@@ -31,10 +31,10 @@ class ALBDropHttpHeaders(BaseResourceCheck):
                             if 'Key' in item.keys() and 'Value' in item.keys():
                                 key = item['Key']
                                 value = item['Value']
-                                if key == 'routing.http.drop_invalid_header_fields.enabled' and value is True:
+                                if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
                                     return CheckResult.PASSED
                 return CheckResult.FAILED
-                
+
         return CheckResult.PASSED
 
 
