@@ -4,6 +4,7 @@ import json
 import itertools
 import dpath.util
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from checkov.common.util.json_utils import CustomJSONEncoder
 
 checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
@@ -19,7 +20,7 @@ def _is_scanned_file(file):
 
 def _put_json_object(s3_client, json_obj, bucket, object_path):
     try:
-        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj))
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception as e:
         logging.error(f"failed to persist object {json_obj} into S3 bucket {bucket}\n{e}")
         raise e
