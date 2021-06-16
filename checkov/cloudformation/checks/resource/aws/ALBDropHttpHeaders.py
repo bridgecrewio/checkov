@@ -18,7 +18,6 @@ class ALBDropHttpHeaders(BaseResourceCheck):
         properties = conf.get("Properties")
         lb_type = properties.get("Type")
         if lb_type != None and lb_type != 'application':
-            print(lb_type)
             alb = False
 
         # If lb is alb then drop headers must be present and true 
@@ -28,14 +27,11 @@ class ALBDropHttpHeaders(BaseResourceCheck):
                 for item in lb_attributes:
                     key = item.get('Key')
                     value = item.get('Value')
-                    #print(key)
-                    #print(value)
                     if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
                         return CheckResult.PASSED
             return CheckResult.FAILED
 
         # if lb is not alb then check is not valid
-        print("well there ya go")
         return CheckResult.UNKNOWN
 
 
