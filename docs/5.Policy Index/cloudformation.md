@@ -117,6 +117,7 @@ nav_order: 1
 | 106 | CKV_AWS_161 | resource | AWS::RDS::DBInstance                      | Ensure RDS database has IAM authentication enabled                                                                                                                                                       | Cloudformation |
 | 107 | CKV_AWS_162 | resource | AWS::RDS::DBCluster                       | Ensure RDS cluster has IAM authentication enabled                                                                                                                                                        | Cloudformation |
 | 108 | CKV_AWS_163 | resource | AWS::ECR::Repository                      | Ensure ECR image scanning on push is enabled                                                                                                                                                             | Cloudformation |
+| 109 | CKV_AWS_165 | resource | AWS::DynamoDB::GlobalTable                | Ensure Dynamodb global table point in time recovery (backup) is enabled                                                                                                                                  | Cloudformation |
 
 
 ---
