@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Azure Agent deployment
 
 Resources:
-  MyGlobalTable0:
+  MyGlobalTableRecoveryEnabled:
     Type: 'AWS::DynamoDB::GlobalTable'
     Properties:
       AttributeDefinitions:

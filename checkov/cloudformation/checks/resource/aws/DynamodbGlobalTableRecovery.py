@@ -11,7 +11,7 @@ class DynamodbGlobalTableRecovery(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'Properties/Replicas/PointInTimeRecoverySpecification/PointInTimeRecoveryEnabled'
+        return 'Properties/Replicas/[0]/PointInTimeRecoverySpecification/PointInTimeRecoveryEnabled'
 
 
 check = DynamodbGlobalTableRecovery()
