@@ -78,7 +78,7 @@ class Runner(BaseRunner):
                                 resource=file
                             ))
                 secrets.scan_file(file)
-                for _, secret in secrets.__iter__():
+                for _, secret in iter(secrets):
                     check_id = SECRET_TYPE_TO_ID[secret.type]
                     if not runner_filter.should_run_check(check_id):
                         result = {'result': CheckResult.SKIPPED}
