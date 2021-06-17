@@ -207,7 +207,7 @@ checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 
 Run all checks except 1 specified:
 ```sh
-checkov -d . --skip-check CKV_AWS_52
+checkov -d . --skip-check CKV_AWS_20
 ```
 
 Run all checks except checks with specified patterns:
@@ -266,7 +266,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 To skip multiple checks, add each as a new line.
 
 ```
-  #checkov:skip=CKV_AWS_52
+  #checkov:skip=CKV2_AWS_6
   #checkov:skip=CKV_AWS_20:The bucket is a public static content host
 ```
   
