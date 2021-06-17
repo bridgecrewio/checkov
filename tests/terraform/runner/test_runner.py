@@ -174,7 +174,7 @@ class TestRunnerValid(unittest.TestCase):
                     # A single check can have multiple resource blocks it checks, which means it will show up multiple times in the registry
                     bad_checks.append(f'{check.id}: {check.name}')
                     print(f'{check.id}: {check.name}')
-        self.assertEqual(len(bad_checks), 0)
+        self.assertEqual(len(bad_checks), 0, f'Bad checks: {bad_checks}')
 
     def test_no_missing_ids(self):
         runner = Runner()
