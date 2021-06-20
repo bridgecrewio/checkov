@@ -100,10 +100,3 @@ class Runner(BaseRunner):
                 return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
         return None
 
-    @staticmethod
-    def get_block_range(filename, lookupValue):
-        with open(filename, 'r') as file:
-            for num, line in enumerate(file, 1):
-                if lookupValue in line:
-                    return num
-            return num
