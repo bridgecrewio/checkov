@@ -121,6 +121,8 @@ jobs:
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
           echo "::set-output name=version::$new_tag"
+          echo "::set-output name=notes::$RELEASE_NOTE"
+        id: version
       - name: release
         uses: actions/create-release@v1
         with:
@@ -128,6 +130,7 @@ jobs:
           prerelease: false
           release_name: ${{ steps.version.outputs.version }}
           tag_name: ${{ steps.version.outputs.version }}
+          body: ${{ steps.version.outputs.notes }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
   publish-package:
