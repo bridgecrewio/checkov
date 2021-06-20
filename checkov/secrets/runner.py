@@ -12,6 +12,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 import linecache
 
@@ -51,7 +52,7 @@ class Runner(BaseRunner):
             report = Report(self.check_type)
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
-            excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories
+            excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_directories(d_names, excluded_paths)
@@ -62,26 +63,27 @@ class Runner(BaseRunner):
             for file in files_to_scan:
                 logging.info(f'Scanning file {file} for secrets')
                 secrets.scan_file(file)
-                for _, secret in iter(secrets):
-                    check_id = SECRET_TYPE_TO_ID[secret.type]
-                    result = {'result': CheckResult.FAILED}
-                    line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
-                    if line_text != "" and line_text.split()[0] == 'git_commit':
-                        continue
-                    result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
-                                                         inv_secret_map) or result
-                    report.add_record(Record(
-                        check_id=check_id,
-                        check_name=secret.type,
-                        check_result=result,
-                        code_block=[(secret.line_number, line_text)],
-                        file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
-                        file_line_range=[secret.line_number, secret.line_number + 1],
-                        resource=secret.secret_hash,
-                        check_class=None,
-                        evaluations=None,
-                        file_abs_path=os.path.abspath(secret.filename)
-                    ))
+
+            for _, secret in iter(secrets):
+                check_id = SECRET_TYPE_TO_ID[secret.type]
+                result = {'result': CheckResult.FAILED}
+                line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
+                if line_text != "" and line_text.split()[0] == 'git_commit':
+                    continue
+                result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
+                                                     inv_secret_map) or result
+                report.add_record(Record(
+                    check_id=check_id,
+                    check_name=secret.type,
+                    check_result=result,
+                    code_block=[(secret.line_number, line_text)],
+                    file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
+                    file_line_range=[secret.line_number, secret.line_number + 1],
+                    resource=secret.secret_hash,
+                    check_class=None,
+                    evaluations=None,
+                    file_abs_path=os.path.abspath(secret.filename)
+                ))
 
             return report
 
