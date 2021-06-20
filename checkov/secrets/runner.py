@@ -99,4 +99,3 @@ class Runner(BaseRunner):
             if skip_search:
                 return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
         return None
-
