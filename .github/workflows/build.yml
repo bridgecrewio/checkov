@@ -21,6 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: dschep/install-pipenv-action@v1
+      - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
       - name: Build & install checkov package
         run: |
@@ -51,7 +52,7 @@ jobs:
           pipenv run pytest integration_tests
   bump-version:
     needs: [integration-tests]
-    runs-on: macos-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -121,7 +122,7 @@ jobs:
           gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
   publish-package:
     needs: bump-version
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -149,7 +150,7 @@ jobs:
           sleep 2m
   update-bridgecrew-projects:
     needs: publish-package
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: update checkov release
@@ -159,7 +160,7 @@ jobs:
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkovdb/dispatches --data '{"event_type": "build"}'
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/platform/dispatches --data '{"event_type": "checkov-upgrade"}'
   publish-checkov-dockerhub:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
@@ -180,7 +181,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
