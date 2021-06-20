@@ -93,7 +93,7 @@ class Runner(BaseRunner):
                         check_name=secret.type,
                         check_result=result,
                         code_block=[(secret.line_number, line_text)],
-                        file_path=f'{os.path.relpath(secret.filename, root_folder)}:{secret.secret_hash}',
+                        file_path=f'{os.path.relpath(secret.filename, root_folder)}',
                         file_line_range=[secret.line_number, secret.line_number + 1],
                         resource=secret.secret_hash,
                         check_class=None,
