@@ -60,6 +60,9 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
+      - name: Install gh cli
+        run: |
+          sudo apt install -y gh
       - name: Install dependencies
         run: |
           pipenv --python 3.7
