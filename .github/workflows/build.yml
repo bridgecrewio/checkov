@@ -60,12 +60,6 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-      - name: Install gh cli
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -77,7 +71,7 @@ jobs:
           pipenv run python -m coverage report
           pipenv run python -m coverage html
           pipenv run python -m coverage_badge -o coverage.svg -f
-      - name: update docs and bump version
+      - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
@@ -126,7 +120,16 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
+          echo "::set-output name=version::$new_tag"
+      - name: release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
   publish-package:
     needs: bump-version
     runs-on: [self-hosted, public, linux, x64]
