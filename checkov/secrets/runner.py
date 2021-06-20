@@ -68,7 +68,7 @@ class Runner(BaseRunner):
                     line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
                     if line_text != "" and line_text.split()[0] == 'git_commit':
                         continue
-                    result = self.search_for_suppression(root_folder, secret, runner_filter.skip_checks,
+                    result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
                                                          inv_secret_map) or result
                     report.add_record(Record(
                         check_id=check_id,
@@ -86,10 +86,10 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def search_for_suppression(root_folder: str, secret: PotentialSecret, skipped_checks: list, inv_secret_map: dict) -> Optional[dict]:
+    def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list, inv_secret_map: dict) -> Optional[dict]:
         if skipped_checks:
             for skipped_check in skipped_checks:
-                if skipped_check in inv_secret_map:
+                if skipped_check == check_id and skipped_check in inv_secret_map:
                     return {'result': CheckResult.SKIPPED,
                             'suppress_comment': f"Secret scan {skipped_check} is skipped"}
         # Check for suppression comment in the line before, the line of, and the line after the secret

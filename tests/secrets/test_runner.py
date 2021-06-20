@@ -37,7 +37,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/cfn"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET_12']))
+                            runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET_10']))
         self.assertEqual(len(report.skipped_checks), 1)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
