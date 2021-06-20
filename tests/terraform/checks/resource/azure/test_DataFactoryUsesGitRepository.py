@@ -1,40 +1,37 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.DataFactoryUsesGitRepository import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestDataFactoryUsesGitRepository(unittest.TestCase):
+    def test(self):
+        test_files_dir = Path(__file__).parent / "example_DataFactoryUsesGitRepository"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_data_factory" "example" {
-              name                = "example"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_data_factory']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_data_factory" "example" {
-              name                = "example"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              github_configuration {
-                repository_name = "checkov"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_data_factory']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "azurerm_data_factory.github",
+            "azurerm_data_factory.vsts",
+        }
+        failing_resources = {
+            "azurerm_data_factory.fail",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
