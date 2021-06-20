@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import atexit
+import json
+from collections import defaultdict
+
 import configargparse
 import logging
 import os
@@ -141,7 +144,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 url = bc_integration.commit_repository(config.branch)
 
             exit_codes.append(runner_registry.print_reports(scan_reports, config, url))
-
+            if config.create_baseline:
+                overall_baseline = defaultdict(list)
+                for report in scan_reports:
+                    report.enrich_baseline(overall_baseline)
+                with open(os.path.join(os.path.abspath(root_folder), '.checkov.baseline'), 'w') as f:
+                    json.dump(overall_baseline, f, indent=4)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -250,6 +258,9 @@ def add_parser_args(parser):
     parser.add('--show-config', help='prints all args and config settings and where they came from '
                                      '(eg. commandline, config file, environment variable or default)',
                action='store_true', default=None)
+    parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
+                                         ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
+               action='store_true', default=False)
 
 
 def get_external_checks_dir(config):

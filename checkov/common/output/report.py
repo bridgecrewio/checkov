@@ -1,36 +1,36 @@
 import json
 from collections import defaultdict
-from typing import Dict, Any
+from typing import List, Dict, DefaultDict, Union
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
+from tabulate import tabulate
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.record import Record
 from checkov.version import version
-from tabulate import tabulate
 
 init(autoreset=True)
 
 
 class Report:
+    def __init__(self, check_type: str):
+        self.check_type: str = check_type
+        self.passed_checks: List[Record] = []
+        self.failed_checks: List[Record] = []
+        self.skipped_checks: List[Record] = []
+        self.parsing_errors: List[str] = []
 
-    def __init__(self, check_type):
-        self.check_type = check_type
-        self.passed_checks = []
-        self.failed_checks = []
-        self.skipped_checks = []
-        self.parsing_errors = []
-
-    def add_parsing_errors(self, errors):
+    def add_parsing_errors(self, errors: List[str]) -> None:
         for file in errors:
             self.add_parsing_error(file)
 
-    def add_parsing_error(self, file):
+    def add_parsing_error(self, file: str) -> None:
         if file:
             self.parsing_errors.append(file)
 
-    def add_record(self, record):
+    def add_record(self, record: Record) -> None:
         if record.check_result['result'] == CheckResult.PASSED:
             self.passed_checks.append(record)
         if record.check_result['result'] == CheckResult.FAILED:
@@ -38,7 +38,7 @@ class Report:
         if record.check_result['result'] == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
 
-    def get_summary(self):
+    def get_summary(self) -> Dict[str, Union[int, str]]:
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
@@ -48,10 +48,10 @@ class Report:
             "checkov_version": version
         }
 
-    def get_json(self):
+    def get_json(self) -> str:
         return json.dumps(self.get_dict(), indent=4)
 
-    def get_dict(self, is_quiet=False):
+    def get_dict(self, is_quiet=False) -> dict:
         if is_quiet:
             return {
                 "check_type": self.check_type,
@@ -59,8 +59,8 @@ class Report:
                     "failed_checks": [check.__dict__ for check in self.failed_checks]
                 },
                 "summary": self.get_summary()
-        }
-        else: 
+            }
+        else:
             return {
                 "check_type": self.check_type,
                 "results": {
@@ -72,17 +72,17 @@ class Report:
                 "summary": self.get_summary()
             }
 
-    def get_exit_code(self, soft_fail):
+    def get_exit_code(self, soft_fail: bool) -> int:
         if soft_fail:
             return 0
         elif len(self.failed_checks) > 0:
             return 1
         return 0
 
-    def is_empty(self):
-        return len(self.passed_checks) + len(self.failed_checks) + len(self.skipped_checks) + len(self.parsing_errors) == 0
+    def is_empty(self) -> bool:
+        return len(self.passed_checks + self.failed_checks + self.skipped_checks) + len(self.parsing_errors) == 0
 
-    def print_console(self, is_quiet=False, is_compact=False):
+    def print_console(self, is_quiet=False, is_compact=False) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -106,25 +106,27 @@ class Report:
                 Report._print_parsing_error_console(file)
 
     @staticmethod
-    def _print_parsing_error_console(file):
+    def _print_parsing_error_console(file: str) -> None:
         print(colored(f'Error parsing file {file}', 'red'))
 
-    def print_junit_xml(self):
+    def print_junit_xml(self) -> None:
         ts = self.get_test_suites()
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_junit_xml_string(self, ts):
+    @staticmethod
+    def get_junit_xml_string(ts: List[TestSuite]) -> str:
         return to_xml_report_string(ts)
-        
-    def print_failed_github_md(self):
+
+    def print_failed_github_md(self) -> None:
         result = []
         for record in self.failed_checks:
-            result.append([record.check_id, record.file_path ,record.resource, record.check_name, record.guideline])
-        print(tabulate(result, headers=["check_id", "file" ,"resource", "check_name", "guideline"], tablefmt="github", showindex=True))
+            result.append([record.check_id, record.file_path, record.resource, record.check_name, record.guideline])
+        print(tabulate(result, headers=["check_id", "file", "resource", "check_name", "guideline"], tablefmt="github",
+                       showindex=True))
         print("\n\n---\n\n")
 
-    def get_test_suites(self):
+    def get_test_suites(self) -> List[TestSuite]:
         test_cases = defaultdict(list)
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
@@ -150,10 +152,10 @@ class Report:
                 TestSuite(name=key, test_cases=test_cases[key], package=test_cases[key][0].classname))
         return test_suites
 
-    def print_json(self):
+    def print_json(self) -> None:
         print(self.get_json())
 
-    def _count_resources(self):
+    def _count_resources(self) -> int:
         unique_resources = set()
         for record in self.passed_checks + self.failed_checks:
             unique_resources.add(record.file_path + '.' + record.resource)
@@ -182,3 +184,12 @@ class Report:
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
         return report
+
+    def enrich_baseline(self, overall_baseline: DefaultDict[str, list]) -> None:
+        for check in self.failed_checks:
+            try:
+                existing = next(x for x in overall_baseline[check.file_path] if x['resource'] == check.resource)
+            except StopIteration:
+                existing = {"resource": check.resource, "check_ids": []}
+                overall_baseline[check.file_path].append(existing)
+            existing['check_ids'].append(check.check_id)
