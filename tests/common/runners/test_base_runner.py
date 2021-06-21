@@ -1,8 +1,7 @@
 import os
-import tempfile
 import unittest
 
-from checkov.common.runners.base_runner import filter_ignored_directories
+from checkov.common.runners.base_runner import filter_ignored_paths
 
 
 class TestBaseRunner(unittest.TestCase):
@@ -10,7 +9,7 @@ class TestBaseRunner(unittest.TestCase):
     def test_filter_ignored_directories_regex_legacy(self):
         d_names = ['bin', 'integration_tests', 'tests', 'docs', '.github', 'checkov', 'venv', '.git', 'kubernetes', '.idea']
         expected = ['bin', 'docs', 'checkov', 'venv', 'kubernetes']
-        filter_ignored_directories('.', d_names, ["tests"])
+        filter_ignored_paths('.', d_names, ["tests"])
         self.assertEqual(expected, d_names)
 
     def test_filter_ignored_directories_regex_relative_cwd(self):
@@ -22,30 +21,39 @@ class TestBaseRunner(unittest.TestCase):
         try:
             os.chdir(current_dir)
 
-            excluded_paths = ['dir2']
+            excluded_paths = ['dir2', 'dir1/file1.tf']
 
             remaining_dirs = []
+            remaining_files = []
 
-            expected = {
+            expected_dirs = {
                 os.path.join('sample_dir', 'dir33'),
                 os.path.join('sample_dir', 'dir1'),
                 os.path.join('sample_dir', 'dir1', 'dir4'),
                 os.path.join('sample_dir', 'dir11')
             }
 
+            expected_files = {
+                os.path.join('sample_dir', 'dir33', 'file2.tf')
+            }
+
             for root, dirs, files in os.walk('sample_dir'):
-                filter_ignored_directories(root, dirs, excluded_paths)
+                filter_ignored_paths(root, dirs, excluded_paths)
+                filter_ignored_paths(root, files, excluded_paths)
                 remaining_dirs += [os.path.join(root, d) for d in dirs]
+                remaining_files += [os.path.join(root, f) for f in files]
 
             # we expect .terraform and all dir2 to get filtered out
-            self.assertEqual(len(remaining_dirs), 4)
-            self.assertEqual(set(remaining_dirs), expected)
+            # also dir1/file1
+            self.assertEqual(set(remaining_dirs), expected_dirs)
+            self.assertEqual(set(remaining_files), expected_files)
 
             excluded_paths = ['dir1/dir2']
 
             remaining_dirs = []
+            remaining_files = []
 
-            expected = {
+            expected_dirs = {
                 os.path.join('sample_dir', 'dir33'),
                 os.path.join('sample_dir', 'dir1'),
                 os.path.join('sample_dir', 'dir1', 'dir4'),
@@ -54,19 +62,27 @@ class TestBaseRunner(unittest.TestCase):
                 os.path.join('sample_dir', 'dir33', 'dir2'),
             }
 
+            expected_files = {
+                os.path.join('sample_dir', 'dir33', 'file2.tf'),
+                os.path.join('sample_dir', 'dir1', 'file1.tf')
+            }
+
             for root, dirs, files in os.walk('sample_dir'):
-                filter_ignored_directories(root, dirs, excluded_paths)
+                filter_ignored_paths(root, dirs, excluded_paths)
+                filter_ignored_paths(root, files, excluded_paths)
                 remaining_dirs += [os.path.join(root, d) for d in dirs]
+                remaining_files += [os.path.join(root, f) for f in files]
 
             # we expect .terraform and dir1/dir2 to get filtered out
-            self.assertEqual(len(remaining_dirs), 6)
-            self.assertEqual(set(remaining_dirs), expected)
+            self.assertEqual(set(remaining_dirs), expected_dirs)
+            self.assertEqual(set(remaining_files), expected_files)
 
             excluded_paths = ['dir../dir2']
 
             remaining_dirs = []
+            remaining_files = []
 
-            expected = {
+            expected_dirs = {
                 os.path.join('sample_dir', 'dir33'),
                 os.path.join('sample_dir', 'dir1'),
                 os.path.join('sample_dir', 'dir1', 'dir4'),
@@ -74,13 +90,21 @@ class TestBaseRunner(unittest.TestCase):
                 os.path.join('sample_dir', 'dir1', 'dir2')
             }
 
+            expected_files = {
+                os.path.join('sample_dir', 'dir1', 'dir2', 'file2.tf'),
+                os.path.join('sample_dir', 'dir1', 'file1.tf'),
+                os.path.join('sample_dir', 'dir33', 'file2.tf')
+            }
+
             for root, dirs, files in os.walk('sample_dir'):
-                filter_ignored_directories(root, dirs, excluded_paths)
+                filter_ignored_paths(root, dirs, excluded_paths)
+                filter_ignored_paths(root, files, excluded_paths)
                 remaining_dirs += [os.path.join(root, d) for d in dirs]
+                remaining_files += [os.path.join(root, f) for f in files]
 
             # we expect .terraform and dir11/dir2 and dir33/dir2 to get filtered out
-            self.assertEqual(len(remaining_dirs), 5)
-            self.assertEqual(set(remaining_dirs), expected)
+            self.assertEqual(set(remaining_dirs), expected_dirs)
+            self.assertEqual(set(remaining_files), expected_files)
 
         finally:
             os.chdir(old_cwd)
@@ -100,12 +124,11 @@ class TestBaseRunner(unittest.TestCase):
             os.path.join(current_dir, 'sample_dir', 'dir11')
         }
 
-        for root, dirs, files in os.walk('sample_dir'):
-            filter_ignored_directories(root, dirs, excluded_paths)
+        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir')):
+            filter_ignored_paths(root, dirs, excluded_paths)
             remaining_dirs += [os.path.join(root, d) for d in dirs]
 
         # we expect .terraform and all dir2 to get filtered out
-        self.assertEqual(len(remaining_dirs), 4)
         self.assertEqual(set(remaining_dirs), expected)
 
         excluded_paths = ['dir1/dir2']
@@ -121,12 +144,11 @@ class TestBaseRunner(unittest.TestCase):
             os.path.join(current_dir, 'sample_dir', 'dir33', 'dir2'),
         }
 
-        for root, dirs, files in os.walk('sample_dir'):
-            filter_ignored_directories(root, dirs, excluded_paths)
+        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir')):
+            filter_ignored_paths(root, dirs, excluded_paths)
             remaining_dirs += [os.path.join(root, d) for d in dirs]
 
         # we expect .terraform and dir1/dir2 to get filtered out
-        self.assertEqual(len(remaining_dirs), 6)
         self.assertEqual(set(remaining_dirs), expected)
 
         excluded_paths = ['dir../dir2']
@@ -141,12 +163,11 @@ class TestBaseRunner(unittest.TestCase):
             os.path.join(current_dir, 'sample_dir', 'dir1', 'dir2')
         }
 
-        for root, dirs, files in os.walk('sample_dir'):
-            filter_ignored_directories(root, dirs, excluded_paths)
+        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir')):
+            filter_ignored_paths(root, dirs, excluded_paths)
             remaining_dirs += [os.path.join(root, d) for d in dirs]
 
         # we expect .terraform and dir11/dir2 and dir33/dir2 to get filtered out
-        self.assertEqual(len(remaining_dirs), 5)
         self.assertEqual(set(remaining_dirs), expected)
 
 
