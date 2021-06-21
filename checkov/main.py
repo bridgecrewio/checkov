@@ -35,13 +35,8 @@ outer_registry = None
 
 logging_init()
 logger = logging.getLogger(__name__)
-checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
                    'dockerfile', 'secrets']
-
-# Check runners for necessary system dependencies.
-runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
-runnerDependencyHandler.validate_runner_deps()
 
 USE_SECRETS_RUNNER = os.environ.get("CHECKOV_USE_DETECT_SECRETS", "FALSE")
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
@@ -66,9 +61,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
     config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
-    # Disable runners with missing system dependencies
-    config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
-
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
@@ -84,6 +76,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         else:
             runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_runner())
 
+    runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
+    runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
         print(parser.format_values())

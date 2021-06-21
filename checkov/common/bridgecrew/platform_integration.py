@@ -488,7 +488,7 @@ class BcPlatformIntegration(object):
                 sleep(1)
 
     def get_excluded_paths(self):
-        repo_settings_api_url = os.path.join(self.bc_api_url, "vcs/settings/scheme")
+        repo_settings_api_url = f'{self.bc_api_url}/vcs/settings/scheme'
         try:
             request = self.http.request("GET", repo_settings_api_url,
                                         headers={"Authorization": self.bc_api_key, "Content-Type": "application/json"})
