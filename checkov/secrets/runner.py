@@ -22,11 +22,11 @@ SECRET_TYPE_TO_ID = {
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
-    'Base64 High Entropy String': 'CKV_SECRET_6',
+    # 'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
-    'Secret Keyword': 'CKV_SECRET_10',
+    # 'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
     'NPM tokens': 'CKV_SECRET_12',
     'Private Key': 'CKV_SECRET_13',
@@ -35,7 +35,7 @@ SECRET_TYPE_TO_ID = {
     'Square OAuth Secret': 'CKV_SECRET_16',
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
-    'Hex High Entropy String': 'CKV_SECRET_19'
+    # 'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
@@ -65,7 +65,9 @@ class Runner(BaseRunner):
                 secrets.scan_file(file)
 
             for _, secret in iter(secrets):
-                check_id = SECRET_TYPE_TO_ID[secret.type]
+                check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                if not check_id:
+                    continue
                 result = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(os.path.join(root_folder, secret.filename), secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
