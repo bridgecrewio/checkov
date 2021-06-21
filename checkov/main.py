@@ -61,12 +61,14 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
     config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
+    excluded_paths = config.skip_path or []
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
-                                 runners=checkov_runners)
+                                 runners=checkov_runners, excluded_paths=excluded_paths)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -104,8 +106,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
                                                         source=source, source_version=source_version, repo_branch=config.branch)
-            excluded_paths = bc_integration.get_excluded_paths()
-            runner_filter.excluded_paths = excluded_paths
+            platform_excluded_paths = bc_integration.get_excluded_paths()
+            runner_filter.excluded_paths = (runner_filter.excluded_paths + platform_excluded_paths) if runner_filter.excluded_paths else platform_excluded_paths
         except Exception as e:
             logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token'
                          ' and try again.', exc_info=True)
@@ -179,6 +181,10 @@ def add_parser_args(parser):
                help='IaC root directory (can not be used together with --file).')
     parser.add('-f', '--file', action='append',
                help='IaC file(can not be used together with --directory)')
+    parser.add('--skip-path', action='append',
+               help='Path (file or directory) to skip, using regular expression logic, relative to current '
+                    'working directory. Word boundaries are not implicit; i.e., specifying "dir1" will skip any '
+                    'directory or subdirectory named "dir1". Ignored with -f. Can be specified multiple times.')
     parser.add('--external-checks-dir', action='append',
                help='Directory for custom checks to be loaded. Can be repeated')
     parser.add('--external-checks-git', action='append',
