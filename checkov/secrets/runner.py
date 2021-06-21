@@ -50,7 +50,52 @@ class Runner(BaseRunner):
             collect_skip_comments=True) -> Report:
         inv_secret_map = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
         secrets = SecretsCollection()
-        with default_settings():
+        with transient_settings({
+            # Only run scans with only these plugins.
+            # This format is the same as the one that is saved in the generated baseline.
+            'plugins_used': [
+                # Example of configuring a built-in plugin
+                {
+                    'name': 'AWSKeyDetector'
+                },
+                {
+                    'name': 'ArtifactoryDetector'
+                },
+                {
+                    'name': 'AzureStorageKeyDetector'
+                },
+                {
+                    'name': 'BasicAuthDetector'
+                },
+                {
+                    'name': 'CloudantDetector'
+                },
+                {
+                    'name': 'IbmCloudIamDetector'
+                },
+                {
+                    'name': 'MailchimpDetector'
+                },
+                {
+                    'name': 'PrivateKeyDetector'
+                },
+                {
+                    'name': 'SlackDetector'
+                },
+                {
+                    'name': 'SoftlayerDetector'
+                },
+                {
+                    'name': 'SquareOAuthDetector'
+                },
+                {
+                    'name': 'StripeDetector'
+                },
+                {
+                    'name': 'TwilioKeyDetector'
+                },
+            ]
+        }):
             report = Report(self.check_type)
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
@@ -64,7 +109,11 @@ class Runner(BaseRunner):
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
             for file in files_to_scan:
                 logging.info(f'Scanning file {file} for secrets')
-                secrets.scan_file(file)
+                try:
+                    secrets.scan_file(file)
+                except Exception as e:
+                    logging.warning(f"Secret scanning:could not process file {file}, {e}")
+                    continue
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -92,7 +141,8 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list, inv_secret_map: dict) -> Optional[dict]:
+    def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list,
+                               inv_secret_map: dict) -> Optional[dict]:
         if skipped_checks:
             for skipped_check in skipped_checks:
                 if skipped_check == check_id and skipped_check in inv_secret_map:
