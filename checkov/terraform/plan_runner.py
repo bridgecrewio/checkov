@@ -5,7 +5,7 @@ import os
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -37,6 +37,8 @@ class Runner(BaseRunner):
         if root_folder:
             files = [] if not files else files
             for root, d_names, f_names in os.walk(root_folder):
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending == '.json':
