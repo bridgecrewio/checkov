@@ -50,9 +50,7 @@ class Runner(BaseRunner):
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
-            # This format is the same as the one that is saved in the generated baseline.
             'plugins_used': [
-                # Example of configuring a built-in plugin
                 {
                     'name': 'AWSKeyDetector'
                 },
