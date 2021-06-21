@@ -3,11 +3,9 @@ import os
 import re
 from typing import Optional
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.core.scan import scan_file
 from detect_secrets import SecretsCollection
 from checkov.common.runners.base_runner import ignored_directories
 from detect_secrets.settings import transient_settings
-from detect_secrets.settings import default_settings
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
