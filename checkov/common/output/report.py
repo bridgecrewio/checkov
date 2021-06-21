@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import List, Dict, DefaultDict, Union
+from typing import List, Dict, Union, Any
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
@@ -184,12 +184,3 @@ class Report:
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
         return report
-
-    def enrich_baseline(self, overall_baseline: DefaultDict[str, list]) -> None:
-        for check in self.failed_checks:
-            try:
-                existing = next(x for x in overall_baseline[check.file_path] if x['resource'] == check.resource)
-            except StopIteration:
-                existing = {"resource": check.resource, "check_ids": []}
-                overall_baseline[check.file_path].append(existing)
-            existing['check_ids'].append(check.check_id)
