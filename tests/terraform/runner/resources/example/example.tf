@@ -71,7 +71,6 @@ resource "aws_s3_bucket" "foo-bucket" {
   tags = {
     Name = "foo-${data.aws_caller_identity.current.account_id}"
   }
-  #checkov:skip=CKV_AWS_52
   #checkov:skip=CKV_AWS_20:The bucket is a public static content host
   versioning {
     enabled = true
@@ -359,7 +358,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.b.bucket_regional_domain_name}"
     origin_id   = "${local.s3_origin_id}"
-    #checkov:skip=CKV_AWS_52
     s3_origin_config {
       origin_access_identity = "origin-access-identity/cloudfront/ABCDEFG1234567"
     }
