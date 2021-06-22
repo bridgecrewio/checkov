@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  UnknownNLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: test
+      Subnets: 
+        - test-0
+        - test-1
+      Type: network
+  UnknownGatewayLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: test
+      Subnets: 
+        - test-0
+        - test-1
+      Type: gateway
