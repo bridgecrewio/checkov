@@ -34,7 +34,8 @@ class TestBaseRunner(unittest.TestCase):
             }
 
             expected_files = {
-                os.path.join('sample_dir', 'dir33', 'file2.tf')
+                os.path.join('sample_dir', 'dir33', 'file2.tf'),
+                os.path.join('sample_dir', 'dir1', 'dir4', 'file3.tf'),
             }
 
             for root, dirs, files in os.walk('sample_dir'):
@@ -64,7 +65,10 @@ class TestBaseRunner(unittest.TestCase):
 
             expected_files = {
                 os.path.join('sample_dir', 'dir33', 'file2.tf'),
-                os.path.join('sample_dir', 'dir1', 'file1.tf')
+                os.path.join('sample_dir', 'dir1', 'file1.tf'),
+                os.path.join('sample_dir', 'dir1', 'dir4', 'file3.tf'),
+                os.path.join('sample_dir', 'dir11', 'dir2', 'file4.tf'),
+                os.path.join('sample_dir', 'dir33', 'dir2', 'file5.tf')
             }
 
             for root, dirs, files in os.walk('sample_dir'):
@@ -93,7 +97,8 @@ class TestBaseRunner(unittest.TestCase):
             expected_files = {
                 os.path.join('sample_dir', 'dir1', 'dir2', 'file2.tf'),
                 os.path.join('sample_dir', 'dir1', 'file1.tf'),
-                os.path.join('sample_dir', 'dir33', 'file2.tf')
+                os.path.join('sample_dir', 'dir33', 'file2.tf'),
+                os.path.join('sample_dir', 'dir1', 'dir4', 'file3.tf')
             }
 
             for root, dirs, files in os.walk('sample_dir'):
