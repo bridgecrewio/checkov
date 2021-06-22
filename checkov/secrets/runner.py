@@ -37,6 +37,7 @@ SECRET_TYPE_TO_ID = {
     'Twilio API Key': 'CKV_SECRET_18',
     # 'Hex High Entropy String': 'CKV_SECRET_19'
 }
+CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
@@ -46,7 +47,6 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
-        CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
