@@ -60,12 +60,12 @@ class BaseResourceValueCheck(BaseResourceCheck):
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:
             # Inspected key exists
-            if ANY_VALUE in expected_values:
-                # Key is found on the configuration - if it accepts any value, the check is PASSED
-                return CheckResult.PASSED
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
+            if ANY_VALUE in expected_values and value is not None:
+                # Key is found on the configuration - if it accepts any value, the check is PASSED
+                return CheckResult.PASSED
             if self._is_variable_dependant(value):
                 # If the tested attribute is variable-dependant, then result is PASSED
                 return CheckResult.PASSED

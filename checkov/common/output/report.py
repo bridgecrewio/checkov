@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from typing import Dict, Any
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
@@ -159,7 +160,7 @@ class Report:
         return len(unique_resources)
 
     @staticmethod
-    def enrich_plan_report(report, enriched_resources):
+    def enrich_plan_report(report: "Report", enriched_resources: Dict[str, Dict[str, Any]]) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
             enriched_resource = enriched_resources.get(record.resource)
@@ -170,10 +171,9 @@ class Report:
         return report
 
     @staticmethod
-    def handle_skipped_checks(report, enriched_resources):
-        records_to_skip = []
+    def handle_skipped_checks(report: "Report", enriched_resources: Dict[str, Dict[str, Any]]) -> "Report":
         for record in report.failed_checks:
-            resource_skips = enriched_resources[record.resource]["skipped_checks"]
+            resource_skips = enriched_resources.get(record.resource, {}).get("skipped_checks", [])
             for skip in resource_skips:
                 if record.check_id in skip["id"]: 
                     # Remove and re-add the record to make Checkov mark it as skipped

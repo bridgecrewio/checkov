@@ -66,8 +66,8 @@ nav_order: 1
 |  55 | CKV_K8S_21  | resource | ReplicationController  | The default namespace should not be used                                                               | Kubernetes |
 |  56 | CKV_K8S_21  | resource | Job                    | The default namespace should not be used                                                               | Kubernetes |
 |  57 | CKV_K8S_21  | resource | CronJob                | The default namespace should not be used                                                               | Kubernetes |
-|  58 | CKV_K8S_21  | resource | ServiceAccount         | The default namespace should not be used                                                               | Kubernetes |
-|  59 | CKV_K8S_21  | resource | Secret                 | The default namespace should not be used                                                               | Kubernetes |
+|  58 | CKV_K8S_21  | resource | Secret                 | The default namespace should not be used                                                               | Kubernetes |
+|  59 | CKV_K8S_21  | resource | ServiceAccount         | The default namespace should not be used                                                               | Kubernetes |
 |  60 | CKV_K8S_21  | resource | Role                   | The default namespace should not be used                                                               | Kubernetes |
 |  61 | CKV_K8S_21  | resource | RoleBinding            | The default namespace should not be used                                                               | Kubernetes |
 |  62 | CKV_K8S_21  | resource | ConfigMap              | The default namespace should not be used                                                               | Kubernetes |
