@@ -46,7 +46,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
-        inv_secret_map = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
+        CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
@@ -120,7 +120,7 @@ class Runner(BaseRunner):
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
                 result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
-                                                     inv_secret_map) or result
+                                                     CHECK_ID_TO_SECRET_TYPE) or result
                 report.add_record(Record(
                     check_id=check_id,
                     check_name=secret.type,
@@ -138,15 +138,15 @@ class Runner(BaseRunner):
 
     @staticmethod
     def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list,
-                               inv_secret_map: dict) -> Optional[dict]:
+                               CHECK_ID_TO_SECRET_TYPE: dict) -> Optional[dict]:
         if skipped_checks:
             for skipped_check in skipped_checks:
-                if skipped_check == check_id and skipped_check in inv_secret_map:
+                if skipped_check == check_id and skipped_check in CHECK_ID_TO_SECRET_TYPE:
                     return {'result': CheckResult.SKIPPED,
                             'suppress_comment': f"Secret scan {skipped_check} is skipped"}
         # Check for suppression comment in the line before, the line of, and the line after the secret
-        for i in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
-            lt = linecache.getline(os.path.join(root_folder, secret.filename), i)
+        for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
+            lt = linecache.getline(os.path.join(root_folder, secret.filename), line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
             if skip_search:
                 return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
