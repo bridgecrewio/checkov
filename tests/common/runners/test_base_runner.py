@@ -21,7 +21,7 @@ class TestBaseRunner(unittest.TestCase):
         try:
             os.chdir(current_dir)
 
-            excluded_paths = ['dir2', 'dir1/file1.tf']
+            excluded_paths = ['dir2', os.path.join('dir1', 'file1.tf')]
 
             remaining_dirs = []
             remaining_files = []
@@ -48,7 +48,7 @@ class TestBaseRunner(unittest.TestCase):
             self.assertEqual(set(remaining_dirs), expected_dirs)
             self.assertEqual(set(remaining_files), expected_files)
 
-            excluded_paths = ['dir1/dir2']
+            excluded_paths = [os.path.join('dir1', 'dir2')]
 
             remaining_dirs = []
             remaining_files = []
@@ -77,7 +77,7 @@ class TestBaseRunner(unittest.TestCase):
             self.assertEqual(set(remaining_dirs), expected_dirs)
             self.assertEqual(set(remaining_files), expected_files)
 
-            excluded_paths = ['dir../dir2']
+            excluded_paths = [os.path.join('dir..', 'dir2')]
 
             remaining_dirs = []
             remaining_files = []
@@ -131,7 +131,7 @@ class TestBaseRunner(unittest.TestCase):
         # we expect .terraform and all dir2 to get filtered out
         self.assertEqual(set(remaining_dirs), expected)
 
-        excluded_paths = ['dir1/dir2']
+        excluded_paths = [os.path.join('dir1', 'dir2')]
 
         remaining_dirs = []
 
@@ -151,7 +151,7 @@ class TestBaseRunner(unittest.TestCase):
         # we expect .terraform and dir1/dir2 to get filtered out
         self.assertEqual(set(remaining_dirs), expected)
 
-        excluded_paths = ['dir../dir2']
+        excluded_paths = [os.path.join('dir..', 'dir2')]
 
         remaining_dirs = []
 

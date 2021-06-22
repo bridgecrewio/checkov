@@ -36,9 +36,9 @@ def filter_ignored_paths(root_dir, names, excluded_paths: List[str]):
     # if excluded_paths = ['dir1/dir33', 'dir2/hello.yaml'], then we would scan dir1, but we would skip its subdirectories. We would scan
     # dir2 and its subdirectory, but we'd skip hello.yaml.
 
-    # first handle the legacy logic - technically, this logic only used to remove directories starting with '.',
-    # so that logic is preserved
-    [names.remove(path) for path in list(names) if path in ignored_directories or (os.path.isdir(os.path.join(root_dir, path)) and path.startswith("."))]
+    # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
+    # mostly this will just remove those problematic directories hardcoded above.
+    [names.remove(path) for path in list(names) if path in ignored_directories or path.startswith(".")]
 
     # now apply the new logic
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
