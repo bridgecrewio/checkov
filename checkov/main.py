@@ -131,7 +131,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     external_checks_dir = get_external_checks_dir(config)
     url = None
-
+    created_baseline_path = None
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -143,13 +143,15 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url))
             if config.create_baseline:
                 overall_baseline = Baseline()
                 for report in scan_reports:
                     overall_baseline.add_findings_from_report(report)
-                with open(os.path.join(os.path.abspath(root_folder), '.checkov.baseline'), 'w') as f:
+                created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
+                with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url, created_baseline_path=created_baseline_path))
+
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -260,6 +262,9 @@ def add_parser_args(parser):
                action='store_true', default=None)
     parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
+               action='store_true', default=False)
+    parser.add('--baseline', help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
+                                  'with respect to the provided baseline',
                action='store_true', default=False)
 
 

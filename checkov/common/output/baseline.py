@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Dict, List, DefaultDict
 
 from checkov.common.output.report import Report
-
+import json
 
 class Baseline:
     failed_checks: DefaultDict[str, List[Dict[str, List[str]]]] = defaultdict(list)
@@ -50,9 +50,9 @@ class Baseline:
         }
         return resp
 
-    # TODO: implement read from JSON
-    # @staticmethod
-    # def from_json(o: dict) -> "Baseline":
-    #     baseline = Baseline()
-    #     baseline.failed_checks = ...
-    #     return baseline
+    @staticmethod
+    def from_json(file_path: str) -> "Baseline":
+        baseline = Baseline()
+        with open(file_path, 'r') as f:
+            a = json.loads(f)
+        return baseline
