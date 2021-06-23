@@ -10,7 +10,7 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 import deep_merge
 import hcl2
 
-from checkov.common.runners.base_runner import filter_ignored_directories
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
@@ -24,9 +24,9 @@ from checkov.terraform.parser_utils import eval_string, find_var_blocks
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
-def _filter_ignored_directories(d_names, excluded_paths):
-    filter_ignored_directories(d_names, excluded_paths)
-    [d_names.remove(d) for d in list(d_names) if d in [default_ml_registry.external_modules_folder_name]]
+def _filter_ignored_paths(root, paths, excluded_paths):
+    filter_ignored_paths(root, paths, excluded_paths)
+    [paths.remove(path) for path in list(paths) if path in [default_ml_registry.external_modules_folder_name]]
 
 
 class Parser:
@@ -120,7 +120,8 @@ class Parser:
 
         if include_sub_dirs:
             for sub_dir, d_names, f_names in os.walk(self.directory):
-                _filter_ignored_directories(d_names, self.excluded_paths)
+                _filter_ignored_paths(sub_dir, d_names, self.excluded_paths)
+                _filter_ignored_paths(sub_dir, f_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
                     self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
                                             keys_referenced_as_modules)

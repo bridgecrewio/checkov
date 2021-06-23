@@ -4,7 +4,7 @@ from dockerfile_parse.constants import DOCKERFILE_FILENAME
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
@@ -33,7 +33,8 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
                     if file in DOCKER_FILE_MASK:
                         files_list.append(os.path.join(root, file))

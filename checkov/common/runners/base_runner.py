@@ -18,7 +18,32 @@ class BaseRunner(ABC):
         pass
 
 
-def filter_ignored_directories(d_names, excluded_paths: List[str]):
-    excluded_paths = [] if excluded_paths is None else excluded_paths
-    [d_names.remove(d) for d in list(d_names) if d in ignored_directories or d.startswith(".")
-     or any(re.findall(re.compile(exp), d) for exp in excluded_paths)]
+def filter_ignored_paths(root_dir, names, excluded_paths: List[str]):
+    # we need to handle legacy logic, where directories to skip could be specified using the env var (default value above)
+    # or a directory starting with '.'; these look only at directory basenames, not relative paths.
+    #
+    # But then any other excluded paths (specified via --skip-path or via the platform repo settings) should look at
+    # the path name relative to the root folder. These can be files or directories.
+    # Example: take the following dir tree:
+    # .
+    #   ./dir1
+    #      ./dir1/dir33
+    #      ./dir1/.terraform
+    #   ./dir2
+    #      ./dir2/dir33
+    #      /.dir2/hello.yaml
+    #
+    # if excluded_paths = ['dir1/dir33', 'dir2/hello.yaml'], then we would scan dir1, but we would skip its subdirectories. We would scan
+    # dir2 and its subdirectory, but we'd skip hello.yaml.
+
+    # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
+    # mostly this will just remove those problematic directories hardcoded above.
+    [names.remove(path) for path in list(names) if path in ignored_directories or path.startswith(".")]
+
+    # now apply the new logic
+    # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
+    #  paths specified via the CLI argument will presumably use \\
+    if excluded_paths:
+        compiled = [re.compile(p) for p in excluded_paths]
+        [names.remove(path) for path in list(names) if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled)]
+

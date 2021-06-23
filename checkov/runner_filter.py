@@ -21,7 +21,7 @@ class RunnerFilter(object):
         evaluate_variables: bool = True,
         runners: Optional[List[str]] = None,
         skip_framework: Optional[str] = None,
-        excluded_directories: Optional[List[str]] = None
+        excluded_paths: Optional[List[str]] = None
     ) -> None:
 
         if checks is None:
@@ -60,7 +60,7 @@ class RunnerFilter(object):
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
-        self.excluded_paths = excluded_directories
+        self.excluded_paths = excluded_paths
 
     def should_run_check(self, check_id: str) -> bool:
         if RunnerFilter.is_external_check(check_id):

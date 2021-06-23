@@ -5,7 +5,7 @@ from functools import reduce
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.parser.parser import parse
 from checkov.kubernetes.registry import registry
 from checkov.runner_filter import RunnerFilter
@@ -34,7 +34,8 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_directories(d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
 
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
