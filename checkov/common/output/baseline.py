@@ -3,8 +3,11 @@ from typing import Dict, List, DefaultDict
 
 from checkov.common.output.report import Report
 import json
+from checkov.common.output.record import Record
+
 
 class Baseline:
+    path = ""
     failed_checks: DefaultDict[str, List[Dict[str, List[str]]]] = defaultdict(list)
 
     def add_findings_from_report(self, report: Report) -> None:
@@ -50,9 +53,26 @@ class Baseline:
         }
         return resp
 
+    def compare_and_reduce_reports(self, scan_reports: List[Report]) -> None:
+        for scan_report in scan_reports:
+            scan_report.passed_checks = [check for check in scan_report.passed_checks if
+                                         self._is_check_in_baseline(check)]
+            scan_report.skipped_checks = []
+            scan_report.failed_checks = [check for check in scan_report.failed_checks if
+                                         not self._is_check_in_baseline(check)]
+
+    def _is_check_in_baseline(self, check: Record) -> bool:
+        failed_check_id = check.check_id
+        failed_check_resource = check.resource
+        for baseline_failed_check in self.failed_checks:
+            for finding in baseline_failed_check["findings"]:
+                if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:
+                    return True
+
     @staticmethod
     def from_json(file_path: str) -> "Baseline":
         baseline = Baseline()
+        baseline.path = file_path
         with open(file_path, 'r') as f:
             baseline_raw = json.load(f)
             baseline.failed_checks = baseline_raw.get("failed_checks", {})

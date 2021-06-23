@@ -82,7 +82,7 @@ class Report:
     def is_empty(self) -> bool:
         return len(self.passed_checks + self.failed_checks + self.skipped_checks) + len(self.parsing_errors) == 0
 
-    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None) -> None:
+    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None, baseline=None) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -107,6 +107,12 @@ class Report:
 
         if created_baseline_path:
             print(colored(f"Created a checkov baseline file at {created_baseline_path}", "blue"))
+
+        if baseline:
+            print(colored(
+                f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
+                "blue"))
+
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:

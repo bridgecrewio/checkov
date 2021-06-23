@@ -129,6 +129,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         print_checks(framework=config.framework)
         return
 
+    baseline = None
+    if config.baseline:
+        baseline = Baseline.from_json(config.baseline)
+
     external_checks_dir = get_external_checks_dir(config)
     url = None
     created_baseline_path = None
@@ -138,6 +142,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file, guidelines=guidelines)
+            if baseline:
+                baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
@@ -150,9 +156,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url, created_baseline_path=created_baseline_path))
-            if config.baseline:
-                baseline = Baseline.from_json(config.baseline)
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url, created_baseline_path=created_baseline_path, baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
