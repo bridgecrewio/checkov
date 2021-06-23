@@ -131,7 +131,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     baseline = None
     if config.baseline:
-        baseline = Baseline.from_json(config.baseline)
+        baseline = Baseline()
+        baseline.from_json(config.baseline)
 
     external_checks_dir = get_external_checks_dir(config)
     url = None

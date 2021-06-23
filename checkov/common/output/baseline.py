@@ -71,11 +71,9 @@ class Baseline:
                     return True
         return False
 
-    @staticmethod
-    def from_json(file_path: str) -> "Baseline":
-        baseline = Baseline()
-        baseline.path = file_path
+    def from_json(self, file_path: str) -> None:
+
+        self.path = file_path
         with open(file_path, 'r') as f:
             baseline_raw = json.load(f)
-            baseline.failed_checks = baseline_raw.get("failed_checks", {})
-        return baseline
+            self.failed_checks = baseline_raw.get("failed_checks", {})
