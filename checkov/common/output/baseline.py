@@ -57,7 +57,8 @@ class Baseline:
         for scan_report in scan_reports:
             scan_report.passed_checks = [check for check in scan_report.passed_checks if
                                          self._is_check_in_baseline(check)]
-            scan_report.skipped_checks = []
+            scan_report.skipped_checks = [check for check in scan_report.skipped_checks if
+                                          self._is_check_in_baseline(check)]
             scan_report.failed_checks = [check for check in scan_report.failed_checks if
                                          not self._is_check_in_baseline(check)]
 
