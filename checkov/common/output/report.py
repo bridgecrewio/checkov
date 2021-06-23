@@ -72,7 +72,24 @@ class Report:
                 "summary": self.get_summary()
             }
 
-    def get_exit_code(self, soft_fail):
+    def get_exit_code(self, soft_fail, soft_fail_on, hard_fail_on):
+        if soft_fail_on:
+            # return 0 if all failing checks are in the soft_fail_on list, return 1 otherwise
+            if all(check_id in soft_fail_on
+                   for check_id in list(failed_check.check_id for failed_check in self.failed_checks)):
+                return 0
+            else:
+                return 1
+        if hard_fail_on:
+            # return 1 if any failed check ids from the hard_fail_on list, return 0 otherwise
+            if any(check_id in hard_fail_on
+                   for check_id in list(failed_check.check_id for failed_check in self.failed_checks)):
+                return 1
+            else:
+                return 0
+            pass
+        if soft_fail_on or hard_fail_on:
+            any(check in hard_fail_on for check in self.failed_checks)
         if soft_fail:
             return 0
         elif len(self.failed_checks) > 0:

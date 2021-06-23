@@ -69,7 +69,7 @@ class RunnerRegistry(object):
                     report.print_console(is_quiet=config.quiet, is_compact=config.compact)
                     if url:
                         print("More details: {}".format(url))
-            exit_codes.append(report.get_exit_code(config.soft_fail))
+            exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
         if config.output == "junitxml":
             if len(junit_reports) == 1:
                 junit_reports[0].print_junit_xml()

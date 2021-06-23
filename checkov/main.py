@@ -129,6 +129,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     external_checks_dir = get_external_checks_dir(config)
     url = None
 
+    if config.soft_fail_on and config.hard_fail_on:
+        parser.error("'--soft-fail-on' and '--hard-fail-on' cannot be used together.")
+        return
+
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -213,6 +217,12 @@ def add_parser_args(parser):
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('-s', '--soft-fail',
                help='Runs checks but suppresses error code', action='store_true')
+    parser.add('--soft-fail-on',
+               help='Exits with a 0 exit status for specified checks.You can '
+                    'specify multiple checks separated by comma delimiter', action='append', default=None)
+    parser.add('--hard-fail-on',
+               help='Exits with a non-zero exit status for specified checks.You can '
+                    'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
