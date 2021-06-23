@@ -181,6 +181,8 @@ class BcPlatformIntegration(object):
                     self._persist_file(f, os.path.relpath(f, root_dir))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
+                # self.excluded_paths only contains the config fetched from the platform.
+                # but here we expect the list from runner_registry as well (which includes self.excluded_paths).
                 filter_ignored_paths(root_path, d_names, excluded_paths)
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
