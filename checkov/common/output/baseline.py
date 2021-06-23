@@ -68,6 +68,7 @@ class Baseline:
             for finding in baseline_failed_check["findings"]:
                 if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:
                     return True
+        return False
 
     @staticmethod
     def from_json(file_path: str) -> "Baseline":
