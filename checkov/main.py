@@ -157,20 +157,31 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url, created_baseline_path=created_baseline_path, baseline=baseline))
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            guidelines=guidelines,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        if baseline:
+            baseline.compare_and_reduce_reports(scan_reports)
+        if config.create_baseline:
+            overall_baseline = Baseline()
+            for report in scan_reports:
+                overall_baseline.add_findings_from_report(report)
+            created_baseline_path = os.path.join(os.path.abspath(os.path.commonprefix(config.file)), '.checkov.baseline')
+            with open(created_baseline_path, 'w') as f:
+                json.dump(overall_baseline.to_dict(), f, indent=4)
+
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder, files)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
-        return runner_registry.print_reports(scan_reports, config, url)
+        return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
+                                             baseline=baseline)
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
