@@ -14,7 +14,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
@@ -32,15 +32,38 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_runner_tf_failing_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/terraform_failed"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets'))
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
     def test_runner_skip_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/cfn"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET_12']))
+                            runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET_2']))
         self.assertEqual(len(report.skipped_checks), 1)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
+
+    def test_runner_multiple_files(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets'))
+        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
 
 if __name__ == '__main__':
     unittest.main()

@@ -84,7 +84,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(5, summary['failed'])
-        self.assertEqual(2, summary['skipped'])
+        self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_runner_extra_check(self):
@@ -174,7 +174,7 @@ class TestRunnerValid(unittest.TestCase):
                     # A single check can have multiple resource blocks it checks, which means it will show up multiple times in the registry
                     bad_checks.append(f'{check.id}: {check.name}')
                     print(f'{check.id}: {check.name}')
-        self.assertEqual(len(bad_checks), 0)
+        self.assertEqual(len(bad_checks), 0, f'Bad checks: {bad_checks}')
 
     def test_no_missing_ids(self):
         runner = Runner()
@@ -193,6 +193,9 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
+                continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_52':
+                # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 

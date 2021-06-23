@@ -1,47 +1,45 @@
 #!/usr/bin/env python
 import atexit
-import configargparse
+import json
 import logging
 import os
 import shutil
 import sys
 from pathlib import Path
 
+import configargparse
+
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
-from checkov.common.util.ext_argument_parser import ExtArgumentParser
-from checkov.common.util.config_utils import get_default_config_paths
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.output.baseline import Baseline
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util.banner import banner as checkov_banner
+from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
+from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.terraform.runner import Runner as tf_graph_runner
-from checkov.secrets.runner import Runner as secrets_runner
+from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
+from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
-from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 
 outer_registry = None
 
 logging_init()
 logger = logging.getLogger(__name__)
-checkov_runner_module_names = ['cfn', 'tf', 'k8', 'sls', 'arm', 'tf_plan', 'helm']
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
                    'dockerfile', 'secrets']
-
-# Check runners for necessary system dependencies.
-runnerDependencyHandler = RunnerDependencyHandler(checkov_runner_module_names, globals())
-runnerDependencyHandler.validate_runner_deps()
 
 USE_SECRETS_RUNNER = os.environ.get("CHECKOV_USE_DETECT_SECRETS", "FALSE")
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
@@ -60,14 +58,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
-    
-    # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
-    config.repo_id=bc_integration.persist_repo_id(config)
-    # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
-    config.bc_api_key=bc_integration.persist_bc_api_key(config)
 
-    # Disable runners with missing system dependencies
-    config.skip_framework = runnerDependencyHandler.disable_incompatible_runners(config.skip_framework)
+    # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
+    config.repo_id = bc_integration.persist_repo_id(config)
+    # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
+    config.bc_api_key = bc_integration.persist_bc_api_key(config)
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
@@ -84,6 +79,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         else:
             runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_runner())
 
+    runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
+    runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
         print(parser.format_values())
@@ -147,7 +144,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 url = bc_integration.commit_repository(config.branch)
 
             exit_codes.append(runner_registry.print_reports(scan_reports, config, url))
-
+            if config.create_baseline:
+                overall_baseline = Baseline()
+                for report in scan_reports:
+                    overall_baseline.add_findings_from_report(report)
+                with open(os.path.join(os.path.abspath(root_folder), '.checkov.baseline'), 'w') as f:
+                    json.dump(overall_baseline.to_dict(), f, indent=4)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -256,6 +258,9 @@ def add_parser_args(parser):
     parser.add('--show-config', help='prints all args and config settings and where they came from '
                                      '(eg. commandline, config file, environment variable or default)',
                action='store_true', default=None)
+    parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
+                                         ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
+               action='store_true', default=False)
 
 
 def get_external_checks_dir(config):

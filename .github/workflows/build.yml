@@ -21,6 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: dschep/install-pipenv-action@v1
+      - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
       - name: Build & install checkov package
         run: |
@@ -51,16 +52,17 @@ jobs:
           pipenv run pytest integration_tests
   bump-version:
     needs: [integration-tests]
-    runs-on: macos-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
+          pipenv --python 3.7
           pipenv install --dev
           pipenv run pip install pytest
       - name: Test with pytest
@@ -69,7 +71,7 @@ jobs:
           pipenv run python -m coverage report
           pipenv run python -m coverage html
           pipenv run python -m coverage_badge -o coverage.svg -f
-      - name: update docs and bump version
+      - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
@@ -118,14 +120,26 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          gh release create $new_tag -t $new_tag --repo bridgecrewio/checkov -n "$RELEASE_NOTE"
+          echo "::set-output name=version::$new_tag"
+          echo "::set-output name=notes::$RELEASE_NOTE"
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body: ${{ steps.version.outputs.notes }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
   publish-package:
     needs: bump-version
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
@@ -149,7 +163,7 @@ jobs:
           sleep 2m
   update-bridgecrew-projects:
     needs: publish-package
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
       - name: update checkov release
@@ -159,7 +173,7 @@ jobs:
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkovdb/dispatches --data '{"event_type": "build"}'
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/platform/dispatches --data '{"event_type": "checkov-upgrade"}'
   publish-checkov-dockerhub:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
@@ -180,7 +194,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
@@ -202,7 +216,7 @@ jobs:
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
   publish-to-brew:
-    runs-on: macos-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - name: Get release version
