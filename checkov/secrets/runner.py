@@ -1,20 +1,26 @@
+import concurrent
+import linecache
 import logging
 import os
 import re
+import time
+from concurrent import futures
 from typing import Optional
-from detect_secrets.core.potential_secret import PotentialSecret
+
 from detect_secrets import SecretsCollection
-from checkov.common.runners.base_runner import ignored_directories
+from detect_secrets.core import scan
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
+
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
+from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
-import linecache
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
@@ -103,13 +109,31 @@ class Runner(BaseRunner):
                         if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
-            for file in files_to_scan:
-                logging.info(f'Scanning file {file} for secrets')
+
+            # TODO: re-enable filter when re-adding `SecretKeyword` plugin
+            scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+
+            def _scan_file(file_path: str):
+                start = time.time()
                 try:
-                    secrets.scan_file(file)
-                except Exception as e:
-                    logging.warning(f"Secret scanning:could not process file {file}, {e}")
-                    continue
+                    secrets.scan_file(file_path)
+                except Exception as err:
+                    logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
+                end = time.time()
+                scan_time = end - start
+                if scan_time > 10:
+                    logging.info(f'Scanned {file_path}, took {scan_time} seconds')
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+                tasks = {executor.submit(_scan_file, f) for f in files_to_scan}
+                wait_result = concurrent.futures.wait(tasks)
+                if wait_result.not_done:
+                    raise Exception(f"failed to perform _scan_file")
+                for task in tasks:
+                    try:
+                        task.result()
+                    except Exception as e:
+                        raise e
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
