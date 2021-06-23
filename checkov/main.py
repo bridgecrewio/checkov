@@ -151,7 +151,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
             exit_codes.append(runner_registry.print_reports(scan_reports, config, url, created_baseline_path=created_baseline_path))
-
+            if config.baseline:
+                baseline = Baseline.from_json(config.baseline)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -264,8 +265,7 @@ def add_parser_args(parser):
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
                action='store_true', default=False)
     parser.add('--baseline', help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
-                                  'with respect to the provided baseline',
-               action='store_true', default=False)
+                                  'with respect to the provided baseline', default=None)
 
 
 def get_external_checks_dir(config):
