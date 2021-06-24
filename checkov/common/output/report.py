@@ -73,21 +73,30 @@ class Report:
             }
 
     def get_exit_code(self, soft_fail, soft_fail_on, hard_fail_on):
+        """
+        Returns the appropriate exit code depending on the flags that are passed in.
+
+        :param soft_fail: If true, exit code is always 0. (default is false)
+        :param soft_fail_on: A list of checks that will return exit code 0 if they fail. Other failing checks will
+        result exit code 1.
+        :param hard_fail_on: A list of checks that will return exit code 1 if they fail. Other failing checks will
+        result exit code 0.
+        :return: Exit code 0 or 1.
+        """
         if soft_fail_on:
-            # return 0 if all failing checks are in the soft_fail_on list, return 1 otherwise
-            if all(check_id in soft_fail_on
-                   for check_id in list(failed_check.check_id for failed_check in self.failed_checks)):
+            if all(check_id in soft_fail_on for check_id in
+                   (failed_check.check_id for failed_check in self.failed_checks)):
+                # List of "failed checks" is a subset of the "soft fail on" list.
                 return 0
             else:
                 return 1
         if hard_fail_on:
-            # return 1 if any failed check ids from the hard_fail_on list, return 0 otherwise
-            if any(check_id in hard_fail_on
-                   for check_id in list(failed_check.check_id for failed_check in self.failed_checks)):
+            if any(check_id in hard_fail_on for check_id in
+                   (failed_check.check_id for failed_check in self.failed_checks)):
+                # Any check from the list of "failed checks" is in the list of "hard fail on checks".
                 return 1
             else:
                 return 0
-            pass
         if soft_fail_on or hard_fail_on:
             any(check in hard_fail_on for check in self.failed_checks)
         if soft_fail:
