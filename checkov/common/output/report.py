@@ -72,8 +72,8 @@ class Report:
                 "summary": self.get_summary()
             }
 
-    def get_exit_code(self, soft_fail: Union[bool, None], soft_fail_on: Union[list, None],
-                      hard_fail_on: Union[list, None]) -> int:
+    def get_exit_code(self, soft_fail: bool, soft_fail_on: Union[list, None] = None,
+                      hard_fail_on: Union[list, None] = None) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
