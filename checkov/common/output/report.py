@@ -9,6 +9,7 @@ from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.version import version
 
 init(autoreset=True)
@@ -85,6 +86,7 @@ class Report:
         :return: Exit code 0 or 1.
         """
         if soft_fail_on:
+            soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
             if all(check_id in soft_fail_on for check_id in
                    (failed_check.check_id for failed_check in self.failed_checks)):
                 # List of "failed checks" is a subset of the "soft fail on" list.
@@ -92,6 +94,7 @@ class Report:
             else:
                 return 1
         if hard_fail_on:
+            hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
             if any(check_id in hard_fail_on for check_id in
                    (failed_check.check_id for failed_check in self.failed_checks)):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".
