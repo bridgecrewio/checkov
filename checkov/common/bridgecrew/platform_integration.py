@@ -24,6 +24,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.version import version as checkov_version
 
 EMAIL_PATTERN = r"[^@]+@[^@]+\.[^@]+"
@@ -162,7 +163,7 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir, files=None):
+    def persist_repository(self, root_dir, files=None, excluded_paths=[]):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
         that are specified will be persisted.
@@ -180,10 +181,10 @@ class BcPlatformIntegration(object):
                     self._persist_file(f, os.path.relpath(f, root_dir))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
-                if any(re.findall(re.compile(exp), root_path) for exp in self.excluded_paths):
-                    # no need to persist files from excluded directories
-                    logging.info(f"skipping persisting excluded directory {root_path}")
-                    continue
+                # self.excluded_paths only contains the config fetched from the platform.
+                # but here we expect the list from runner_registry as well (which includes self.excluded_paths).
+                filter_ignored_paths(root_path, d_names, excluded_paths)
+                filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS:

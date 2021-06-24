@@ -296,8 +296,11 @@ For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DE
 Default is `LOG_LEVEL=WARNING`.
 
 #### Skipping directories
-To skip a whole directory, use the environment variable `CKV_IGNORED_DIRECTORIES`. 
-Default is `CKV_IGNORED_DIRECTORIES=node_modules,.terraform,.serverless`
+To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
+
+By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
+
+You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`. Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
 
 #### VSCODE Extension
 

@@ -1,61 +1,67 @@
+import itertools
+from typing import List, Optional, Dict, Any, Tuple
+
+from networkx import DiGraph
+
 from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.terraform.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from checkov.terraform.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from checkov.terraform.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
+from checkov.terraform.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
-    def __init__(self, solvers, operator):
+    def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         self.solver_type = SolverType.COMPLEX_CONNECTION
-        if solvers is None:
-            solvers = []
-        self.solvers = solvers
+        self.solvers = solvers if solvers else []
         self.operator = operator
 
-        resource_types = []
-        connected_resources_types = []
+        resource_types = set()
+        connected_resources_types = set()
         for sub_solver in self.solvers:
-            if sub_solver.solver_type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION]:
-                resource_types.extend(sub_solver.resource_types)
-                connected_resources_types.extend(sub_solver.connected_resources_types)
-            elif sub_solver.solver_type in [SolverType.ATTRIBUTE]:
-                resource_types.extend(sub_solver.resource_types)
-        resource_types = list(set(resource_types))
-        connected_resources_types = list(set(connected_resources_types))
+            if isinstance(sub_solver, BaseConnectionSolver):
+                resource_types.update(sub_solver.resource_types)
+                connected_resources_types.update(sub_solver.connected_resources_types)
+            elif isinstance(sub_solver, BaseAttributeSolver):
+                resource_types.update(sub_solver.resource_types)
 
-        super().__init__(resource_types, connected_resources_types)
+        super().__init__(list(resource_types), list(connected_resources_types))
 
     @staticmethod
-    def filter_duplicates(checks):
+    def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return list({check[CustomAttributes.ID]: check for check in checks}.values())
 
-    def filter_results(self, passed: list, failed: list):
-        filters = []
-        filter_solvers = [sub_solver for sub_solver in self.solvers if sub_solver.solver_type == SolverType.FILTER]
+    def filter_results(
+        self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]]
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        filter_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseFilterSolver)]
         for sub_solver in filter_solvers:
-            filters.append(sub_solver._get_operation())
-        if filters:
-            for filter_pred in filters:
-                passed = list(filter(filter_pred, passed))
-                failed = list(filter(filter_pred, failed))
+            filter_pred = sub_solver._get_operation()
+            passed = list(filter(filter_pred, passed))
+            failed = list(filter(filter_pred, failed))
         passed = self.filter_duplicates(passed)
         failed = self.filter_duplicates(failed)
         return passed, failed
 
-    def get_sorted_connection_solvers(self):
-        connection_solvers = [sub_solver for sub_solver in self.solvers if
-                              sub_solver.solver_type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION]]
-        filter_solvers = [sub_solver for sub_solver in self.solvers if sub_solver.solver_type == SolverType.FILTER]
+    def get_sorted_connection_solvers(self) -> List[BaseConnectionSolver]:
+        connection_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseConnectionSolver)]
+        filter_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseFilterSolver)]
 
         resource_types_to_filter = []
         for filter_solver in filter_solvers:
-            if filter_solver.attribute == 'resource_type':
+            if filter_solver.attribute == "resource_type":
                 resource_types_to_filter.extend(filter_solver.value)
 
         sorted_connection_solvers = []
         connection_solvers_with_filtered_resource_types = []
         for connection_solver in connection_solvers:
-            if any(r in resource_types_to_filter for r in connection_solver.resource_types + connection_solver.connected_resources_types):
+            if any(
+                r in resource_types_to_filter
+                for r in itertools.chain(connection_solver.resource_types, connection_solver.connected_resources_types)
+            ):
                 connection_solvers_with_filtered_resource_types.append(connection_solver)
             else:
                 sorted_connection_solvers.append(connection_solver)
@@ -63,9 +69,12 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         sorted_connection_solvers.extend(connection_solvers_with_filtered_resource_types)
         return sorted_connection_solvers
 
-    def run_attribute_solvers(self, graph_connector):
-        attribute_solvers = [sub_solver for sub_solver in self.solvers if
-                             sub_solver.solver_type in [SolverType.ATTRIBUTE, SolverType.COMPLEX]]
+    def run_attribute_solvers(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        attribute_solvers = [
+            sub_solver
+            for sub_solver in self.solvers
+            if isinstance(sub_solver, (BaseAttributeSolver, BaseComplexSolver))
+        ]
         passed_attributes, failed_attributes = [], []
         for attribute_solver in attribute_solvers:
             passed_solver, failed_solver = attribute_solver.run(graph_connector)

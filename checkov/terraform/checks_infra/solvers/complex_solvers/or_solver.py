@@ -1,4 +1,7 @@
+from typing import List, Any, Dict
+
 from checkov.common.graph.checks_infra.enums import Operators
+from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.terraform.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from functools import reduce
 from operator import or_
@@ -7,15 +10,13 @@ from operator import or_
 class OrSolver(BaseComplexSolver):
     operator = Operators.OR
 
-    def __init__(self, solvers, resource_types):
+    def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)
 
-    def _get_operation(self, *args):
+    def _get_operation(self, *args: Any) -> Any:
         return reduce(or_, args)
 
-    def get_operation(self, vertex):
-        for i, solver in enumerate(self.solvers):
-            pred_result = solver.get_operation(vertex)
-            if pred_result:
-                return pred_result
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+        if any(solver.get_operation(vertex) for solver in self.solvers):
+            return True
         return False

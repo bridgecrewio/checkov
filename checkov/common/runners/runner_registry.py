@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from abc import abstractmethod
+from typing import List
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.report import Report
@@ -33,7 +34,7 @@ class RunnerRegistry(object):
     def extract_entity_details(self, entity):
         raise NotImplementedError()
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, repo_root_for_plan_enrichment=None):
+    def run(self, root_folder=None, external_checks_dir=None, files=None, guidelines=None, collect_skip_comments=True, repo_root_for_plan_enrichment=None) -> List[Report]:
         for runner in self.runners:
             integration_feature_registry.run_pre_scan()
             scan_report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
@@ -43,14 +44,12 @@ class RunnerRegistry(object):
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
                 enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
-                enriched_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
-                enriched_report_with_skipped = Report("terraform_plan").handle_skipped_checks(enriched_report, enriched_resources)
-                self.scan_reports.append(enriched_report_with_skipped)
-            else:
-                self.scan_reports.append(scan_report)
+                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+                scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+            self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, config, url=None):
+    def print_reports(self, scan_reports, config, url=None, created_baseline_path=None, baseline=None):
         if config.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
@@ -66,7 +65,7 @@ class RunnerRegistry(object):
                 elif config.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=config.quiet, is_compact=config.compact)
+                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path,baseline=baseline)
                     if url:
                         print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
