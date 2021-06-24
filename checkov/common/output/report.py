@@ -82,7 +82,7 @@ class Report:
     def is_empty(self) -> bool:
         return len(self.passed_checks + self.failed_checks + self.skipped_checks) + len(self.parsing_errors) == 0
 
-    def print_console(self, is_quiet=False, is_compact=False) -> None:
+    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None, baseline=None) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -104,6 +104,15 @@ class Report:
         if not is_quiet:
             for file in self.parsing_errors:
                 Report._print_parsing_error_console(file)
+
+        if created_baseline_path:
+            print(colored(f"Created a checkov baseline file at {created_baseline_path}", "blue"))
+
+        if baseline:
+            print(colored(
+                f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
+                "blue"))
+
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
@@ -177,7 +186,7 @@ class Report:
         for record in report.failed_checks:
             resource_skips = enriched_resources.get(record.resource, {}).get("skipped_checks", [])
             for skip in resource_skips:
-                if record.check_id in skip["id"]: 
+                if record.check_id in skip["id"]:
                     # Remove and re-add the record to make Checkov mark it as skipped
                     report.failed_checks.remove(record)
                     record.check_result["result"] = CheckResult.SKIPPED

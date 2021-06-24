@@ -64,12 +64,14 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
     config.bc_api_key = bc_integration.persist_bc_api_key(config)
 
+    excluded_paths = config.skip_path or []
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
-                                 runners=checkov_runners)
+                                 runners=checkov_runners, excluded_paths=excluded_paths)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -107,8 +109,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
                                                         source=source, source_version=source_version, repo_branch=config.branch)
-            excluded_paths = bc_integration.get_excluded_paths()
-            runner_filter.excluded_paths = excluded_paths
+            platform_excluded_paths = bc_integration.get_excluded_paths() or []
+            runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except Exception as e:
             logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token'
                          ' and try again.', exc_info=True)
@@ -129,40 +131,59 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         print_checks(framework=config.framework)
         return
 
+    baseline = None
+    if config.baseline:
+        baseline = Baseline()
+        baseline.from_json(config.baseline)
+
     external_checks_dir = get_external_checks_dir(config)
     url = None
-
+    created_baseline_path = None
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file, guidelines=guidelines)
+            if baseline:
+                baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder)
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url))
             if config.create_baseline:
                 overall_baseline = Baseline()
                 for report in scan_reports:
                     overall_baseline.add_findings_from_report(report)
-                with open(os.path.join(os.path.abspath(root_folder), '.checkov.baseline'), 'w') as f:
+                created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
+                with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            guidelines=guidelines,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        if baseline:
+            baseline.compare_and_reduce_reports(scan_reports)
+        if config.create_baseline:
+            overall_baseline = Baseline()
+            for report in scan_reports:
+                overall_baseline.add_findings_from_report(report)
+            created_baseline_path = os.path.join(os.path.abspath(os.path.commonprefix(config.file)), '.checkov.baseline')
+            with open(created_baseline_path, 'w') as f:
+                json.dump(overall_baseline.to_dict(), f, indent=4)
+
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder, files)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
-        return runner_registry.print_reports(scan_reports, config, url)
+        return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
+                                             baseline=baseline)
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
@@ -187,6 +208,10 @@ def add_parser_args(parser):
                help='IaC root directory (can not be used together with --file).')
     parser.add('-f', '--file', action='append',
                help='IaC file(can not be used together with --directory)')
+    parser.add('--skip-path', action='append',
+               help='Path (file or directory) to skip, using regular expression logic, relative to current '
+                    'working directory. Word boundaries are not implicit; i.e., specifying "dir1" will skip any '
+                    'directory or subdirectory named "dir1". Ignored with -f. Can be specified multiple times.')
     parser.add('--external-checks-dir', action='append',
                help='Directory for custom checks to be loaded. Can be repeated')
     parser.add('--external-checks-git', action='append',
@@ -261,6 +286,8 @@ def add_parser_args(parser):
     parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
                action='store_true', default=False)
+    parser.add('--baseline', help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
+                                  'with respect to the provided baseline', default=None)
 
 
 def get_external_checks_dir(config):

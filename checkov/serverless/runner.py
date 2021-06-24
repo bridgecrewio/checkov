@@ -14,7 +14,7 @@ from checkov.serverless.checks.package.registry import package_registry
 from checkov.serverless.checks.plugin.registry import plugin_registry
 from checkov.serverless.checks.provider.registry import provider_registry
 from checkov.serverless.checks.service.registry import service_registry
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_directories
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -64,7 +64,8 @@ class Runner(BaseRunner):
                 if "node_modules" in d_names:
                     d_names.remove("node_modules")
 
-                filter_ignored_directories(d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
                     if file in SLS_FILE_MASK:
                         full_path = os.path.join(root, file)

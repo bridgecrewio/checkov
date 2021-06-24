@@ -49,7 +49,7 @@ class RunnerRegistry(object):
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def print_reports(self, scan_reports, config, url=None):
+    def print_reports(self, scan_reports, config, url=None, created_baseline_path=None, baseline=None):
         if config.output == 'cli':
             print(f"{self.banner}\n")
         exit_codes = []
@@ -65,7 +65,7 @@ class RunnerRegistry(object):
                 elif config.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=config.quiet, is_compact=config.compact)
+                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path,baseline=baseline)
                     if url:
                         print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(config.soft_fail))
