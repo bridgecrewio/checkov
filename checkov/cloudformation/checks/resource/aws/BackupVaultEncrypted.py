@@ -13,7 +13,7 @@ class BackupVaultEncrypted(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'Properties/EncryptionKeyArn'
 
-    def get_inspected_value(self):
+    def get_expected_value(self):
         return ANY_VALUE
 
 
