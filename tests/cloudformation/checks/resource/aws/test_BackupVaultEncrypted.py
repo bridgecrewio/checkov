@@ -22,11 +22,11 @@ class TestBackupVaultEncrypted(unittest.TestCase):
             self.assertEqual(record.check_id, check.id)
 
         passing_resources = {
-            "AWS::ElasticLoadBalancingV2::LoadBalancer.Pass",
+            "AWS::Backup::BackupVault.Pass",
         }
 
         failing_resources = {
-            "AWS::ElasticLoadBalancingV2::LoadBalancer.Fail",
+            "AWS::Backup::BackupVault.Fail",
 
         }
 
