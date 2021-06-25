@@ -140,7 +140,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
     created_baseline_path = None
 
-    if sum(x is not None for x in [config.soft_fail, config.soft_fail_on, config.hard_fail_on]) > 1:
+    if sum(arg is not None for arg in [config.soft_fail, config.soft_fail_on, config.hard_fail_on]) > 1:
         parser.error("'--soft-fail', '--soft-fail-on' and '--hard-fail-on' cannot be used together.")
         return
 
@@ -252,10 +252,10 @@ def add_parser_args(parser):
     parser.add('-s', '--soft-fail',
                help='Runs checks but suppresses error code', action='store_true')
     parser.add('--soft-fail-on',
-               help='Exits with a 0 exit status for specified checks.You can '
+               help='Exits with a 0 exit code for specified checks. You can '
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('--hard-fail-on',
-               help='Exits with a non-zero exit status for specified checks.You can '
+               help='Exits with a non-zero exit code for specified checks. You can '
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
