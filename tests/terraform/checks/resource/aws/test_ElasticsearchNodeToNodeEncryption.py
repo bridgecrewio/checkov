@@ -1,166 +1,42 @@
+import os
 import unittest
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.ElasticsearchNodeToNodeEncryption import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_unknown(self):
-        resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
-                         'elasticsearch_version': ['${var.elasticsearch_version}'],
-                         'advanced_options': ['${var.advanced_options}'], 'ebs_options': [
-                {'ebs_enabled': ['${var.ebs_volume_size > 0 ? True : False}'],
-                 'volume_size': ['${var.ebs_volume_size}'], 'volume_type': ['${var.ebs_volume_type}'],
-                 'iops': ['${var.ebs_iops}']}],
-                         'encrypt_at_rest': [{'enabled': [False], 'kms_key_id': ['${var.encrypt_at_rest_kms_key_id}']}],
-                         'cluster_config': [{'instance_count': ['${var.foo}'], 'instance_type': ['${var.instance_type}'],
-                                             'dedicated_master_enabled': ['${var.dedicated_master_enabled}'],
-                                             'dedicated_master_count': ['${var.dedicated_master_count}'],
-                                             'dedicated_master_type': ['${var.dedicated_master_type}'],
-                                             'zone_awareness_enabled': ['${var.zone_awareness_enabled}'],
-                                             'zone_awareness_config': [
-                                                 {'availability_zone_count': ['${var.availability_zone_count}']}]}],
-                         'vpc_options': [
-                             {'security_group_ids': [['${join("",aws_security_group.default.*.id)}']],
-                              'subnet_ids': ['${var.subnet_ids}']}], 'snapshot_options': [
-                {'automated_snapshot_start_hour': ['${var.automated_snapshot_start_hour}']}],
-                         'log_publishing_options': [
-                             {'enabled': ['${var.log_publishing_index_enabled}'], 'log_type': ['INDEX_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_index_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_search_enabled}'], 'log_type': ['SEARCH_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_search_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_application_enabled}'],
-                              'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
-                                 '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
-                         'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+        test_files_dir = current_dir + "/example_ElasticsearchNodeToNodeEncryption"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure(self):
-        resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
-                         'elasticsearch_version': ['${var.elasticsearch_version}'],
-                         'advanced_options': ['${var.advanced_options}'], 'ebs_options': [
-                {'ebs_enabled': ['${var.ebs_volume_size > 0 ? True : False}'],
-                 'volume_size': ['${var.ebs_volume_size}'], 'volume_type': ['${var.ebs_volume_type}'],
-                 'iops': ['${var.ebs_iops}']}],
-                         'encrypt_at_rest': [{'enabled': [False], 'kms_key_id': ['${var.encrypt_at_rest_kms_key_id}']}],
-                         'cluster_config': [{'instance_count': 3, 'instance_type': ['${var.instance_type}'],
-                                             'dedicated_master_enabled': ['${var.dedicated_master_enabled}'],
-                                             'dedicated_master_count': ['${var.dedicated_master_count}'],
-                                             'dedicated_master_type': ['${var.dedicated_master_type}'],
-                                             'zone_awareness_enabled': ['${var.zone_awareness_enabled}'],
-                                             'zone_awareness_config': [
-                                                 {'availability_zone_count': ['${var.availability_zone_count}']}]}],
-                         'node_to_node_encryption': [{'enabled': False}], 'vpc_options': [
-                {'security_group_ids': [['${join("",aws_security_group.default.*.id)}']],
-                 'subnet_ids': ['${var.subnet_ids}']}], 'snapshot_options': [
-                {'automated_snapshot_start_hour': ['${var.automated_snapshot_start_hour}']}],
-                         'log_publishing_options': [
-                             {'enabled': ['${var.log_publishing_index_enabled}'], 'log_type': ['INDEX_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_index_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_search_enabled}'], 'log_type': ['SEARCH_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_search_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_application_enabled}'],
-                              'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
-                                 '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
-                         'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_elasticsearch_domain.without_cluster_config",
+            "aws_elasticsearch_domain.without_instance_count",
+            "aws_elasticsearch_domain.instance_count_not_bigger_than_1",
+            "aws_elasticsearch_domain.node_to_node_encryption_enabled"
+        }
+        failing_resources = {
+            "aws_elasticsearch_domain.node_to_node_encryption_disabled",
+            "aws_elasticsearch_domain.node_to_node_encryption_doesnt_exist",
+        }
 
-    def test_failure_node_to_node_encryption_missing(self):
-        resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
-                         'elasticsearch_version': ['${var.elasticsearch_version}'],
-                         'advanced_options': ['${var.advanced_options}'], 'ebs_options': [
-                {'ebs_enabled': ['${var.ebs_volume_size > 0 ? True : False}'],
-                 'volume_size': ['${var.ebs_volume_size}'], 'volume_type': ['${var.ebs_volume_type}'],
-                 'iops': ['${var.ebs_iops}']}],
-                         'encrypt_at_rest': [{'enabled': [False], 'kms_key_id': ['${var.encrypt_at_rest_kms_key_id}']}],
-                         'cluster_config': [{'instance_count': 3, 'instance_type': ['${var.instance_type}'],
-                                             'dedicated_master_enabled': ['${var.dedicated_master_enabled}'],
-                                             'dedicated_master_count': ['${var.dedicated_master_count}'],
-                                             'dedicated_master_type': ['${var.dedicated_master_type}'],
-                                             'zone_awareness_enabled': ['${var.zone_awareness_enabled}'],
-                                             'zone_awareness_config': [
-                                                 {'availability_zone_count': ['${var.availability_zone_count}']}]}],
-                         'vpc_options': [
-                             {'security_group_ids': [['${join("",aws_security_group.default.*.id)}']],
-                              'subnet_ids': ['${var.subnet_ids}']}], 'snapshot_options': [
-                {'automated_snapshot_start_hour': ['${var.automated_snapshot_start_hour}']}],
-                         'log_publishing_options': [
-                             {'enabled': ['${var.log_publishing_index_enabled}'], 'log_type': ['INDEX_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_index_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_search_enabled}'], 'log_type': ['SEARCH_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_search_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_application_enabled}'],
-                              'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
-                                 '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
-                         'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success(self):
-        resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
-                         'elasticsearch_version': ['${var.elasticsearch_version}'],
-                         'advanced_options': ['${var.advanced_options}'], 'ebs_options': [
-                {'ebs_enabled': ['${var.ebs_volume_size > 0 ? True : False}'],
-                 'volume_size': ['${var.ebs_volume_size}'], 'volume_type': ['${var.ebs_volume_type}'],
-                 'iops': ['${var.ebs_iops}']}],
-                         'encrypt_at_rest': [{'enabled': [True], 'kms_key_id': ['${var.encrypt_at_rest_kms_key_id}']}],
-                         'cluster_config': [{'instance_count': 3, 'instance_type': ['${var.instance_type}'],
-                                             'dedicated_master_enabled': ['${var.dedicated_master_enabled}'],
-                                             'dedicated_master_count': ['${var.dedicated_master_count}'],
-                                             'dedicated_master_type': ['${var.dedicated_master_type}'],
-                                             'zone_awareness_enabled': ['${var.zone_awareness_enabled}'],
-                                             'zone_awareness_config': [
-                                                 {'availability_zone_count': ['${var.availability_zone_count}']}]}],
-                         'node_to_node_encryption': [{'enabled': True}], 'vpc_options': [
-                {'security_group_ids': [['${join("",aws_security_group.default.*.id)}']],
-                 'subnet_ids': ['${var.subnet_ids}']}], 'snapshot_options': [
-                {'automated_snapshot_start_hour': ['${var.automated_snapshot_start_hour}']}],
-                         'log_publishing_options': [
-                             {'enabled': ['${var.log_publishing_index_enabled}'], 'log_type': ['INDEX_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_index_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_search_enabled}'], 'log_type': ['SEARCH_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_search_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_application_enabled}'],
-                              'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
-                                 '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
-                         'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_success_single_node(self):
-        resource_conf = {'count': ['${var.enabled ? 1 : 0}'], 'domain_name': ['${module.label.id}'],
-                         'elasticsearch_version': ['${var.elasticsearch_version}'],
-                         'advanced_options': ['${var.advanced_options}'], 'ebs_options': [
-                {'ebs_enabled': ['${var.ebs_volume_size > 0 ? True : False}'],
-                 'volume_size': ['${var.ebs_volume_size}'], 'volume_type': ['${var.ebs_volume_type}'],
-                 'iops': ['${var.ebs_iops}']}],
-                         'encrypt_at_rest': [{'enabled': [True], 'kms_key_id': ['${var.encrypt_at_rest_kms_key_id}']}],
-                         'cluster_config': [{'instance_count': 1, 'instance_type': ['${var.instance_type}'],
-                                             'dedicated_master_enabled': ['${var.dedicated_master_enabled}'],
-                                             'dedicated_master_count': ['${var.dedicated_master_count}'],
-                                             'dedicated_master_type': ['${var.dedicated_master_type}'],
-                                             'zone_awareness_enabled': ['${var.zone_awareness_enabled}'],
-                                             'zone_awareness_config': [
-                                                 {'availability_zone_count': ['${var.availability_zone_count}']}]}],
-                         'node_to_node_encryption': [{'enabled': False}], 'vpc_options': [
-                {'security_group_ids': [['${join("",aws_security_group.default.*.id)}']],
-                 'subnet_ids': ['${var.subnet_ids}']}], 'snapshot_options': [
-                {'automated_snapshot_start_hour': ['${var.automated_snapshot_start_hour}']}],
-                         'log_publishing_options': [
-                             {'enabled': ['${var.log_publishing_index_enabled}'], 'log_type': ['INDEX_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_index_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_search_enabled}'], 'log_type': ['SEARCH_SLOW_LOGS'],
-                              'cloudwatch_log_group_arn': ['${var.log_publishing_search_cloudwatch_log_group_arn}']},
-                             {'enabled': ['${var.log_publishing_application_enabled}'],
-                              'log_type': ['ES_APPLICATION_LOGS'], 'cloudwatch_log_group_arn': [
-                                 '${var.log_publishing_application_cloudwatch_log_group_arn}']}],
-                         'tags': ['${module.label.tags}'], 'depends_on': [['${aws_iam_service_linked_role.default}']]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
