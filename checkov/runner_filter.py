@@ -28,15 +28,6 @@ class RunnerFilter(object):
         self.checks = convert_csv_string_arg_to_list(checks)
         self.skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
-        if skip_checks is None:
-            skip_checks = []
-        if isinstance(skip_checks, str):
-            self.skip_checks = skip_checks.split(",")
-        elif isinstance(skip_checks, list) and len(skip_checks) == 1:
-            self.skip_checks = skip_checks[0].split(",")
-        else:
-            self.skip_checks = skip_checks
-
         if skip_framework is None:
             self.framework = framework
         else:

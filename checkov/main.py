@@ -140,8 +140,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
     created_baseline_path = None
 
-    if config.soft_fail_on and config.hard_fail_on:
-        parser.error("'--soft-fail-on' and '--hard-fail-on' cannot be used together.")
+    if sum(x is not None for x in [config.soft_fail, config.soft_fail_on, config.hard_fail_on]) > 1:
+        parser.error("'--soft-fail', '--soft-fail-on' and '--hard-fail-on' cannot be used together.")
         return
 
     if config.directory:
