@@ -59,7 +59,7 @@ Scheduled scan result in Jenkins
 
 ## Getting started
 
-### Requrirements
+### Requirements
  * Python >= 3.7 (Data classes are available for Python 3.7+)
  * Terraform >= 0.12
 
