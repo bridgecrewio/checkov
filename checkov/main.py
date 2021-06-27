@@ -194,6 +194,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         if config.branch is None:
             parser.error("--branch argument is required when using --docker-image")
             return
+        bc_integration.commit_repository(config.branch)
         image_scanner.scan(config.docker_image, config.dockerfile_path)
     else:
         print(f"{banner}")
