@@ -62,7 +62,7 @@ setup(
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
-    url="https://github.com/nimrodkor/checkov",
+    url="https://github.com/bridgecrewio/checkov",
     packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
     include_package_data=True,
     package_dir={'checkov.terraform.checks.graph_checks': 'checkov/terraform/checks/graph_checks'},
