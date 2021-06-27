@@ -19,7 +19,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
             "aws_elasticsearch_domain.without_cluster_config",
             "aws_elasticsearch_domain.without_instance_count",
             "aws_elasticsearch_domain.instance_count_not_bigger_than_1",
-            "aws_elasticsearch_domain.node_to_node_encryption_enabled"
+            "aws_elasticsearch_domain.node_to_node_encryption_enabled",
+            "aws_elasticsearch_domain.old_hcl"
         }
         failing_resources = {
             "aws_elasticsearch_domain.node_to_node_encryption_disabled",
@@ -29,7 +30,7 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["passed"], 5)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

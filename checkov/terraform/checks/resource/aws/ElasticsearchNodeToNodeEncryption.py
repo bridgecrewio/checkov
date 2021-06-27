@@ -24,17 +24,21 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                 if "instance_count" not in cluster_config:
                     return CheckResult.PASSED
                 self.evaluated_keys = ['cluster_config/[0]/instance_count']
-                instance_count_list = cluster_config["instance_count"];
-                if len(instance_count_list) != 1:
-                    return CheckResult.UNKNOWN
-                instance_count = force_int(instance_count_list[0])
+                instance_count = cluster_config["instance_count"]
+                if isinstance(instance_count, list):
+                    instance_count = instance_count[0]
+                    if not isinstance(instance_count, int):
+                        return CheckResult.UNKNOWN
                 if instance_count:
                     if instance_count > 1:
                         self.evaluated_keys.append('node_to_node_encryption/[0]/enabled')
                         if "node_to_node_encryption" in conf.keys() and "enabled" in conf["node_to_node_encryption"][0]:
-                            if len(conf["node_to_node_encryption"][0]["enabled"]) != 1:
+                            n2n_enc_enabled = conf["node_to_node_encryption"][0]["enabled"]
+                            if isinstance(n2n_enc_enabled, list):
+                                n2n_enc_enabled = conf["node_to_node_encryption"][0]["enabled"][0]
+                            if not isinstance(n2n_enc_enabled, bool):
                                 return CheckResult.UNKNOWN
-                            if conf["node_to_node_encryption"][0]["enabled"][0]:
+                            if n2n_enc_enabled:
                                 return CheckResult.PASSED
                             else:
                                 return CheckResult.FAILED
