@@ -230,6 +230,14 @@ jobs:
           echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      - name: Installing Homebrew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+          test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+          test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+          echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+          echo "::add-path::/home/linuxbrew/.linuxbrew/bin"
+          brew --version
       - name: release homebrew
         uses: dawidd6/action-homebrew-bump-formula@v3.8.0
         if: env.ZERO_IF_SHOULD_RELEASE == 0
