@@ -29,6 +29,18 @@ resource "aws_elasticsearch_domain" "node_to_node_encryption_enabled" {
   }
 }
 
+resource "aws_elasticsearch_domain" "old_hcl" {
+  domain_name           = "old_hcl"
+
+  cluster_config = {
+    instance_count = 2
+  }
+
+  node_to_node_encryption = {
+    enabled = true
+  }
+}
+
 # fail
 resource "aws_elasticsearch_domain" "node_to_node_encryption_disabled" {
   domain_name           = "node_to_node_encryption_disabled"
