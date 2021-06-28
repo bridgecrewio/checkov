@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from copy import deepcopy
-from typing import Union, List, Any, Dict, Optional, Callable
+from typing import Union, List, Any, Dict, Optional, Callable, overload
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -190,7 +190,7 @@ def get_referenced_vertices_in_value(
     return references_vertices
 
 
-def encode_graph_property_value(value: Union[bool, int, float, str, Dict[str, Any]]) -> str:
+def encode_graph_property_value(value: Union[bool, int, float, str, List[str], Dict[str, Any]]) -> str:
     if isinstance(value, bool):
         # Encode boolean into Terraform's lower case convention
         value = str(value).lower()
@@ -242,6 +242,16 @@ def run_function_multithreaded(
                     future.result()
                 except Exception as e:
                     raise e
+
+
+@overload
+def update_dictionary_attribute(config: List[Any], key_to_update: str, new_value: Any) -> List[Any]:
+    ...
+
+
+@overload
+def update_dictionary_attribute(config: Dict[str, Any], key_to_update: str, new_value: Any) -> Dict[str, Any]:
+    ...
 
 
 def update_dictionary_attribute(

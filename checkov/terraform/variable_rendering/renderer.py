@@ -90,9 +90,9 @@ class VariableRenderer:
         self.evaluate_non_rendered_values()
 
     def _edge_evaluation_task(self, edges: List[List[Edge]]) -> List[Edge]:
-        edges = edges[0]
-        self.evaluate_vertex_attribute_from_edge(edges)
-        return edges
+        inner_edges = edges[0]
+        self.evaluate_vertex_attribute_from_edge(inner_edges)
+        return inner_edges
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
