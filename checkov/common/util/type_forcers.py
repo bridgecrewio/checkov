@@ -94,3 +94,23 @@ def extract_policy_dict(policy: Union[dict, str]) -> Optional[dict]:
             return None
 
     return None
+
+
+def convert_csv_string_arg_to_list(csv_string_arg: Union[List[str], str, None]) -> list:
+    """
+    Converts list type arguments that also support comma delimited strings into a list.
+    For instance the --check flag in the CLI:
+        checkov -c CKV_1,CKV2
+        will translate to ['CKV_1', 'CKV_2']
+    :param csv_string_arg: Comma delimited string
+    :return: List of strings or empty list
+    """
+    if csv_string_arg is None:
+        return []
+    if isinstance(csv_string_arg, str):
+        return csv_string_arg.split(',')
+    elif isinstance(csv_string_arg, list) and len(csv_string_arg) == 1:
+        return csv_string_arg[0].split(',')
+    else:
+        return csv_string_arg
+

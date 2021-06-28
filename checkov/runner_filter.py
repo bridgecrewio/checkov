@@ -3,6 +3,7 @@ import fnmatch
 from typing import Set, Optional, Union, List
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 
 
 class RunnerFilter(object):
@@ -24,23 +25,8 @@ class RunnerFilter(object):
         excluded_paths: Optional[List[str]] = None
     ) -> None:
 
-        if checks is None:
-            checks = []
-        if isinstance(checks, str):
-            self.checks = checks.split(",")
-        elif isinstance(checks, list) and len(checks) == 1:
-            self.checks = checks[0].split(",")
-        else:
-            self.checks = checks
-
-        if skip_checks is None:
-            skip_checks = []
-        if isinstance(skip_checks, str):
-            self.skip_checks = skip_checks.split(",")
-        elif isinstance(skip_checks, list) and len(skip_checks) == 1:
-            self.skip_checks = skip_checks[0].split(",")
-        else:
-            self.skip_checks = skip_checks
+        self.checks = convert_csv_string_arg_to_list(checks)
+        self.skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
         if skip_framework is None:
             self.framework = framework
