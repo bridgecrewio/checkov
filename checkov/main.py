@@ -140,10 +140,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
     created_baseline_path = None
 
-    if sum(arg is not None for arg in [config.soft_fail, config.soft_fail_on, config.hard_fail_on]) > 1:
-        parser.error("'--soft-fail', '--soft-fail-on' and '--hard-fail-on' cannot be used together.")
-        return
-
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -249,14 +245,6 @@ def add_parser_args(parser):
     parser.add('--skip-check',
                help='filter scan to run on all check but a specific check identifier(denylist), You can '
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
-    parser.add('-s', '--soft-fail',
-               help='Runs checks but suppresses error code', action='store_true')
-    parser.add('--soft-fail-on',
-               help='Exits with a 0 exit code for specified checks. You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
-    parser.add('--hard-fail-on',
-               help='Exits with a non-zero exit code for specified checks. You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
     parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
@@ -299,6 +287,15 @@ def add_parser_args(parser):
                action='store_true', default=False)
     parser.add('--baseline', help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
                                   'with respect to the provided baseline', default=None)
+    # Add mutually exclusive groups of arguments
+    exit_code_group = parser.add_mutually_exclusive_group()
+    exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
+    exit_code_group.add('--soft-fail-on', help='Exits with a 0 exit code for specified checks. You can specify '
+                                               'multiple checks separated by comma delimiter', action='append',
+                        default=None)
+    exit_code_group.add('--hard-fail-on', help='Exits with a non-zero exit code for specified checks. You can specify '
+                                               'multiple checks separated by comma delimiter', action='append',
+                        default=None)
 
 
 def get_external_checks_dir(config):

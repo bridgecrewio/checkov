@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import List, Dict, Union, Any
+from typing import List, Dict, Union, Any, Optional
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
@@ -73,8 +73,8 @@ class Report:
                 "summary": self.get_summary()
             }
 
-    def get_exit_code(self, soft_fail: bool, soft_fail_on: Union[list, None] = None,
-                      hard_fail_on: Union[list, None] = None) -> int:
+    def get_exit_code(self, soft_fail: bool, soft_fail_on: Optional[list] = None,
+                      hard_fail_on: Optional[list] = None) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
