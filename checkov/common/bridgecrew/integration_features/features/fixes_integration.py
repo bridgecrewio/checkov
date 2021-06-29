@@ -43,7 +43,7 @@ class FixesIntegration(BaseIntegrationFeature):
             with open(file_abs_path, 'r') as reader:
                 file_contents = reader.read()
 
-            fixes = self._get_fixes_for_file(file, file_contents, failed_checks)
+            fixes = self._get_fixes_for_file(scan_report.check_type, file, file_contents, failed_checks)
             if not fixes:
                 continue
             all_fixes = fixes['fixes']
@@ -57,7 +57,7 @@ class FixesIntegration(BaseIntegrationFeature):
                 failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
                 failed_check.fixed_definition = fix['fixedDefinition']
 
-    def _get_fixes_for_file(self, filename, file_contents, failed_checks):
+    def _get_fixes_for_file(self, check_type, filename, file_contents, failed_checks):
 
         errors = list(map(lambda c: {
             'resourceId': c.resource,
@@ -69,6 +69,7 @@ class FixesIntegration(BaseIntegrationFeature):
         payload = {
             'filePath': filename,
             'fileContent': file_contents,
+            'framework': check_type,
             'errors': errors
         }
 
