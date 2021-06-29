@@ -7,7 +7,7 @@ from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 
 class AWSDefaultTags(BaseProviderCheck):
     def __init__(self) -> None:
-        name = "AWS provider should specify default tags"
+        name = "Ensure AWS provider uses default_tags"
         id = "CKV_AWS_166"
         supported_provider = ["aws"]
         categories = [CheckCategories.GENERAL_SECURITY]
@@ -21,8 +21,13 @@ class AWSDefaultTags(BaseProviderCheck):
         :return: <CheckResult>
         """
         if "default_tags" in conf.keys():
-            return CheckResult.PASSED
+            default_tags = conf['default_tags'][0]
+            if 'tags' in default_tags:
+                tags = default_tags['tags'][0]
+                if tags:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 
 check = AWSDefaultTags()
