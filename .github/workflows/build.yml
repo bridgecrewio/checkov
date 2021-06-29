@@ -216,13 +216,13 @@ jobs:
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
   publish-to-brew:
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: macos-latest
     needs: publish-package
     steps:
       - name: Get release version
         id: get_version
         run: |
-          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r '.[0]["name"]' )
+          checkov_version=$(curl -sL https://api.github.com/repos/bridgecrewio/checkov/tags | jq -r '.[0]["name"]' )
           micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
           echo $micro_version
           ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
@@ -230,14 +230,6 @@ jobs:
           echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      - name: Installing Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-          test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-          test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-          echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
-          echo "::add-path::/home/linuxbrew/.linuxbrew/bin"
-          brew --version
       - name: release homebrew
         uses: dawidd6/action-homebrew-bump-formula@v3.8.0
         if: env.ZERO_IF_SHOULD_RELEASE == 0
