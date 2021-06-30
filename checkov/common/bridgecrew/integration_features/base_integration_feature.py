@@ -11,6 +11,7 @@ class BaseIntegrationFeature(ABC):
     onboarding_url = f"{BC_API_URL}/signup/checkov"
     api_token_url = f"{BC_API_URL}/integrations/apiToken"
     suppressions_url = f"{BC_API_URL}/suppressions"
+    policies_url = f"{BC_API_URL}/policies/table/data"
     fixes_url = f"{BC_API_URL}/fixes/checkov"
 
     def __init__(self, bc_integration, order):

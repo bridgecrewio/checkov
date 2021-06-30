@@ -112,6 +112,22 @@ class TestSuppressionsIntegration(unittest.TestCase):
 
         self.assertFalse(suppressions_integration._suppression_valid_for_run(suppression))
 
+        # custom policy
+        suppression = {
+            "suppressionType": "Tags",
+            "policyId": "bcorg_aws_1234567891011",
+            "creationDate": 1610035761349,
+            "comment": "No justification comment provided.",
+            "tags": [
+                {
+                    "value": "test_1",
+                    "key": "test_num"
+                }
+            ]
+        }
+
+        self.assertTrue(suppressions_integration._suppression_valid_for_run(suppression))
+
     def test_policy_suppression(self):
         instance = BcPlatformIntegration()
 
