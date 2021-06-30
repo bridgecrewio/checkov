@@ -22,7 +22,7 @@ class FixesIntegration(BaseIntegrationFeature):
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
 
-    def post_scan(self, scan_report):
+    def post_runner(self, scan_report):
         if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
             return
         self._get_platform_fixes(scan_report)

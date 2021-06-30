@@ -25,10 +25,14 @@ class BaseIntegrationFeature(ABC):
         raise NotImplementedError()
 
     def pre_scan(self):
-        # overriding is optional
+        """Runs before any runners"""
         pass
 
-    def post_scan(self, scan_reports):
-        # overriding is optional
+    def pre_runner(self):
+        """Runs before each runner"""
+        pass
+
+    def post_runner(self, scan_reports):
+        """Runs after each runner completes"""
         pass
 
