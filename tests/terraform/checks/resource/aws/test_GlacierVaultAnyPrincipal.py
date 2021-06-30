@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.GlacierVaultAnyPrincipal import check
 from checkov.terraform.runner import Runner
 
 
-class TestBackupVaultEncrypted(unittest.TestCase):
+class TestGlacierVaultAnyPrincipal(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))

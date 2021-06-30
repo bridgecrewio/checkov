@@ -17,10 +17,15 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'access_policy' in conf:
-            policy = Policy(conf['access_policy'][0])
-            if policy.is_internet_accessible():
-                 return CheckResult.FAILED
+        conf_policy = conf.get("access_policy")
+        if conf_policy:
+            if isinstance(conf_policy[0], dict):
+                policy = Policy(conf_policy[0])
+                if policy.is_internet_accessible():
+                    return CheckResult.FAILED
+            else:
+                return CheckResult.UNKNOWN
+
         return CheckResult.PASSED
 
 check = GlacierVaultAnyPrincipal()

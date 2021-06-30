@@ -144,3 +144,10 @@ resource "aws_glacier_vault" "my_archive6" {
 }
 EOF
 }
+
+# unknown
+resource "aws_glacier_vault" "my_archive7" {
+  name = "MyArchive"
+
+  access_policy = data.aws_iam_policy_document.bucket_policy.json
+}

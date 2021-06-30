@@ -180,3 +180,10 @@ resource "aws_sns_topic_policy" "sns_tp6" {
 }
 POLICY
 }
+
+# unknown
+resource "aws_sns_topic_policy" "sns_tp7" {
+  arn = aws_sns_topic.test.arn
+
+  policy = data.aws_iam_policy_document.bucket_policy.json
+}
