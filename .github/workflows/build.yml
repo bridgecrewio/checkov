@@ -215,6 +215,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
+          buildoptions: "--no-cache"
   publish-to-brew:
     runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
