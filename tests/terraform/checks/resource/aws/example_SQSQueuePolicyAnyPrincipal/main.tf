@@ -120,3 +120,10 @@ resource "aws_sqs_queue_policy" "q6" {
 }
 POLICY
 }
+
+# unknown
+resource "aws_sqs_queue_policy" "q7" {
+  queue_url = aws_sqs_queue.q.id
+
+  policy = data.aws_iam_policy_document.bucket_policy.json
+}
