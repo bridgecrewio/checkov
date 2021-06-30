@@ -108,6 +108,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.setup_bridgecrew_credentials(bc_api_key=config.bc_api_key, repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
+                                                        skip_policy_download=config.skip_policy_download,
                                                         source=source, source_version=source_version, repo_branch=config.branch)
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
@@ -261,6 +262,10 @@ def add_parser_args(parser):
     parser.add('--skip-suppressions',
                help='Do not download preconfigured suppressions from the Bridgecrew platform. Code comment '
                     'suppressions will still be honored. '
+                    'Only has effect when using the --bc-api-key flag',
+               action='store_true')
+    parser.add('--skip-policy-download',
+               help='Do not download custom policies configured in the Bridgecrew platform. '
                     'Only has effect when using the --bc-api-key flag',
                action='store_true')
     parser.add('--download-external-modules',
