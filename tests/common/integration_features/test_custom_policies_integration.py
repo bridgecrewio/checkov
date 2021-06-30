@@ -4,6 +4,8 @@ import unittest
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.runner import graph_registry, Runner
 from checkov.runner_filter import RunnerFilter
 
@@ -109,16 +111,16 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
             }
         ]
 
-        def mock_policies():
-            return policies
+        # for this test, we simulate some of the check registry manipulation; otherwise the singleton
+        # instance will be modified and break other tests.
 
-        custom_policies_integration = CustomPoliciesIntegration(BcPlatformIntegration())
-        custom_policies_integration._get_policies_from_platform = mock_policies
-        custom_policies_integration.pre_scan()
+        parser = NXGraphCheckParser()
 
-        self.assertEqual(len(graph_registry.checks), 2)
+        registry = Registry(parser=NXGraphCheckParser())
+        checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
+        registry.checks = checks  # simulate that the policy downloader will do
 
-        runner = Runner()
+        runner = Runner(external_registries=[registry])
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         test_files_dir = current_dir + "/example_custom_policy_dir"
