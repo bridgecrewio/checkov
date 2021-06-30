@@ -147,6 +147,7 @@ class Runner(BaseRunner):
                                     file_line_range=[entity_context.get('start_line'),
                                                      entity_context.get('end_line')],
                                     resource=".".join(entity_context['definition_path']),
+                                    entity_tags=entity.get('tags', {}),
                                     evaluations=entity_evaluations,
                                     check_class=check.__class__.__module__,
                                     file_abs_path=os.path.abspath(full_file_path))
