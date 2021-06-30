@@ -40,6 +40,7 @@ dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
 detect_secrets = "*"
+policyuniverse = "*"
 
 [requires]
 python_version = "3.7"
