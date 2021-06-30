@@ -192,6 +192,7 @@ jobs:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          buildoptions: "--no-cache"
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
