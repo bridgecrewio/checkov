@@ -192,6 +192,7 @@ jobs:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          buildoptions: "--no-cache"
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
@@ -215,8 +216,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
+          buildoptions: "--no-cache"
   publish-to-brew:
-    runs-on: macos-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - name: Get release version
