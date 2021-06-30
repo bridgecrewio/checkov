@@ -216,7 +216,7 @@ jobs:
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
   publish-to-brew:
-    runs-on: macos-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
     steps:
       - name: Get release version
