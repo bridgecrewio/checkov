@@ -17,7 +17,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.suppressions = {}
-        self.custom_policy_id_regex = re.compile(r'.+_.+_\d{13}')
+
+        # bcorgname_provider_timestamp (ex: companyxyz_aws_1234567891011)
+        # the provider may be lower or upper depending on where the policy was created
+        self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
 
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_suppressions
