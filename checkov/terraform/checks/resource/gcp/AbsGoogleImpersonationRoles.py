@@ -23,9 +23,6 @@ IMPERSONATION_ROLES = [
 
 
 class AbsGoogleImpersonationRoles(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources):
-        super().__init__(name, id, categories, supported_resources)
-
     def scan_resource_conf(self, conf):
         if 'role' in conf and conf['role'][0] in IMPERSONATION_ROLES:
             return CheckResult.FAILED
