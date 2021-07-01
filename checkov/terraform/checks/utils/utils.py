@@ -15,6 +15,7 @@ BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
 FUNC_CALL_PREFIX_PATTERN = r"([.a-zA-Z]+)\("
 INTERPOLATION_PATTERN = "[${}]"
 INTERPOLATION_EXPR = r"\$\{([^\}]*)\}"
+DATA_TO_JSON_PATTERN = r"\$?\{?(.+?)(?=.json).json\}?"
 BRACKETS_PATTERN = r"[\[\]\)\(\{\}]+"
 INDEX_PATTERN = r"\[([0-9]+)\]"
 IDENTIFIER_PATTERN = r"^[^\d\W]\w*\Z"

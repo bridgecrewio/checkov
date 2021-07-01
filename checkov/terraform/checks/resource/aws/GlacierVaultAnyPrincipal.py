@@ -1,10 +1,10 @@
+import re
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.type_forcers import force_list
-
 from policyuniverse.policy import Policy
 
-import json
+from checkov.terraform.checks.utils.utils import DATA_TO_JSON_PATTERN
 
 
 class GlacierVaultAnyPrincipal(BaseResourceCheck):
@@ -18,11 +18,13 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'access_policy' in conf:
-            policy = Policy(conf['access_policy'][0])
+            policy_string = conf['access_policy'][0]
+            if re.match(DATA_TO_JSON_PATTERN, policy_string):
+                return CheckResult.UNKNOWN
+            policy = Policy(policy_string)
             if policy.is_internet_accessible():
-                 return CheckResult.FAILED
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = GlacierVaultAnyPrincipal()
-
-
