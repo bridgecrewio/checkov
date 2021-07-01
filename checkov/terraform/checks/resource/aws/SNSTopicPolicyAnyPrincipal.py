@@ -17,10 +17,14 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'policy' in conf:
-            policy = Policy(conf['policy'][0])
-            if policy.is_internet_accessible():
-                 return CheckResult.FAILED
+        conf_policy = conf.get("policy")
+        if conf_policy:
+            if isinstance(conf_policy[0], dict):
+                policy = Policy(conf['policy'][0])
+                if policy.is_internet_accessible():
+                     return CheckResult.FAILED
+            else:
+                return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
 check = SNSTopicPolicyAnyPrincipal()
