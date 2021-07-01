@@ -520,7 +520,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -544,7 +544,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -568,7 +568,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -592,7 +592,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
