@@ -54,6 +54,7 @@ class BcPlatformIntegration(object):
         self.repo_branch = None
         self.skip_fixes = False
         self.skip_suppressions = False
+        self.skip_policy_download = False
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
@@ -92,10 +93,11 @@ class BcPlatformIntegration(object):
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
-                                     source_version=None, repo_branch=None):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False,
+                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None):
         """
         Setup credentials against Bridgecrew's platform.
+        :param source:
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
         :param bc_api_key: Bridgecrew issued API key
@@ -105,6 +107,7 @@ class BcPlatformIntegration(object):
         self.repo_branch = repo_branch
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
+        self.skip_policy_download = skip_policy_download
         if source:
             self.bc_source = source
         if source_version:

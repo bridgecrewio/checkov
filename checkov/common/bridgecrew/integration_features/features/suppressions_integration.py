@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from itertools import groupby
 
 import requests
@@ -17,6 +18,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.suppressions = {}
 
+        # bcorgname_provider_timestamp (ex: companyxyz_aws_1234567891011)
+        # the provider may be lower or upper depending on where the policy was created
+        self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
+
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_suppressions
 
@@ -26,7 +31,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self.suppressions = {policy_id: list(sup) for policy_id, sup in groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
         logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
 
-    def post_scan(self, scan_report):
+    def post_runner(self, scan_report):
         self._apply_suppressions_to_report(scan_report)
 
     def _apply_suppressions_to_report(self, scan_report):
@@ -109,25 +114,27 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             error_message = extract_error_message(response)
             raise Exception(f'Get suppressions request failed with response code {response.status_code}: {error_message}')
 
-        # filter out custom policies and non-checkov policies
+        # filter out suppressions that we know just don't apply
         suppressions = [s for s in json.loads(response.content) if self._suppression_valid_for_run(s)]
 
         for suppression in suppressions:
-            suppression['checkovPolicyId'] = self.bc_integration.bc_id_mapping[suppression['policyId']]
+            if suppression['policyId'] in self.bc_integration.bc_id_mapping:
+                suppression['checkovPolicyId'] = self.bc_integration.bc_id_mapping[suppression['policyId']]
+            else:
+                suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
 
         return suppressions
 
     def _suppression_valid_for_run(self, suppression):
         """
         Returns whether this suppression is valid. A suppression is NOT valid if:
-        - its policy ID is not a Checkov ID, or
+        - the policy does not have a checkov ID and does not have an ID matching a custom policy format
         - the suppression type is 'Accounts' and this repo is not included in the account list
         :param suppression:
         :return:
         """
-
         policyId = suppression['policyId']
-        if policyId not in self.bc_integration.bc_id_mapping:
+        if policyId not in self.bc_integration.bc_id_mapping and not self.custom_policy_id_regex.match(policyId):
             return False
 
         if suppression['suppressionType'] == 'Accounts':
