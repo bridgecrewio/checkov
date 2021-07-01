@@ -1,6 +1,0 @@
-pass:
-  - "aws_instance.pass_attachment"
-  - "aws_instance.pass_instance_network"
-  - "aws_instance.pass_instance_subnet"
-fail:
-  - "aws_instance.fail"

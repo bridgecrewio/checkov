@@ -109,9 +109,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AutoScallingEnabledELB(self):
         self.go("AutoScallingEnabledELB")
 
-    def test_EC2hasVPC(self):
-        self.go("EC2hasVPC")
-
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 

@@ -232,6 +232,9 @@ class TestRunnerValid(unittest.TestCase):
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
         for i in range(1, len(aws_checks) + 1):
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
+                # CKV2_AWS_17 was overly keen and those resources it checks are created by default
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
