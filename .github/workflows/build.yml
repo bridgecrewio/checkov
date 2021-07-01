@@ -145,6 +145,7 @@ jobs:
       - uses: dschep/install-pipenv-action@v1
       - name: Install dependencies
         run: |
+          pipenv --python 3.7
           pipenv install --dev
       - name: create python package
         run: |
