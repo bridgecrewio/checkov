@@ -50,7 +50,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             error_message = extract_error_message(response)
             raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
 
-        policies = json.loads(response.content).get('data')
+        policies = response.json().get('data', [])
         return policies
 
 
