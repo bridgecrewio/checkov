@@ -18,10 +18,11 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'access_policy' in conf:
-            policy_string = conf['access_policy'][0]
-            if re.match(DATA_TO_JSON_PATTERN, policy_string):
-                return CheckResult.UNKNOWN
-            policy = Policy(policy_string)
+            policy_obj = conf['access_policy'][0]
+            if isinstance(policy_obj, str):
+                if re.match(DATA_TO_JSON_PATTERN, policy_obj):
+                    return CheckResult.UNKNOWN
+            policy = Policy(policy_obj)
             if policy.is_internet_accessible():
                 return CheckResult.FAILED
         return CheckResult.PASSED
