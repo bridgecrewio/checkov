@@ -135,7 +135,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
     outputs:
-      version: ${{ steps.version.outputs.new_tag }}
+      version: ${{ steps.version.outputs.version }}
   publish-package:
     needs: bump-version
     runs-on: [self-hosted, public, linux, x64]
