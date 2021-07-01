@@ -219,7 +219,7 @@ jobs:
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
   publish-to-brew:
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: macos-latest
     needs: publish-package
     steps:
       - name: Get release version
