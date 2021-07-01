@@ -24,7 +24,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         for record in report.failed_checks:
@@ -38,7 +38,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all', skip_checks=checks_denylist))
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -52,7 +52,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None)
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -77,7 +77,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=passing_tf_dir_path, external_checks_dir=None)
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(False), 1)
@@ -100,7 +100,7 @@ class TestRunnerValid(unittest.TestCase):
         for check in resource_registry.checks["aws_s3_bucket"]:
             if check.id == "CUSTOM_AWS_1":
                 resource_registry.checks["aws_s3_bucket"].remove(check)
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
 
@@ -128,7 +128,7 @@ class TestRunnerValid(unittest.TestCase):
         for check in resource_registry.checks["aws_s3_bucket"]:
             if check.id == "CKV2_CUSTOM_1":
                 resource_registry.checks["aws_s3_bucket"].remove(check)
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
 
@@ -152,7 +152,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         # self.assertEqual(report.get_exit_code(), 0)
@@ -489,7 +489,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -520,7 +520,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -544,7 +544,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -568,7 +568,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path
@@ -592,7 +592,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
 
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreaterThan(len(all_checks), 0)  # ensure that the assertions below are going to do something
 
         for record in all_checks:
             # no need to join with a '/' because the TF runner adds it to the start of the file path

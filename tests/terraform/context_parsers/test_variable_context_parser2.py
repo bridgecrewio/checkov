@@ -26,7 +26,7 @@ class TestVariableContextParser(unittest.TestCase):
                 'assignments'))
 
     def test_assignment_value(self):
-        self.assertEqual(
+        self.assertIs(
             self.definitions_context[os.path.dirname(
                 os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][
                 'variable'].get(
