@@ -1,4 +1,3 @@
-import re
 from typing import Dict, List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -20,14 +19,11 @@ class AWSDefaultTags(BaseProviderCheck):
         :param conf: aws provider configuration
         :return: <CheckResult>
         """
-        if "default_tags" in conf.keys():
-            default_tags = conf['default_tags'][0]
-            if 'tags' in default_tags:
-                tags = default_tags['tags'][0]
-                if tags:
-                    return CheckResult.PASSED
+        default_tags = conf.get('default_tags')
+        if default_tags:
+        	tags = default_tags[0].get('tags')
+        	if tags and tags[0]:
+        		return CheckResult.PASSED
         return CheckResult.FAILED
-
-
 
 check = AWSDefaultTags()
