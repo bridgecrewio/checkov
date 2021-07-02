@@ -72,7 +72,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
-                                 runners=checkov_runners, excluded_paths=excluded_paths)
+                                 runners=checkov_runners, excluded_paths=excluded_paths,
+                                 all_external=config.run_all_external_checks)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -250,6 +251,10 @@ def add_parser_args(parser):
     parser.add('--skip-check',
                help='filter scan to run on all check but a specific check identifier(denylist), You can '
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
+    parser.add('--run-all-external-checks', action='store_true',
+               help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
+                    'in the --check list. This allows you to always ensure that new checks present in the external '
+                    'source are used. If an external check is included in --skip-check, it will still be skipped.')
     parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
