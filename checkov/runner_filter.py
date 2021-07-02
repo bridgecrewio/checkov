@@ -23,7 +23,7 @@ class RunnerFilter(object):
         runners: Optional[List[str]] = None,
         skip_framework: Optional[str] = None,
         excluded_paths: Optional[List[str]] = None,
-        all_external = False
+        all_external: bool = False
     ) -> None:
 
         self.checks = convert_csv_string_arg_to_list(checks)
