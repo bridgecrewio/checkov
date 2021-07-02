@@ -65,8 +65,8 @@ class Runner(BaseRunner):
                                     runner_filter)
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
-                startline = 0
-                endline = 0
+                startline = 1
+                endline = 1
                 result_instruction = ""
                 if result_configuration:
                     startline = result_configuration['startline']
@@ -89,7 +89,6 @@ class Runner(BaseRunner):
 
         return report
 
-
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
-            codeblock.append((line, definitions_raw[docker_file_path][line]))
+            codeblock.append((line, definitions_raw[docker_file_path][line - 1]))
