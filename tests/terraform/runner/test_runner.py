@@ -617,7 +617,7 @@ class TestRunnerValid(unittest.TestCase):
                               external_checks_dir=None,
                               runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
 
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 0)
 
         found_inside = False
