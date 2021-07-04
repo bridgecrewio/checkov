@@ -52,6 +52,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
@@ -95,6 +96,10 @@ class Runner(BaseRunner):
                 {
                     'name': 'TwilioKeyDetector'
                 },
+                {
+                    'name': 'EntropyKeywordCombinator',
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
+                }
             ]
         }):
             report = Report(self.check_type)
@@ -111,7 +116,7 @@ class Runner(BaseRunner):
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             # TODO: re-enable filter when re-adding `SecretKeyword` plugin
-            scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            # scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
             def _scan_file(file_paths: List[str]):
                 for file_path in file_paths:
