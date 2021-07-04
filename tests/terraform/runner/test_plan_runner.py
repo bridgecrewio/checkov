@@ -18,7 +18,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all", checks=checks_allowlist),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -40,7 +40,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -60,7 +60,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -91,7 +91,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -136,7 +136,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -164,7 +164,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=RunnerFilter(framework="all")
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
@@ -283,7 +283,7 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 0)
@@ -305,7 +305,7 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         report_json = report.get_json()
-        self.assertTrue(isinstance(report_json, str))
+        self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suites())
         self.assertEqual(report.get_exit_code(soft_fail=False), 0)

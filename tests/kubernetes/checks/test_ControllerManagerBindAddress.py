@@ -21,14 +21,15 @@ class TestControllerManagerBindAddress(unittest.TestCase):
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
-
         for record in report.failed_checks:
-            self.assertTrue("FAILED" in record.file_path)
-            self.assertTrue(record.check_id in [check.id])
+            with self.subTest(record=record):
+                self.assertIn("FAILED", record.file_path)
+                self.assertIn(record.check_id, [check.id])
 
         for record in report.passed_checks:
-            self.assertTrue("PASSED" in record.file_path)
-            self.assertTrue(record.check_id in [check.id])
+            with self.subTest(record=record):
+                self.assertIn("PASSED", record.file_path)
+                self.assertIn(record.check_id, [check.id])
 
 
 if __name__ == '__main__':

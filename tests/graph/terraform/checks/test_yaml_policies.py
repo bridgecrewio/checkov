@@ -203,7 +203,9 @@ class TestYamlPolicies(unittest.TestCase):
         assert found
 
     def assert_entities(self, expected_entities: List[str], results: List[CheckResult], assertion: bool):
-        self.assertEqual(len(expected_entities), len(results), f"mismatch in number of results in {'passed' if assertion else 'failed'}, expected: {len(expected_entities)}, got: {len(results)}")
+        self.assertEqual(len(expected_entities), len(results),
+                         f"mismatch in number of results in {'passed' if assertion else 'failed'}, "
+                         f"expected: {len(expected_entities)}, got: {len(results)}")
         for expected_entity in expected_entities:
             found = False
             for check_result in results:
@@ -211,7 +213,7 @@ class TestYamlPolicies(unittest.TestCase):
                 if entity_id == expected_entity:
                     found = True
                     break
-            self.assertTrue(found, f"expected to find entity {expected_entity} in {'passed' if assertion else 'failed'}")
+            self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
 
 
 def get_policy_results(root_folder, policy):

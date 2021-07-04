@@ -23,12 +23,12 @@ class TestApiServerRequestTimeout(unittest.TestCase):
         self.assertEqual(summary['parsing_errors'], 0)
         
         for record in report.failed_checks:
-            self.assertTrue("FAILED" in record.file_path)
-            self.assertTrue(record.check_id in [check.id])
+            self.assertIn("FAILED", record.file_path)
+            self.assertIn(record.check_id, [check.id])
             
         for record in report.passed_checks:
-            self.assertTrue("PASSED" in record.file_path)
-            self.assertTrue(record.check_id in [check.id])       
+            self.assertIn("PASSED", record.file_path)
+            self.assertIn(record.check_id, [check.id])
 
 
 if __name__ == '__main__':

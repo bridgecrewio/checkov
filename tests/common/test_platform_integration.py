@@ -28,14 +28,15 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.setup_http_manager()
         instance.get_id_mapping()
-        self.assertEqual(None,instance.ckv_to_bc_id_mapping)
+        self.assertIsNone(instance.ckv_to_bc_id_mapping)
 
     @mock.patch.dict(os.environ, {'BC_SKIP_MAPPING': 'FALSE'})
     def test_skip_mapping_false(self):
         instance = BcPlatformIntegration()
         instance.setup_http_manager()
         instance.get_id_mapping()
-        self.assertNotEqual(None,instance.ckv_to_bc_id_mapping)
+        self.assertIsNotNone(instance.ckv_to_bc_id_mapping)
+
 
 if __name__ == '__main__':
     unittest.main()
