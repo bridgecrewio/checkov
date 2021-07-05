@@ -101,7 +101,7 @@ class Runner(BaseRunner):
                     'limit': 4.5
                 }
             ]
-        }):
+        }) as settings:
             report = Report(self.check_type)
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
@@ -115,8 +115,7 @@ class Runner(BaseRunner):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
-            # TODO: re-enable filter when re-adding `SecretKeyword` plugin
-            # scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
             def _scan_file(file_paths: List[str]):
                 for file_path in file_paths:
