@@ -54,7 +54,8 @@ setup(
         "docker",
         "configargparse",
         "detect-secrets",
-        "policyuniverse"
+        "policyuniverse",
+        "typing-extensions"
     ],
     license="Apache License 2.0",
     name="checkov",

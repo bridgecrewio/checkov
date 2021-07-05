@@ -1,53 +1,68 @@
 import logging
 import os
 from copy import deepcopy
-from typing import List, Optional, Union
+from pathlib import Path
+from typing import List, Optional, Union, Any, Dict, Set, Callable
+
+from typing_extensions import TypedDict
 
 from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import \
-    ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value, update_dictionary_attribute, \
-    join_trimmed_strings, filter_sub_keys, attribute_has_nested_attributes
+from checkov.terraform.checks.utils.utils import (
+    get_referenced_vertices_in_value,
+    update_dictionary_attribute,
+    join_trimmed_strings,
+    filter_sub_keys,
+    attribute_has_nested_attributes,
+)
 from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.terraform.variable_rendering.renderer import VariableRenderer
 
-MODULE_RESERVED_ATTRIBUTES = ('source', 'version')
+MODULE_RESERVED_ATTRIBUTES = ("source", "version")
+
+
+class Undetermined(TypedDict):
+    module_vertex_id: int
+    attribute_name: str
+    variable_vertex_id: int
 
 
 class LocalGraph:
-    def __init__(self, module, module_dependency_map):
+    def __init__(self, module: Module, module_dependency_map: Dict[str, List[List[str]]]) -> None:
         self.module = module
-        self.vertices = []
-        self.edges = []
-        self.in_edges = {}  # map between vertex index and the edges entering it
-        self.out_edges = {}  # map between vertex index and the edges exiting it
-        self.vertices_by_block_type = {}
-        self.vertex_hash_cache = {}
-        self.vertices_block_name_map = {}
+        self.vertices: List[Block] = []
+        self.edges: List[Edge] = []
+        self.in_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges entering it
+        self.out_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges exiting it
+        self.vertices_by_block_type: Dict[BlockType, List[int]] = {}
+        self.vertex_hash_cache: Dict[int, str] = {}
+        self.vertices_block_name_map: Dict[BlockType, Dict[str, List[int]]] = {}
         self.module_dependency_map = module_dependency_map
-        self.map_path_to_module = {}
+        self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
 
-    def build_graph(self, render_variables):
+    def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         undetermined_values = self._set_variables_values_from_modules()
         self._build_edges()
         self.calculate_encryption_attribute()
         if render_variables:
-            logging.info('Rendering variables')
+            logging.info("Rendering variables")
             renderer = VariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.process_undetermined_values(undetermined_values)
 
-    def _create_vertices(self):
-        logging.info('Creating vertices')
-        self.vertices = [None] * len(self.module.blocks)
+    def _create_vertices(self) -> None:
+        logging.info("Creating vertices")
+        self.vertices = [None] * len(self.module.blocks)  # type: ignore
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
 
@@ -63,62 +78,78 @@ class LocalGraph:
 
             if block.block_type == BlockType.MODULE:
                 # map between file paths and module vertices indexes from that file
-                if not self.map_path_to_module.get(block.path):
-                    self.map_path_to_module[block.path] = []
-                self.map_path_to_module[block.path].append(i)
+                self.map_path_to_module.setdefault(block.path, []).append(i)
 
             self.in_edges[i] = []
             self.out_edges[i] = []
 
-    def _set_variables_values_from_modules(self):
-        undetermined_values = []
+    def _set_variables_values_from_modules(self) -> List[Undetermined]:
+        undetermined_values: List[Undetermined] = []
         for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
             module_vertex = self.vertices[module_vertex_id]
-            for attribute_name in module_vertex.attributes:
+            for attribute_name, attribute_value in module_vertex.attributes.items():
                 matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
                 for variable_vertex_id in matching_variables:
-                    variable_vertex = self.vertices[variable_vertex_id]
-                    variable_dir = os.path.dirname(variable_vertex.path)
+                    variable_dir = os.path.dirname(self.vertices[variable_vertex_id].path)
+                    # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
+                    #   therefore this condition is always false. Fixing it results in some variables not being rendered.
+                    #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
                     if module_vertex.path in self.module_dependency_map.get(variable_dir, []):
-                        attribute_value = module_vertex.attributes[attribute_name]
-                        has_var_reference = get_referenced_vertices_in_value(value=attribute_value, aliases={},
-                                                            resources_types=self.get_resources_types_in_graph())
+                        has_var_reference = get_referenced_vertices_in_value(
+                            value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                        )
                         if has_var_reference:
                             undetermined_values.append(
-                                {'module_vertex_id': module_vertex_id, 'attribute_name': attribute_name,
-                                 'variable_vertex_id': variable_vertex_id})
+                                {
+                                    "module_vertex_id": module_vertex_id,
+                                    "attribute_name": attribute_name,
+                                    "variable_vertex_id": variable_vertex_id,
+                                }
+                            )
                         var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
-                        if not has_var_reference or not var_default_value or get_referenced_vertices_in_value(value=var_default_value, aliases={},
-                                                            resources_types=self.get_resources_types_in_graph()):
-                            self.update_vertex_attribute(variable_vertex_id, 'default', attribute_value,
-                                                         module_vertex_id, attribute_name)
+                        if (
+                            not has_var_reference
+                            or not var_default_value
+                            or get_referenced_vertices_in_value(
+                                value=var_default_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                            )
+                        ):
+                            self.update_vertex_attribute(
+                                variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
+                            )
         return undetermined_values
 
-    def process_undetermined_values(self, undetermined_values):
+    def process_undetermined_values(self, undetermined_values: List[Undetermined]) -> None:
         for undetermined in undetermined_values:
-            module_vertex = self.vertices[undetermined.get('module_vertex_id')]
-            value = module_vertex.attributes.get(undetermined.get('attribute_name'))
-            if not get_referenced_vertices_in_value(value=value, aliases={},
-                                                    resources_types=self.get_resources_types_in_graph()):
-                self.update_vertex_attribute(undetermined.get('variable_vertex_id'), 'default', value,
-                                             undetermined.get('module_vertex_id'), undetermined.get('attribute_name'))
+            module_vertex = self.vertices[undetermined["module_vertex_id"]]
+            value = module_vertex.attributes.get(undetermined["attribute_name"])
+            if not get_referenced_vertices_in_value(
+                value=value, aliases={}, resources_types=self.get_resources_types_in_graph()
+            ):
+                self.update_vertex_attribute(
+                    undetermined["variable_vertex_id"],
+                    "default",
+                    value,
+                    undetermined["module_vertex_id"],
+                    undetermined["attribute_name"],
+                )
 
-    def _get_aliases(self):
+    def _get_aliases(self) -> Dict[str, Dict[str, BlockType]]:
         """
         :return aliases: map between alias names that are found inside the blocks and the block type their aliased to.
         """
-        aliases = {}
-        for vertex in self.vertices:
-            if 'alias' in vertex.attributes:
-                aliases[vertex.name] = {CustomAttributes.BLOCK_TYPE: vertex.block_type}
-        return aliases
+        return {
+            vertex.name: {CustomAttributes.BLOCK_TYPE: vertex.block_type}
+            for vertex in self.vertices
+            if "alias" in vertex.attributes
+        }
 
-    def get_module_vertices_mapping(self):
+    def get_module_vertices_mapping(self) -> None:
         """
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
-        block_dirs_to_modules = {}
+        block_dirs_to_modules: Dict[str, Set[int]] = {}
         for dir_name, paths_to_modules in self.module_dependency_map.items():
             # for each directory, find the module vertex that imported it
             if block_dirs_to_modules.get(dir_name):
@@ -126,35 +157,36 @@ class LocalGraph:
             for path_to_module in paths_to_modules:
                 if not path_to_module:
                     continue
-                path_to_module = unify_dependency_path(path_to_module)
-                module_list = self.map_path_to_module.get(path_to_module, [])
+                path_to_module_str = unify_dependency_path(path_to_module)
+                module_list = self.map_path_to_module.get(path_to_module_str, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
                     module_vertex_dir = os.path.dirname(module_vertex.path)
-                    module_source = self.vertices[module_index].attributes.get('source', [''])[0]
+                    module_source = module_vertex.attributes.get("source", [""])[0]
                     if self._get_dest_module_path(module_vertex_dir, module_source) == dir_name:
-                        if not block_dirs_to_modules.get(dir_name):
-                            block_dirs_to_modules[dir_name] = set()
-                        block_dirs_to_modules[dir_name].add(module_index)
+                        block_dirs_to_modules.setdefault(dir_name, set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_index = block_dirs_to_modules.get(os.path.dirname(vertex.path), set())
-            if module_index:
-                vertex.source_module = module_index
+            module_indices = block_dirs_to_modules.get(os.path.dirname(vertex.path), set())
+            if module_indices:
+                vertex.source_module = module_indices
 
-    def _build_edges(self):
-        logging.info('Creating edges')
+    def _build_edges(self) -> None:
+        logging.info("Creating edges")
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
         for origin_node_index, vertex in enumerate(self.vertices):
             for attribute_key in vertex.attributes:
-                if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(attribute_key,
-                                                                                                     vertex.attributes):
+                if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
+                    attribute_key, vertex.attributes
+                ):
                     continue
-                referenced_vertices = get_referenced_vertices_in_value(value=vertex.attributes[attribute_key],
-                                                                       aliases=aliases,
-                                                                       resources_types=self.get_resources_types_in_graph())
+                referenced_vertices = get_referenced_vertices_in_value(
+                    value=vertex.attributes[attribute_key],
+                    aliases=aliases,
+                    resources_types=self.get_resources_types_in_graph(),
+                )
                 for vertex_reference in referenced_vertices:
                     # for certain blocks such as data and resource, the block name is composed from several parts.
                     # the purpose of the loop is to avoid not finding the node if the name has several parts
@@ -162,28 +194,27 @@ class LocalGraph:
                     for i in range(len(sub_values)):
                         reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
                         if vertex.module_dependency:
-                            dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
-                                                                                       reference_name,
-                                                                                       vertex.path,
-                                                                                       vertex.module_dependency)
+                            dest_node_index = self._find_vertex_index_relative_to_path(
+                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency
+                            )
                             if dest_node_index == -1:
-                                dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
-                                                                                           reference_name,
-                                                                                           vertex.path,
-                                                                                           vertex.path)
+                                dest_node_index = self._find_vertex_index_relative_to_path(
+                                    vertex_reference.block_type, reference_name, vertex.path, vertex.path
+                                )
                         else:
-                            dest_node_index = self._find_vertex_index_relative_to_path(vertex_reference.block_type,
-                                                                                       reference_name,
-                                                                                       vertex.path,
-                                                                                       vertex.module_dependency)
+                            dest_node_index = self._find_vertex_index_relative_to_path(
+                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency
+                            )
                         if dest_node_index > -1 and origin_node_index > -1:
                             if vertex_reference.block_type == BlockType.MODULE:
                                 try:
-                                    self._connect_module(sub_values, attribute_key, self.vertices[dest_node_index],
-                                                         origin_node_index)
+                                    self._connect_module(
+                                        sub_values, attribute_key, self.vertices[dest_node_index], origin_node_index
+                                    )
                                 except Exception as e:
                                     logging.warning(
-                                        f'Module {self.vertices[dest_node_index]} does not have source attribute, skipping')
+                                        f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
+                                    )
                                     logging.warning(e, stack_info=True)
                             else:
                                 self._create_edge(origin_node_index, dest_node_index, attribute_key)
@@ -191,31 +222,32 @@ class LocalGraph:
 
             if vertex.block_type == BlockType.MODULE:
                 target_path = vertex.path
-                if vertex.module_dependency != '':
+                if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
-                target_variables = list(filter(lambda v: self.vertices[v].module_dependency == target_path,
-                                               self.vertices_by_block_type.get(BlockType.VARIABLE, {})))
+                target_variables = [
+                    index
+                    for index in self.vertices_by_block_type.get(BlockType.VARIABLE, [])
+                    if self.vertices[index].module_dependency == target_path
+                ]
                 for attribute, value in vertex.attributes.items():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
                         continue
-                    target_variable = None
-                    for v in target_variables:
-                        if self.vertices[v].name == attribute:
-                            target_variable = v
-                            break
+                    target_variable = next((v for v in target_variables if self.vertices[v].name == attribute), None)
                     if target_variable is not None:
-                        self._create_edge(target_variable, origin_node_index, 'default')
+                        self._create_edge(target_variable, origin_node_index, "default")
             elif vertex.block_type == BlockType.TF_VARIABLE:
-                if vertex.module_dependency != '':
+                if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
                 # Assuming the tfvars file is in the same directory as the variables file (best practice)
-                target_variables = list(filter(lambda v: os.path.dirname(self.vertices[v].path) == os.path.dirname(vertex.path),
-                                               self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])))
+                target_variables = [
+                    index
+                    for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
+                    if os.path.dirname(self.vertices[index].path) == os.path.dirname(vertex.path)
+                ]
                 if len(target_variables) == 1:
-                    self._create_edge(target_variables[0], origin_node_index, 'default')
+                    self._create_edge(target_variables[0], origin_node_index, "default")
 
-
-    def _create_edge(self, origin_vertex_index, dest_vertex_index, label):
+    def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:
         if origin_vertex_index == dest_vertex_index:
             return
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
@@ -223,7 +255,9 @@ class LocalGraph:
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
 
-    def _connect_module(self, sub_values, attribute_key, module_node, origin_node_index):
+    def _connect_module(
+        self, sub_values: List[str], attribute_key: str, module_node: Block, origin_node_index: int
+    ) -> None:
         """
         :param sub_values: list of sub values of the attribute value.
                             example: given 'instance_type = module.child.myoutput',
@@ -235,39 +269,43 @@ class LocalGraph:
         module, and creates edges between them.
         """
         curr_module_dir = os.path.dirname(module_node.path)
-        dest_module_source = module_node.attributes['source'][0]
+        dest_module_source = module_node.attributes["source"][0]
         dest_module_path = self._get_dest_module_path(curr_module_dir, dest_module_source)
 
         if len(sub_values) > 1:
             block_name_in_other_module = sub_values[1]
             output_blocks_with_name = self.vertices_block_name_map.get(BlockType.OUTPUT, {}).get(
-                block_name_in_other_module, [])
+                block_name_in_other_module, []
+            )
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
-                if os.path.dirname(vertex.path) == dest_module_path and \
-                        (vertex.module_dependency == module_node.module_dependency or # The vertex is in the same file
-                         os.path.abspath(vertex.module_dependency) == os.path.abspath(module_node.path)): # The vertex is in the correct dependency path
+                if (os.path.dirname(vertex.path) == dest_module_path) and (
+                    vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
+                    or os.path.abspath(vertex.module_dependency)
+                    == os.path.abspath(module_node.path)  # The vertex is in the correct dependency path
+                ):
                     self._create_edge(origin_node_index, vertex_index, attribute_key)
                     self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break
 
-    def _get_dest_module_path(self, curr_module_dir, dest_module_source):
+    def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str) -> str:
         """
         :param curr_module_dir: current source directory
         :param dest_module_source: the value of module.source
         :return: the real path in the local file system of the dest module
         """
-        dest_module_path = ''
+        dest_module_path = Path()
         if is_local_path(curr_module_dir, dest_module_source):
-            dest_module_path = os.path.join(curr_module_dir, dest_module_source)
+            dest_module_path = Path(curr_module_dir) / dest_module_source
         else:
-            for root, d_names, f_names in os.walk(self.module.source_dir):
-                dest_module_path = os.path.join(root, dest_module_source)
-                if os.path.exists(dest_module_path):
-                    break
+            dest_module_path = next(
+                (path for path in Path(self.module.source_dir).rglob(dest_module_source)), dest_module_path
+            )
         return os.path.realpath(dest_module_path)
 
-    def _find_vertex_index_relative_to_path(self, block_type, name, block_path, module_path):
+    def _find_vertex_index_relative_to_path(
+        self, block_type: BlockType, name: str, block_path: str, module_path: str
+    ) -> int:
         relative_vertices = []
         possible_vertices = self.vertices_block_name_map.get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
@@ -279,9 +317,9 @@ class LocalGraph:
             return relative_vertices[0]
         return self._find_vertex_with_longest_path_match(relative_vertices, block_path)
 
-    def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes, origin_path) -> int:
+    def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes: List[int], origin_path: str) -> int:
         vertex_index_with_longest_common_prefix = -1
-        longest_common_prefix = ''
+        longest_common_prefix = ""
         for vertex_index in relevant_vertices_indexes:
             vertex = self.vertices[vertex_index]
             common_prefix = os.path.commonpath([os.path.realpath(vertex.path), os.path.realpath(origin_path)])
@@ -290,84 +328,86 @@ class LocalGraph:
                 longest_common_prefix = common_prefix
         return vertex_index_with_longest_common_prefix
 
-    def get_vertices_hash_codes_to_attributes_map(self):
+    def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
         return {vertex.get_hash(): vertex.get_decoded_attribute_dict() for vertex in self.vertices}
 
-    def order_edges_by_hash_codes(self):
+    def order_edges_by_hash_codes(self) -> Dict[str, Edge]:
         edges = {}
         for edge in self.edges:
-            edge_data = {'edge_label': edge.label,
-                         'from_vertex_hash': self.get_vertex_hash_by_index(vertex_index=edge.origin),
-                         'to_vertex_hash': self.get_vertex_hash_by_index(vertex_index=edge.dest),
-                         }
+            edge_data = {
+                "edge_label": edge.label,
+                "from_vertex_hash": self.get_vertex_hash_by_index(vertex_index=edge.origin),
+                "to_vertex_hash": self.get_vertex_hash_by_index(vertex_index=edge.dest),
+            }
             edge_hash = calculate_hash(edge_data)
             edges[edge_hash] = edge
         return edges
 
-    def get_vertex_attributes_by_index(self, index):
+    def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
         return self.vertices[index].get_decoded_attribute_dict()
 
-    def get_vertices_with_degrees_conditions(self, out_degree_cond, in_degree_cond):
-        vertices_with_out_degree = set([vertex_index for vertex_index in self.out_edges.keys() if
-                                        out_degree_cond(len(self.out_edges.get(vertex_index)))])
-        vertices_with_in_degree = set([vertex_index for vertex_index in self.in_edges.keys() if
-                                       in_degree_cond(len(self.in_edges.get(vertex_index)))])
+    def get_vertices_with_degrees_conditions(
+        self, out_degree_cond: Callable[[int], bool], in_degree_cond: Callable[[int], bool]
+    ) -> List[int]:
+        vertices_with_out_degree = {
+            vertex_index for vertex_index in self.out_edges.keys() if out_degree_cond(len(self.out_edges[vertex_index]))
+        }
+        vertices_with_in_degree = {
+            vertex_index for vertex_index in self.in_edges.keys() if in_degree_cond(len(self.in_edges[vertex_index]))
+        }
 
         return list(vertices_with_in_degree.intersection(vertices_with_out_degree))
 
-    def get_vertex_hash_by_index(self, vertex_index):
-        if vertex_index not in self.vertex_hash_cache:
-            self.vertex_hash_cache[vertex_index] = self.vertices[vertex_index].get_hash()
-        return self.vertex_hash_cache[vertex_index]
+    def get_vertex_hash_by_index(self, vertex_index: int) -> str:
+        return self.vertex_hash_cache.setdefault(vertex_index, self.vertices[vertex_index].get_hash())
 
-    def get_in_edges(self, end_vertices):
+    def get_in_edges(self, end_vertices: List[int]) -> List[Edge]:
         res = []
         for vertex in end_vertices:
             res.extend(self.in_edges.get(vertex, []))
         return self.sort_edged_by_dest_out_degree(res)
 
-    def sort_edged_by_dest_out_degree(self, edges):
-        edged_by_out_degree = {}
+    def sort_edged_by_dest_out_degree(self, edges: List[Edge]) -> List[Edge]:
+        edged_by_out_degree: Dict[int, List[Edge]] = {}
         for edge in edges:
-            dest_out_degree = len(self.out_edges.get(edge.dest))
-            if not edged_by_out_degree.get(dest_out_degree):
-                edged_by_out_degree[dest_out_degree] = []
-            edged_by_out_degree[dest_out_degree].append(edge)
+            dest_out_degree = len(self.out_edges[edge.dest])
+            edged_by_out_degree.setdefault(dest_out_degree, []).append(edge)
         sorted_edges = []
         for degree in sorted(edged_by_out_degree.keys()):
             sorted_edges.extend(edged_by_out_degree[degree])
         return sorted_edges
 
     def update_vertex_attribute(
-            self,
-            vertex_index: int,
-            attribute_key: str,
-            attribute_value: List[str],
-            change_origin_id: int,
-            attribute_at_dest: Optional[Union[str, List[str]]]
+        self,
+        vertex_index: int,
+        attribute_key: str,
+        attribute_value: Any,
+        change_origin_id: int,
+        attribute_at_dest: Optional[Union[str, List[str]]],
     ) -> None:
         previous_breadcrumbs = []
         attribute_at_dest = self.vertices[change_origin_id].find_attribute(attribute_at_dest)
         if attribute_at_dest:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
-        self.vertices[vertex_index].update_attribute(attribute_key, attribute_value, change_origin_id,
-                                                     previous_breadcrumbs)
+        self.vertices[vertex_index].update_attribute(
+            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs
+        )
 
-    def update_vertices_configs(self):
+    def update_vertices_configs(self) -> None:
         for vertex in self.vertices:
             changed_attributes = list(vertex.changed_attributes.keys())
             changed_attributes = filter_sub_keys(changed_attributes)
             self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(vertex, changed_attributes):
+    def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
-            parts = vertex.name.split('.')
+            parts = vertex.name.split(".")
             start = 0
             end = 1
             while end <= len(parts):
-                cur_key = '.'.join(parts[start:end])
+                cur_key = ".".join(parts[start:end])
                 if cur_key in updated_config:
                     updated_config = updated_config[cur_key]
                     start = end
@@ -376,7 +416,7 @@ class LocalGraph:
             new_value = vertex.attributes.get(changed_attribute, None)
             if new_value is not None:
                 if vertex.block_type == BlockType.LOCALS:
-                    changed_attribute = changed_attribute.replace(vertex.name + ".", '')
+                    changed_attribute = changed_attribute.replace(vertex.name + ".", "")
                 updated_config = update_dictionary_attribute(updated_config, changed_attribute, new_value)
 
         if len(changed_attributes) > 0:
@@ -384,10 +424,10 @@ class LocalGraph:
                 updated_config = updated_config.get(vertex.name)
             update_dictionary_attribute(vertex.config, vertex.name, updated_config)
 
-    def get_resources_types_in_graph(self):
+    def get_resources_types_in_graph(self) -> List[str]:
         return self.module.get_resources_types()
 
-    def update_vertices_breadcrumbs_and_module_connections(self):
+    def update_vertices_breadcrumbs_and_module_connections(self) -> None:
         """
         The function processes each vertex's breadcrumbs:
         1. Get more data to each vertex in breadcrumb (name, path, hash and type)
@@ -400,7 +440,7 @@ class LocalGraph:
                 for vertex_id in breadcrumbs_list:
                     v = self.vertices[vertex_id]
                     breadcrumb = v.get_export_data()
-                    breadcrumb['module_connection'] = self._determine_if_module_connection(breadcrumbs_list, v)
+                    breadcrumb["module_connection"] = self._determine_if_module_connection(breadcrumbs_list, v)
                     hash_breadcrumbs.append(breadcrumb)
                 vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
             if len(vertex.source_module) == 1:
@@ -413,7 +453,7 @@ class LocalGraph:
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
 
     @staticmethod
-    def _determine_if_module_connection(breadcrumbs_list, vertex_in_breadcrumbs):
+    def _determine_if_module_connection(breadcrumbs_list: List[int], vertex_in_breadcrumbs: Block) -> bool:
         """
         :param breadcrumbs_list: list of vertex's breadcrumbs
         :param vertex_in_breadcrumbs: one of the vertices in the breadcrumb list
@@ -422,20 +462,20 @@ class LocalGraph:
         if not vertex_in_breadcrumbs.module_connections:
             return False
         for connection_list in vertex_in_breadcrumbs.module_connections.values():
-            same_ids = [i for i in connection_list if i in breadcrumbs_list]
-            if len(same_ids) > 0:
+            if any(i in breadcrumbs_list for i in connection_list):
                 return True
         return False
 
-    def calculate_encryption_attribute(self):
-        for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE.value, []):
+    def calculate_encryption_attribute(self) -> None:
+        for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE, []):
             vertex = self.vertices[vertex_index]
-            resource_type = vertex.id.split('.')[0]
+            resource_type = vertex.id.split(".")[0]
             encryption_conf = ENCRYPTION_BY_RESOURCE_TYPE.get(resource_type)
-            attributes = vertex.get_attribute_dict()
             if encryption_conf:
+                attributes = vertex.get_attribute_dict()
                 is_encrypted, reason = encryption_conf.is_encrypted(attributes)
                 # TODO: Does not support possible dependency (i.e. S3 Object being encrypted due to S3 Bucket config)
-                vertex.attributes[CustomAttributes.ENCRYPTION] = \
+                vertex.attributes[CustomAttributes.ENCRYPTION] = (
                     EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value
+                )
                 vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = reason
