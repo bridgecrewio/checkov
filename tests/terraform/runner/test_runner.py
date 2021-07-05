@@ -83,7 +83,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(7, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -113,8 +113,8 @@ class TestRunnerValid(unittest.TestCase):
             if record.check_id == "CUSTOM_AWS_1":
                 failed_custom = failed_custom + 1
 
-        self.assertEqual(passing_custom, 1)
-        self.assertEqual(failed_custom, 2)
+        self.assertEqual(1, passing_custom)
+        self.assertEqual(2, failed_custom)
 
     def test_runner_extra_yaml_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -158,7 +158,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):

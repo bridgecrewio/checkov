@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure all resources are tagged with the relevant env"
-  id: "CUSTOM_AWS_1"
+  id: "CUSTOM_GRAPH_AWS_1"
   category: "GENERAL_SECURITY"
 scope:
   provider: "AWS"
