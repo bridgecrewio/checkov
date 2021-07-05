@@ -648,6 +648,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_loading_external_checks_yaml(self):
         runner = Runner()
+        graph_registry.checks = []
         graph_registry.load_checks()
         base_len = len(graph_registry.checks)
         current_dir = os.path.dirname(os.path.realpath(__file__))
