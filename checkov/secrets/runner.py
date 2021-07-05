@@ -4,9 +4,9 @@ import os
 import re
 import time
 from typing import Optional, List
+import string
 
 from detect_secrets import SecretsCollection
-from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
@@ -98,7 +98,8 @@ class Runner(BaseRunner):
                 },
                 {
                     'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
+                    'limit': 4.5
                 }
             ]
         }):
@@ -125,6 +126,7 @@ class Runner(BaseRunner):
                         secrets.scan_file(file_path)
                     except Exception as err:
                         logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
+                        continue
                     end = time.time()
                     scan_time = end - start
                     if scan_time > 10:
