@@ -653,10 +653,8 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(graph_registry.checks), base_len + 1)
-        self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
-        self.assertEqual(graph_registry.checks[base_len].name, 'Ensure bucket has versioning and owner tag')
-        graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
+        self.assertEqual(len(graph_registry.checks), base_len + 2)
+        graph_registry.checks = graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
         runner = Runner()
@@ -667,7 +665,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(graph_registry.checks), 2)
         runner.load_external_checks(extra_checks_dir_path)
         self.assertEqual(len(graph_registry.checks), 2)
-        self.assertListEqual(['CUSTOM_GRAPH_AWS_1', 'CKV2_CUSTOM_1'], [x.id for x in graph_registry.checks])
+        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in graph_registry.checks])
+        self.assertIn('CKV2_CUSTOM_1', [x.id for x in graph_registry.checks])
         graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
@@ -712,9 +711,6 @@ class TestRunnerValid(unittest.TestCase):
             found += 1
         self.assertEqual(found, len(scanner.supported_resources))
         self.assertEqual(len(list(filter(lambda c: c.id == CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))), 1)
-        self.assertEqual(graph_registry.checks[-1].id, CUSTOM_GRAPH_CHECK_ID)
-        self.assertEqual(graph_registry.checks[-1].name, 'Ensure bucket has versioning and owner tag')
-        graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
