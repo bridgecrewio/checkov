@@ -1,4 +1,7 @@
-def getInnerDict(source_dict, path_as_list):
+from typing import Generator, Any, Union
+
+
+def get_inner_dict(source_dict, path_as_list):
     result = source_dict
     for index in path_as_list:
         result = result[index]
@@ -19,3 +22,10 @@ def merge_dicts(*dicts):
             continue
         res = {**res, **d}
     return res
+
+
+def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
+    try:
+        return next(g)
+    except StopIteration:
+        return

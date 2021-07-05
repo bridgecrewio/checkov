@@ -4,7 +4,6 @@ import os
 import re
 import time
 from typing import Optional, List
-import string
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -27,7 +26,7 @@ SECRET_TYPE_TO_ID = {
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
-    # 'Base64 High Entropy String': 'CKV_SECRET_6',
+    'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
@@ -40,7 +39,7 @@ SECRET_TYPE_TO_ID = {
     'Square OAuth Secret': 'CKV_SECRET_16',
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
-    # 'Hex High Entropy String': 'CKV_SECRET_19'
+    'Hex High Entropy String': 'CKV_SECRET_19'
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 

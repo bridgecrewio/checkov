@@ -6,7 +6,7 @@ from typing import List
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.report import Report
-from checkov.common.util import dict_utils
+from checkov.common.util import data_structures_utils
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
@@ -15,7 +15,6 @@ from checkov.terraform.parser import Parser
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ['cli', 'json', 'junitxml', 'github_failed_only']
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
 
 class RunnerRegistry(object):
     runners = []
@@ -136,7 +135,7 @@ class RunnerRegistry(object):
                         definition_path = context_parser.get_entity_context_path(entity)
                         entity_id = ".".join(definition_path)
                         entity_context_path = [block_type] + definition_path
-                        entity_context = dict_utils.getInnerDict(
+                        entity_context = data_structures_utils.get_inner_dict(
                             definitions_context[full_file_path], entity_context_path
                         )
                         entity_lines_range = [
