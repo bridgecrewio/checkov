@@ -38,10 +38,17 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
-            self.assertEqual(data["summary"]["parsing_errors"], 0,
-                             f"expecting 0 parsing errors but got: {data['results']['parsing_errors']}")
-            self.assertGreater(data["summary"]["failed"], 1,
-                               f"expecting more than 1 failed checks, got: {data['summary']['failed']}")
+            if isinstance(data, list):
+                for framework_report in data:
+                    self.validate_report_not_empty(framework_report)
+            else:
+                self.validate_report_not_empty(data)
+
+    def validate_report_not_empty(self, report):
+        self.assertEqual(report["summary"]["parsing_errors"], 0,
+                         f"expecting 0 parsing errors but got: {report['results']['parsing_errors']}")
+        self.assertGreater(report["summary"]["failed"], 1,
+                           f"expecting more than 1 failed checks, got: {report['summary']['failed']}")
 
     def validate_json_quiet(self):
         report_path = current_dir + "/../checkov_report_cfngoat_quiet.json"
@@ -50,6 +57,7 @@ class TestCheckovJsonReport(unittest.TestCase):
             self.assertTrue(data["results"]["failed_checks"])
             self.assertFalse(data["results"]["passed_checks"])
             self.assertTrue(data["summary"])
+
 
 if __name__ == '__main__':
     unittest.main()
