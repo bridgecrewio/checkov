@@ -16,6 +16,8 @@ class EntropyKeywordCombinator(BasePlugin):
         keyword_secrets_generator = self.keyword_scanner.analyze_string(string)
         potential_entropy_secrets = []
         potential_kw_secret = generator_reader_wrapper(keyword_secrets_generator)
+        if not potential_kw_secret:
+            return
         for entropy_scanner in self.high_entropy_scanners:
             potential_entropy_secret = generator_reader_wrapper(entropy_scanner.analyze_string(string))
             if potential_entropy_secret:
