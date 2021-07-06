@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BC_API_URL
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_auth_header, get_default_get_headers, get_default_post_headers
 
 

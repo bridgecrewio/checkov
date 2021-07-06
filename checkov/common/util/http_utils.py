@@ -3,7 +3,7 @@ import requests
 import logging
 
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
 logger = logging.getLogger(__name__)

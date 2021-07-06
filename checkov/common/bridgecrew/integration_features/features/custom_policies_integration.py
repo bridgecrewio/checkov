@@ -5,7 +5,7 @@ import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.terraform.runner import graph_registry

@@ -6,7 +6,6 @@ import time
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
-from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
@@ -27,7 +26,7 @@ SECRET_TYPE_TO_ID = {
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
-    # 'Base64 High Entropy String': 'CKV_SECRET_6',
+    'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
@@ -40,7 +39,7 @@ SECRET_TYPE_TO_ID = {
     'Square OAuth Secret': 'CKV_SECRET_16',
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
-    # 'Hex High Entropy String': 'CKV_SECRET_19'
+    'Hex High Entropy String': 'CKV_SECRET_19'
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -52,6 +51,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
@@ -95,8 +95,13 @@ class Runner(BaseRunner):
                 {
                     'name': 'TwilioKeyDetector'
                 },
+                {
+                    'name': 'EntropyKeywordCombinator',
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
+                    'limit': 4.5
+                }
             ]
-        }):
+        }) as settings:
             report = Report(self.check_type)
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
@@ -110,8 +115,7 @@ class Runner(BaseRunner):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
-            # TODO: re-enable filter when re-adding `SecretKeyword` plugin
-            scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
             def _scan_file(file_paths: List[str]):
                 for file_path in file_paths:
@@ -120,6 +124,7 @@ class Runner(BaseRunner):
                         secrets.scan_file(file_path)
                     except Exception as err:
                         logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
+                        continue
                     end = time.time()
                     scan_time = end - start
                     if scan_time > 10:

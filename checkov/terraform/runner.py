@@ -11,7 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.util import dict_utils
+from checkov.common.util import data_structures_utils
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -258,7 +258,7 @@ class Runner(BaseRunner):
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
             try:
-                entity_context = dict_utils.getInnerDict(definition_context[full_file_path], entity_context_path)
+                entity_context = data_structures_utils.get_inner_dict(definition_context[full_file_path], entity_context_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
