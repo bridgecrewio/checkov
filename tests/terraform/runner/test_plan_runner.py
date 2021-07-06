@@ -3,6 +3,7 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.plan_runner import Runner
+from checkov.terraform.runner import graph_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -53,10 +54,11 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_nested_child_modules/tfplan.json"
         runner = Runner()
+        graph_registry.checks = []
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
-            external_checks_dir=None,
+            external_checks_dir=[current_dir + "/extra_yaml_checks"],
             runner_filter=RunnerFilter(framework="all"),
         )
         report_json = report.get_json()
@@ -66,7 +68,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 15)
+        self.assertEqual(report.get_summary()["failed"], 18)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -76,6 +78,7 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_39",
             "CKV_AWS_58",
             "CKV_AWS_151",
+            "CUSTOM_GRAPH_AWS_1"
         }
 
         assert failed_check_ids == expected_failed_check_ids
@@ -84,6 +87,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_root_module_resources_no_values/tfplan.json"
         runner = Runner()
+        graph_registry.checks = []
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],

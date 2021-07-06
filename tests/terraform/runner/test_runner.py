@@ -83,7 +83,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(7, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -113,8 +113,8 @@ class TestRunnerValid(unittest.TestCase):
             if record.check_id == "CUSTOM_AWS_1":
                 failed_custom = failed_custom + 1
 
-        self.assertEqual(passing_custom, 1)
-        self.assertEqual(failed_custom, 2)
+        self.assertEqual(1, passing_custom)
+        self.assertEqual(2, failed_custom)
 
     def test_runner_extra_yaml_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -158,7 +158,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -648,29 +648,27 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_loading_external_checks_yaml(self):
         runner = Runner()
+        graph_registry.checks = []
         graph_registry.load_checks()
         base_len = len(graph_registry.checks)
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(graph_registry.checks), base_len + 1)
-        self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
-        self.assertEqual(graph_registry.checks[base_len].name, 'Ensure bucket has versioning and owner tag')
-        graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
+        self.assertEqual(len(graph_registry.checks), base_len + 2)
+        graph_registry.checks = graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
         runner = Runner()
-        base_len = len(graph_registry.checks)
         current_dir = os.path.dirname(os.path.realpath(__file__))
+        graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(graph_registry.checks), base_len + 1)
-        self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
-        self.assertEqual(graph_registry.checks[base_len].name, 'Ensure bucket has versioning and owner tag')
+        self.assertEqual(len(graph_registry.checks), 2)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(graph_registry.checks), base_len + 1)
-        self.assertEqual(graph_registry.checks[base_len].id, CUSTOM_GRAPH_CHECK_ID)
-        graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
+        self.assertEqual(len(graph_registry.checks), 2)
+        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in graph_registry.checks])
+        self.assertIn('CKV2_CUSTOM_1', [x.id for x in graph_registry.checks])
+        graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
         runner = Runner()
@@ -714,9 +712,6 @@ class TestRunnerValid(unittest.TestCase):
             found += 1
         self.assertEqual(found, len(scanner.supported_resources))
         self.assertEqual(len(list(filter(lambda c: c.id == CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))), 1)
-        self.assertEqual(graph_registry.checks[-1].id, CUSTOM_GRAPH_CHECK_ID)
-        self.assertEqual(graph_registry.checks[-1].name, 'Ensure bucket has versioning and owner tag')
-        graph_registry.checks = list(filter(lambda c: c.id != CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
