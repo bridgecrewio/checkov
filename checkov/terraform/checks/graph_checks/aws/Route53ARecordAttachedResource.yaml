@@ -4,6 +4,11 @@ metadata:
   category: "NETWORKING"
 definition:
  and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_route53_record
+        operator: within
       - cond_type: attribute
         resource_types:
            - aws_route53_record
