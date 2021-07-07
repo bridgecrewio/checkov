@@ -2,6 +2,8 @@ import logging
 import operator
 import os
 from functools import reduce
+
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -221,6 +223,8 @@ class Runner(BaseRunner):
 def get_skipped_checks(entity_conf):
     skipped = []
     metadata = {}
+    bc_id_mapping = bc_integration.get_id_mapping()
+    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
     if not isinstance(entity_conf,dict):
         return skipped
     if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
@@ -238,12 +242,17 @@ def get_skipped_checks(entity_conf):
             for key in annotation:
                 skipped_item = {}
                 if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                    if "CKV_K8S" in annotation[key]:
+                    if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key]:
                         if "=" in annotation[key]:
                             (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
                         else:
                             skipped_item["id"] = annotation[key]
                             skipped_item["suppress_comment"] = "No comment provided"
+                        if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
+                            skipped_item["bc_id"] = skipped_item["id"]
+                            skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
+                        elif ckv_to_bc_id_mapping:
+                            skipped_item["bc_id"] = ckv_to_bc_id_mapping.get(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
                         logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
