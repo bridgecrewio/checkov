@@ -1,4 +1,5 @@
 resource "aws_eip" "fixed" {
+	# checkov:skip=CKV2_AWS_19: ADD REASON
 }
 
 resource "aws_route53_record" "pass" {
