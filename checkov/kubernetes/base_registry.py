@@ -19,7 +19,7 @@ class Registry(BaseCheckRegistry):
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
 
-            if self._should_run_scan(check.id, check.bc_id, entity_configuration, runner_filter):
+            if self._should_run_scan(check.id, entity_configuration, runner_filter, check.bc_id):
                 self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
                 result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
@@ -28,7 +28,7 @@ class Registry(BaseCheckRegistry):
         return results
 
     @staticmethod
-    def _should_run_scan(check_id, bc_id, entity_configuration, runner_filter):
+    def _should_run_scan(check_id, entity_configuration, runner_filter, bc_id=None):
         check_id_allowlist = runner_filter.checks
         check_id_denylist = runner_filter.skip_checks
         if check_id_allowlist:
