@@ -8,6 +8,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.runner import graph_registry
 
 
@@ -24,7 +25,9 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def pre_scan(self):
         self.policies = self._get_policies_from_platform()
         for policy in self.policies:
-            check = self.platform_policy_parser.parse_raw_check(self._convert_raw_check(policy))
+            converted_check = self._convert_raw_check(policy)
+            resource_types = Registry._get_resource_types(converted_check['metadata'])
+            check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
             graph_registry.checks.append(check)
         logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
 
@@ -33,7 +36,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         metadata = {
             'id': policy['id'],
             'name': policy['title'],
-            'category': policy['category']
+            'category': policy['category'],
+            'scope': {
+                'provider': policy['provider']
+            }
         }
         check = {
             'metadata': metadata,
