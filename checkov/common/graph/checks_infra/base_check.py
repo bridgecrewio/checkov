@@ -9,6 +9,7 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 class BaseGraphCheck:
     def __init__(self) -> None:
         self.id = ""
+        self.bc_id = None
         self.name = ""
         self.resource_types: List[str] = []
         self.connected_resources_types: List[str] = []

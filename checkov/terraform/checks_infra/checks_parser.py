@@ -1,5 +1,6 @@
 from typing import Dict, Any, List, Optional
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -48,6 +49,8 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
+        if bc_integration.ckv_to_bc_id_mapping:
+            check.bc_id = bc_integration.ckv_to_bc_id_mapping.get(check.id)
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 

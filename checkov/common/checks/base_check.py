@@ -14,10 +14,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: List[str] = []
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
     ) -> None:
         self.name = name
         self.id = id
+        self.bc_id = bc_id
         self.categories = categories
         self.block_type = block_type
         self.supported_entities = supported_entities

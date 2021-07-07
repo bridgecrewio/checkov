@@ -8,6 +8,7 @@ import yaml
 
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks_infra.resources_types import resources_types
 
 CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
@@ -41,6 +42,7 @@ class Registry(BaseRegistry):
                             check_json, resources_types=self._get_resource_types(check_json)
                         )
                         if not any([c for c in self.checks if check.id == c.id]):
+                            RunnerFilter.notify_external_check(check.id)
                             self.checks.append(check)
 
     def load_external_checks(self, dir: str) -> None:
