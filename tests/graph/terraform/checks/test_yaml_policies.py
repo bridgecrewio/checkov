@@ -169,6 +169,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_EFSAddedBackupSuppress(self):
         self.go("EFSAddedBackupSuppress", "EFSAddedBackup")
 
+    def test_Route53ARecordAttachedResource(self):
+        self.go("Route53ARecordAttachedResource")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser())
         registry.load_checks()

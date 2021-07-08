@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_4"
-  name: "Ensure API Gateway stage have logging level defined as appropiate"
+  name: "Ensure API Gateway stage have logging level defined as appropriate"
   category: "LOGGING"
 definition:
   and:
