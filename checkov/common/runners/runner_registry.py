@@ -64,7 +64,7 @@ class RunnerRegistry(object):
                 elif config.output == 'github_failed_only':
                     report.print_failed_github_md()
                 else:
-                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path,baseline=baseline)
+                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path, baseline=baseline, use_bc_id=config.output_bc_ids)
                     if url:
                         print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
