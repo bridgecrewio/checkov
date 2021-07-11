@@ -161,7 +161,7 @@ class TestRenderer(TestCase):
                                      f'error during comparing {v.block_type} in attribute key: {attribute_key}')
 
     def test_graph_rendering_order(self):
-        resource_path = os.path.join(TEST_DIRNAME, "../../../graph/terraform", "resources", "module_rendering", "example")
+        resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         module_vertices = list(filter(lambda v: v.block_type == BlockType.MODULE, local_graph.vertices))
