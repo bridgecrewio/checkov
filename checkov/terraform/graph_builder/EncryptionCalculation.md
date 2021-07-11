@@ -35,8 +35,8 @@ the resource it will be marked as encrypted, no matter what the actual value is 
 
 ##Example Usage
 This field can be leveraged in policies, i.e. query the field `encryption_` for the strings "ENCRYPTED" / "UNENCRYPTED".
-Example [query](../../../tests/graph/terraform/checks_infra/attribute_solvers/equals_solver/EncryptedResources.yaml), 
-and the expected resources can be found in the matching [test-case on line 22 here](../../../tests/graph/terraform/checks_infra/attribute_solvers/equals_solver/test_solver.py).
+Example [query](../../../tests/terraform/graph/checks_infra/attribute_solvers/equals_solver/EncryptedResources.yaml), 
+and the expected resources can be found in the matching [test-case on line 22 here](../../../tests/terraform/graph/checks_infra/attribute_solvers/equals_solver/test_solver.py).
 
 ## Contributing to Extend Coverage
 To add support for a new resource type, for example `foo_bar`, a new entry needs to be added to 
