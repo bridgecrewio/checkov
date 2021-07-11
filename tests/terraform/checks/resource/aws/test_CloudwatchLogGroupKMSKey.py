@@ -5,7 +5,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.CloudwatchLogGroupKMSKey import check
 from checkov.terraform.runner import Runner
 
-class RestCloudWatchLogGroupKMSKey(unittest.TestCase):
+class TestCloudWatchLogGroupKMSKey(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
