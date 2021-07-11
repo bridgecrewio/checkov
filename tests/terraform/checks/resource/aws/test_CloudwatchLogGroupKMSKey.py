@@ -1,9 +1,8 @@
-import os
 import unittest
+import hcl2
 
-from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.CloudwatchLogGroupKMSKey import check
-from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.aws.CloudWatchLogGroupKMSKey import check
+from checkov.common.models.enums import CheckResult
 
 class TestCloudWatchLogGroupKMSKey(unittest.TestCase):
     def test(self):

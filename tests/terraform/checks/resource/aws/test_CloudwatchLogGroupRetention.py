@@ -1,7 +1,7 @@
 import unittest
 import hcl2
 
-from checkov.terraform.checks.resource.aws.CloudwatchLogGroupRetention import check
+from checkov.terraform.checks.resource.aws.CloudWatchLogGroupRetention import check
 from checkov.common.models.enums import CheckResult
 
 
