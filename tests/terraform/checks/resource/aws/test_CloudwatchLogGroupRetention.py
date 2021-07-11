@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.aws.CloudwatchLogGroupRetention import ch
 from checkov.common.models.enums import CheckResult
 
 
-class TestCloudwatchLogGroupRetention(unittest.TestCase):
+class TestCloudWatchLogGroupRetention(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
