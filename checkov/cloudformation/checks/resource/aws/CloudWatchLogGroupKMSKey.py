@@ -3,7 +3,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 from checkov.common.models.consts import ANY_VALUE
 
 
-class CloudWatchLogGroupRetention(BaseResourceValueCheck):
+class CloudWatchLogGroupKMSKey(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that CloudWatch Log Group is encrypted by KMS"
         id = "CKV_AWS_158"
@@ -18,4 +18,4 @@ class CloudWatchLogGroupRetention(BaseResourceValueCheck):
         return ANY_VALUE
 
 
-check = cloudwatchLogGroupRetention()
+check = CloudWatchLogGroupKMSKey()
