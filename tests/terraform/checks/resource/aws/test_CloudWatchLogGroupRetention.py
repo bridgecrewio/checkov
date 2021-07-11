@@ -2,7 +2,7 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.ALBDropHttpHeaders import check
+from checkov.terraform.checks.resource.aws.CloudWatchLogGroupRetention import check
 from checkov.terraform.runner import Runner
 
 
