@@ -3,6 +3,8 @@ from unittest.case import TestCase
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
+from checkov.terraform.graph_manager import GraphManager
+from tests.terraform.graph.variable_rendering.expected_data import *
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
