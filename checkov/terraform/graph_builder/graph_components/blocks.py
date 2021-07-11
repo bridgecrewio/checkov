@@ -46,7 +46,7 @@ class Block:
         self.attributes = attributes
         self.id = id
         self.source = source
-        self.changed_attributes: Dict[str, List[int]] = {}
+        self.changed_attributes: Dict[str, List[Any]] = {}
         self.breadcrumbs: Dict[str, List[Dict[str, Any]]] = {}
         self.module_connections: Dict[str, List[int]] = {}
         self.source_module: Set[int] = set()

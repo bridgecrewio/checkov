@@ -20,13 +20,13 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
 
 if TYPE_CHECKING:
-    from checkov.terraform.graph_builder.local_graph import LocalGraph
+    from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 ATTRIBUTES_NO_EVAL = ["template_body", "template"]
 
 
 class VariableRenderer:
-    def __init__(self, local_graph: "LocalGraph") -> None:
+    def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         self.local_graph = local_graph
         run_async = os.environ.get("RENDER_VARIABLES_ASYNC", "True")
         self.run_async = True if run_async == "True" else False

@@ -6,15 +6,10 @@ from typing import List, Optional, Union, Any, Dict, Set, Callable
 
 from typing_extensions import TypedDict
 
-from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
+from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
-from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
-from checkov.terraform.graph_builder.graph_components.module import Module
-from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.checks.utils.utils import (
     get_referenced_vertices_in_value,
     update_dictionary_attribute,
@@ -23,6 +18,12 @@ from checkov.terraform.checks.utils.utils import (
     attribute_has_nested_attributes,
 )
 from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.terraform.graph_builder.graph_components.module import Module
+from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.variable_rendering.renderer import VariableRenderer
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
@@ -34,16 +35,10 @@ class Undetermined(TypedDict):
     variable_vertex_id: int
 
 
-class LocalGraph:
+class TerraformLocalGraph(LocalGraph):
     def __init__(self, module: Module, module_dependency_map: Dict[str, List[List[str]]]) -> None:
+        super().__init__()
         self.module = module
-        self.vertices: List[Block] = []
-        self.edges: List[Edge] = []
-        self.in_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges entering it
-        self.out_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges exiting it
-        self.vertices_by_block_type: Dict[BlockType, List[int]] = {}
-        self.vertex_hash_cache: Dict[int, str] = {}
-        self.vertices_block_name_map: Dict[BlockType, Dict[str, List[int]]] = {}
         self.module_dependency_map = module_dependency_map
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}

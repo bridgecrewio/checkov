@@ -8,7 +8,7 @@ import jmespath
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.terraform.graph_manager import GraphManager
+from checkov.terraform.graph_manager import TerraformGraphManager
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -132,7 +132,7 @@ class TestRendererScenarios(TestCase):
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../../terraform/parser/resources/parser_scenarios', dir_name))
-        graph_manager = GraphManager(dir_name, [dir_name])
+        graph_manager = TerraformGraphManager(dir_name, [dir_name])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         expected = load_expected(replace_expected, dir_name, resources_dir)

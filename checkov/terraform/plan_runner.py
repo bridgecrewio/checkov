@@ -66,9 +66,9 @@ class Runner(TerraformRunner):
                 else:
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
-        report.add_parsing_errors(parsing_errors.keys())
+        report.add_parsing_errors(list(parsing_errors.keys()))
 
-        graph = self.graph_manager.build_graph_from_tf_definitions(self.tf_definitions, render_variables=False)
+        graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
         self.graph_manager.save_graph(graph)
 
         graph_report = self.get_graph_checks_report(root_folder, runner_filter)

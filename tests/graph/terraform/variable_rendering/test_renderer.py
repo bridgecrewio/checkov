@@ -2,7 +2,7 @@ import os
 from unittest.case import TestCase
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_manager import GraphManager
+from checkov.terraform.graph_manager import TerraformGraphManager
 from tests.graph.terraform.variable_rendering.expected_data import *
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -16,7 +16,7 @@ class TestRenderer(TestCase):
 
     def test_render_local(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_local')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_local = {'bucket_name': 'test_bucket_name'}
@@ -27,7 +27,7 @@ class TestRenderer(TestCase):
 
     def test_render_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_variable')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_resource = {'region': "us-west-2", 'bucket': "test_bucket_name", "acl": "acl", "force_destroy": True}
@@ -37,7 +37,7 @@ class TestRenderer(TestCase):
     def test_render_local_from_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME,
                                      '../resources/variable_rendering/render_local_from_variable')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_local = {'bucket_name': 'test_bucket_name'}
@@ -46,7 +46,7 @@ class TestRenderer(TestCase):
 
     def test_general_example(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_provider = {'profile': 'default', 'region': 'us-east-1', 'alias': 'east1'}
@@ -59,7 +59,7 @@ class TestRenderer(TestCase):
 
     def test_terragoat_db_app(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_terragoat_db_app')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         self.compare_vertex_attributes(local_graph, expected_terragoat_local_resource_prefix, BlockType.LOCALS.value, 'resource_prefix')
@@ -67,7 +67,7 @@ class TestRenderer(TestCase):
 
     def test_render_nested_modules(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_nested_modules')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_aws_instance = {"instance_type": "bar"}
@@ -85,7 +85,7 @@ class TestRenderer(TestCase):
 
     def test_breadcrumbs(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/s3_bucket')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
         s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
@@ -105,7 +105,7 @@ class TestRenderer(TestCase):
 
     def test_multiple_breadcrumbs(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
         s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
@@ -125,7 +125,7 @@ class TestRenderer(TestCase):
 
     def test_render_lambda(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_lambda')
-        graph_manager = GraphManager('acme', ['acme'])
+        graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         expected_aws_lambda_permission = {'count': 0, 'statement_id': 'test_statement_id', 'action': 'lambda:InvokeFunction', 'function_name': 'my-func', 'principal': 'dumbeldor', 'resource_type': 'aws_lambda_permission'}
@@ -134,7 +134,7 @@ class TestRenderer(TestCase):
 
     def test_eks(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/terraform-aws-eks-master')
-        graph_manager = GraphManager('eks', ['eks'])
+        graph_manager = TerraformGraphManager('eks', ['eks'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         for v in local_graph.vertices:
@@ -148,7 +148,7 @@ class TestRenderer(TestCase):
 
     def test_dict_tfvar(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_dictionary_tfvars')
-        graph_manager = GraphManager('d', ['d'])
+        graph_manager = TerraformGraphManager('d', ['d'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
         for v in local_graph.vertices:
@@ -161,7 +161,7 @@ class TestRenderer(TestCase):
 
     def test_graph_rendering_order(self):
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
-        graph_manager = GraphManager('m', ['m'])
+        graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         module_vertices = list(filter(lambda v: v.block_type == BlockType.MODULE, local_graph.vertices))
         existing = set()
