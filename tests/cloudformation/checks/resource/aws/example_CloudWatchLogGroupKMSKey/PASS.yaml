@@ -4,4 +4,4 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties: 
       LogGroupName: test
-      RetentionInDays: 3
+      KmsKeyId: test
