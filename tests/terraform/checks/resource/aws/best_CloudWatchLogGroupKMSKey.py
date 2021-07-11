@@ -1,16 +1,16 @@
+import os
 import unittest
-import hcl2
 
-from checkov.terraform.checks.resource.aws.CloudWatchLogGroupRetention import check
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.resource.aws.ALBDropHttpHeaders import check
+from checkov.terraform.runner import Runner
 
-
-class TestCloudWatchLogGroupRetention(unittest.TestCase): 
+class TestCloudWatchLogGroupKMSKey(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_CloudWatchLogGroupRetention"
+        test_files_dir = current_dir + "/example_CloudWatchLogGroupKMSKey"
         report = runner.run(
             root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
         )
@@ -35,5 +35,5 @@ class TestCloudWatchLogGroupRetention(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
