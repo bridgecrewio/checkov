@@ -160,7 +160,7 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list,
+    def search_for_suppression(check_id: str, secret: PotentialSecret, skipped_checks: list,
                                CHECK_ID_TO_SECRET_TYPE: dict) -> Optional[dict]:
         if skipped_checks:
             for skipped_check in skipped_checks:
