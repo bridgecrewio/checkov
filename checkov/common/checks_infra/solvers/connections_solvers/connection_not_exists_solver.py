@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import Operators
-from checkov.terraform.checks_infra.solvers.connections_solvers.connection_exists_solver import ConnectionExistsSolver
+from checkov.common.checks_infra.solvers.connections_solvers.connection_exists_solver import ConnectionExistsSolver
 
 
 class ConnectionNotExistsSolver(ConnectionExistsSolver):

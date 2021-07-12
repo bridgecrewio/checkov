@@ -8,7 +8,7 @@ import yaml
 
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.terraform.checks_infra.resources_types import resources_types
+from checkov.common.checks_infra.resources_types import resources_types
 
 CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
 
@@ -18,7 +18,7 @@ class Registry(BaseRegistry):
         super().__init__(parser)
         self.checks = []
         self.parser = parser
-        self.checks_dir = checks_dir if checks_dir else str(Path(__file__).parent.parent / "checks" / "graph_checks")
+        self.checks_dir = checks_dir if checks_dir else str(Path(__file__).parent.parent.parent / "terraform" / "checks" / "graph_checks")
         self.logger = logging.getLogger(__name__)
 
     def load_checks(self) -> None:

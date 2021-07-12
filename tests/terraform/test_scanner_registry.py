@@ -1,8 +1,8 @@
 import unittest
 
 from checkov.terraform.checks.resource.registry import resource_registry as registry
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 
 
 class TestScannerRegistry(unittest.TestCase):

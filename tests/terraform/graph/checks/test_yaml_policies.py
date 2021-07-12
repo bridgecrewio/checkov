@@ -5,8 +5,8 @@ import warnings
 
 import yaml
 from checkov.terraform import checks
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
 from typing import List
 from checkov.terraform.runner import Runner
@@ -222,7 +222,7 @@ class TestYamlPolicies(unittest.TestCase):
 def get_policy_results(root_folder, policy):
     check_id = policy['metadata']['id']
     graph_runner = Runner()
-    report = graph_runner.run(root_folder,runner_filter=RunnerFilter(checks=[check_id]))
+    report = graph_runner.run(root_folder, runner_filter=RunnerFilter(checks=[check_id]))
     return report
 
 

@@ -5,10 +5,10 @@ from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.terraform.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
-from checkov.terraform.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
-from checkov.terraform.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
-from checkov.terraform.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
+from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
