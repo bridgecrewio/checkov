@@ -3,6 +3,7 @@ import dataclasses
 import logging
 import os
 from typing import Dict, Optional, Tuple, List
+from pathlib import Path
 
 import dpath.util
 
@@ -19,8 +20,8 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -35,7 +36,8 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-graph_registry = Registry(parser=NXGraphCheckParser())
+graph_registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(Path(__file__).parent / "checks" / "graph_checks"))
+
 
 class Runner(BaseRunner):
     check_type = "terraform"

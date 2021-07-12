@@ -1,7 +1,7 @@
 from typing import List, Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
-from checkov.terraform.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
 
 class EqualsAttributeSolver(BaseAttributeSolver):

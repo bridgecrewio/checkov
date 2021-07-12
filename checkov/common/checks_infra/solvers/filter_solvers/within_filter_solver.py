@@ -1,7 +1,7 @@
 from typing import List, Any, Callable
 
 from checkov.common.graph.checks_infra.enums import Operators
-from checkov.terraform.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
+from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
 
 class WithinFilterSolver(BaseFilterSolver):

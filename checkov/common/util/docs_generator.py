@@ -15,7 +15,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks_infra.registry import BaseRegistry as BaseGraphRegistry
+from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry
 from checkov.terraform.runner import graph_registry
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
