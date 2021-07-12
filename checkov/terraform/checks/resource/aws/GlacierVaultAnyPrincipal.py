@@ -4,8 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from policyuniverse.policy import Policy
 
-from checkov.terraform.checks.utils.utils import DATA_TO_JSON_PATTERN
-
+DATA_TO_JSON_PATTERN = r"\$?\{?(.+?)(?=.json).json\}?"
 
 class GlacierVaultAnyPrincipal(BaseResourceCheck):
 

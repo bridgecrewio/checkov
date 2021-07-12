@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
+from checkov.common.graph.graph_builder.utils import calculate_hash
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -11,7 +12,6 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
-from checkov.terraform.checks.utils.utils import calculate_hash, decode_graph_property_value
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -112,8 +112,7 @@ class TestLocalGraph(TestCase):
         local_graph.calculate_encryption_attribute()
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
-            [resource_type, resource_name] = decode_graph_property_value(
-                attribute_dict[CustomAttributes.ID]).split(".")
+            [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
                 is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
                 details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]

@@ -6,12 +6,10 @@ from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 from lark.tree import Tree
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.terraform.checks.utils.utils import (
-    run_function_multithreaded,
+from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded, join_trimmed_strings
+from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
-    join_trimmed_strings,
     remove_index_pattern_from_str,
-    calculate_hash,
     attribute_has_nested_attributes,
     VertexReference,
 )

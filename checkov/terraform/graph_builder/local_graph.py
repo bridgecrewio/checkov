@@ -9,15 +9,14 @@ from typing_extensions import TypedDict
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
-from checkov.terraform.checks.utils.utils import (
+from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     update_dictionary_attribute,
-    join_trimmed_strings,
     filter_sub_keys,
-    attribute_has_nested_attributes,
+    attribute_has_nested_attributes, remove_index_pattern_from_str,
 )
-from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
