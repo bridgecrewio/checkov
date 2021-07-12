@@ -3,3 +3,5 @@ pass:
   - "aws_route53_record.pass2"
 fail:
   - "aws_route53_record.fail"
+ignore:
+  - "aws_route53_record.ignore"

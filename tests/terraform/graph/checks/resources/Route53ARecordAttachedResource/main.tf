@@ -36,3 +36,11 @@ resource "aws_route53_record" "fail" {
   ttl     = "300"
   records = ["1.1.1.1"]
 }
+
+resource "aws_route53_record" "ignore" {
+  zone_id = data.aws_route53_zone.parent.id
+  name    = "Some name abcd"
+  type    = "CNAME"
+  ttl     = 60
+  records = [module.controller.loadbalancer_dns_name]
+}

@@ -9,11 +9,11 @@ definition:
         value:
           - aws_route53_record
         operator: within
-      - cond_type: attribute
+      - cond_type: filter
         resource_types:
            - aws_route53_record
         attribute: type
-        operator: equals
+        operator: within
         value: "A"
       - cond_type: connection
         resource_types:
