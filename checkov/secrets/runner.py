@@ -136,6 +136,8 @@ class Runner(BaseRunner):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
+                if runner_filter.checks and check_id not in runner_filter.checks:
+                    continue
                 result = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(os.path.join(root_folder, secret.filename),
                                               secret.line_number) if root_folder else linecache.getline(secret.filename,
