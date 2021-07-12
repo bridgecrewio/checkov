@@ -139,9 +139,7 @@ class Runner(BaseRunner):
                 if runner_filter.checks and check_id not in runner_filter.checks:
                     continue
                 result = {'result': CheckResult.FAILED}
-                line_text = linecache.getline(os.path.join(root_folder, secret.filename),
-                                              secret.line_number) if root_folder else linecache.getline(secret.filename,
-                                                                                                        secret.line_number)
+                line_text = linecache.getline(secret.filename,secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
                 result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
@@ -171,8 +169,7 @@ class Runner(BaseRunner):
                             'suppress_comment': f"Secret scan {skipped_check} is skipped"}
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
-            lt = linecache.getline(os.path.join(root_folder, secret.filename),
-                                   line_number) if root_folder else linecache.getline(secret.filename, line_number)
+            lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
             if skip_search:
                 return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
