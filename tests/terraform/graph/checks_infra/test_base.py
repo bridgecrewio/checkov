@@ -1,8 +1,8 @@
 import os
 from unittest import TestCase
 
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

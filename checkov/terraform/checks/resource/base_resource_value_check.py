@@ -9,7 +9,7 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.parser_utils import find_var_blocks
 from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value
-from checkov.terraform.checks_infra.resources_types import resources_types
+from checkov.common.checks_infra.resources_types import resources_types
 
 
 class BaseResourceValueCheck(BaseResourceCheck):

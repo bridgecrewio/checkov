@@ -4,11 +4,11 @@ import unittest
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.runner import graph_registry, Runner
 from checkov.runner_filter import RunnerFilter
-
+from pathlib import Path
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
 
@@ -116,7 +116,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
         parser = NXGraphCheckParser()
 
-        registry = Registry(parser=NXGraphCheckParser())
+        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+            Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
 
