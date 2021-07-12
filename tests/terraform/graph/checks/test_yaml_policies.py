@@ -9,6 +9,7 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
 from typing import List
+from pathlib import Path
 from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
@@ -173,7 +174,8 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("Route53ARecordAttachedResource")
 
     def test_registry_load(self):
-        registry = Registry(parser=NXGraphCheckParser())
+        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+            Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 

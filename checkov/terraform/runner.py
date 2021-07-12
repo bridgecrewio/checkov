@@ -3,6 +3,7 @@ import dataclasses
 import logging
 import os
 from typing import Dict, Optional, Tuple, List
+from pathlib import Path
 
 import dpath.util
 
@@ -35,7 +36,7 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-graph_registry = Registry(parser=NXGraphCheckParser())
+graph_registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(Path(__file__).parent / "checks" / "graph_checks"))
 
 
 class Runner(BaseRunner):

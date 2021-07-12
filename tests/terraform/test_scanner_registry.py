@@ -3,7 +3,7 @@ import unittest
 from checkov.terraform.checks.resource.registry import resource_registry as registry
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
-
+from pathlib import Path
 
 class TestScannerRegistry(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class TestScannerRegistry(unittest.TestCase):
 
     def test_non_colliding_graph_check_ids(self):
         check_id_check_class_map = {}
-        graph_registry = Registry(parser=NXGraphCheckParser())
+        graph_registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(Path(__file__).parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         graph_registry.load_checks()
         for check in graph_registry.checks:
             check_id_check_class_map.setdefault(check.id, []).append(check)
