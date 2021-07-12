@@ -142,7 +142,7 @@ class Runner(BaseRunner):
                 line_text = linecache.getline(secret.filename,secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
-                result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
+                result = self.search_for_suppression(check_id, secret, runner_filter.skip_checks,
                                                      CHECK_ID_TO_SECRET_TYPE) or result
                 report.add_record(Record(
                     check_id=check_id,
