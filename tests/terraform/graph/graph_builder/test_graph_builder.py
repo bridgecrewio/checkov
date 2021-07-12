@@ -59,10 +59,10 @@ class TestGraphBuilder(TestCase):
             if graph.vertices[edge.origin].get_hash() == hashed_from and graph.vertices[edge.dest].get_hash() == hashed_to:
                 matching_edges.append(edge)
         self.assertGreater(len(matching_edges), 0,
-                           f'expected to find edge from [{node_from.block_type.value} {node_from.name}] to [{node_to.block_type.value} {node_to.name}] with label [{expected_label}]')
+                           f'expected to find edge from [{node_from.block_type} {node_from.name}] to [{node_to.block_type} {node_to.name}] with label [{expected_label}]')
         if not any(e.label == expected_label for e in matching_edges):
             self.fail(
-                f'expected to find edge from [{node_from.block_type.value} {node_from.name}] to [{node_to.block_type.value} {node_to.name}] with label [{expected_label}], found edges: {[str(e) for e in matching_edges]}')
+                f'expected to find edge from [{node_from.block_type} {node_from.name}] to [{node_to.block_type} {node_to.name}] with label [{expected_label}], found edges: {[str(e) for e in matching_edges]}')
 
     @staticmethod
     def get_vertex_by_name_and_type(local_graph, block_type, name, multiple=False):

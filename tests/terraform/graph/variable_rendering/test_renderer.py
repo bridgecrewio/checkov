@@ -23,8 +23,8 @@ class TestRenderer(TestCase):
         expected_local = {'bucket_name': 'test_bucket_name'}
         expected_resource = {'region': 'us-west-2', 'bucket': expected_local['bucket_name']}
 
-        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS.value, 'bucket_name')
-        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE.value, 'aws_s3_bucket.template_bucket')
+        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS, 'bucket_name')
+        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.template_bucket')
 
     def test_render_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_variable')
@@ -33,7 +33,7 @@ class TestRenderer(TestCase):
 
         expected_resource = {'region': "us-west-2", 'bucket': "test_bucket_name", "acl": "acl", "force_destroy": True}
 
-        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE.value, 'aws_s3_bucket.template_bucket')
+        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.template_bucket')
 
     def test_render_local_from_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME,
@@ -43,7 +43,7 @@ class TestRenderer(TestCase):
 
         expected_local = {'bucket_name': 'test_bucket_name'}
 
-        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS.value, 'bucket_name')
+        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS, 'bucket_name')
 
     def test_general_example(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
@@ -54,17 +54,17 @@ class TestRenderer(TestCase):
         expected_local = {'bucket_name': {'val': 'MyBucket'}}
         expected_resource = {'region': 'us-west-2', 'bucket': expected_local['bucket_name']}
 
-        self.compare_vertex_attributes(local_graph, expected_provider, BlockType.PROVIDER.value, 'aws.east1')
-        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS.value, 'bucket_name')
-        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE.value, 'aws_s3_bucket.template_bucket')
+        self.compare_vertex_attributes(local_graph, expected_provider, BlockType.PROVIDER, 'aws.east1')
+        self.compare_vertex_attributes(local_graph, expected_local, BlockType.LOCALS, 'bucket_name')
+        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.template_bucket')
 
     def test_terragoat_db_app(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_terragoat_db_app')
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
 
-        self.compare_vertex_attributes(local_graph, expected_terragoat_local_resource_prefix, BlockType.LOCALS.value, 'resource_prefix')
-        self.compare_vertex_attributes(local_graph, expected_terragoat_db_instance, BlockType.RESOURCE.value, "aws_db_instance.default")
+        self.compare_vertex_attributes(local_graph, expected_terragoat_local_resource_prefix, BlockType.LOCALS, 'resource_prefix')
+        self.compare_vertex_attributes(local_graph, expected_terragoat_db_instance, BlockType.RESOURCE, "aws_db_instance.default")
 
     def test_render_nested_modules(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_nested_modules')
@@ -79,7 +79,7 @@ class TestRenderer(TestCase):
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
         print(f'breadcrumbs = {vertex.breadcrumbs}')
-        vertex_attributes = vertex.get_decoded_attribute_dict()
+        vertex_attributes = vertex.get_attribute_dict()
         for attribute_key, expected_value in expected_attributes.items():
             actual_value = vertex_attributes.get(attribute_key)
             self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
@@ -131,7 +131,7 @@ class TestRenderer(TestCase):
 
         expected_aws_lambda_permission = {'count': 0, 'statement_id': 'test_statement_id', 'action': 'lambda:InvokeFunction', 'function_name': 'my-func', 'principal': 'dumbeldor', 'resource_type': 'aws_lambda_permission'}
 
-        self.compare_vertex_attributes(local_graph, expected_aws_lambda_permission, BlockType.RESOURCE.value, "aws_lambda_permission.test_lambda_permissions")
+        self.compare_vertex_attributes(local_graph, expected_aws_lambda_permission, BlockType.RESOURCE, "aws_lambda_permission.test_lambda_permissions")
 
     def test_eks(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/terraform-aws-eks-master')

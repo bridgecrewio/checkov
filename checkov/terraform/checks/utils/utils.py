@@ -95,7 +95,7 @@ def block_type_str_to_enum(block_type_str: str) -> BlockType:
         return BlockType.VARIABLE
     if block_type_str == "local":
         return BlockType.LOCALS
-    return BlockType(block_type_str)
+    return BlockType().get(block_type_str)
 
 
 def block_type_enum_to_str(block_type: BlockType) -> str:

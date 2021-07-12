@@ -20,7 +20,7 @@ from checkov.terraform.checks.utils.utils import (
 from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import is_local_path
@@ -251,7 +251,7 @@ class TerraformLocalGraph(LocalGraph):
         self.in_edges[dest_vertex_index].append(edge)
 
     def _connect_module(
-        self, sub_values: List[str], attribute_key: str, module_node: Block, origin_node_index: int
+        self, sub_values: List[str], attribute_key: str, module_node: TerraformBlock, origin_node_index: int
     ) -> None:
         """
         :param sub_values: list of sub values of the attribute value.
@@ -324,7 +324,7 @@ class TerraformLocalGraph(LocalGraph):
         return vertex_index_with_longest_common_prefix
 
     def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
-        return {vertex.get_hash(): vertex.get_decoded_attribute_dict() for vertex in self.vertices}
+        return {vertex.get_hash(): vertex.get_attribute_dict() for vertex in self.vertices}
 
     def order_edges_by_hash_codes(self) -> Dict[str, Edge]:
         edges = {}
@@ -339,7 +339,7 @@ class TerraformLocalGraph(LocalGraph):
         return edges
 
     def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
-        return self.vertices[index].get_decoded_attribute_dict()
+        return self.vertices[index].get_attribute_dict()
 
     def get_vertices_with_degrees_conditions(
         self, out_degree_cond: Callable[[int], bool], in_degree_cond: Callable[[int], bool]
@@ -395,7 +395,7 @@ class TerraformLocalGraph(LocalGraph):
             self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
             parts = vertex.name.split(".")
@@ -448,7 +448,7 @@ class TerraformLocalGraph(LocalGraph):
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
 
     @staticmethod
-    def _determine_if_module_connection(breadcrumbs_list: List[int], vertex_in_breadcrumbs: Block) -> bool:
+    def _determine_if_module_connection(breadcrumbs_list: List[int], vertex_in_breadcrumbs: TerraformBlock) -> bool:
         """
         :param breadcrumbs_list: list of vertex's breadcrumbs
         :param vertex_in_breadcrumbs: one of the vertices in the breadcrumb list

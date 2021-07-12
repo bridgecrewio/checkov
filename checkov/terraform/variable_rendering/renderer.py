@@ -191,13 +191,13 @@ class VariableRenderer:
             if value is not None:
                 return value
 
-        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE.value, BlockType.TF_VARIABLE.value]:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
             default_val = attributes.get("default")
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
             return default_val if not value else value
-        if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT.value:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
 
@@ -213,7 +213,7 @@ class VariableRenderer:
         :return origin_value
         """
         for vertex_reference in referenced_vertices:
-            block_type = vertex_reference.block_type.value
+            block_type = vertex_reference.block_type
             attribute_path = vertex_reference.sub_parts
             copy_of_attribute_path = deepcopy(attribute_path)
             if vertex_attributes[CustomAttributes.BLOCK_TYPE] == block_type:
@@ -257,7 +257,7 @@ class VariableRenderer:
 
     def evaluate_vertices_attributes(self) -> None:
         for vertex in self.local_graph.vertices:
-            decoded_attributes = vertex.get_decoded_attribute_dict()
+            decoded_attributes = vertex.get_attribute_dict()
             for attr in decoded_attributes:
                 if attr in vertex.changed_attributes:
                     continue

@@ -5,7 +5,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.parser import Parser
@@ -25,7 +25,7 @@ class TestLocalGraph(TestCase):
         config = {"resource_type": {"resource_name": {"attribute1": 1, "attribute2": 2, "resource_name": ["caution!"]}}}
         attributes = {"attribute1": 1, "attribute2": 2, "resource_name": "ok"}
         local_graph = TerraformLocalGraph(None, {})
-        vertex = Block(name="resource_type.resource_name", config=config, path='', block_type=BlockType.RESOURCE, attributes=attributes)
+        vertex = TerraformBlock(name="resource_type.resource_name", config=config, path='', block_type=BlockType.RESOURCE, attributes=attributes)
         vertex.changed_attributes["resource_name"] = ""
         local_graph.vertices.append(vertex)
         local_graph.update_vertices_configs()
