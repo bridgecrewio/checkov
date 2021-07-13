@@ -36,7 +36,7 @@ class Undetermined(TypedDict):
 
 class TerraformLocalGraph(LocalGraph):
     def __init__(self, module: Module, module_dependency_map: Dict[str, List[List[str]]]) -> None:
-        super().__init__()
+        super(TerraformLocalGraph, self).__init__()
         self.module = module
         self.module_dependency_map = module_dependency_map
         self.map_path_to_module: Dict[str, List[int]] = {}
@@ -60,14 +60,7 @@ class TerraformLocalGraph(LocalGraph):
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
 
-            if not self.vertices_by_block_type.get(block.block_type):
-                self.vertices_by_block_type[block.block_type] = []
             self.vertices_by_block_type[block.block_type].append(i)
-
-            if block.block_type not in self.vertices_block_name_map:
-                self.vertices_block_name_map[block.block_type] = {}
-            if block.name not in self.vertices_block_name_map[block.block_type]:
-                self.vertices_block_name_map[block.block_type][block.name] = []
             self.vertices_block_name_map[block.block_type][block.name].append(i)
 
             if block.block_type == BlockType.MODULE:

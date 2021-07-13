@@ -1,6 +1,7 @@
 import os
 from unittest import TestCase
 
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 
@@ -14,15 +15,15 @@ class TestCloudformationGraphManager(TestCase):
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir)
 
         expected_resources_by_file = {
-            "./tags.yaml": [
+            "/tags.yaml": [
                 "AWS::S3::Bucket.DataBucket",
                 "AWS::S3::Bucket.NoTags",
                 "AWS::EKS::Nodegroup.EKSClusterNodegroup",
                 "AWS::AutoScaling::AutoScalingGroup.TerraformServerAutoScalingGroup"],
-            "./cfn_newline_at_end.yaml": [
+            "/cfn_newline_at_end.yaml": [
                 "AWS::RDS::DBInstance.MyDB",
                 "AWS::S3::Bucket.MyBucket"],
-            "./success.json": [
+            "/success.json": [
                 "AWS::S3::Bucket.acmeCWSBucket",
                 "AWS::S3::Bucket.acmeCWSBucket2",
                 "AWS::S3::BucketPolicy.acmeCWSBucketPolicy",
@@ -40,10 +41,7 @@ class TestCloudformationGraphManager(TestCase):
                 ],
         }
         self.assertEqual(20, len(local_graph.vertices))
-        self.assertEqual(6, len(local_graph.vertices_by_block_type["AWS::S3::Bucket"]))
-        self.assertEqual(1, len(local_graph.vertices_by_block_type["AWS::EKS::Nodegroup"]))
-        self.assertEqual(1, len(local_graph.vertices_by_block_type["AWS::AutoScaling::AutoScalingGroup"]))
-        self.assertEqual(1, len(local_graph.vertices_by_block_type["AWS::RDS::DBInstance"]))
+        self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
 
         for v in local_graph.vertices:
             self.assertIn(v.name, expected_resources_by_file[v.path])

@@ -14,4 +14,4 @@ class CloudformationBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super().__init__(name, config, path, block_type, attributes, id, source)
+        super(CloudformationBlock, self).__init__(name, config, path, block_type, attributes, id, source)

@@ -1,21 +1,13 @@
 from typing import Dict
 
-from typing_extensions import TypedDict
-
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections, BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 
-class Undetermined(TypedDict):
-    module_vertex_id: int
-    attribute_name: str
-    variable_vertex_id: int
-
-
 class CloudformationLocalGraph(LocalGraph):
     def __init__(self, cfn_definitions: Dict, source="CloudFormation") -> None:
-        super().__init__()
+        super(CloudformationLocalGraph, self).__init__()
         self.definitions = cfn_definitions
         self.source = source
 
