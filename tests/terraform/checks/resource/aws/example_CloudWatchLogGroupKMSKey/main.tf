@@ -6,4 +6,3 @@ resource "aws_cloudwatch_log_group" "pass" {
 resource "aws_cloudwatch_log_group" "fail" {
   retention_in_days = 1
 }
-

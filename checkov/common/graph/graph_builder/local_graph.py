@@ -1,4 +1,5 @@
 from collections import defaultdict
+from abc import abstractmethod
 from typing import List, Dict
 
 from checkov.common.graph.graph_builder import Edge
@@ -16,5 +17,6 @@ class LocalGraph:
         self.vertex_hash_cache: defaultdict[int, str]
         self.vertices_block_name_map: defaultdict[BlockType, defaultdict[str, List[int]]]
 
+    @abstractmethod
     def build_graph(self, render_variables: bool) -> None:
         pass

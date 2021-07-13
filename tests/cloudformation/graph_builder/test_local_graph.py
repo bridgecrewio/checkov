@@ -22,6 +22,6 @@ class TestLocalGraph(TestCase):
         self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
-        self.assertEqual("TestDeployment", resource_vertex.attributes.get("DeploymentId"))
+        self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"], resource_vertex.attributes)
 
 
