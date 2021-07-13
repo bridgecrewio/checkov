@@ -79,7 +79,8 @@ class TestParser(TestCase):
             )
 
     def test_hcl_parsing_sorting(self):
-        source_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/tf_parsing_comparison/modifications_diff'))
+        source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                   '../resources/tf_parsing_comparison/modifications_diff'))
         config_parser = Parser()
         res = config_parser.parse_hcl_module(source_dir, 'AWS')
         expected = ['https://www.googleapis.com/auth/devstorage.read_only', 'https://www.googleapis.com/auth/logging.write',

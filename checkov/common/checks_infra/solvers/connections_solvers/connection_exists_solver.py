@@ -47,7 +47,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 continue
 
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
-            if destination_block_type == BlockType.OUTPUT.value:
+            if destination_block_type == BlockType.OUTPUT:
                 try:
                     output_edges = graph_connector.edges(v, data=True)
                     _, output_destination, _ = next(iter(output_edges))

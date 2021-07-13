@@ -1,7 +1,6 @@
 from typing import Dict, List, Union, Tuple, Any
 
 from checkov.common.graph.graph_builder import EncryptionTypes
-from checkov.terraform.checks.utils.utils import decode_graph_property_value
 
 
 class GenericResourceEncryption:
@@ -31,9 +30,8 @@ class GenericResourceEncryption:
         result = True
         result_description = ""
         for att, expected_vals in self.attribute_values_map.items():
-            att_conf = atts_dict.get(att)
-            if att_conf:
-                att_value = decode_graph_property_value(att_conf)
+            att_value = atts_dict.get(att)
+            if att_value:
                 result &= (len(expected_vals) == 0 and att_value is not None) or att_value in expected_vals
                 if result:
                     if att_value == EncryptionTypes.AES256.value:

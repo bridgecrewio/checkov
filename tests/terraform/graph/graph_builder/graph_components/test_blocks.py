@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 
 class TestBlocks(TestCase):
@@ -12,8 +12,8 @@ class TestBlocks(TestCase):
                     {'from_port': [443], 'to_port': [443], 'protocol': ['tcp'],
                      'security_groups': [['${aws_security_group.test.id}', '${data.aws_security_group.test.id}']]}]}}}
 
-        block = Block(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
-                      attributes=config['aws_security_group']['test'])
+        block = TerraformBlock(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
+                               attributes=config['aws_security_group']['test'])
 
         block.update_inner_attribute(attribute_key='ingress.security_groups.0', nested_attributes=block.attributes,
                                      value_to_update='sg-0')
@@ -40,8 +40,8 @@ class TestBlocks(TestCase):
                  '${data.test6.id}']],
              'cidr_blocks': [['test', '${var.test}', '${var.v3}']]}]}}}
 
-        block = Block(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
-                      attributes=config['aws_security_group']['test'])
+        block = TerraformBlock(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
+                               attributes=config['aws_security_group']['test'])
 
         block.update_inner_attribute(attribute_key='ingress.0.cidr_blocks.1', nested_attributes=block.attributes,
                                      value_to_update='sg-1')
@@ -61,9 +61,9 @@ class TestBlocks(TestCase):
                 'arn:aws:states:${var.region}:${data.aws_caller_identity.current.account_id}:stateMachine:${module.consts.bc_checkov_scanner_step_function_name}*']]},
             {'actions': [['lambda:InvokeFunction']], 'effect': ['Allow'], 'resources': [
                 '${formatlist("%s%s","arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:",concat([\'${local.vcs_webhook_lambda_name}\', \'${local.customer_api_lambda}\']))}']}]}}}
-        block = Block(name='aws_iam_policy_document.vcs_webhook_step_function_execution_policy', config=config,
-                      path='test_path', block_type=BlockType.DATA,
-                      attributes=config['aws_iam_policy_document']['vcs_webhook_step_function_execution_policy'])
+        block = TerraformBlock(name='aws_iam_policy_document.vcs_webhook_step_function_execution_policy', config=config,
+                               path='test_path', block_type=BlockType.DATA,
+                               attributes=config['aws_iam_policy_document']['vcs_webhook_step_function_execution_policy'])
         err = block.update_inner_attribute(attribute_key='statement.1.resources.0',
                                            nested_attributes={'statement': [{'actions': ['events:DescribeRule',
                                                                                          'events:PutRule',
@@ -128,8 +128,8 @@ class TestBlocks(TestCase):
                                  'app.kubernetes.io/version': '1.0.0', 'app.kubernetes.io/managed-by': 'terraform'},
                       'labels.app.kubernetes.io/name': '${local.name}', 'labels.app.kubernetes.io/instance': 'hpa',
                       'labels.app.kubernetes.io/version': '1.0.0', 'labels.app.kubernetes.io/managed-by': 'terraform'}
-        block = Block(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
-                      attributes=attributes)
+        block = TerraformBlock(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
+                               attributes=attributes)
 
         err = block.update_inner_attribute(attribute_key="labels.app.kubernetes.io/name", nested_attributes=attributes,
                                            value_to_update="dummy value")
@@ -143,8 +143,8 @@ class TestBlocks(TestCase):
                                              'transit_gateway_vpc_attachment_id': None,
                                              'vpc_cidr': '${local.own_vpc.vpc_cidr}',
                                              'vpc_id': '${local.own_vpc.vpc_id}'}}
-        block = Block(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
-                      attributes=attributes)
+        block = TerraformBlock(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
+                               attributes=attributes)
         value_to_update = "test"
         err = block.update_inner_attribute(attribute_key="var.owning_account.vpc_cidr", nested_attributes=attributes,
                                            value_to_update=value_to_update)
@@ -163,8 +163,8 @@ class TestBlocks(TestCase):
             'test': {}}}
 
         nested_attributes = {'provisioner/remote-exec.connection': {'private_key': '${file(var.ssh_key_path)}', 'user': 'ec2-user'}, 'provisioner/remote-exec.connection.private_key': '${file(var.ssh_key_path)}', 'provisioner/remote-exec.connection.user': 'ec2-user', 'provisioner/remote-exec.inline': ['command'], 'provisioner/remote-exec.inline.0': 'command0', 'provisioner/remote-exec.inline.1': 'command1', 'provisioner/remote-exec.inline.2': 'command2', 'provisioner/remote-exec.inline.3': 'command3', 'provisioner/remote-exec.inline.4': 'command4'}
-        block = Block(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
-                      attributes=nested_attributes)
+        block = TerraformBlock(name='aws_security_group.test', config=config, path='test_path', block_type=BlockType.RESOURCE,
+                               attributes=nested_attributes)
 
         block.update_inner_attribute(attribute_key='provisioner/remote-exec.inline.3', nested_attributes=nested_attributes,
                                      value_to_update='new_command_3')
@@ -177,8 +177,8 @@ class TestBlocks(TestCase):
             'test': {}}}
 
         nested_attributes = {'triggers': {'change_endpoint_name': '${md5("my_dev_endpoint")}', 'change_extra_jars_s3_path': '${md5()}', 'change_extra_python_libs_s3_path': '${md5()}', 'change_number_of_nodes': '${md5("2")}', 'change_public_keys': '${md5("${var.glue_endpoint_public_keys}")}', 'change_region': '${md5("us-east-1")}', 'change_role': '${md5("arn:aws:iam::111111111111:role/my_role")}', 'change_security_configuration': '${md5()}', 'change_security_group_ids': '${md5("${var.glue_endpoint_security_group_ids}")}', 'change_subnet_id': '${md5()}'}, 'provisioner/local-exec': {'command': "echo 'info: destroy ignored because part of apply'", 'when': 'destroy'}, 'provisioner/local-exec.command': "echo 'info: destroy ignored because part of apply'", 'provisioner/local-exec.environment': {'endpoint_name': '${var.glue_endpoint_name}', 'extra_jars_s3_path': '${var.glue_endpoint_extra_jars_libraries}', 'extra_python_libs_s3_path': '${var.glue_endpoint_extra_python_libraries}', 'number_of_nodes': '${var.glue_endpoint_number_of_dpus}', 'public_keys': '${join(",",var.glue_endpoint_public_keys)}', 'region': '${var.aws_region}', 'role_arn': '${var.glue_endpoint_role}', 'security_configuration': '${var.glue_endpoint_security_configuration}', 'security_group_ids': '${join(",",var.glue_endpoint_security_group_ids)}', 'subnet_id': '${var.glue_endpoint_subnet_id}'}, 'provisioner/local-exec.environment.endpoint_name': 'my_dev_endpoint', 'provisioner/local-exec.environment.extra_jars_s3_path': '', 'provisioner/local-exec.environment.extra_python_libs_s3_path': '', 'provisioner/local-exec.environment.number_of_nodes': 2, 'provisioner/local-exec.environment.public_keys': '${join(",",var.glue_endpoint_public_keys)}', 'provisioner/local-exec.environment.region': 'us-east-1', 'provisioner/local-exec.environment.role_arn': 'arn:aws:iam::111111111111:role/my_role', 'provisioner/local-exec.environment.security_configuration': '', 'provisioner/local-exec.environment.security_group_ids': '${join(",",var.glue_endpoint_security_group_ids)}', 'provisioner/local-exec.environment.subnet_id': '', 'provisioner/local-exec.when': 'destroy', 'resource_type': ['null_resource'], 'triggers.change_endpoint_name': '${md5("my_dev_endpoint")}', 'triggers.change_extra_jars_s3_path': '${md5()}', 'triggers.change_extra_python_libs_s3_path': '${md5()}', 'triggers.change_number_of_nodes': '${md5("2")}', 'triggers.change_public_keys': '${md5("${var.glue_endpoint_public_keys}")}', 'triggers.change_region': '${md5("us-east-1")}', 'triggers.change_role': '${md5("arn:aws:iam::111111111111:role/my_role")}', 'triggers.change_security_configuration': '${md5()}', 'triggers.change_security_group_ids': '${md5("${var.glue_endpoint_security_group_ids}")}', 'triggers.change_subnet_id': '${md5()}'}
-        block = Block(name='null_resource.glue_endpoint_apply', config=config, path='test_path', block_type=BlockType.RESOURCE,
-                      attributes=nested_attributes)
+        block = TerraformBlock(name='null_resource.glue_endpoint_apply', config=config, path='test_path', block_type=BlockType.RESOURCE,
+                               attributes=nested_attributes)
         attribute_key = 'provisioner/local-exec.environment.security_configuration'
         block.update_inner_attribute(attribute_key=attribute_key, nested_attributes=nested_attributes,
                                      value_to_update='')
