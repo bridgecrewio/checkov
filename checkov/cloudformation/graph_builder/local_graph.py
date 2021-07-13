@@ -6,8 +6,6 @@ from checkov.cloudformation.graph_builder.graph_components.block_types import Cl
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
-DEFINITIONS_EXCLUDED_ATTRIBUTES = ["start_mark", "end_mark", "conditions_functions"]
-
 
 class Undetermined(TypedDict):
     module_vertex_id: int
@@ -32,10 +30,10 @@ class CloudformationLocalGraph(LocalGraph):
         for resource_name, resource in resources.items():
             resource = resources[resource_name]
             resource_type = resource.get("Type")
-            attributes = filter_excluded_dict_attributes(resource.get("Properties"))
+            attributes = resource.get("Properties")
             attributes["resource_type"] = resource_type
             block = CloudformationBlock(name=".".join([resource_type, resource_name]),
-                                        config=filter_excluded_dict_attributes(resource.get("Properties")),
+                                        config=resource.get("Properties"),
                                         path=file_path,
                                         block_type=BlockType.RESOURCE,
                                         attributes=attributes,
@@ -47,7 +45,3 @@ class CloudformationLocalGraph(LocalGraph):
 
 def get_only_dict_items(origin_dict: Dict) -> Dict:
     return {key: origin_dict[key] for key in origin_dict.keys() if isinstance(origin_dict[key], dict)}
-
-
-def filter_excluded_dict_attributes(origin_dict: Dict) -> Dict:
-    return {key: origin_dict[key] for key in origin_dict.keys() if key not in DEFINITIONS_EXCLUDED_ATTRIBUTES}

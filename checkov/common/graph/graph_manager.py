@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import List
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
@@ -9,10 +10,12 @@ class GraphManager:
         self.source = source
         self.parser = parser
 
+    @abstractmethod
     def build_graph_from_source_directory(self, source_dir, render_variables=True, local_graph_class=LocalGraph,
                                           parsing_errors=None, download_external_modules=False, excluded_paths: List[str]=None):
         pass
 
+    @abstractmethod
     def build_graph_from_definitions(self, definitions, render_variables=True):
         pass
 
