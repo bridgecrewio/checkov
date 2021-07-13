@@ -92,5 +92,11 @@ def get_folder_definitions(root_folder, excluded_paths: Optional[List[str]]):
         except TypeError:
             logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
 
+    # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
+    definitions = {k: v for k, v in definitions.items() if
+                   v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"],
+                                                                                                 dict_node)}
+    definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
     return definitions, definitions_raw
 

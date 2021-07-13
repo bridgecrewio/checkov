@@ -10,10 +10,10 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestCloudformationGraphManager(TestCase):
-    def test_build_graph_from_source_directory(self):
+    def test_build_graph_from_source_directory_no_rendering(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir)
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
             "/tags.yaml": [
@@ -46,6 +46,17 @@ class TestCloudformationGraphManager(TestCase):
 
         for v in local_graph.vertices:
             self.assertIn(v.name, expected_resources_by_file[v.path])
+
+        sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
+        self.assertDictEqual({'Fn::Join': ['', [{'Ref': 'ResourceNamePrefix', '__startline__': 650, '__endline__': 652}, '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
+
+    def test_build_graph_from_source_directory_with_rendering(self):
+            root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
+            graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+            local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=True)
+
+            sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
+            self.assertDictEqual({'Fn::Join': ['', ['acme', '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
 
     def test_build_graph_from_definitions(self):
         relative_file_path = "./checks/resource/aws/example_APIGatewayXray/APIGatewayXray-PASSED.yaml"
