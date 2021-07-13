@@ -13,8 +13,7 @@ class Module:
         self,
         source_dir: str,
         module_dependency_map: Dict[str, List[List[str]]],
-        dep_index_mapping: Dict[str, str],
-        encode: bool,
+        dep_index_mapping: Dict[str, str]
     ) -> None:
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
@@ -25,7 +24,6 @@ class Module:
         self.source = ""
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
-        self.encode = encode
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -61,8 +59,7 @@ class Module:
                     config=provider_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(provider_block)
 
@@ -76,8 +73,7 @@ class Module:
                     config=variable_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(variable_block)
 
@@ -90,8 +86,7 @@ class Module:
                     config={name: blocks_section[name]},
                     path=path,
                     attributes={name: blocks_section[name]},
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(local_block)
 
@@ -106,8 +101,7 @@ class Module:
                     config=output_dict,
                     path=path,
                     attributes={"value": output_dict[name].get("value")},
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(output_block)
 
@@ -120,8 +114,7 @@ class Module:
                     config=module_dict,
                     path=path,
                     attributes=module_dict[name],
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(module_block)
 
@@ -142,8 +135,7 @@ class Module:
                         path=path,
                         attributes=attributes,
                         id=f"{resource_type}.{name}",
-                        source=self.source,
-                        encode=self.encode,
+                        source=self.source
                     )
                     self._add_to_blocks(resource_block)
 
@@ -158,8 +150,7 @@ class Module:
                         path=path,
                         attributes=data_dict.get(data_type, {}).get(name, {}),
                         id=data_type + "." + name,
-                        source=self.source,
-                        encode=self.encode,
+                        source=self.source
                     )
                     self._add_to_blocks(data_block)
 
@@ -172,8 +163,7 @@ class Module:
                     config=terraform_dict,
                     path=path,
                     attributes={},
-                    source=self.source,
-                    encode=self.encode,
+                    source=self.source
                 )
                 self._add_to_blocks(terraform_block)
 
@@ -185,8 +175,7 @@ class Module:
                 config={tf_var_name: attributes},
                 path=path,
                 attributes=attributes,
-                source=self.source,
-                encode=self.encode,
+                source=self.source
             )
             self._add_to_blocks(tfvar_block)
 

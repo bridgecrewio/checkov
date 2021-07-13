@@ -16,7 +16,6 @@ class Block:
         attributes: Dict[str, Any],
         id: str = "",
         source: str = "",
-        encode: bool = False,
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -37,7 +36,6 @@ class Block:
 
         attributes_to_add = self._extract_inner_attributes()
         self.attributes.update(attributes_to_add)
-        self.encode = encode
 
     def _extract_inner_attributes(self) -> Dict[str, Any]:
         attributes_to_add = {}

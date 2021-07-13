@@ -1,13 +1,13 @@
 from typing import List, Dict
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
 
 class LocalGraph:
     def __init__(self) -> None:
-        self.vertices: List[TerraformBlock] = []
+        self.vertices: List[Block] = []
         self.edges: List[Edge] = []
         self.in_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges entering it
         self.out_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges exiting it
