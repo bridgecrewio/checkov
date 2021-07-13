@@ -2,6 +2,7 @@ import logging
 import os
 
 from checkov.cloudformation import cfn_utils
+from checkov.cloudformation.cfn_utils import CF_POSSIBLE_ENDINGS, get_files_from_root_folder
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.parser import parse
 from checkov.common.output.record import Record
@@ -10,8 +11,6 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.parser.node import dict_node
 from checkov.cloudformation.context_parser import ContextParser
-
-CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
 
 class Runner(BaseRunner):
@@ -32,18 +31,11 @@ class Runner(BaseRunner):
                 (definitions[file], definitions_raw[file]) = parse(file)
 
         if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                for file in f_names:
-                    file_ending = os.path.splitext(file)[1]
-                    if file_ending in CF_POSSIBLE_ENDINGS:
-                        files_list.append(os.path.join(root, file))
+            files_list = get_files_from_root_folder(root_folder, runner_filter.excluded_paths)
 
             for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
                 try:
-                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+                    (definitions[file], definitions_raw[file]) = parse(file)
                 except TypeError:
                     logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
 

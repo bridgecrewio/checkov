@@ -1,8 +1,12 @@
 import logging
+import os
+from typing import Optional, List
 
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.parser.node import dict_node, list_node
+from checkov.common.runners.base_runner import filter_ignored_paths
 
+CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
 
 def get_resource_tags(entity, registry=cfn_registry):
     entity_details = registry.extract_entity_details(entity)
@@ -66,4 +70,18 @@ def get_entity_value_as_string(value):
             return value
     else:
         return value
+
+
+def get_files_from_root_folder(root_folder, excluded_paths: Optional[List[str]]):
+    files_list = []
+    for root, d_names, f_names in os.walk(root_folder):
+        filter_ignored_paths(root, d_names, excluded_paths)
+        filter_ignored_paths(root, f_names, excluded_paths)
+        for file in f_names:
+            file_ending = os.path.splitext(file)[1]
+            if file_ending in CF_POSSIBLE_ENDINGS:
+                files_list.append(os.path.join(root, file))
+
+    # compute relative path for each file
+    return [f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}' for file in files_list]
 
