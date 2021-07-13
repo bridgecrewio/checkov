@@ -66,10 +66,6 @@ class Block:
             sorted_breadcrumbs = dict(sorted(self.breadcrumbs.items()))
             base_attributes[CustomAttributes.RENDERING_BREADCRUMBS] = sorted_breadcrumbs
 
-        if self.encode:
-            for attribute, value in base_attributes.items():
-                base_attributes[attribute] = stringify_value(value)
-
         base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
 
         if "changed_attributes" in base_attributes:
