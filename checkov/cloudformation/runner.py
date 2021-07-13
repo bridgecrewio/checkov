@@ -31,6 +31,10 @@ class Runner(BaseRunner):
         if root_folder:
             definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
 
+        # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
+        definitions = {k: v for k, v in definitions.items() if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)}
+        definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
         for cf_file in definitions.keys():
 
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
