@@ -28,6 +28,10 @@ class CloudformationLocalGraph(LocalGraph):
         for file_path, file_conf in self.definitions.items():
             self._create_resources_vertices(file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.RESOURCES.value, [])))
 
+        for i, vertex in enumerate(self.vertices):
+            self.vertices_by_block_type[vertex.block_type].append(i)
+            self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
+
     def _create_resources_vertices(self, file_path, resources):
         for resource_name, resource in resources.items():
             resource = resources[resource_name]

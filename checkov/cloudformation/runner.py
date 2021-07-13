@@ -2,15 +2,15 @@ import logging
 import os
 
 from checkov.cloudformation import cfn_utils
-from checkov.cloudformation.cfn_utils import CF_POSSIBLE_ENDINGS, get_files_from_root_folder
+from checkov.cloudformation.cfn_utils import get_folder_definitions
 from checkov.cloudformation.checks.resource.registry import cfn_registry
+from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.parser import parse
+from checkov.cloudformation.parser.node import dict_node
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
-from checkov.cloudformation.parser.node import dict_node
-from checkov.cloudformation.context_parser import ContextParser
 
 
 class Runner(BaseRunner):
@@ -20,8 +20,6 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
-        parsing_errors = {}
-        files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
                 cfn_registry.load_external_checks(directory)
@@ -31,13 +29,7 @@ class Runner(BaseRunner):
                 (definitions[file], definitions_raw[file]) = parse(file)
 
         if root_folder:
-            files_list = get_files_from_root_folder(root_folder, runner_filter.excluded_paths)
-
-            for file in files_list:
-                try:
-                    (definitions[file], definitions_raw[file]) = parse(file)
-                except TypeError:
-                    logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
+            definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
         definitions = {k: v for k, v in definitions.items() if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)}

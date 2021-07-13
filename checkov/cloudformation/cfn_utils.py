@@ -3,6 +3,7 @@ import os
 from typing import Optional, List
 
 from checkov.cloudformation.checks.resource.registry import cfn_registry
+from checkov.cloudformation.parser import parse
 from checkov.cloudformation.parser.node import dict_node, list_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 
@@ -72,7 +73,7 @@ def get_entity_value_as_string(value):
         return value
 
 
-def get_files_from_root_folder(root_folder, excluded_paths: Optional[List[str]]):
+def get_folder_definitions(root_folder, excluded_paths: Optional[List[str]]):
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -82,6 +83,14 @@ def get_files_from_root_folder(root_folder, excluded_paths: Optional[List[str]])
             if file_ending in CF_POSSIBLE_ENDINGS:
                 files_list.append(os.path.join(root, file))
 
-    # compute relative path for each file
-    return [f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}' for file in files_list]
+    definitions = {}
+    definitions_raw = {}
+    for file in files_list:
+        relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
+        try:
+            (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+        except TypeError:
+            logging.info(f'CloudFormation skipping {file} as it is not a valid CF template')
+
+    return definitions, definitions_raw
 
