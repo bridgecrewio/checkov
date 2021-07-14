@@ -21,7 +21,7 @@ class MinimizeCapabilities(BaseK8Check):
             if conf["securityContext"].get("capabilities"):
                 if conf["securityContext"]["capabilities"].get("drop"):
                     for d in conf["securityContext"]["capabilities"]["drop"]:
-                        if "ALL" in d or "all" in d:
+                        if any(cap in d for cap in ("ALL", "all")):
                             return CheckResult.PASSED
         return CheckResult.FAILED
 
