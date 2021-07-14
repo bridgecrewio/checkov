@@ -44,6 +44,6 @@ def filter_ignored_paths(root_dir, names, excluded_paths: List[str]):
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
     #  paths specified via the CLI argument will presumably use \\
     if excluded_paths:
-        compiled = [re.compile(p) for p in excluded_paths]
+        compiled = [re.compile(p.replace('.terraform', '\.terraform')) for p in excluded_paths]
         [names.remove(path) for path in list(names) if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled)]
 
