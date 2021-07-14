@@ -144,7 +144,7 @@ class Block:
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
 
-    def get_base_attributes(self) -> Dict[str, Union[str, List[str], Dict[str, Any]]]:
+    def get_base_attributes(self) -> Dict[CustomAttributes, Union[str, List[str], Dict[str, Any]]]:
         return {
             CustomAttributes.BLOCK_NAME: self.name,
             CustomAttributes.BLOCK_TYPE: self.block_type,
