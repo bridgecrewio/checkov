@@ -41,7 +41,6 @@ class Block:
         attributes_to_add = {}
         for attribute_key in self.attributes:
             attribute_value = self.attributes[attribute_key]
-            # if type(attribute_value) is list and len(attribute_value) > 0 and type(attribute_value[0]) is dict:
             if isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)):
                 inner_attributes = get_inner_attributes(attribute_key, attribute_value)
                 attributes_to_add.update(inner_attributes)
