@@ -1,21 +1,13 @@
 from typing import Dict
 
-from typing_extensions import TypedDict
-
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections, BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 
-class Undetermined(TypedDict):
-    module_vertex_id: int
-    attribute_name: str
-    variable_vertex_id: int
-
-
 class CloudformationLocalGraph(LocalGraph):
     def __init__(self, cfn_definitions: Dict, source="CloudFormation") -> None:
-        super().__init__()
+        super(CloudformationLocalGraph, self).__init__()
         self.definitions = cfn_definitions
         self.source = source
 
@@ -25,6 +17,10 @@ class CloudformationLocalGraph(LocalGraph):
     def _create_vertices(self) -> None:
         for file_path, file_conf in self.definitions.items():
             self._create_resources_vertices(file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.RESOURCES.value, [])))
+
+        for i, vertex in enumerate(self.vertices):
+            self.vertices_by_block_type[vertex.block_type].append(i)
+            self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
 
     def _create_resources_vertices(self, file_path, resources):
         for resource_name, resource in resources.items():
