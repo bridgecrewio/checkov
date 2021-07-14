@@ -41,7 +41,7 @@ class Block:
         attributes_to_add = {}
         for attribute_key in self.attributes:
             attribute_value = self.attributes[attribute_key]
-            if type(attribute_value) is list and len(attribute_value) > 0 and type(attribute_value[0]) is dict:
+            if isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)):
                 inner_attributes = get_inner_attributes(attribute_key, attribute_value)
                 attributes_to_add.update(inner_attributes)
         return attributes_to_add
@@ -143,6 +143,17 @@ class Block:
 
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
+
+    def get_base_attributes(self) -> Dict[CustomAttributes, Union[str, List[str], Dict[str, Any]]]:
+        return {
+            CustomAttributes.BLOCK_NAME: self.name,
+            CustomAttributes.BLOCK_TYPE: self.block_type,
+            CustomAttributes.FILE_PATH: self.path,
+            CustomAttributes.CONFIG: self.config,
+            CustomAttributes.LABEL: str(self),
+            CustomAttributes.ID: self.id,
+            CustomAttributes.SOURCE: self.source,
+        }
 
 
 def get_inner_attributes(attribute_key: str, attribute_value: Union[str, List[str], Dict[str, Any]]) -> Dict[str, Any]:

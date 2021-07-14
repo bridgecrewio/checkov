@@ -64,7 +64,7 @@ class TestBlocks(TestCase):
         block = TerraformBlock(name='aws_iam_policy_document.vcs_webhook_step_function_execution_policy', config=config,
                                path='test_path', block_type=BlockType.DATA,
                                attributes=config['aws_iam_policy_document']['vcs_webhook_step_function_execution_policy'])
-        err = block.update_inner_attribute(attribute_key='statement.1.resources.0',
+        block.update_inner_attribute(attribute_key='statement.1.resources.0',
                                            nested_attributes={'statement': [{'actions': ['events:DescribeRule',
                                                                                          'events:PutRule',
                                                                                          'events:PutTargets'],
@@ -109,7 +109,6 @@ class TestBlocks(TestCase):
                                                               'statement.2.effect': 'Allow',
                                                               'statement.2.resources': '${formatlist("%s%s","arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:",concat([\'${local.vcs_webhook_lambda_name}\', \'${local.customer_api_lambda}\']))}'},
                                            value_to_update='arn:aws:states:${var.region}:${data.aws_caller_identity.current.account_id}:stateMachine:bc-vcs-scanner-sfn*')
-        self.assertIsNone(err)
         self.assertIn(block.attributes['statement.0.resources.1'],
                       [
                           'arn:aws:events:${var.region}:${data.aws_caller_identity.current.account_id}:rule/StepFunctionsGetEventsForECSTaskRule',
@@ -131,9 +130,9 @@ class TestBlocks(TestCase):
         block = TerraformBlock(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
                                attributes=attributes)
 
-        err = block.update_inner_attribute(attribute_key="labels.app.kubernetes.io/name", nested_attributes=attributes,
+        block.update_inner_attribute(attribute_key="labels.app.kubernetes.io/name", nested_attributes=attributes,
                                            value_to_update="dummy value")
-        self.assertIsNone(err)
+        self.assertEquals("dummy value", block.attributes["labels.app.kubernetes.io/name"])
 
     def test_update_complex_key2(self):
         config = {}
@@ -146,10 +145,9 @@ class TestBlocks(TestCase):
         block = TerraformBlock(name='test_local_name', config=config, path='', block_type=BlockType.LOCALS,
                                attributes=attributes)
         value_to_update = "test"
-        err = block.update_inner_attribute(attribute_key="var.owning_account.vpc_cidr", nested_attributes=attributes,
+        block.update_inner_attribute(attribute_key="var.owning_account.vpc_cidr", nested_attributes=attributes,
                                            value_to_update=value_to_update)
-        self.assertIsNone(err)
-        self.assertDictEqual(block.attributes,
+        self.assertDictEqual({'var.owning_account': block.attributes["var.owning_account"]},
                              {'var.owning_account': {'route_to': None, 'route_to_cidr_blocks': '${local.allowed_cidrs}',
                                                      'static_routes': None,
                                                      'subnet_ids': '${local.own_vpc.private_subnet_ids}',
