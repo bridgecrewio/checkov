@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_AWS_24"
+  name: "Ensure all data stored in the Sagemaker Notebook is securely encrypted at rest"
+  category: "ENCRYPTION"
+definition:
+    cond_type: attribute
+    attribute: KmsKeyId
+    operator: exists
+    resource_types:
+      - AWS::SageMaker::NotebookInstance

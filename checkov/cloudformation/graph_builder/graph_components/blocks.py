@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from checkov.common.graph.graph_builder.graph_components.blocks import Block
+from checkov.common.graph.graph_builder.graph_components.blocks import Block, get_inner_attributes
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 
 
@@ -15,3 +15,12 @@ class CloudformationBlock(Block):
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
         super(CloudformationBlock, self).__init__(name, config, path, block_type, attributes, id, source)
+
+    def _extract_inner_attributes(self) -> Dict[str, Any]:
+        attributes_to_add = {}
+        for attribute_key in self.attributes:
+            attribute_value = self.attributes[attribute_key]
+            if isinstance(attribute_value, dict):
+                inner_attributes = get_inner_attributes(attribute_key, attribute_value)
+                attributes_to_add.update(inner_attributes)
+        return attributes_to_add

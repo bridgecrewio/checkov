@@ -10,7 +10,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 class TestLocalGraph(TestCase):
     def test_build_graph_with_single_resource(self):
-        relative_file_path = "../checks/resource/aws/example_APIGatewayXray/APIGatewayXray-PASSED.yaml"
+        relative_file_path = "../../checks/resource/aws/example_APIGatewayXray/APIGatewayXray-PASSED.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
