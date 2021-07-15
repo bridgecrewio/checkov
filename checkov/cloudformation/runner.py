@@ -1,9 +1,11 @@
 import logging
 
 from checkov.cloudformation import cfn_utils
-from checkov.cloudformation.cfn_utils import get_folder_definitions, create_file_abs_path
+from checkov.cloudformation.cfn_utils import get_folder_definitions, create_file_abs_path, create_definitions, \
+    build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 from checkov.cloudformation.parser import parse
 from checkov.cloudformation.parser.node import dict_node
 from checkov.common.output.record import Record
@@ -17,22 +19,14 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                cfn_registry.load_external_checks(directory)
+        definitions, definitions_raw, definitions_context = {}, {}, {}
 
-        if files:
-            for file in files:
-                (definitions[file], definitions_raw[file]) = parse(file)
+        if self.context is None or self.definitions is None or self.breadcrumbs is None:
 
-        if root_folder:
-            definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
-
-        # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
-        definitions = {k: v for k, v in definitions.items() if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)}
-        definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+            definitions, definitions_raw = create_definitions(root_folder, files, runner_filter)
+            if external_checks_dir:
+                for directory in external_checks_dir:
+                    cfn_registry.load_external_checks(directory)
 
         for cf_file in definitions.keys():
 
@@ -40,8 +34,6 @@ class Runner(BaseRunner):
 
             if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
                 cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
-                logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
-                cf_context_parser.evaluate_default_refs()
                 for resource_name, resource in definitions[cf_file]['Resources'].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource

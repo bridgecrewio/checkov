@@ -1,7 +1,7 @@
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict, Optional
 
 from checkov.runner_filter import RunnerFilter
 
@@ -12,10 +12,31 @@ ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 class BaseRunner(ABC):
     check_type = ""
+    definitions = None
+    context = None
+    breadcrumbs = None
 
     @abstractmethod
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         pass
+
+    def set_external_data(self, definitions: Optional[Dict], context: Optional[Dict], breadcrumbs: Optional[Dict]):
+        self.definitions = definitions
+        self.context = context
+        self.breadcrumbs = breadcrumbs
+
+    def load_external_checks(self, external_checks_dir: List[str]):
+        pass
+
+    def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
+        pass
+
+    def should_create_graph(self):
+        # This allows to check for a specific check type whether we want to build a graph
+        # The expected format of BUILD_GRAPH is BUILD_GRAPH=`cloudformation,terraform`
+        # A runner will limit building graph only if it uses this method
+        graphs_to_build = os.environ.get('BUILD_GRAPH')
+        return graphs_to_build and self.check_type in graphs_to_build
 
 
 def filter_ignored_paths(root_dir, names, excluded_paths: List[str]):

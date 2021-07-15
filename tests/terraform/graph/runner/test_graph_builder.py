@@ -14,7 +14,7 @@ class TestGraphBuilder(TestCase):
         source_files = ["pass_s3.tf", "variables.tf"]
         runner = Runner()
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
-        tf_definitions = runner.tf_definitions
+        tf_definitions = runner.definitions
         self.assertEqual(3, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):
