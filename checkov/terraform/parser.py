@@ -573,7 +573,7 @@ class Parser:
 
     @staticmethod
     def get_new_module(source_dir, module_dependency_map, dep_index_mapping):
-        return Module(source_dir, module_dependency_map, dep_index_mapping, encode=False)
+        return Module(source_dir, module_dependency_map, dep_index_mapping)
 
     def add_tfvars(self, module, source):
         if not self.external_variables_data:

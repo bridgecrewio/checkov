@@ -3,15 +3,15 @@ from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
+from checkov.common.graph.graph_builder.utils import calculate_hash
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.parser import Parser
-from checkov.terraform.graph_builder.local_graph import LocalGraph
-from checkov.terraform.graph_manager import GraphManager
-from checkov.terraform.checks.utils.utils import calculate_hash, decode_graph_property_value
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+from checkov.terraform.graph_manager import TerraformGraphManager
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -24,8 +24,8 @@ class TestLocalGraph(TestCase):
     def test_update_vertices_configs_attribute_like_resource_name(self):
         config = {"resource_type": {"resource_name": {"attribute1": 1, "attribute2": 2, "resource_name": ["caution!"]}}}
         attributes = {"attribute1": 1, "attribute2": 2, "resource_name": "ok"}
-        local_graph = LocalGraph(None, {})
-        vertex = Block(name="resource_type.resource_name", config=config, path='', block_type=BlockType.RESOURCE, attributes=attributes)
+        local_graph = TerraformLocalGraph(None, {})
+        vertex = TerraformBlock(name="resource_type.resource_name", config=config, path='', block_type=BlockType.RESOURCE, attributes=attributes)
         vertex.changed_attributes["resource_name"] = ""
         local_graph.vertices.append(vertex)
         local_graph.update_vertices_configs()
@@ -36,7 +36,7 @@ class TestLocalGraph(TestCase):
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/k8_service'))
 
-        graph_manager = GraphManager(NetworkxConnector())
+        graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir,
                                                                           render_variables=True)
         edges_hash = []
@@ -55,7 +55,7 @@ class TestLocalGraph(TestCase):
         hcl_config_parser = Parser()
         module, module_dependency_map, tf_definitions = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                                            source=self.source)
-        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph._create_vertices()
 
         variables_before_module_definitions = {
@@ -107,13 +107,12 @@ class TestLocalGraph(TestCase):
         hcl_config_parser = Parser()
         module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                               self.source)
-        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph._create_vertices()
         local_graph.calculate_encryption_attribute()
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
-            [resource_type, resource_name] = decode_graph_property_value(
-                attribute_dict[CustomAttributes.ID]).split(".")
+            [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
                 is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
                 details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
@@ -136,7 +135,7 @@ class TestLocalGraph(TestCase):
         hcl_config_parser = Parser()
         module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                               self.source)
-        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph._create_vertices()
         tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         self.assertIsNotNone(tf_definitions)
@@ -175,7 +174,7 @@ class TestLocalGraph(TestCase):
         hcl_config_parser = Parser()
         module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
                                                                               self.source)
-        local_graph = LocalGraph(module, module_dependency_map)
+        local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph.build_graph(render_variables=True)
 
         self.assertEqual(12, len(local_graph.edges))

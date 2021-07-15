@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_AWS_24"
+  name: "Ensure SageMaker Notebook is encrypted at rest using KMS CMK"
+  category: "ENCRYPTION"
+definition:
+    cond_type: attribute
+    attribute: KmsKeyId
+    operator: exists
+    resource_types:
+      - AWS::SageMaker::NotebookInstance

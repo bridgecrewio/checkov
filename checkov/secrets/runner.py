@@ -10,6 +10,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -18,7 +19,6 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.utils.utils import run_function_multithreaded
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',

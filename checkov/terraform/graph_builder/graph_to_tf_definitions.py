@@ -2,11 +2,11 @@ import os
 from typing import List, Dict, Any, Tuple
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 
 def convert_graph_vertices_to_tf_definitions(
-    vertices: List[Block], root_folder: str
+    vertices: List[TerraformBlock], root_folder: str
 ) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     tf_definitions: Dict[str, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
@@ -18,7 +18,7 @@ def convert_graph_vertices_to_tf_definitions(
         tf_path = block_path
         if vertex.module_dependency:
             tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
-        block_type = vertex.block_type.value
+        block_type = vertex.block_type
         if block_type == BlockType.TF_VARIABLE:
             continue
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
@@ -27,7 +27,7 @@ def convert_graph_vertices_to_tf_definitions(
     return tf_definitions, breadcrumbs
 
 
-def add_breadcrumbs(vertex: Block, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
+def add_breadcrumbs(vertex: TerraformBlock, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
     vertex_breadcrumbs = vertex.breadcrumbs
     if vertex_breadcrumbs:
         breadcrumbs.setdefault(relative_block_path, {})[vertex.name] = vertex_breadcrumbs
