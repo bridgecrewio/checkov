@@ -1,6 +1,7 @@
 import unittest
 
 import os
+from pathlib import Path
 
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -38,10 +39,26 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(2, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
+    def test_runner_tf_skip_check(self):
+        valid_dir_path = Path(__file__).parent / "resources/terraform_skip"
+
+        report = Runner().run(
+            root_folder=valid_dir_path,
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework='secrets')
+        )
+
+        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(len(report.skipped_checks), 1)
+
         report.print_console()
 
     def test_runner_skip_check(self):
@@ -60,10 +77,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(5, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
-        self.assertEqual(report.skipped_checks, [])
+        self.assertEqual(len(report.skipped_checks), 1)
 
 if __name__ == '__main__':
     unittest.main()

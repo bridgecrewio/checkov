@@ -22,11 +22,6 @@ definition:
         attribute: vpc
         operator: equals
         value: true
-      - cond_type: attribute
-        resource_types:
-          - aws_eip
-        attribute: instance
-        operator: exists
     - and:
       - resource_types:
           - aws_eip_association
@@ -69,3 +64,23 @@ definition:
         attribute: vpc
         operator: equals
         value: true
+    - and:
+      - or:
+        - cond_type: attribute
+          resource_types:
+          - aws_eip
+          attribute: instance
+          operator: contains
+          value: "module."
+        - cond_type: attribute
+          resource_types:
+          - aws_eip
+          attribute: instance
+          operator: contains
+          value: "data."
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_eip
+        operator: within
+      

@@ -1,0 +1,11 @@
+{
+  "Resources": {
+    "vpc16AA8B31E": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": "app1",
+        "RepositoryPolicyText": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"CodeBuildReadAccess\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Service\": \"codebuild.amazonaws.com\"\n      },\n      \"Action\": [\n        \"ecr:BatchCheckLayerAvailability\",\n        \"ecr:BatchGetImage\",\n        \"ecr:GetDownloadUrlForLayer\"\n      ]\n    }\n  ]\n}\n"
+      }
+    }
+  }
+}

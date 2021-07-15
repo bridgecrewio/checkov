@@ -3,6 +3,7 @@ import dataclasses
 import logging
 import os
 from typing import Dict, Optional, Tuple, List
+from pathlib import Path
 
 import dpath.util
 
@@ -19,14 +20,14 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.terraform.graph_builder.local_graph import LocalGraph
-from checkov.terraform.graph_manager import GraphManager
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+from checkov.terraform.graph_manager import TerraformGraphManager
 
 # Allow the evaluation of empty variables
 from checkov.terraform.parser import Parser
@@ -35,13 +36,14 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-graph_registry = Registry(parser=NXGraphCheckParser())
+graph_registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(Path(__file__).parent / "checks" / "graph_checks"))
+
 
 class Runner(BaseRunner):
     check_type = "terraform"
 
     def __init__(self, parser=Parser(), db_connector=NetworkxConnector(), external_registries=None,
-                 source="Terraform", graph_class=LocalGraph, graph_manager=None):
+                 source="Terraform", graph_class=TerraformLocalGraph, graph_manager=None):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser
@@ -50,8 +52,8 @@ class Runner(BaseRunner):
         self.breadcrumbs = None
         self.definitions_context = {}
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        self.graph_manager = graph_manager if graph_manager is not None else GraphManager(source=source,
-                                                                                          db_connector=db_connector)
+        self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
+                                                                                                   db_connector=db_connector)
 
     block_type_registries = {
         'resource': resource_registry,
@@ -94,7 +96,7 @@ class Runner(BaseRunner):
                         if file_parsing_errors:
                             parsing_errors.update(file_parsing_errors)
                             continue
-                local_graph = self.graph_manager.build_graph_from_tf_definitions(self.tf_definitions)
+                local_graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
@@ -105,7 +107,7 @@ class Runner(BaseRunner):
 
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
-        report.add_parsing_errors(parsing_errors.keys())
+        report.add_parsing_errors(list(parsing_errors.keys()))
 
         graph_report = self.get_graph_checks_report(root_folder, runner_filter)
         merge_reports(report, graph_report)
@@ -123,7 +125,7 @@ class Runner(BaseRunner):
         checks_results = {}
         for r in self.external_registries + [graph_registry]:
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_traversal(), runner_filter)
+            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
             checks_results = {**checks_results, **registry_results}
 
         for check, check_results in checks_results.items():

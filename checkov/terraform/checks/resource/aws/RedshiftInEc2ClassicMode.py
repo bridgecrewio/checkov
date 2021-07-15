@@ -8,7 +8,7 @@ class RedshiftInEc2ClassicMode(BaseResourceValueCheck):
         name = "Ensure Redshift is not deployed outside of a VPC"
         id = "CKV_AWS_154"
         supported_resources = ['aws_redshift_cluster']
-        categories = [CheckCategories.LOGGING]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):

@@ -1,0 +1,8 @@
+pass:
+  - "aws_eip.ok_eip"
+  - "aws_eip.ok_eip_assoc"
+  - "aws_eip.ok_eip_nat"
+  - "aws_eip.ok_eip_module"
+  - "aws_eip.ok_eip_data"
+fail:
+  - "aws_eip.not_ok_eip"
