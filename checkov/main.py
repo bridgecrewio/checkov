@@ -134,7 +134,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             check.bc_id = ckv_to_bc_mapping.get(check.id)
 
     if config.list:
-        print_checks(framework=config.framework)
+        print_checks(framework=config.framework, use_bc_ids=config.output_bc_ids)
         return
 
     baseline = None
@@ -230,7 +230,7 @@ def add_parser_args(parser):
                default='cli',
                help='Report output format')
     parser.add('--output-bc-ids', action='store_true',
-               help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...)')
+               help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
                default=False,
                help='Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. This prevents '

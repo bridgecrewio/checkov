@@ -110,7 +110,7 @@ class Report:
     def is_empty(self) -> bool:
         return len(self.passed_checks + self.failed_checks + self.skipped_checks) + len(self.parsing_errors) == 0
 
-    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None, baseline=None, use_bc_id=False) -> None:
+    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None, baseline=None, use_bc_ids=False) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
@@ -122,12 +122,12 @@ class Report:
         print(colored(message, "cyan"))
         if not is_quiet:
             for record in self.passed_checks:
-                print(record.to_string(compact=is_compact, use_bc_id=use_bc_id))
+                print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
         for record in self.failed_checks:
-            print(record.to_string(compact=is_compact, use_bc_id=use_bc_id))
+            print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
         if not is_quiet:
             for record in self.skipped_checks:
-                print(record.to_string(compact=is_compact, use_bc_id=use_bc_id))
+                print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
 
         if not is_quiet:
             for file in self.parsing_errors:
@@ -146,8 +146,8 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f'Error parsing file {file}', 'red'))
 
-    def print_junit_xml(self) -> None:
-        ts = self.get_test_suites()
+    def print_junit_xml(self, use_bc_ids=False) -> None:
+        ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
@@ -155,20 +155,20 @@ class Report:
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
         return to_xml_report_string(ts)
 
-    def print_failed_github_md(self) -> None:
+    def print_failed_github_md(self, use_bc_ids=False) -> None:
         result = []
         for record in self.failed_checks:
-            result.append([record.check_id, record.file_path, record.resource, record.check_name, record.guideline])
+            result.append([record.get_output_id(use_bc_ids), record.file_path, record.resource, record.check_name, record.guideline])
         print(tabulate(result, headers=["check_id", "file", "resource", "check_name", "guideline"], tablefmt="github",
                        showindex=True))
         print("\n\n---\n\n")
 
-    def get_test_suites(self) -> List[TestSuite]:
+    def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = f'{record.check_id}/{record.check_name}'
+            check_name = f'{record.get_output_id(use_bc_ids)}/{record.check_name}'
 
             test_name = f'{self.check_type} {check_name} {record.resource}'
             test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)

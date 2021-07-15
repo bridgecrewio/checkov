@@ -74,7 +74,7 @@ class Record:
                 string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + ' | ' + Fore.YELLOW + line
         return string_block
 
-    def to_string(self, compact=False, use_bc_id=False):
+    def to_string(self, compact=False, use_bc_ids=False):
         status = ''
         evaluation_message = f''
         status_color = "white"
@@ -89,9 +89,7 @@ class Record:
             status_color = 'blue'
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
 
-        output_id = self.bc_check_id if use_bc_id and self.bc_check_id else self.check_id
-
-        check_message = colored("Check: {}: \"{}\"\n".format(output_id, self.check_name), "white")
+        check_message = colored("Check: {}: \"{}\"\n".format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ''
         if self.guideline:
             guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
@@ -130,3 +128,6 @@ class Record:
 
     def __str__(self):
         return self.to_string()
+
+    def get_output_id(self, use_bc_ids: bool) -> str:
+        return self.bc_check_id if self.bc_check_id and use_bc_ids else self.check_id

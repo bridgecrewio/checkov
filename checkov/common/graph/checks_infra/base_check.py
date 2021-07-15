@@ -25,3 +25,6 @@ class BaseGraphCheck:
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         return self.solver.run(graph_connector=graph_connector)
+
+    def get_output_id(self, use_bc_ids: bool) -> str:
+        return self.bc_id if self.bc_id and use_bc_ids else self.id

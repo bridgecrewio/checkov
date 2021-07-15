@@ -62,22 +62,22 @@ class RunnerRegistry(object):
                     junit_reports.append(report)
                     # report.print_junit_xml()
                 elif config.output == 'github_failed_only':
-                    report.print_failed_github_md()
+                    report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 else:
-                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path, baseline=baseline, use_bc_id=config.output_bc_ids)
+                    report.print_console(is_quiet=config.quiet, is_compact=config.compact, created_baseline_path=created_baseline_path, baseline=baseline, use_bc_ids=config.output_bc_ids)
                     if url:
                         print("More details: {}".format(url))
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
         if config.output == "junitxml":
             if len(junit_reports) == 1:
-                junit_reports[0].print_junit_xml()
+                junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
             else:
                 master_report = Report(None)
                 for report in junit_reports:
                     master_report.skipped_checks += report.skipped_checks
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
-                master_report.print_junit_xml()
+                master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
         if config.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))

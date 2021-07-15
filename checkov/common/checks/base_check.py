@@ -86,3 +86,6 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         :return: List of the evaluated keys, as JSONPath syntax paths of the checked attributes
         """
         return force_list(self.evaluated_keys)
+
+    def get_output_id(self, use_bc_ids: bool) -> str:
+        return self.bc_id if self.bc_id and use_bc_ids else self.id
