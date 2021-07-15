@@ -12,4 +12,4 @@ Resources:
       UserName: test
       BundleId: wsb-abc123456
       DirectoryId: d-abc123456
-      UserVolumeEncryptionEnabled: False
+      UserVolumeEncryptionEnabled: false
