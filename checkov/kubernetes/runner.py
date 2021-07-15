@@ -248,6 +248,8 @@ def get_skipped_checks(entity_conf):
                         else:
                             skipped_item["id"] = annotation[key]
                             skipped_item["suppress_comment"] = "No comment provided"
+
+                        # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                         if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
                             skipped_item["bc_id"] = skipped_item["id"]
                             skipped_item["id"] = bc_id_mapping[skipped_item["id"]]

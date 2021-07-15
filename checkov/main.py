@@ -233,8 +233,8 @@ def add_parser_args(parser):
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
                default=False,
-               help='Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. This prevents '
-                    'Bridgecrew platform check IDs from being used anywhere in the CLI.')
+               help='Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. Note: this '
+                    'prevents Bridgecrew platform check IDs from being used anywhere in the CLI.')
     parser.add('--quiet', action='store_true',
                default=False,
                help='in case of CLI output, display only failed checks')

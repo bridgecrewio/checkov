@@ -114,6 +114,7 @@ class BaseContextParser(ABC):
                 continue
             for (skip_check_line_num, skip_check) in comments:
                 if entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
+                    # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                     if bc_id_mapping and skip_check["id"] in bc_id_mapping:
                         skip_check["bc_id"] = skip_check["id"]
                         skip_check["id"] = bc_id_mapping[skip_check["id"]]

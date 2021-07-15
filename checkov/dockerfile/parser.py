@@ -37,6 +37,7 @@ def collect_skipped_checks(parse_result):
                     'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
                         3) else "No comment provided"
                 }
+                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                 if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                     skipped_check["bc_id"] = skipped_check["id"]
                     skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
