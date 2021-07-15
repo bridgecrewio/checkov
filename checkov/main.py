@@ -93,15 +93,23 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     elif config.bc_api_key:
         logger.debug(f'Using API key ending with {config.bc_api_key[-8:]}')
 
-        if config.repo_id is None:
+        if config.repo_id is None and not config.list:
+            # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
+            # so the repo is not required
             parser.error("--repo-id argument is required when using --bc-api-key")
-        if len(config.repo_id.split('/')) != 2:
+        elif config.repo_id and len(config.repo_id.split('/')) != 2:
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
 
         source = os.getenv('BC_SOURCE', 'cli')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
         logger.debug(f'BC_SOURCE = {source}, version = {source_version}')
+
+        if config.list:
+            # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
+            logger.debug('Using --list; setting source to None')
+            source = None
+
         try:
             bc_integration.setup_bridgecrew_credentials(bc_api_key=config.bc_api_key, repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,

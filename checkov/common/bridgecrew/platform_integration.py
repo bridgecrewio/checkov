@@ -18,6 +18,7 @@ from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError
 
+from checkov.common.bridgecrew.bc_source import should_upload_results
 from checkov.common.bridgecrew.ci_variables import *
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
@@ -113,7 +114,7 @@ class BcPlatformIntegration(object):
         if source_version:
             self.bc_source_version = source_version
 
-        if self.bc_source != 'vscode':
+        if should_upload_results(source):
             try:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
