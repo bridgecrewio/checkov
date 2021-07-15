@@ -3,6 +3,7 @@ import unittest
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
 from checkov.cloudformation.parser.node import dict_node
+from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 RELATIVE_PATH = '../file_formats/cfn_utils'
@@ -23,7 +24,7 @@ class TestCfnUtils(unittest.TestCase):
 
     def test_parameters_value(self):
         parameters = self.definitions_context[self.test_root_dir + '/test_yaml.yaml'][
-                'Parameters']
+                CloudformationTemplateSections.PARAMETERS.value]
         self.assertIsNotNone(parameters)
         self.assertEqual(len(parameters), 2)
         self.validate_definition_lines(parameters['KmsMasterKeyId'], 4, 7, 4)
@@ -31,7 +32,7 @@ class TestCfnUtils(unittest.TestCase):
 
     def test_resources_value(self):
         resources = self.definitions_context[self.test_root_dir + '/test_yaml.yaml'][
-                'Resources']
+                CloudformationTemplateSections.RESOURCES.value]
         self.assertIsNotNone(resources)
         self.assertEqual(len(resources), 2)
         self.validate_definition_lines(resources['MySourceQueue'], 13, 16, 4)
@@ -39,14 +40,14 @@ class TestCfnUtils(unittest.TestCase):
 
     def test_outputs_value(self):
         outputs = self.definitions_context[self.test_root_dir + '/test_yaml.yaml'][
-                'Outputs']
+                CloudformationTemplateSections.OUTPUTS.value]
         self.assertIsNotNone(outputs)
         self.assertEqual(len(outputs), 1)
         self.validate_definition_lines(outputs['DBAppPublicDNS'], 28, 30, 3)
 
     def test_skipped_check_exists(self):
         skipped_checks = self.definitions_context[self.test_root_dir + '/test_yaml.yaml'][
-                'Resources']['MyDB']['skipped_checks']
+                CloudformationTemplateSections.RESOURCES.value]['MyDB']['skipped_checks']
         self.assertEqual(len(skipped_checks), 1)
         self.assertEqual(skipped_checks[0]['id'], 'CKV_AWS_16')
         self.assertEqual(skipped_checks[0]['suppress_comment'],
