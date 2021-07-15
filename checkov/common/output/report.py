@@ -87,16 +87,16 @@ class Report:
         """
         if soft_fail_on:
             soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
-            if all(check_id in soft_fail_on for check_id in
-                   (failed_check.check_id for failed_check in self.failed_checks)):
+            if all((check_id in soft_fail_on or bc_check_id in soft_fail_on) for (check_id, bc_check_id) in
+                   ((failed_check.check_id, failed_check.bc_check_id) for failed_check in self.failed_checks)):
                 # List of "failed checks" is a subset of the "soft fail on" list.
                 return 0
             else:
                 return 1
         if hard_fail_on:
             hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
-            if any(check_id in hard_fail_on for check_id in
-                   (failed_check.check_id for failed_check in self.failed_checks)):
+            if any((check_id in hard_fail_on or bc_check_id in hard_fail_on) for (check_id, bc_check_id) in
+                   ((failed_check.check_id, failed_check.bc_check_id) for failed_check in self.failed_checks)):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".
                 return 1
             else:
