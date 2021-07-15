@@ -31,16 +31,21 @@ def get_resource_tags(entity, registry=cfn_registry):
         if properties:
             tags = properties.get('Tags')
             if tags:
-                if type(tags) == list_node:
-                    tag_dict = {tag['Key']: str(get_entity_value_as_string(tag['Value'])) for tag in tags}
-                    return tag_dict
-                elif type(tags) == dict_node:
-                    tag_dict = {str(key): str(get_entity_value_as_string(value)) for key, value in tags.items() if key not in ('__startline__', '__endline__')}
-                    return tag_dict
+                return parse_entity_tags(tags)
     except:
         logging.warning(f'Failed to parse tags for entity {entity}')
 
     return None
+
+
+def parse_entity_tags(tags):
+    if type(tags) == list_node:
+        tag_dict = {tag['Key']: str(get_entity_value_as_string(tag['Value'])) for tag in tags}
+        return tag_dict
+    elif isinstance(tags, dict):
+        tag_dict = {str(key): str(get_entity_value_as_string(value)) for key, value in tags.items() if
+                    key not in ('__startline__', '__endline__')}
+        return tag_dict
 
 
 def get_entity_value_as_string(value):

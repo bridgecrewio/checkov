@@ -11,7 +11,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, merge_reports
 from checkov.common.util import data_structures_utils
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.variables.context import EvaluationContext
@@ -36,7 +36,6 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-graph_registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(Path(__file__).parent / "checks" / "graph_checks"))
 
 
 class Runner(BaseRunner):
@@ -112,15 +111,11 @@ class Runner(BaseRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-                graph_registry.load_external_checks(directory)
+                self.get_graph_checks_registry().load_external_checks(directory)
 
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         report = Report(self.check_type)
-        checks_results = {}
-        for r in self.external_registries + [graph_registry]:
-            r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
-            checks_results = {**checks_results, **registry_results}
+        checks_results = self.run_graph_checks_results(runner_filter)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -315,10 +310,3 @@ class Runner(BaseRunner):
                     if full_file_path in module_content["__resolved__"]:
                         return f"module.{module_name}"
         return None
-
-
-def merge_reports(base_report, report_to_merge):
-    base_report.passed_checks.extend(report_to_merge.passed_checks)
-    base_report.failed_checks.extend(report_to_merge.failed_checks)
-    base_report.skipped_checks.extend(report_to_merge.skipped_checks)
-    base_report.parsing_errors.extend(report_to_merge.parsing_errors)

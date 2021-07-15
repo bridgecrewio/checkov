@@ -221,3 +221,10 @@ class Report:
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
         return report
+
+
+def merge_reports(base_report, report_to_merge):
+    base_report.passed_checks.extend(report_to_merge.passed_checks)
+    base_report.failed_checks.extend(report_to_merge.failed_checks)
+    base_report.skipped_checks.extend(report_to_merge.skipped_checks)
+    base_report.parsing_errors.extend(report_to_merge.parsing_errors)
