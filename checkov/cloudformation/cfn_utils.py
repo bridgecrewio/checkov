@@ -1,5 +1,6 @@
 import logging
 import os
+from enum import Enum
 from typing import Optional, List
 
 import dpath.util
@@ -11,7 +12,15 @@ from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
-CF_DEFINITION_TYPES = frozenset(['METADATA', 'PARAMETERS', 'MAPPINGS', 'CONDITIONS', 'RESOURCES', 'OUTPUTS'])
+
+
+class DefinitionTypes(Enum):
+    METADATA = 'METADATA'
+    PARAMETERS = 'PARAMETERS'
+    MAPPINGS = 'MAPPINGS'
+    CONDITIONS = 'CONDITIONS'
+    RESOURCES = 'RESOURCES'
+    OUTPUTS = 'OUTPUTS'
 
 
 def get_resource_tags(entity, registry=cfn_registry):
@@ -113,7 +122,7 @@ def build_definitions_context(definitions, definitions_raw, root_folder):
         # iterate on the definitions (Parameters, Resources, Outputs...)
         for file_path_definition, definition in file_path_definitions.items():
             if isinstance(file_path_definition, str_node)\
-                    and file_path_definition.upper() in CF_DEFINITION_TYPES and isinstance(definition, dict_node):
+                    and file_path_definition.upper() in DefinitionTypes.__members__ and isinstance(definition, dict_node):
                 # iterate on the actual objects of each definition
                 for attribute, attr_value in definition.items():
                     if isinstance(attr_value, dict_node):
@@ -125,10 +134,11 @@ def build_definitions_context(definitions, definitions_raw, root_folder):
                                   [file_abs_path, str(file_path_definition), str(attribute)],
                                   {'start_line': start_line, 'end_line': end_line, 'code_lines': code_lines}
                                   )
-                        if file_path_definition.upper() == "RESOURCES":
+                        if file_path_definition.upper() == DefinitionTypes.RESOURCES.value:
                             skipped_checks = ContextParser.collect_skip_comments(code_lines)
                             dpath.new(definitions_context,
-                                      [file_abs_path, str(file_path_definition), str(attribute), 'skipped_checks'], skipped_checks)
+                                      [file_abs_path, str(file_path_definition), str(attribute), 'skipped_checks'],
+                                      skipped_checks)
     return definitions_context
 
 
