@@ -8,6 +8,7 @@ from typing import Optional, List
 from detect_secrets import SecretsCollection
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
+from typing_extensions import TypedDict
 
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.graph.graph_builder.utils import run_function_multithreaded
@@ -44,6 +45,11 @@ SECRET_TYPE_TO_ID = {
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+
+
+class _CheckResult(TypedDict, total=False):
+    result: CheckResult
+    suppress_comment: str
 
 
 class Runner(BaseRunner):
@@ -138,12 +144,15 @@ class Runner(BaseRunner):
                     continue
                 if runner_filter.checks and check_id not in runner_filter.checks:
                     continue
-                result = {'result': CheckResult.FAILED}
-                line_text = linecache.getline(secret.filename,secret.line_number)
+                result: _CheckResult = {'result': CheckResult.FAILED}
+                line_text = linecache.getline(secret.filename, secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
-                result = self.search_for_suppression(check_id, secret, runner_filter.skip_checks,
-                                                     CHECK_ID_TO_SECRET_TYPE) or result
+                result = self.search_for_suppression(
+                    check_id=check_id,
+                    secret=secret,
+                    skipped_checks=runner_filter.skip_checks,
+                ) or result
                 report.add_record(Record(
                     check_id=check_id,
                     check_name=secret.type,
@@ -160,17 +169,23 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def search_for_suppression(check_id: str, secret: PotentialSecret, skipped_checks: list,
-                               CHECK_ID_TO_SECRET_TYPE: dict) -> Optional[dict]:
-        if skipped_checks:
-            for skipped_check in skipped_checks:
-                if skipped_check == check_id and skipped_check in CHECK_ID_TO_SECRET_TYPE:
-                    return {'result': CheckResult.SKIPPED,
-                            'suppress_comment': f"Secret scan {skipped_check} is skipped"}
+    def search_for_suppression(
+        check_id: str,
+        secret: PotentialSecret,
+        skipped_checks: List[str]
+    ) -> Optional[_CheckResult]:
+        if check_id in skipped_checks and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+            return {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": f"Secret scan {check_id} is skipped"
+            }
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
             lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
-            if skip_search:
-                return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
+            if skip_search and skip_search.group(2) == check_id:
+                return {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
+                }
         return None
