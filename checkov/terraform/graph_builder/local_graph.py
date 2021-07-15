@@ -6,23 +6,23 @@ from typing import List, Optional, Union, Any, Dict, Set, Callable
 
 from typing_extensions import TypedDict
 
-from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
 from checkov.common.graph.graph_builder import Edge
+from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
+from checkov.terraform.graph_builder.utils import (
+    get_referenced_vertices_in_value,
+    update_dictionary_attribute,
+    filter_sub_keys,
+    attribute_has_nested_attributes, remove_index_pattern_from_str,
+)
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import Block
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.checks.utils.utils import (
-    get_referenced_vertices_in_value,
-    update_dictionary_attribute,
-    join_trimmed_strings,
-    filter_sub_keys,
-    attribute_has_nested_attributes,
-)
-from checkov.terraform.checks.utils.utils import remove_index_pattern_from_str, calculate_hash
 from checkov.terraform.variable_rendering.renderer import VariableRenderer
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
@@ -34,16 +34,10 @@ class Undetermined(TypedDict):
     variable_vertex_id: int
 
 
-class LocalGraph:
+class TerraformLocalGraph(LocalGraph):
     def __init__(self, module: Module, module_dependency_map: Dict[str, List[List[str]]]) -> None:
+        super(TerraformLocalGraph, self).__init__()
         self.module = module
-        self.vertices: List[Block] = []
-        self.edges: List[Edge] = []
-        self.in_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges entering it
-        self.out_edges: Dict[int, List[Edge]] = {}  # map between vertex index and the edges exiting it
-        self.vertices_by_block_type: Dict[BlockType, List[int]] = {}
-        self.vertex_hash_cache: Dict[int, str] = {}
-        self.vertices_block_name_map: Dict[BlockType, Dict[str, List[int]]] = {}
         self.module_dependency_map = module_dependency_map
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
@@ -66,14 +60,7 @@ class LocalGraph:
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
 
-            if not self.vertices_by_block_type.get(block.block_type):
-                self.vertices_by_block_type[block.block_type] = []
             self.vertices_by_block_type[block.block_type].append(i)
-
-            if block.block_type not in self.vertices_block_name_map:
-                self.vertices_block_name_map[block.block_type] = {}
-            if block.name not in self.vertices_block_name_map[block.block_type]:
-                self.vertices_block_name_map[block.block_type][block.name] = []
             self.vertices_block_name_map[block.block_type][block.name].append(i)
 
             if block.block_type == BlockType.MODULE:
@@ -256,7 +243,7 @@ class LocalGraph:
         self.in_edges[dest_vertex_index].append(edge)
 
     def _connect_module(
-        self, sub_values: List[str], attribute_key: str, module_node: Block, origin_node_index: int
+        self, sub_values: List[str], attribute_key: str, module_node: TerraformBlock, origin_node_index: int
     ) -> None:
         """
         :param sub_values: list of sub values of the attribute value.
@@ -329,7 +316,7 @@ class LocalGraph:
         return vertex_index_with_longest_common_prefix
 
     def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
-        return {vertex.get_hash(): vertex.get_decoded_attribute_dict() for vertex in self.vertices}
+        return {vertex.get_hash(): vertex.get_attribute_dict() for vertex in self.vertices}
 
     def order_edges_by_hash_codes(self) -> Dict[str, Edge]:
         edges = {}
@@ -344,7 +331,7 @@ class LocalGraph:
         return edges
 
     def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
-        return self.vertices[index].get_decoded_attribute_dict()
+        return self.vertices[index].get_attribute_dict()
 
     def get_vertices_with_degrees_conditions(
         self, out_degree_cond: Callable[[int], bool], in_degree_cond: Callable[[int], bool]
@@ -400,7 +387,7 @@ class LocalGraph:
             self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
             parts = vertex.name.split(".")
@@ -453,7 +440,7 @@ class LocalGraph:
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
 
     @staticmethod
-    def _determine_if_module_connection(breadcrumbs_list: List[int], vertex_in_breadcrumbs: Block) -> bool:
+    def _determine_if_module_connection(breadcrumbs_list: List[int], vertex_in_breadcrumbs: TerraformBlock) -> bool:
         """
         :param breadcrumbs_list: list of vertex's breadcrumbs
         :param vertex_in_breadcrumbs: one of the vertices in the breadcrumb list

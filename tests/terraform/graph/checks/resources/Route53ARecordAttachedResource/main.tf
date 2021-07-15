@@ -55,3 +55,15 @@ resource "aws_route53_record" "pass3" {
     evaluate_target_health = true
   }
 }
+
+resource "aws_route53_record" "pass4" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = data.aws_lb.example.dns_name
+    zone_id                = data.aws_lb.example.zone_id
+    evaluate_target_health = true
+  }
+}

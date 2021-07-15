@@ -50,3 +50,14 @@ resource "aws_nat_gateway" "ok_eip_nat" {
   allocation_id = aws_eip.ok_eip_nat.id
   subnet_id     = "aws_subnet.public.id"
 }
+
+resource "aws_eip" "ok_eip_module" {
+  count    = 1
+  instance = module.example[count.index].instance_id
+  vpc      = true
+}
+
+resource "aws_eip" "ok_eip_data" {
+  instance = data.aws_instance.id
+  vpc      = true
+}

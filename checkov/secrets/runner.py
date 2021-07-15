@@ -11,6 +11,7 @@ from detect_secrets.settings import transient_settings
 from typing_extensions import TypedDict
 
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -19,7 +20,6 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.utils.utils import run_function_multithreaded
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
@@ -114,8 +114,8 @@ class Runner(BaseRunner):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                    filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                    filter_ignored_paths(root, d_names, excluded_paths)
+                    filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                             files_to_scan.append(os.path.join(root, file))

@@ -7,8 +7,7 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.terraform.checks.utils.utils import get_referenced_vertices_in_value
-from checkov.common.checks_infra.resources_types import resources_types
+from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
