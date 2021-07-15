@@ -62,15 +62,4 @@ class TerraformBlock(Block):
 
         return None
 
-    def get_base_attributes(self) -> Dict[str, Union[str, List[str], Dict[str, Any]]]:
-        return {
-            CustomAttributes.BLOCK_NAME: self.name,
-            CustomAttributes.BLOCK_TYPE: self.block_type,
-            CustomAttributes.FILE_PATH: self.path,
-            CustomAttributes.CONFIG: self.config,
-            CustomAttributes.LABEL: str(self),
-            CustomAttributes.ID: self.id,
-            CustomAttributes.SOURCE: self.source,
-        }
-
 

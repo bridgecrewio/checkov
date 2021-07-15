@@ -108,8 +108,8 @@ class Runner(BaseRunner):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                    filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                    filter_ignored_paths(root, d_names, excluded_paths)
+                    filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                             files_to_scan.append(os.path.join(root, file))
