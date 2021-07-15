@@ -2,12 +2,17 @@ import logging
 import os
 from typing import Optional, List
 
+import dpath.util
+
 from checkov.cloudformation.checks.resource.registry import cfn_registry
+from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 from checkov.cloudformation.parser import parse
-from checkov.cloudformation.parser.node import dict_node, list_node
+from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 
-CF_POSSIBLE_ENDINGS = [".yml", ".yaml", ".json", ".template"]
+CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
+
 
 def get_resource_tags(entity, registry=cfn_registry):
     entity_details = registry.extract_entity_details(entity)
@@ -99,4 +104,45 @@ def get_folder_definitions(root_folder, excluded_paths: Optional[List[str]]):
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
     return definitions, definitions_raw
+
+
+def build_definitions_context(definitions, definitions_raw, root_folder):
+    definitions_context = {}
+    # iterate on the files
+    for file_path, file_path_definitions in definitions.items():
+        # iterate on the definitions (Parameters, Resources, Outputs...)
+        for file_path_definition, definition in file_path_definitions.items():
+            if isinstance(file_path_definition, str_node)\
+                    and file_path_definition.upper() in CloudformationTemplateSections.__members__ \
+                    and isinstance(definition, dict_node):
+                # iterate on the actual objects of each definition
+                for attribute, attr_value in definition.items():
+                    if isinstance(attr_value, dict_node):
+                        start_line = attr_value.start_mark.line
+                        end_line = attr_value.end_mark.line
+                        code_lines = definitions_raw[file_path][start_line - 1: end_line]
+                        file_abs_path = create_file_abs_path(root_folder, file_path)
+                        dpath.new(definitions_context,
+                                  [file_abs_path, str(file_path_definition), str(attribute)],
+                                  {'start_line': start_line, 'end_line': end_line, 'code_lines': code_lines}
+                                  )
+                        if file_path_definition.upper() == CloudformationTemplateSections.RESOURCES.value.upper():
+                            skipped_checks = ContextParser.collect_skip_comments(code_lines)
+                            dpath.new(definitions_context,
+                                      [file_abs_path, str(file_path_definition), str(attribute), 'skipped_checks'],
+                                      skipped_checks)
+    return definitions_context
+
+
+def create_file_abs_path(root_folder, cf_file):
+    # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
+    # or there will be no leading slash; root_folder will always be none.
+    # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
+    # The goal here is simply to get a valid path to the file (which cf_file does not always give).
+    if cf_file[0] == '/':
+        path_to_convert = (root_folder + cf_file) if root_folder else cf_file
+    else:
+        path_to_convert = (os.path.join(root_folder, cf_file)) if root_folder else cf_file
+
+    return os.path.abspath(path_to_convert)
 

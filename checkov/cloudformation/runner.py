@@ -1,8 +1,7 @@
 import logging
-import os
 
 from checkov.cloudformation import cfn_utils
-from checkov.cloudformation.cfn_utils import get_folder_definitions
+from checkov.cloudformation.cfn_utils import get_folder_definitions, create_file_abs_path
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.parser import parse
@@ -37,16 +36,7 @@ class Runner(BaseRunner):
 
         for cf_file in definitions.keys():
 
-            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
-            # or there will be no leading slash; root_folder will always be none.
-            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-            # The goal here is simply to get a valid path to the file (which cf_file does not always give).
-            if cf_file[0] == '/':
-                path_to_convert = (root_folder + cf_file) if root_folder else cf_file
-            else:
-                path_to_convert = (os.path.join(root_folder, cf_file)) if root_folder else cf_file
-
-            file_abs_path = os.path.abspath(path_to_convert)
+            file_abs_path = create_file_abs_path(root_folder, cf_file)
 
             if isinstance(definitions[cf_file], dict_node) and 'Resources' in definitions[cf_file].keys():
                 cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
