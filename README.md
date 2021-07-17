@@ -32,6 +32,9 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
+- [Integrations](#integrations)
+- [Alternatives](#alternatives)
+- [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [Support](#support)
 
@@ -302,10 +305,6 @@ By default, all directories named `node_modules`, `.terraform`, and `.serverless
 
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`. Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
 
-#### VSCODE Extension
-
-If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
-
 ### Configuration using a config file
 
 Checkov can be configured using a YAML configuration file. By default, checkov looks for a `.checkov.yaml` or `.checkov.yml` file in the following places in order of precedence:
@@ -370,6 +369,21 @@ Defaults:
   --external-modules-download-path:.external_modules
   --evaluate-variables:True
 ```
+
+## Integrations
+
+### VSCODE Extension
+
+If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+
+### Mega-Linter
+
+You can use [Mega-Linter](https://nvuillam.github.io/mega-linter/) to run checkov automatically on every PR, and also lint all file types detected in your repository.
+
+Please follow the [installation instructions](https://nvuillam.github.io/mega-linter/installation/) to activate checkov without any additional configuration.
+
+Mega-Linter’s [Terraform flavor](https://nvuillam.github.io/mega-linter/flavors/terraform/) is optimized for Terraform linting and also embeds [tflint](https://nvuillam.github.io/mega-linter/descriptors/terraform_tflint/), [terrascan](https://nvuillam.github.io/mega-linter/descriptors/terraform_terrascan/), [terragrunt](https://nvuillam.github.io/mega-linter/descriptors/terraform_terragrunt/) and [terraform formatter](https://nvuillam.github.io/mega-linter/descriptors/terraform_terraform_fmt/).
+
 ## Alternatives
 
 For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline) for secured basline.
