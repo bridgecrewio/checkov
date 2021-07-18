@@ -1,3 +1,4 @@
+import logging
 import os
 
 from checkov.cloudformation import cfn_utils
@@ -76,6 +77,7 @@ class Runner(BaseRunner):
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
         should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
         if should_create_graph and should_create_graph.lower() == "true":
+            logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)

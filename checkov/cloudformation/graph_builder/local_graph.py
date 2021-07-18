@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections, BlockType
@@ -13,6 +14,7 @@ class CloudformationLocalGraph(LocalGraph):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
+        logging.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
 
     def _create_vertices(self) -> None:
         for file_path, file_conf in self.definitions.items():
@@ -26,7 +28,7 @@ class CloudformationLocalGraph(LocalGraph):
         for resource_name, resource in resources.items():
             resource = resources[resource_name]
             resource_type = resource.get("Type")
-            attributes = resource.get("Properties")
+            attributes = resource.get("Properties", {})
             attributes["resource_type"] = resource_type
             block = CloudformationBlock(name=".".join([resource_type, resource_name]),
                                         config=resource.get("Properties"),
