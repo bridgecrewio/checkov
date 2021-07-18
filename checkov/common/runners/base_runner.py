@@ -39,7 +39,7 @@ class BaseRunner(ABC):
         # The expected format of BUILD_GRAPH is BUILD_GRAPH=`cloudformation,terraform`
         # A runner will limit building graph only if it uses this method
         graphs_to_build = os.environ.get('BUILD_GRAPH')
-        return graphs_to_build and self.check_type in graphs_to_build
+        return graphs_to_build and self.check_type in graphs_to_build.lower()
 
     def run_graph_checks_results(self, runner_filter):
         checks_results = {}
