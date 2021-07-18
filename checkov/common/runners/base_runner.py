@@ -34,13 +34,6 @@ class BaseRunner(ABC):
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         pass
 
-    def should_create_graph(self):
-        # This allows to check for a specific check type whether we want to build a graph
-        # The expected format of BUILD_GRAPH is BUILD_GRAPH=`cloudformation,terraform`
-        # A runner will limit building graph only if it uses this method
-        graphs_to_build = os.environ.get('BUILD_GRAPH')
-        return graphs_to_build and self.check_type in graphs_to_build.lower()
-
     def run_graph_checks_results(self, runner_filter):
         checks_results = {}
         for r in self.external_registries + [self.graph_registry]:

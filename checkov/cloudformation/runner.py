@@ -1,3 +1,5 @@
+import os
+
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_file_abs_path, create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -71,7 +73,9 @@ class Runner(BaseRunner):
                                                 file_abs_path=file_abs_path, entity_tags=tags)
                                 report.add_record(record=record)
 
-        if self.should_create_graph():
+        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
+        should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
+        if should_create_graph and should_create_graph.lower() == "true":
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
