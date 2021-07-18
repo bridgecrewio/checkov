@@ -1,4 +1,3 @@
-import json
 import logging
 
 import requests
@@ -13,7 +12,6 @@ from checkov.terraform.runner import graph_registry
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
-
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.policies = {}
@@ -57,6 +55,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
 
         policies = response.json().get('data', [])
+        policies = [p for p in policies if p['isCustom']]
         return policies
 
 
