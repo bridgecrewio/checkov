@@ -6,6 +6,7 @@ from checkov.cloudformation.graph_builder.graph_components.block_types import Cl
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.cloudformation.parser.node import dict_node
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.graph_record import GraphRecord
@@ -28,6 +29,7 @@ class Runner(BaseRunner):
         self.graph_manager = graph_manager if graph_manager is not None else CloudformationGraphManager(source=source,
                                                                                                         db_connector=db_connector)
         self.definitions_raw = {}
+        self.graph_registry = get_graph_checks_registry(self.check_type)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)

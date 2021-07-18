@@ -15,8 +15,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry
-from checkov.terraform.runner import graph_registry
+from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -59,6 +58,7 @@ def get_checks(framework="all"):
         add_from_repository(provider_registry, "provider", "Terraform")
         add_from_repository(module_registry, "module", "Terraform")
 
+        graph_registry = get_graph_checks_registry("terraform")
         graph_registry.load_checks()
         add_from_repository(graph_registry, "resource", "Terraform")
     if framework == "cloudformation" or framework == "all":

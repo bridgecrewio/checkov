@@ -3,32 +3,29 @@ import dataclasses
 import logging
 import os
 from typing import Dict, Optional, Tuple, List
-from pathlib import Path
 
 import dpath.util
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
-from checkov.common.util import data_structures_utils
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.util import data_structures_utils
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
-
 # Allow the evaluation of empty variables
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
@@ -52,6 +49,7 @@ class Runner(BaseRunner):
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
                                                                                                    db_connector=db_connector)
+        self.graph_registry = get_graph_checks_registry(self.check_type)
 
     block_type_registries = {
         'resource': resource_registry,
@@ -111,7 +109,7 @@ class Runner(BaseRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-                self.get_graph_checks_registry().load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         report = Report(self.check_type)

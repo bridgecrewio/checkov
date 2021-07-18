@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 from checkov.common.output.record import Record
@@ -11,7 +12,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan
-from checkov.terraform.runner import graph_registry, Runner as TerraformRunner, merge_reports
+from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 
 
 class Runner(TerraformRunner):
@@ -20,6 +21,7 @@ class Runner(TerraformRunner):
     def __init__(self):
         super().__init__()
         self.template_lines = {}
+        self.graph_registry = get_graph_checks_registry(super().check_type)
 
     block_type_registries = {
         'resource': resource_registry,
@@ -33,7 +35,7 @@ class Runner(TerraformRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-                graph_registry.load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
         if root_folder:
             files = [] if not files else files

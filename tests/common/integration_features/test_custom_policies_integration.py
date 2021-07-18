@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
-from checkov.terraform.runner import graph_registry, Runner
+from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pathlib import Path
 

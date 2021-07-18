@@ -5,11 +5,12 @@ import unittest
 import dis
 from pathlib import Path
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner, graph_registry, resource_registry
+from checkov.terraform.runner import Runner, resource_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 
@@ -217,6 +218,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
 
+        graph_registry = get_graph_checks_registry("terraform")
         graph_registry.load_checks()
         graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
         aws_checks, gcp_checks, azure_checks = [], [], []
@@ -648,27 +650,27 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_loading_external_checks_yaml(self):
         runner = Runner()
-        graph_registry.checks = []
-        graph_registry.load_checks()
-        base_len = len(graph_registry.checks)
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
+        base_len = len(runner.graph_registry.checks)
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(graph_registry.checks), base_len + 2)
-        graph_registry.checks = graph_registry.checks[:base_len]
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 2)
+        runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        graph_registry.checks = []
+        runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(graph_registry.checks), 2)
+        self.assertEqual(len(runner.graph_registry.checks), 2)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(graph_registry.checks), 2)
-        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in graph_registry.checks])
-        self.assertIn('CKV2_CUSTOM_1', [x.id for x in graph_registry.checks])
-        graph_registry.checks = []
+        self.assertEqual(len(runner.graph_registry.checks), 2)
+        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in runner.graph_registry.checks])
+        self.assertIn('CKV2_CUSTOM_1', [x.id for x in runner.graph_registry.checks])
+        runner.graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
         runner = Runner()
@@ -711,7 +713,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(scanner, checks)
             found += 1
         self.assertEqual(found, len(scanner.supported_resources))
-        self.assertEqual(len(list(filter(lambda c: c.id == CUSTOM_GRAPH_CHECK_ID, graph_registry.checks))), 1)
+        self.assertEqual(len(list(filter(lambda c: c.id == CUSTOM_GRAPH_CHECK_ID, runner.graph_registry.checks))), 1)
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]

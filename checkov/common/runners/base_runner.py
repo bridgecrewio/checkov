@@ -1,11 +1,8 @@
 import os
 import re
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import List, Dict, Optional
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
 from checkov.runner_filter import RunnerFilter
 
 IGNORED_DIRECTORIES_ENV = os.getenv('CKV_IGNORED_DIRECTORIES', "node_modules,.terraform,.serverless")
@@ -20,6 +17,7 @@ class BaseRunner(ABC):
     breadcrumbs = None
     external_registries = None
     graph_manager = None
+    graph_registry = None
 
     @abstractmethod
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
@@ -43,13 +41,9 @@ class BaseRunner(ABC):
         graphs_to_build = os.environ.get('BUILD_GRAPH')
         return graphs_to_build and self.check_type in graphs_to_build
 
-    def get_graph_checks_registry(self):
-        return Registry(parser=NXGraphCheckParser(),
-                        checks_dir=f"{Path(__file__).parent.parent.parent}/{self.check_type}/checks/graph_checks")
-
     def run_graph_checks_results(self, runner_filter):
         checks_results = {}
-        for r in self.external_registries + [self.get_graph_checks_registry()]:
+        for r in self.external_registries + [self.graph_registry]:
             r.load_checks()
             registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
             checks_results = {**checks_results, **registry_results}

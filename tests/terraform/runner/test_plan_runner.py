@@ -3,7 +3,6 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.plan_runner import Runner
-from checkov.terraform.runner import graph_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -54,7 +53,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_nested_child_modules/tfplan.json"
         runner = Runner()
-        graph_registry.checks = []
+        runner.graph_registry.checks = []
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
@@ -87,7 +86,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_root_module_resources_no_values/tfplan.json"
         runner = Runner()
-        graph_registry.checks = []
+        runner.graph_registry.checks = []
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
