@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  Pass:
+    Type: AWS::WorkSpaces::Workspace
+    Properties: 
+      UserName: test
+      BundleId: wsb-abc123456
+      DirectoryId: d-abc123456
+      RootVolumeEncryptionEnabled: true

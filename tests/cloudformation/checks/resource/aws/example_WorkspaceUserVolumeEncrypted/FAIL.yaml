@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  FailDefault:
+    Type: AWS::WorkSpaces::Workspace
+    Properties: 
+      UserName: test
+      BundleId: wsb-abc123456
+      DirectoryId: d-abc123456
+  FailExplicit:
+    Type: AWS::WorkSpaces::Workspace
+    Properties: 
+      UserName: test
+      BundleId: wsb-abc123456
+      DirectoryId: d-abc123456
+      UserVolumeEncryptionEnabled: false

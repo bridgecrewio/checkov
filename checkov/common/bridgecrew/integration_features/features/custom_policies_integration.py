@@ -11,7 +11,6 @@ from checkov.common.util.http_utils import get_default_get_headers, get_auth_hea
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
-
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.policies = {}
@@ -55,6 +54,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
 
         policies = response.json().get('data', [])
+        policies = [p for p in policies if p['isCustom']]
         return policies
 
 

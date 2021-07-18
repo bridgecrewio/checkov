@@ -175,13 +175,13 @@ class Report:
             if record.check_result['result'] == CheckResult.FAILED:
                 if record.file_path and record.file_line_range:
                     test_case.add_failure_info(
-                        f'Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range}')
+                        f'Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range} - Guideline: {record.guideline}')
                 else:
                     test_case.add_failure_info(
                         f'Resource {record.resource} failed in check {check_name}')
             if record.check_result['result'] == CheckResult.SKIPPED:
                 test_case.add_skipped_info(
-                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]}')
+                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]} - Guideline: {record.guideline}')
 
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
