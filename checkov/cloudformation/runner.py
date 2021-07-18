@@ -72,15 +72,14 @@ class Runner(BaseRunner):
                                 report.add_record(record=record)
 
         if self.should_create_graph():
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            self.graph_manager.save_graph(local_graph)
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
         return report
 
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
-        local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-        self.graph_manager.save_graph(local_graph)
-
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
 
