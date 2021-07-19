@@ -9,6 +9,7 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
 import deep_merge
 import hcl2
+from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -428,7 +429,7 @@ class Parser:
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
                              external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths)
-        tf_definitions = Parser._hcl_boolean_types_to_boolean(tf_definitions)
+        tf_definitions = Parser._clean_parser_types(tf_definitions)
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
@@ -447,7 +448,7 @@ class Parser:
         return module, module_dependency_map, tf_definitions
 
     @staticmethod
-    def _hcl_boolean_types_to_boolean(conf: dict) -> dict:
+    def _clean_parser_types(conf: dict) -> dict:
         sorted_keys = list(conf.keys())
         if len(conf.keys()) > 0 and all(isinstance(x, type(list(conf.keys())[0])) for x in conf.keys()):
             sorted_keys = sorted(filter(lambda x: x is not None, conf.keys()))
@@ -457,26 +458,34 @@ class Parser:
             if attribute == 'alias':
                 continue
             if isinstance(values, list):
-                sorted_conf[attribute] = Parser._hcl_boolean_types_to_boolean_lst(values)
+                sorted_conf[attribute] = Parser._clean_parser_types_lst(values)
             elif isinstance(values, dict):
-                sorted_conf[attribute] = Parser._hcl_boolean_types_to_boolean(conf[attribute])
+                sorted_conf[attribute] = Parser._clean_parser_types(conf[attribute])
             elif isinstance(values, str) and values in ('true', 'false'):
                 sorted_conf[attribute] = True if values == 'true' else False
+            elif isinstance(values, set):
+                sorted_conf[attribute] = [Parser._clean_parser_types(v) for v in values]
+            elif isinstance(values, Tree):
+                sorted_conf[attribute] = str(values)
         return sorted_conf
 
     @staticmethod
-    def _hcl_boolean_types_to_boolean_lst(values: list) -> list:
+    def _clean_parser_types_lst(values: list) -> list:
         for i in range(len(values)):
             val = values[i]
             if isinstance(val, dict):
-                values[i] = Parser._hcl_boolean_types_to_boolean(val)
+                values[i] = Parser._clean_parser_types(val)
             elif isinstance(val, list):
-                values[i] = Parser._hcl_boolean_types_to_boolean_lst(val)
+                values[i] = Parser._clean_parser_types_lst(val)
             elif isinstance(val, str):
                 if val == 'true':
                     values[i] = True
                 elif val == 'false':
                     values[i] = False
+            elif isinstance(val, set):
+                values[i] = Parser._clean_parser_types_lst(list(val))
+            elif isinstance(val, Tree):
+                values[i] = str(val)
         str_values_in_lst = [val for val in values if isinstance(val, str)]
         str_values_in_lst.sort()
         result_values = [val for val in values if not isinstance(val, str)]

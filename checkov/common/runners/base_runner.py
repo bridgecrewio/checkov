@@ -1,3 +1,4 @@
+import itertools
 import os
 import re
 from abc import ABC, abstractmethod
@@ -36,7 +37,7 @@ class BaseRunner(ABC):
 
     def run_graph_checks_results(self, runner_filter):
         checks_results = {}
-        for r in self.external_registries + [self.graph_registry]:
+        for r in itertools.chain(self.external_registries, [self.graph_registry]):
             r.load_checks()
             registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
             checks_results = {**checks_results, **registry_results}
@@ -71,4 +72,3 @@ def filter_ignored_paths(root_dir, names, excluded_paths: List[str]):
     if excluded_paths:
         compiled = [re.compile(p.replace('.terraform', '\.terraform')) for p in excluded_paths]
         [names.remove(path) for path in list(names) if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled)]
-
