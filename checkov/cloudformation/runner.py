@@ -7,6 +7,7 @@ from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
+from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.cloudformation.parser.node import dict_node
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -46,13 +47,21 @@ class Runner(BaseRunner):
 
         self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
+        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
+        should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
+        if should_create_graph and should_create_graph.lower() == "true":
+            logging.info("creating cloudformation graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            self.graph_manager.save_graph(local_graph)
+            self.definitions2, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+
         for cf_file in self.definitions.keys():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
 
-            if isinstance(self.definitions[cf_file], dict_node) and CloudformationTemplateSections.RESOURCES in self.definitions[cf_file].keys():
-                cf_context_parser = ContextParser(cf_file, self.definitions[cf_file], self.definitions_raw[cf_file])
-                for resource_name, resource in self.definitions[cf_file][CloudformationTemplateSections.RESOURCES].items():
+            if isinstance(self.definitions2[cf_file], dict) and 'resource' in self.definitions2[cf_file].keys():
+                cf_context_parser = ContextParser(cf_file, self.definitions2[cf_file], self.definitions_raw[cf_file])
+                for resource_name, resource in self.definitions2[cf_file]['resource'].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
@@ -77,9 +86,6 @@ class Runner(BaseRunner):
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
         should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
         if should_create_graph and should_create_graph.lower() == "true":
-            logging.info("creating cloudformation graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            self.graph_manager.save_graph(local_graph)
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
