@@ -46,13 +46,13 @@ class Runner(BaseRunner):
 
         self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
-        for cf_file in self.definitions.keys():
+        for cf_file, definition in self.definitions.items():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
 
-            if isinstance(self.definitions[cf_file], dict_node) and CloudformationTemplateSections.RESOURCES in self.definitions[cf_file].keys():
-                cf_context_parser = ContextParser(cf_file, self.definitions[cf_file], self.definitions_raw[cf_file])
-                for resource_name, resource in self.definitions[cf_file][CloudformationTemplateSections.RESOURCES].items():
+            if isinstance(definition, dict_node) and CloudformationTemplateSections.RESOURCES in definition.keys():
+                cf_context_parser = ContextParser(cf_file, definition, self.definitions_raw[cf_file])
+                for resource_name, resource in definition[CloudformationTemplateSections.RESOURCES].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
@@ -94,7 +94,7 @@ class Runner(BaseRunner):
                 entity = check_result['entity']
                 entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
                 entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
-                entity_context = self.context.get(entity_file_abs_path).get(CloudformationTemplateSections.RESOURCES).get(entity_name)
+                entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][entity_name]
 
                 record = Record(check_id=check.id,
                                 check_name=check.name,
