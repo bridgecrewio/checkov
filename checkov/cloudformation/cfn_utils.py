@@ -10,6 +10,7 @@ from checkov.cloudformation.graph_builder.graph_components.block_types import Cl
 from checkov.cloudformation.parser import parse
 from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.runner_filter import RunnerFilter
 
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
 
@@ -30,16 +31,21 @@ def get_resource_tags(entity, registry=cfn_registry):
         if properties:
             tags = properties.get('Tags')
             if tags:
-                if type(tags) == list_node:
-                    tag_dict = {tag['Key']: str(get_entity_value_as_string(tag['Value'])) for tag in tags}
-                    return tag_dict
-                elif type(tags) == dict_node:
-                    tag_dict = {str(key): str(get_entity_value_as_string(value)) for key, value in tags.items() if key not in ('__startline__', '__endline__')}
-                    return tag_dict
+                return parse_entity_tags(tags)
     except:
         logging.warning(f'Failed to parse tags for entity {entity}')
 
     return None
+
+
+def parse_entity_tags(tags):
+    if type(tags) == list_node:
+        tag_dict = {tag['Key']: str(get_entity_value_as_string(tag['Value'])) for tag in tags}
+        return tag_dict
+    elif isinstance(tags, dict):
+        tag_dict = {str(key): str(get_entity_value_as_string(value)) for key, value in tags.items() if
+                    key not in ('__startline__', '__endline__')}
+        return tag_dict
 
 
 def get_entity_value_as_string(value):
@@ -146,3 +152,25 @@ def create_file_abs_path(root_folder, cf_file):
 
     return os.path.abspath(path_to_convert)
 
+
+def create_definitions(root_folder, files=None, runner_filter=RunnerFilter()):
+    definitions = {}
+    definitions_raw = {}
+    if files:
+        for file in files:
+            (definitions[file], definitions_raw[file]) = parse(file)
+
+    if root_folder:
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+
+        # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
+    definitions = {k: v for k, v in definitions.items() if
+                   v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"],
+                                                                                                 dict_node)}
+    definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
+    for cf_file in definitions.keys():
+        cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
+        logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
+        cf_context_parser.evaluate_default_refs()
+    return definitions, definitions_raw

@@ -1,10 +1,12 @@
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 import yaml
 
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.runner_filter import RunnerFilter
@@ -52,3 +54,8 @@ class Registry(BaseRegistry):
     def _get_resource_types(check_json: Dict[str, Dict[str, Any]]) -> Optional[List[str]]:
         provider = check_json.get("scope", {}).get("provider", "").lower()
         return resources_types.get(provider)
+
+
+def get_graph_checks_registry(check_type):
+    return Registry(parser=NXGraphCheckParser(),
+                    checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")

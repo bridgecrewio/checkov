@@ -12,6 +12,9 @@ Resources:
           - ReplaceWithSubnetId1
           - ReplaceWithSubnetId2
           - ReplaceWithSubnetId3
+      Tags:
+        - Key: yor_trace
+          Value: "mock_trace"
   ClusterBadNoLoggingDisabled:
     Type: 'AWS::MSK::Cluster'
     Properties:

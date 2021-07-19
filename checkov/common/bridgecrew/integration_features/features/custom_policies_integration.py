@@ -1,19 +1,16 @@
-import json
 import logging
 
 import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
-from checkov.terraform.runner import graph_registry
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
-
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.policies = {}
@@ -28,7 +25,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             converted_check = self._convert_raw_check(policy)
             resource_types = Registry._get_resource_types(converted_check['metadata'])
             check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
-            graph_registry.checks.append(check)
+            get_graph_checks_registry("terraform").checks.append(check)
         logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
 
     @staticmethod
@@ -57,6 +54,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
 
         policies = response.json().get('data', [])
+        policies = [p for p in policies if p['isCustom']]
         return policies
 
 

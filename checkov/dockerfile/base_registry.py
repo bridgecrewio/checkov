@@ -3,10 +3,6 @@ from checkov.common.models.enums import CheckResult
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self):
-        super().__init__()
-
-
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
 
         results = {}
