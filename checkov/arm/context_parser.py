@@ -5,6 +5,7 @@ from functools import reduce
 
 # COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.util.type_forcers import force_list
 
 COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
 
@@ -123,31 +124,14 @@ class ContextParser(object):
         ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
         if "metadata" in resource:
             if "checkov" in resource["metadata"]:
-                if isinstance(resource["metadata"]["checkov"], list):
-                    for index, item in enumerate(resource["metadata"]["checkov"]):
-                        skip_search = re.search(COMMENT_REGEX, str(item))
-                        if skip_search:
-                            skipped_check = {
-                                'id': skip_search.group(1),
-                                'suppress_comment': skip_search.group(2)[1:] if skip_search.group(
-                                    2) else "No comment provided"
-                            }
-                            if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
-                                skipped_check["bc_id"] = skipped_check["id"]
-                                skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                            elif ckv_to_bc_id_mapping:
-                                skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
-
-                            skipped_checks.append(skipped_check)
-                else:
-                    skip_search = re.search(COMMENT_REGEX, str(resource["metadata"]["checkov"]))
+                for index, item in enumerate(force_list(resource["metadata"]["checkov"])):
+                    skip_search = re.search(COMMENT_REGEX, str(item))
                     if skip_search:
                         skipped_check = {
                             'id': skip_search.group(1),
                             'suppress_comment': skip_search.group(2)[1:] if skip_search.group(
                                 2) else "No comment provided"
                         }
-                        # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                         if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
