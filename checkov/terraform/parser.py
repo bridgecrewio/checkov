@@ -30,6 +30,8 @@ class DefinitionsEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, set):
             return list(obj)
+        elif isinstance(obj, Tree):
+            return str(obj)
         return super().default(self, obj)
 
 
@@ -473,8 +475,7 @@ class Parser:
             elif isinstance(values, str) and values in ('true', 'false'):
                 sorted_conf[attribute] = True if values == 'true' else False
             elif isinstance(values, set):
-                values_list = list(values)
-                sorted_conf[attribute] = [Parser._clean_parser_types(v) for v in values_list]
+                sorted_conf[attribute] = Parser._clean_parser_types_lst(list(values))
             elif isinstance(values, Tree):
                 sorted_conf[attribute] = str(values)
         return sorted_conf
@@ -494,8 +495,6 @@ class Parser:
                     values[i] = False
             elif isinstance(val, set):
                 values[i] = Parser._clean_parser_types_lst(list(val))
-            elif isinstance(val, Tree):
-                values[i] = str(val)
         str_values_in_lst = [val for val in values if isinstance(val, str)]
         str_values_in_lst.sort()
         result_values = [val for val in values if not isinstance(val, str)]
