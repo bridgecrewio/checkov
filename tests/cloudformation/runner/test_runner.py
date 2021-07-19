@@ -172,6 +172,18 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_run_graph_checks(self):
+        os.environ["CHECKOV_CLOUDFORMATION_GRAPH"] = "true"
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "../graph/checks/resources/MSKClusterLogging")
+
+
+        dir_abs_path = os.path.abspath(scan_dir_path)
+
+        runner = Runner()
+        report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False))
+
     def tearDown(self):
         pass
 
