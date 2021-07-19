@@ -17,6 +17,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -87,9 +88,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return
 
     if config.bc_api_key == '':
-        parser.error(
-            'The --bc-api-key flag was specified but the value was blank. If this value was passed as a secret, '
-            'you may need to double check the mapping.')
+        parser.error('The --bc-api-key flag was specified but the value was blank. If this value was passed as a '
+                     'secret, you may need to double check the mapping.')
     elif config.bc_api_key:
         logger.debug(f'Using API key ending with {config.bc_api_key[-8:]}')
 
@@ -117,10 +117,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     else:
         logger.debug('No API key found. Scanning locally only.')
 
-    guidelines = {}
-    if not config.no_guide:
-        guidelines = bc_integration.get_guidelines()
-
     if config.check and config.skip_check:
         if any(item in runner_filter.checks for item in runner_filter.skip_checks):
             parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
@@ -128,8 +124,17 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     integration_feature_registry.run_pre_scan()
 
+    guidelines = {}
+    if not config.no_guide:
+        guidelines = bc_integration.get_guidelines()
+
+        ckv_to_bc_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        for check in all_checks:
+            check.bc_id = ckv_to_bc_mapping.get(check.id)
+
     if config.list:
-        print_checks(framework=config.framework)
+        print_checks(framework=config.framework, use_bc_ids=config.output_bc_ids)
         return
 
     baseline = None
@@ -224,9 +229,12 @@ def add_parser_args(parser):
     parser.add('-o', '--output', nargs='?', choices=OUTPUT_CHOICES,
                default='cli',
                help='Report output format')
+    parser.add('--output-bc-ids', action='store_true',
+               help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
                default=False,
-               help='do not fetch bridgecrew guide in checkov output report')
+               help='Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. Note: this '
+                    'prevents Bridgecrew platform check IDs from being used anywhere in the CLI.')
     parser.add('--quiet', action='store_true',
                default=False,
                help='in case of CLI output, display only failed checks')

@@ -124,7 +124,7 @@ class Runner(BaseRunner):
                         results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                         for check, check_result in results.items():
-                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                            record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                             code_block=entity_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=cf_resource_id, evaluations=variable_evaluations,
