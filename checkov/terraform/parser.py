@@ -464,7 +464,8 @@ class Parser:
             elif isinstance(values, str) and values in ('true', 'false'):
                 sorted_conf[attribute] = True if values == 'true' else False
             elif isinstance(values, set):
-                sorted_conf[attribute] = [Parser._clean_parser_types(v) for v in values]
+                values_list = list(values)
+                sorted_conf[attribute] = [Parser._clean_parser_types(v) for v in values_list]
             elif isinstance(values, Tree):
                 sorted_conf[attribute] = str(values)
         return sorted_conf
