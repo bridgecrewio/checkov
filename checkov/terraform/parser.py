@@ -6,6 +6,7 @@ import re
 from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
+from json import dumps, loads, JSONEncoder
 
 import deep_merge
 import hcl2
@@ -23,6 +24,13 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
 from checkov.terraform.parser_utils import eval_string, find_var_blocks
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
+
+
+class DefinitionsEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return super().default(self, obj)
 
 
 def _filter_ignored_paths(root, paths, excluded_paths):
@@ -429,7 +437,8 @@ class Parser:
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
                              external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths)
-        tf_definitions = Parser._clean_parser_types(tf_definitions)
+        tf_definitions = self._clean_parser_types(tf_definitions)
+        tf_definitions = self._serialize_definitions(tf_definitions)
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
@@ -492,6 +501,10 @@ class Parser:
         result_values = [val for val in values if not isinstance(val, str)]
         result_values.extend(str_values_in_lst)
         return result_values
+
+    @staticmethod
+    def _serialize_definitions(tf_definitions):
+        return loads(dumps(tf_definitions, cls=DefinitionsEncoder))
 
     @staticmethod
     def get_next_vertices(evaluated_files: list, unevaluated_files: list) -> (list, list):
