@@ -11,6 +11,7 @@ from checkov.cloudformation.parser import parse
 from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
+from checkov.common.models.consts import YAML_COMMENT_MARK
 
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
 
@@ -129,11 +130,11 @@ def build_definitions_context(definitions, definitions_raw, root_folder):
                         # fix lines number for yaml and json files
                         if file_path.endswith(".yaml") or file_path.endswith(".yml"):
                             current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
-                            while not current_line or current_line[0] is "#":
+                            while not current_line or current_line[0] is YAML_COMMENT_MARK:
                                 start_line -= 1
                                 current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
                             current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
-                            while not current_line or current_line[0] is "#":
+                            while not current_line or current_line[0] is YAML_COMMENT_MARK:
                                 end_line -= 1
                                 current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
                         elif file_path.endswith(".json"):
