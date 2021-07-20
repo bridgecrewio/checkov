@@ -24,7 +24,6 @@ class TestRunnerValid(unittest.TestCase):
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
-
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
