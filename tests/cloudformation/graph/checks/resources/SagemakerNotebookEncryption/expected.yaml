@@ -1,4 +1,4 @@
 pass:
-  - "AWS::SageMaker::NotebookInstance.BasicNotebookInstanceGood"
+  - "BasicNotebookInstanceGood"
 fail:
-  - "AWS::SageMaker::NotebookInstance.BasicNotebookInstanceBad"
+  - "BasicNotebookInstanceBad"

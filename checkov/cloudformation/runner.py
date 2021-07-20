@@ -6,10 +6,9 @@ from checkov.cloudformation.cfn_utils import create_file_abs_path, create_defini
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
-from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
+from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
-from checkov.cloudformation.parser.node import dict_node
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -53,15 +52,15 @@ class Runner(BaseRunner):
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
-            self.definitions2, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
-        for cf_file in self.definitions.keys():
+        for cf_file, definition in self.definitions.items():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
 
-            if isinstance(self.definitions2[cf_file], dict) and 'resource' in self.definitions2[cf_file].keys():
-                cf_context_parser = ContextParser(cf_file, self.definitions2[cf_file], self.definitions_raw[cf_file])
-                for resource_name, resource in self.definitions2[cf_file]['resource'].items():
+            if isinstance(definition, dict) and CloudformationTemplateSections.RESOURCES in definition.keys():
+                cf_context_parser = ContextParser(cf_file, definition, self.definitions_raw[cf_file])
+                for resource_name, resource in definition[CloudformationTemplateSections.RESOURCES].items():
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
@@ -99,7 +98,7 @@ class Runner(BaseRunner):
             for check_result in check_results:
                 entity = check_result['entity']
                 entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
-                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
+                entity_name = entity.get(CustomAttributes.BLOCK_NAME)
                 entity_context = self.context.get(entity_file_abs_path).get(CloudformationTemplateSections.RESOURCES).get(entity_name)
 
                 record = Record(check_id=check.id,

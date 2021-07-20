@@ -1,0 +1,40 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "AWS CloudFormation Template to deploy insecure infrastructure",
+  "Parameters": {
+    "KmsMasterKeyId": {
+      "Description": "Company Name",
+      "Type": "String",
+      "Default": "kms_id"
+    },
+    "DBName": {
+      "Description": "Name of the Database",
+      "Type": "String",
+      "Default": "db"
+    }
+  },
+  "Resources": {
+    "MySourceQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "KmsMasterKeyId": { "Ref": "KmsMasterKeyId" }
+      }
+    },
+    "MyDB": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBName": { "Ref": "DBName" },
+        "DBInstanceClass": "db.t3.micro",
+        "Engine": "mysql",
+        "MasterUsername": "master",
+        "MasterUserPassword": "password"
+      }
+    }
+  },
+  "Outputs": {
+    "DBAppPublicDNS": {
+      "Description": "DB App Public DNS Name",
+      "Value": { "Fn::GetAtt" : [ "MyDB", "PublicDnsName" ] }
+    }
+  }
+}

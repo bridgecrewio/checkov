@@ -1,9 +1,9 @@
 import logging
 import operator
-from functools import reduce
 import re
-from checkov.common.comment.enum import COMMENT_REGEX
+from functools import reduce
 
+from checkov.common.comment.enum import COMMENT_REGEX
 
 ENDLINE = '__endline__'
 
@@ -51,7 +51,7 @@ class ContextParser(object):
         if 'Type' not in cf_resource:
             # This is not a CloudFormation resource, skip
             return
-        return cf_resource_name
+        return f"{cf_resource['Type']}.{cf_resource_name}"
 
     def extract_cf_resource_code_lines(self, cf_resource):
         find_lines_result_list = list(self.find_lines(cf_resource, STARTLINE))
