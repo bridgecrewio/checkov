@@ -21,7 +21,6 @@ class ContainsAttributeSolver(BaseAttributeSolver):
                 att = json.loads(att.replace("'", '"'))
             except ValueError:
                 pass
-            return self.value in att
         if isinstance(att, dict):
             return self.value in att or any(self.value in val for val in att.values())
         return self.value in att
