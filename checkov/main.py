@@ -129,9 +129,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         guidelines = bc_integration.get_guidelines()
 
         ckv_to_bc_mapping = bc_integration.get_ckv_to_bc_id_mapping()
-        all_checks = BaseCheckRegistry.get_all_registered_checks()
-        for check in all_checks:
-            check.bc_id = ckv_to_bc_mapping.get(check.id)
+        if ckv_to_bc_mapping:
+            all_checks = BaseCheckRegistry.get_all_registered_checks()
+            for check in all_checks:
+                check.bc_id = ckv_to_bc_mapping.get(check.id)
 
     if config.list:
         print_checks(framework=config.framework, use_bc_ids=config.output_bc_ids)

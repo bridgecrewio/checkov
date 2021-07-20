@@ -45,9 +45,9 @@ class TestCloudformationGraphManager(TestCase):
         self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
 
         for v in local_graph.vertices:
-            self.assertIn(v.id, expected_resources_by_file[v.path])
+            self.assertIn(v.name, expected_resources_by_file[v.path])
 
-        sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["acmeCWSQueue"][0]]
+        sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
         self.assertDictEqual({'Fn::Join': ['', [{'Ref': 'ResourceNamePrefix', '__startline__': 650, '__endline__': 652}, '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
 
     def test_build_graph_from_source_directory_with_rendering(self):
@@ -55,7 +55,7 @@ class TestCloudformationGraphManager(TestCase):
             graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
             local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=True)
 
-            sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["acmeCWSQueue"][0]]
+            sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
             self.assertDictEqual({'Fn::Join': ['', ['acme', '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
 
     def test_build_graph_from_definitions(self):
@@ -67,7 +67,7 @@ class TestCloudformationGraphManager(TestCase):
         local_graph = graph_manager.build_graph_from_definitions(definitions)
         self.assertEqual(1, len(local_graph.vertices))
         resource_vertex = local_graph.vertices[0]
-        self.assertEqual("MyStage", resource_vertex.name)
+        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.name)
         self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)

@@ -1,9 +1,9 @@
 pass:
-  - "ClusterCloudWatchLogsGood"
-  - "ClusterFirehoseGood"
-  - "Clusters3Good"
-  - "ClusterAllGood"
+  - "AWS::MSK::Cluster.ClusterCloudWatchLogsGood"
+  - "AWS::MSK::Cluster.ClusterFirehoseGood"
+  - "AWS::MSK::Cluster.Clusters3Good"
+  - "AWS::MSK::Cluster.ClusterAllGood"
 fail:
-  - "ClusterBadNoLoggingInfo"
-  - "ClusterBadNoLoggingDisabled"
+  - "AWS::MSK::Cluster.ClusterBadNoLoggingInfo"
+  - "AWS::MSK::Cluster.ClusterBadNoLoggingDisabled"
 

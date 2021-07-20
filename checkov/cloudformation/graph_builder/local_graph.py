@@ -34,7 +34,7 @@ class CloudformationLocalGraph(LocalGraph):
             attributes["__endline__"] = resource["__endline__"]
             attributes.start_mark = resource.start_mark
             attributes.end_mark = attributes.end_mark
-            block = CloudformationBlock(resource_name,
+            block = CloudformationBlock(name=".".join([resource_type, resource_name]),
                                         config=resource.get("Properties"),
                                         path=file_path,
                                         block_type=BlockType.RESOURCE,

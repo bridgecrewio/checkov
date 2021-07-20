@@ -22,7 +22,7 @@ class TestLocalGraph(TestCase):
         local_graph.build_graph(render_variables=False)
         self.assertEqual(1, len(local_graph.vertices))
         resource_vertex = local_graph.vertices[0]
-        self.assertEqual("MyStage", resource_vertex.name)
+        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.name)
         self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
