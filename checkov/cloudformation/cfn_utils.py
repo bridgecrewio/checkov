@@ -126,6 +126,19 @@ def build_definitions_context(definitions, definitions_raw, root_folder):
                     if isinstance(attr_value, dict_node):
                         start_line = attr_value.start_mark.line
                         end_line = attr_value.end_mark.line
+                        # fix lines number for yaml and json files
+                        if file_path.endswith(".yaml") or file_path.endswith(".yml"):
+                            current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
+                            while not current_line or current_line[0] is "#":
+                                start_line -= 1
+                                current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
+                            current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
+                            while not current_line or current_line[0] is "#":
+                                end_line -= 1
+                                current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
+                        elif file_path.endswith(".json"):
+                            start_line += 1
+                            end_line += 1
                         code_lines = definitions_raw[file_path][start_line - 1: end_line]
                         file_abs_path = create_file_abs_path(root_folder, file_path)
                         dpath.new(definitions_context,
