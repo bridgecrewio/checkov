@@ -47,8 +47,7 @@ class Runner(BaseRunner):
         self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
-        if should_create_graph and should_create_graph.lower() == "true":
+        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
@@ -83,8 +82,7 @@ class Runner(BaseRunner):
                                 report.add_record(record=record)
 
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        should_create_graph = os.environ.get("CHECKOV_CLOUDFORMATION_GRAPH")
-        if should_create_graph and should_create_graph.lower() == "true":
+        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
@@ -99,7 +97,7 @@ class Runner(BaseRunner):
                 entity = check_result['entity']
                 entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
                 entity_name = entity.get(CustomAttributes.BLOCK_NAME)
-                entity_context = self.context.get(entity_file_abs_path).get(CloudformationTemplateSections.RESOURCES).get(entity_name)
+                entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][entity_name]
 
                 record = Record(check_id=check.id,
                                 check_name=check.name,
