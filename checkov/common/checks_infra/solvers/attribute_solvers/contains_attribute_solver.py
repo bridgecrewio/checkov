@@ -12,7 +12,7 @@ class ContainsAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        att = vertex.get(attribute, "")
-        if not isinstance(att, str):
-            att = json.dumps(att)
+        att = vertex.get(attribute, "{}")
+        if isinstance(att, str):
+            att = json.loads(att)
         return self.value in att
