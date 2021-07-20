@@ -18,6 +18,7 @@ class BaseCheckRegistry(object):
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
     __loading_external_checks = False
+    __all_registered_checks = []
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
@@ -44,6 +45,12 @@ class BaseCheckRegistry(object):
             checks = self.wildcard_checks if self._is_wildcard(entity) else self.checks
             if not any(c.id == check.id for c in checks[entity]):
                 checks[entity].append(check)
+
+        BaseCheckRegistry.__all_registered_checks.append(check)
+
+    @staticmethod
+    def get_all_registered_checks():
+        return BaseCheckRegistry.__all_registered_checks
 
     @staticmethod
     def _is_wildcard(entity: str) -> bool:
@@ -109,7 +116,7 @@ class BaseCheckRegistry(object):
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check.id):
+            if runner_filter.should_run_check(check.id, check.bc_id):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results

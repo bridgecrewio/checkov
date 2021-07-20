@@ -3,6 +3,7 @@ import operator
 import re
 from functools import reduce
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 
 ENDLINE = '__endline__'
@@ -111,16 +112,24 @@ class ContextParser(object):
     @staticmethod
     def collect_skip_comments(entity_code_lines):
         skipped_checks = []
+        bc_id_mapping = bc_integration.get_id_mapping()
+        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
         for line in entity_code_lines:
             skip_search = re.search(COMMENT_REGEX, str(line))
             if skip_search:
-                skipped_checks.append(
-                    {
-                        'id': skip_search.group(2),
-                        'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
-                            3) else "No comment provided"
-                    }
-                )
+                skipped_check = {
+                    'id': skip_search.group(2),
+                    'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
+                        3) else "No comment provided"
+                }
+                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                    skipped_check["bc_id"] = skipped_check["id"]
+                    skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
+                elif ckv_to_bc_id_mapping:
+                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+
+                skipped_checks.append(skipped_check)
         return skipped_checks
 
     @staticmethod

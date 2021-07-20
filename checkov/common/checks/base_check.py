@@ -14,10 +14,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: List[str] = []
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
     ) -> None:
         self.name = name
         self.id = id
+        self.bc_id = bc_id
         self.categories = categories
         self.block_type = block_type
         self.supported_entities = supported_entities
@@ -85,3 +86,6 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         :return: List of the evaluated keys, as JSONPath syntax paths of the checked attributes
         """
         return force_list(self.evaluated_keys)
+
+    def get_output_id(self, use_bc_ids: bool) -> str:
+        return self.bc_id if self.bc_id and use_bc_ids else self.id

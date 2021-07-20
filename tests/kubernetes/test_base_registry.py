@@ -18,20 +18,40 @@ class TestRunnerFilter(unittest.TestCase):
         run_filter = RunnerFilter(checks=["CKV_1"], skip_checks=[])
         self.assertTrue(instance._should_run_scan("CKV_1", {}, run_filter))
 
+    def test_run_by_id_specific_enable_bc_id(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=["BC_CKV_1"], skip_checks=[])
+        self.assertTrue(instance._should_run_scan("CKV_1", {}, run_filter, "BC_CKV_1"))
+
     def test_run_by_id_omitted_specific_enable(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=["CKV_1"], skip_checks=[])
         self.assertFalse(instance._should_run_scan("CKV_999", {}, run_filter))
+
+    def test_run_by_id_omitted_specific_enablebc_id(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=["BC_CKV_1"], skip_checks=[])
+        self.assertFalse(instance._should_run_scan("CKV_999", {}, run_filter, "BC_CKV_999"))
 
     def test_run_by_id_specific_disable(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["CKV_1"])
         self.assertFalse(instance._should_run_scan("CKV_1", {}, run_filter))
 
+    def test_run_by_id_specific_disable_bc_id(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=[], skip_checks=["BC_CKV_1"])
+        self.assertFalse(instance._should_run_scan("CKV_1", {}, run_filter, "BC_CKV_1"))
+
     def test_run_by_id_omitted_specific_disable(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["CKV_1"])
         self.assertTrue(instance._should_run_scan("CKV_999", {}, run_filter))
+
+    def test_run_by_id_omitted_specific_disable_bc_id(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=[], skip_checks=["BC_CKV_1"])
+        self.assertTrue(instance._should_run_scan("CKV_999", {}, run_filter, "BC_CKV_999"))
 
     def test_run_by_id_external(self):
         instance = Registry()
@@ -43,11 +63,17 @@ class TestRunnerFilter(unittest.TestCase):
         instance = Registry()
         run_filter = RunnerFilter(checks=["CKV_1"], skip_checks=["CKV_2"])
         run_filter.notify_external_check("CKV_EXT_999")
-        self.assertTrue(instance._should_run_scan("CKV_EXT_999", {}, run_filter))
+        self.assertFalse(instance._should_run_scan("CKV_EXT_999", {}, run_filter))
 
     def test_run_by_id_external3(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=["CKV_EXT_999"], skip_checks=[])
+        run_filter.notify_external_check("CKV_EXT_999")
+        self.assertTrue(instance._should_run_scan("CKV_EXT_999", {}, run_filter))
+
+    def test_run_by_id_external4(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=["CKV_1"], skip_checks=["CKV_2"], all_external=True)
         run_filter.notify_external_check("CKV_EXT_999")
         self.assertTrue(instance._should_run_scan("CKV_EXT_999", {}, run_filter))
 
