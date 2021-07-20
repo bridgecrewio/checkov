@@ -20,6 +20,5 @@ class ContainsAttributeSolver(BaseAttributeSolver):
             try:
                 att = json.loads(att.replace("'", '"'))
             except ValueError:
-                logger.warning(f"Malformed JSON string {att}")
-                return False
+                pass
         return self.value in att
