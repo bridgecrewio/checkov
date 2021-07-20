@@ -24,6 +24,7 @@ class TestRunnerValid(unittest.TestCase):
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
@@ -116,6 +117,8 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(1, passing_custom)
         self.assertEqual(2, failed_custom)
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_runner_extra_yaml_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -144,6 +147,8 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_custom, 0)
         self.assertEqual(failed_custom, 3)
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_runner_specific_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -714,6 +719,8 @@ class TestRunnerValid(unittest.TestCase):
             found += 1
         self.assertEqual(found, len(scanner.supported_resources))
         self.assertEqual(len(list(filter(lambda c: c.id == CUSTOM_GRAPH_CHECK_ID, runner.graph_registry.checks))), 1)
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
