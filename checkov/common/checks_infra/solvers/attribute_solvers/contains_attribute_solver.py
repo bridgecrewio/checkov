@@ -5,6 +5,8 @@ from typing import List, Optional, Any, Dict
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
+logger = logging.getLogger(__name__)
+
 
 class ContainsAttributeSolver(BaseAttributeSolver):
     operator = Operators.CONTAINS
@@ -18,6 +20,6 @@ class ContainsAttributeSolver(BaseAttributeSolver):
             try:
                 att = json.loads(att)
             except ValueError:
-                logging.warning(f"Malformed JSON string {att}")
+                logger.warning(f"Malformed JSON string {att}")
                 return False
         return self.value in att
