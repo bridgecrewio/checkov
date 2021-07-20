@@ -1,9 +1,9 @@
-from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.common.graph.graph_builder.graph_components.block_types import BlockType as CommonBlockType
 from dataclasses import dataclass
 
 
 @dataclass
-class BlockType(BlockType):
+class BlockType(CommonBlockType):
     DATA = "data"
     LOCALS = "locals"
     MODULE = "module"

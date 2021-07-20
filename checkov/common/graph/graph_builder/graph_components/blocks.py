@@ -12,7 +12,7 @@ class Block:
         name: str,
         config: Dict[str, Any],
         path: str,
-        block_type: BlockType,
+        block_type: str,
         attributes: Dict[str, Any],
         id: str = "",
         source: str = "",
@@ -21,7 +21,7 @@ class Block:
             :param name: unique name given to the block, for example
             :param config: the section in tf_definitions that belong to this block
             :param path: the file location of the block
-            :param block_type: BlockType
+            :param block_type: str
             :param attributes: dictionary of the block's original attributes in the origin file
         """
         self.name = name
@@ -144,7 +144,7 @@ class Block:
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
 
-    def get_base_attributes(self) -> Dict[CustomAttributes, Union[str, List[str], Dict[str, Any]]]:
+    def get_base_attributes(self) -> Dict[str, Union[str, List[str], Dict[str, Any]]]:
         return {
             CustomAttributes.BLOCK_NAME: self.name,
             CustomAttributes.BLOCK_TYPE: self.block_type,

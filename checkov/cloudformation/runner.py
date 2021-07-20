@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional, List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_file_abs_path, create_definitions, build_definitions_context
@@ -22,19 +23,32 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     check_type = "cloudformation"
 
-    def __init__(self, db_connector=NetworkxConnector(),
-                 source="CloudFormation",
-                 graph_class=CloudformationLocalGraph,
-                 graph_manager=None,
-                 external_registries=None):
+    def __init__(
+        self,
+        db_connector=NetworkxConnector(),
+        source="CloudFormation",
+        graph_class=CloudformationLocalGraph,
+        graph_manager=None,
+        external_registries=None,
+    ):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.graph_manager = graph_manager if graph_manager is not None else CloudformationGraphManager(source=source,
-                                                                                                        db_connector=db_connector)
+        self.graph_manager = (
+            graph_manager
+            if graph_manager is not None
+            else CloudformationGraphManager(source=source, db_connector=db_connector)
+        )
         self.definitions_raw = {}
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True,
+    ) -> Report:
         report = Report(self.check_type)
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
@@ -51,7 +65,9 @@ class Runner(BaseRunner):
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                local_graph.vertices, root_folder
+            )
 
         for cf_file, definition in self.definitions.items():
 
@@ -63,22 +79,32 @@ class Runner(BaseRunner):
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
-                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(resource)
+                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
+                            resource
+                        )
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
 
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
                             entity = {resource_name: resource}
-                            results = cfn_registry.scan(cf_file, entity, skipped_checks,
-                                                        runner_filter)
+                            results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
-                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=cf_file,
-                                                file_line_range=entity_lines_range, resource=resource_id,
-                                                evaluations=variable_evaluations,check_class=check.__class__.__module__,
-                                                file_abs_path=file_abs_path, entity_tags=tags)
+                                record = Record(
+                                    check_id=check.id,
+                                    bc_check_id=check.bc_id,
+                                    check_name=check.name,
+                                    check_result=check_result,
+                                    code_block=entity_code_lines,
+                                    file_path=cf_file,
+                                    file_line_range=entity_lines_range,
+                                    resource=resource_id,
+                                    evaluations=variable_evaluations,
+                                    check_class=check.__class__.__module__,
+                                    file_abs_path=file_abs_path,
+                                    entity_tags=tags,
+                                )
                                 report.add_record(record=record)
 
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
@@ -88,28 +114,32 @@ class Runner(BaseRunner):
 
         return report
 
-    def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
-                entity = check_result['entity']
+                entity = check_result["entity"]
                 entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
                 entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
-                entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][entity_name]
+                entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][
+                    entity_name
+                ]
 
-                record = Record(check_id=check.id,
-                                check_name=check.name,
-                                check_result=check_result,
-                                code_block=entity_context.get("code_lines"),
-                                file_path=entity.get(CustomAttributes.FILE_PATH),
-                                file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                                resource=entity.get(CustomAttributes.ID),
-                                evaluations={},
-                                check_class=check.__class__.__module__,
-                                file_abs_path=entity_file_abs_path,
-                                entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags")))
+                record = Record(
+                    check_id=check.id,
+                    check_name=check.name,
+                    check_result=check_result,
+                    code_block=entity_context.get("code_lines"),
+                    file_path=entity.get(CustomAttributes.FILE_PATH),
+                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    resource=entity.get(CustomAttributes.ID),
+                    evaluations={},
+                    check_class=check.__class__.__module__,
+                    file_abs_path=entity_file_abs_path,
+                    entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags")),
+                )
                 if self.breadcrumbs:
                     breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                     if breadcrumb:
