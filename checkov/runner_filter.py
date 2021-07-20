@@ -50,15 +50,15 @@ class RunnerFilter(object):
         self.excluded_paths = excluded_paths
         self.all_external = all_external
 
-    def should_run_check(self, check_id: str) -> bool:
+    def should_run_check(self, check_id: str, bc_check_id: Optional[str] = None) -> bool:
         if RunnerFilter.is_external_check(check_id) and self.all_external:
             pass  # enabled unless skipped
         elif self.checks:
-            if check_id in self.checks:
+            if check_id in self.checks or bc_check_id in self.checks:
                 return True
             else:
                 return False
-        if self.skip_checks and any(fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks):
+        if self.skip_checks and any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in self.skip_checks):
             return False
         return True
 

@@ -129,6 +129,7 @@ class Runner(BaseRunner):
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
                     record = Record(check_id=check.id,
+                                    bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=copy_of_check_result,
                                     code_block=entity_context.get('code_lines'),
@@ -269,7 +270,7 @@ class Runner(BaseRunner):
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             for check, check_result in results.items():
-                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                 code_block=entity_code_lines, file_path=scanned_file,
                                 file_line_range=entity_lines_range,
                                 resource=entity_id, evaluations=entity_evaluations,

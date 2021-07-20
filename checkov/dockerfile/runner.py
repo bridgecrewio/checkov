@@ -75,7 +75,7 @@ class Runner(BaseRunner):
 
                 codeblock = []
                 self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
-                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                 code_block=codeblock,
                                 file_path=docker_file_path,
                                 file_line_range=[startline,
