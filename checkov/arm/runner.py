@@ -98,7 +98,7 @@ class Runner(BaseRunner):
                             results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
                                                                  runner_filter)
                             for check, check_result in results.items():
-                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
@@ -119,7 +119,7 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(parameter_details)
                             results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
                             for check, check_result in results.items():
-                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                                 code_block=entity_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
