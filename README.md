@@ -314,6 +314,8 @@ Checkov can be configured using a YAML configuration file. By default, checkov l
 * Current working directory where checkov is called.
 * User's home directory.
 
+**Attention**: it is a best practice for checkov configuration file to be loaded from a trusted source composed by a verified identity, so that scanned files, check ids and loaded custom checks are as desired.
+
 Users can also pass in the path to a config file via the command line. In this case, the other config files will be ignored. For example:
 ```sh
 checkov --config-file path/to/config.yaml
