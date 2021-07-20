@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List, Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
@@ -14,5 +15,9 @@ class ContainsAttributeSolver(BaseAttributeSolver):
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         att = vertex.get(attribute, "{}")
         if isinstance(att, str):
-            att = json.loads(att)
+            try:
+                att = json.loads(att)
+            except ValueError:
+                logging.warning(f"Malformed JSON string {att}")
+                return False
         return self.value in att
