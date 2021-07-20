@@ -18,7 +18,7 @@ class ContainsAttributeSolver(BaseAttributeSolver):
         att = vertex.get(attribute, "{}")
         if isinstance(att, str):
             try:
-                att = json.loads(att)
+                att = json.loads(att.replace("'", '"'))
             except ValueError:
                 logger.warning(f"Malformed JSON string {att}")
                 return False
