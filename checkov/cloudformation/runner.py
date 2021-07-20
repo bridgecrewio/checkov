@@ -96,7 +96,7 @@ class Runner(BaseRunner):
             for check_result in check_results:
                 entity = check_result['entity']
                 entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
-                entity_name = entity.get(CustomAttributes.BLOCK_NAME)
+                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
                 entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][entity_name]
 
                 record = Record(check_id=check.id,
