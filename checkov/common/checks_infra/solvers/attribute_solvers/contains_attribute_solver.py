@@ -24,3 +24,4 @@ class ContainsAttributeSolver(BaseAttributeSolver):
             return self.value in att
         if isinstance(att, dict):
             return self.value in att or any(self.value in val for val in att.values())
+        return self.value in att
