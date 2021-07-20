@@ -1,11 +1,10 @@
 import logging
 import operator
-from functools import reduce
 import re
+from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-
 
 ENDLINE = '__endline__'
 

@@ -30,6 +30,10 @@ class CloudformationLocalGraph(LocalGraph):
             resource_type = resource.get("Type")
             attributes = resource.get("Properties", {})
             attributes["resource_type"] = resource_type
+            attributes["__startline__"] = resource["__startline__"]
+            attributes["__endline__"] = resource["__endline__"]
+            attributes.start_mark = resource.start_mark
+            attributes.end_mark = attributes.end_mark
             block = CloudformationBlock(name=".".join([resource_type, resource_name]),
                                         config=resource.get("Properties"),
                                         path=file_path,
