@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import List, Dict, Any, Callable, Optional
 
+from checkov.common.typing import _SkippedCheck
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
@@ -31,7 +32,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_configuration: Dict[str, List[Any]],
         entity_name: str,
         entity_type: str,
-        skip_info: Dict[str, str],
+        skip_info: _SkippedCheck,
     ) -> Dict[str, Any]:
         check_result: Dict[str, Any] = {}
         if skip_info:

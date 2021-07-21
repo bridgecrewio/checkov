@@ -11,6 +11,7 @@ from checkov.common.checks.base_check import BaseCheck
 
 from collections import defaultdict
 
+from checkov.common.typing import _SkippedCheck
 from checkov.runner_filter import RunnerFilter
 
 
@@ -18,7 +19,7 @@ class BaseCheckRegistry(object):
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
     __loading_external_checks = False
-    __all_registered_checks = []
+    __all_registered_checks: List[BaseCheck] = []
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class BaseCheckRegistry(object):
         BaseCheckRegistry.__all_registered_checks.append(check)
 
     @staticmethod
-    def get_all_registered_checks():
+    def get_all_registered_checks() -> List[BaseCheck]:
         return BaseCheckRegistry.__all_registered_checks
 
     @staticmethod
@@ -98,7 +99,7 @@ class BaseCheckRegistry(object):
         self,
         scanned_file: str,
         entity: Dict[str, Any],
-        skipped_checks: List[Dict[str, str]],
+        skipped_checks: List[_SkippedCheck],
         runner_filter: RunnerFilter,
     ) -> Dict[BaseCheck, Dict[str, Any]]:
 
@@ -111,7 +112,7 @@ class BaseCheckRegistry(object):
 
         checks = self.get_checks(entity_type)
         for check in checks:
-            skip_info = {}
+            skip_info: _SkippedCheck = {}
             if skipped_checks:
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
@@ -128,7 +129,7 @@ class BaseCheckRegistry(object):
         entity_name: str,
         entity_type: str,
         scanned_file: str,
-        skip_info: Dict[str, str],
+        skip_info: _SkippedCheck,
     ) -> Dict[str, Any]:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
         result = check.run(
