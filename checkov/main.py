@@ -11,6 +11,7 @@ import configargparse
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -101,14 +102,17 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                          "bridgecrewio/checkov")
 
-        source = os.getenv('BC_SOURCE', 'cli')
+        source_env_val = os.getenv('BC_SOURCE', 'cli')
+        source = get_source_type(source_env_val)
+        if source == SourceTypes[BCSourceType.DISABLED]:
+            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; setting source to DISABLED')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
-        logger.debug(f'BC_SOURCE = {source}, version = {source_version}')
+        logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
 
         if config.list:
             # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
-            logger.debug('Using --list; setting source to None')
-            source = None
+            logger.debug('Using --list; setting source to DISABLED')
+            source = SourceTypes[BCSourceType.DISABLED]
 
         try:
             bc_integration.setup_bridgecrew_credentials(bc_api_key=config.bc_api_key, repo_id=config.repo_id,

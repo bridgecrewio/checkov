@@ -1,14 +1,30 @@
-from typing import Optional
-
-# Helper methods for determining behavior based on different BC_SOURCE values. Python enums are limiting here, and
-# using a class is overkill
+from dataclasses import dataclass
 
 
-def should_upload_results(source: Optional[str]) -> bool:
-    """Whether scan results should be uploaded to the platform. Default for unknown sources is False."""
-    if source == 'vscode':
-        return False
-    elif source == 'cli':
-        return True
+class SourceType:
+    def __init__(self, name: str, upload_results: bool):
+        self.name = name
+        self.upload_results = upload_results
+
+
+@dataclass
+class BCSourceType:
+    VSCODE = 'vscode'
+    CLI = 'cli'
+    DISABLED = 'disabled'  # use this to indicate that #TODO
+
+
+SourceTypes = {
+    BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
+    BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
+    BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False)
+}
+
+
+def get_source_type(source: str):
+    # helper method to get the source type with a default - using dict.get is ugly; you have to do:
+    # SourceTypes.get(xyz, SourceTypes[BCSourceType.Disabled])
+    if source in SourceTypes:
+        return SourceTypes[source]
     else:
-        return False
+        return SourceTypes[BCSourceType.DISABLED]
