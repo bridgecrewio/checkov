@@ -56,7 +56,7 @@ class TerraformLocalGraph(LocalGraph):
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
-        self.vertices = [None] * len(self.module.blocks)  # type: ignore
+        self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)  # type: ignore
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
 
@@ -211,10 +211,12 @@ class TerraformLocalGraph(LocalGraph):
                 target_path = vertex.path
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+                dest_module_path = self._get_dest_module_path(os.path.dirname(vertex.path), vertex.attributes['source'][0])
                 target_variables = [
                     index
                     for index in self.vertices_by_block_type.get(BlockType.VARIABLE, [])
                     if self.vertices[index].module_dependency == target_path
+                       and os.path.dirname(self.vertices[index].path) == dest_module_path
                 ]
                 for attribute, value in vertex.attributes.items():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
@@ -223,8 +225,6 @@ class TerraformLocalGraph(LocalGraph):
                     if target_variable is not None:
                         self._create_edge(target_variable, origin_node_index, "default")
             elif vertex.block_type == BlockType.TF_VARIABLE:
-                if vertex.module_dependency != "":
-                    target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
                 # Assuming the tfvars file is in the same directory as the variables file (best practice)
                 target_variables = [
                     index
