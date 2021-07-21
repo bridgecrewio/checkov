@@ -43,8 +43,7 @@ class Runner(BaseRunner):
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
-
-        self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
+            self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
         # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
         if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
