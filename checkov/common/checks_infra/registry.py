@@ -56,6 +56,11 @@ class Registry(BaseRegistry):
         return resources_types.get(provider)
 
 
+_registry_instances = {}
+
+
 def get_graph_checks_registry(check_type):
-    return Registry(parser=NXGraphCheckParser(),
-                    checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")
+    if not _registry_instances.get(check_type):
+        _registry_instances[check_type] = Registry(parser=NXGraphCheckParser(),
+                             checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")
+    return _registry_instances[check_type]
