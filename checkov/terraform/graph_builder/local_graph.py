@@ -285,9 +285,14 @@ class TerraformLocalGraph(LocalGraph):
         if is_local_path(curr_module_dir, dest_module_source):
             dest_module_path = Path(curr_module_dir) / dest_module_source
         else:
-            dest_module_path = next(
-                (path for path in Path(self.module.source_dir).rglob(dest_module_source)), dest_module_path
-            )
+            try:
+                dest_module_path = next(
+                    (path for path in Path(self.module.source_dir).rglob(dest_module_source)), dest_module_path
+                )
+            except NotImplementedError as e:
+                if 'Non-relative patterns are unsupported' in str(e):
+                    return ""
+                raise e
         return os.path.realpath(dest_module_path)
 
     def _find_vertex_index_relative_to_path(
