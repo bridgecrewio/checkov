@@ -1,9 +1,13 @@
-module "submodule1" {
-  source = "./submodule1"
+variable "v" {
+  default = true
+}
+
+module "module1" {
+  source = "./module1"
   v = var.v
 }
 
-module "submodule2" {
-  source = "./submodule2"
+module "module2" {
+  source = "./module1"
   v = var.v
 }

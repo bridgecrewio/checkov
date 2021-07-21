@@ -187,12 +187,24 @@ class TestLocalGraph(TestCase):
         local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph.build_graph(render_variables=True)
         print(local_graph.edges)
-        self.assertEqual(4, len(local_graph.edges))
-        self.assertEqual(5, len(local_graph.vertices))
+        self.assertEqual(12, len(local_graph.edges))
+        self.assertEqual(13, len(local_graph.vertices))
 
         module_variable_edges = [
             e for e in local_graph.edges
-            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/main.tf')
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith(
+                'same_var_names/module2/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin],
+                            local_graph.vertices[module_variable_edges[1].origin])
+
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/module1/main.tf')
         ]
 
         # Check they point to 2 different modules
