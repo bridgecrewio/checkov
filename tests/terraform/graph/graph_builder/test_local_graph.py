@@ -178,3 +178,23 @@ class TestLocalGraph(TestCase):
         local_graph.build_graph(render_variables=True)
 
         self.assertEqual(12, len(local_graph.edges))
+
+    def test_variables_same_name_different_modules(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
+        hcl_config_parser = Parser()
+        module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir,
+                                                                              self.source)
+        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        local_graph.build_graph(render_variables=True)
+        print(local_graph.edges)
+        self.assertEqual(4, len(local_graph.edges))
+        self.assertEqual(5, len(local_graph.vertices))
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])

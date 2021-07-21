@@ -1,0 +1,3 @@
+variable "v" {
+  default = true
+}
