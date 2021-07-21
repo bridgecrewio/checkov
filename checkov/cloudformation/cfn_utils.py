@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Union
@@ -6,7 +7,7 @@ import dpath.util
 
 from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
-from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 from checkov.cloudformation.parser import parse
 from checkov.cloudformation.parser.node import dict_node, list_node, str_node
@@ -48,7 +49,7 @@ def parse_entity_tags(tags: Union[list_node, Dict[str, Any]]) -> Optional[Dict[s
         tag_dict = {
             str(key): get_entity_value_as_string(value)
             for key, value in tags.items()
-            if key not in ("__startline__", "__endline__")
+            if key not in (STARTLINE, ENDLINE)
         }
         return tag_dict
     return None
@@ -111,6 +112,8 @@ def get_folder_definitions(
             if isinstance(template, dict_node) and isinstance(template.get("Resources"), dict_node):
                 definitions[relative_file_path] = template
                 definitions_raw[relative_file_path] = template_lines
+            else:
+                logging.debug(f"Parsed file {file} incorrectly {template}")
         except TypeError:
             logging.info(f"CloudFormation skipping {file} as it is not a valid CF template")
 
@@ -205,6 +208,8 @@ def create_definitions(
 
     for cf_file in definitions.keys():
         cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
-        logging.debug("Template Dump for {}: {}".format(cf_file, definitions[cf_file], indent=2))
+        logging.debug(
+            "Template Dump for {}: {}".format(cf_file, json.dumps(definitions[cf_file], indent=2, default=str))
+        )
         cf_context_parser.evaluate_default_refs()
     return definitions, definitions_raw
