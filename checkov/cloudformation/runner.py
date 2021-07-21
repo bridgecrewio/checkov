@@ -46,12 +46,11 @@ class Runner(BaseRunner):
 
         self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
-        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
-            logging.info("creating cloudformation graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+        # run graph checks
+        logging.info("creating cloudformation graph")
+        local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+        self.graph_manager.save_graph(local_graph)
+        self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
         for cf_file, definition in self.definitions.items():
 
@@ -81,10 +80,9 @@ class Runner(BaseRunner):
                                                 file_abs_path=file_abs_path, entity_tags=tags)
                                 report.add_record(record=record)
 
-        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-            merge_reports(report, graph_report)
+        # run graph checks
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        merge_reports(report, graph_report)
 
         return report
 
