@@ -11,7 +11,7 @@ class SourceType:
 class BCSourceType:
     VSCODE = 'vscode'
     CLI = 'cli'
-    DISABLED = 'disabled'  # use this to indicate that #TODO
+    DISABLED = 'disabled'  # use this as a placeholder for generic no-upload logic
 
 
 SourceTypes = {
