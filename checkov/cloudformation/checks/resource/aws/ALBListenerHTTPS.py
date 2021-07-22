@@ -28,6 +28,8 @@ class ALBListenerHTTPS(BaseResourceCheck):
                         and
                         conf['Properties']['DefaultActions'][0]['Type'] == 'redirect'
                         and
+                        conf['Properties']['DefaultActions'][0].get('Type') == 'redirect'
+                        and
                         conf['Properties']['DefaultActions'][0].get('RedirectConfig', {}).get('Protocol') == "HTTPS"
                     ):
                         return CheckResult.PASSED
