@@ -2,9 +2,8 @@ import os
 import unittest
 from unittest import mock
 
-from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
+from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.output.record import Record
 
 
 class TestBCApiUrl(unittest.TestCase):
@@ -13,15 +12,6 @@ class TestBCApiUrl(unittest.TestCase):
     def test_overriding_bc_api_url(self):
         instance = BcPlatformIntegration()
         self.assertEqual(instance.bc_api_url, "foo")
-
-    @mock.patch.dict(os.environ, {'BC_SOURCE': 'foo'})
-    def test_overriding_bc_source(self):
-        instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_source, "foo")
-
-    def test_default_bc_source(self):
-        instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_source, "cli")
 
     @mock.patch.dict(os.environ, {'BC_SKIP_MAPPING': 'TRUE'})
     def test_skip_mapping(self):
@@ -36,6 +26,12 @@ class TestBCApiUrl(unittest.TestCase):
         instance.setup_http_manager()
         instance.get_id_mapping()
         self.assertIsNotNone(instance.ckv_to_bc_id_mapping)
+
+    def test_should_upload(self):
+        self.assertFalse(get_source_type('vscode').upload_results)
+        self.assertTrue(get_source_type('cli').upload_results)
+        self.assertFalse(get_source_type('xyz').upload_results)
+        self.assertFalse(get_source_type(None).upload_results)
 
 
 if __name__ == '__main__':

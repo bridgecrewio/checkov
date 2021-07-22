@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from copy import deepcopy
+import datetime
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 from json import dumps, loads, JSONEncoder
@@ -32,7 +33,9 @@ class DefinitionsEncoder(JSONEncoder):
             return list(obj)
         elif isinstance(obj, Tree):
             return str(obj)
-        return super().default(self, obj)
+        elif isinstance(obj, datetime.date):
+            return str(obj)
+        return super().default(obj)
 
 
 def _filter_ignored_paths(root, paths, excluded_paths):
