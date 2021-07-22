@@ -58,7 +58,7 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', 'cli')
+        self.bc_source = None
         self.bc_source_version = None
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
@@ -108,12 +108,10 @@ class BcPlatformIntegration(object):
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
         self.skip_policy_download = skip_policy_download
-        if source:
-            self.bc_source = source
-        if source_version:
-            self.bc_source_version = source_version
+        self.bc_source = source
+        self.bc_source_version = source_version
 
-        if self.bc_source != 'vscode':
+        if self.bc_source.upload_results:
             try:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
@@ -221,7 +219,7 @@ class BcPlatformIntegration(object):
         request = None
         try:
 
-            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
+            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
                                                     "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
                                                     "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
@@ -229,7 +227,7 @@ class BcPlatformIntegration(object):
                                                     "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
                                                     "repository_url": BC_REPOSITORY_URL}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json",
-                                            'x-api-client': self.bc_source, 'x-api-checkov-version': checkov_version
+                                            'x-api-client': self.bc_source.name, 'x-api-checkov-version': checkov_version
                                             })
             response = json.loads(request.data.decode("utf8"))
             url = response.get("url", None)

@@ -56,7 +56,7 @@ class DockerImageScanningIntegration:
             'dockerImageName': docker_image_name,
             'dockerFilePath': dockerfile_path,
             'dockerFileContent': dockerfile_content,
-            'sourceType': bc_integration.bc_source,
+            'sourceType': bc_integration.bc_source.name,
             'vulnerabilities': vulnerabilities
         }
         response = requests.request('POST', f"{self.docker_image_scanning_base_url}/report", headers=headers, json=payload)
