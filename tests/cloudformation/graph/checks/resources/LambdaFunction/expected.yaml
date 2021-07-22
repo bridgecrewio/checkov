@@ -1,0 +1,6 @@
+pass:
+  - "AWS::Lambda::Function.GoodLambdaFunction"
+fail:
+  - "AWS::Lambda::Function.WrongTracingConfigValueLambdaFunction"
+  - "AWS::Lambda::Function.WithoutTracingConfigLambdaFunction"
+
