@@ -14,6 +14,7 @@ class TestCheckovJsonReport(unittest.TestCase):
     def test_cfngoat_report(self):
         report_path = current_dir + "/../checkov_report_cfngoat.json"
         self.validate_report(os.path.abspath(report_path))
+        self.validate_check_in_report(report_path, "CKV2_AWS_26")
 
     def test_k8goat_report(self):
         report_path = current_dir + "/../checkov_report_kubernetes-goat.json"
@@ -57,6 +58,11 @@ class TestCheckovJsonReport(unittest.TestCase):
             self.assertTrue(data["results"]["failed_checks"])
             self.assertFalse(data["results"]["passed_checks"])
             self.assertTrue(data["summary"])
+
+    def validate_check_in_report(self, report_path, check_id):
+        with open(report_path) as json_file:
+            data = json.load(json_file)[0]
+        assert any(check["check_id"] == check_id for check in data["results"]["failed_checks"] + data["results"]["passed_checks"])
 
 
 if __name__ == '__main__':
