@@ -5,4 +5,4 @@ Resources:
   FailExplicit:
     Type: AWS::EC2::VPCEndpointService
     Properties: 
-      AcceptanceRequired: fail
+      AcceptanceRequired: false
