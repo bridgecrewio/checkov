@@ -283,7 +283,7 @@ class BcPlatformIntegration(object):
 
     def get_checkov_mapping_metadata(self) -> dict:
         BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING","FALSE")
-        if BC_SKIP_MAPPING == "TRUE":
+        if BC_SKIP_MAPPING.upper() == "TRUE":
             logging.debug(f"Skipped mapping API call")
             return {}
         try:
