@@ -7,7 +7,7 @@ class VPCEndpointAcceptanceConfigured(BaseResourceValueCheck):
         name = "Ensure that VPC Endpoint Service is configured for Manual Acceptance"
         id = "CKV_AWS_123"
         supported_resources = ['AWS::EC2::VPCEndpointService']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
