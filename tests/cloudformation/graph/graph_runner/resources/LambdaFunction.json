@@ -1,0 +1,13 @@
+{
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "${AWS::AccountId}-${CompanyName}-${Environment}-analysis",
+        "Runtime": "nodejs12.x",
+        "Role": "!GetAtt IAM4Lambda.Arn",
+        "Handler": "exports.test"
+      }
+    }
+  }
+}

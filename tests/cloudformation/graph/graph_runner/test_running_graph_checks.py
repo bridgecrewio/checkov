@@ -13,6 +13,8 @@ class TestRunningGraphChecks(unittest.TestCase):
             check.check_id == "CKV2_AWS_24" for check in itertools.chain(report.failed_checks, report.passed_checks))
         assert any(
             check.check_id == "CKV2_AWS_25" for check in itertools.chain(report.failed_checks, report.passed_checks))
+        assert any(
+            check.check_id == "CKV2_AWS_26" for check in itertools.chain(report.failed_checks, report.passed_checks))
 
 
 if __name__ == '__main__':
