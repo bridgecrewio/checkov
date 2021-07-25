@@ -1,4 +1,4 @@
-Description: MSK Cluster with required properties.
+Description: X-ray tracing is enabled for Lambda.
 Resources:
   GoodLambdaFunction:
     Type: "AWS::Lambda::Function"

@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import unittest
@@ -62,7 +63,8 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_check_in_report(self, report_path, check_id):
         with open(report_path) as json_file:
             data = json.load(json_file)[0]
-        assert any(check["check_id"] == check_id for check in itertools.chain(data["results"]["failed_checks"], data["results"]["passed_checks"]))
+        assert any(check["check_id"] == check_id for check in
+                   itertools.chain(data["results"]["failed_checks"], data["results"]["passed_checks"]))
 
 
 if __name__ == '__main__':
