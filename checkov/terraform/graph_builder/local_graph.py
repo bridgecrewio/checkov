@@ -286,8 +286,10 @@ class TerraformLocalGraph(LocalGraph):
             dest_module_path = Path(curr_module_dir) / dest_module_source
         else:
             try:
+                if not self.relative_paths_cache.get(dest_module_source):
+                    self.relative_paths_cache[dest_module_source] = list(Path(self.module.source_dir).rglob(dest_module_source))
                 dest_module_path = next(
-                    (path for path in Path(self.module.source_dir).rglob(dest_module_source)), dest_module_path
+                    (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path
                 )
             except NotImplementedError as e:
                 if 'Non-relative patterns are unsupported' in str(e):

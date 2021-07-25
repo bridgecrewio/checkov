@@ -1,7 +1,6 @@
-from typing import Tuple, List
+from typing import Tuple
 import os
 import re
-from copy import deepcopy
 from typing import Union, List, Any, Dict, Optional, Callable, overload
 
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -296,9 +295,7 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
     Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
     """
-    copy_of_attributes = deepcopy(attributes)
-    copy_of_attributes.pop(attribute_key)
-    prefixes_with_attribute_key = [a for a in copy_of_attributes.keys() if a.startswith(attribute_key)]
+    prefixes_with_attribute_key = [a for a in attributes.keys() if a.startswith(attribute_key) and a != attribute_key]
     if not any(re.findall(r"\.\d+", a) for a in prefixes_with_attribute_key):
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
