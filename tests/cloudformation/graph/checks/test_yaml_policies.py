@@ -32,6 +32,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_MSKClusterLogging(self):
         self.go("MSKClusterLogging")
 
+    def test_LambdaFunction(self):
+        self.go("LambdaFunction")
+
     def test_registry_load(self):
         registry = get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
