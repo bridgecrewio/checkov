@@ -21,14 +21,13 @@ jobs:
           pipenv update
           git add -u
           git commit -m "update pipenv packages"
+        env:
+          GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: bump checkov pypi packages version
-          committer: GitHub <action@github.com>
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'
           body: |
             bump pipenv packages
