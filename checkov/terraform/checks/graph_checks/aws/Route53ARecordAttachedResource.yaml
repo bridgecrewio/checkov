@@ -41,5 +41,6 @@ definition:
               - aws_elastic_beanstalk_environment
               - aws_vpc_endpoint
               - aws_globalaccelerator_accelerator
+              - aws_cloudfront_distribution
            operator: exists
            attribute: networking
