@@ -42,7 +42,7 @@ configargparse = "*"
 detect_secrets = "*"
 policyuniverse = "*"
 typing-extensions = "*"
-importlib-metadata >= "0.12"
+importlib-metadata = ">=0.12"
 
 [requires]
 python_version = "3.7"
