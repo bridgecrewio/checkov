@@ -52,7 +52,6 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-
             self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
             if external_checks_dir:
                 for directory in external_checks_dir:
@@ -60,12 +59,12 @@ class Runner(BaseRunner):
                     self.graph_registry.load_external_checks(directory)
             self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
-        # run graph checks
-        logging.info("creating cloudformation graph")
-        local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-        self.graph_manager.save_graph(local_graph)
-        self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+            logging.info("creating cloudformation graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            self.graph_manager.save_graph(local_graph)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
+        # run checks
         for cf_file, definition in self.definitions.items():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
@@ -76,13 +75,13 @@ class Runner(BaseRunner):
                     resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
-                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
-                            resource
-                        )
+                        resource_context = self.context[file_abs_path][
+                            CloudformationTemplateSections.RESOURCES][resource_name]
+                        entity_lines_range = [resource_context['start_line'], resource_context['end_line']]
+                        entity_code_lines = resource_context['code_lines']
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
