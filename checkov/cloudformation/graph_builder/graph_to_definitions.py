@@ -20,16 +20,12 @@ def convert_graph_vertices_to_definitions(
             'Type': vertex.attributes['resource_type'],
             'Properties': vertex.config
         }
-        if vertex.attributes.get('__startline__'):
-            definition['__startline__'] = vertex.attributes['__startline__']
-        if vertex.attributes.get('__endline__'):
-            definition['__endline__'] = vertex.attributes['__endline__']
-        definition = dict_node(definition, vertex.attributes.start_mark, vertex.attributes.end_mark)
         definitions.setdefault(block_path, {}).setdefault(block_type, {}).setdefault(block_name, definition)
 
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
     return definitions, breadcrumbs
+
 
 def add_breadcrumbs(vertex: CloudformationBlock, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
     vertex_breadcrumbs = vertex.breadcrumbs
