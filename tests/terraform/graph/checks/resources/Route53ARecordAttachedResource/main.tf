@@ -67,3 +67,15 @@ resource "aws_route53_record" "pass4" {
     evaluate_target_health = true
   }
 }
+
+resource "aws_route53_record" "legacy-tf" {
+  count = var.instance_count
+  zone_id = data.aws_route53_zone.dns_zone.zone_id
+  name = "brochureworker-${count.index + 1}.${data.aws_route53_zone.dns_zone.name}"
+  type = "A"
+  records = ["${aws_instance.brochureworker.*.private_ip[count.index]}"]
+  ttl = "300"
+}
+
+resource "aws_instance" "brochureworker" {
+}
