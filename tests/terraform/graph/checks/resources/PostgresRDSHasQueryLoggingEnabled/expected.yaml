@@ -2,5 +2,6 @@ pass:
   - "aws_db_instance.pass"
 fail:
   - "aws_db_instance.fail"
-ignore:
-  - "aws_db_instance.ignore"
+  - "aws_db_instance.fail2"
+  - "aws_db_instance.fail3"
+  - "aws_db_instance.fail4"

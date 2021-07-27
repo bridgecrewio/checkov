@@ -2,18 +2,33 @@ resource "aws_db_instance" "pass" {
   engine               = "postgres"
   instance_class       = "db.t3.micro"
   name                 = "mydb"
-  parameter_group_name = "aws_rds_cluster_parameter_group.pass.name"
+  parameter_group_name = aws_rds_cluster_parameter_group.pass.id
 }
+
+resource "aws_db_instance" "fail3" {
+  engine               = "postgres"
+  instance_class       = "db.t3.micro"
+  name                 = "mydb"
+  parameter_group_name = aws_rds_cluster_parameter_group.fail.id
+}
+
+resource "aws_db_instance" "fail4" {
+  engine               = "postgres"
+  instance_class       = "db.t3.micro"
+  name                 = "mydb"
+  parameter_group_name = aws_rds_cluster_parameter_group.fail2.id
+}
+
 
 //no parameter_group_name set
 resource "aws_db_instance" "fail" {
-  engine         = "postgres"
+  engine         = "mysql"
   instance_class = "db.t3.micro"
   name           = "mydb"
 }
 
 // no postgres
-resource "aws_db_instance" "ignore" {
+resource "aws_db_instance" "fail2" {
   allocated_storage    = 10
   engine               = "mysql"
   engine_version       = "5.7"
@@ -27,8 +42,8 @@ resource "aws_db_instance" "ignore" {
 
 //not correct params
 resource "aws_rds_cluster_parameter_group" "fail" {
-  name        = "rds-cluster-pg-fail"
-  family      = "postgres11"
+  name        = "mysql-cluster-fail"
+  family      = "mysql"
   description = "RDS default cluster parameter group"
 
   parameter {
@@ -47,18 +62,29 @@ region="eu-west-2"
 }
 
 //will be correct params
-//resource "aws_rds_cluster_parameter_group" "pass" {
-//  name        = "rds-cluster-pg-pass"
-//  family      = "aurora-postgresql11"
-//  description = "RDS default cluster parameter group"
+resource "aws_rds_cluster_parameter_group" "pass" {
+  name        = "rds-cluster-pg-pass"
+  family      = "aurora-postgresql11"
+  description = "RDS default cluster parameter group"
 
-//  parameter {
-//    name  = "character_set_server"
-//    value = "utf8"
-//  }
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
 
-//  parameter {
-//    name  = "character_set_client"
-//    value = "utf8"
-//  }
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "250ms"
+  }
+}
+
+resource "aws_rds_cluster_parameter_group" "fail2" {
+  name        = "rds-cluster-pg-pass"
+  family      = "aurora-postgresql11"
+  description = "RDS default cluster parameter group"
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
 }
