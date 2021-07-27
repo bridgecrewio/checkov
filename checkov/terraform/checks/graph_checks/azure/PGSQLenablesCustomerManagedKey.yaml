@@ -5,9 +5,9 @@ metadata:
 definition:
   and:
     - resource_types:
-        - azurerm_postgresql_server
-      connected_resource_types:
         - azurerm_postgresql_server_key
+      connected_resource_types:
+        - azurerm_postgresql_server
       operator:  exists
       cond_type: connection
     - resource_types:
