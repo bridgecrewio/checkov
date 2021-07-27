@@ -173,6 +173,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ARecordAttachedResource(self):
         self.go("Route53ARecordAttachedResource")
 
+    def test_PostgresRDSHasQueryLoggingEnabled(self):
+        self.go("PostgresRDSHasQueryLoggingEnabled")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
