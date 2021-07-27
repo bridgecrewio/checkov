@@ -9,6 +9,7 @@ class CustomAttributes:
     BLOCK_TYPE = "block_type_"
     FILE_PATH = "file_path_"
     CONFIG = "config_"
+    ATTRIBUTES = "attributes_"
     LABEL = "label_"
     ID = "id_"
     HASH = "hash"
