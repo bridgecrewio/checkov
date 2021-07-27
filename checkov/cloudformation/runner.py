@@ -70,9 +70,8 @@ class Runner(BaseRunner):
             file_abs_path = create_file_abs_path(root_folder, cf_file)
 
             if isinstance(definition, dict) and CloudformationTemplateSections.RESOURCES in definition.keys():
-                cf_context_parser = ContextParser(cf_file, definition)
                 for resource_name, resource in definition[CloudformationTemplateSections.RESOURCES].items():
-                    resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
+                    resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
                         resource_context = self.context[file_abs_path][
