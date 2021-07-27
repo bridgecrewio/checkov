@@ -14,7 +14,7 @@ def convert_graph_vertices_to_definitions(
     for vertex in vertices:
         block_path = vertex.path
         block_type = CloudformationTemplateSections.RESOURCES.value if vertex.block_type == 'resource' else vertex.block_type
-        block_name = vertex.name.split('.')[1]  # vertex.name is "type.name" so type.name -> [type, name]
+        block_name = vertex.name.split('.')[-1]  # vertex.name is "type.name" so type.name -> [type, name]
 
         definition = {
             'Type': vertex.attributes['resource_type'],
