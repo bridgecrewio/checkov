@@ -78,6 +78,7 @@ resource "aws_route53_record" "pass5" {
     zone_id                = aws_cloudfront_distribution.website.hosted_zone_id
   }
 }
+
 resource "aws_cloudfront_distribution" "website" {
   provider = aws.useastone
   origin {
@@ -176,3 +177,14 @@ resource "aws_cloudfront_distribution" "website" {
   retain_on_delete = var.retain
   tags             = var.common_tags
 }
+
+resource "aws_route53_record" "legacy-tf" {
+  count = var.instance_count
+  zone_id = data.aws_route53_zone.dns_zone.zone_id
+  name = "brochureworker-${count.index + 1}.${data.aws_route53_zone.dns_zone.name}"
+  type = "A"
+  records = ["${aws_instance.brochureworker.*.private_ip[count.index]}"]
+  ttl = "300"
+}
+
+resource "aws_instance" "brochureworker" {}
