@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_AWS_28"
+  name: "Ensure ALB are protected by WAF"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_lb
+      operator: within
+    - cond_type: attribute
+      attribute: internal
+      resource_types:
+        - aws_lb
+      operator: not_equals
+      value: true
+
