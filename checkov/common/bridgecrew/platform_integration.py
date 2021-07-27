@@ -1,4 +1,5 @@
 import os.path
+from concurrent import futures
 from time import sleep
 
 import boto3
@@ -174,12 +175,12 @@ class BcPlatformIntegration(object):
 
         if not self.use_s3_integration:
             return
-
+        files_to_persist = []
         if files:
             for f in files:
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    self._persist_file(f, os.path.relpath(f, root_dir))
+                    files_to_persist.append((f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
@@ -191,7 +192,15 @@ class BcPlatformIntegration(object):
                     if file_extension in SUPPORTED_FILE_EXTENSIONS:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
-                        self._persist_file(full_file_path, relative_file_path)
+                        files_to_persist.append((full_file_path, relative_file_path))
+
+        logging.info(f"Persisting {len(files_to_persist)} files")
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(self._persist_file, full_file_path, relative_file_path) for full_file_path, relative_file_path in files_to_persist],
+                return_when=futures.FIRST_EXCEPTION,
+            )
+        logging.info(f"Done persisting {len(files_to_persist)} files")
 
     def persist_scan_results(self, scan_reports):
         """
