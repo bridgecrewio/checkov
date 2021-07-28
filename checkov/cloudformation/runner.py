@@ -1,6 +1,5 @@
 import logging
-import os
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_file_abs_path, create_definitions, build_definitions_context
@@ -65,6 +64,15 @@ class Runner(BaseRunner):
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
         # run checks
+        self.check_definitions(root_folder, runner_filter, report)
+
+        # run graph checks
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        merge_reports(report, graph_report)
+
+        return report
+
+    def check_definitions(self, root_folder, runner_filter, report):
         for cf_file, definition in self.definitions.items():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
@@ -101,12 +109,6 @@ class Runner(BaseRunner):
                                     entity_tags=tags,
                                 )
                                 report.add_record(record=record)
-
-        # run graph checks
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-        merge_reports(report, graph_report)
-
-        return report
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
