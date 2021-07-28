@@ -176,6 +176,10 @@ class TestYamlPolicies(unittest.TestCase):
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
+
+    def test_APIProtectedByWAF(self):
+        self.go("APIProtectedByWAF")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
@@ -204,6 +208,7 @@ class TestYamlPolicies(unittest.TestCase):
                     expected_to_fail = expected.get('fail', [])
                     expected_to_pass = expected.get('pass', [])
                     expected_to_skip = expected.get('skip', [])
+
                     self.assert_entities(expected_to_pass, report.passed_checks, True)
                     self.assert_entities(expected_to_fail, report.failed_checks, False)
                     self.assert_entities(expected_to_skip, report.skipped_checks, True)
