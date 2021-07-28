@@ -17,12 +17,10 @@ Here is a basic example:
 ```yaml
 stages:
     - test
-variables: 
-  ALLOWFAILURE: true #True for AutoDevOps compatibility
-
+    
 checkov:
   stage: test
-  allow_failure: $ALLOWFAILURE
+  allow_failure: true #True for AutoDevOps compatibility
   image:
     name: bridgecrew/checkov:latest
     entrypoint:
@@ -72,12 +70,10 @@ Note that in the examples above, the output of the test results does not display
 ```yaml
 stages:
     - test
-variables: 
-  ALLOWFAILURE: true #True for AutoDevOps compatibility
 
 checkov:
   stage: test
-  allow_failure: $ALLOWFAILURE
+  allow_failure: true #True for AutoDevOps compatibility
   image:
     name: bridgecrew/checkov:latest
     entrypoint:
@@ -99,11 +95,6 @@ checkov:
     # Use `script` to emulate `tty` for colored output.
     - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
     - exit $(cat CKVEXIT)
-  artifacts:
-    reports:
-      junit: "checkov.test.xml"
-    paths:
-      - "checkov.test.xml"
 ```
 
 See the [GitLab CI documentation](https://docs.gitlab.com/ee/ci/) for additional information.
