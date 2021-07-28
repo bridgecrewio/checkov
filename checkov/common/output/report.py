@@ -1,4 +1,5 @@
 import json
+import logging
 from collections import defaultdict
 from typing import List, Dict, Union, Any, Optional
 
@@ -228,3 +229,19 @@ def merge_reports(base_report, report_to_merge):
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
+
+
+def remove_duplicate_results(report):
+    def dedupe_records(origin_records):
+        record_cache = []
+        new_records = []
+        for record in origin_records:
+            record_hash = record.get_unique_string()
+            if record_hash not in record_cache:
+                new_records.append(record)
+                record_cache.append(record_hash)
+        return new_records
+
+    report.passed_checks = dedupe_records(report.passed_checks)
+    report.failed_checks = dedupe_records(report.failed_checks)
+    return report
