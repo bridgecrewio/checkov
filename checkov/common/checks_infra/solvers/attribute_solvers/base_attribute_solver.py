@@ -1,3 +1,4 @@
+import concurrent.futures
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern
 
@@ -5,6 +6,8 @@ from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+
+from concurrent.futures import ThreadPoolExecutor
 
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
@@ -19,11 +22,14 @@ class BaseAttributeSolver(BaseSolver):
         self.value = value
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        all_vertices_resource_types = [
-            data for _, data in graph_connector.nodes(data=True) if self.resource_type_pred(data, self.resource_types)
-        ]
-        passed_vertices = [data for data in all_vertices_resource_types if self.get_operation(vertex=data)]
-        failed_vertices = [resource for resource in all_vertices_resource_types if resource not in passed_vertices]
+        executer = ThreadPoolExecutor()
+        jobs = []
+        passed_vertices = []
+        failed_vertices = []
+        for _, data in graph_connector.nodes(data=True):
+            jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
+
+        concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
@@ -44,6 +50,14 @@ class BaseAttributeSolver(BaseSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
+
+    def _process_node(self, data, passed_vartices, failed_vertices):
+        if not self.resource_type_pred(data, self.resource_types):
+            return
+        if self.get_operation(vertex=data):
+            passed_vartices.append(data)
+        else:
+            failed_vertices.append(data)
 
     @staticmethod
     def get_attribute_patterns(attribute: str) -> Tuple[Pattern[str], Pattern[str]]:

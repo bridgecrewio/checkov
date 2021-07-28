@@ -1,6 +1,5 @@
 import logging
-import os
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_file_abs_path, create_definitions, build_definitions_context
@@ -52,39 +51,44 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-
             self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
+                    self.graph_registry.load_external_checks(directory)
             self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
-        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
-                local_graph.vertices, root_folder
-            )
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
+        # run checks
+        self.check_definitions(root_folder, runner_filter, report)
+
+        # run graph checks
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        merge_reports(report, graph_report)
+
+        return report
+
+    def check_definitions(self, root_folder, runner_filter, report):
         for cf_file, definition in self.definitions.items():
 
             file_abs_path = create_file_abs_path(root_folder, cf_file)
 
             if isinstance(definition, dict) and CloudformationTemplateSections.RESOURCES in definition.keys():
-                cf_context_parser = ContextParser(cf_file, definition, self.definitions_raw[cf_file])
                 for resource_name, resource in definition[CloudformationTemplateSections.RESOURCES].items():
-                    resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
+                    resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)
                     # check that the resource can be parsed as a CF resource
                     if resource_id:
-                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
-                            resource
-                        )
+                        resource_context = self.context[file_abs_path][
+                            CloudformationTemplateSections.RESOURCES][resource_name]
+                        entity_lines_range = [resource_context['start_line'], resource_context['end_line']]
+                        entity_code_lines = resource_context['code_lines']
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-
                             skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
@@ -105,13 +109,6 @@ class Runner(BaseRunner):
                                     entity_tags=tags,
                                 )
                                 report.add_record(record=record)
-
-        # run graph checks only if environment variable CHECKOV_CLOUDFORMATION_GRAPH='true'
-        if os.getenv("CHECKOV_CLOUDFORMATION_GRAPH", "false").lower() == "true":
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-            merge_reports(report, graph_report)
-
-        return report
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)

@@ -14,22 +14,18 @@ def convert_graph_vertices_to_definitions(
     for vertex in vertices:
         block_path = vertex.path
         block_type = CloudformationTemplateSections.RESOURCES.value if vertex.block_type == 'resource' else vertex.block_type
-        block_name = vertex.name.split('.')[1]  # vertex.name is "type.name" so type.name -> [type, name]
+        block_name = vertex.name.split('.')[-1]  # vertex.name is "type.name" so type.name -> [type, name]
 
         definition = {
             'Type': vertex.attributes['resource_type'],
             'Properties': vertex.config
         }
-        if vertex.attributes.get('__startline__'):
-            definition['__startline__'] = vertex.attributes['__startline__']
-        if vertex.attributes.get('__endline__'):
-            definition['__endline__'] = vertex.attributes['__endline__']
-        definition = dict_node(definition, vertex.attributes.start_mark, vertex.attributes.end_mark)
         definitions.setdefault(block_path, {}).setdefault(block_type, {}).setdefault(block_name, definition)
 
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
     return definitions, breadcrumbs
+
 
 def add_breadcrumbs(vertex: CloudformationBlock, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
     vertex_breadcrumbs = vertex.breadcrumbs

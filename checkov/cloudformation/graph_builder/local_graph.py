@@ -38,7 +38,7 @@ class CloudformationLocalGraph(LocalGraph):
             attributes.end_mark = attributes.end_mark
             block = CloudformationBlock(
                 name=f"{resource_type}.{resource_name}",
-                config=resource.get("Properties"),
+                config=resource.get("Properties", {}),
                 path=file_path,
                 block_type=BlockType.RESOURCE,
                 attributes=attributes,

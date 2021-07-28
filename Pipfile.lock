@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5b803a90a1c64e4076d866adaa539f24fdf96821135abff00e025189226d7a78"
+            "sha256": "6cb1e5626f6afd9bef08b843a1cf5bfb773d20012cc4a3591ca528f7e5b1644d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -67,7 +67,7 @@
                 "sha256:88fce3fa5b1a84fdcb3f603d889f723d1dd89b26059d0123ca435570e848d5e1",
                 "sha256:c46c3ace2d744cfbdebceaa3c19ae691f53ae621b39fd7570f59d14fb7f2fd12"
             ],
-            "markers": "python_version >= '3.0'",
+            "markers": "python_version >= '3'",
             "version": "==2.0.3"
         },
         "click": {
@@ -185,7 +185,7 @@
                 "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a",
                 "sha256:467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"
             ],
-            "markers": "python_version >= '3.0'",
+            "markers": "python_version >= '3'",
             "version": "==3.2"
         },
         "importlib-metadata": {
@@ -193,7 +193,7 @@
                 "sha256:079ada16b7fc30dfbb5d13399a5113110dab1aa7c2bc62f66af75f0b717c8cac",
                 "sha256:9f55f560e116f8643ecf2922d9cd3e1c7e8d52e683178fecd9d08f6aa357e11e"
             ],
-            "markers": "python_version < '3.8'",
+            "index": "pypi",
             "version": "==4.6.1"
         },
         "jinja2": {
@@ -294,7 +294,7 @@
                 "sha256:49d154f87154fd409c57c71d4035d802d9a05667c328ba5c9ce2bef4d9de2a0a",
                 "sha256:8b88cb58a390ae7e0e06db13b3bbb5ece0d32d7d7c38a92259eb9c4722198fb5"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==0.11.16"
         },
         "policyuniverse": {
@@ -407,7 +407,7 @@
                 "sha256:052774848f448cf19c7e959adf5566904d525f33a3f8b6ba6f6f8f26ec7de0cc",
                 "sha256:c2c1c2d44f158cdbddab7824a9af8c4f83c76b1e23e049479aa432feb6c4c23b"
             ],
-            "markers": "python_version >= '3.0'",
+            "markers": "python_version >= '3'",
             "version": "==2.2.1"
         },
         "tabulate": {
@@ -579,7 +579,7 @@
                 "sha256:079ada16b7fc30dfbb5d13399a5113110dab1aa7c2bc62f66af75f0b717c8cac",
                 "sha256:9f55f560e116f8643ecf2922d9cd3e1c7e8d52e683178fecd9d08f6aa357e11e"
             ],
-            "markers": "python_version < '3.8'",
+            "index": "pypi",
             "version": "==4.6.1"
         },
         "iniconfig": {
