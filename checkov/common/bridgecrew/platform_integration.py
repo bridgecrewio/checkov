@@ -294,7 +294,8 @@ class BcPlatformIntegration(object):
         BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING","FALSE")
         if BC_SKIP_MAPPING.upper() == "TRUE":
             logging.debug(f"Skipped mapping API call")
-            return {}
+            self.ckv_to_bc_id_mapping = {}
+            return
         try:
             request = self.http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
@@ -304,7 +305,8 @@ class BcPlatformIntegration(object):
             logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
-            return {}
+            self.ckv_to_bc_id_mapping = {}
+            return
 
     def onboarding(self):
         if not self.bc_api_key:
