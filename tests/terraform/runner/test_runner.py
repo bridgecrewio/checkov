@@ -817,6 +817,20 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
+    def test_no_duplicate_results(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "duplicate_violations")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform'))
+
+        unique_checks = []
+        for record in report.passed_checks:
+            check_unique = f"{record.check_id}.{record.resource}"
+            if check_unique in unique_checks:
+                self.fail(f"found duplicate results in report: {record.to_string()}")
+            unique_checks.append(check_unique)
+
     def tearDown(self):
         parser_registry.context = {}
 
