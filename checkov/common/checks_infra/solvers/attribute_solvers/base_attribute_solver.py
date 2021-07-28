@@ -1,3 +1,4 @@
+import concurrent.futures
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern
 
@@ -6,7 +7,7 @@ from networkx import DiGraph
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
@@ -21,17 +22,14 @@ class BaseAttributeSolver(BaseSolver):
         self.value = value
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices = []
         failed_vertices = []
         for _, data in graph_connector.nodes(data=True):
-            thread = threading.Thread(target=self._process_node(data, passed_vertices, failed_vertices))
-            jobs.append(thread)
-            thread.start()
+            jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
 
-        for job in jobs:
-            job.join()
-
+        concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
