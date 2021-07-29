@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  Pass:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: test
+      RetentionInDays: 3

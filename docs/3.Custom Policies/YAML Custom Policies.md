@@ -13,7 +13,7 @@ A YAML-based custom policy for Checkov consists of sections for the **Metadata**
 
 ![](policy-definition.png)
 
-### Metadata
+**Metadata**
 
 The Metadata includes:
 
@@ -33,7 +33,7 @@ The possible values for category are:
 * SECRETS
 * KUBERNETES
 
-### Policy Definition
+## Policy Definition
 
 The policy definition consists of:
 
@@ -47,7 +47,7 @@ The policy definition consists of:
 * **Attribute Blocks:** The policy describes resources with a certain configuration as defined by a configuration **attribute** and its value (per Terraform), or by the presence/absence of an attribute.
 * **Connection State Blocks** - The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
 
-#### Using AND/OR Logic
+### Using AND/OR Logic
 A policy definition may include multiple blocks (**Attribute**, **Connection state** or both), associated by **AND/OR** logic.
 
 ## Attribute Blocks
@@ -171,7 +171,7 @@ defintion:
 
 *Note: The condition above uses AND logic. See [additional examples](https://www.checkov.io/3.Custom%20Policies/Examples.html) for complex logic in policy definitions.*
 
-### Using AND/OR Logic
+## Using AND/OR Logic
 
 The Bridgecrew platform allows you to combine definition blocks using AND/OR operators.
 
@@ -179,7 +179,7 @@ The Bridgecrew platform allows you to combine definition blocks using AND/OR ope
 * Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources.
 Every other logical operator applies within a collection. For example, you can use AND/OR logic in a collection of key-value pairs.
 
-#### Example
+### Example
 
 The logic in the policy definition shown below is:
 `AND[block 1,block 2,OR[block 3,block 4]]`.

@@ -1,25 +1,27 @@
-import logging
 import json
 import logging
 import os
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
-# Allow the evaluation of empty variables
 from checkov.terraform.plan_parser import parse_tf_plan
+from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 
 
-class Runner(BaseRunner):
+class Runner(TerraformRunner):
     check_type = "terraform_plan"
 
     def __init__(self):
-        self.tf_definitions = {}
-        self.definitions_context = {}
+        super().__init__()
         self.template_lines = {}
+        self.graph_registry = get_graph_checks_registry(super().check_type)
 
     block_type_registries = {
         'resource': resource_registry,
@@ -33,6 +35,7 @@ class Runner(BaseRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
         if root_folder:
             files = [] if not files else files
@@ -65,13 +68,22 @@ class Runner(BaseRunner):
                 else:
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
-        report.add_parsing_errors(parsing_errors.keys())
+        report.add_parsing_errors(list(parsing_errors.keys()))
+
+        graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
+        self.graph_manager.save_graph(graph)
+
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        merge_reports(report, graph_report)
 
         return report
 
-    def check_tf_definition(self, report, runner_filter,
-                            ):
+    def get_entity_context_and_evaluations(self, entity):
+        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."), entity[CustomAttributes.FILE_PATH])
+        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
+        return raw_context, None
 
+    def check_tf_definition(self, report, runner_filter):
         for full_file_path, definition in self.tf_definitions.items():
             scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
@@ -80,12 +92,10 @@ class Runner(BaseRunner):
                     self.run_block(definition[block_type], full_file_path, report, scanned_file,
                                    block_type, runner_filter)
 
-    def run_block(self, entities, full_file_path, report, scanned_file, block_type,
-                  runner_filter=None):
+    def run_block(self, entities, full_file_path, report, scanned_file, block_type, runner_filter=None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
-                entity_evaluations = None
                 context_parser = parser_registry.context_parsers[block_type]
                 definition_path = context_parser.get_entity_context_path(entity)
                 entity_id = ".".join(definition_path)
@@ -95,10 +105,10 @@ class Runner(BaseRunner):
                 entity_code_lines = entity_context.get('code_lines')
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
-                                    resource=entity_id, evaluations=entity_evaluations,
+                                    resource=entity_id, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path)
                     report.add_record(record=record)
 
@@ -112,6 +122,7 @@ class Runner(BaseRunner):
                     resource_defintion = resource[resource_type][resource_name]
                     entity_context['start_line'] = resource_defintion['start_line'][0]
                     entity_context['end_line'] = resource_defintion['end_line'][0]
-                    entity_context['code_lines'] = self.template_lines[entity_context['start_line']:entity_context['end_line']]
+                    entity_context['code_lines'] = self.template_lines[
+                                                   entity_context['start_line']:entity_context['end_line']]
                     return entity_context
         return entity_context

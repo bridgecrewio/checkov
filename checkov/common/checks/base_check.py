@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import List, Dict, Any, Callable, Optional
 
+from checkov.common.typing import _SkippedCheck
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
@@ -14,10 +15,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: List[str] = []
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
     ) -> None:
         self.name = name
         self.id = id
+        self.bc_id = bc_id
         self.categories = categories
         self.block_type = block_type
         self.supported_entities = supported_entities
@@ -30,7 +32,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_configuration: Dict[str, List[Any]],
         entity_name: str,
         entity_type: str,
-        skip_info: Dict[str, str],
+        skip_info: _SkippedCheck,
     ) -> Dict[str, Any]:
         check_result: Dict[str, Any] = {}
         if skip_info:
@@ -85,3 +87,6 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         :return: List of the evaluated keys, as JSONPath syntax paths of the checked attributes
         """
         return force_list(self.evaluated_keys)
+
+    def get_output_id(self, use_bc_ids: bool) -> str:
+        return self.bc_id if self.bc_id and use_bc_ids else self.id

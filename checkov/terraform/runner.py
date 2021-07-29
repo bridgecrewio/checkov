@@ -6,28 +6,26 @@ from typing import Dict, Optional, Tuple, List
 
 import dpath.util
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
-from checkov.common.util import dict_utils
+from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.util import data_structures_utils
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.terraform.graph_builder.local_graph import LocalGraph
-from checkov.terraform.graph_manager import GraphManager
-
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
@@ -35,23 +33,23 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-graph_registry = Registry(parser=NXGraphCheckParser())
+
 
 class Runner(BaseRunner):
     check_type = "terraform"
 
     def __init__(self, parser=Parser(), db_connector=NetworkxConnector(), external_registries=None,
-                 source="Terraform", graph_class=LocalGraph, graph_manager=None):
+                 source="Terraform", graph_class=TerraformLocalGraph, graph_manager=None):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser
-        self.tf_definitions = None
-        self.definitions_context = None
+        self.definitions = None
+        self.context = None
         self.breadcrumbs = None
-        self.definitions_context = {}
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        self.graph_manager = graph_manager if graph_manager is not None else GraphManager(source=source,
-                                                                                          db_connector=db_connector)
+        self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
+                                                                                                   db_connector=db_connector)
+        self.graph_registry = get_graph_checks_registry(self.check_type)
 
     block_type_registries = {
         'resource': resource_registry,
@@ -60,18 +58,13 @@ class Runner(BaseRunner):
         'module': module_registry,
     }
 
-    def set_external_data(self, tf_definitions: dict, definitions_context: dict, breadcrumbs: dict):
-        self.tf_definitions = tf_definitions
-        self.definitions_context = definitions_context
-        self.breadcrumbs = breadcrumbs
-
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
 
-        if self.definitions_context is None or self.tf_definitions is None or self.breadcrumbs is None:
-            self.tf_definitions = {}
+        if self.context is None or self.definitions is None or self.breadcrumbs is None:
+            self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
@@ -90,25 +83,26 @@ class Runner(BaseRunner):
                         file_parsing_errors = {}
                         parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
                         if parse_result is not None:
-                            self.tf_definitions[file] = parse_result
+                            self.definitions[file] = parse_result
                         if file_parsing_errors:
                             parsing_errors.update(file_parsing_errors)
                             continue
-                local_graph = self.graph_manager.build_graph_from_tf_definitions(self.tf_definitions)
+                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
             self.graph_manager.save_graph(local_graph)
-            self.tf_definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
             logging.info(f"Scanning root folder using existing tf_definitions")
 
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
-        report.add_parsing_errors(parsing_errors.keys())
+        report.add_parsing_errors(list(parsing_errors.keys()))
 
         graph_report = self.get_graph_checks_report(root_folder, runner_filter)
         merge_reports(report, graph_report)
+        report = remove_duplicate_results(report)
 
         return report
 
@@ -116,15 +110,11 @@ class Runner(BaseRunner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
-                graph_registry.load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         report = Report(self.check_type)
-        checks_results = {}
-        for r in self.external_registries + [graph_registry]:
-            r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_traversal(), runner_filter)
-            checks_results = {**checks_results, **registry_results}
+        checks_results = self.run_graph_checks_results(runner_filter)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -140,6 +130,7 @@ class Runner(BaseRunner):
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
                     record = Record(check_id=check.id,
+                                    bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=copy_of_check_result,
                                     code_block=entity_context.get('code_lines'),
@@ -147,12 +138,14 @@ class Runner(BaseRunner):
                                     file_line_range=[entity_context.get('start_line'),
                                                      entity_context.get('end_line')],
                                     resource=".".join(entity_context['definition_path']),
+                                    entity_tags=entity.get('tags', {}),
                                     evaluations=entity_evaluations,
                                     check_class=check.__class__.__module__,
                                     file_abs_path=os.path.abspath(full_file_path))
-                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
-                    if breadcrumb:
-                        record = GraphRecord(record, breadcrumb)
+                    if self.breadcrumbs:
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                        if breadcrumb:
+                            record = GraphRecord(record, breadcrumb)
 
                     report.add_record(record=record)
         return report
@@ -163,12 +156,12 @@ class Runner(BaseRunner):
         full_file_path = entity[CustomAttributes.FILE_PATH]
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
-        entity_context = self.definitions_context.get(full_file_path, {})
+        entity_context = self.context.get(full_file_path, {})
         try:
             if not entity_context:
-                dc_keys = self.definitions_context.keys()
+                dc_keys = self.context.keys()
                 dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
-                entity_context = self.definitions_context.get(dc_key, {})
+                entity_context = self.context.get(dc_key, {})
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
@@ -182,18 +175,18 @@ class Runner(BaseRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         parser_registry.reset_definitions_context()
-        if not self.definitions_context:
+        if not self.context:
             definitions_context = {}
-            for definition in self.tf_definitions.items():
+            for definition in self.definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
-            self.definitions_context = definitions_context
+            self.context = definitions_context
             logging.debug('Created definitions context')
 
-        for full_file_path, definition in self.tf_definitions.items():
+        for full_file_path, definition in self.definitions.items():
             abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
-            self.run_all_blocks(definition, self.definitions_context, full_file_path, root_folder, report,
+            self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
@@ -228,7 +221,7 @@ class Runner(BaseRunner):
 
             if module_referrer is not None:
                 referrer_id = self._find_id_for_referrer(full_file_path,
-                                                         self.tf_definitions)
+                                                         self.definitions)
                 if referrer_id:
                     entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
@@ -256,7 +249,7 @@ class Runner(BaseRunner):
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
             try:
-                entity_context = dict_utils.getInnerDict(definition_context[full_file_path], entity_context_path)
+                entity_context = data_structures_utils.get_inner_dict(definition_context[full_file_path], entity_context_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
@@ -278,7 +271,7 @@ class Runner(BaseRunner):
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             for check, check_result in results.items():
-                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                 code_block=entity_code_lines, file_path=scanned_file,
                                 file_line_range=entity_lines_range,
                                 resource=entity_id, evaluations=entity_evaluations,
@@ -317,10 +310,3 @@ class Runner(BaseRunner):
                     if full_file_path in module_content["__resolved__"]:
                         return f"module.{module_name}"
         return None
-
-
-def merge_reports(base_report, report_to_merge):
-    base_report.passed_checks.extend(report_to_merge.passed_checks)
-    base_report.failed_checks.extend(report_to_merge.failed_checks)
-    base_report.skipped_checks.extend(report_to_merge.skipped_checks)
-    base_report.parsing_errors.extend(report_to_merge.parsing_errors)

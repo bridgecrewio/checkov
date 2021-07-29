@@ -1,0 +1,47 @@
+metadata:
+  name: "Route53 A Record has Attached Resource"
+  id: "CKV2_AWS_23"
+  category: "NETWORKING"
+definition:
+ and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_route53_record
+        operator: within
+      - cond_type: filter
+        resource_types:
+           - aws_route53_record
+        attribute: type
+        operator: within
+        value: "A"
+      - or:
+         - cond_type: attribute
+           attribute: alias.name
+           operator: contains
+           value: "module"
+           resource_types:
+             - aws_route53_record
+         - cond_type: attribute
+           attribute: alias.name
+           operator: contains
+           value: "data."
+           resource_types:
+             - aws_route53_record
+         - cond_type: connection
+           resource_types:
+              - aws_route53_record
+           connected_resource_types:
+              - aws_instance
+              - aws_eip
+              - aws_elb
+              - aws_lb
+              - aws_route53_record
+              - aws_s3_bucket
+              - aws_api_gateway_domain_name
+              - aws_elastic_beanstalk_environment
+              - aws_vpc_endpoint
+              - aws_globalaccelerator_accelerator
+              - aws_cloudfront_distribution
+           operator: exists
+           attribute: networking

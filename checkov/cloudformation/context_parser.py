@@ -1,79 +1,84 @@
 import logging
 import operator
-from functools import reduce
 import re
+from functools import reduce
+from typing import List, Tuple, Optional, Union, Generator
+
+from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.cloudformation.parser.node import dict_node, str_node, list_node
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.typing import _SkippedCheck
 
+ENDLINE = "__endline__"
+STARTLINE = "__startline__"
 
-ENDLINE = '__endline__'
-
-STARTLINE = '__startline__'
 
 class ContextParser(object):
     """
     CloudFormation template context parser
     """
-    def __init__(self, cf_file, cf_template, cf_template_lines):
+
+    def __init__(self, cf_file: str, cf_template: dict_node, cf_template_lines: List[Tuple[int, str]]) -> None:
         self.cf_file = cf_file
         self.cf_template = cf_template
         self.cf_template_lines = cf_template_lines
 
-    def evaluate_default_refs(self):
+    def evaluate_default_refs(self) -> None:
         # Get Parameter Defaults - Locate Refs in Template
-        refs = []
-        refs.extend(self.search_deep_keys('Ref', self.cf_template, []))
+        refs = self.search_deep_keys("Ref", self.cf_template, [])
 
         for ref in refs:
             refname = ref.pop()
             ref.pop()  # Get rid of the 'Ref' dict key
 
-            if 'Parameters' in self.cf_template.keys() and refname in self.cf_template[
-                'Parameters'].keys():
-                # TODO refactor into evaluations
-                if 'Default' in self.cf_template['Parameters'][refname].keys():
-                    logging.debug(
-                        "Replacing Ref {} in file {} with default parameter value: {}".format(refname, self.cf_file,
-                                                                                              self.cf_template[
-                                                                                                  'Parameters'][
-                                                                                                  refname][
-                                                                                                  'Default']))
-                    self._set_in_dict(self.cf_template, ref,
-                                      self.cf_template['Parameters'][refname]['Default'])
+            # TODO refactor into evaluations
+            default_value = self.cf_template.get("Parameters", {}).get(refname, {}).get("Default")
+            if default_value is not None:
+                logging.debug(
+                    "Replacing Ref {} in file {} with default parameter value: {}".format(
+                        refname, self.cf_file, default_value
+                    )
+                )
+                self._set_in_dict(self.cf_template, ref, default_value)
 
-                    ## TODO - Add Variable Eval Message for Output
-                    # Output in Checkov looks like this:
-                    # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
+                ## TODO - Add Variable Eval Message for Output
+                # Output in Checkov looks like this:
+                # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
     @staticmethod
-    def extract_cf_resource_id(cf_resource, cf_resource_name):
+    def extract_cf_resource_id(cf_resource: dict_node, cf_resource_name: str_node) -> Optional[str]:
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
-            return
-        if 'Type' not in cf_resource:
+            return None
+        if "Type" not in cf_resource:
             # This is not a CloudFormation resource, skip
-            return
+            return None
         return f"{cf_resource['Type']}.{cf_resource_name}"
 
-    def extract_cf_resource_code_lines(self, cf_resource):
-        find_lines_result_list = list(self.find_lines(cf_resource, STARTLINE))
-        if len(find_lines_result_list) >= 1:
-            start_line = min(find_lines_result_list)
-            end_line = max(list(self.find_lines(cf_resource, ENDLINE)))
+    def extract_cf_resource_code_lines(
+        self, cf_resource: dict_node
+    ) -> Tuple[Optional[List[int]], Optional[List[Tuple[int, str]]]]:
+        find_lines_result_set = set(self.find_lines(cf_resource, STARTLINE))
+        if len(find_lines_result_set) >= 1:
+            start_line = min(find_lines_result_set)
+            end_line = max(self.find_lines(cf_resource, ENDLINE))
 
             # start_line - 2: -1 to switch to 0-based indexing, and -1 to capture the resource name
-            entity_code_lines = self.cf_template_lines[start_line - 2: end_line - 1]
+            entity_code_lines = self.cf_template_lines[start_line - 2 : end_line - 1]
 
             # if the file did not end in a new line, and this was the last resource in the file, then we
             # trimmed off the last line
-            if (end_line - 1) < len(self.cf_template_lines) and not self.cf_template_lines[end_line - 1][1].endswith('\n'):
+            if (end_line - 1) < len(self.cf_template_lines) and not self.cf_template_lines[end_line - 1][1].endswith(
+                "\n"
+            ):
                 entity_code_lines.append(self.cf_template_lines[end_line - 1])
 
             entity_code_lines = ContextParser.trim_lines(entity_code_lines)
-            entity_lines_range = [entity_code_lines[0][0],entity_code_lines[-1][0]]
+            entity_lines_range = [entity_code_lines[0][0], entity_code_lines[-1][0]]
             return entity_lines_range, entity_code_lines
         return None, None
 
     @staticmethod
-    def trim_lines(code_lines):
+    def trim_lines(code_lines: List[Tuple[int, str]]) -> List[Tuple[int, str]]:
         # Removes leading and trailing lines that are only whitespace, returning a new value
         # The passed value should be a list of tuples of line numbers and line strings (entity_code_lines)
         start = 0
@@ -87,11 +92,11 @@ class ContextParser(object):
         return code_lines[start:end]
 
     @staticmethod
-    def find_lines(node, kv):
-        # Hack to allow running checkov on json templates 
+    def find_lines(node: Union[list_node, dict_node], kv: str) -> Generator[int, None, None]:
+        # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker
-        if hasattr(node, 'start_mark') and kv == STARTLINE:
+        if hasattr(node, "start_mark") and kv == STARTLINE:
             yield node.start_mark.line + 1
 
         if hasattr(node, "end_mark") and kv == ENDLINE:
@@ -109,24 +114,33 @@ class ContextParser(object):
                     yield x
 
     @staticmethod
-    def collect_skip_comments(entity_code_lines):
+    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]]) -> List[_SkippedCheck]:
         skipped_checks = []
+        bc_id_mapping = bc_integration.get_id_mapping()
+        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
         for line in entity_code_lines:
             skip_search = re.search(COMMENT_REGEX, str(line))
             if skip_search:
-                skipped_checks.append(
-                    {
-                        'id': skip_search.group(2),
-                        'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
-                            3) else "No comment provided"
-                    }
-                )
+                skipped_check: _SkippedCheck = {
+                    "id": skip_search.group(2),
+                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
+                }
+                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                    skipped_check["bc_id"] = skipped_check["id"]
+                    skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
+                elif ckv_to_bc_id_mapping:
+                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+
+                skipped_checks.append(skipped_check)
         return skipped_checks
 
     @staticmethod
-    def search_deep_keys(search_text, cfn_dict, path):
+    def search_deep_keys(
+        search_text: str, cfn_dict: Union[str_node, list_node, dict_node], path: List[str]
+    ) -> List[List[Union[int, str]]]:
         """Search deep for keys and get their values"""
-        keys = []
+        keys: List[List[Union[int, str]]] = []
         if isinstance(cfn_dict, dict):
             for key in cfn_dict:
                 pathprop = path[:]
@@ -152,22 +166,22 @@ class ContextParser(object):
 
         return keys
 
-    def _set_in_dict(self, data_dict, map_list, value):
+    def _set_in_dict(self, data_dict: dict_node, map_list: List[Union[int, str]], value: str_node) -> None:
         v = self._get_from_dict(data_dict, map_list[:-1])
         # save the original marks so that we do not copy in the line numbers of the parameter element
         # but not all ref types will have these attributes
         start = None
         end = None
-        if hasattr(v, 'start_mark'):
+        if hasattr(v, "start_mark") and hasattr(v, "end_mark"):
             start = v.start_mark
             end = v.end_mark
 
         v[map_list[-1]] = value
 
-        if hasattr(v[map_list[-1]], 'start_mark') and start and end:
+        if hasattr(v[map_list[-1]], "start_mark") and start and end:
             v[map_list[-1]].start_mark = start
             v[map_list[-1]].end_mark = end
 
     @staticmethod
-    def _get_from_dict(data_dict, map_list):
+    def _get_from_dict(data_dict: dict_node, map_list: List[Union[int, str]]) -> Union[list_node, dict_node]:
         return reduce(operator.getitem, map_list, data_dict)

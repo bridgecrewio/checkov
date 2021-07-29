@@ -22,7 +22,8 @@ class RunnerFilter(object):
         evaluate_variables: bool = True,
         runners: Optional[List[str]] = None,
         skip_framework: Optional[str] = None,
-        excluded_paths: Optional[List[str]] = None
+        excluded_paths: Optional[List[str]] = None,
+        all_external: bool = False
     ) -> None:
 
         self.checks = convert_csv_string_arg_to_list(checks)
@@ -47,16 +48,17 @@ class RunnerFilter(object):
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
         self.excluded_paths = excluded_paths
+        self.all_external = all_external
 
-    def should_run_check(self, check_id: str) -> bool:
-        if RunnerFilter.is_external_check(check_id):
+    def should_run_check(self, check_id: str, bc_check_id: Optional[str] = None) -> bool:
+        if RunnerFilter.is_external_check(check_id) and self.all_external:
             pass  # enabled unless skipped
         elif self.checks:
-            if check_id in self.checks:
+            if check_id in self.checks or bc_check_id in self.checks:
                 return True
             else:
                 return False
-        if self.skip_checks and any(fnmatch.fnmatch(check_id, pattern) for pattern in self.skip_checks):
+        if self.skip_checks and any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in self.skip_checks):
             return False
         return True
 

@@ -15,11 +15,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.terraform.checks_infra.registry import Registry as GraphRegistry, BaseRegistry as BaseGraphRegistry
-
-tf_graph_registry = GraphRegistry(parser=NXGraphCheckParser())
-tf_graph_registry.load_checks()
+from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -35,33 +31,36 @@ def get_compare_key(c):
     return res
 
 
-def print_checks(framework="all"):
-    printable_checks_list = get_checks(framework)
+def print_checks(framework="all", use_bc_ids=False):
+    printable_checks_list = get_checks(framework, use_bc_ids=use_bc_ids)
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
 
-def get_checks(framework="all"):
+def get_checks(framework="all", use_bc_ids=False):
     printable_checks_list = []
 
     def add_from_repository(registry, checked_type: str, iac: str):
         nonlocal printable_checks_list
         if isinstance(registry, BaseCheckRegistry):
             for entity, check in registry.all_checks():
-                printable_checks_list.append([check.id, checked_type, entity, check.name, iac])
+                printable_checks_list.append([check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac])
         elif isinstance(registry, BaseGraphRegistry):
             for check in registry.checks:
                 for rt in check.resource_types:
-                    printable_checks_list.append([check.id, checked_type, rt, check.name, iac])
+                    printable_checks_list.append([check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac])
 
     if framework == "terraform" or framework == "all":
         add_from_repository(resource_registry, "resource", "Terraform")
         add_from_repository(data_registry, "data", "Terraform")
         add_from_repository(provider_registry, "provider", "Terraform")
         add_from_repository(module_registry, "module", "Terraform")
-        add_from_repository(tf_graph_registry, "resource", "Terraform")
+
+        graph_registry = get_graph_checks_registry("terraform")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Terraform")
     if framework == "cloudformation" or framework == "all":
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if framework == "kubernetes" or framework == "all":

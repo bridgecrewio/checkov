@@ -12,7 +12,7 @@ class TestBaseGetter(unittest.TestCase):
         result_dir = getter.get()
         print(current_dir)
         print(result_dir)
-        self.assertTrue(current_dir in result_dir)
+        self.assertIn(current_dir, result_dir)
 
         # Cleanup
         os.rmdir(getter.temp_dir)

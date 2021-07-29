@@ -15,7 +15,7 @@ class TestPlanFileParser(unittest.TestCase):
         resource_tags = resource_attributes['tags'][0]
         for tag_key, tag_value in resource_tags.items():
             if tag_key not in ['start_line', 'end_line']:
-                self.assertTrue(isinstance(tag_value, str))
+                self.assertIsInstance(tag_value, str)
 
 
 if __name__ == '__main__':

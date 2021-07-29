@@ -104,7 +104,7 @@ Check: CKV_AWS_20: "S3 Bucket has an ACL defined which allows public access."
 	PASSED for resource: aws_s3_bucket.template_bucket
 	File: /main.tf:24-29
 
-	Variable acl (of /variables.tf) evaluated to value "public-acl" in expression: acl = ${var.acl}
+	Variable acl (of /variables.tf) evaluated to value "private" in expression: acl = ${var.acl}
 	Variable region (of /variables.tf) evaluated to value "us-west-2" in expression: region = ${var.region}
 ```
 

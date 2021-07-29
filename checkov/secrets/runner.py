@@ -6,11 +6,12 @@ import time
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
-from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
+from typing_extensions import TypedDict
 
 from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -19,7 +20,6 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.utils.utils import run_function_multithreaded
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
@@ -27,7 +27,7 @@ SECRET_TYPE_TO_ID = {
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
-    # 'Base64 High Entropy String': 'CKV_SECRET_6',
+    'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
@@ -40,11 +40,16 @@ SECRET_TYPE_TO_ID = {
     'Square OAuth Secret': 'CKV_SECRET_16',
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
-    # 'Hex High Entropy String': 'CKV_SECRET_19'
+    'Hex High Entropy String': 'CKV_SECRET_19'
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+
+
+class _CheckResult(TypedDict, total=False):
+    result: CheckResult
+    suppress_comment: str
 
 
 class Runner(BaseRunner):
@@ -52,6 +57,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True) -> Report:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
@@ -95,23 +101,27 @@ class Runner(BaseRunner):
                 {
                     'name': 'TwilioKeyDetector'
                 },
+                {
+                    'name': 'EntropyKeywordCombinator',
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
+                    'limit': 4.5
+                }
             ]
-        }):
+        }) as settings:
             report = Report(self.check_type)
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                    filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                    filter_ignored_paths(root, d_names, excluded_paths)
+                    filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
-            # TODO: re-enable filter when re-adding `SecretKeyword` plugin
-            scan.get_settings().disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
             def _scan_file(file_paths: List[str]):
                 for file_path in file_paths:
@@ -120,6 +130,7 @@ class Runner(BaseRunner):
                         secrets.scan_file(file_path)
                     except Exception as err:
                         logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
+                        continue
                     end = time.time()
                     scan_time = end - start
                     if scan_time > 10:
@@ -131,14 +142,17 @@ class Runner(BaseRunner):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
-                result = {'result': CheckResult.FAILED}
-                line_text = linecache.getline(os.path.join(root_folder, secret.filename),
-                                              secret.line_number) if root_folder else linecache.getline(secret.filename,
-                                                                                                        secret.line_number)
+                if runner_filter.checks and check_id not in runner_filter.checks:
+                    continue
+                result: _CheckResult = {'result': CheckResult.FAILED}
+                line_text = linecache.getline(secret.filename, secret.line_number)
                 if line_text != "" and line_text.split()[0] == 'git_commit':
                     continue
-                result = self.search_for_suppression(check_id, root_folder, secret, runner_filter.skip_checks,
-                                                     CHECK_ID_TO_SECRET_TYPE) or result
+                result = self.search_for_suppression(
+                    check_id=check_id,
+                    secret=secret,
+                    skipped_checks=runner_filter.skip_checks,
+                ) or result
                 report.add_record(Record(
                     check_id=check_id,
                     check_name=secret.type,
@@ -155,18 +169,23 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def search_for_suppression(check_id: str, root_folder: str, secret: PotentialSecret, skipped_checks: list,
-                               CHECK_ID_TO_SECRET_TYPE: dict) -> Optional[dict]:
-        if skipped_checks:
-            for skipped_check in skipped_checks:
-                if skipped_check == check_id and skipped_check in CHECK_ID_TO_SECRET_TYPE:
-                    return {'result': CheckResult.SKIPPED,
-                            'suppress_comment': f"Secret scan {skipped_check} is skipped"}
+    def search_for_suppression(
+        check_id: str,
+        secret: PotentialSecret,
+        skipped_checks: List[str]
+    ) -> Optional[_CheckResult]:
+        if check_id in skipped_checks and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+            return {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": f"Secret scan {check_id} is skipped"
+            }
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
-            lt = linecache.getline(os.path.join(root_folder, secret.filename),
-                                   line_number) if root_folder else linecache.getline(secret.filename, line_number)
+            lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
-            if skip_search:
-                return {'result': CheckResult.SKIPPED, 'suppress_comment': skip_search[1]}
+            if skip_search and skip_search.group(2) == check_id:
+                return {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
+                }
         return None

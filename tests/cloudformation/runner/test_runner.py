@@ -8,6 +8,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.parser import parse
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
+from checkov.common.output.report import Report
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -29,7 +30,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
@@ -52,7 +53,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
@@ -74,7 +75,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
@@ -96,7 +97,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertTrue(len(all_checks) > 0)  # ensure that the assertions below are going to do something
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
@@ -171,6 +172,58 @@ class TestRunnerValid(unittest.TestCase):
                         check_imports.append({file.name: wrong_import})
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
+
+    def test_run_graph_checks(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "../graph/checks/resources/MSKClusterLogging")
+
+
+        dir_abs_path = os.path.abspath(scan_dir_path)
+
+        runner = Runner()
+        report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False))
+
+    def test_external_data(self):
+        dir_abs_path = os.path.dirname(os.path.realpath(__file__))
+
+        definitions = {
+            '/s3.yaml': {
+                'Resources': {
+                    'MySourceQueue': {
+                        'Type': 'AWS::SQS::Queue',
+                        'Properties': {
+                            'KmsMasterKeyId': 'kms_id',
+                            '__startline__': 17,
+                            '__endline__': 22,
+                            'resource_type': 'AWS::SQS::Queue'
+                        }
+                    },
+                    'MyDB': {
+                        'Type': 'AWS::RDS::DBInstance',
+                        'Properties': {
+                            'DBName': 'db',
+                            'DBInstanceClass': 'db.t3.micro',
+                            'Engine': 'mysql',
+                            'MasterUsername': 'master',
+                            'MasterUserPassword': 'password',
+                            '__startline__': 23,
+                            '__endline__': 32,
+                            'resource_type': 'AWS::RDS::DBInstance'
+                        }
+                    }
+                }
+            }
+        }
+        context = {f'{dir_abs_path}/s3.yaml': {'Parameters': {'KmsMasterKeyId': {'start_line': 5, 'end_line': 9, 'code_lines': [(5, '    "KmsMasterKeyId": {\n'), (6, '      "Description": "Company Name",\n'), (7, '      "Type": "String",\n'), (8, '      "Default": "kms_id"\n'), (9, '    },\n')]}, 'DBName': {'start_line': 10, 'end_line': 14, 'code_lines': [(10, '    "DBName": {\n'), (11, '      "Description": "Name of the Database",\n'), (12, '      "Type": "String",\n'), (13, '      "Default": "db"\n'), (14, '    }\n')]}}, 'Resources': {'MySourceQueue': {'start_line': 17, 'end_line': 22, 'code_lines': [(17, '    "MySourceQueue": {\n'), (18, '      "Type": "AWS::SQS::Queue",\n'), (19, '      "Properties": {\n'), (20, '        "KmsMasterKeyId": { "Ref": "KmsMasterKeyId" }\n'), (21, '      }\n'), (22, '    },\n')], 'skipped_checks': []}, 'MyDB': {'start_line': 23, 'end_line': 32, 'code_lines': [(23, '    "MyDB": {\n'), (24, '      "Type": "AWS::RDS::DBInstance",\n'), (25, '      "Properties": {\n'), (26, '        "DBName": { "Ref": "DBName" },\n'), (27, '        "DBInstanceClass": "db.t3.micro",\n'), (28, '        "Engine": "mysql",\n'), (29, '        "MasterUsername": "master",\n'), (30, '        "MasterUserPassword": "password"\n'), (31, '      }\n'), (32, '    }\n')], 'skipped_checks': []}}, 'Outputs': {'DBAppPublicDNS': {'start_line': 35, 'end_line': 38, 'code_lines': [(35, '    "DBAppPublicDNS": {\n'), (36, '      "Description": "DB App Public DNS Name",\n'), (37, '      "Value": { "Fn::GetAtt" : [ "MyDB", "PublicDnsName" ] }\n'), (38, '    }\n')]}}}}
+        breadcrumbs = {}
+        runner = Runner()
+        runner.set_external_data(definitions, context, breadcrumbs)
+        report = Report('cloudformation')
+        runner.check_definitions(root_folder=dir_abs_path, runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False), report=report)
+        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 3)
+        pass
 
     def tearDown(self):
         pass

@@ -1,0 +1,6 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  Pass:
+    Type: AWS::EC2::VPCEndpointService
+    Properties: 
+      AcceptanceRequired: true

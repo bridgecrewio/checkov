@@ -1,0 +1,10 @@
+Resources:
+  RedshiftClusterDisabled:
+    Type: "AWS::Redshift::Cluster"
+    Properties:
+      DBName: "mydb"
+      MasterUsername: "master"
+      MasterUserPassword: "MasterUserPassword"
+      NodeType: "ds2.xlarge"
+      ClusterType: "single-node"
+      PubliclyAccessible: true

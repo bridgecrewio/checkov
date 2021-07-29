@@ -7,7 +7,7 @@ import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_auth_header, extract_error_message, \
     get_default_post_headers
 
@@ -22,7 +22,7 @@ class FixesIntegration(BaseIntegrationFeature):
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
 
-    def post_scan(self, scan_report):
+    def post_runner(self, scan_report):
         if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
             return
         self._get_platform_fixes(scan_report)

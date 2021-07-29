@@ -1,4 +1,5 @@
 import os.path
+from concurrent import futures
 from time import sleep
 
 import boto3
@@ -54,10 +55,11 @@ class BcPlatformIntegration(object):
         self.repo_branch = None
         self.skip_fixes = False
         self.skip_suppressions = False
+        self.skip_policy_download = False
         self.timestamp = None
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud/api/v1")
-        self.bc_source = os.getenv('BC_SOURCE', 'cli')
+        self.bc_source = None
         self.bc_source_version = None
         self.integrations_api_url = f"{self.bc_api_url}/integrations/types/checkov"
         self.guidelines_api_url = f"{self.bc_api_url}/guidelines"
@@ -92,10 +94,11 @@ class BcPlatformIntegration(object):
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False, source=None,
-                                     source_version=None, repo_branch=None):
+    def setup_bridgecrew_credentials(self, bc_api_key, repo_id, skip_fixes=False, skip_suppressions=False,
+                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None):
         """
         Setup credentials against Bridgecrew's platform.
+        :param source:
         :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
         :param bc_api_key: Bridgecrew issued API key
@@ -105,12 +108,11 @@ class BcPlatformIntegration(object):
         self.repo_branch = repo_branch
         self.skip_fixes = skip_fixes
         self.skip_suppressions = skip_suppressions
-        if source:
-            self.bc_source = source
-        if source_version:
-            self.bc_source_version = source_version
+        self.skip_policy_download = skip_policy_download
+        self.bc_source = source
+        self.bc_source_version = source_version
 
-        if self.bc_source != 'vscode':
+        if self.bc_source.upload_results:
             try:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(bc_api_key, repo_id)
@@ -173,12 +175,12 @@ class BcPlatformIntegration(object):
 
         if not self.use_s3_integration:
             return
-
+        files_to_persist = []
         if files:
             for f in files:
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    self._persist_file(f, os.path.relpath(f, root_dir))
+                    files_to_persist.append((f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
@@ -190,7 +192,15 @@ class BcPlatformIntegration(object):
                     if file_extension in SUPPORTED_FILE_EXTENSIONS:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
-                        self._persist_file(full_file_path, relative_file_path)
+                        files_to_persist.append((full_file_path, relative_file_path))
+
+        logging.info(f"Persisting {len(files_to_persist)} files")
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(self._persist_file, full_file_path, relative_file_path) for full_file_path, relative_file_path in files_to_persist],
+                return_when=futures.FIRST_EXCEPTION,
+            )
+        logging.info(f"Done persisting {len(files_to_persist)} files")
 
     def persist_scan_results(self, scan_reports):
         """
@@ -218,7 +228,7 @@ class BcPlatformIntegration(object):
         request = None
         try:
 
-            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source}",
+            request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",
                                    body=json.dumps({"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
                                                     "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
                                                     "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
@@ -226,7 +236,7 @@ class BcPlatformIntegration(object):
                                                     "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
                                                     "repository_url": BC_REPOSITORY_URL}),
                                    headers={"Authorization": self.bc_api_key, "Content-Type": "application/json",
-                                            'x-api-client': self.bc_source, 'x-api-checkov-version': checkov_version
+                                            'x-api-client': self.bc_source.name, 'x-api-checkov-version': checkov_version
                                             })
             response = json.loads(request.data.decode("utf8"))
             url = response.get("url", None)
@@ -282,9 +292,10 @@ class BcPlatformIntegration(object):
 
     def get_checkov_mapping_metadata(self) -> dict:
         BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING","FALSE")
-        if BC_SKIP_MAPPING == "TRUE":
+        if BC_SKIP_MAPPING.upper() == "TRUE":
             logging.debug(f"Skipped mapping API call")
-            return {}
+            self.ckv_to_bc_id_mapping = {}
+            return
         try:
             request = self.http.request("GET", self.guidelines_api_url)
             response = json.loads(request.data.decode("utf8"))
@@ -294,7 +305,8 @@ class BcPlatformIntegration(object):
             logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
-            return {}
+            self.ckv_to_bc_id_mapping = {}
+            return
 
     def onboarding(self):
         if not self.bc_api_key:

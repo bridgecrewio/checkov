@@ -6,12 +6,10 @@ from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 from lark.tree import Tree
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.terraform.checks.utils.utils import (
-    run_function_multithreaded,
+from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded, join_trimmed_strings
+from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
-    join_trimmed_strings,
     remove_index_pattern_from_str,
-    calculate_hash,
     attribute_has_nested_attributes,
     VertexReference,
 )
@@ -20,13 +18,13 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
 
 if TYPE_CHECKING:
-    from checkov.terraform.graph_builder.local_graph import LocalGraph
+    from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 ATTRIBUTES_NO_EVAL = ["template_body", "template"]
 
 
 class VariableRenderer:
-    def __init__(self, local_graph: "LocalGraph") -> None:
+    def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         self.local_graph = local_graph
         run_async = os.environ.get("RENDER_VARIABLES_ASYNC", "True")
         self.run_async = True if run_async == "True" else False
@@ -90,9 +88,9 @@ class VariableRenderer:
         self.evaluate_non_rendered_values()
 
     def _edge_evaluation_task(self, edges: List[List[Edge]]) -> List[Edge]:
-        edges = edges[0]
-        self.evaluate_vertex_attribute_from_edge(edges)
-        return edges
+        inner_edges = edges[0]
+        self.evaluate_vertex_attribute_from_edge(inner_edges)
+        return inner_edges
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
@@ -191,13 +189,13 @@ class VariableRenderer:
             if value is not None:
                 return value
 
-        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE.value, BlockType.TF_VARIABLE.value]:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
             default_val = attributes.get("default")
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
             return default_val if not value else value
-        if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT.value:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
 
@@ -213,7 +211,7 @@ class VariableRenderer:
         :return origin_value
         """
         for vertex_reference in referenced_vertices:
-            block_type = vertex_reference.block_type.value
+            block_type = vertex_reference.block_type
             attribute_path = vertex_reference.sub_parts
             copy_of_attribute_path = deepcopy(attribute_path)
             if vertex_attributes[CustomAttributes.BLOCK_TYPE] == block_type:
@@ -257,7 +255,7 @@ class VariableRenderer:
 
     def evaluate_vertices_attributes(self) -> None:
         for vertex in self.local_graph.vertices:
-            decoded_attributes = vertex.get_decoded_attribute_dict()
+            decoded_attributes = vertex.get_attribute_dict()
             for attr in decoded_attributes:
                 if attr in vertex.changed_attributes:
                     continue

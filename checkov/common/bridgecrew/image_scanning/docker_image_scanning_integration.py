@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BC_API_URL
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_auth_header, get_default_get_headers, get_default_post_headers
 
 
@@ -56,7 +56,7 @@ class DockerImageScanningIntegration:
             'dockerImageName': docker_image_name,
             'dockerFilePath': dockerfile_path,
             'dockerFileContent': dockerfile_content,
-            'sourceType': bc_integration.bc_source,
+            'sourceType': bc_integration.bc_source.name,
             'vulnerabilities': vulnerabilities
         }
         response = requests.request('POST', f"{self.docker_image_scanning_base_url}/report", headers=headers, json=payload)

@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  FailDefault:
+    Type: AWS::EC2::VPCEndpointService
+  FailExplicit:
+    Type: AWS::EC2::VPCEndpointService
+    Properties: 
+      AcceptanceRequired: false

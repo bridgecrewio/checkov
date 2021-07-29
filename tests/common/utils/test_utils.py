@@ -1,9 +1,6 @@
-import os
 import unittest
-from unittest import mock
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.util.dict_utils import merge_dicts
-from checkov.common.util.docs_generator import get_compare_key
+
+from checkov.common.util.data_structures_utils import merge_dicts
 
 
 class TestUtils(unittest.TestCase):

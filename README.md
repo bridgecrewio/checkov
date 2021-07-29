@@ -4,7 +4,7 @@
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity) 
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
-[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/documentation?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
+[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/1.Welcome/What%20is%20Checkov.html?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Python Version](https://img.shields.io/github/pipenv/locked/python-version/bridgecrewio/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
@@ -42,6 +42,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
  * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
+ * [Identifies secrets](https://bridgecrew.io/blog/checkov-secrets-scanning-find-exposed-credentials-in-iac/) using regular expressions, keywords, and entropy based detection.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
@@ -312,6 +313,8 @@ Checkov can be configured using a YAML configuration file. By default, checkov l
 * Directory against which checkov is run. (`--directory`)
 * Current working directory where checkov is called.
 * User's home directory.
+
+**Attention**: it is a best practice for checkov configuration file to be loaded from a trusted source composed by a verified identity, so that scanned files, check ids and loaded custom checks are as desired.
 
 Users can also pass in the path to a config file via the command line. In this case, the other config files will be ignored. For example:
 ```sh

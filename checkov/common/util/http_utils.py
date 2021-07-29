@@ -2,8 +2,9 @@ import json
 import requests
 import logging
 
+from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
-from checkov.common.util.dict_utils import merge_dicts
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
 logger = logging.getLogger(__name__)
@@ -35,9 +36,9 @@ def get_version_headers(client, client_version):
     }
 
 
-def get_default_get_headers(client, client_version):
-    return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client, client_version))
+def get_default_get_headers(client: SourceType, client_version: str):
+    return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client.name, client_version))
 
 
-def get_default_post_headers(client, client_version):
-    return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client, client_version))
+def get_default_post_headers(client: SourceType, client_version: str):
+    return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version))
