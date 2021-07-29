@@ -17,7 +17,7 @@ class TestTransferServerIsPublic(unittest.TestCase):
 
         passing_resources = {
             "AWS::Transfer::Server.VPC",
-            "AWS::Transfer::Server.VPC_ENDPOINT",
+            "AWS::Transfer::Server.VPCENDPOINT",
         }
         failing_resources = {
             "AWS::Transfer::Server.PUBLIC",
