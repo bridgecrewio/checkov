@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  VPC:
+    Type: AWS::Transfer::Server
+    Properties: 
+      EndpointType: "VPC"
+  NONE:
+    Type: AWS::Transfer::Server
