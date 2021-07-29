@@ -573,15 +573,15 @@ resource "aws_emr_cluster" "pass_emr" {
 
   ec2_attributes {
     subnet_id                         = var.subnet_id
-    emr_managed_master_security_group = aws_security_group.emr.id
-    emr_managed_slave_security_group  = aws_security_group.emr.id
+    emr_managed_master_security_group = aws_security_group.pass_emr.id
+    emr_managed_slave_security_group  = aws_security_group.pass_emr.id
     instance_profile                  = aws_iam_instance_profile.examplea.arn
   }
 
   service_role = aws_iam_role.emr_service.arn
 }
 
-resource "aws_security_group" "emr" {
+resource "aws_security_group" "pass_emr" {
   //todo
   name        = "block_access"
   description = "Block all traffic"
