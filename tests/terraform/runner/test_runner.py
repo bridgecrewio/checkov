@@ -196,7 +196,7 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125'):
                 # These checks were removed because they were duplicates
                 continue
-            if f'CKV_AWS_{i}' == 'CKV_AWS_95':
+            if f'CKV_AWS_{i}' in 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
@@ -240,6 +240,9 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(aws_checks) + 1):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
+                continue
+            if f'CKV2_AWS_{i}' in ('CKV2_AWS_24','CKV2_AWS_25','CKV2_AWS_26'):
+                # These all currently only exist for cf graph
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
