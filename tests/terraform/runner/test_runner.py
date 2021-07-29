@@ -196,7 +196,7 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125'):
                 # These checks were removed because they were duplicates
                 continue
-            if f'CKV_AWS_{i}' == 'CKV_AWS_95':
+            if f'CKV_AWS_{i}' in 'CKV_AWS_95':
                 # CKV_AWS_95 is currently implemented just on cfn
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
@@ -225,6 +225,12 @@ class TestRunnerValid(unittest.TestCase):
         graph_registry = get_graph_checks_registry("terraform")
         graph_registry.load_checks()
         graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
+
+        # add cloudformation checks to graph checks
+        graph_registry = get_graph_checks_registry("cloudformation")
+        graph_registry.load_checks()
+        graph_checks.extend(list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks)))
+
         aws_checks, gcp_checks, azure_checks = [], [], []
         for check in graph_checks:
             if '_AWS_' in check.id:
