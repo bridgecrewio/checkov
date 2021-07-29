@@ -565,3 +565,38 @@ resource "aws_security_group" "fail" {
     cidr_blocks = 0.0.0.0/0
   }
 }
+
+resource "aws_emr_cluster" "pass_emr" {
+  name                   = var.cluster_name
+  release_label          = var.release_label
+  security_configuration = aws_emr_security_configuration.examplea.name
+
+  ec2_attributes {
+    subnet_id                         = var.subnet_id
+    emr_managed_master_security_group = aws_security_group.emr.id
+    emr_managed_slave_security_group  = aws_security_group.emr.id
+    instance_profile                  = aws_iam_instance_profile.examplea.arn
+  }
+
+  service_role = aws_iam_role.emr_service.arn
+}
+
+resource "aws_security_group" "emr" {
+  //todo
+  name        = "block_access"
+  description = "Block all traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+}
