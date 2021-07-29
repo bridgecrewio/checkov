@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class EMRClusterKerberosAttributes(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure that EMR clusters have Kerberos Enabled"
+        name = "Ensure that EMR clusters with Kerberos have Kerberos Realm set"
         id = "CKV_AWS_114"
         supported_resources = ['aws_emr_cluster']
         categories = [CheckCategories.GENERAL_SECURITY]
@@ -17,7 +17,7 @@ class EMRClusterKerberosAttributes(BaseResourceCheck):
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
-        return CheckResult.PASSED
+        return CheckResult.SKIPPED
 
 
 check = EMRClusterKerberosAttributes()
