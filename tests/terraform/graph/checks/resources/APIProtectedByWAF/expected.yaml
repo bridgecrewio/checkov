@@ -1,7 +1,7 @@
 pass:
   - "aws_api_gateway_rest_api.private"
   - "aws_api_gateway_rest_api.no_stage"
+  - "aws_api_gateway_rest_api.pass"
 
 fail:
-  - "aws_api_gateway_rest_api.pass"
   - "aws_api_gateway_rest_api.no_assoc"
