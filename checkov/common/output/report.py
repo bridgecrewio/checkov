@@ -1,7 +1,6 @@
 import json
 from collections import defaultdict
 from typing import List, Dict, Union, Any, Optional
-
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
@@ -32,11 +31,11 @@ class Report:
             self.parsing_errors.append(file)
 
     def add_record(self, record: Record) -> None:
-        if record.check_result['result'] == CheckResult.PASSED:
+        if record.check_result["result"] == CheckResult.PASSED:
             self.passed_checks.append(record)
-        if record.check_result['result'] == CheckResult.FAILED:
+        if record.check_result["result"] == CheckResult.FAILED:
             self.failed_checks.append(record)
-        if record.check_result['result'] == CheckResult.SKIPPED:
+        if record.check_result["result"] == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
@@ -46,7 +45,7 @@ class Report:
             "skipped": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "resource_count": self._count_resources(),
-            "checkov_version": version
+            "checkov_version": version,
         }
 
     def get_json(self) -> str:
@@ -59,7 +58,7 @@ class Report:
                 "results": {
                     "failed_checks": [check.__dict__ for check in self.failed_checks]
                 },
-                "summary": self.get_summary()
+                "summary": self.get_summary(),
             }
         else:
             return {
@@ -68,13 +67,17 @@ class Report:
                     "passed_checks": [check.__dict__ for check in self.passed_checks],
                     "failed_checks": [check.__dict__ for check in self.failed_checks],
                     "skipped_checks": [check.__dict__ for check in self.skipped_checks],
-                    "parsing_errors": list(self.parsing_errors)
+                    "parsing_errors": list(self.parsing_errors),
                 },
-                "summary": self.get_summary()
+                "summary": self.get_summary(),
             }
 
-    def get_exit_code(self, soft_fail: bool, soft_fail_on: Optional[list] = None,
-                      hard_fail_on: Optional[list] = None) -> int:
+    def get_exit_code(
+        self,
+        soft_fail: bool,
+        soft_fail_on: Optional[list] = None,
+        hard_fail_on: Optional[list] = None,
+    ) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
@@ -87,16 +90,26 @@ class Report:
         """
         if soft_fail_on:
             soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
-            if all((check_id in soft_fail_on or bc_check_id in soft_fail_on) for (check_id, bc_check_id) in
-                   ((failed_check.check_id, failed_check.bc_check_id) for failed_check in self.failed_checks)):
+            if all(
+                (check_id in soft_fail_on or bc_check_id in soft_fail_on)
+                for (check_id, bc_check_id) in (
+                    (failed_check.check_id, failed_check.bc_check_id)
+                    for failed_check in self.failed_checks
+                )
+            ):
                 # List of "failed checks" is a subset of the "soft fail on" list.
                 return 0
             else:
                 return 1
         if hard_fail_on:
             hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
-            if any((check_id in hard_fail_on or bc_check_id in hard_fail_on) for (check_id, bc_check_id) in
-                   ((failed_check.check_id, failed_check.bc_check_id) for failed_check in self.failed_checks)):
+            if any(
+                (check_id in hard_fail_on or bc_check_id in hard_fail_on)
+                for (check_id, bc_check_id) in (
+                    (failed_check.check_id, failed_check.bc_check_id)
+                    for failed_check in self.failed_checks
+                )
+            ):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".
                 return 1
             else:
@@ -108,17 +121,35 @@ class Report:
         return 0
 
     def is_empty(self) -> bool:
-        return len(self.passed_checks + self.failed_checks + self.skipped_checks) + len(self.parsing_errors) == 0
+        return (
+            len(self.passed_checks + self.failed_checks + self.skipped_checks)
+            + len(self.parsing_errors)
+            == 0
+        )
 
-    def print_console(self, is_quiet=False, is_compact=False, created_baseline_path=None, baseline=None, use_bc_ids=False) -> None:
+    def print_console(
+        self,
+        is_quiet=False,
+        is_compact=False,
+        created_baseline_path=None,
+        baseline=None,
+        use_bc_ids=False,
+    ) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
             message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
-                summary["passed"], summary["failed"], summary["skipped"], summary["parsing_errors"])
+                summary["passed"],
+                summary["failed"],
+                summary["skipped"],
+                summary["parsing_errors"],
+            )
         else:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
-                summary["passed"], summary["failed"], summary["skipped"])
+            message = (
+                "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
+                    summary["passed"], summary["failed"], summary["skipped"]
+                )
+            )
         print(colored(message, "cyan"))
         if not is_quiet:
             for record in self.passed_checks:
@@ -134,22 +165,89 @@ class Report:
                 Report._print_parsing_error_console(file)
 
         if created_baseline_path:
-            print(colored(f"Created a checkov baseline file at {created_baseline_path}", "blue"))
+            print(
+                colored(
+                    f"Created a checkov baseline file at {created_baseline_path}",
+                    "blue",
+                )
+            )
 
         if baseline:
-            print(colored(
-                f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                "blue"))
-
+            print(
+                colored(
+                    f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
+                    "blue",
+                )
+            )
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
-        print(colored(f'Error parsing file {file}', 'red'))
+        print(colored(f"Error parsing file {file}", "red"))
 
     def print_junit_xml(self, use_bc_ids=False) -> None:
         ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
+
+    def get_sarif_json(self):
+        rules = []
+        results = []
+        for idx, record in enumerate(self.failed_checks):
+            rule = {
+                "id": record.check_id,
+                "name": record.check_name,
+                "shortDescription": {"text": record.check_name},
+                "fullDescription": {"text": record.check_name},
+                "help": {
+                    "text": f'"{record.check_name}\nResource: {record.resource}\nGuideline: {record.guideline}"',
+                },
+                "defaultConfiguration": {"level": "error"},
+            }
+            if record.file_line_range[0] == 0:
+                record.file_line_range[0] = 1
+            if record.file_line_range[1] == 0:
+                record.file_line_range[1] = 1
+            result = {
+                "ruleId": record.check_id,
+                "ruleIndex": idx,
+                "level": "error",
+                "message": {"text": record.check_name},
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": record.file_path},
+                            "region": {
+                                "startLine": int(record.file_line_range[0]),
+                                "endLine": int(record.file_line_range[2]),
+                            },
+                        }
+                    }
+                ],
+            }
+            rules.append(rule)
+            results.append(result)
+        sarif_template_report = {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [],
+        }
+        set_run = {
+            "tool": {
+                "driver": {
+                    "name": "checkov",
+                    "version": version,
+                    "informationUri": "https://github.com/bridgecrewio/checkov/",
+                    "rules": rules,
+                    "organization": "bridgecrew",
+                }
+            },
+            "results": results,
+        }
+        sarif_template_report["runs"].append(set_run)
+        return sarif_template_report
+
+    def print_sarif_report(self):
+        print(json.dumps(get_sarif_json()))
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
@@ -158,9 +256,23 @@ class Report:
     def print_failed_github_md(self, use_bc_ids=False) -> None:
         result = []
         for record in self.failed_checks:
-            result.append([record.get_output_id(use_bc_ids), record.file_path, record.resource, record.check_name, record.guideline])
-        print(tabulate(result, headers=["check_id", "file", "resource", "check_name", "guideline"], tablefmt="github",
-                       showindex=True))
+            result.append(
+                [
+                    record.get_output_id(use_bc_ids),
+                    record.file_path,
+                    record.resource,
+                    record.check_name,
+                    record.guideline,
+                ]
+            )
+        print(
+            tabulate(
+                result,
+                headers=["check_id", "file", "resource", "check_name", "guideline"],
+                tablefmt="github",
+                showindex=True,
+            )
+        )
         print("\n\n---\n\n")
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
@@ -168,25 +280,35 @@ class Report:
         test_suites = []
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = f'{record.get_output_id(use_bc_ids)}/{record.check_name}'
+            check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
 
-            test_name = f'{self.check_type} {check_name} {record.resource}'
-            test_case = TestCase(name=test_name, file=record.file_path, classname=record.check_class)
-            if record.check_result['result'] == CheckResult.FAILED:
+            test_name = f"{self.check_type} {check_name} {record.resource}"
+            test_case = TestCase(
+                name=test_name, file=record.file_path, classname=record.check_class
+            )
+            if record.check_result["result"] == CheckResult.FAILED:
                 if record.file_path and record.file_line_range:
                     test_case.add_failure_info(
-                        f'Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range} - Guideline: {record.guideline}')
+                        f"Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range} - Guideline: {record.guideline}"
+                    )
                 else:
                     test_case.add_failure_info(
-                        f'Resource {record.resource} failed in check {check_name}')
-            if record.check_result['result'] == CheckResult.SKIPPED:
+                        f"Resource {record.resource} failed in check {check_name}"
+                    )
+            if record.check_result["result"] == CheckResult.SKIPPED:
                 test_case.add_skipped_info(
-                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]} - Guideline: {record.guideline}')
+                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]} - Guideline: {record.guideline}'
+                )
 
             test_cases[check_name].append(test_case)
         for key in test_cases.keys():
             test_suites.append(
-                TestSuite(name=key, test_cases=test_cases[key], package=test_cases[key][0].classname))
+                TestSuite(
+                    name=key,
+                    test_cases=test_cases[key],
+                    package=test_cases[key][0].classname,
+                )
+            )
         return test_suites
 
     def print_json(self) -> None:
@@ -195,11 +317,13 @@ class Report:
     def _count_resources(self) -> int:
         unique_resources = set()
         for record in self.passed_checks + self.failed_checks:
-            unique_resources.add(record.file_path + '.' + record.resource)
+            unique_resources.add(record.file_path + "." + record.resource)
         return len(unique_resources)
 
     @staticmethod
-    def enrich_plan_report(report: "Report", enriched_resources: Dict[str, Dict[str, Any]]) -> "Report":
+    def enrich_plan_report(
+        report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
+    ) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
             enriched_resource = enriched_resources.get(record.resource)
@@ -210,9 +334,13 @@ class Report:
         return report
 
     @staticmethod
-    def handle_skipped_checks(report: "Report", enriched_resources: Dict[str, Dict[str, Any]]) -> "Report":
+    def handle_skipped_checks(
+        report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
+    ) -> "Report":
         for record in report.failed_checks:
-            resource_skips = enriched_resources.get(record.resource, {}).get("skipped_checks", [])
+            resource_skips = enriched_resources.get(record.resource, {}).get(
+                "skipped_checks", []
+            )
             for skip in resource_skips:
                 if record.check_id in skip["id"]:
                     # Remove and re-add the record to make Checkov mark it as skipped
