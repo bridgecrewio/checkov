@@ -225,6 +225,12 @@ class TestRunnerValid(unittest.TestCase):
         graph_registry = get_graph_checks_registry("terraform")
         graph_registry.load_checks()
         graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
+
+        # add cloudformation checks to graph checks
+        graph_registry = get_graph_checks_registry("cloudformation")
+        graph_registry.load_checks()
+        graph_checks.extend(list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks)))
+
         aws_checks, gcp_checks, azure_checks = [], [], []
         for check in graph_checks:
             if '_AWS_' in check.id:
@@ -240,9 +246,6 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(aws_checks) + 1):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
-                continue
-            if f'CKV2_AWS_{i}' in ('CKV2_AWS_24','CKV2_AWS_25','CKV2_AWS_26'):
-                # These all currently only exist for cf graph
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
