@@ -35,12 +35,13 @@ class GitGetter(BaseGetter):
 
         clone_dir = self.temp_dir + "/clone/" if self.create_clone_and_res_dirs else self.temp_dir
         result_dir = self.temp_dir + "/result/"
-
-        if ".git//" in self.url:
-            git_url, internal_dir = self.url.split(".git//")
-            self._clone(git_url + ".git", clone_dir, result_dir, internal_dir)
+        
+        git_url, internal_dir = self._source_subdir()
+        
+        if internal_dir:
+            self._clone(git_url, clone_dir, result_dir, internal_dir)
         else:
-            self._clone(self.url, clone_dir, result_dir)
+            self._clone(git_url, clone_dir, result_dir)
 
         return result_dir
 
@@ -52,3 +53,26 @@ class GitGetter(BaseGetter):
             Repo.clone_from(git_url, clone_dir)
         if self.create_clone_and_res_dirs:
             shutil.copytree(clone_dir + internal_dir, result_dir)
+
+    # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', 'repo/subpath')
+    # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
+    def _source_subdir(self):
+        stop = len(self.url)
+        
+        query_index =  = self.url.find("?")
+        if query_index > -1:
+            stop = query_index
+        
+        start = 0
+        scheme_index = self.url.find("://", start, stop)
+        if scheme_index > -1:
+            start = scheme_index + 3
+
+        subdir_index = self.url.find("//", start, stop)
+        if subdir_index == -1:
+            return (self.url, "")
+
+        internal_dir = self.url[subdir_index + 2:stop]
+        git_url = self.url[:subdir_index] + source_url[stop:]
+
+        return (git_url, internal_dir)
