@@ -176,6 +176,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
+    def test_ALBProtectedByWAF(self):
+        self.go("ALBProtectedByWAF")
 
     def test_APIProtectedByWAF(self):
         self.go("APIProtectedByWAF")

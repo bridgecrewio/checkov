@@ -11,7 +11,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.variables.context import EvaluationContext
@@ -102,6 +102,7 @@ class Runner(BaseRunner):
 
         graph_report = self.get_graph_checks_report(root_folder, runner_filter)
         merge_reports(report, graph_report)
+        report = remove_duplicate_results(report)
 
         return report
 

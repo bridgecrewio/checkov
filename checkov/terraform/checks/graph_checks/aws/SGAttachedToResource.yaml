@@ -26,6 +26,7 @@ definition:
         - aws_elasticache_cluster
         - aws_elasticsearch_domain
         - aws_elb
+        - aws_emr_cluster
         - aws_instance
         - aws_lambda_function
         - aws_launch_configuration
