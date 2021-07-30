@@ -4,5 +4,7 @@ Resources:
     Type: AWS::Transfer::Server
     Properties: 
       EndpointType: "VPC"
-  NONE:
+  VPCENDPOINT:
     Type: AWS::Transfer::Server
+    Properties: 
+      EndpointType: "VPC_ENDPOINT"
