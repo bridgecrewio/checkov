@@ -59,7 +59,7 @@ class GitGetter(BaseGetter):
     def _source_subdir(self):
         stop = len(self.url)
         
-        query_index =  = self.url.find("?")
+        query_index = self.url.find("?")
         if query_index > -1:
             stop = query_index
         
@@ -73,6 +73,6 @@ class GitGetter(BaseGetter):
             return (self.url, "")
 
         internal_dir = self.url[subdir_index + 2:stop]
-        git_url = self.url[:subdir_index] + source_url[stop:]
+        git_url = self.url[:subdir_index] + self.url[stop:]
 
         return (git_url, internal_dir)
