@@ -184,12 +184,13 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def print_junit_xml(self, use_bc_ids=False) -> None:
+    def print_junit_xml(self, use_bc_ids: bool = False) -> None:
         ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_sarif_json(self):
+    def get_sarif_json(self) -> Dict[str, Any]:
+        runs = []
         rules = []
         results = []
         for idx, record in enumerate(self.failed_checks):
@@ -218,7 +219,7 @@ class Report:
                             "artifactLocation": {"uri": record.file_path},
                             "region": {
                                 "startLine": int(record.file_line_range[0]),
-                                "endLine": int(record.file_line_range[2]),
+                                "endLine": int(record.file_line_range[1]),
                             },
                         }
                     }
@@ -226,12 +227,8 @@ class Report:
             }
             rules.append(rule)
             results.append(result)
-        sarif_template_report = {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": [],
-        }
-        set_run = {
+
+        runs.append({
             "tool": {
                 "driver": {
                     "name": "checkov",
@@ -242,12 +239,16 @@ class Report:
                 }
             },
             "results": results,
+        })
+        sarif_template_report = {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": runs,
         }
-        sarif_template_report["runs"].append(set_run)
         return sarif_template_report
 
-    def print_sarif_report(self):
-        print(json.dumps(get_sarif_json()))
+    def print_sarif_report(self) -> None:
+        print(json.dumps(self.get_sarif_json()))
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
