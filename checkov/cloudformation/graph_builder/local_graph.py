@@ -23,6 +23,18 @@ class CloudformationLocalGraph(LocalGraph):
                 file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.RESOURCES.value, {}))
             )
 
+            self._create_parameters_vertices(
+                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.PARAMETERS.value, {}))
+            )
+
+            self._create_outputs_vertices(
+                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.OUTPUTS.value, {}))
+            )
+
+            self._create_conditions_vertices(
+                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.CONDITIONS.value, {}))
+            )
+
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
@@ -46,6 +58,42 @@ class CloudformationLocalGraph(LocalGraph):
                 source=self.source,
             )
             self.vertices.append(block)
+
+    def _create_parameters_vertices(self, file_path: str, params: Dict[str, dict_node]):
+        for param_name, parameter in params.items():
+            self.vertices.append(CloudformationBlock(
+                name=f"{BlockType.PARAMETER}.{param_name}",
+                path=file_path,
+                config=parameter,
+                block_type=BlockType.PARAMETER,
+                id=f"{BlockType.PARAMETER}.{param_name}",
+                source=self.source,
+                attributes=parameter
+            ))
+
+    def _create_outputs_vertices(self, file_path: str, outputs: Dict[str, dict_node]):
+        for output_name, output in outputs.items():
+            self.vertices.append(CloudformationBlock(
+                name=f"{BlockType.OUTPUT}.{output_name}",
+                path=file_path,
+                config=output,
+                block_type=BlockType.OUTPUT,
+                id=f"{BlockType.OUTPUT}.{output_name}",
+                source=self.source,
+                attributes=output
+            ))
+
+    def _create_conditions_vertices(self, file_path: str, conditions: Dict[str, dict_node]):
+        for cond_name, cond in conditions.items():
+            self.vertices.append(CloudformationBlock(
+                name=f"{BlockType.CONDITION}.{cond_name}",
+                path=file_path,
+                config=cond,
+                block_type=BlockType.CONDITION,
+                id=f"{BlockType.CONDITION}.{cond_name}",
+                source=self.source,
+                attributes=cond
+            ))
 
 
 def get_only_dict_items(origin_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:

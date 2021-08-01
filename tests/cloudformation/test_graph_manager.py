@@ -41,11 +41,15 @@ class TestCloudformationGraphManager(TestCase):
                 "Custom::acmeSnsCustomResource.acmeSnsCustomResource",
                 ],
         }
-        self.assertEqual(20, len(local_graph.vertices))
+        self.assertEqual(39, len(local_graph.vertices))
         self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETER]))
+        self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUT]))
+        self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITION]))
 
         for v in local_graph.vertices:
-            self.assertIn(v.name, expected_resources_by_file[v.path])
+            if v.block_type == BlockType.RESOURCE:
+                self.assertIn(v.name, expected_resources_by_file[v.path])
 
         sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
         self.assertDictEqual({'Fn::Join': ['', [{'Ref': 'ResourceNamePrefix', '__startline__': 650, '__endline__': 652}, '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
