@@ -27,7 +27,7 @@ resource "aws_emr_cluster" "test" {
         """)
         resource_conf = hcl_res['resource'][0]['aws_emr_cluster']['test']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.SKIPPED, scan_result)
+        self.assertEqual(CheckResult.UNKNOWN, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
