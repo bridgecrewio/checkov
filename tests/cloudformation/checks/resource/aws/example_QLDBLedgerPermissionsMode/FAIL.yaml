@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  AllowAll:
+    Type: "AWS::QLDB::Ledger"
+    Properties:
+      Name: "ledger"
+      PermissionsMode: "ALLOW_ALL"
