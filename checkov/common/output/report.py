@@ -338,17 +338,23 @@ class Report:
     def handle_skipped_checks(
         report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
+        skip_records = []
         for record in report.failed_checks:
             resource_skips = enriched_resources.get(record.resource, {}).get(
                 "skipped_checks", []
             )
             for skip in resource_skips:
                 if record.check_id in skip["id"]:
-                    # Remove and re-add the record to make Checkov mark it as skipped
-                    report.failed_checks.remove(record)
+                    # Mark for removal and add it as a skipped record. It is not safe to remove
+                    # the record from failed_checks immediately because we're iterating over it
+                    skip_records.append(record)
                     record.check_result["result"] = CheckResult.SKIPPED
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
+
+        for record in skip_records:
+            if record in report.failed_checks:
+                report.failed_checks.remove(record)
         return report
 
 
