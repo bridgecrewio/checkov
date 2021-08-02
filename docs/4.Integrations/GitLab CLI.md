@@ -95,6 +95,11 @@ checkov:
     # Use `script` to emulate `tty` for colored output.
     - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
     - exit $(cat CKVEXIT)
+  artifacts:
+    reports:
+      junit: "checkov.test.xml"
+    paths:
+      - "checkov.test.xml"
 ```
 
 See the [GitLab CI documentation](https://docs.gitlab.com/ee/ci/) for additional information.
