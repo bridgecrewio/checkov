@@ -129,6 +129,7 @@ nav_order: 1
 | 118 | CKV_AWS_164 | resource | AWS::Transfer::Server                     | Ensure Transfer Server is not exposed publicly.                                                                                                                                                          | Cloudformation |
 | 119 | CKV_AWS_165 | resource | AWS::DynamoDB::GlobalTable                | Ensure Dynamodb global table point in time recovery (backup) is enabled                                                                                                                                  | Cloudformation |
 | 120 | CKV_AWS_166 | resource | AWS::Backup::BackupVault                  | Ensure Backup Vault is encrypted at rest using KMS CMK                                                                                                                                                   | Cloudformation |
+| 121 | CKV_AWS_170 | resource | AWS::QLDB::Ledger                         | Ensure QLDB ledger permissions mode is set to STANDARD                                                                                                                                                   | Cloudformation |
 
 
 ---
