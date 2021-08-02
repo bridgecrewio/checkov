@@ -35,6 +35,10 @@ class CloudformationLocalGraph(LocalGraph):
                 file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.CONDITIONS.value, {}))
             )
 
+            self._create_mappings_vertices(
+                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.MAPPINGS.value, {}))
+            )
+
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
@@ -93,6 +97,18 @@ class CloudformationLocalGraph(LocalGraph):
                 id=f"{BlockType.CONDITION}.{cond_name}",
                 source=self.source,
                 attributes=cond
+            ))
+
+    def _create_mappings_vertices(self, file_path: str, mappings: Dict[str, dict_node]):
+        for mapping_name, mapping in mappings.items():
+            self.vertices.append(CloudformationBlock(
+                name=mapping_name,
+                path=file_path,
+                config=mapping,
+                block_type=BlockType.MAPPING,
+                id=f"{BlockType.MAPPING}.{mapping_name}",
+                source=self.source,
+                attributes=mapping
             ))
 
 
