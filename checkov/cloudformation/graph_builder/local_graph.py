@@ -18,33 +18,8 @@ class CloudformationLocalGraph(LocalGraph):
         logging.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
 
     def _create_vertices(self) -> None:
-        for file_path, file_conf in self.definitions.items():
-            self._create_resources_vertices(
-                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.RESOURCES.value, {}))
-            )
 
-            self._create_parameters_vertices(
-                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.PARAMETERS.value, {}))
-            )
-
-            self._create_outputs_vertices(
-                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.OUTPUTS.value, {}))
-            )
-
-            self._create_conditions_vertices(
-                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.CONDITIONS.value, {}))
-            )
-
-            self._create_mappings_vertices(
-                file_path, get_only_dict_items(file_conf.get(CloudformationTemplateSections.MAPPINGS.value, {}))
-            )
-
-        for i, vertex in enumerate(self.vertices):
-            self.vertices_by_block_type[vertex.block_type].append(i)
-            self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
-
-    def _create_resources_vertices(self, file_path: str, resources: Dict[str, dict_node]) -> None:
-        for resource_name, resource in resources.items():
+        def extract_resource_attributes(resource: dict_node) -> dict_node:
             resource_type = resource.get("Type")
             attributes = resource.get("Properties", {})
             attributes["resource_type"] = resource_type
@@ -52,65 +27,40 @@ class CloudformationLocalGraph(LocalGraph):
             attributes["__endline__"] = resource["__endline__"]
             attributes.start_mark = resource.start_mark
             attributes.end_mark = attributes.end_mark
-            block = CloudformationBlock(
-                name=f"{resource_type}.{resource_name}",
-                config=resource.get("Properties", {}),
+            return attributes
+
+        for file_path, file_conf in self.definitions.items():
+            self._create_section_vertices(file_path, file_conf, CloudformationTemplateSections.RESOURCES,
+                                          BlockType.RESOURCE, extract_resource_attributes)
+            self._create_section_vertices(file_path, file_conf, CloudformationTemplateSections.OUTPUTS, BlockType.OUTPUT)
+            self._create_section_vertices(file_path, file_conf, CloudformationTemplateSections.MAPPINGS, BlockType.MAPPING)
+            self._create_section_vertices(file_path, file_conf, CloudformationTemplateSections.CONDITIONS,
+                                          BlockType.CONDITION)
+            self._create_section_vertices(file_path, file_conf, CloudformationTemplateSections.PARAMETERS,
+                                          BlockType.PARAMETER)
+
+        for i, vertex in enumerate(self.vertices):
+            self.vertices_by_block_type[vertex.block_type].append(i)
+            self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
+
+
+    def _create_section_vertices(self, file_path: str, file_conf: dict, section: CloudformationTemplateSections,
+                                 block_type: str, attributes_operator: callable = lambda a: a) -> None:
+        for name, obj in get_only_dict_items(file_conf.get(section.value, {})).items():
+            is_resources_section = section == CloudformationTemplateSections.RESOURCES
+            attributes = attributes_operator(obj)
+            block_name = name if not is_resources_section else f"{obj['Type']}.{name}"
+            config = obj if not is_resources_section else obj.get("Properties")
+            id = f"{block_type}.{block_name}" if not is_resources_section else block_name
+            self.vertices.append(CloudformationBlock(
+                name=block_name,
+                config=config,
                 path=file_path,
-                block_type=BlockType.RESOURCE,
+                block_type=block_type,
                 attributes=attributes,
-                id=f"{resource_type}.{resource_name}",
-                source=self.source,
-            )
-            self.vertices.append(block)
-
-    def _create_parameters_vertices(self, file_path: str, params: Dict[str, dict_node]):
-        for param_name, parameter in params.items():
-            self.vertices.append(CloudformationBlock(
-                name=param_name,
-                path=file_path,
-                config=parameter,
-                block_type=BlockType.PARAMETER,
-                id=f"{BlockType.PARAMETER}.{param_name}",
-                source=self.source,
-                attributes=parameter
+                id=id,
+                source=self.source
             ))
-
-    def _create_outputs_vertices(self, file_path: str, outputs: Dict[str, dict_node]):
-        for output_name, output in outputs.items():
-            self.vertices.append(CloudformationBlock(
-                name=output_name,
-                path=file_path,
-                config=output,
-                block_type=BlockType.OUTPUT,
-                id=f"{BlockType.OUTPUT}.{output_name}",
-                source=self.source,
-                attributes=output
-            ))
-
-    def _create_conditions_vertices(self, file_path: str, conditions: Dict[str, dict_node]):
-        for cond_name, cond in conditions.items():
-            self.vertices.append(CloudformationBlock(
-                name=cond_name,
-                path=file_path,
-                config=cond,
-                block_type=BlockType.CONDITION,
-                id=f"{BlockType.CONDITION}.{cond_name}",
-                source=self.source,
-                attributes=cond
-            ))
-
-    def _create_mappings_vertices(self, file_path: str, mappings: Dict[str, dict_node]):
-        for mapping_name, mapping in mappings.items():
-            self.vertices.append(CloudformationBlock(
-                name=mapping_name,
-                path=file_path,
-                config=mapping,
-                block_type=BlockType.MAPPING,
-                id=f"{BlockType.MAPPING}.{mapping_name}",
-                source=self.source,
-                attributes=mapping
-            ))
-
 
 def get_only_dict_items(origin_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     return {key: value for key, value in origin_dict.items() if isinstance(value, dict)}

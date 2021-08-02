@@ -36,19 +36,11 @@ class TestLocalGraph(TestCase):
         (definitions[relative_file_path], definitions_raw) = parse(file)
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
-        self.assertEqual(len(local_graph.vertices), 56)
+        self.assertEqual(len(local_graph.vertices), 57)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.CONDITION]), 2)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 16)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.PARAMETER]), 30)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUT]), 8)
-
-    def test_build_graph_with_mappings(self):
-        relative_file_path = '../../checks/resource/aws/example_IAMRoleAllowAssumeFromAccount/example_IAMRoleAllowAssumeFromAccount-PASSED-2.yml'
-        definitions = {}
-        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
-        (definitions[relative_file_path], definitions_raw) = parse(file)
-        local_graph = CloudformationLocalGraph(definitions)
-        local_graph.build_graph(render_variables=False)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.MAPPING]), 1)
 
     def test_vertices_from_local_graph(self):
