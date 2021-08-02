@@ -62,7 +62,7 @@ class CloudformationLocalGraph(LocalGraph):
     def _create_parameters_vertices(self, file_path: str, params: Dict[str, dict_node]):
         for param_name, parameter in params.items():
             self.vertices.append(CloudformationBlock(
-                name=f"{BlockType.PARAMETER}.{param_name}",
+                name=param_name,
                 path=file_path,
                 config=parameter,
                 block_type=BlockType.PARAMETER,
@@ -74,7 +74,7 @@ class CloudformationLocalGraph(LocalGraph):
     def _create_outputs_vertices(self, file_path: str, outputs: Dict[str, dict_node]):
         for output_name, output in outputs.items():
             self.vertices.append(CloudformationBlock(
-                name=f"{BlockType.OUTPUT}.{output_name}",
+                name=output_name,
                 path=file_path,
                 config=output,
                 block_type=BlockType.OUTPUT,
@@ -86,7 +86,7 @@ class CloudformationLocalGraph(LocalGraph):
     def _create_conditions_vertices(self, file_path: str, conditions: Dict[str, dict_node]):
         for cond_name, cond in conditions.items():
             self.vertices.append(CloudformationBlock(
-                name=f"{BlockType.CONDITION}.{cond_name}",
+                name=cond_name,
                 path=file_path,
                 config=cond,
                 block_type=BlockType.CONDITION,
