@@ -1,5 +1,4 @@
 import os
-import hashlib
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.terraform.module_loading.content import ModuleContent
