@@ -344,7 +344,7 @@ class Parser:
                         continue
 
                     # Variables being passed to module, "source" and "version" are reserved
-                    specified_vars = {k: v[0] for k, v in module_call_data.items()
+                    specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
                                       if k != "source" and k != "version"}
 
                     if not ignore_unresolved_params:
