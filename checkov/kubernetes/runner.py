@@ -76,7 +76,7 @@ class Runner(BaseRunner):
 
                     # Split out resources if entity kind is List
                     if entity_conf["kind"] == "List":
-                        for item in entity_conf["items"]:
+                        for item in entity_conf.get("items", []):
                             definitions[k8_file].append(item)
 
                 for i in range(len(definitions[k8_file])):
