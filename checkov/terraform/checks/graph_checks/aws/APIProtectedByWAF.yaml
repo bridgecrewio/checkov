@@ -1,0 +1,50 @@
+metadata:
+  id: "CKV2_AWS_29"
+  name: "Ensure public API gateway are protected by WAF"
+  category: "NETWORKING"
+definition:
+  or:
+    - and:
+      - cond_type: attribute
+        resource_types:
+        - aws_api_gateway_rest_api
+        attribute: endpoint_configuration.types
+        operator: contains
+        value: PRIVATE
+      - resource_types:
+        - aws_api_gateway_rest_api
+        connected_resource_types:
+        - aws_api_gateway_stage
+        operator:  exists
+        cond_type: connection
+    - and:
+      - cond_type: attribute
+        resource_types:
+        - aws_api_gateway_rest_api
+        attribute: endpoint_configuration.types
+        operator: contains
+        value: REGIONAL
+      - resource_types:
+        - aws_api_gateway_rest_api
+        connected_resource_types:
+        - aws_api_gateway_stage
+        operator:  exists
+        cond_type: connection
+      - resource_types:
+        - aws_api_gateway_stage
+        connected_resource_types:
+        - aws_wafregional_web_acl_association
+        operator:  exists
+        cond_type: connection
+    - and:
+      - resource_types:
+        - aws_api_gateway_rest_api
+        connected_resource_types:
+        - aws_api_gateway_stage
+        operator:  not_exists
+        cond_type: connection
+    - cond_type: filter
+      value:
+      - aws_api_gateway_stage
+      attribute: resource_type
+      operator: within

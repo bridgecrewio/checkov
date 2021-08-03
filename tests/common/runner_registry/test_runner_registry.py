@@ -12,12 +12,13 @@ from checkov.terraform.runner import Runner as tf_runner
 
 
 class TestRunnerRegistry(unittest.TestCase):
-
     def test_multi_iac(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_multi_iac"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
         reports = runner_registry.run(root_folder=test_files_dir)
         for report in reports:
             self.assertGreater(len(report.passed_checks), 1)
@@ -26,43 +27,46 @@ class TestRunnerRegistry(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_multi_iac"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
         reports = runner_registry.run(root_folder=test_files_dir)
 
         # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
-        counts_by_type = {
-            'kubernetes': 13,
-            'terraform': 3,
-            'cloudformation': 3
-        }
+        counts_by_type = {"kubernetes": 13, "terraform": 3, "cloudformation": 3}
 
         for report in reports:
-            self.assertEqual(counts_by_type[report.check_type], report.get_summary()['resource_count'])
+            self.assertEqual(
+                counts_by_type[report.check_type],
+                report.get_summary()["resource_count"],
+            )
 
     def test_empty_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_empty_tf"
         self.verify_empty_report(test_files_dir=test_files_dir)
-        test_files = [test_files_dir + '/example_empty_file.tf']
+        test_files = [test_files_dir + "/example_empty_file.tf"]
         self.verify_empty_report(test_files_dir=None, files=test_files)
 
     def test_empty_non_existing(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/foo"
         self.verify_empty_report(test_files_dir=test_files_dir)
-        test_files = [test_files_dir + '/goo.yaml']
+        test_files = [test_files_dir + "/goo.yaml"]
         self.verify_empty_report(test_files_dir=None, files=test_files)
 
     def test_empty_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_empty_yaml"
         self.verify_empty_report(test_files_dir=test_files_dir)
-        test_files = [test_files_dir + '/example_empty_file.yaml']
+        test_files = [test_files_dir + "/example_empty_file.yaml"]
         self.verify_empty_report(test_files_dir=None, files=test_files)
 
     def verify_empty_report(self, test_files_dir, files=None):
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
-        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner(), cfn_runner(), k8_runner())
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
         reports = runner_registry.run(root_folder=test_files_dir, files=files)
         for report in reports:
             self.assertEqual(report.failed_checks, [])
@@ -70,5 +74,6 @@ class TestRunnerRegistry(unittest.TestCase):
             self.assertEqual(report.passed_checks, [])
         return runner_registry
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

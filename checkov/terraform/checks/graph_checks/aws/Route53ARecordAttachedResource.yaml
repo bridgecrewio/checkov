@@ -32,6 +32,7 @@ definition:
            resource_types:
               - aws_route53_record
            connected_resource_types:
+              - aws_instance
               - aws_eip
               - aws_elb
               - aws_lb
@@ -41,5 +42,6 @@ definition:
               - aws_elastic_beanstalk_environment
               - aws_vpc_endpoint
               - aws_globalaccelerator_accelerator
+              - aws_cloudfront_distribution
            operator: exists
            attribute: networking

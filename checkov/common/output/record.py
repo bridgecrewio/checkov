@@ -131,3 +131,6 @@ class Record:
 
     def get_output_id(self, use_bc_ids: bool) -> str:
         return self.bc_check_id if self.bc_check_id and use_bc_ids else self.check_id
+
+    def get_unique_string(self):
+        return f"{self.check_id}.{self.check_result}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"

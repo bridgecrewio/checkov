@@ -7,10 +7,10 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 @dataclass
 class BlockType(CommonBlockType):
     METADATA = "metadata"
-    Parameter = "parameter"
-    RULE = "rule"
-    MAPPING = "mapping"
-    CONDITION = "condition"
+    PARAMETER = "parameters"
+    RULE = "rules"
+    MAPPING = "mappings"
+    CONDITION = "conditions"
     TRANSFORM = "transform"
     OUTPUT = "outputs"
 

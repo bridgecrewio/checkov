@@ -1,11 +1,11 @@
 import os
 from unittest import TestCase
 
-from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
-from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
-from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
-from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 from checkov.cloudformation.cfn_utils import create_definitions
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
+from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
+from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
+from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.parser import parse
 from checkov.runner_filter import RunnerFilter
 
@@ -26,7 +26,22 @@ class TestLocalGraph(TestCase):
         self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
-        self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"], resource_vertex.attributes)
+        self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"],
+                             resource_vertex.attributes)
+
+    def test_build_graph_with_params_outputs(self):
+        relative_file_path = "../../checks/resource/aws/example_IAMRoleAllowAssumeFromAccount/example_IAMRoleAllowAssumeFromAccount-PASSED-2.yml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        local_graph = CloudformationLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False)
+        self.assertEqual(len(local_graph.vertices), 57)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.CONDITION]), 2)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 16)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.PARAMETER]), 30)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUT]), 8)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.MAPPING]), 1)
 
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, './resources'))
@@ -50,4 +65,3 @@ class TestLocalGraph(TestCase):
 
         self.assertIsNotNone(breadcrumbs)
         self.assertDictEqual(breadcrumbs, {})  # Will be changed when we add breadcrumbs to cfn vertices
-

@@ -1,3 +1,4 @@
+from collections import Hashable
 import logging
 import os
 from copy import deepcopy
@@ -342,7 +343,11 @@ class VariableRenderer:
         elif isinstance(val, set):
             evaluated_val = set()
             for v in val:
-                evaluated_val.add(self.evaluate_value(v))
+                evaluated_v = self.evaluate_value(v)
+                if isinstance(evaluated_v, Hashable):
+                    evaluated_val.add(evaluated_v)
+                else:
+                    evaluated_val.add(str(evaluated_v))
         else:
             evaluated_val = {}
             for k, v in val.items():

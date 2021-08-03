@@ -28,7 +28,8 @@ setup(
             "coverage",
             "coverage-badge",
             "GitPython==3.1.7",
-            "bandit"
+            "bandit",
+            "jsonschema",
         ]
     },
     install_requires=[
@@ -55,7 +56,7 @@ setup(
         "configargparse",
         "detect-secrets",
         "policyuniverse",
-        "typing-extensions"
+        "typing-extensions",
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -65,21 +66,29 @@ setup(
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=setuptools.find_packages(exclude=["tests*","integration_tests*"]),
+    packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
-    package_dir={'checkov.terraform.checks.graph_checks': 'checkov/terraform/checks/graph_checks'},
-    package_data = {'checkov.terraform.checks.graph_checks': ['aws/*.yaml', 'gcp/*.yaml', 'azure/*.yaml']},
+    package_dir={
+        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks"
+    },
+    package_data={
+        "checkov.terraform.checks.graph_checks": [
+            "aws/*.yaml",
+            "gcp/*.yaml",
+            "azure/*.yaml",
+        ]
+    },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Topic :: Security',
-        'Topic :: Software Development :: Build Tools'
-    ]
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Security",
+        "Topic :: Software Development :: Build Tools",
+    ],
 )

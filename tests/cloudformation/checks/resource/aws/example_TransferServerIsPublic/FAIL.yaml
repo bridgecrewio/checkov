@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  PUBLIC:
+    Type: AWS::Transfer::Server
+    Properties: 
+      EndpointType: "PUBLIC"
+  NONE:
+    Type: AWS::Transfer::Server

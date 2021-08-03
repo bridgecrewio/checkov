@@ -9,6 +9,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 
 
 class TestRunnerRegistryEnrichment(unittest.TestCase):
+
     def test_enrichment_of_plan_report(self):
         allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
         runner_registry = RunnerRegistry(
@@ -138,6 +139,25 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(len(skipped_check_ids), 0)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
         self.assertEqual(enriched_data, expected_enriched_data)
+
+    def test_skip_check(self):
+        allowed_checks = ["CKV_AWS_20", "CKV_AWS_28"]
+        runner_registry = RunnerRegistry(
+            banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
+        )
+
+        repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
+        valid_plan_path = repo_root / "tfplan.json"
+
+        report = runner_registry.run(repo_root_for_plan_enrichment=repo_root, files=[valid_plan_path])[0]
+
+        failed_check_ids = {c.check_id for c in report.failed_checks}
+        skipped_check_ids = {c.check_id for c in report.skipped_checks}
+        expected_skipped_check_ids = {"CKV_AWS_20", "CKV_AWS_28"}
+
+        self.assertEqual(len(failed_check_ids), 0)
+        self.assertEqual(len(skipped_check_ids), 2)
+        self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
 
 
 if __name__ == "__main__":
