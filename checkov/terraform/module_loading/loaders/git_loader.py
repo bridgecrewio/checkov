@@ -15,7 +15,7 @@ class GenericGitLoader(ModuleLoader):
         try:
             module_source = self.module_source.replace('git::', '')
             if os.name == 'nt':
-                self.logger.info(f'Operating System: {os.uname()}')
+                self.logger.info(f'Operating System: {os.name}')
                 self._create_valid_windows_dest_dir()
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = self.dest_dir
