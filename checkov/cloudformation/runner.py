@@ -1,8 +1,9 @@
 import logging
+import os
 from typing import Optional, List
 
 from checkov.cloudformation import cfn_utils
-from checkov.cloudformation.cfn_utils import create_file_abs_path, create_definitions, build_definitions_context
+from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
@@ -73,9 +74,9 @@ class Runner(BaseRunner):
         return report
 
     def check_definitions(self, root_folder, runner_filter, report):
-        for cf_file, definition in self.definitions.items():
+        for file_abs_path, definition in self.definitions.items():
 
-            file_abs_path = create_file_abs_path(root_folder, cf_file)
+            cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
 
             if isinstance(definition, dict) and CloudformationTemplateSections.RESOURCES in definition.keys():
                 for resource_name, resource in definition[CloudformationTemplateSections.RESOURCES].items():
@@ -117,7 +118,8 @@ class Runner(BaseRunner):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_abs_path = create_file_abs_path(root_folder, entity.get(CustomAttributes.FILE_PATH))
+                entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_path = scanned_file = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
                 entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
                 entity_context = self.context[entity_file_abs_path][CloudformationTemplateSections.RESOURCES][
                     entity_name
@@ -128,7 +130,7 @@ class Runner(BaseRunner):
                     check_name=check.name,
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
-                    file_path=entity.get(CustomAttributes.FILE_PATH),
+                    file_path=entity_file_path,
                     file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
                     resource=entity.get(CustomAttributes.ID),
                     evaluations={},

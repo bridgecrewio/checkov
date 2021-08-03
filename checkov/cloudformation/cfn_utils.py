@@ -157,17 +157,16 @@ def build_definitions_context(
                                 current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
 
                         code_lines = definitions_raw[file_path][start_line - 1 : end_line]
-                        file_abs_path = create_file_abs_path(root_folder, file_path)
                         dpath.new(
                             definitions_context,
-                            [file_abs_path, str(file_path_definition), str(attribute)],
+                            [file_path, str(file_path_definition), str(attribute)],
                             {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
                         )
                         if file_path_definition.upper() == CloudformationTemplateSections.RESOURCES.value.upper():
                             skipped_checks = ContextParser.collect_skip_comments(code_lines)
                             dpath.new(
                                 definitions_context,
-                                [file_abs_path, str(file_path_definition), str(attribute), "skipped_checks"],
+                                [file_path, str(file_path_definition), str(attribute), "skipped_checks"],
                                 skipped_checks,
                             )
     return definitions_context
@@ -205,6 +204,9 @@ def create_definitions(
         if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+
+    definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
+    definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
 
     for cf_file in definitions.keys():
         cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
