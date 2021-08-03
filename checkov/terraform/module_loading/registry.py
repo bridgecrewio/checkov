@@ -24,7 +24,7 @@ information, see `loader.ModuleLoader.load`.
         if os.name == 'nt':
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
             # https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
-            source_hash = hashlib.md5(source.encode())
+            source_hash = hashlib.md5(source.encode())  # nosec
             local_dir = os.path.join(current_dir, self.external_modules_folder_name, source_hash.hexdigest())
         else:
             local_dir = os.path.join(current_dir, self.external_modules_folder_name, source)
