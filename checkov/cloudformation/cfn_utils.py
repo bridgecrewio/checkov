@@ -117,6 +117,9 @@ def get_folder_definitions(
         except TypeError:
             logging.info(f"CloudFormation skipping {file} as it is not a valid CF template")
 
+    definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
+    definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
+
     return definitions, definitions_raw
 
 
@@ -204,9 +207,6 @@ def create_definitions(
         if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
-
-    definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
-    definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
 
     for cf_file in definitions.keys():
         cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])

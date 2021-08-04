@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
+from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
 from checkov.cloudformation.parser.node import dict_node
 from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
 
@@ -14,7 +14,7 @@ class TestCfnUtils(unittest.TestCase):
     def setUp(self):
         self.test_root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, RELATIVE_PATH))
 
-        definitions, definitions_raw = create_definitions(self.test_root_dir, None)
+        definitions, definitions_raw = get_folder_definitions(self.test_root_dir, None)
         self.definitions_context = build_definitions_context(definitions, definitions_raw, self.test_root_dir)
 
     def validate_definition_lines(self, definition: dict_node, start_line, end_line, code_lines):
