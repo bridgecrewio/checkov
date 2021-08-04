@@ -16,15 +16,15 @@ class TestCloudformationGraphManager(TestCase):
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
-            "/tags.yaml": [
+            os.path.join(root_dir, "tags.yaml"): [
                 "AWS::S3::Bucket.DataBucket",
                 "AWS::S3::Bucket.NoTags",
                 "AWS::EKS::Nodegroup.EKSClusterNodegroup",
                 "AWS::AutoScaling::AutoScalingGroup.TerraformServerAutoScalingGroup"],
-            "/cfn_newline_at_end.yaml": [
+            os.path.join(root_dir, "cfn_newline_at_end.yaml"): [
                 "AWS::RDS::DBInstance.MyDB",
                 "AWS::S3::Bucket.MyBucket"],
-            "/success.json": [
+            os.path.join(root_dir, "success.json"): [
                 "AWS::S3::Bucket.acmeCWSBucket",
                 "AWS::S3::Bucket.acmeCWSBucket2",
                 "AWS::S3::BucketPolicy.acmeCWSBucketPolicy",

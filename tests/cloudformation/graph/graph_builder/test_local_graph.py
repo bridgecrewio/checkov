@@ -48,17 +48,17 @@ class TestLocalGraph(TestCase):
         definitions, _ = create_definitions(root_folder=resources_dir, files=None, runner_filter=RunnerFilter())
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
-        tf_definitions, breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, resources_dir)
+        definitions, breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, resources_dir)
 
-        self.assertIsNotNone(tf_definitions)
-        self.assertEqual(len(tf_definitions.items()), 2)
+        self.assertIsNotNone(definitions)
+        self.assertEqual(len(definitions.items()), 2)
 
-        test_yaml_definitions = tf_definitions['/test.yaml'][CloudformationTemplateSections.RESOURCES]
+        test_yaml_definitions = definitions[os.path.join(resources_dir, 'test.yaml')][CloudformationTemplateSections.RESOURCES]
         self.assertEqual(len(test_yaml_definitions.keys()), 2)
         self.assertIn('MyDB', test_yaml_definitions.keys())
         self.assertIn('MySourceQueue', test_yaml_definitions.keys())
 
-        test_json_definitions = tf_definitions['/test.json'][CloudformationTemplateSections.RESOURCES]
+        test_json_definitions = definitions[os.path.join(resources_dir, 'test.json')][CloudformationTemplateSections.RESOURCES]
         self.assertEqual(len(test_json_definitions.keys()), 2)
         self.assertIn('MyDB', test_json_definitions.keys())
         self.assertIn('MySourceQueue', test_json_definitions.keys())
