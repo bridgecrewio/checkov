@@ -74,6 +74,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
+          sleep $((RANDOM % 11))
           sh integration_tests/prepare_data.sh
       - name: Run integration tests
         run: |

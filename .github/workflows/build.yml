@@ -40,6 +40,7 @@ jobs:
         run: git clone https://github.com/madhuakula/kubernetes-goat
       - name: Create checkov reports
         run: |
+          sleep $((RANDOM % 11))
           sh integration_tests/prepare_data.sh
         env:
           BC_KEY: ${{ secrets.BC_API_KEY }}
