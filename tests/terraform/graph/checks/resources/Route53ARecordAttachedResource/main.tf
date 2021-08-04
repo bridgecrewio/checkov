@@ -45,6 +45,15 @@ resource "aws_route53_record" "ignore" {
   records = [module.controller.loadbalancer_dns_name]
 }
 
+resource "aws_route53_record" "ignore2" {
+  # it is possible to have a plan with a route53 record that has no type. I am not sure how, but this is a test
+  # of that case.
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = "dns.freebeer.site"
+  ttl     = "300"
+  records = ["1.1.1.1"]
+}
+
 resource "aws_route53_record" "pass3" {
   zone_id = var.zone_id
   name = "test.example.com"
