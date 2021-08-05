@@ -33,14 +33,12 @@ class GitGetter(BaseGetter):
             raise ImportError("Unable to load git module (is the git executable available?)") \
                 from git_import_error
 
-        clone_dir = self.temp_dir + "/clone/" if self.create_clone_and_res_dirs else self.temp_dir
-        
         git_url, internal_dir = self._source_subdir()
 
+        clone_dir = self.temp_dir + "/clone/" if self.create_clone_and_res_dirs else self.temp_dir
         self._clone(git_url, clone_dir)
 
         if internal_dir:
-            # Point clone to sub-path
             clone_dir = clone_dir + internal_dir
 
         if self.create_clone_and_res_dirs:
@@ -57,7 +55,7 @@ class GitGetter(BaseGetter):
         else:
             Repo.clone_from(git_url, clone_dir)
 
-    # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', 'repo/subpath')
+    # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
     def _source_subdir(self):
         stop = len(self.url)
