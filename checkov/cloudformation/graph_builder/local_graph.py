@@ -49,7 +49,7 @@ class CloudformationLocalGraph(LocalGraph):
         for name, obj in get_only_dict_items(file_conf.get(section.value, {})).items():
             is_resources_section = section == CloudformationTemplateSections.RESOURCES
             attributes = attributes_operator(obj)
-            block_name = name if not is_resources_section else f"{obj['Type']}.{name}"
+            block_name = name if not is_resources_section else f"{obj.get('Type', 'UnTyped')}.{name}"
             config = obj if not is_resources_section else obj.get("Properties")
             id = f"{block_type}.{block_name}" if not is_resources_section else block_name
             self.vertices.append(CloudformationBlock(
