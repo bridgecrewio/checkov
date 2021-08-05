@@ -1,3 +1,4 @@
+import logging
 from typing import List, Dict, Any
 
 from networkx import DiGraph
@@ -23,6 +24,7 @@ class BaseRegistry:
         for check in self.checks:
             if not runner_filter.should_run_check(check.id, check.bc_id):
                 continue
+            logging.debug(f'Running graph check: {check.id}')
             passed, failed = check.run(graph_connector)
             check_result = self._process_check_result(passed, [], CheckResult.PASSED)
             check_result = self._process_check_result(failed, check_result, CheckResult.FAILED)

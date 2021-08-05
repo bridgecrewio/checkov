@@ -184,12 +184,13 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def print_junit_xml(self, use_bc_ids=False) -> None:
+    def print_junit_xml(self, use_bc_ids: bool = False) -> None:
         ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_sarif_json(self):
+    def get_sarif_json(self) -> Dict[str, Any]:
+        runs = []
         rules = []
         results = []
         for idx, record in enumerate(self.failed_checks):
@@ -218,7 +219,7 @@ class Report:
                             "artifactLocation": {"uri": record.file_path},
                             "region": {
                                 "startLine": int(record.file_line_range[0]),
-                                "endLine": int(record.file_line_range[2]),
+                                "endLine": int(record.file_line_range[1]),
                             },
                         }
                     }
@@ -226,12 +227,8 @@ class Report:
             }
             rules.append(rule)
             results.append(result)
-        sarif_template_report = {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": [],
-        }
-        set_run = {
+
+        runs.append({
             "tool": {
                 "driver": {
                     "name": "checkov",
@@ -242,12 +239,16 @@ class Report:
                 }
             },
             "results": results,
+        })
+        sarif_template_report = {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": runs,
         }
-        sarif_template_report["runs"].append(set_run)
         return sarif_template_report
 
-    def print_sarif_report(self):
-        print(json.dumps(get_sarif_json()))
+    def print_sarif_report(self) -> None:
+        print(json.dumps(self.get_sarif_json()))
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
@@ -337,17 +338,23 @@ class Report:
     def handle_skipped_checks(
         report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
+        skip_records = []
         for record in report.failed_checks:
             resource_skips = enriched_resources.get(record.resource, {}).get(
                 "skipped_checks", []
             )
             for skip in resource_skips:
                 if record.check_id in skip["id"]:
-                    # Remove and re-add the record to make Checkov mark it as skipped
-                    report.failed_checks.remove(record)
+                    # Mark for removal and add it as a skipped record. It is not safe to remove
+                    # the record from failed_checks immediately because we're iterating over it
+                    skip_records.append(record)
                     record.check_result["result"] = CheckResult.SKIPPED
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
+
+        for record in skip_records:
+            if record in report.failed_checks:
+                report.failed_checks.remove(record)
         return report
 
 

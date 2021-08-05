@@ -16,15 +16,15 @@ class TestCloudformationGraphManager(TestCase):
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
-            "/tags.yaml": [
+            os.path.join(root_dir, "tags.yaml"): [
                 "AWS::S3::Bucket.DataBucket",
                 "AWS::S3::Bucket.NoTags",
                 "AWS::EKS::Nodegroup.EKSClusterNodegroup",
                 "AWS::AutoScaling::AutoScalingGroup.TerraformServerAutoScalingGroup"],
-            "/cfn_newline_at_end.yaml": [
+            os.path.join(root_dir, "cfn_newline_at_end.yaml"): [
                 "AWS::RDS::DBInstance.MyDB",
                 "AWS::S3::Bucket.MyBucket"],
-            "/success.json": [
+            os.path.join(root_dir, "success.json"): [
                 "AWS::S3::Bucket.acmeCWSBucket",
                 "AWS::S3::Bucket.acmeCWSBucket2",
                 "AWS::S3::BucketPolicy.acmeCWSBucketPolicy",
@@ -41,11 +41,16 @@ class TestCloudformationGraphManager(TestCase):
                 "Custom::acmeSnsCustomResource.acmeSnsCustomResource",
                 ],
         }
-        self.assertEqual(20, len(local_graph.vertices))
+        self.assertEqual(40, len(local_graph.vertices))
         self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETER]))
+        self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUT]))
+        self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITION]))
+        self.assertEqual(1, len(local_graph.vertices_by_block_type[BlockType.MAPPING]))
 
         for v in local_graph.vertices:
-            self.assertIn(v.name, expected_resources_by_file[v.path])
+            if v.block_type == BlockType.RESOURCE:
+                self.assertIn(v.name, expected_resources_by_file[v.path])
 
         sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
         self.assertDictEqual({'Fn::Join': ['', [{'Ref': 'ResourceNamePrefix', '__startline__': 650, '__endline__': 652}, '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
