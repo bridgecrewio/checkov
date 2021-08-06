@@ -11,12 +11,14 @@ class SourceType:
 class BCSourceType:
     VSCODE = 'vscode'
     CLI = 'cli'
+    KUBERNETES_WORKLOADS = 'kubernetesWorkloads'
     DISABLED = 'disabled'  # use this as a placeholder for generic no-upload logic
 
 
 SourceTypes = {
     BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
     BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
+    BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False)
 }
 
