@@ -114,8 +114,9 @@ def get_folder_definitions(
                 definitions_raw[relative_file_path] = template_lines
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
-        except TypeError:
-            logging.info(f"CloudFormation skipping {file} as it is not a valid CF template")
+        except (TypeError, ValueError) as e:
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
+            continue
 
     definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
     definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}

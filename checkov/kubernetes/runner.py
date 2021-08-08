@@ -49,9 +49,13 @@ class Runner(BaseRunner):
 
             for file in files_list:
                 relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                parse_result = parse(file)
-                if parse_result:
-                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+                try:
+                    parse_result = parse(file)
+                    if parse_result:
+                        (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+                except (TypeError, ValueError) as e:
+                    logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+                    continue
 
         for k8_file in definitions.keys():
 
