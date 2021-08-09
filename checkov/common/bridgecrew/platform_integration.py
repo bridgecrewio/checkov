@@ -258,7 +258,7 @@ class BcPlatformIntegration(object):
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
                 raise e
             finally:
-                if request.status == 201 and response and response.get["result"] == "Success":
+                if request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
                 elif try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
                                                         response.get('message', '')):
