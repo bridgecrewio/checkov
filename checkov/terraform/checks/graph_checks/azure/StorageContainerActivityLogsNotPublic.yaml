@@ -31,7 +31,7 @@ definition:
             - azurerm_monitor_activity_log_alert
           attribute: enabled
           operator: equals
-          value: 'true'
+          value: true
     - cond_type: connection
       resource_types:
         - azurerm_storage_container
