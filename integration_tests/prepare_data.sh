@@ -10,7 +10,7 @@ pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet
 pipenv run checkov -s -d terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml -o json > checkov_config_report_terragoat.json
 echo 1: $1
 echo 2: $2
-if [[ $2 == "3.7"]]; then
+if [[ $2 == "3.7" ]]; then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
 fi
