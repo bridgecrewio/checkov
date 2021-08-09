@@ -262,6 +262,7 @@ class BcPlatformIntegration(object):
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
                 elif try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
                                                         response.get('message', '')):
+                    logging.info(f"Failed to persist for repo {self.repo_id}, sleeping for 2 seconds before retrying")
                     try_num += 1
                     time.sleep(2)
                 else:
