@@ -14,8 +14,6 @@ class GenericGitLoader(ModuleLoader):
     def _load_module(self) -> ModuleContent:
         try:
             module_source = self.module_source.replace('git::', '')
-            if module_source.startswith('ssh:'):
-                return ModuleContent(dir=None, failed_url=self.module_source)
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = self.dest_dir
             git_getter.do_get()

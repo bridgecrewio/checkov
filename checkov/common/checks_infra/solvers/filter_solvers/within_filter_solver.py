@@ -14,4 +14,7 @@ class WithinFilterSolver(BaseFilterSolver):
         return self._get_operation()(*args)
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> Callable[..., bool]:
-        return lambda check: check.get(self.attribute) in self.value
+        def op(check):
+            val = check.get(self.attribute)
+            return val and (val in self.value)
+        return op

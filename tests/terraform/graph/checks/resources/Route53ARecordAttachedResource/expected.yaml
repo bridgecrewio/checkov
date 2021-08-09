@@ -10,3 +10,4 @@ fail:
   - "aws_route53_record.fail"
 ignore:
   - "aws_route53_record.ignore"
+  - "aws_route53_record.ignore2"

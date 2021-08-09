@@ -17,7 +17,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
             "AWS::IAM::Role", "AWS::IAM::User"])
 
     def scan_resource_conf(self, conf):
-        if 'Properties' in conf.keys():
+        if conf.get('Properties'):
             props_conf = conf['Properties']
             policies_key = 'Policies'
 

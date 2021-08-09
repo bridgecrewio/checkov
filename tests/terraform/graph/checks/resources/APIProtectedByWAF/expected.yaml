@@ -1,0 +1,6 @@
+pass:
+  - "aws_api_gateway_stage.pass"
+  - "aws_api_gateway_stage.no_api"
+  - "aws_api_gateway_stage.private"
+fail:
+  - "aws_api_gateway_stage.no_assoc"

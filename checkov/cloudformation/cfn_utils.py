@@ -114,8 +114,12 @@ def get_folder_definitions(
                 definitions_raw[relative_file_path] = template_lines
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
-        except TypeError:
-            logging.info(f"CloudFormation skipping {file} as it is not a valid CF template")
+        except (TypeError, ValueError) as e:
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
+            continue
+
+    definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
+    definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
 
     return definitions, definitions_raw
 
@@ -157,17 +161,16 @@ def build_definitions_context(
                                 current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
 
                         code_lines = definitions_raw[file_path][start_line - 1 : end_line]
-                        file_abs_path = create_file_abs_path(root_folder, file_path)
                         dpath.new(
                             definitions_context,
-                            [file_abs_path, str(file_path_definition), str(attribute)],
+                            [file_path, str(file_path_definition), str(attribute)],
                             {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
                         )
                         if file_path_definition.upper() == CloudformationTemplateSections.RESOURCES.value.upper():
                             skipped_checks = ContextParser.collect_skip_comments(code_lines)
                             dpath.new(
                                 definitions_context,
-                                [file_abs_path, str(file_path_definition), str(attribute), "skipped_checks"],
+                                [file_path, str(file_path_definition), str(attribute), "skipped_checks"],
                                 skipped_checks,
                             )
     return definitions_context

@@ -373,13 +373,6 @@ Defaults:
   --external-modules-download-path:.external_modules
   --evaluate-variables:True
 ```
-## Alternatives
-
-For Terraform compliance scanners check out [tfsec](https://github.com/liamg/tfsec) and [Terraform AWS Secure Baseline](https://github.com/nozaq/terraform-aws-secure-baseline) for secured basline.
-
-For CloudFormation scanning check out [cfripper](https://github.com/Skyscanner/cfripper/) and [cfn_nag](https://github.com/stelligent/cfn_nag).
-
-For Kubernetes scanning check out [kube-scan](https://github.com/octarinesec/kube-scan) and [Polaris](https://github.com/FairwindsOps/polaris).
 
 ## Contributing
 

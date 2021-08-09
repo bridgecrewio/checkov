@@ -118,7 +118,7 @@ class RunnerRegistry(object):
             master_report = Report(None)
             for report in sarif_reports:
                 master_report.failed_checks += report.failed_checks
-            master_rget_sarif_jsonjsonjsonjsonjsonjsonjson()
+            master_report.print_sarif_report()
         if config.output == "json":
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))

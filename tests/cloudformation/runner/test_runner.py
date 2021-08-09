@@ -188,7 +188,7 @@ class TestRunnerValid(unittest.TestCase):
         dir_abs_path = os.path.dirname(os.path.realpath(__file__))
 
         definitions = {
-            '/s3.yaml': {
+            f'{dir_abs_path}/s3.yaml': {
                 'Resources': {
                     'MySourceQueue': {
                         'Type': 'AWS::SQS::Queue',
