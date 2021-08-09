@@ -17,30 +17,30 @@ jobs:
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
 
-  unit-tests:
-    strategy:
-      fail-fast: true
-      matrix:
-        python: [3.7, 3.8, 3.9]
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-      - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
-        run: |
-          pipenv --python ${{ matrix.python }}
-          pipenv install --dev
-      - name: Unit tests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+#  unit-tests:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        python: [3.7, 3.8, 3.9]
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Set up Python ${{ matrix.python }}
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python }}
+#      - uses: dschep/install-pipenv-action@v1
+#      - name: Install dependencies
+#        run: |
+#          pipenv --python ${{ matrix.python }}
+#          pipenv install --dev
+#      - name: Unit tests
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          pipenv run python -m coverage run -m pytest tests
+#          pipenv run python -m coverage report
+#          pipenv run python -m coverage html
 
   integration-tests:
     strategy:
@@ -75,7 +75,7 @@ jobs:
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
           sleep $((RANDOM % 11))
-          sh integration_tests/prepare_data.sh
+          sh integration_tests/prepare_data.sh ${{ matrix.python }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
