@@ -20,7 +20,9 @@ class CodeBuildProjectEncryption(BaseResourceCheck):
                 self.evaluated_keys = 'artifacts/[0]/type'
             elif 'encryption_disabled' in artifact and artifact['encryption_disabled']:
                 self.evaluated_keys = 'artifacts/[0]/encryption_disabled'
-                return CheckResult.FAILED
+                if artifact['encryption_disabled'] == [True]:
+                  return CheckResult.FAILED
+
         return CheckResult.PASSED
 
 

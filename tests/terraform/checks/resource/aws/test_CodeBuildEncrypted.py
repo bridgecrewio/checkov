@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.aws.CodeBuildEncrypted import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestRDSClusterEncrypted(unittest.TestCase):
+class TestCodeBuildEncrypted(unittest.TestCase):
     def test_failure(self):
         hcl_res = hcl2.loads("""
             resource "aws_codebuild_project" "example" {
