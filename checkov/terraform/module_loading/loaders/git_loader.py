@@ -16,8 +16,7 @@ class GenericGitLoader(ModuleLoader):
             module_source = self.module_source.replace('git::', '')
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = self.dest_dir
-            git_getter.do_get()
-            return_dir = self.dest_dir
+            return_dir = git_getter.do_get()
             if self.inner_module:
                 return_dir = os.path.join(self.dest_dir, self.inner_module)
             return ModuleContent(dir=return_dir)
