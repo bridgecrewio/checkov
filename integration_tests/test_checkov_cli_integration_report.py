@@ -1,7 +1,4 @@
-import itertools
-import json
 import os
-import sys
 import unittest
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -18,12 +15,11 @@ class TestCheckovJsonReport(unittest.TestCase):
         self.validate_report(os.path.abspath(report_path))
 
     def validate_report(self, report_path):
-        if sys.version_info[1] == 7:
-            platform_url_found = False
-            with open(report_path) as f:
-                if 'More details: https://www.bridgecrew.cloud/codeReview/' in f.read():
-                    platform_url_found = True
-            self.assertTrue(platform_url_found,"when using api key, platform code review url should exist")
+        platform_url_found = False
+        with open(report_path) as f:
+            if 'More details: https://www.bridgecrew.cloud/codeReview/' in f.read():
+                platform_url_found = True
+        self.assertTrue(platform_url_found, "when using api key, platform code review url should exist")
 
 
 if __name__ == '__main__':
