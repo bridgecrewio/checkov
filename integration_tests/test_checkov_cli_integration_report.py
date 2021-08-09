@@ -1,5 +1,3 @@
-import itertools
-import json
 import os
 import unittest
 
@@ -21,7 +19,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         with open(report_path) as f:
             if 'More details: https://www.bridgecrew.cloud/codeReview/' in f.read():
                 platform_url_found = True
-        self.assertTrue(platform_url_found,"when using api key, platform code review url should exist")
+        self.assertTrue(platform_url_found, "when using api key, platform code review url should exist")
 
 
 if __name__ == '__main__':
