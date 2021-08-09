@@ -36,7 +36,7 @@ ACCOUNT_CREATION_TIME = 180  # in seconds
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
 DEFAULT_REGION = "us-west-2"
-MAX_RETRIES = 5
+MAX_RETRIES = 10
 ONBOARDING_SOURCE = "checkov"
 
 SIGNUP_HEADER = {
@@ -264,7 +264,7 @@ class BcPlatformIntegration(object):
                                                         response.get('message', '')):
                     logging.info(f"Failed to persist for repo {self.repo_id}, sleeping for 2 seconds before retrying")
                     try_num += 1
-                    time.sleep(2)
+                    sleep(3)
                 else:
                     raise Exception(
                         f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
