@@ -17,9 +17,11 @@ class CodeBuildProjectEncryption(BaseResourceCheck):
         artifact = conf['artifacts'][0]
         if isinstance(artifact, dict):
             if artifact['type'] == ["NO_ARTIFACTS"]:
+                self.evaluated_keys = 'artifacts/[0]/type'
                 return CheckResult.UNKNOWN
-            if 'encryption_disabled' in artifact:
+            if 'encryption_disabled' in artifact:   
                 if artifact['encryption_disabled'] == [True]:
+                   self.evaluated_keys = 'artifacts/[0]/encryption_disabled'
                    return CheckResult.FAILED
         return CheckResult.PASSED
 
