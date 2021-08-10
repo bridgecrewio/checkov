@@ -75,7 +75,7 @@ jobs:
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
           sleep $((RANDOM % 11))
-          sh integration_tests/prepare_data.sh
+          ./integration_tests/prepare_data.sh ${{ matrix.python }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
