@@ -138,7 +138,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         if suppression['suppressionType'] == 'Accounts':
-
             if not any(self._repo_matches(account) for account in suppression['accountIds']):
                 return False
 
