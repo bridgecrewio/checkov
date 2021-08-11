@@ -296,6 +296,10 @@ def add_parser_args(parser):
     parser.add('--download-external-modules',
                help="download external terraform modules from public git repositories and terraform registry",
                default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False), env_var='DOWNLOAD_EXTERNAL_MODULES')
+    parser.add('--tf-var-file', action='append',
+               help='tfvars files to load in addition to the default files (see '
+                    'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
+                    'Only affects Terraform scans.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
