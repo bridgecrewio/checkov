@@ -77,9 +77,11 @@ class Runner(BaseRunner):
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
+                    if entity_conf is None:
+                        continue
 
                     # Split out resources if entity kind is List
-                    if entity_conf["kind"] == "List":
+                    if isinstance(entity_conf, dict) and entity_conf["kind"] == "List":
                         for item in entity_conf.get("items", []):
                             definitions[k8_file].append(item)
 
