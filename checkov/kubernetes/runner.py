@@ -147,7 +147,7 @@ class Runner(BaseRunner):
                     if isinstance(entity_conf, dict) and (entity_conf["kind"] == "List" or not entity_conf.get("kind")):
                         continue
 
-                    if isinstance(entity_conf, dict) and isinstance(entity_conf["kind"], int):
+                    if isinstance(entity_conf, dict) and isinstance(entity_conf.get("kind"), int):
                         continue
                     # Skip entity without metadata["name"] or parent_metadata["name"]
                     if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
