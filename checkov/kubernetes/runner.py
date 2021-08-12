@@ -92,7 +92,7 @@ class Runner(BaseRunner):
 
                     entity_conf = definitions[k8_file][i]
 
-                    if isinstance(entity_conf, dict) and entity_conf["kind"] == "List":
+                    if isinstance(entity_conf, dict) and entity_conf.get("kind") == "List":
                         continue
 
                     # Skip entity without metadata["name"]
