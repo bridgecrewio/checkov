@@ -84,18 +84,18 @@ class Runner(BaseRunner):
                             definitions[k8_file].append(item)
 
                 for i in range(len(definitions[k8_file])):
-                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
 
-                    if entity_conf["kind"] == "List":
+                    if isinstance(entity_conf, dict) and entity_conf["kind"] == "List":
                         continue
 
                     # Skip entity without metadata["name"]
-                    if entity_conf.get("metadata"):
-                        if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
+                    if isinstance(entity_conf, dict) and entity_conf.get("metadata"):
+                        if isinstance(entity_conf["metadata"], int) or "name" not in entity_conf["metadata"]:
                             continue
                     else:
                         continue
@@ -135,16 +135,17 @@ class Runner(BaseRunner):
 
                 # Run for each definition included added container definitions
                 for i in range(len(definitions[k8_file])):
-                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
-
-                    if entity_conf["kind"] == "List" or not entity_conf.get("kind"):
+                    if entity_conf is None:
+                        continue
+                    if isinstance(entity_conf, dict) and (entity_conf["kind"] == "List" or not entity_conf.get("kind")):
                         continue
 
-                    if isinstance(entity_conf["kind"], int):
+                    if isinstance(entity_conf, dict) and isinstance(entity_conf["kind"], int):
                         continue
                     # Skip entity without metadata["name"] or parent_metadata["name"]
                     if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
@@ -288,3 +289,6 @@ def find_lines(node, kv):
                 yield x
 
 
+def _is_invalid_k8_definition(definition: dict) -> bool:
+    return isinstance(definition, dict) and 'apiVersion' not in definition.keys() and 'kind' not in \
+           definition.keys()
