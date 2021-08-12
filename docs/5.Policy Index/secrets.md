@@ -1,3 +1,11 @@
+---
+layout: default
+title: secrets resource scans
+nav_order: 1
+---
+
+# secrets resource scans (auto generated)
+
 |    |               | Id                               | Type    | Entity                           | Policy                           | IaC     |
 |----|---------------|----------------------------------|---------|----------------------------------|----------------------------------|---------|
 |  0 | CKV_SECRET_1  | Artifactory Credentials          | secrets | Artifactory Credentials          | Artifactory Credentials          | secrets |
