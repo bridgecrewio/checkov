@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class DynamoDBTablesEncrypted(BaseResourceValueCheck):
+class DynamoDBTablesEncrypted(BaseResourceCheck):
     def __init__(self):
         name = "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
         id = "CKV_AWS_119"
