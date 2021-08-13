@@ -13,13 +13,13 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        sse = conf.get("server_side_encryption")
-        enabled = sse.get("enabled")
-        kms_key_arn = sse.get("kms_key_arn")
-        if enabled is True and kms_key_arn != None:
-            return CheckResult.PASSED
-        else:
-            return CheckResult.FAILED
+        if 'server_side_encryption' in conf.keys():
+            sse = conf['server_side_encryption'][0]
+            enabled = sse.get("enabled")
+            kms_key_arn = sse.get("kms_key_arn")
+            if enabled == [True] and kms_key_arn != None:
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = DynamoDBTablesEncrypted()
