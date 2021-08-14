@@ -15,7 +15,7 @@ resource "aws_dynamodb_table" "cmk" {
 
   server_side_encryption {
       enabled = true
-      kms_key_arn = "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      kms_key_arn = "arn:aws:kms:us-west-2:123456789012:key/1234abcd-12ab-34cd-56ef-1234567890ab"
   }
 }
 
