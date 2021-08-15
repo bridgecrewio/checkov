@@ -57,13 +57,13 @@ class Runner(BaseRunner):
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
                     self.graph_registry.load_external_checks(directory)
+            self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            evaluate_default_refs(self.definitions, self.definitions_raw)
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
-            evaluate_default_refs(self.definitions, self.definitions_raw)
-            self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
