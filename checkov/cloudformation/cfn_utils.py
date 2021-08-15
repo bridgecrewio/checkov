@@ -8,8 +8,7 @@ import dpath.util
 from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
-from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
-from checkov.cloudformation.parser import parse
+from checkov.cloudformation.parser import parse, TemplateSections
 from checkov.cloudformation.parser.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -133,7 +132,7 @@ def build_definitions_context(
         for file_path_definition, definition in file_path_definitions.items():
             if (
                 isinstance(file_path_definition, str_node)
-                and file_path_definition.upper() in CloudformationTemplateSections.__members__
+                and file_path_definition.upper() in TemplateSections.__members__
                 and isinstance(definition, dict_node)
             ):
                 # iterate on the actual objects of each definition
@@ -165,7 +164,7 @@ def build_definitions_context(
                             [file_path, str(file_path_definition), str(attribute)],
                             {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
                         )
-                        if file_path_definition.upper() == CloudformationTemplateSections.RESOURCES.value.upper():
+                        if file_path_definition.upper() == TemplateSections.RESOURCES.value.upper():
                             skipped_checks = ContextParser.collect_skip_comments(code_lines)
                             dpath.new(
                                 definitions_context,
@@ -189,7 +188,8 @@ def create_file_abs_path(root_folder: str, cf_file: str) -> str:
 
 
 def create_definitions(
-    root_folder: str, files: Optional[List[str]] = None, runner_filter: RunnerFilter = RunnerFilter()
+    root_folder: str, files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(), is_evaluate_default_refs: bool = True
 ) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
@@ -208,10 +208,15 @@ def create_definitions(
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
+    if is_evaluate_default_refs:
+        evaluate_default_refs(definitions, definitions_raw)
+    return definitions, definitions_raw
+
+
+def evaluate_default_refs(definitions, definitions_raw):
     for cf_file in definitions.keys():
         cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
         logging.debug(
             "Template Dump for {}: {}".format(cf_file, json.dumps(definitions[cf_file], indent=2, default=str))
         )
         cf_context_parser.evaluate_default_refs()
-    return definitions, definitions_raw

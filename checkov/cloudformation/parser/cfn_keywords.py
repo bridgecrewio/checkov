@@ -32,3 +32,14 @@ class ResourceAttributes(str, Enum):
     METADATA = "Metadata"
     UPDATE_POLICY = "UpdatePolicy"
     UPDATE_REPLACE_POLICY = "UpdateReplacePolicy"
+
+
+class TemplateSections(str, Enum):
+    RESOURCES = "Resources"
+    METADATA = "Metadata"
+    PARAMETERS = "Parameters"
+    RULES = "Rules"
+    MAPPINGS = "Mappings"
+    CONDITIONS = "Conditions"
+    TRANSFORM = "Transform"
+    OUTPUTS = "Outputs"

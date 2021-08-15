@@ -4,7 +4,7 @@ from typing import Tuple, Optional, List, Union
 
 from checkov.cloudformation.parser import cfn_yaml, cfn_json
 from checkov.cloudformation.parser.node import dict_node
-from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
+from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.parser import ScannerError
 from yaml import YAMLError
 
@@ -44,7 +44,7 @@ def parse(filename: str) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple
     except YAMLError as err:
         pass
 
-    resources = template.get(CloudformationTemplateSections.RESOURCES.value)
+    resources = template.get(TemplateSections.RESOURCES.value)
     if resources:
         if '__startline__' in resources:
             resources.pop('__startline__')

@@ -1,7 +1,8 @@
 import os
 from typing import List, Dict, Any, Tuple
 
-from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections, BlockType
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
+from checkov.cloudformation.parser import TemplateSections
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
 from checkov.cloudformation.parser.node import dict_node
 
@@ -15,7 +16,7 @@ def convert_graph_vertices_to_definitions(
         if vertex.block_type != BlockType.RESOURCE:
             continue
         block_path = vertex.path
-        block_type = CloudformationTemplateSections.RESOURCES.value if vertex.block_type == 'resource' else vertex.block_type
+        block_type = TemplateSections.RESOURCES.value if vertex.block_type == 'resource' else vertex.block_type
         block_name = vertex.name.split('.')[-1]  # vertex.name is "type.name" so type.name -> [type, name]
 
         definition = {

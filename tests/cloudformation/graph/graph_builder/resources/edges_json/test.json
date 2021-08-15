@@ -1,0 +1,179 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "EnvType": {
+            "Description": "Environment type.",
+            "Default": "test",
+            "Type": "String",
+            "AllowedValues": [
+                "prod",
+                "dev",
+                "test"
+            ],
+            "ConstraintDescription": "must specify prod, dev, or test."
+        },
+        "DataBucketName": {
+            "Description": "Bucket Name",
+            "Type": "String",
+            "Default": "bucket_name"
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-0ff8a91507f77f867"
+            },
+            "us-west-1": {
+                "AMI": "ami-0bdb828fd58c52235"
+            },
+            "us-west-2": {
+                "AMI": "ami-a0cfeed8"
+            },
+            "eu-west-1": {
+                "AMI": "ami-047bb4163c506cd98"
+            },
+            "sa-east-1": {
+                "AMI": "ami-07b14488da8ea02a0"
+            },
+            "ap-southeast-1": {
+                "AMI": "ami-08569b978cc4dfa10"
+            },
+            "ap-southeast-2": {
+                "AMI": "ami-09b42976632b27e9b"
+            },
+            "ap-northeast-1": {
+                "AMI": "ami-06cd52961ce9f0d85"
+            }
+        }
+    },
+    "Conditions": {
+        "CreateProdResources": {
+            "Fn::Equals": [
+                {
+                    "Ref": "EnvType"
+                },
+                "prod"
+            ]
+        },
+        "CreateDevResources": {
+            "Fn::Equals": [
+                {
+                    "Ref": "EnvType"
+                },
+                "dev"
+            ]
+        }
+    },
+    "Resources": {
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "InstanceType": {
+                    "Fn::If": [
+                        "CreateProdResources",
+                        "c1.xlarge",
+                        {
+                            "Fn::If": [
+                                "CreateDevResources",
+                                "m1.large",
+                                "m1.small"
+                            ]
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Sub": [
+                                "ec2-${Environment}",
+                                {
+                                    "Environment": {
+                                        "Ref": "EnvType"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "MountPoint": {
+            "Type": "AWS::EC2::VolumeAttachment",
+            "Condition": "CreateProdResources",
+            "Properties": {
+                "InstanceId": {
+                    "Ref": "EC2Instance"
+                },
+                "VolumeId": {
+                    "Ref": "NewVolume"
+                },
+                "Device": "/dev/sdh"
+            }
+        },
+        "NewVolume": {
+            "Type": "AWS::EC2::Volume",
+            "Condition": "CreateProdResources",
+            "Properties": {
+                "Size": 100,
+                "AvailabilityZone": {
+                    "Fn::GetAtt": [
+                        "EC2Instance",
+                        "AvailabilityZone"
+                    ]
+                }
+            }
+        },
+        "DataBucket": {
+            "Type": "AWS::S3::Bucket",
+            "DeletionPolicy": "Delete",
+            "DependsOn": "EC2Instance",
+            "Properties": {
+                "BucketName": {
+                    "Ref": "DataBucketName"
+                },
+                "AccessControl": "PublicRead",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Sub": "${AWS::AccountId}-${DataBucketName}-${EnvType}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "EC2InstanceId": {
+            "Description": "Web Host Public DNS Name",
+            "Value": {
+                "Ref": "EC2Instance"
+            }
+        },
+        "EC2PublicDNS": {
+            "Description": "Web Host Public DNS Name",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EC2Instance",
+                    "PublicDnsName"
+                ]
+            }
+        },
+        "DataBucketUniqueId": {
+            "Description": "Data Bucket Name",
+            "Value": {
+                "Fn::Sub": "DataBucket-${DataBucket}-${DataBucketName}"
+            }
+        }
+    }
+}
