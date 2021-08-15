@@ -8,6 +8,7 @@ from checkov.cloudformation.parser import dict_node
 from checkov.cloudformation.parser.node import str_node
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_list
 
 VARIABLE_DEPENDANT_REGEX = r"(?:Ref)\.[^\s]+"
 
@@ -100,3 +101,6 @@ class BaseResourceValueCheck(BaseResourceCheck):
         Returns the default expected value, governed by provider best practices
         """
         return True
+
+    def get_evaluated_keys(self) -> List[str]:
+        return force_list(self.get_inspected_key())

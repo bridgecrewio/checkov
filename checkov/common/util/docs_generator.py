@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 
 import re
-
 from tabulate import tabulate
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.kubernetes.registry import registry as k8_registry
-from checkov.serverless.registry import sls_registry
+from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 from checkov.dockerfile.registry import registry as dockerfile_registry
-
+from checkov.kubernetes.registry import registry as k8_registry
+from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
+from checkov.serverless.registry import sls_registry
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -72,6 +71,9 @@ def get_checks(framework="all", use_bc_ids=False):
     if framework == "arm" or framework == "all":
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
+    if framework == "secrets" or framework == "all":
+        for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
+            printable_checks_list.append((check_id, check_type, "secrets", check_type, check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)
 
 

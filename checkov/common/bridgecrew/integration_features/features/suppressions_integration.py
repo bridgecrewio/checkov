@@ -85,10 +85,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Accounts':
             # This should be true, because we validated when we downloaded the policies.
             # But checking here adds some resiliency against bugs if that changes.
-            return self.bc_integration.repo_id in suppression['accountIds']
+            return any(self._repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
             for resource in suppression['resources']:
-                if resource['accountId'] == self.bc_integration.repo_id and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
+                if self._repo_matches(resource['accountId']) and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
             return False
         elif type == 'Tags':
@@ -138,10 +138,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         if suppression['suppressionType'] == 'Accounts':
-            if self.bc_integration.repo_id not in suppression['accountIds']:
+            if not any(self._repo_matches(account) for account in suppression['accountIds']):
                 return False
 
         return True
+
+    def _repo_matches(self, repo_name):
+        # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
+        return re.match(f'^(\\w+_)?{self.bc_integration.repo_id}$', repo_name) is not None
 
 
 integration = SuppressionsIntegration(bc_integration)

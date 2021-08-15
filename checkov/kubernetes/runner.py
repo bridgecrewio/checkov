@@ -49,9 +49,13 @@ class Runner(BaseRunner):
 
             for file in files_list:
                 relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                parse_result = parse(file)
-                if parse_result:
-                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+                try:
+                    parse_result = parse(file)
+                    if parse_result:
+                        (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+                except (TypeError, ValueError) as e:
+                    logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+                    continue
 
         for k8_file in definitions.keys():
 
@@ -73,25 +77,27 @@ class Runner(BaseRunner):
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
+                    if entity_conf is None:
+                        continue
 
                     # Split out resources if entity kind is List
-                    if entity_conf["kind"] == "List":
+                    if isinstance(entity_conf, dict) and entity_conf["kind"] == "List":
                         for item in entity_conf.get("items", []):
                             definitions[k8_file].append(item)
 
                 for i in range(len(definitions[k8_file])):
-                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
 
-                    if entity_conf["kind"] == "List":
+                    if isinstance(entity_conf, dict) and entity_conf.get("kind") == "List":
                         continue
 
                     # Skip entity without metadata["name"]
-                    if entity_conf.get("metadata"):
-                        if isinstance(entity_conf["metadata"], int) or not "name" in entity_conf["metadata"]:
+                    if isinstance(entity_conf, dict) and entity_conf.get("metadata"):
+                        if isinstance(entity_conf["metadata"], int) or "name" not in entity_conf["metadata"]:
                             continue
                     else:
                         continue
@@ -131,16 +137,17 @@ class Runner(BaseRunner):
 
                 # Run for each definition included added container definitions
                 for i in range(len(definitions[k8_file])):
-                    if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
+                    if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
                     logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
 
                     entity_conf = definitions[k8_file][i]
-
-                    if entity_conf["kind"] == "List" or not entity_conf.get("kind"):
+                    if entity_conf is None:
+                        continue
+                    if isinstance(entity_conf, dict) and (entity_conf["kind"] == "List" or not entity_conf.get("kind")):
                         continue
 
-                    if isinstance(entity_conf["kind"], int):
+                    if isinstance(entity_conf, dict) and isinstance(entity_conf.get("kind"), int):
                         continue
                     # Skip entity without metadata["name"] or parent_metadata["name"]
                     if not any(x in entity_conf["kind"] for x in ["containers", "initContainers"]):
@@ -284,3 +291,6 @@ def find_lines(node, kv):
                 yield x
 
 
+def _is_invalid_k8_definition(definition: dict) -> bool:
+    return isinstance(definition, dict) and 'apiVersion' not in definition.keys() and 'kind' not in \
+           definition.keys()
