@@ -62,9 +62,9 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_REPOS" ]; then
 fi
 
 if [ ! -z "$INPUT_SOFT_FAIL" ]; then
-    echo "::add-matcher::bridgecrew-problem-matcher.json"
+    echo "::add-matcher::checkov-problem-matcher.json"
     else
-    echo "::add-matcher::bridgecrew-problem-matcher-warning.json"
+    echo "::add-matcher::checkov-problem-matcher-softfail.json"
 fi
 
 API_KEY=${API_KEY_VARIABLE}
