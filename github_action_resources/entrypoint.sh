@@ -8,6 +8,13 @@ then
   exit $?
 fi
 
+matcher_path=`pwd`/checkov-problem-matcher.json
+warning_matcher_path=`pwd`/checkov-problem-matcher-softfail.json
+cp /usr/local/lib/checkov-problem-matcher.json "$matcher_path"
+cp /usr/local/lib/checkov-problem-matcher-softfail.json "$warning_matcher_path"
+
+export BC_SOURCE=githubActions
+
 # Actions pass inputs as $INPUT_<input name> environment variables
 #
 [[ -n "$INPUT_CHECK" ]] && CHECK_FLAG="--check $INPUT_CHECK"
@@ -54,15 +61,11 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_REPOS" ]; then
   done
 fi
 
-echo "input_soft_fail:$INPUT_SOFT_FAIL"
-matcher_path=$(pwd)/checkov-problem-matcher.json
-if [ -n "$INPUT_SOFT_FAIL" ]; then
-    cp /usr/local/lib/checkov-problem-matcher.json "$matcher_path"
+if [ ! -z "$INPUT_SOFT_FAIL" ]; then
+    echo "::add-matcher::bridgecrew-problem-matcher.json"
     else
-    cp /usr/local/lib/checkov-problem-matcher-softfail.json "$matcher_path"
+    echo "::add-matcher::bridgecrew-problem-matcher-warning.json"
 fi
-
-echo "::add-matcher::checkov-problem-matcher.json"
 
 API_KEY=${API_KEY_VARIABLE}
 
