@@ -312,11 +312,11 @@
         },
         "policyuniverse": {
             "hashes": [
-                "sha256:40ba6f9b8da755d3d7a5ccddcd5e095704f89deb86058dc43cdbb9c09140878a",
-                "sha256:f61552c1eb6d31f437ca6de7d74ba84f0d9772d9d8c61ceb4f49529a90693f97"
+                "sha256:1d5136329b4c4d33b114f8c781ebb2e306ff9dc6969d106ece2567e312b2dd15",
+                "sha256:a95adcecd8c5b6aafedbf0094217f9251589a5a350b3db54aa55b6cabc26a7ff"
             ],
             "index": "pypi",
-            "version": "==1.4.0.20210730"
+            "version": "==1.4.0.20210816"
         },
         "pyparsing": {
             "hashes": [
