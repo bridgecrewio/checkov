@@ -1,5 +1,9 @@
 FROM python:3.7-alpine
 
+ARG UID=1000
+ARG GID=1000
+ARG USERNAME=checkov
+
 RUN apk update && apk add --no-cache git util-linux bash openssl
 
 RUN pip install --no-cache-dir -U checkov
@@ -8,6 +12,15 @@ RUN wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/sc
 COPY ./github_action_resources/entrypoint.sh /entrypoint.sh
 COPY ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json
 COPY ./github_action_resources/checkov-problem-matcher-softfail.json /usr/local/lib/checkov-problem-matcher-softfail.json
+
+RUN addgroup -S -g ${GID} ${USERNAME} && \
+    adduser -S -D -u ${UID} -G ${USERNAME} ${USERNAME} && \
+    chown -R ${USERNAME}:0 /entrypoint.sh && \
+    chown -R ${USERNAME}:0 /usr/local/lib/ && \
+    chmod -R g=u /entrypoint.sh && \
+    chmod -R g=u /usr/local/lib/
+
+USER ${UID}
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
