@@ -32,7 +32,7 @@ class ContextParser(object):
             ref.pop()  # Get rid of the 'Ref' dict key
 
             # TODO refactor into evaluations
-            default_value = self.cf_template.get("Parameters", {}).get(refname, {}).get("Default")
+            default_value = self.cf_template.get("Parameters", {}).get(refname, {}).get("Properties", {}).get("Default")
             if default_value is not None:
                 logging.debug(
                     "Replacing Ref {} in file {} with default parameter value: {}".format(
