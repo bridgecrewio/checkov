@@ -134,10 +134,11 @@ class CloudformationLocalGraph(LocalGraph):
                 source_id, value, attributes = self._extract_source_value_attrs(matching_path)
                 target_id = extract_target_id_func(template, value)
                 if target_id:
-                    origin_node_index = self._vertices_indexes[file_path][source_id]
-                    dest_vertex_index = self._vertices_indexes[file_path][target_id]
-                    attributes_joined = '.'.join(map(str, attributes))  # mapping all attributes to str because one of the attrs might be an int
-                    self._create_edge(origin_node_index, dest_vertex_index, label=attributes_joined)
+                    origin_vertex_index, dest_vertex_index, label = self._extract_origin_dest_label(
+                        file_path, source_id, target_id, attributes)
+                    if origin_vertex_index is None or dest_vertex_index is None:
+                        continue
+                    self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
     def _fetch_if_target_id(self, template, value) -> int:
         target_id = None
@@ -200,11 +201,20 @@ class CloudformationLocalGraph(LocalGraph):
                     if sub_parameter not in sub_parameter_values:
                         if '.' in sub_parameter:
                             sub_parameter = sub_parameter.split('.')[0]
-                        origin_node_index = self._vertices_indexes[file_path][source_id]
-                        dest_vertex_index = self._vertices_indexes[file_path][sub_parameter]
-                        attributes_joined = '.'.join(map(str,
-                                                         attributes))  # mapping all attributes to str because one of the attrs might be an int
-                        self._create_edge(origin_node_index, dest_vertex_index, label=attributes_joined)
+                        origin_vertex_index, dest_vertex_index, label = self._extract_origin_dest_label(
+                            file_path, source_id, sub_parameter, attributes)
+                        if origin_vertex_index is None or dest_vertex_index is None:
+                            continue
+                        self._create_edge(origin_vertex_index, dest_vertex_index, label)
+
+    def _extract_origin_dest_label(self, file_path, source_id, target_id, attributes):
+        origin_vertex_index, dest_vertex_index = None, None
+        if dpath.search(self._vertices_indexes, [file_path, source_id]):
+            origin_vertex_index = dpath.get(self._vertices_indexes, [file_path, source_id])
+        if dpath.search(self._vertices_indexes, [file_path, target_id]):
+            dest_vertex_index = dpath.get(self._vertices_indexes, [file_path, target_id])
+        attributes_joined = '.'.join(map(str, attributes))  # mapping all attributes to str because one of the attrs might be an int
+        return origin_vertex_index, dest_vertex_index, attributes_joined
 
     @staticmethod
     def _find_fn_sub_parameter(string):

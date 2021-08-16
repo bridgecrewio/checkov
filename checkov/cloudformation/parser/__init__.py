@@ -44,10 +44,11 @@ def parse(filename: str) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple
     except YAMLError as err:
         pass
 
-    resources = template.get(TemplateSections.RESOURCES.value)
-    if resources:
-        if '__startline__' in resources:
-            resources.pop('__startline__')
-        if '__endline__' in resources:
-            resources.pop('__endline__')
+    if template:
+        resources = template.get(TemplateSections.RESOURCES.value, None)
+        if resources:
+            if '__startline__' in resources:
+                resources.pop('__startline__')
+            if '__endline__' in resources:
+                resources.pop('__endline__')
     return template, template_lines
