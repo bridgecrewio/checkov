@@ -75,43 +75,12 @@ class TerraformLocalGraph(LocalGraph):
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
-
-        # Pre processing. The goal is to avoid
-        # (1) iterating the same variable many times
-        # (2) iterating variables that their path is not in module dependency map
-        modules_by_attribute_name = defaultdict(list)
-        all_possible_variables = set()  # all variables that might be referenced by all modules
         for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
             module_vertex = self.vertices[module_vertex_id]
-            for attribute_name in module_vertex.attributes:
-                modules_by_attribute_name[attribute_name].append(module_vertex_id)
-                all_possible_variables.update(set(self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, set())))
-
-        dir_names_for_variables = defaultdict(str)  # for each file path of variables, calculate their dir path
-        variables_in_dependent_modules = set()         # find variables that are in dependent modules
-        for variable_vertex_id in all_possible_variables:
-            variable_dir = dir_names_for_variables.get(self.vertices[variable_vertex_id].path)
-            if not variable_dir:
-                variable_dir = self.get_dirname(self.vertices[variable_vertex_id].path)
-            if len(self.module_dependency_map.get(variable_dir, [[]])[0]) > 0:  # save data only if it belongs to a dependent module
-                dir_names_for_variables[self.vertices[variable_vertex_id].path] = variable_dir
-                variables_in_dependent_modules.add(variable_vertex_id)
-
-        module_paths_in_dependent_modules = set()
-        for dir_name in dir_names_for_variables.values():
-            module_paths_in_dependent_modules.update([module_path[0] for module_path in self.module_dependency_map[dir_name]])
-
-        logging.info(f"done ordering modules by attributes, have {len(modules_by_attribute_name)} to iterate")
-
-        for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
-            module_vertex = self.vertices[module_vertex_id]
-            if module_vertex.path not in module_paths_in_dependent_modules:
-                continue
             for attribute_name, attribute_value in module_vertex.attributes.items():
                 matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
-                matching_variables = [v for v in matching_variables if v in variables_in_dependent_modules]
                 for variable_vertex_id in matching_variables:
-                    variable_dir = self.get_dirname(self.vertices[variable_vertex_id].path)
+                    variable_dir = os.path.dirname(self.vertices[variable_vertex_id].path)
                     # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
                     #   therefore this condition is always false. Fixing it results in some variables not being rendered.
                     #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
@@ -138,92 +107,6 @@ class TerraformLocalGraph(LocalGraph):
                             self.update_vertex_attribute(
                                 variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
                             )
-
-
-
-        # count = 0
-        # var_reference_cache = {}
-        # for attribute_name, modules in modules_by_attribute_name.items():
-        #     count += 1
-        #     logging.info(f"[{count}] - {attribute_name}, modules before = {len(modules)}")
-        #     modules = [module_vertex_id for module_vertex_id in modules
-        #                if self.vertices[module_vertex_id].path in module_paths_in_dependent_modules]
-        #     logging.info(f"[{count}] - {attribute_name}, modules after = {len(modules)}")
-        #     if len(modules) == 0:
-        #         continue
-        #     matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
-        #     matching_variables = [v for v in matching_variables if v in variables_in_dependent_modules]
-        #     for variable_vertex_id in matching_variables:
-        #         variable_dir = dir_names_for_variables.get(self.vertices[variable_vertex_id].path)
-        #         # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
-        #         #   therefore this condition is always false. Fixing it results in some variables not being rendered.
-        #         #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
-        #         for module_vertex_id in modules:
-        #             module_vertex = self.vertices[module_vertex_id]
-        #             if module_vertex.path in [path for path_list in self.module_dependency_map[variable_dir] for path in path_list]:
-        #                 attribute_value = module_vertex.attributes[attribute_name]
-        #                 has_var_reference = var_reference_cache.get(str(attribute_value))
-        #                 logging.info(f"attribute_name={attribute_name}, attribute_value={attribute_value}, has_var_reference={has_var_reference is not None}")
-        #                 if not has_var_reference:
-        #                     has_var_reference = get_referenced_vertices_in_value(
-        #                         value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
-        #                     )
-        #                     var_reference_cache[str(attribute_value)] = has_var_reference
-        #                 if has_var_reference:
-        #                     undetermined_values.append(
-        #                         {
-        #                             "module_vertex_id": module_vertex_id,
-        #                             "attribute_name": attribute_name,
-        #                             "variable_vertex_id": variable_vertex_id,
-        #                         }
-        #                     )
-        #                 var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
-        #                 logging.info(
-        #                     f"attribute_name={attribute_name}, var_default_value={var_default_value}, found in cache={var_reference_cache.get(str(var_default_value)) is not None}")
-        #                 if not var_reference_cache.get(str(var_default_value)):
-        #                     var_reference_cache[str(var_default_value)] = get_referenced_vertices_in_value(
-        #                     value=var_default_value, aliases={}, resources_types=self.get_resources_types_in_graph())
-        #                 if (
-        #                         not has_var_reference
-        #                         or not var_default_value
-        #                         or var_reference_cache[str(var_default_value)]
-        #                 ):
-        #                     self.update_vertex_attribute(
-        #                         variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
-        #                     )
-
-        # for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
-        #     module_vertex = self.vertices[module_vertex_id]
-        #     for attribute_name, attribute_value in module_vertex.attributes.items():
-        #         matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
-        #         for variable_vertex_id in matching_variables:
-        #             variable_dir = os.path.dirname(self.vertices[variable_vertex_id].path)
-        #             # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
-        #             #   therefore this condition is always false. Fixing it results in some variables not being rendered.
-        #             #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
-        #             if module_vertex.path in self.module_dependency_map.get(variable_dir, []):
-        #                 has_var_reference = get_referenced_vertices_in_value(
-        #                     value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
-        #                 )
-        #                 if has_var_reference:
-        #                     undetermined_values.append(
-        #                         {
-        #                             "module_vertex_id": module_vertex_id,
-        #                             "attribute_name": attribute_name,
-        #                             "variable_vertex_id": variable_vertex_id,
-        #                         }
-        #                     )
-        #                 var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
-        #                 if (
-        #                     not has_var_reference
-        #                     or not var_default_value
-        #                     or get_referenced_vertices_in_value(
-        #                         value=var_default_value, aliases={}, resources_types=self.get_resources_types_in_graph()
-        #                     )
-        #                 ):
-        #                     self.update_vertex_attribute(
-        #                         variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
-        #                     )
         return undetermined_values
 
     def process_undetermined_values(self, undetermined_values: List[Undetermined]) -> None:
@@ -332,15 +215,9 @@ class TerraformLocalGraph(LocalGraph):
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
                 dest_module_path = self._get_dest_module_path(self.get_dirname(vertex.path), vertex.attributes['source'][0])
-                # target_variables = list(filter(lambda index: self.vertices[index].module_dependency == target_path
-                #                                and self.get_dirname(self.vertices[index].path) == dest_module_path,
-                #                                self.vertices_by_block_type.get(BlockType.VARIABLE, {})))
-                target_variables = [
-                    index
-                    for index in self.vertices_by_module_dependency.get(target_path, [])
-                    if self.vertices[index].block_type == BlockType.VARIABLE
-                       and self.get_dirname(self.vertices[index].path) == dest_module_path
-                ]
+                target_variables = list(filter(lambda index: self.vertices[index].block_type == BlockType.VARIABLE
+                                               and self.get_dirname(self.vertices[index].path) == dest_module_path,
+                                               self.vertices_by_module_dependency.get(target_path, [])))
                 for attribute, value in vertex.attributes.items():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
                         continue
@@ -352,11 +229,6 @@ class TerraformLocalGraph(LocalGraph):
                 target_variables = list(
                     filter(lambda index: self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path),
                            self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])))
-                # target_variables = [
-                #     index
-                #     for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
-                #     if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path)
-                # ]
                 if len(target_variables) == 1:
                     self._create_edge(target_variables[0], origin_node_index, "default")
 
@@ -432,7 +304,6 @@ class TerraformLocalGraph(LocalGraph):
         relative_vertices = []
         possible_vertices = [index for index in self.vertices_by_module_dependency.get(module_path, [])
                              if self.vertices[index].block_type == block_type and self.vertices[index].name == name]
-         # possible_vertices = self.vertices_block_name_map.get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
