@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from unittest import TestCase
@@ -192,3 +193,13 @@ class TestGraphBuilder(TestCase):
                     self.assertFalse(conf['versioning'][0]['enabled'][0])
                     found_results += 1
         self.assertEqual(found_results, 3)
+
+    # def test_build_graph_prod(self):
+    #     tf_definitions = {}
+    #     with open("tf_definitions_rotem.json", "r") as f:
+    #         tf_definitions = json.loads(f.read())
+    #
+    #     graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+    #     graph, tf_definitions = graph_manager.build_graph_from_definitions(definitions=tf_definitions, render_variables=True)
+    #
+    #     print()
