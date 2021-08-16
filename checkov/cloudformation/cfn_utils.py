@@ -207,11 +207,4 @@ def create_definitions(
         if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
-
-    for cf_file in definitions.keys():
-        cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
-        logging.debug(
-            "Template Dump for {}: {}".format(cf_file, json.dumps(definitions[cf_file], indent=2, default=str))
-        )
-        cf_context_parser.evaluate_default_refs()
     return definitions, definitions_raw

@@ -227,7 +227,7 @@ class CloudformationLocalGraph(LocalGraph):
         self._add_resource_attr_connections(IntrinsicFunctions.CONDITION.value)
         self._add_fn_connections(IntrinsicFunctions.GET_ATT.value)
         self._add_fn_connections(ConditionFunctions.IF.value)
-        #self._add_fn_connections(IntrinsicFunctions.REF.value)
+        self._add_fn_connections(IntrinsicFunctions.REF.value)
         self._add_fn_connections(IntrinsicFunctions.FIND_IN_MAP.value)
         self._add_fn_sub_connections()
 
