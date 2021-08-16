@@ -189,8 +189,7 @@ def create_file_abs_path(root_folder: str, cf_file: str) -> str:
 
 
 def create_definitions(
-    root_folder: str, files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(), is_evaluate_default_refs: bool = True
+    root_folder: str, files: Optional[List[str]] = None, runner_filter: RunnerFilter = RunnerFilter()
 ) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
@@ -209,12 +208,6 @@ def create_definitions(
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-    if is_evaluate_default_refs:
-        evaluate_default_refs(definitions, definitions_raw)
-    return definitions, definitions_raw
-
-
-def evaluate_default_refs(definitions, definitions_raw):
     for cf_file in definitions.keys():
         cf_context_parser = ContextParser(cf_file, definitions[cf_file], definitions_raw[cf_file])
         logging.debug(

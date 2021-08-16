@@ -1,10 +1,9 @@
 import logging
 import os
 from typing import Optional, List
-from copy import deepcopy
 
 from checkov.cloudformation import cfn_utils
-from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context, evaluate_default_refs
+from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.parser import TemplateSections
