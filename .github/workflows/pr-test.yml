@@ -3,44 +3,44 @@ name: PR Test
 on: pull_request
 
 jobs:
-  cfn-lint:
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Install cfn-lint
-        run: |
-          pip install cfn-lint==0.51.0
-      - name: Lint Cloudformation templates
-        run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
-
-  unit-tests:
-    strategy:
-      fail-fast: true
-      matrix:
-        python: [3.7, 3.8, 3.9]
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-      - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
-        run: |
-          pipenv --python ${{ matrix.python }}
-          pipenv install --dev
-      - name: Unit tests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+#  cfn-lint:
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#      - name: Install cfn-lint
+#        run: |
+#          pip install cfn-lint==0.51.0
+#      - name: Lint Cloudformation templates
+#        run: |
+#          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+#
+#  unit-tests:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        python: [3.7, 3.8, 3.9]
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Set up Python ${{ matrix.python }}
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python }}
+#      - uses: dschep/install-pipenv-action@v1
+#      - name: Install dependencies
+#        run: |
+#          pipenv --python ${{ matrix.python }}
+#          pipenv install --dev
+#      - name: Unit tests
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          pipenv run python -m coverage run -m pytest tests
+#          pipenv run python -m coverage report
+#          pipenv run python -m coverage html
 
   integration-tests:
     strategy:
