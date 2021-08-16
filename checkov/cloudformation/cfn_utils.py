@@ -221,3 +221,4 @@ def evaluate_default_refs(definitions, definitions_raw):
             "Template Dump for {}: {}".format(cf_file, json.dumps(definitions[cf_file], indent=2, default=str))
         )
         cf_context_parser.evaluate_default_refs()
+    return definitions, definitions_raw

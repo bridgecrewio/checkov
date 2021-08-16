@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Optional, List
+from copy import deepcopy
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context, evaluate_default_refs
@@ -52,7 +53,7 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, False)
+            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
@@ -61,7 +62,6 @@ class Runner(BaseRunner):
 
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            evaluate_default_refs(self.definitions, self.definitions_raw)
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
