@@ -17,9 +17,9 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 
 class CloudformationLocalGraph(LocalGraph):
-    SUPPORTED_RESOURCE_ATTR_CONNECTION_KEYS = (ResourceAttributes.DEPENDS_ON.value, IntrinsicFunctions.CONDITION.value)
-    SUPPORTED_FN_CONNECTION_KEYS = (IntrinsicFunctions.GET_ATT.value, ConditionFunctions.IF.value,
-                                    IntrinsicFunctions.REF.value, IntrinsicFunctions.FIND_IN_MAP.value)
+    SUPPORTED_RESOURCE_ATTR_CONNECTION_KEYS = (ResourceAttributes.DEPENDS_ON, IntrinsicFunctions.CONDITION)
+    SUPPORTED_FN_CONNECTION_KEYS = (IntrinsicFunctions.GET_ATT, ConditionFunctions.IF,
+                                    IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP)
 
     def __init__(self, cfn_definitions: Dict[str, dict_node], source: str = "CloudFormation") -> None:
         super().__init__()
@@ -31,10 +31,10 @@ class CloudformationLocalGraph(LocalGraph):
         self._templates = {file_path: Template(file_path, definition)
                            for file_path, definition in self.definitions.items()}
         self._connection_key_func = {
-            IntrinsicFunctions.GET_ATT.value: self._fetch_getatt_target_id,
-            ConditionFunctions.IF.value: self._fetch_if_target_id,
-            IntrinsicFunctions.REF.value: self._fetch_ref_target_id,
-            IntrinsicFunctions.FIND_IN_MAP.value: self._fetch_findinmap_target_id
+            IntrinsicFunctions.GET_ATT: self._fetch_getatt_target_id,
+            ConditionFunctions.IF: self._fetch_if_target_id,
+            IntrinsicFunctions.REF: self._fetch_ref_target_id,
+            IntrinsicFunctions.FIND_IN_MAP: self._fetch_findinmap_target_id
         }
 
     def build_graph(self, render_variables: bool) -> None:
@@ -182,7 +182,7 @@ class CloudformationLocalGraph(LocalGraph):
     def _add_fn_sub_connections(self):
         for file_path, template in self._templates.items():
             # add edges for "Fn::Sub" tags. E.g. { "Fn::Sub": "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${vpc}" }
-            sub_objs = template.search_deep_keys(IntrinsicFunctions.SUB.value)
+            sub_objs = template.search_deep_keys(IntrinsicFunctions.SUB)
             for sub_obj in sub_objs:
                 sub_parameters = []
                 sub_parameter_values = {}
@@ -223,12 +223,12 @@ class CloudformationLocalGraph(LocalGraph):
         return regex.findall(string)
 
     def _create_edges(self) -> None:
-        self._add_resource_attr_connections(ResourceAttributes.DEPENDS_ON.value)
-        self._add_resource_attr_connections(IntrinsicFunctions.CONDITION.value)
-        self._add_fn_connections(IntrinsicFunctions.GET_ATT.value)
-        self._add_fn_connections(ConditionFunctions.IF.value)
-        self._add_fn_connections(IntrinsicFunctions.REF.value)
-        self._add_fn_connections(IntrinsicFunctions.FIND_IN_MAP.value)
+        self._add_resource_attr_connections(ResourceAttributes.DEPENDS_ON)
+        self._add_resource_attr_connections(IntrinsicFunctions.CONDITION)
+        self._add_fn_connections(IntrinsicFunctions.GET_ATT)
+        self._add_fn_connections(ConditionFunctions.IF)
+        self._add_fn_connections(IntrinsicFunctions.REF)
+        self._add_fn_connections(IntrinsicFunctions.FIND_IN_MAP)
         self._add_fn_sub_connections()
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:

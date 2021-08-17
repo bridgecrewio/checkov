@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from enum import Enum
 
 
-class IntrinsicFunctions(str, Enum):
+@dataclass
+class IntrinsicFunctions:
     BASE64 = "Fn::Base64"
     CIDR = "Fn::Cidr"
     FIND_IN_MAP = "Fn::FindInMap"
@@ -17,7 +19,8 @@ class IntrinsicFunctions(str, Enum):
     CONDITION = "Condition"
 
 
-class ConditionFunctions(str, Enum):
+@dataclass
+class ConditionFunctions:
     AND = "Fn::And"
     EQUALS = "Fn::Equals"
     IF = "Fn::If"
@@ -25,7 +28,8 @@ class ConditionFunctions(str, Enum):
     OR = "Fn::Or"
 
 
-class ResourceAttributes(str, Enum):
+@dataclass
+class ResourceAttributes:
     CREATION_POLICY = "CreationPolicy"
     DELETION_POLICY = "DeletionPolicy"
     DEPENDS_ON = "DependsOn"
