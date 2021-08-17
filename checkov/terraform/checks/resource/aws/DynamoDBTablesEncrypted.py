@@ -17,7 +17,7 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
             sse = conf['server_side_encryption'][0]
             enabled = sse.get("enabled")
             kms_key_arn = sse.get("kms_key_arn")
-            if enabled == [True] and kms_key_arn != None:
+            if enabled == [True] and kms_key_arn is not None:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
