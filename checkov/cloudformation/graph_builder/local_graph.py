@@ -1,10 +1,7 @@
 import logging
 import re
 from inspect import ismethod
-from typing import Dict, Any
-
-import six
-from cfnlint.template import Template
+from typing import Dict, Any, Optional
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
@@ -13,6 +10,7 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.cloudformation.parser.node import dict_node
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from cfnlint.template import Template
 
 
 class CloudformationLocalGraph(LocalGraph):
@@ -99,18 +97,23 @@ class CloudformationLocalGraph(LocalGraph):
                 vertex_name = vertex.name.split('.')[-1]
                 target_ids = self.definitions.get(vertex_path, {})\
                     .get(TemplateSections.RESOURCES.value, {}).get(vertex_name, {}).get(attribute, None)
-                if isinstance(target_ids, (list, six.string_types)):
-                    if isinstance(target_ids, (six.string_types)):
-                        target_ids = [target_ids]
+                target_ids = [target_ids] if isinstance(target_ids,  str) else target_ids
+                if isinstance(target_ids, list):
                     for target_id in target_ids:
-                        if isinstance(target_id, six.string_types):
+                        if isinstance(target_id, str):
                             dest_vertex_index = self._vertices_indexes[vertex_path][target_id]
                             self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
+                        else:
+                            logging.info(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                                         f"and vertex_path {vertex_path} as target_id is not a string")
+                else:
+                    logging.info(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                                 f"and vertex_path {vertex_path} as target_ids is not a list")
 
     def _extract_source_value_attrs(self, matching_path):
-        # matching_path for Resource = [template_section, source_id, 'Properties', ... , key, value]
-        # matching_path otherwise = # matching_path for Resource = [template_section, source_id, ... , key, value]
-        # key = Ref, GetAtt, etc...
+        """ matching_path for Resource = [template_section, source_id, 'Properties', ... , key, value]
+         matching_path otherwise = # matching_path for Resource = [template_section, source_id, ... , key, value]
+         key = a member of SUPPORTED_FN_CONNECTION_KEYS """
         template_section = matching_path[0]
         source_id = matching_path[1]
         value = matching_path[-1]
@@ -133,18 +136,17 @@ class CloudformationLocalGraph(LocalGraph):
                 if target_id:
                     origin_vertex_index, dest_vertex_index, label = self._extract_origin_dest_label(
                         file_path, source_id, target_id, attributes)
-                    if origin_vertex_index is None or dest_vertex_index is None:
-                        continue
-                    self._create_edge(origin_vertex_index, dest_vertex_index, label)
+                    if origin_vertex_index is not None and dest_vertex_index is not None:
+                        self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
-    def _fetch_if_target_id(self, template, value) -> int:
+    def _fetch_if_target_id(self, template, value) -> Optional[int]:
         target_id = None
         # value = [condition_name, value_if_true, value_if_false]
         if isinstance(value, list) and len(value) == 3 and (self._is_condition(template, value[0])):
             target_id = value[0]
         return target_id
 
-    def _fetch_getatt_target_id(self, template, value) -> int:
+    def _fetch_getatt_target_id(self, template, value) -> Optional[int]:
         """ might be one of the 2 following notations:
          1st: { "Fn::GetAtt" : [ "logicalNameOfResource", "attributeName" ] }
          2nd: { "!GetAtt" : "logicalNameOfResource.attributeName" } """
@@ -155,21 +157,22 @@ class CloudformationLocalGraph(LocalGraph):
             target_id = value[0]
 
         # !GetAtt notation
-        if isinstance(value, (six.string_types, six.text_type)) and '.' in value:
-            if self._is_resource(template, value.split('.')[0]):
-                target_id = value.split('.')[0]
+        if isinstance(value, str) and '.' in value:
+            resource_id = value.split('.')[0]
+            if self._is_resource(template, resource_id):
+                target_id = resource_id
 
         return target_id
 
-    def _fetch_ref_target_id(self, template, value) -> int:
+    def _fetch_ref_target_id(self, template, value) -> Optional[int]:
         target_id = None
         # value might be a string or a list of strings
-        if isinstance(value, (six.text_type, six.string_types, int)) \
+        if isinstance(value, (str, int)) \
                 and ((self._is_resource(template, value)) or (self._is_parameter(template, value))):
             target_id = value
         return target_id
 
-    def _fetch_findinmap_target_id(self, template, value) -> int:
+    def _fetch_findinmap_target_id(self, template, value) -> Optional[int]:
         target_id = None
         # value = [ MapName, TopLevelKey, SecondLevelKey ]
         if isinstance(value, list) and len(value) == 3 and (self._is_mapping(template, value[0])):
@@ -191,7 +194,7 @@ class CloudformationLocalGraph(LocalGraph):
                     if len(value) == 2:
                         sub_parameter_values = value[1]
                     sub_parameters = self._find_fn_sub_parameter(value[0])
-                elif isinstance(value, (six.text_type, six.string_types)):
+                elif isinstance(value, str):
                     sub_parameters = self._find_fn_sub_parameter(value)
 
                 for sub_parameter in sub_parameters:
@@ -200,9 +203,8 @@ class CloudformationLocalGraph(LocalGraph):
                             sub_parameter = sub_parameter.split('.')[0]
                         origin_vertex_index, dest_vertex_index, label = self._extract_origin_dest_label(
                             file_path, source_id, sub_parameter, attributes)
-                        if origin_vertex_index is None or dest_vertex_index is None:
-                            continue
-                        self._create_edge(origin_vertex_index, dest_vertex_index, label)
+                        if origin_vertex_index is not None and dest_vertex_index is not None:
+                            self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
     def _extract_origin_dest_label(self, file_path, source_id, target_id, attributes):
         origin_vertex_index = self._vertices_indexes.get(file_path, {}).get(source_id, None)
