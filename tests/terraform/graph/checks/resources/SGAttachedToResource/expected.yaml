@@ -1,6 +1,7 @@
 pass:
   - "aws_security_group.pass_alb"
   - "aws_security_group.pass_batch"
+  - "aws_security_group.pass_cloudwatch_event"
   - "aws_security_group.pass_codebuild"
   - "aws_security_group.pass_dms"
   - "aws_security_group.pass_docdb"
