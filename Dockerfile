@@ -12,9 +12,9 @@ RUN wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/sc
 RUN addgroup -S -g ${GID} ${USERNAME} && \
     adduser -S -D -u ${UID} -G ${USERNAME} ${USERNAME} 
 
-COPY --chown=${UID}:${GID} ./github_action_resources/entrypoint.sh /entrypoint.sh
-COPY --chown=${UID}:${GID} ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json
-COPY --chown=${UID}:${GID} ./github_action_resources/checkov-problem-matcher-softfail.json /usr/local/lib/checkov-problem-matcher-softfail.json
+COPY --chown=${USERNAME} ./github_action_resources/entrypoint.sh /entrypoint.sh
+COPY --chown=${USERNAME} ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json
+COPY --chown=${USERNAME} ./github_action_resources/checkov-problem-matcher-softfail.json /usr/local/lib/checkov-problem-matcher-softfail.json
 
 USER ${UID}
 
