@@ -44,7 +44,6 @@ class TerraformLocalGraph(LocalGraph):
         self.relative_paths_cache = {}
         self.abspath_cache = {}
         self.dirname_cache = {}
-        self.vertices_relative_to_path_cache = {}
         self.vertices_by_module_dependency = defaultdict(list)
 
     def build_graph(self, render_variables: bool) -> None:
@@ -69,6 +68,8 @@ class TerraformLocalGraph(LocalGraph):
             if block.block_type == BlockType.MODULE:
                 # map between file paths and module vertices indexes from that file
                 self.map_path_to_module.setdefault(block.path, []).append(i)
+
+            self.vertices_by_module_dependency[block.module_dependency].append(i)
 
             self.in_edges[i] = []
             self.out_edges[i] = []
@@ -298,9 +299,6 @@ class TerraformLocalGraph(LocalGraph):
     def _find_vertex_index_relative_to_path(
         self, block_type: BlockType, name: str, block_path: str, module_path: str
     ) -> int:
-        cache_key = f"{module_path}-{block_type}.{name}"
-        if self.vertices_relative_to_path_cache.get(cache_key):
-            return self.vertices_relative_to_path_cache.get(cache_key)
         relative_vertices = []
         possible_vertices = [index for index in self.vertices_by_module_dependency.get(module_path, [])
                              if self.vertices[index].block_type == block_type and self.vertices[index].name == name]
@@ -313,7 +311,6 @@ class TerraformLocalGraph(LocalGraph):
             relative_vertex = relative_vertices[0]
         else:
             relative_vertex = self._find_vertex_with_longest_path_match(relative_vertices, block_path)
-        self.vertices_relative_to_path_cache[cache_key] = relative_vertex
         return relative_vertex
 
     def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes: List[int], origin_path: str) -> int:
