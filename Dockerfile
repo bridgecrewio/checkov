@@ -16,7 +16,7 @@ COPY --chown=${USERNAME} ./github_action_resources/entrypoint.sh /entrypoint.sh
 COPY --chown=${USERNAME} ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json
 COPY --chown=${USERNAME} ./github_action_resources/checkov-problem-matcher-softfail.json /usr/local/lib/checkov-problem-matcher-softfail.json
 
-USER ${UID}
+#USER ${UID}
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
