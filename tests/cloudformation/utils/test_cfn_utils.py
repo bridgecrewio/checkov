@@ -3,7 +3,7 @@ import unittest
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
 from checkov.cloudformation.parser.node import dict_node
-from checkov.cloudformation.graph_builder.graph_components.block_types import CloudformationTemplateSections
+from checkov.cloudformation.parser import TemplateSections
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 RELATIVE_PATH = 'file_formats'
@@ -25,20 +25,20 @@ class TestCfnUtils(unittest.TestCase):
     def test_parameters_value(self):
         # Asserting test.yaml file
         yaml_parameters = self.definitions_context[os.path.join(self.test_root_dir, 'test.yaml')][
-                CloudformationTemplateSections.PARAMETERS.value]
+                TemplateSections.PARAMETERS.value]
         self.assertIsNotNone(yaml_parameters)
         self.assertEqual(len(yaml_parameters), 2)
         self.validate_definition_lines(yaml_parameters['KmsMasterKeyId'], 4, 7, 4)
         self.validate_definition_lines(yaml_parameters['DBName'], 8, 11, 4)
         # Asserting test2.yaml file
         yaml2_parameters = self.definitions_context[os.path.join(self.test_root_dir, 'test2.yaml')][
-            CloudformationTemplateSections.PARAMETERS.value]
+            TemplateSections.PARAMETERS.value]
         self.assertIsNotNone(yaml2_parameters)
         self.assertEqual(len(yaml2_parameters), 1)
         self.validate_definition_lines(yaml2_parameters['LatestAmiId'], 4, 6, 3)
         # Asserting json file
         json_parameters = self.definitions_context[os.path.join(self.test_root_dir, 'test.json')][
-                CloudformationTemplateSections.PARAMETERS.value]
+                TemplateSections.PARAMETERS.value]
         self.assertIsNotNone(json_parameters)
         self.assertEqual(len(json_parameters), 2)
         self.validate_definition_lines(json_parameters['KmsMasterKeyId'], 5, 9, 5)
@@ -47,14 +47,14 @@ class TestCfnUtils(unittest.TestCase):
     def test_resources_value(self):
         # Asserting test.yaml file
         yaml_resources = self.definitions_context[os.path.join(self.test_root_dir, 'test.yaml')][
-                CloudformationTemplateSections.RESOURCES.value]
+                TemplateSections.RESOURCES.value]
         self.assertIsNotNone(yaml_resources)
         self.assertEqual(len(yaml_resources), 2)
         self.validate_definition_lines(yaml_resources['MySourceQueue'], 13, 16, 4)
         self.validate_definition_lines(yaml_resources['MyDB'], 17, 26, 10)
         # Asserting test2.yaml file
         yaml2_resources = self.definitions_context[os.path.join(self.test_root_dir, 'test2.yaml')][
-            CloudformationTemplateSections.RESOURCES.value]
+            TemplateSections.RESOURCES.value]
         self.assertIsNotNone(yaml2_resources)
         self.assertEqual(len(yaml2_resources), 4)
         self.validate_definition_lines(yaml2_resources['WebHostStorage'], 12, 23, 12)
@@ -63,7 +63,7 @@ class TestCfnUtils(unittest.TestCase):
         self.validate_definition_lines(yaml2_resources['DBAppInstance'], 52, 184, 133)
         # Asserting json file
         json_resources = self.definitions_context[os.path.join(self.test_root_dir, 'test.json')][
-                CloudformationTemplateSections.RESOURCES.value]
+                TemplateSections.RESOURCES.value]
         self.assertIsNotNone(json_resources)
         self.assertEqual(len(json_resources), 2)
         self.validate_definition_lines(json_resources['MySourceQueue'], 17, 22, 6)
@@ -72,13 +72,13 @@ class TestCfnUtils(unittest.TestCase):
     def test_outputs_value(self):
         # Asserting test.yaml file
         yaml_outputs = self.definitions_context[os.path.join(self.test_root_dir, 'test.yaml')][
-                CloudformationTemplateSections.OUTPUTS.value]
+                TemplateSections.OUTPUTS.value]
         self.assertIsNotNone(yaml_outputs)
         self.assertEqual(len(yaml_outputs), 1)
         self.validate_definition_lines(yaml_outputs['DBAppPublicDNS'], 28, 30, 3)
         # Asserting test2.yaml file
         yaml2_outputs = self.definitions_context[os.path.join(self.test_root_dir, 'test2.yaml')][
-            CloudformationTemplateSections.OUTPUTS.value]
+            TemplateSections.OUTPUTS.value]
         self.assertIsNotNone(yaml2_outputs)
         self.assertEqual(len(yaml2_outputs), 5)
         self.validate_definition_lines(yaml2_outputs['EC2PublicDNS'], 187, 191, 5)
@@ -88,14 +88,14 @@ class TestCfnUtils(unittest.TestCase):
         self.validate_definition_lines(yaml2_outputs['UserName'], 204, 206, 3)
         # Asserting json file
         json_outputs = self.definitions_context[os.path.join(self.test_root_dir, 'test.json')][
-                CloudformationTemplateSections.OUTPUTS.value]
+                TemplateSections.OUTPUTS.value]
         self.assertIsNotNone(json_outputs)
         self.assertEqual(len(json_outputs), 1)
         self.validate_definition_lines(json_outputs['DBAppPublicDNS'], 35, 38, 4)
 
     def test_skipped_check_exists(self):
         skipped_checks = self.definitions_context[os.path.join(self.test_root_dir, 'test.yaml')][
-                CloudformationTemplateSections.RESOURCES.value]['MyDB']['skipped_checks']
+                TemplateSections.RESOURCES.value]['MyDB']['skipped_checks']
         self.assertEqual(len(skipped_checks), 1)
         self.assertEqual(skipped_checks[0]['id'], 'CKV_AWS_16')
         self.assertEqual(skipped_checks[0]['suppress_comment'],
