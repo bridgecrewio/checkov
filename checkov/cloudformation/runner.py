@@ -67,11 +67,14 @@ class Runner(BaseRunner):
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():
-            cf_context_parser = ContextParser(cf_file, self.definitions[cf_file], self.definitions_raw[cf_file])
-            logging.debug(
-                "Template Dump for {}: {}".format(cf_file, json.dumps(self.definitions[cf_file], indent=2, default=str))
-            )
-            cf_context_parser.evaluate_default_refs()
+            file_definition = self.definitions.get(cf_file, None)
+            file_definition_raw = self.definitions_raw.get(cf_file, None)
+            if file_definition is not None and file_definition_raw is not None:
+                cf_context_parser = ContextParser(cf_file, file_definition, file_definition_raw)
+                logging.debug(
+                    "Template Dump for {}: {}".format(cf_file, json.dumps(file_definition, indent=2, default=str))
+                )
+                cf_context_parser.evaluate_default_refs()
 
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
