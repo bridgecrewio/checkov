@@ -3,7 +3,6 @@ import re
 from inspect import ismethod
 from typing import Dict, Any
 
-import dpath.util
 import six
 from cfnlint.template import Template
 
@@ -98,10 +97,8 @@ class CloudformationLocalGraph(LocalGraph):
             if vertex.block_type == BlockType.RESOURCE:
                 vertex_path = vertex.path
                 vertex_name = vertex.name.split('.')[-1]
-                vertex_definition = dpath.get(self.definitions,
-                                              [vertex_path, TemplateSections.RESOURCES.value,
-                                               vertex_name])
-                target_ids = vertex_definition.get(attribute)
+                target_ids = self.definitions.get(vertex_path, {})\
+                    .get(TemplateSections.RESOURCES.value, {}).get(vertex_name, {}).get(attribute, None)
                 if isinstance(target_ids, (list, six.string_types)):
                     if isinstance(target_ids, (six.string_types)):
                         target_ids = [target_ids]
@@ -208,11 +205,8 @@ class CloudformationLocalGraph(LocalGraph):
                         self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
     def _extract_origin_dest_label(self, file_path, source_id, target_id, attributes):
-        origin_vertex_index, dest_vertex_index = None, None
-        if dpath.search(self._vertices_indexes, [file_path, source_id]):
-            origin_vertex_index = dpath.get(self._vertices_indexes, [file_path, source_id])
-        if dpath.search(self._vertices_indexes, [file_path, target_id]):
-            dest_vertex_index = dpath.get(self._vertices_indexes, [file_path, target_id])
+        origin_vertex_index = self._vertices_indexes.get(file_path, {}).get(source_id, None)
+        dest_vertex_index = self._vertices_indexes.get(file_path, {}).get(target_id, None)
         attributes_joined = '.'.join(map(str, attributes))  # mapping all attributes to str because one of the attrs might be an int
         return origin_vertex_index, dest_vertex_index, attributes_joined
 
