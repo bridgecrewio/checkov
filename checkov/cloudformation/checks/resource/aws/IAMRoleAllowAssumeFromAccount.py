@@ -23,6 +23,8 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                 assume_role_block = json.loads(assume_role_policy_doc)
             else:
                 assume_role_block = assume_role_policy_doc
+        else:
+            return CheckResult.UNKNOWN
 
         if 'Statement' in assume_role_block.keys():
             if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
