@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from typing import Optional, List
@@ -63,6 +64,14 @@ class Runner(BaseRunner):
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+
+        # TODO: replace with real graph rendering
+        for cf_file in self.definitions.keys():
+            cf_context_parser = ContextParser(cf_file, self.definitions[cf_file], self.definitions_raw[cf_file])
+            logging.debug(
+                "Template Dump for {}: {}".format(cf_file, json.dumps(self.definitions[cf_file], indent=2, default=str))
+            )
+            cf_context_parser.evaluate_default_refs()
 
         # run checks
         self.check_definitions(root_folder, runner_filter, report)

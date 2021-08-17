@@ -79,26 +79,26 @@ class TestLocalGraph(TestCase):
             'parameters.EnvType': 0,
             'parameters.DataBucketName': 0,
             'mappings.RegionMap': 0,
-            'conditions.CreateProdResources': 0,
-            'conditions.CreateDevResources': 0,
-            'AWS::EC2::Instance.EC2Instance': 3,
-            'AWS::EC2::VolumeAttachment.MountPoint': 1,
+            'conditions.CreateProdResources': 1,
+            'conditions.CreateDevResources': 1,
+            'AWS::EC2::Instance.EC2Instance': 4,
+            'AWS::EC2::VolumeAttachment.MountPoint': 3,
             'AWS::EC2::Volume.NewVolume': 2,
-            'AWS::S3::Bucket.DataBucket': 3,
-            'outputs.EC2InstanceId': 0,
+            'AWS::S3::Bucket.DataBucket': 4,
+            'outputs.EC2InstanceId': 1,
             'outputs.EC2PublicDNS': 1,
             'outputs.DataBucketUniqueId': 2
         }
 
         expected_in_edges_count = {
-            'parameters.EnvType': 1,
-            'parameters.DataBucketName': 2,
+            'parameters.EnvType': 4,
+            'parameters.DataBucketName': 3,
             'mappings.RegionMap': 1,
             'conditions.CreateProdResources': 3,
             'conditions.CreateDevResources': 1,
-            'AWS::EC2::Instance.EC2Instance': 3,
+            'AWS::EC2::Instance.EC2Instance': 5,
             'AWS::EC2::VolumeAttachment.MountPoint': 0,
-            'AWS::EC2::Volume.NewVolume': 0,
+            'AWS::EC2::Volume.NewVolume': 1,
             'AWS::S3::Bucket.DataBucket': 1,
             'outputs.EC2InstanceId': 0,
             'outputs.EC2PublicDNS': 0,
@@ -114,14 +114,14 @@ class TestLocalGraph(TestCase):
         out_edges_overall_count = 0
         for vertex_index, actual_out_edges in local_graph.out_edges.items():
             vertex_id = idx_to_vertex_id[vertex_index]
-            self.assertEqual(len(actual_out_edges), expected_out_edges_count[vertex_id])
+            self.assertEqual(len(actual_out_edges), expected_out_edges_count[vertex_id], f'{vertex_id} actually has {len(actual_out_edges)} outgoing edges, not {expected_out_edges_count[vertex_id]}')
             out_edges_overall_count += len(actual_out_edges)
 
         # we check that each entity in the template file has the right amount of in edges_yaml
         in_edges_overall_count = 0
         for vertex_index, actual_in_edges in local_graph.in_edges.items():
             vertex_id = idx_to_vertex_id[vertex_index]
-            self.assertEqual(len(actual_in_edges), expected_in_edges_count[vertex_id])
+            self.assertEqual(len(actual_in_edges), expected_in_edges_count[vertex_id], f'{vertex_id} actually has {len(actual_in_edges)} outgoing edges, not {expected_in_edges_count[vertex_id]}')
             in_edges_overall_count += len(actual_in_edges)
 
         # we check that the overall amount of out edges_yaml equals the overall amount of in edges_yaml
