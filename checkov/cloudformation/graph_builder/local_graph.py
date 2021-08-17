@@ -240,22 +240,30 @@ class CloudformationLocalGraph(LocalGraph):
     @staticmethod
     def _is_parameter(template, identifier):
         """Check if the identifier is that of a Parameter"""
-        return template.template.get(TemplateSections.PARAMETERS, {}).get(identifier, {})
+        if isinstance(identifier, str):
+            return template.template.get(TemplateSections.PARAMETERS, {}).get(identifier, {})
+        return False
 
     @staticmethod
     def _is_mapping(template, identifier):
         """Check if the identifier is that of a Mapping"""
-        return template.template.get(TemplateSections.MAPPINGS, {}).get(identifier, {})
+        if isinstance(identifier, str):
+            return template.template.get(TemplateSections.MAPPINGS, {}).get(identifier, {})
+        return False
 
     @staticmethod
     def _is_condition(template, identifier):
         """Check if the identifier is that of a Condition"""
-        return template.template.get(TemplateSections.CONDITIONS, {}).get(identifier, {})
+        if isinstance(identifier, str):
+            return template.template.get(TemplateSections.CONDITIONS, {}).get(identifier, {})
+        return False
 
     @staticmethod
     def _is_resource(template, identifier):
         """Check if the identifier is that of a Resource"""
-        return template.template.get(TemplateSections.RESOURCES, {}).get(identifier, {})
+        if isinstance(identifier, str):
+            return template.template.get(TemplateSections.RESOURCES, {}).get(identifier, {})
+        return False
 
 
 def get_only_dict_items(origin_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
