@@ -13,14 +13,3 @@ class BlockType(CommonBlockType):
     CONDITION = "conditions"
     TRANSFORM = "transform"
     OUTPUT = "outputs"
-
-
-class CloudformationTemplateSections(str, Enum):
-    RESOURCES = "Resources"
-    METADATA = "Metadata"
-    PARAMETERS = "Parameters"
-    RULES = "Rules"
-    MAPPINGS = "Mappings"
-    CONDITIONS = "Conditions"
-    TRANSFORM = "Transform"
-    OUTPUTS = "Outputs"
