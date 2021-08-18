@@ -25,7 +25,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
         self.port = port
 
     def is_port_in_range(self, portRange):
-        if re.match(PORT_RANGE, portRange):
+        if re.match(PORT_RANGE, str(portRange)):
             start, end = int(portRange.split('-')[0]), int(portRange.split('-')[1])
             if start <= self.port <= end:
                 return True
