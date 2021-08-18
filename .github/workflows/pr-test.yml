@@ -75,7 +75,7 @@ jobs:
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
           sleep $((RANDOM % 11))
-          sh integration_tests/prepare_data.sh
+          ./integration_tests/prepare_data.sh 3.8  # Just making sure the API key tests don't run on PRs
       - name: Run integration tests
         run: |
-          pipenv run pytest integration_tests
+          pipenv run pytest integration_tests -k 'not api_key'

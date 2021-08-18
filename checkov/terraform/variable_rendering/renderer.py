@@ -27,7 +27,7 @@ ATTRIBUTES_NO_EVAL = ["template_body", "template"]
 class VariableRenderer:
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         self.local_graph = local_graph
-        run_async = os.environ.get("RENDER_VARIABLES_ASYNC", "True")
+        run_async = os.environ.get("RENDER_VARIABLES_ASYNC", "False")
         self.run_async = True if run_async == "True" else False
         self.max_workers = int(os.environ.get("RENDER_ASYNC_MAX_WORKERS", 50))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
@@ -87,6 +87,7 @@ class VariableRenderer:
         self.local_graph.update_vertices_configs()
         logging.info("done evaluating edges")
         self.evaluate_non_rendered_values()
+        logging.info("done evaluate_non_rendered_values")
 
     def _edge_evaluation_task(self, edges: List[List[Edge]]) -> List[Edge]:
         inner_edges = edges[0]

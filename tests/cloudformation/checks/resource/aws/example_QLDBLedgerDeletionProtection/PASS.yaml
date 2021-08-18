@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Default:
+    Type: "AWS::QLDB::Ledger"
+    Properties:
+      Name: "ledger"
+      PermissionsMode: "STANDARD"
+  Enabled:
+    Type: "AWS::QLDB::Ledger"
+    Properties:
+      DeletionProtection: true
+      Name: "ledger"
+      PermissionsMode: "STANDARD"

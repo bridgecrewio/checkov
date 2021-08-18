@@ -41,7 +41,7 @@ jobs:
       - name: Create checkov reports
         run: |
           sleep $((RANDOM % 11))
-          sh integration_tests/prepare_data.sh
+          ./integration_tests/prepare_data.sh ${{ matrix.python }}
         env:
           BC_KEY: ${{ secrets.BC_API_KEY }}
       - name: Run integration tests
@@ -52,6 +52,12 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -86,7 +92,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
@@ -137,6 +143,12 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:

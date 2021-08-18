@@ -1,5 +1,6 @@
 import logging
 import os
+from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, Set, Callable
@@ -41,18 +42,20 @@ class TerraformLocalGraph(LocalGraph):
         self.module_dependency_map = module_dependency_map
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
+        self.abspath_cache: Dict[str, str] = {}
+        self.dirname_cache: Dict[str, str] = {}
+        self.vertices_by_module_dependency_by_name: Dict[str, Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.vertices_by_module_dependency: Dict[str, Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
-        undetermined_values = self._set_variables_values_from_modules()
         self._build_edges()
         self.calculate_encryption_attribute()
         if render_variables:
-            logging.info("Rendering variables")
+            logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = VariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
-            self.process_undetermined_values(undetermined_values)
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
@@ -66,6 +69,9 @@ class TerraformLocalGraph(LocalGraph):
             if block.block_type == BlockType.MODULE:
                 # map between file paths and module vertices indexes from that file
                 self.map_path_to_module.setdefault(block.path, []).append(i)
+
+            self.vertices_by_module_dependency[block.module_dependency][block.block_type].append(i)
+            self.vertices_by_module_dependency_by_name[block.module_dependency][block.block_type][block.name].append(i)
 
             self.in_edges[i] = []
             self.out_edges[i] = []
@@ -148,14 +154,14 @@ class TerraformLocalGraph(LocalGraph):
                 module_list = self.map_path_to_module.get(path_to_module_str, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
-                    module_vertex_dir = os.path.dirname(module_vertex.path)
+                    module_vertex_dir = self.get_dirname(module_vertex.path)
                     module_source = module_vertex.attributes.get("source", [""])[0]
                     if self._get_dest_module_path(module_vertex_dir, module_source) == dir_name:
                         block_dirs_to_modules.setdefault(dir_name, set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_indices = block_dirs_to_modules.get(os.path.dirname(vertex.path), set())
+            module_indices = block_dirs_to_modules.get(self.get_dirname(vertex.path), set())
             if module_indices:
                 vertex.source_module = module_indices
 
@@ -211,13 +217,9 @@ class TerraformLocalGraph(LocalGraph):
                 target_path = vertex.path
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
-                dest_module_path = self._get_dest_module_path(os.path.dirname(vertex.path), vertex.attributes['source'][0])
-                target_variables = [
-                    index
-                    for index in self.vertices_by_block_type.get(BlockType.VARIABLE, [])
-                    if self.vertices[index].module_dependency == target_path
-                       and os.path.dirname(self.vertices[index].path) == dest_module_path
-                ]
+                dest_module_path = self._get_dest_module_path(self.get_dirname(vertex.path), vertex.attributes['source'][0])
+                target_variables = list(filter(lambda index: self.get_dirname(self.vertices[index].path) == dest_module_path,
+                                               self.vertices_by_module_dependency.get(target_path, {}).get(BlockType.VARIABLE, [])))
                 for attribute, value in vertex.attributes.items():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
                         continue
@@ -226,11 +228,9 @@ class TerraformLocalGraph(LocalGraph):
                         self._create_edge(target_variable, origin_node_index, "default")
             elif vertex.block_type == BlockType.TF_VARIABLE:
                 # Assuming the tfvars file is in the same directory as the variables file (best practice)
-                target_variables = [
-                    index
-                    for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
-                    if os.path.dirname(self.vertices[index].path) == os.path.dirname(vertex.path)
-                ]
+                target_variables = list(
+                    filter(lambda index: self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path),
+                           self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])))
                 if len(target_variables) == 1:
                     self._create_edge(target_variables[0], origin_node_index, "default")
 
@@ -255,7 +255,7 @@ class TerraformLocalGraph(LocalGraph):
         The function receives a node of a block of type BlockType.Module, and finds all the nodes of blocks that belong to this
         module, and creates edges between them.
         """
-        curr_module_dir = os.path.dirname(module_node.path)
+        curr_module_dir = self.get_dirname(module_node.path)
         dest_module_source = module_node.attributes["source"][0]
         dest_module_path = self._get_dest_module_path(curr_module_dir, dest_module_source)
 
@@ -266,10 +266,10 @@ class TerraformLocalGraph(LocalGraph):
             )
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
-                if (os.path.dirname(vertex.path) == dest_module_path) and (
+                if (self.get_dirname(vertex.path) == dest_module_path) and (
                     vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
-                    or os.path.abspath(vertex.module_dependency)
-                    == os.path.abspath(module_node.path)  # The vertex is in the correct dependency path
+                    or self.get_abspath(vertex.module_dependency)
+                    == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
                 ):
                     self._create_edge(origin_node_index, vertex_index, attribute_key)
                     self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
@@ -301,15 +301,17 @@ class TerraformLocalGraph(LocalGraph):
         self, block_type: BlockType, name: str, block_path: str, module_path: str
     ) -> int:
         relative_vertices = []
-        possible_vertices = self.vertices_block_name_map.get(block_type, {}).get(name, [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_path, {}).get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
-            if vertex.module_dependency == module_path and os.path.dirname(vertex.path) == os.path.dirname(block_path):
+            if self.get_dirname(vertex.path) == self.get_dirname(block_path):
                 relative_vertices.append(vertex_index)
 
         if len(relative_vertices) == 1:
-            return relative_vertices[0]
-        return self._find_vertex_with_longest_path_match(relative_vertices, block_path)
+            relative_vertex = relative_vertices[0]
+        else:
+            relative_vertex = self._find_vertex_with_longest_path_match(relative_vertices, block_path)
+        return relative_vertex
 
     def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes: List[int], origin_path: str) -> int:
         vertex_index_with_longest_common_prefix = -1
@@ -473,3 +475,17 @@ class TerraformLocalGraph(LocalGraph):
                     EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value
                 )
                 vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = reason
+
+    def get_dirname(self, path: str) -> str:
+        dir_name = self.dirname_cache.get(path)
+        if not dir_name:
+            dir_name = os.path.dirname(path)
+            self.dirname_cache[path] = dir_name
+        return dir_name
+
+    def get_abspath(self, path: str) -> str:
+        dir_name = self.abspath_cache.get(path)
+        if not dir_name:
+            dir_name = os.path.abspath(path)
+            self.abspath_cache[path] = dir_name
+        return dir_name

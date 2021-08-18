@@ -9,18 +9,18 @@ definition:
    value:
    - aws_db_instance
    operator: within
+ - cond_type: filter
+   resource_types:
+   - aws_db_instance
+   attribute: engine
+   operator: within
+   value: "postgres"  
  - cond_type: connection
    resource_types:
    - aws_db_instance
    connected_resource_types:
    - aws_rds_cluster_parameter_group
    operator: exists
- - cond_type: attribute
-   resource_types:
-   - aws_db_instance
-   attribute: "engine"
-   operator: contains
-   value: "postgres"
  - cond_type: attribute
    resource_types:
    - aws_rds_cluster_parameter_group

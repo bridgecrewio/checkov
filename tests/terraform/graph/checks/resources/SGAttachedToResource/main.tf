@@ -600,3 +600,38 @@ resource "aws_security_group" "pass_emr" {
     cidr_blocks = ["10.0.0.0/16"]
   }
 }
+
+resource "aws_cloudwatch_event_target" "pass_cloudwatch_event" {
+  target_id = var.target_id
+  arn       = var.arn
+  rule      = var.rule
+  role_arn  = var.role_arn
+
+  ecs_target {
+    launch_type = var.launch_type
+    task_count  = var.task_count
+    task_definition_arn = var.task_definition_arn
+
+    network_configuration {
+      subnets          = [var.subnet_id]
+      security_groups  = [aws_security_group.pass_cloudwatch_event.id]
+      assign_public_ip = false
+    }
+  }
+
+  input = <<EOF
+{
+  "containerOverrides": [ ]
+}
+EOF
+}
+
+resource "aws_security_group" "pass_cloudwatch_event" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
