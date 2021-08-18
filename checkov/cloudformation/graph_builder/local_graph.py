@@ -101,8 +101,9 @@ class CloudformationLocalGraph(LocalGraph):
                 if isinstance(target_ids, list):
                     for target_id in target_ids:
                         if isinstance(target_id, str):
-                            dest_vertex_index = self._vertices_indexes[vertex_path][target_id]
-                            self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
+                            dest_vertex_index = self._vertices_indexes.get(vertex_path, {}).get(target_id, None)
+                            if dest_vertex_index is not None:
+                                self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
                             logging.info(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
                                          f"and vertex_path {vertex_path} as target_id is not a string")
