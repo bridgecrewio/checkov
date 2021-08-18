@@ -22,5 +22,5 @@ class ContainsAttributeSolver(BaseAttributeSolver):
             except ValueError:
                 pass
         if isinstance(att, dict):
-            return self.value in att or any(self.value in val for val in att.values())
+            return self.value in att or any(self.value in val for val in att.values() if type(val) in [str, list, set, dict])
         return self.value in att
