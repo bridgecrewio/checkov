@@ -15,6 +15,12 @@ definition:
         resource_types:
         - aws_lb
         connected_resource_types:
+        - aws_wafv2_web_acl_association
+      - cond_type: connection
+        operator: exists
+        resource_types:
+        - aws_lb
+        connected_resource_types:
         - aws_wafregional_web_acl_association
       - cond_type: attribute
         value: true
