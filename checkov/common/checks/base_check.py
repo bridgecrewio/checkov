@@ -69,13 +69,13 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     @multi_signature()
     @abstractmethod
-    def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         raise NotImplementedError()
 
     @classmethod
     @scan_entity_conf.add_signature(args=["self", "conf"])
-    def _scan_entity_conf_self_conf(cls, wrapped: Callable) -> Callable:
-        def wrapper(self: "BaseCheck", conf: Dict[str, List[Any]], entity_type: Optional[str] = None) -> CheckResult:
+    def _scan_entity_conf_self_conf(cls, wrapped: Callable[..., CheckResult]) -> Callable[..., CheckResult]:
+        def wrapper(self: "BaseCheck", conf: Dict[str, Any], entity_type: Optional[str] = None) -> CheckResult:
             # keep default argument for entity_type so old code, that doesn't set it, will work.
             return wrapped(self, conf)
 
