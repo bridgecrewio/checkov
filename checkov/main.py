@@ -74,7 +74,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
-                                 all_external=config.run_all_external_checks)
+                                 all_external=config.run_all_external_checks, tf_var_files=config.tf_var_file)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -297,9 +297,9 @@ def add_parser_args(parser):
                help="download external terraform modules from public git repositories and terraform registry",
                default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False), env_var='DOWNLOAD_EXTERNAL_MODULES')
     parser.add('--tf-var-file', action='append',
-               help='tfvars files to load in addition to the default files (see '
+               help='tfvars file to load in addition to the default files (see '
                     'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
-                    'Only affects Terraform scans.')
+                    'Only affects source Terraform (.tf file) scans.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')

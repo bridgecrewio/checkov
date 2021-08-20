@@ -59,7 +59,8 @@ class Parser:
               env_vars: Mapping[str, str],
               download_external_modules: bool,
               external_modules_download_path: str,
-              excluded_paths: Optional[List[str]] = None):
+              excluded_paths: Optional[List[str]] = None,
+              tf_var_files: Optional[List[str]] = None):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -67,6 +68,7 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
+        self.tf_var_files = tf_var_files
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -153,8 +155,7 @@ class Parser:
                            dir_filter: Callable[[str], bool],
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
-                           module_load_context: Optional[str] = None,
-                           tf_var_files: Optional[List[str]] = None):
+                           module_load_context: Optional[str] = None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
