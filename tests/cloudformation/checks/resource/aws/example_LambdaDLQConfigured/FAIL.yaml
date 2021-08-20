@@ -8,4 +8,4 @@ Resources:
       Code:
         S3Bucket: my-bucket
         S3Key: function.zip
-      Runtime: python3.9
+      Runtime: python3.8
