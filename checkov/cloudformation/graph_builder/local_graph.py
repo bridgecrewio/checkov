@@ -39,6 +39,10 @@ class CloudformationLocalGraph(LocalGraph):
         logging.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
         self._create_edges()
         logging.info(f"[CloudformationLocalGraph] created {len(self.edges)} edges")
+        if render_variables:
+            logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
+            #renderer = VariableRenderer(self)
+            #renderer.render_variables_from_local_graph()
 
     def _create_vertices(self) -> None:
 

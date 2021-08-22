@@ -24,7 +24,7 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.variable_rendering.renderer import VariableRenderer
+from checkov.terraform.variable_rendering.renderer import TerraformVariableRenderer
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 
@@ -53,7 +53,7 @@ class TerraformLocalGraph(LocalGraph):
         self.calculate_encryption_attribute()
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
-            renderer = VariableRenderer(self)
+            renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
 
@@ -339,39 +339,8 @@ class TerraformLocalGraph(LocalGraph):
             edges[edge_hash] = edge
         return edges
 
-    def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
-        return self.vertices[index].get_attribute_dict()
-
-    def get_vertices_with_degrees_conditions(
-        self, out_degree_cond: Callable[[int], bool], in_degree_cond: Callable[[int], bool]
-    ) -> List[int]:
-        vertices_with_out_degree = {
-            vertex_index for vertex_index in self.out_edges.keys() if out_degree_cond(len(self.out_edges[vertex_index]))
-        }
-        vertices_with_in_degree = {
-            vertex_index for vertex_index in self.in_edges.keys() if in_degree_cond(len(self.in_edges[vertex_index]))
-        }
-
-        return list(vertices_with_in_degree.intersection(vertices_with_out_degree))
-
     def get_vertex_hash_by_index(self, vertex_index: int) -> str:
         return self.vertex_hash_cache.setdefault(vertex_index, self.vertices[vertex_index].get_hash())
-
-    def get_in_edges(self, end_vertices: List[int]) -> List[Edge]:
-        res = []
-        for vertex in end_vertices:
-            res.extend(self.in_edges.get(vertex, []))
-        return self.sort_edged_by_dest_out_degree(res)
-
-    def sort_edged_by_dest_out_degree(self, edges: List[Edge]) -> List[Edge]:
-        edged_by_out_degree: Dict[int, List[Edge]] = {}
-        for edge in edges:
-            dest_out_degree = len(self.out_edges[edge.dest])
-            edged_by_out_degree.setdefault(dest_out_degree, []).append(edge)
-        sorted_edges = []
-        for degree in sorted(edged_by_out_degree.keys()):
-            sorted_edges.extend(edged_by_out_degree[degree])
-        return sorted_edges
 
     def update_vertex_attribute(
         self,
