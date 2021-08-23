@@ -8,6 +8,9 @@ then
   exit $?
 fi
 
+# added in for some debugging
+echo "GitHub workspace is $GITHUB_WORKSPACE"
+
 matcher_path=`pwd`/checkov-problem-matcher.json
 warning_matcher_path=`pwd`/checkov-problem-matcher-softfail.json
 cp /usr/local/lib/checkov-problem-matcher.json "$matcher_path"
