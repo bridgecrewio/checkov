@@ -192,7 +192,10 @@ class VariableRenderer:
                 return value
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
+            type = attributes.get('type')
             default_val = attributes.get("default")
+            if not default_val and type == '${map}':
+                default_val = {}
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
