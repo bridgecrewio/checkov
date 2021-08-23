@@ -4,7 +4,14 @@ metadata:
   category: "NETWORKING"
 definition:
   or:
-    - and :
+    - and:
+      - resource_types:
+          - aws_network_acl
+        connected_resource_types:
+          - aws_vpc
+        operator: not_exists
+        cond_type: connection
+    - and:
       - resource_types:
           - aws_network_acl
         connected_resource_types:
