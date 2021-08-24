@@ -212,10 +212,8 @@ class VariableRenderer:
     @staticmethod
     def get_default_placeholder_value(var_type):
         for type, default_value in VAR_TYPE_DEFAULT_VALUES.items():
-            if var_type.startswith(type) or var_type.startswith('${map'):
-                return default
-        elif var_type.startswith('list') or var_type.startswith('${list'):
-            return []
+            if var_type.startswith(type) or var_type.startswith('${' + type):
+                return default_value
         else:
             return None
 
