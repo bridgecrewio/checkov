@@ -1,0 +1,38 @@
+{
+  "main.tf": {
+    "resource": [
+      {
+        "google_compute_instance": {
+          "a": {
+            "metadata": [{
+              "x": "123",
+              "block-project-ssh-keys": true
+            }]
+          },
+          "b": {
+            "metadata": [{
+              "block-project-ssh-keys": true
+            }]
+          },
+          "c": {
+            "metadata": [{
+              "x": "123",
+              "block-project-ssh-keys": true
+            }]
+          },
+          "d": {
+            "metadata": [{
+              "block-project-ssh-keys": true
+            }]
+          },
+          "e": {
+            "metadata": [["123", "xyz"]]
+          },
+          "f": {
+            "metadata": [["xyz"]]
+          }
+        }
+      }
+    ]
+  }
+}

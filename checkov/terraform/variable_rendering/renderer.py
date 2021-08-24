@@ -1,3 +1,4 @@
+import re
 from collections import Hashable
 import logging
 import os
@@ -26,6 +27,9 @@ VAR_TYPE_DEFAULT_VALUES = {
     'list': [],
     'map': {}
 }
+# matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
+# be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
+TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 
 
 class VariableRenderer:
@@ -211,11 +215,10 @@ class VariableRenderer:
 
     @staticmethod
     def get_default_placeholder_value(var_type):
-        for type, default_value in VAR_TYPE_DEFAULT_VALUES.items():
-            if var_type.startswith(type) or var_type.startswith('${' + type):
-                return default_value
-        else:
+        if not var_type or type(var_type) != str:
             return None
+        match = TYPE_REGEX.match(var_type)
+        return VAR_TYPE_DEFAULT_VALUES.get(match.group(2)) if match else None
 
     @staticmethod
     def find_path_from_referenced_vertices(
