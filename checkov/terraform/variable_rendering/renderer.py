@@ -22,6 +22,10 @@ if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 ATTRIBUTES_NO_EVAL = ["template_body", "template"]
+VAR_TYPE_DEFAULT_VALUES = {
+    'list': [],
+    'map': {}
+}
 
 
 class VariableRenderer:
@@ -192,10 +196,11 @@ class VariableRenderer:
                 return value
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
-            type = attributes.get('type')
+            var_type = attributes.get('type')
             default_val = attributes.get("default")
-            if not default_val and type == '${map}':
-                default_val = {}
+            if not default_val:
+                # this allows functions like merge(var.xyz, ...) to work even with no default value
+                default_val = self.get_default_placeholder_value(var_type)
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
@@ -203,6 +208,16 @@ class VariableRenderer:
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
+
+    @staticmethod
+    def get_default_placeholder_value(var_type):
+        for type, default_value in VAR_TYPE_DEFAULT_VALUES.items():
+            if var_type.startswith(type) or var_type.startswith('${map'):
+                return default
+        elif var_type.startswith('list') or var_type.startswith('${list'):
+            return []
+        else:
+            return None
 
     @staticmethod
     def find_path_from_referenced_vertices(
