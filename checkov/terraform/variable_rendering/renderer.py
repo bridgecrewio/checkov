@@ -202,7 +202,7 @@ class VariableRenderer:
         if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
             var_type = attributes.get('type')
             default_val = attributes.get("default")
-            if not default_val:
+            if default_val is None:
                 # this allows functions like merge(var.xyz, ...) to work even with no default value
                 default_val = self.get_default_placeholder_value(var_type)
             value = None
