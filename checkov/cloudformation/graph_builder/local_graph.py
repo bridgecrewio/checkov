@@ -10,6 +10,7 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.cloudformation.parser.node import dict_node
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.util.data_structures_utils import search_deep_keys
 
 
 class CloudformationLocalGraph(LocalGraph):
@@ -144,41 +145,13 @@ class CloudformationLocalGraph(LocalGraph):
         """
         logging.debug('Search for key %s as far down as the template goes', searchText)
         results = []
-        results.extend(self._search_deep_keys(searchText, cfndict, []))
+        results.extend(search_deep_keys(searchText, cfndict, []))
         # Globals are removed during a transform.  They need to be checked manually
         if includeGlobals:
-            pre_results = self._search_deep_keys(searchText, self.transform_pre.get('Globals'), [])
+            pre_results = search_deep_keys(searchText, self.transform_pre.get('Globals'), [])
             for pre_result in pre_results:
                 results.append(['Globals'] + pre_result)
         return results
-
-    def _search_deep_keys(self, searchText, cfndict, path):
-        """Search deep for keys and get their values"""
-        keys = []
-        if isinstance(cfndict, dict):
-            for key in cfndict:
-                pathprop = path[:]
-                pathprop.append(key)
-                if key == searchText:
-                    pathprop.append(cfndict[key])
-                    keys.append(pathprop)
-                    # pop the last element off for nesting of found elements for
-                    # dict and list checks
-                    pathprop = pathprop[:-1]
-                if isinstance(cfndict[key], dict):
-                    keys.extend(self._search_deep_keys(searchText, cfndict[key], pathprop))
-                elif isinstance(cfndict[key], list):
-                    for index, item in enumerate(cfndict[key]):
-                        pathproparr = pathprop[:]
-                        pathproparr.append(index)
-                        keys.extend(self._search_deep_keys(searchText, item, pathproparr))
-        elif isinstance(cfndict, list):
-            for index, item in enumerate(cfndict):
-                pathprop = path[:]
-                pathprop.append(index)
-                keys.extend(self._search_deep_keys(searchText, item, pathprop))
-
-        return keys
 
     def _fetch_if_target_id(self, cfndict, value) -> Optional[int]:
         target_id = None

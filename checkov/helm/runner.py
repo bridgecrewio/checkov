@@ -2,21 +2,18 @@ import io
 import logging
 import operator
 import os
-import subprocess #nosec
+import shutil
+import subprocess  # nosec
 import tempfile
 from functools import reduce
-import shutil
-import json
-
-from checkov.common.output.record import Record
-from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.runner import Runner as k8_runner
-from checkov.helm.registry import registry
-from checkov.runner_filter import RunnerFilter
 
 import yaml
-import asyncio
+
+from checkov.common.output.report import Report
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.helm.registry import registry
+from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.runner_filter import RunnerFilter
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
@@ -49,17 +46,20 @@ class Runner(BaseRunner):
     @staticmethod
     def parse_helm_dependency_output(o):
         output = o.decode('utf-8')
-        chart_dependencies={}
+        chart_dependencies = {}
         if "WARNING" in output:
-            #Helm  output showing no deps, example: 'WARNING: no dependencies at helm-charts/charts/prometheus-kafka-exporter/charts\n'
+            # Helm  output showing no deps, example: 'WARNING: no dependencies at helm-charts/charts/prometheus-kafka-exporter/charts\n'
             pass
-        else: 
+        else:
             lines = output.split('\n')
             for line in lines:
                 if line != "":
                     if not "NAME" in line:
                         chart_name, chart_version, chart_repo, chart_status = line.split("\t")
-                        chart_dependencies.update({chart_name.rstrip():{'chart_name': chart_name.rstrip(), 'chart_version': chart_version.rstrip(), 'chart_repo': chart_repo.rstrip(), 'chart_status': chart_status.rstrip()}})
+                        chart_dependencies.update({chart_name.rstrip(): {'chart_name': chart_name.rstrip(),
+                                                                         'chart_version': chart_version.rstrip(),
+                                                                         'chart_repo': chart_repo.rstrip(),
+                                                                         'chart_status': chart_status.rstrip()}})
         return chart_dependencies
 
     @staticmethod
@@ -76,11 +76,12 @@ class Runner(BaseRunner):
         # Returns framework names to skip if deps fail.
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
         try:
-            proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #nosec
+            proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
             oString = str(o, 'utf-8')
             if "Version:" in oString:
-                helmVersionOutput = oString[oString.find(':')+2 : oString.find(',')-1]
+                helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
                 if "v3" in helmVersionOutput:
                     logging.info(f"Found working version of {self.check_type} dependancies: {helmVersionOutput}")
                     return None
@@ -90,7 +91,8 @@ class Runner(BaseRunner):
             logging.info(f"Error running necessary tools to process {self.check_type} checks.")
             return self.check_type
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
+            collect_skip_comments=True):
 
         definitions = {}
         definitions_raw = {}
@@ -103,32 +105,39 @@ class Runner(BaseRunner):
         chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
 
         report = Report(self.check_type)
-    
+
         for chart_dir in chart_directories:
-            #chart_name = os.path.basename(chart_dir)
+            # chart_name = os.path.basename(chart_dir)
             chart_meta = self.parse_helm_chart_details(chart_dir)
-            logging.info(f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
+            logging.info(
+                f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             with tempfile.TemporaryDirectory() as target_dir:
-                #dependency list is nicer to parse than dependency update.
-                proc = subprocess.Popen([self.helm_command, 'dependency', 'list' , chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #nosec
+                # dependency list is nicer to parse than dependency update.
+                proc = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 if e:
                     if "Warning: Dependencies" in str(e, 'utf-8'):
-                        logging.info(f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")       
-                    else: 
-                        logging.info(f"Error processing helm dependancies for {chart_meta['name']} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
-                        
+                        logging.info(
+                            f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    else:
+                        logging.info(
+                            f"Error processing helm dependancies for {chart_meta['name']} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+
                 self.parse_helm_dependency_output(o)
 
                 try:
-                    #--dependency-update needed to pull in deps before templating.
-                    proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #nosec
+                    # --dependency-update needed to pull in deps before templating.
+                    proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir],
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                     o, e = proc.communicate()
-                    logging.debug(f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                    logging.debug(
+                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
                 except Exception:
-                    logging.info(f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
-            
+                    logging.info(
+                        f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+
                 output = str(o, 'utf-8')
                 reader = io.StringIO(output)
                 cur_source_file = None
@@ -176,7 +185,8 @@ class Runner(BaseRunner):
 
                 try:
                     k8s_runner = k8_runner()
-                    chart_results = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir, runner_filter=runner_filter, helmChart=chart_meta['name'])
+                    chart_results = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir,
+                                                   runner_filter=runner_filter, helmChart=chart_meta['name'])
                     logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
                     report.failed_checks += chart_results.failed_checks
                     report.passed_checks += chart_results.passed_checks
@@ -185,46 +195,18 @@ class Runner(BaseRunner):
 
                 except:
                     with tempfile.TemporaryDirectory() as save_error_dir:
-                        logging.debug(f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
-                        shutil.move(target_dir, save_error_dir) 
-                    
-        
-        ## TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+                        logging.debug(
+                            f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
+                        shutil.move(target_dir, save_error_dir)
+
+                        ## TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
         return report
 
-
-    def _search_deep_keys(self, search_text, k8n_dict, path):
-        """Search deep for keys and get their values"""
-        keys = []
-        if isinstance(k8n_dict, dict):
-            for key in k8n_dict:
-                pathprop = path[:]
-                pathprop.append(key)
-                if key == search_text:
-                    pathprop.append(k8n_dict[key])
-                    keys.append(pathprop)
-                    # pop the last element off for nesting of found elements for
-                    # dict and list checks
-                    pathprop = pathprop[:-1]
-                if isinstance(k8n_dict[key], dict):
-                    keys.extend(self._search_deep_keys(search_text, k8n_dict[key], pathprop))
-                elif isinstance(k8n_dict[key], list):
-                    for index, item in enumerate(k8n_dict[key]):
-                        pathproparr = pathprop[:]
-                        pathproparr.append(index)
-                        keys.extend(self._search_deep_keys(search_text, item, pathproparr))
-        elif isinstance(k8n_dict, list):
-            for index, item in enumerate(k8n_dict):
-                pathprop = path[:]
-                pathprop.append(index)
-                keys.extend(self._search_deep_keys(search_text, item, pathprop))
-
-        return keys
 
 def get_skipped_checks(entity_conf):
     skipped = []
     metadata = {}
-    if not isinstance(entity_conf,dict):
+    if not isinstance(entity_conf, dict):
         return skipped
     if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
         metadata = entity_conf["parent_metadata"]
@@ -243,9 +225,12 @@ def get_skipped_checks(entity_conf):
                         skipped_item["suppress_comment"] = "No comment provided"
                     skipped.append(skipped_item)
                 else:
-                    logging.info("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                    logging.info(
+                        "Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf,
+                                                                       indent=2))
                     continue
     return skipped
+
 
 def _get_from_dict(data_dict, map_list):
     return reduce(operator.getitem, map_list, data_dict)
@@ -268,5 +253,3 @@ def find_lines(node, kv):
         for j in node.values():
             for x in find_lines(j, kv):
                 yield x
-
-
