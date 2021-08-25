@@ -142,7 +142,10 @@ class Module:
 
     @staticmethod
     def clean_bad_characters(resource_conf):
-        return json.loads(json.dumps(resource_conf).replace("\\\\", "\\"))
+        try:
+            return json.loads(json.dumps(resource_conf).replace("\\\\", "\\"))
+        except json.JSONDecodeError:
+            return resource_conf
 
     def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for data_dict in blocks:
