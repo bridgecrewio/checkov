@@ -10,7 +10,6 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.cloudformation.parser.node import dict_node
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from cfnlint.template import Template
 
 
 class CloudformationLocalGraph(LocalGraph):
@@ -23,10 +22,8 @@ class CloudformationLocalGraph(LocalGraph):
         self.definitions = cfn_definitions
         self.source = source
         self._vertices_indexes = {}
-        self._templates = {}
+        self.transform_pre = {}
         self._edges_set = set()
-        self._templates = {file_path: Template(file_path, definition)
-                           for file_path, definition in self.definitions.items()}
         self._connection_key_func = {
             IntrinsicFunctions.GET_ATT: self._fetch_getatt_target_id,
             ConditionFunctions.IF: self._fetch_if_target_id,
@@ -95,9 +92,9 @@ class CloudformationLocalGraph(LocalGraph):
             if vertex.block_type == BlockType.RESOURCE:
                 vertex_path = vertex.path
                 vertex_name = vertex.name.split('.')[-1]
-                target_ids = self.definitions.get(vertex_path, {})\
+                target_ids = self.definitions.get(vertex_path, {}) \
                     .get(TemplateSections.RESOURCES.value, {}).get(vertex_name, {}).get(attribute, None)
-                target_ids = [target_ids] if isinstance(target_ids,  str) else target_ids
+                target_ids = [target_ids] if isinstance(target_ids, str) else target_ids
                 if isinstance(target_ids, list):
                     for target_id in target_ids:
                         if isinstance(target_id, str):
@@ -129,61 +126,104 @@ class CloudformationLocalGraph(LocalGraph):
         if not ismethod(extract_target_id_func):
             return
 
-        for file_path, template in self._templates.items():
-            matching_paths = template.search_deep_keys(key)
+        for file_path, cfndict in self.definitions.items():
+            matching_paths = self.search_deep_keys(key, cfndict)
             for matching_path in matching_paths:
                 source_id, value, attributes = self._extract_source_value_attrs(matching_path)
-                target_id = extract_target_id_func(template, value)
+                target_id = extract_target_id_func(cfndict, value)
                 if target_id:
                     origin_vertex_index, dest_vertex_index, label = self._extract_origin_dest_label(
                         file_path, source_id, target_id, attributes)
                     if origin_vertex_index is not None and dest_vertex_index is not None:
                         self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
-    def _fetch_if_target_id(self, template, value) -> Optional[int]:
+    def search_deep_keys(self, searchText, cfndict, includeGlobals=True):
+        """
+            Search for a key in all parts of the template.
+            :return if searchText is "Ref", an array like ['Resources', 'myInstance', 'Properties', 'ImageId', 'Ref', 'Ec2ImageId']
+        """
+        logging.debug('Search for key %s as far down as the template goes', searchText)
+        results = []
+        results.extend(self._search_deep_keys(searchText, cfndict, []))
+        # Globals are removed during a transform.  They need to be checked manually
+        if includeGlobals:
+            pre_results = self._search_deep_keys(searchText, self.transform_pre.get('Globals'), [])
+            for pre_result in pre_results:
+                results.append(['Globals'] + pre_result)
+        return results
+
+    def _search_deep_keys(self, searchText, cfndict, path):
+        """Search deep for keys and get their values"""
+        keys = []
+        if isinstance(cfndict, dict):
+            for key in cfndict:
+                pathprop = path[:]
+                pathprop.append(key)
+                if key == searchText:
+                    pathprop.append(cfndict[key])
+                    keys.append(pathprop)
+                    # pop the last element off for nesting of found elements for
+                    # dict and list checks
+                    pathprop = pathprop[:-1]
+                if isinstance(cfndict[key], dict):
+                    keys.extend(self._search_deep_keys(searchText, cfndict[key], pathprop))
+                elif isinstance(cfndict[key], list):
+                    for index, item in enumerate(cfndict[key]):
+                        pathproparr = pathprop[:]
+                        pathproparr.append(index)
+                        keys.extend(self._search_deep_keys(searchText, item, pathproparr))
+        elif isinstance(cfndict, list):
+            for index, item in enumerate(cfndict):
+                pathprop = path[:]
+                pathprop.append(index)
+                keys.extend(self._search_deep_keys(searchText, item, pathprop))
+
+        return keys
+
+    def _fetch_if_target_id(self, cfndict, value) -> Optional[int]:
         target_id = None
         # value = [condition_name, value_if_true, value_if_false]
-        if isinstance(value, list) and len(value) == 3 and (self._is_condition(template, value[0])):
+        if isinstance(value, list) and len(value) == 3 and (self._is_of_type(cfndict, value[0], TemplateSections.CONDITIONS)):
             target_id = value[0]
         return target_id
 
-    def _fetch_getatt_target_id(self, template, value) -> Optional[int]:
+    def _fetch_getatt_target_id(self, cfndict, value) -> Optional[int]:
         """ might be one of the 2 following notations:
          1st: { "Fn::GetAtt" : [ "logicalNameOfResource", "attributeName" ] }
          2nd: { "!GetAtt" : "logicalNameOfResource.attributeName" } """
         target_id = None
 
         # Fn::GetAtt notation
-        if isinstance(value, list) and len(value) == 2 and (self._is_resource(template, value[0])):
+        if isinstance(value, list) and len(value) == 2 and (self._is_of_type(cfndict, value[0], TemplateSections.RESOURCES)):
             target_id = value[0]
 
         # !GetAtt notation
         if isinstance(value, str) and '.' in value:
             resource_id = value.split('.')[0]
-            if self._is_resource(template, resource_id):
+            if self._is_of_type(cfndict, resource_id, TemplateSections.RESOURCES):
                 target_id = resource_id
 
         return target_id
 
-    def _fetch_ref_target_id(self, template, value) -> Optional[int]:
+    def _fetch_ref_target_id(self, cfndict, value) -> Optional[int]:
         target_id = None
         # value might be a string or a list of strings
         if isinstance(value, (str, int)) \
-                and ((self._is_resource(template, value)) or (self._is_parameter(template, value))):
+                and (self._is_of_type(cfndict, value, TemplateSections.RESOURCES, TemplateSections.PARAMETERS)):
             target_id = value
         return target_id
 
-    def _fetch_findinmap_target_id(self, template, value) -> Optional[int]:
+    def _fetch_findinmap_target_id(self, cfndict, value) -> Optional[int]:
         target_id = None
         # value = [ MapName, TopLevelKey, SecondLevelKey ]
-        if isinstance(value, list) and len(value) == 3 and (self._is_mapping(template, value[0])):
+        if isinstance(value, list) and len(value) == 3 and (self._is_of_type(cfndict, value[0], TemplateSections.MAPPINGS)):
             target_id = value[0]
         return target_id
 
     def _add_fn_sub_connections(self):
-        for file_path, template in self._templates.items():
+        for file_path, cfndict in self.definitions.items():
             # add edges for "Fn::Sub" tags. E.g. { "Fn::Sub": "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${vpc}" }
-            sub_objs = template.search_deep_keys(IntrinsicFunctions.SUB)
+            sub_objs = self.search_deep_keys(IntrinsicFunctions.SUB, cfndict)
             for sub_obj in sub_objs:
                 sub_parameters = []
                 sub_parameter_values = {}
@@ -239,31 +279,11 @@ class CloudformationLocalGraph(LocalGraph):
             self.in_edges[dest_vertex_index].append(edge)
 
     @staticmethod
-    def _is_parameter(template, identifier):
-        """Check if the identifier is that of a Parameter"""
+    def _is_of_type(cfndict, identifier, *template_sections):
         if isinstance(identifier, str):
-            return template.template.get(TemplateSections.PARAMETERS, {}).get(identifier, {})
-        return False
-
-    @staticmethod
-    def _is_mapping(template, identifier):
-        """Check if the identifier is that of a Mapping"""
-        if isinstance(identifier, str):
-            return template.template.get(TemplateSections.MAPPINGS, {}).get(identifier, {})
-        return False
-
-    @staticmethod
-    def _is_condition(template, identifier):
-        """Check if the identifier is that of a Condition"""
-        if isinstance(identifier, str):
-            return template.template.get(TemplateSections.CONDITIONS, {}).get(identifier, {})
-        return False
-
-    @staticmethod
-    def _is_resource(template, identifier):
-        """Check if the identifier is that of a Resource"""
-        if isinstance(identifier, str):
-            return template.template.get(TemplateSections.RESOURCES, {}).get(identifier, {})
+            for ts in template_sections:
+                if cfndict.get(ts, {}).get(identifier):
+                    return True
         return False
 
 
