@@ -112,21 +112,6 @@ class TerraformLocalGraph(LocalGraph):
                             )
         return undetermined_values
 
-    def process_undetermined_values(self, undetermined_values: List[Undetermined]) -> None:
-        for undetermined in undetermined_values:
-            module_vertex = self.vertices[undetermined["module_vertex_id"]]
-            value = module_vertex.attributes.get(undetermined["attribute_name"])
-            if not get_referenced_vertices_in_value(
-                value=value, aliases={}, resources_types=self.get_resources_types_in_graph()
-            ):
-                self.update_vertex_attribute(
-                    undetermined["variable_vertex_id"],
-                    "default",
-                    value,
-                    undetermined["module_vertex_id"],
-                    undetermined["attribute_name"],
-                )
-
     def _get_aliases(self) -> Dict[str, Dict[str, BlockType]]:
         """
         :return aliases: map between alias names that are found inside the blocks and the block type their aliased to.
