@@ -44,6 +44,21 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 ...
 ```
+### Cloudformation Example:
+
+```yaml
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    # Test case for check skip via comment
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+```
 
 ### Kubernetes Example
 To suppress checks in Kubernetes manifests, annotations are used with the following format:
