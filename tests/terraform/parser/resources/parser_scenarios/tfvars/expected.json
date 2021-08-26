@@ -16,7 +16,7 @@
         "aws_s3_bucket": {
           "my_bucket": {
             "bucket": [
-              "nimrodIsCöol-nine-dev-abc-xyz"
+              "hello-nimrodIsCöol-nine-dev-abc-xyz"
             ]
           }
         }
