@@ -173,8 +173,6 @@ class Runner(BaseRunner):
 
                     results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
 
-                    # TODO refactor into context parsing
-                    find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
                     start_line = entity_conf["__startline__"]
                     end_line = entity_conf["__endline__"]
 

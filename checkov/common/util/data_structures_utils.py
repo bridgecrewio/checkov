@@ -44,7 +44,9 @@ def search_deep_keys(searchText, obj, path):
                 # dict and list checks
                 pathprop = pathprop[:-1]
             if isinstance(obj[key], dict):
-                keys.extend(search_deep_keys(searchText, obj[key], pathprop))
+                if key != 'parent_metadata':
+                    # Don't go back to the parent metadata, it is scanned for the parent
+                    keys.extend(search_deep_keys(searchText, obj[key], pathprop))
             elif isinstance(obj[key], list):
                 for index, item in enumerate(obj[key]):
                     pathproparr = pathprop[:]
@@ -57,3 +59,13 @@ def search_deep_keys(searchText, obj, path):
             keys.extend(search_deep_keys(searchText, item, pathprop))
 
     return keys
+
+
+def find_in_dict(obj: dict, key_path: str) -> Any:
+    val = obj
+    key_list = key_path.split("/")
+    for key in key_list:
+        val = val.get(key)
+        if val is None:
+            return None
+    return val

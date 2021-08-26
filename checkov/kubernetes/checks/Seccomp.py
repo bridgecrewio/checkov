@@ -1,6 +1,5 @@
-import dpath
-
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.kubernetes.base_spec_check import BaseK8Check
 from checkov.common.util.type_forcers import force_list
 
@@ -29,26 +28,17 @@ class Seccomp(BaseK8Check):
         metadata = {}
 
         if conf['kind'] == 'Pod':
-            security_profile = dpath.search(conf, 'spec/securityContext/seccompProfile/type')
+            security_profile = find_in_dict(conf, 'spec/securityContext/seccompProfile/type')
             if security_profile:
-                security_profile = dpath.get(conf, 'spec/securityContext/seccompProfile/type')
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
-        if conf['kind'] == 'Deployment':
-            security_profile = dpath.search(conf, 'spec/template/spec/securityContext/seccompProfile/type')
+        if conf['kind'] == 'Deployment' or conf['kind'] == 'StatefulSet':
+            security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
             if security_profile:
-                security_profile = dpath.get(conf, 'spec/template/spec/securityContext/seccompProfile/type')
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
-        if conf['kind'] == 'StatefulSet':
-            security_profile = dpath.search(conf, 'spec/template/spec/securityContext/seccompProfile/type')
-            if security_profile:
-                security_profile = dpath.get(conf, 'spec/template/spec/securityContext/seccompProfile/type')
-                return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
-            if "metadata" in conf:
-                metadata = conf["metadata"]            
         elif conf['kind'] == 'CronJob':
             if "spec" in conf:
                 if "jobTemplate" in conf["spec"]:
