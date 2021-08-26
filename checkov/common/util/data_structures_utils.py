@@ -30,30 +30,30 @@ def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
     except StopIteration:
         return
 
-def search_deep_keys(searchText, dict, path):
+def search_deep_keys(searchText, obj, path):
     """Search deep for keys and get their values"""
     keys = []
-    if isinstance(dict, dict):
-        for key in dict:
+    if isinstance(obj, dict):
+        for key in obj:
             pathprop = path[:]
             pathprop.append(key)
             if key == searchText:
-                pathprop.append(dict[key])
+                pathprop.append(obj[key])
                 keys.append(pathprop)
                 # pop the last element off for nesting of found elements for
                 # dict and list checks
                 pathprop = pathprop[:-1]
-            if isinstance(dict[key], dict):
-                keys.extend(self._search_deep_keys(searchText, dict[key], pathprop))
-            elif isinstance(dict[key], list):
-                for index, item in enumerate(dict[key]):
+            if isinstance(obj[key], dict):
+                keys.extend(search_deep_keys(searchText, obj[key], pathprop))
+            elif isinstance(obj[key], list):
+                for index, item in enumerate(obj[key]):
                     pathproparr = pathprop[:]
                     pathproparr.append(index)
-                    keys.extend(self._search_deep_keys(searchText, item, pathproparr))
-    elif isinstance(dict, list):
-        for index, item in enumerate(dict):
+                    keys.extend(search_deep_keys(searchText, item, pathproparr))
+    elif isinstance(obj, list):
+        for index, item in enumerate(obj):
             pathprop = path[:]
             pathprop.append(index)
-            keys.extend(self._search_deep_keys(searchText, item, pathprop))
+            keys.extend(search_deep_keys(searchText, item, pathprop))
 
     return keys
