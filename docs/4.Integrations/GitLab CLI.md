@@ -20,7 +20,7 @@ stages:
     
 checkov:
   stage: test
-  allow_failure: true #True for AutoDevOps compatibility
+  allow_failure: true  # True for AutoDevOps compatibility
   image:
     name: bridgecrew/checkov:latest
     entrypoint:
@@ -31,13 +31,13 @@ checkov:
       when: never
     - if: $CI_COMMIT_BRANCH
       exists:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - '**/*.json'
-      - '**/*.template'
-      - '**/*.tf'      
-      - '**/serverless.yml'
-      - '**/serverless.yaml'
+        - '**/*.yml'
+        - '**/*.yaml'
+        - '**/*.json'
+        - '**/*.template'
+        - '**/*.tf'      
+        - '**/serverless.yml'
+        - '**/serverless.yaml'
   script:
     - checkov -d . -o junitxml | tee checkov.test.xml
   artifacts:
@@ -73,7 +73,7 @@ stages:
 
 checkov:
   stage: test
-  allow_failure: true #True for AutoDevOps compatibility
+  allow_failure: true  # True for AutoDevOps compatibility
   image:
     name: bridgecrew/checkov:latest
     entrypoint:
@@ -84,13 +84,13 @@ checkov:
       when: never
     - if: $CI_COMMIT_BRANCH
       exists:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - '**/*.json'
-      - '**/*.template'
-      - '**/*.tf'      
-      - '**/serverless.yml'
-      - '**/serverless.yaml'
+        - '**/*.yml'
+        - '**/*.yaml'
+        - '**/*.json'
+        - '**/*.template'
+        - '**/*.tf'      
+        - '**/serverless.yml'
+        - '**/serverless.yaml'
   script:
     # Use `script` to emulate `tty` for colored output.
     - script -q -c 'checkov -d . ; echo $? > CKVEXIT'

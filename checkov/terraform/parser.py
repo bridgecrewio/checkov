@@ -628,9 +628,9 @@ Load JSON or HCL, depending on filename.
                 return json.load(f)
             else:
                 raw_data = hcl2.load(f)
-                non_malformed_definitions = _validate_malformed_definitions(raw_data)
+                non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
-                    return _clean_bad_definitions(non_malformed_definitions)
+                    return clean_bad_definitions(non_malformed_definitions)
                 else:
                     return non_malformed_definitions
     except Exception as e:
@@ -648,7 +648,7 @@ def _is_valid_block(block):
     return False
 
 
-def _validate_malformed_definitions(raw_data):
+def validate_malformed_definitions(raw_data):
     raw_data_cleaned = copy.deepcopy(raw_data)
     for block_type, blocks in raw_data.items():
         raw_data_cleaned[block_type] = [block for block in blocks if _is_valid_block(block)]
@@ -656,7 +656,7 @@ def _validate_malformed_definitions(raw_data):
     return raw_data_cleaned
 
 
-def _clean_bad_definitions(tf_definition_list):
+def clean_bad_definitions(tf_definition_list):
     return {
         block_type: list(filter(lambda definition_list: block_type == 'locals' or
                                                         not isinstance(definition_list, dict)

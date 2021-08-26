@@ -12,6 +12,7 @@ class BCSourceType:
     VSCODE = 'vscode'
     CLI = 'cli'
     KUBERNETES_WORKLOADS = 'kubernetesWorkloads'
+    GITHUB_ACTIONS = 'githubActions'
     DISABLED = 'disabled'  # use this as a placeholder for generic no-upload logic
 
 
@@ -19,6 +20,7 @@ SourceTypes = {
     BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
     BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
     BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
+    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False)
 }
 

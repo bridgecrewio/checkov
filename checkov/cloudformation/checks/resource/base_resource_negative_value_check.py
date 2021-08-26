@@ -1,9 +1,8 @@
 from abc import abstractmethod
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser.node import dict_node, str_node
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 
@@ -20,7 +19,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
         self.missing_block_result = missing_block_result
 
-    def scan_resource_conf(self, conf: dict_node, entity_type: str_node) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:
             path_elements = excluded_key.split("/")

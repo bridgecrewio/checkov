@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Secret:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs12.x
+      Role: arn:aws:iam::123456789012:role/lambda-role
+      Handler: index.handler
+      Environment:
+        Variables:
+          key1: AKIAAAAAAAAAAAAAAAAA
+          key2: Val2
+      Code:
+        ZipFile: |
+          print('hi')
+      Description: Invoke a function during stack creation.
+      TracingConfig:
+        Mode: Active
