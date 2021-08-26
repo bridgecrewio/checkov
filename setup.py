@@ -57,7 +57,6 @@ setup(
         "detect-secrets",
         "policyuniverse",
         "typing-extensions",
-        "cfn-lint==0.53.*",
     ],
     license="Apache License 2.0",
     name="checkov",
