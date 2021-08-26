@@ -76,8 +76,7 @@ class Runner(BaseRunner):
         # Returns framework names to skip if deps fail.
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
         try:
-            proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)  # nosec
+            proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
             oString = str(o, 'utf-8')
             if "Version:" in oString:
@@ -113,8 +112,7 @@ class Runner(BaseRunner):
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             with tempfile.TemporaryDirectory() as target_dir:
                 # dependency list is nicer to parse than dependency update.
-                proc = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)  # nosec
+                proc = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 if e:
                     if "Warning: Dependencies" in str(e, 'utf-8'):
@@ -128,8 +126,7 @@ class Runner(BaseRunner):
 
                 try:
                     # --dependency-update needed to pull in deps before templating.
-                    proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir],
-                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                    proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                     o, e = proc.communicate()
                     logging.debug(
                         f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
