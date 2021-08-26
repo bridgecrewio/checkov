@@ -57,6 +57,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                add_env_var_help=True)
     add_parser_args(parser)
     config = parser.parse_args(argv)
+
+    # Check if --output value is None. If so, replace with ['cli'] for default cli output.
+    if config.output == None:
+        config.output = ['cli']
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
@@ -239,9 +244,9 @@ def add_parser_args(parser):
                help='Github url of external checks to be added. \n you can specify a subdirectory after a '
                     'double-slash //. \n cannot be used together with --external-checks-dir')
     parser.add('-l', '--list', help='List checks', action='store_true')
-    parser.add('-o', '--output', nargs='?', choices=OUTPUT_CHOICES,
-               default='cli',
-               help='Report output format')
+    parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
+               default=None,
+               help='Report output format. Can be repeated')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
