@@ -117,7 +117,7 @@ class TestRendererScenarios(TestCase):
         self.go("ternary_793")
 
     def test_tfvars(self):
-        self.go("tfvars")
+        self.go("tfvars", vars_files=['other2.tfvars'])
 
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
@@ -129,14 +129,16 @@ class TestRendererScenarios(TestCase):
     def test_default_var_types(self):
         self.go("default_var_types")
 
-    def go(self, dir_name, different_expected=None, replace_expected=False):
+    def go(self, dir_name, different_expected=None, replace_expected=False, vars_files=None):
         os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
         os.environ['LOG_LEVEL'] = 'INFO'
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+        if vars_files:
+            vars_files = [os.path.join(resources_dir, f) for f in vars_files]
         graph_manager = TerraformGraphManager(dir_name, [dir_name])
-        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True, vars_files=vars_files)
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         expected = load_expected(replace_expected, dir_name, resources_dir)
 
