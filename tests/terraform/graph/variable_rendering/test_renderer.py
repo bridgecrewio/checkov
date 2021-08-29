@@ -4,7 +4,7 @@ from unittest.case import TestCase
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_manager import GraphManager
-from checkov.terraform.variable_rendering.renderer import VariableRenderer
+from checkov.terraform.variable_rendering.renderer import TerraformVariableRenderer
 from tests.terraform.graph.variable_rendering.expected_data import *
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -183,15 +183,15 @@ class TestRenderer(TestCase):
         self.assertEqual(found, count, f"Expected all instances to have the same value, found {found} instances but only {count} correct values")
 
     def test_type_default_values(self):
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('map'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${map}'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('map(string)'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${map(string)}'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('list'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('list(string)'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${list}'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${list(string)}'), [])
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value('number'))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value('${number}'))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value(None))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value(123))
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('map'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${map}'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('map(string)'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${map(string)}'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('list'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('list(string)'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${list}'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${list(string)}'), [])
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('number'))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('${number}'))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(None))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(123))
