@@ -64,7 +64,6 @@ class CloudformationVariableRenderer(VariableRenderer):
                         change_origin_id=edge.dest,
                         attribute_at_dest=edge.label,
                     )
-                    print('here')
 
     @staticmethod
     def _evaluate_ref_connection(value: str, dest_vertex_attributes) -> Optional[str]:
@@ -74,8 +73,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         if value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and dest_vertex_attributes.get(
                 CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS:
             evaluated_value = dest_vertex_attributes.get('Default', None)
+            evaluated_value = str(evaluated_value) if evaluated_value else value
 
-        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     @staticmethod
@@ -92,8 +91,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     map_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.MAPPINGS:
                 evaluated_value = dest_vertex_attributes.get(f'{top_level_key}.{second_level_key}', None)
+                evaluated_value = str(evaluated_value) if evaluated_value else value
 
-        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     @staticmethod
@@ -110,8 +109,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     resource_name == dest_name and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
                 evaluated_value = dest_vertex_attributes.get(attribute_name, None)  # we extract only build time atts, not runtime
+                evaluated_value = str(evaluated_value) if evaluated_value else value
 
-        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     def _evaluate_sub_connection(self, value: str, dest_vertex_attributes) -> Optional[str]:
@@ -130,14 +129,15 @@ class CloudformationVariableRenderer(VariableRenderer):
             block_evaluated_value = self._evaluate_ref_connection(block_name, dest_vertex_attributes)
             if block_evaluated_value:
                 evaluated_value = value.replace(f'${{{block_name}}}', block_evaluated_value)
+                evaluated_value = str(evaluated_value) if evaluated_value else value
         elif block_type == BlockType.RESOURCE and block_name:
             for var in vars_list:
                 split_var = var.split('.')
                 block_evaluated_value = self._evaluate_getatt_connection(split_var, dest_vertex_attributes)
                 if block_evaluated_value:
                     evaluated_value = value.replace(f'${{{var}}}', block_evaluated_value)
+                    evaluated_value = str(evaluated_value) if evaluated_value else value
 
-        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes) -> Optional[str]:
@@ -150,7 +150,7 @@ class CloudformationVariableRenderer(VariableRenderer):
                 condition_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                 dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.CONDITIONS:
             evaluated_value = self._evaluate_condition(value)
-        evaluated_value = str(evaluated_value) if evaluated_value else None
+            evaluated_value = str(evaluated_value) if evaluated_value else None
         return evaluated_value
 
     def _evaluate_condition(self, value: List[str]) -> Optional[bool]:
@@ -198,9 +198,10 @@ class CloudformationVariableRenderer(VariableRenderer):
         vertices_block_name_map = deepcopy(self.local_graph.vertices_block_name_map)
         resources_blocks_name_map = vertices_block_name_map[BlockType.RESOURCE]
 
+        updated_resources_blocks_name_map = {}  # used in order to prevent RuntimeError: dictionary changed size during iteration
         for resource_name, blocks_list in resources_blocks_name_map.items():
-            resources_blocks_name_map.pop(resource_name)
             shortened_resource_name = resource_name.split('.')[-1]  # Trims AWS::X::Y.ResourceName and leaves us with ResoruceName
-            resources_blocks_name_map[shortened_resource_name] = blocks_list
+            updated_resources_blocks_name_map[shortened_resource_name] = blocks_list
+        vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
 
