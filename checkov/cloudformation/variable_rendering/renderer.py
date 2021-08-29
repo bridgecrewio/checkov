@@ -42,19 +42,19 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         if referenced_vertices:
             # Ref, GetAtt, FindInMap, If, Sub connections
-            evaluation_function = None
+            cfn_evaluation_function = None
             for curr_evaluation_function in self.EVALUATION_CFN_FUNCTIONS:
                 if curr_evaluation_function in val_to_eval:
-                    evaluation_function = curr_evaluation_function
-            if evaluation_function:
-                original_value = val_to_eval.get(evaluation_function, None)
+                    cfn_evaluation_function = curr_evaluation_function
+            if cfn_evaluation_function:
+                original_value = val_to_eval.get(cfn_evaluation_function, None)
                 evaluated_value = original_value
 
                 for edge in edge_list:
                     dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-                    evaluated_value = self.evaluation_methods[evaluation_function](evaluated_value, dest_vertex_attributes)
+                    evaluated_value = self.evaluation_methods[cfn_evaluation_function](evaluated_value, dest_vertex_attributes)
                     if evaluated_value:
-                        val_to_eval[evaluation_function] = evaluated_value
+                        val_to_eval[cfn_evaluation_function] = evaluated_value
 
                 if evaluated_value and evaluated_value != original_value:
                     self.update_evaluated_value(
@@ -74,6 +74,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         if value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and dest_vertex_attributes.get(
                 CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS:
             evaluated_value = dest_vertex_attributes.get('Default', None)
+
+        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     @staticmethod
@@ -90,6 +92,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     map_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.MAPPINGS:
                 evaluated_value = dest_vertex_attributes.get(f'{top_level_key}.{second_level_key}', None)
+
+        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     @staticmethod
@@ -106,6 +110,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     resource_name == dest_name and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
                 evaluated_value = dest_vertex_attributes.get(attribute_name, None)  # we extract only build time atts, not runtime
+
+        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     def _evaluate_sub_connection(self, value: str, dest_vertex_attributes) -> Optional[str]:
@@ -117,8 +123,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         if block_type == BlockType.RESOURCE:
             block_name = block_name.split('.')[-1]
 
-        vars_list = find_all_interpolations(value) # a list of parameters and resources.at.attribute
-        vars_list = [var for var in vars_list if block_name in var] # get only relevate interpolations
+        vars_set = set(find_all_interpolations(value)) # a list of parameters and resources.at.attribute
+        vars_list = [var for var in vars_set if block_name in var] # get only relevate interpolations
 
         if block_type == BlockType.PARAMETERS:
             block_evaluated_value = self._evaluate_ref_connection(block_name, dest_vertex_attributes)
@@ -131,10 +137,11 @@ class CloudformationVariableRenderer(VariableRenderer):
                 if block_evaluated_value:
                     evaluated_value = value.replace(f'${{{var}}}', block_evaluated_value)
 
+        evaluated_value = str(evaluated_value) if evaluated_value else value
         return evaluated_value
 
     def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes) -> Optional[str]:
-        evaluated_val = None
+        evaluated_value = None
         condition_name = value[0]
         value_if_true = value[1]
         value_if_false = value[2]
@@ -142,8 +149,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         if all(isinstance(element, str) for element in value) and \
                 condition_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                 dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.CONDITIONS:
-            evaluated_val = self._evaluate_condition(value)
-        return evaluated_val
+            evaluated_value = self._evaluate_condition(value)
+        evaluated_value = str(evaluated_value) if evaluated_value else None
+        return evaluated_value
 
     def _evaluate_condition(self, value: List[str]) -> Optional[bool]:
         # value = [condition_name, value_if_true, value_if_false]
