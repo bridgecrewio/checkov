@@ -5,6 +5,7 @@ from colorama import init, Fore, Style
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.util.file_utils import convert_to_unix_path
 
 init(autoreset=True)
 
@@ -40,7 +41,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
-        self.repo_file_path = f'/{os.path.relpath(file_abs_path)}' # matches file paths given in the BC platform.
+        self.repo_file_path = convert_to_unix_path(f'/{os.path.relpath(file_abs_path)}')  # matches file paths given in the BC platform and should always be a unix path
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations

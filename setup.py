@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2>=0.3.18",
+        "bc-python-hcl2==0.3.18",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -57,7 +57,6 @@ setup(
         "detect-secrets",
         "policyuniverse",
         "typing-extensions",
-        "cfn-lint==0.53.*",
     ],
     license="Apache License 2.0",
     name="checkov",

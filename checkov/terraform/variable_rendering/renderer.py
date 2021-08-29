@@ -1,3 +1,4 @@
+import re
 from collections import Hashable
 import logging
 import os
@@ -23,6 +24,13 @@ if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 ATTRIBUTES_NO_EVAL = ["template_body", "template"]
+VAR_TYPE_DEFAULT_VALUES = {
+    'list': [],
+    'map': {}
+}
+# matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
+# be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
+TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 
 
 class TerraformVariableRenderer(VariableRenderer):
@@ -127,7 +135,11 @@ class TerraformVariableRenderer(VariableRenderer):
                 return value
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
+            var_type = attributes.get('type')
             default_val = attributes.get("default")
+            if default_val is None:
+                # this allows functions like merge(var.xyz, ...) to work even with no default value
+                default_val = self.get_default_placeholder_value(var_type)
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
@@ -135,6 +147,13 @@ class TerraformVariableRenderer(VariableRenderer):
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
+
+    @staticmethod
+    def get_default_placeholder_value(var_type):
+        if not var_type or type(var_type) != str:
+            return None
+        match = TYPE_REGEX.match(var_type)
+        return VAR_TYPE_DEFAULT_VALUES.get(match.group(2)) if match else None
 
     @staticmethod
     def find_path_from_referenced_vertices(

@@ -1,5 +1,6 @@
 pass:
   - "aws_lb.lb_good_1"
+  - "aws_lb.lb_good_2"
   - "aws_lb.ignore"
 
 fail:

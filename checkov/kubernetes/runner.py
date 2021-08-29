@@ -4,6 +4,7 @@ import os
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -113,7 +114,7 @@ class Runner(BaseRunner):
                         containers = []
                         if entity_conf["kind"] == "CustomResourceDefinition":
                             continue
-                        containers = self._search_deep_keys(type, entity_conf, [])
+                        containers = search_deep_keys(type, entity_conf, [])
                         if not containers:
                             continue
                         containers = containers.pop()
@@ -172,8 +173,6 @@ class Runner(BaseRunner):
 
                     results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
 
-                    # TODO refactor into context parsing
-                    find_lines_result_list = list(find_lines(entity_conf, '__startline__'))
                     start_line = entity_conf["__startline__"]
                     end_line = entity_conf["__endline__"]
 
@@ -198,34 +197,6 @@ class Runner(BaseRunner):
         return report
 
 
-
-    def _search_deep_keys(self, search_text, k8n_dict, path):
-        """Search deep for keys and get their values"""
-        keys = []
-        if isinstance(k8n_dict, dict):
-            for key in k8n_dict:
-                pathprop = path[:]
-                pathprop.append(key)
-                if key == search_text:
-                    pathprop.append(k8n_dict[key])
-                    keys.append(pathprop)
-                    # pop the last element off for nesting of found elements for
-                    # dict and list checks
-                    pathprop = pathprop[:-1]
-                if isinstance(k8n_dict[key], dict):
-                    keys.extend(self._search_deep_keys(search_text, k8n_dict[key], pathprop))
-                elif isinstance(k8n_dict[key], list):
-                    for index, item in enumerate(k8n_dict[key]):
-                        pathproparr = pathprop[:]
-                        pathproparr.append(index)
-                        keys.extend(self._search_deep_keys(search_text, item, pathproparr))
-        elif isinstance(k8n_dict, list):
-            for index, item in enumerate(k8n_dict):
-                pathprop = path[:]
-                pathprop.append(index)
-                keys.extend(self._search_deep_keys(search_text, item, pathprop))
-
-        return keys
 
 def get_skipped_checks(entity_conf):
     skipped = []

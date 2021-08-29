@@ -42,6 +42,7 @@ definition:
         - aws_redshift_cluster
         - aws_sagemaker_notebook_instance
         - aws_vpc_endpoint
+        - aws_mq_broker
       operator:  exists
       attribute: networking
       cond_type: connection

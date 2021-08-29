@@ -34,3 +34,7 @@ resource "aws_network_acl" "acl_bad_B" {
   
 }
 
+resource "aws_vpc" "no_nacl_vpc" {
+  cidr_block = "10.0.0.0/16"
+}
+

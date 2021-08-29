@@ -1,3 +1,4 @@
+import json
 import os
 from copy import deepcopy
 from typing import List, Dict, Any, Set, Callable
@@ -123,7 +124,7 @@ class Module:
             for resource_type, resources in resource_dict.items():
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
-                    attributes = deepcopy(resource_conf)
+                    attributes = self.clean_bad_characters(resource_conf)
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
@@ -131,13 +132,20 @@ class Module:
                     resource_block = TerraformBlock(
                         block_type=BlockType.RESOURCE,
                         name=f"{resource_type}.{name}",
-                        config=resource_dict,
+                        config=self.clean_bad_characters(resource_dict),
                         path=path,
                         attributes=attributes,
                         id=f"{resource_type}.{name}",
                         source=self.source
                     )
                     self._add_to_blocks(resource_block)
+
+    @staticmethod
+    def clean_bad_characters(resource_conf):
+        try:
+            return json.loads(json.dumps(resource_conf).replace("\\\\", "\\"))
+        except json.JSONDecodeError:
+            return resource_conf
 
     def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for data_dict in blocks:

@@ -42,11 +42,11 @@ def get_resource_tags(entity: Dict[str_node, dict_node], registry: Registry = cf
 
 def parse_entity_tags(tags: Union[list_node, Dict[str, Any]]) -> Optional[Dict[str, str]]:
     if isinstance(tags, list_node):
-        tag_dict = {tag["Key"]: get_entity_value_as_string(tag["Value"]) for tag in tags}
+        tag_dict = {get_entity_value_as_string(tag["Key"]): get_entity_value_as_string(tag["Value"]) for tag in tags}
         return tag_dict
     elif isinstance(tags, dict):
         tag_dict = {
-            str(key): get_entity_value_as_string(value)
+            get_entity_value_as_string(key): get_entity_value_as_string(value)
             for key, value in tags.items()
             if key not in (STARTLINE, ENDLINE)
         }

@@ -126,6 +126,9 @@ class TestRendererScenarios(TestCase):
         self.skipTest("invalid values are not supported")
         self.go("bogus_function")
 
+    def test_default_var_types(self):
+        self.go("default_var_types")
+
     def go(self, dir_name, different_expected=None, replace_expected=False):
         os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
         os.environ['LOG_LEVEL'] = 'INFO'
@@ -169,21 +172,24 @@ class TestRendererScenarios(TestCase):
         return False
 
     def match_resources(self, expected_block_val, different_expected, got_block_type_list, expected_block_name):
+        found = False
         for got_block_dict in got_block_type_list:
             for got_block_name, got_block_val in got_block_dict.items():
                 if got_block_name == expected_block_name:
-                    expected_resource_name = list(expected_block_val.keys())[0]
+                    # expected_resource_name = list(expected_block_val.keys())[0]
                     got_resource_name = list(got_block_val.keys())[0]
-                    if expected_resource_name != got_resource_name:
+                    if got_resource_name not in expected_block_val:
                         continue
-                    if expected_resource_name in different_expected:
-                        expected_block_val = {expected_resource_name: different_expected.get(expected_resource_name)}
-                    self.assertEqual(expected_block_val, got_block_val,
+                    if got_resource_name in different_expected:
+                        expected_block_val = {got_resource_name: different_expected.get(got_resource_name)}
+
+                    block_to_eval = {got_resource_name: expected_block_val.get(got_resource_name)}
+                    self.assertEqual(block_to_eval, got_block_val,
                                      f"failed to match block [{got_block_name}].\nExpected: {expected_block_val}\nActual: {got_block_val}\n")
                     print(f"success {got_block_name}: {got_block_val}")
-                    return True
+                    found = True
 
-        return False
+        return found
 
 
 def load_expected(replace_expected, dir_name, resources_dir):
