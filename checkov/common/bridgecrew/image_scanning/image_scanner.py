@@ -3,6 +3,7 @@ import subprocess  # nosec
 import docker
 import json
 import os
+import time
 
 from checkov.common.bridgecrew.image_scanning.docker_image_scanning_integration import docker_image_scanning_integration
 
@@ -32,9 +33,13 @@ def _get_dockerfile_content(dockerfile_path):
 
 
 class ImageScanner:
-    def scan(self, docker_image_id, dockerfile_path):
+    def scan(self, docker_image_id, dockerfile_path, skip_extract_image_name=False):
         try:
-            docker_image_name = _get_docker_image_name(docker_image_id)
+            if skip_extract_image_name:
+                # Provide a default image name in case the image has not been tagged with a name
+                docker_image_name = f'repository/image{str(time.time() * 1000)}'
+            else:
+                docker_image_name = _get_docker_image_name(docker_image_id)
             dockerfile_content = _get_dockerfile_content(dockerfile_path)
             docker_image_scanning_integration.download_twistcli(TWISTCLI_FILE_NAME)
 
