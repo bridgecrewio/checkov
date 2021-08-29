@@ -34,11 +34,11 @@
         },
         "bc-python-hcl2": {
             "hashes": [
-                "sha256:46f525676842d5c232752f9655f138665a1fa317b04e26efee3f82101dae204b",
-                "sha256:768c1a3c00db3cb9be7bd1e08c20813cf1e86d4a3cc47a76f7f97172d7b7d432"
+                "sha256:7391189891b3a35754025b86062606adb1d9e52824b3fcf4d267a7db33f0ee92",
+                "sha256:d6b4127cc873362d287468ec6384a69f7a37df2fa48fbf1399652b57594b6de5"
             ],
             "index": "pypi",
-            "version": "==0.3.18"
+            "version": "==0.3.20"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -207,11 +207,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:7b30a78db2922d78a6f47fb30683156a14f3c6aa5cc23f77cc8967e9ab2d002f",
-                "sha256:ed5157fef23a4bc4594615a0dd8eba94b2bb36bf2a343fa3d8bb2fa0a62a99d5"
+                "sha256:7108c0c93872d7e9312c69d2f8e625fac7da59dc9a32475336bb99bc83815497",
+                "sha256:c23af2799037d2928713861886ec5a95aaa4421ec62e63b8eac63eba0779bf73"
             ],
             "index": "pypi",
-            "version": "==4.6.4"
+            "version": "==4.8.0"
         },
         "jinja2": {
             "hashes": [
@@ -661,14 +661,6 @@
             "index": "pypi",
             "version": "==3.1.18"
         },
-        "importlib-metadata": {
-            "hashes": [
-                "sha256:7b30a78db2922d78a6f47fb30683156a14f3c6aa5cc23f77cc8967e9ab2d002f",
-                "sha256:ed5157fef23a4bc4594615a0dd8eba94b2bb36bf2a343fa3d8bb2fa0a62a99d5"
-            ],
-            "index": "pypi",
-            "version": "==4.6.4"
-        },
         "iniconfig": {
             "hashes": [
                 "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3",
@@ -825,15 +817,6 @@
             "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==0.10.2"
         },
-        "typing-extensions": {
-            "hashes": [
-                "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497",
-                "sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342",
-                "sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84"
-            ],
-            "index": "pypi",
-            "version": "==3.10.0.0"
-        },
         "urllib3-mock": {
             "hashes": [
                 "sha256:702c90042920d771c9902b7b5b542551cc57f259078f4eada47ab4e8cdd11f1a",
@@ -841,14 +824,6 @@
             ],
             "index": "pypi",
             "version": "==0.3.3"
-        },
-        "zipp": {
-            "hashes": [
-                "sha256:957cfda87797e389580cb8b9e3870841ca991e2125350677b2ca83a0e99390a3",
-                "sha256:f5812b1e007e48cff63449a5e9f4e7ebea716b4111f9c4f9a645f91d579bf0c4"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==3.5.0"
         }
     }
 }
