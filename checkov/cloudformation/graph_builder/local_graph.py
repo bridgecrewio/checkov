@@ -1,13 +1,14 @@
 import logging
 import re
 from inspect import ismethod
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
 from checkov.cloudformation.parser.node import dict_node
+from checkov.cloudformation.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from cfnlint.template import Template
@@ -41,8 +42,9 @@ class CloudformationLocalGraph(LocalGraph):
         logging.info(f"[CloudformationLocalGraph] created {len(self.edges)} edges")
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
-            #renderer = VariableRenderer(self)
-            #renderer.render_variables_from_local_graph()
+            renderer = CloudformationVariableRenderer(self)
+            renderer.render_variables_from_local_graph()
+            #self.update_vertices_breadcrumbs_and_module_connections()
 
     def _create_vertices(self) -> None:
 
@@ -59,12 +61,12 @@ class CloudformationLocalGraph(LocalGraph):
         for file_path, file_conf in self.definitions.items():
             self._create_section_vertices(file_path, file_conf, TemplateSections.RESOURCES,
                                           BlockType.RESOURCE, extract_resource_attributes)
-            self._create_section_vertices(file_path, file_conf, TemplateSections.OUTPUTS, BlockType.OUTPUT)
-            self._create_section_vertices(file_path, file_conf, TemplateSections.MAPPINGS, BlockType.MAPPING)
+            self._create_section_vertices(file_path, file_conf, TemplateSections.OUTPUTS, BlockType.OUTPUTS)
+            self._create_section_vertices(file_path, file_conf, TemplateSections.MAPPINGS, BlockType.MAPPINGS)
             self._create_section_vertices(file_path, file_conf, TemplateSections.CONDITIONS,
-                                          BlockType.CONDITION)
+                                          BlockType.CONDITIONS)
             self._create_section_vertices(file_path, file_conf, TemplateSections.PARAMETERS,
-                                          BlockType.PARAMETER)
+                                          BlockType.PARAMETERS)
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -91,6 +93,20 @@ class CloudformationLocalGraph(LocalGraph):
             if not self._vertices_indexes.get(file_path):
                 self._vertices_indexes[file_path] = {}
             self._vertices_indexes[file_path][name] = len(self.vertices) - 1
+
+    def update_vertices_breadcrumbs_and_module_connections(self) -> None:
+        """
+        The function processes each vertex's breadcrumbs:
+        1. Get more data to each vertex in breadcrumb (name, path, hash and type)
+        """
+        for vertex in self.vertices:
+            for attribute_key, breadcrumbs_list in vertex.changed_attributes.items():
+                hash_breadcrumbs = []
+                for vertex_id in breadcrumbs_list:
+                    v = self.vertices[vertex_id]
+                    breadcrumb = v.get_export_data()
+                    hash_breadcrumbs.append(breadcrumb)
+                vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
 
     def _add_resource_attr_connections(self, attribute):
         if attribute not in self.SUPPORTED_RESOURCE_ATTR_CONNECTION_KEYS:
@@ -223,6 +239,16 @@ class CloudformationLocalGraph(LocalGraph):
         regex = re.compile(r'\${([a-zA-Z0-9.]*)}')
         return regex.findall(string)
 
+    def _fill_in_out_edges(self) -> None:
+        for i, vertex in enumerate(self.vertices):
+            if i not in self.in_edges:
+                self.in_edges[i] = []
+            if i not in self.out_edges:
+                self.out_edges[i] = []
+
+    def get_resources_types_in_graph(self) -> List[str]:
+        pass
+
     def _create_edges(self) -> None:
         self._add_resource_attr_connections(ResourceAttributes.DEPENDS_ON)
         self._add_resource_attr_connections(IntrinsicFunctions.CONDITION)
@@ -231,6 +257,7 @@ class CloudformationLocalGraph(LocalGraph):
         self._add_fn_connections(IntrinsicFunctions.REF)
         self._add_fn_connections(IntrinsicFunctions.FIND_IN_MAP)
         self._add_fn_sub_connections()
+        self._fill_in_out_edges()
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:
         if origin_vertex_index == dest_vertex_index:

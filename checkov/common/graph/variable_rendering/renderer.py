@@ -2,7 +2,7 @@ from collections import Hashable
 import logging
 import os
 from copy import deepcopy
-from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
+from typing import TYPE_CHECKING, List, Dict, Any
 from abc import ABC, abstractmethod
 
 from lark.tree import Tree
@@ -97,7 +97,7 @@ class VariableRenderer(ABC):
 
     @abstractmethod
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
-        raise NotImplementedError()
+        pass
 
     @staticmethod
     def group_edges_by_origin_and_label(edges: List[Edge]) -> List[List[Edge]]:
@@ -109,6 +109,5 @@ class VariableRenderer(ABC):
             edge_groups[origin_and_label_hash].append(edge)
         return list(edge_groups.values())
 
-    @staticmethod
     def evaluate_non_rendered_values(self) -> None:
-        raise NotImplementedError()
+        pass

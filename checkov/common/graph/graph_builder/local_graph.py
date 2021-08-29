@@ -50,27 +50,33 @@ class LocalGraph:
 
     @abstractmethod
     def update_vertices_configs(self) -> None:
-        raise NotImplementedError()
+        pass
 
     @staticmethod
     @abstractmethod
     def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def get_resources_types_in_graph(self) -> List[str]:
-        raise NotImplementedError()
+        pass
 
     def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
         return self.vertices[index].get_attribute_dict()
 
-    @abstractmethod
     def update_vertex_attribute(
-        self,
-        vertex_index: int,
-        attribute_key: str,
-        attribute_value: Any,
-        change_origin_id: int,
-        attribute_at_dest: Optional[Union[str, List[str]]],
+            self,
+            vertex_index: int,
+            attribute_key: str,
+            attribute_value: Any,
+            change_origin_id: int,
+            attribute_at_dest: Optional[Union[str, List[str]]],
     ) -> None:
-        raise NotImplementedError()
+        previous_breadcrumbs = []
+        attribute_at_dest = self.vertices[change_origin_id].find_attribute(attribute_at_dest)
+        if attribute_at_dest:
+            previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
+        self.vertices[vertex_index].update_attribute(
+            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs
+        )
+
