@@ -120,22 +120,10 @@ jobs:
           # git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
-          git tag $new_tag
-          git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
           echo "::set-output name=version::$new_tag"
           echo "::set-output name=notes::$RELEASE_NOTE"
         id: version
-      - name: release
-        uses: actions/create-release@v1
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body: ${{ steps.version.outputs.notes }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
     outputs:
       version: ${{ steps.version.outputs.version }}
   publish-package:
@@ -173,6 +161,20 @@ jobs:
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
+      - name: Tag Version
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push --tags
+      - name: release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body: ${{ steps.version.outputs.notes }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
     outputs:
       version: ${{ needs.bump-version.outputs.version }}
   publish-checkov-dockerhub:
