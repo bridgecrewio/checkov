@@ -126,6 +126,7 @@ jobs:
         id: version
     outputs:
       version: ${{ steps.version.outputs.version }}
+      notes: ${{ steps.version.outputs.notes }}
   publish-package:
     needs: bump-version
     runs-on: [self-hosted, public, linux, x64]
@@ -163,16 +164,16 @@ jobs:
           sleep 2m
       - name: Tag Version
         run: |
-          git tag ${{ steps.version.outputs.version }}
+          git tag ${{ needs.bump-version.outputs.version }}
           git push --tags
       - name: release
         uses: actions/create-release@v1
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body: ${{ steps.version.outputs.notes }}
+          release_name: ${{ needs.bump-version.outputs.version }}
+          tag_name: ${{ needs.bump-version.outputs.version }}
+          body: ${{ needs.bump-version.outputs.notes }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
     outputs:
