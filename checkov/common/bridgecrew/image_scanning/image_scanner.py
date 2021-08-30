@@ -58,7 +58,7 @@ class ImageScanner:
     @staticmethod
     def run_image_scan(docker_image_id):
         command_args = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file {DOCKER_IMAGE_SCAN_RESULT_FILE_NAME} {docker_image_id}".split()
-        subprocess.run(command_args, check=True)  # nosec
+        subprocess.run(command_args, check=True, shell=True)  # nosec
         logging.info(f'TwistCLI ran successfully on image {docker_image_id}')
 
         with open(DOCKER_IMAGE_SCAN_RESULT_FILE_NAME) as docker_image_scan_result_file:
@@ -67,9 +67,10 @@ class ImageScanner:
 
     def scan(self, docker_image_id, dockerfile_path, skip_extract_image_name=False):
         try:
-            self.setup_scan(docker_image_id, dockerfile_path, skip_extract_image_name)
+            # self.setup_scan(docker_image_id, dockerfile_path, skip_extract_image_name)
             scan_result = self.run_image_scan(docker_image_id)
-            docker_image_scanning_integration.report_results(self.docker_image_name, dockerfile_path, self.dockerfile_content,
+            docker_image_scanning_integration.report_results(self.docker_image_name, dockerfile_path,
+                                                             self.dockerfile_content,
                                                              twistcli_scan_result=scan_result)
             logging.info(f'Docker image scanning results reported to the platform')
             self.cleanup_scan()
