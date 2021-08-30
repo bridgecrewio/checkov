@@ -79,4 +79,3 @@ class LocalGraph:
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs
         )
-

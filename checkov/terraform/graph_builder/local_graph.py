@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, Set, Callable
+from typing import List, Optional, Union, Any, Dict, Set
 
 from typing_extensions import TypedDict
 
@@ -14,7 +14,6 @@ from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimme
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
-    update_dictionary_attribute,
     filter_sub_keys,
     attribute_has_nested_attributes, remove_index_pattern_from_str,
 )
@@ -24,7 +23,7 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 
@@ -349,8 +348,7 @@ class TerraformLocalGraph(LocalGraph):
             changed_attributes = filter_sub_keys(changed_attributes)
             self.update_vertex_config(vertex, changed_attributes)
 
-    @staticmethod
-    def update_vertex_config(vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(self, vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
             parts = vertex.name.split(".")
@@ -443,3 +441,27 @@ class TerraformLocalGraph(LocalGraph):
             dir_name = os.path.abspath(path)
             self.abspath_cache[path] = dir_name
         return dir_name
+
+
+def update_dictionary_attribute(
+        config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
+) -> Union[List[Any], Dict[str, Any]]:
+    key_parts = key_to_update.split(".")
+    if isinstance(config, dict):
+        if config.get(key_parts[0]) is not None:
+            key = key_parts[0]
+            if len(key_parts) == 1:
+                if isinstance(config[key], list) and not isinstance(new_value, list):
+                    new_value = [new_value]
+                config[key] = new_value
+                return config
+            else:
+                config[key] = update_dictionary_attribute(config[key], ".".join(key_parts[1:]), new_value)
+        else:
+            for key in config:
+                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
+    if isinstance(config, list):
+        for i in range(len(config)):
+            config[i] = update_dictionary_attribute(config[i], key_to_update, new_value)
+
+    return config

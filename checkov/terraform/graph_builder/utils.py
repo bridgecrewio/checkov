@@ -1,10 +1,12 @@
-from typing import Tuple
 import os
 import re
-from typing import Union, List, Any, Dict, Optional, Callable, overload
+from typing import Tuple
+from typing import Union, List, Any, Dict, Optional, Callable
 
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
+
 MODULE_DEPENDENCY_PATTERN_IN_PATH = r"\[.+\#.+\]"
 
 
@@ -48,29 +50,9 @@ INTERPOLATION_EXPR = r"\$\{([^\}]*)\}"
 INDEX_PATTERN = r"\[([0-9]+)\]"
 MAP_ATTRIBUTE_PATTERN = r"\[\"([^\d\W]\w*)\"\]"
 
-
-class VertexReference:
-    def __init__(self, block_type: Union[str, BlockType], sub_parts: List[str], origin_value: str) -> None:
-        self.block_type: BlockType = block_type_str_to_enum(block_type) if isinstance(block_type, str) else block_type
-        self.sub_parts = sub_parts
-        self.origin_value = origin_value
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, VertexReference):
-            return NotImplemented
-        return (
-            self.block_type == other.block_type
-            and self.sub_parts == other.sub_parts
-            and self.origin_value == other.origin_value
-        )
-
-    def __str__(self) -> str:
-        return f"{self.block_type} sub_parts = {self.sub_parts}, origin = {self.origin_value}"
-
-
 def get_vertices_references(
     str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
-) -> List[VertexReference]:
+) -> List[TerraformVertexReference]:
     vertices_references = []
     words_in_str_value = str_value.split()
 
@@ -90,7 +72,7 @@ def get_vertices_references(
                 suspected_block_type = word_sub_parts[0]
                 if suspected_block_type in BLOCK_TYPES_STRINGS:
                     # matching cases like 'var.x'
-                    vertex_reference = VertexReference(
+                    vertex_reference = TerraformVertexReference(
                         block_type=suspected_block_type, sub_parts=word_sub_parts[1:], origin_value=w
                     )
                     if vertex_reference not in vertices_references:
@@ -108,7 +90,7 @@ def get_vertices_references(
                 if word_sub_parts[0] in resources_types:
                     block_name = word_sub_parts[0] + "." + word_sub_parts[1]
                     word_sub_parts = [block_name] + word_sub_parts[2:]
-                    vertex_reference = VertexReference(
+                    vertex_reference = TerraformVertexReference(
                         block_type=BlockType.RESOURCE, sub_parts=word_sub_parts, origin_value=w
                     )
                     if vertex_reference not in vertices_references:
@@ -117,25 +99,9 @@ def get_vertices_references(
     return vertices_references
 
 
-def block_type_str_to_enum(block_type_str: str) -> BlockType:
-    if block_type_str == "var":
-        return BlockType.VARIABLE
-    if block_type_str == "local":
-        return BlockType.LOCALS
-    return BlockType().get(block_type_str)
-
-
-def block_type_enum_to_str(block_type: BlockType) -> str:
-    if block_type == BlockType.VARIABLE:
-        return "var"
-    if block_type == BlockType.LOCALS:
-        return "local"
-    return block_type
-
-
 def get_vertex_reference_from_alias(
     block_type_str: str, aliases: Dict[str, Dict[str, BlockType]], val: List[str]
-) -> Optional[VertexReference]:
+) -> Optional[TerraformVertexReference]:
     block_type = ""
     if block_type_str in aliases:
         block_type = aliases[block_type_str][CustomAttributes.BLOCK_TYPE]
@@ -143,7 +109,7 @@ def get_vertex_reference_from_alias(
     if aliased_provider in aliases:
         block_type = aliases[aliased_provider][CustomAttributes.BLOCK_TYPE]
     if block_type:
-        return VertexReference(block_type=block_type, sub_parts=val, origin_value="")
+        return TerraformVertexReference(block_type=block_type, sub_parts=val, origin_value="")
     return None
 
 
@@ -191,7 +157,7 @@ def get_referenced_vertices_in_value(
     aliases: Dict[str, Dict[str, BlockType]],
     resources_types: List[str],
     cleanup_functions: Optional[List[Callable[[str], str]]] = None,
-) -> List[VertexReference]:
+) -> List[TerraformVertexReference]:
     if cleanup_functions is None:
         cleanup_functions = DEFAULT_CLEANUP_FUNCTIONS
     references_vertices = []
@@ -215,40 +181,6 @@ def get_referenced_vertices_in_value(
         references_vertices = get_vertices_references(value, aliases, resources_types)
 
     return references_vertices
-
-
-@overload
-def update_dictionary_attribute(config: List[Any], key_to_update: str, new_value: Any) -> List[Any]:
-    ...
-
-
-@overload
-def update_dictionary_attribute(config: Dict[str, Any], key_to_update: str, new_value: Any) -> Dict[str, Any]:
-    ...
-
-
-def update_dictionary_attribute(
-    config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
-) -> Union[List[Any], Dict[str, Any]]:
-    key_parts = key_to_update.split(".")
-    if isinstance(config, dict):
-        if config.get(key_parts[0]) is not None:
-            key = key_parts[0]
-            if len(key_parts) == 1:
-                if isinstance(config[key], list) and not isinstance(new_value, list):
-                    new_value = [new_value]
-                config[key] = new_value
-                return config
-            else:
-                config[key] = update_dictionary_attribute(config[key], ".".join(key_parts[1:]), new_value)
-        else:
-            for key in config:
-                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
-    if isinstance(config, list):
-        for i in range(len(config)):
-            config[i] = update_dictionary_attribute(config[i], key_to_update, new_value)
-
-    return config
 
 
 def filter_sub_keys(key_list: List[str]) -> List[str]:

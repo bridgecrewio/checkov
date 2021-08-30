@@ -1,24 +1,23 @@
 import re
 from collections import Hashable
-import logging
-import os
 from copy import deepcopy
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
 from lark.tree import Tree
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded, join_trimmed_strings
+from checkov.common.graph.graph_builder.utils import join_trimmed_strings
+from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
     attribute_has_nested_attributes,
-    VertexReference,
 )
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.variable_rendering.evaluate_terraform import replace_string_value, evaluate_terraform
-from checkov.common.graph.variable_rendering.renderer import VariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
+    evaluate_terraform
 
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -157,7 +156,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     @staticmethod
     def find_path_from_referenced_vertices(
-        referenced_vertices: List[VertexReference], vertex_attributes: Dict[str, Any]
+        referenced_vertices: List[TerraformVertexReference], vertex_attributes: Dict[str, Any]
     ) -> Tuple[List[str], str]:
         """
         :param referenced_vertices: an array of VertexReference

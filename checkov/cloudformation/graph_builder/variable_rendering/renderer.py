@@ -1,11 +1,12 @@
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union, Callable, overload, Set
 from copy import deepcopy
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union
 
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
+from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
+from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
-from checkov.common.graph.variable_rendering.renderer import VariableRenderer
-from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
-from checkov.cloudformation.graph_builder.utils import VertexReference, get_referenced_vertices_in_value, find_all_interpolations
+from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
 if TYPE_CHECKING:
     from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
@@ -172,10 +173,9 @@ class CloudformationVariableRenderer(VariableRenderer):
             vertex, changed_attribute_key, changed_attribute_value, change_origin_id, attribute_at_dest
         )
 
-
     @staticmethod
     def find_path_from_referenced_vertices(
-            referenced_vertices: List[VertexReference], vertex_attributes: Dict[str, Any]
+            referenced_vertices: List[TerraformVertexReference], vertex_attributes: Dict[str, Any]
     ) -> Tuple[List[str], str]:
         """
         :param referenced_vertices: an array of VertexReference
@@ -204,4 +204,3 @@ class CloudformationVariableRenderer(VariableRenderer):
             updated_resources_blocks_name_map[shortened_resource_name] = blocks_list
         vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
-

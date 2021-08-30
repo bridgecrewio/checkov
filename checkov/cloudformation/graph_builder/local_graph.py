@@ -8,7 +8,7 @@ from checkov.cloudformation.graph_builder.graph_components.blocks import Cloudfo
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
 from checkov.cloudformation.parser.node import dict_node
-from checkov.cloudformation.variable_rendering.renderer import CloudformationVariableRenderer
+from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
