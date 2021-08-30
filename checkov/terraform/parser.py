@@ -179,8 +179,8 @@ class Parser:
         var_value_and_file_map: Dict[str, Tuple[Any, str]] = {}
         hcl_tfvars: Optional[os.DirEntry] = None
         json_tfvars: Optional[os.DirEntry] = None
-        auto_vars_files: Optional[List[os.DirEntry]] = None  # lazy creation
-        explicit_var_files: Optional[List[os.DirEntry]] = None  # only process the ones that are in this directory
+        auto_vars_files: List[os.DirEntry] = []  # *.auto.tfvars / *.auto.tfvars.json
+        explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
         for file in os.scandir(directory):
             # Ignore directories and hidden files
             try:
@@ -199,16 +199,10 @@ class Parser:
                 hcl_tfvars = file
                 continue
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
-                if auto_vars_files is None:
-                    auto_vars_files = [file]
-                else:
-                    auto_vars_files.append(file)
+                auto_vars_files.append(file)
                 continue
             elif vars_files and file.path in vars_files:
-                if explicit_var_files is None:
-                    explicit_var_files = [file]
-                else:
-                    explicit_var_files.append(file)
+                explicit_var_files.append(file)
                 continue
 
             # Resource files
@@ -265,18 +259,16 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-        if auto_vars_files:  # *.auto.tfvars / *.auto.tfvars.json
-            for var_file in sorted(auto_vars_files, key=lambda e: e.name):
-                data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-                if data:
-                    var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                    self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
-        if explicit_var_files:  # files passed with --var-file
-            for var_file in explicit_var_files:
-                data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-                if data:
-                    var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                    self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
+            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+        for var_file in explicit_var_files:
+            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
