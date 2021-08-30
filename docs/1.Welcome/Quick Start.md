@@ -169,6 +169,8 @@ You can integrate Checkov with:
 * [GitHub Actions](https://www.checkov.io/4.Integrations/GitHub%20Actions.html)
 * [GitLab CLI](https://www.checkov.io/4.Integrations/GitLab%20CLI.html)
 * [Kubernetes](https://www.checkov.io/4.Integrations/Kubernetes.html)
+* [Pre-Commit](https://www.checkov.io/4.Integrations/pre-commit.html)
+* [Docker](https://www.checkov.io/4.Integrations/Docker.html)
 * [Terraform Plans and Third-Party Modules](https://www.checkov.io/4.Integrations/Terraform%20Scanning.html)
 
 ## Add-ons
