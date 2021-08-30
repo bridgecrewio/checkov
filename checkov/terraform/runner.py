@@ -73,7 +73,8 @@ class Runner(BaseRunner):
                     self.graph_manager.build_graph_from_source_directory(root_folder,
                                                                          local_graph_class=self.graph_class,
                                                                          download_external_modules=runner_filter.download_external_modules,
-                                                                         parsing_errors=parsing_errors, excluded_paths=runner_filter.excluded_paths)
+                                                                         parsing_errors=parsing_errors, excluded_paths=runner_filter.excluded_paths,
+                                                                         vars_files=runner_filter.var_files)
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
