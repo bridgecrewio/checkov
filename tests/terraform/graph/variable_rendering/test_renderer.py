@@ -3,7 +3,6 @@ from unittest.case import TestCase
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
-from checkov.terraform.graph_manager import GraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 from tests.terraform.graph.variable_rendering.expected_data import *
 

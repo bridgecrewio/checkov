@@ -49,22 +49,19 @@ class CloudformationVariableRenderer(VariableRenderer):
                     cfn_evaluation_function = curr_evaluation_function
             if cfn_evaluation_function:
                 original_value = val_to_eval.get(cfn_evaluation_function, None)
-                evaluated_value = original_value
 
                 for edge in edge_list:
                     dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-                    evaluated_value = self.evaluation_methods[cfn_evaluation_function](evaluated_value, dest_vertex_attributes)
-                    if evaluated_value:
+                    evaluated_value = self.evaluation_methods[cfn_evaluation_function](val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
+                    if evaluated_value and evaluated_value != original_value:
                         val_to_eval[cfn_evaluation_function] = evaluated_value
-
-                if evaluated_value and evaluated_value != original_value:
-                    self.update_evaluated_value(
-                        changed_attribute_key=edge.label,
-                        changed_attribute_value=evaluated_value,
-                        vertex=edge.origin,
-                        change_origin_id=edge.dest,
-                        attribute_at_dest=edge.label,
-                    )
+                        self.update_evaluated_value(
+                            changed_attribute_key=edge.label,
+                            changed_attribute_value=evaluated_value,
+                            vertex=edge.origin,
+                            change_origin_id=edge.dest,
+                            attribute_at_dest=edge.label,
+                        )
 
     @staticmethod
     def _evaluate_ref_connection(value: str, dest_vertex_attributes) -> Optional[str]:
@@ -74,7 +71,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         if value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and dest_vertex_attributes.get(
                 CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS:
             evaluated_value = dest_vertex_attributes.get('Default', None)
-            evaluated_value = str(evaluated_value) if evaluated_value else value
+            if evaluated_value:
+                evaluated_value = str(evaluated_value)
 
         return evaluated_value
 
@@ -92,7 +90,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     map_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.MAPPINGS:
                 evaluated_value = dest_vertex_attributes.get(f'{top_level_key}.{second_level_key}', None)
-                evaluated_value = str(evaluated_value) if evaluated_value else value
+                if evaluated_value:
+                    evaluated_value = str(evaluated_value)
 
         return evaluated_value
 
@@ -110,7 +109,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                     resource_name == dest_name and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
                 evaluated_value = dest_vertex_attributes.get(attribute_name, None)  # we extract only build time atts, not runtime
-                evaluated_value = str(evaluated_value) if evaluated_value else value
+                if evaluated_value:
+                    evaluated_value = str(evaluated_value)
 
         return evaluated_value
 
