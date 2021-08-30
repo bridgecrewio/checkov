@@ -11,6 +11,11 @@ on:
       - 'README.md'
 
 jobs:
+  test-bc-jenkins:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - name: notify BC
+        run: curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=checkov/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
   integration-tests:
     strategy:
       fail-fast: true
