@@ -117,6 +117,18 @@ class TestRendererScenarios(TestCase):
         self.go("ternary_793")
 
     def test_tfvars(self):
+        # variable evaluation order (later values overwrite earlier values):
+        # 1. default values in variable definition
+        # 2. terraform.tfvars
+        # 3. *.auto.tfvars files (in alphanetical order)
+        # 4. Files specified with --var-file
+        # So we expect the following variable values:
+        # foo = "nimrodIsCöol" (from other2.tfvars - overwrites y.auto.tfvars, x.auto.tfvars, terraform.tfvars)
+        # list_data = ["nine", "ten"] from y.auto.tfvars (overwrites x.auto.tfvars, terraform.tfvars)
+        # map_data = {<value from terraform.tfvars}
+        # only_here = "hello" (from var definition default)
+        # other_var_1 = "abc" (from var definition default - other1.tfvars is not loaded)
+        # other_var_2 = "xyz" (from other2.tfvars - overwrites var default)
         self.go("tfvars", vars_files=['other2.tfvars'])
 
     def test_account_dirs_and_modules(self):
