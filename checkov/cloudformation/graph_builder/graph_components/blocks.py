@@ -26,7 +26,7 @@ class CloudformationBlock(Block):
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
-        :param attribute: key to search in self.attribute
+        :param attribute: key to search in self.attributes
         The function searches for  attribute in self.attribute. It might not exist if the block is variable or output,
         or its search path might be different if its a resource.
         :return: the actual attribute key or None
@@ -35,7 +35,7 @@ class CloudformationBlock(Block):
             return None
 
         if self.block_type == BlockType.PARAMETERS:
-            return "Default" if self.attributes.get("Default") else None
+            return "Default" if "Default" in self.attributes else None
         # else:
         #     print('here')
         #

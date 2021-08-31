@@ -38,7 +38,7 @@ class TerraformBlock(Block):
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
-        :param attribute: key to search in self.attribute
+        :param attribute: key to search in self.attributes
         The function searches for  attribute in self.attribute. It might not exist if the block is variable or output,
         or its search path might be different if its a resource.
         :return: the actual attribute key or None
@@ -50,10 +50,10 @@ class TerraformBlock(Block):
             return attribute[0]
 
         if self.block_type == BlockType.VARIABLE:
-            return "default" if self.attributes.get("default") else None
+            return "Default" if "Default" in self.attributes else None
 
         if self.block_type == BlockType.OUTPUT:
-            return "value" if self.attributes.get("value") else None
+            return "value" if "value" in self.attributes else None
 
         if self.block_type == BlockType.RESOURCE and len(attribute) > 1:
             # handle cases where attribute_at_dest == ['aws_s3_bucket.template_bucket', 'acl']

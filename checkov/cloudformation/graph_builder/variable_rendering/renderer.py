@@ -28,7 +28,6 @@ class CloudformationVariableRenderer(VariableRenderer):
         }
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
-        multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
         origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
@@ -64,57 +63,52 @@ class CloudformationVariableRenderer(VariableRenderer):
                         )
 
     @staticmethod
-    def _evaluate_ref_connection(value: str, dest_vertex_attributes) -> Optional[str]:
-        evaluated_value = None
-
+    def _evaluate_ref_connection(value: str, dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
         # in case of Ref we take only Parameter's default value
-        if value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and dest_vertex_attributes.get(
-                CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS:
-            evaluated_value = dest_vertex_attributes.get('Default', None)
-            if evaluated_value:
-                evaluated_value = str(evaluated_value)
-
-        return evaluated_value
+        evaluated_value = dest_vertex_attributes.get('Default')
+        if (
+            evaluated_value and
+            value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and
+            dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS
+        ):
+            return str(evaluated_value)
+        return None
 
     @staticmethod
-    def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes) -> Optional[str]:
-        evaluated_value = None
-
+    def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
         # value = [ "MapName", "TopLevelKey", "SecondLevelKey"]
         if isinstance(value, list) and len(value) == 3:
             map_name = value[0]
             top_level_key = value[1]
             second_level_key = value[2]
+            evaluated_value = dest_vertex_attributes.get(f'{top_level_key}.{second_level_key}')
 
-            if all(isinstance(element, str) for element in value) and \
+            if evaluated_value and \
+                    all(isinstance(element, str) for element in value) and \
                     map_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.MAPPINGS:
-                evaluated_value = dest_vertex_attributes.get(f'{top_level_key}.{second_level_key}', None)
-                if evaluated_value:
-                    evaluated_value = str(evaluated_value)
+                return str(evaluated_value)
 
-        return evaluated_value
+        return None
 
     @staticmethod
-    def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes) -> Optional[str]:
-        evaluated_value = None
-
+    def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
         # value = [ "logicalNameOfResource", "attributeName" ]
         if isinstance(value, list) and len(value) == 2:
             resource_name = value[0]
             attribute_name = value[1]
             dest_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME).split('.')[-1]
+            evaluated_value = dest_vertex_attributes.get(attribute_name)  # we extract only build time atts, not runtime
 
-            if all(isinstance(element, str) for element in value) and \
+            if evaluated_value and \
+                    all(isinstance(element, str) for element in value) and \
                     resource_name == dest_name and \
                     dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
-                evaluated_value = dest_vertex_attributes.get(attribute_name, None)  # we extract only build time atts, not runtime
-                if evaluated_value:
-                    evaluated_value = str(evaluated_value)
+                return str(evaluated_value)
 
-        return evaluated_value
+        return None
 
-    def _evaluate_sub_connection(self, value: str, dest_vertex_attributes) -> Optional[str]:
+    def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
         evaluated_value = None
 
         # value = '..${ref/getatt}..${ref/getatt}..${ref/getatt}..'
@@ -124,24 +118,24 @@ class CloudformationVariableRenderer(VariableRenderer):
             block_name = block_name.split('.')[-1]
 
         vars_set = set(find_all_interpolations(value)) # a list of parameters and resources.at.attribute
-        vars_list = [var for var in vars_set if block_name in var] # get only relevate interpolations
+        vars_list = [var for var in vars_set if block_name in var] # get only relevant interpolations
 
         if block_type == BlockType.PARAMETERS:
             block_evaluated_value = self._evaluate_ref_connection(block_name, dest_vertex_attributes)
             if block_evaluated_value:
                 evaluated_value = value.replace(f'${{{block_name}}}', block_evaluated_value)
-                evaluated_value = str(evaluated_value) if evaluated_value else value
+                evaluated_value = evaluated_value if evaluated_value else value
         elif block_type == BlockType.RESOURCE and block_name:
             for var in vars_list:
                 split_var = var.split('.')
                 block_evaluated_value = self._evaluate_getatt_connection(split_var, dest_vertex_attributes)
                 if block_evaluated_value:
                     evaluated_value = value.replace(f'${{{var}}}', block_evaluated_value)
-                    evaluated_value = str(evaluated_value) if evaluated_value else value
+                    evaluated_value = evaluated_value if evaluated_value else value
 
         return evaluated_value
 
-    def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes) -> Optional[str]:
+    def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
         evaluated_value = None
         condition_name = value[0]
         value_if_true = value[1]
@@ -188,7 +182,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             block_type = vertex_reference.block_type
             attribute_path = vertex_reference.sub_parts
             if vertex_attributes[CustomAttributes.BLOCK_TYPE] == block_type:
-                for i in range(len(attribute_path)):
+                for i, _ in enumerate(attribute_path):
                     name = ".".join(attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
                         return attribute_path, vertex_reference.origin_value
@@ -198,7 +192,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         vertices_block_name_map = deepcopy(self.local_graph.vertices_block_name_map)
         resources_blocks_name_map = vertices_block_name_map[BlockType.RESOURCE]
 
-        updated_resources_blocks_name_map = {}  # used in order to prevent RuntimeError: dictionary changed size during iteration
+        updated_resources_blocks_name_map = {}
         for resource_name, blocks_list in resources_blocks_name_map.items():
             shortened_resource_name = resource_name.split('.')[-1]  # Trims AWS::X::Y.ResourceName and leaves us with ResoruceName
             updated_resources_blocks_name_map[shortened_resource_name] = blocks_list

@@ -11,7 +11,7 @@ class TerraformVertexReference(ABC):
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, TerraformVertexReference):
-            return NotImplemented
+            return False
         return (
             self.block_type == other.block_type
             and self.sub_parts == other.sub_parts

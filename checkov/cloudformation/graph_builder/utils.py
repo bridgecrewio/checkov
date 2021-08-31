@@ -8,7 +8,7 @@ REMOVE_INTERPOLATION_PATTERN = "[${}]"
 FIND_INTERPOLATION_PATTERN = "\${(.*?)}"
 
 
-def get_vertices_references(str_value: str, vertices_block_name_map: Dict[str, Dict[str, List[int]]]):
+def get_vertices_references(str_value: str, vertices_block_name_map: Dict[str, Dict[str, List[int]]]) -> List[CloudformationVertexReference]:
     vertices_references = []
     words_in_str_value = str_value.split()
     for word in words_in_str_value:

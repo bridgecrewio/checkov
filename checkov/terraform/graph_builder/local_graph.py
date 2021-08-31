@@ -461,7 +461,7 @@ def update_dictionary_attribute(
             for key in config:
                 config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
     if isinstance(config, list):
-        for i in range(len(config)):
-            config[i] = update_dictionary_attribute(config[i], key_to_update, new_value)
+        for i, config_value in enumerate(config):
+            config[i] = update_dictionary_attribute(config_value, key_to_update, new_value)
 
     return config

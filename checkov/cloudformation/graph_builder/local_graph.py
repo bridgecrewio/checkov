@@ -99,11 +99,10 @@ class CloudformationLocalGraph(LocalGraph):
         """
         for vertex in self.vertices:
             for attribute_key, breadcrumbs_list in vertex.changed_attributes.items():
-                hash_breadcrumbs = []
-                for vertex_id in breadcrumbs_list:
-                    v = self.vertices[vertex_id]
-                    breadcrumb = v.get_export_data()
-                    hash_breadcrumbs.append(breadcrumb)
+                hash_breadcrumbs = [
+                    self.vertices[vertex_id].get_export_data()
+                    for vertex_id in breadcrumbs_list
+                ]
                 vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
 
     def _add_resource_attr_connections(self, attribute):

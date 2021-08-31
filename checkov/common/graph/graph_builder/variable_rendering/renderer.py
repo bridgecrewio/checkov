@@ -17,8 +17,7 @@ class VariableRenderer(ABC):
 
     def __init__(self, local_graph: "LocalGraph") -> None:
         self.local_graph = local_graph
-        run_async = os.environ.get("RENDER_VARIABLES_ASYNC", "False")
-        self.run_async = True if run_async == "True" else False
+        self.run_async = True if os.environ.get("RENDER_VARIABLES_ASYNC") == "True" else False
         self.max_workers = int(os.environ.get("RENDER_ASYNC_MAX_WORKERS", 50))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
@@ -48,9 +47,7 @@ class VariableRenderer(ABC):
                     self._edge_evaluation_task([edge_group])
             for edge in edges_to_render:
                 origin = edge.origin
-                if origin not in self.done_edges_by_origin_vertex:
-                    self.done_edges_by_origin_vertex[origin] = []
-                self.done_edges_by_origin_vertex[origin].append(edge)
+                self.done_edges_by_origin_vertex.setdefault(origin, []).append(edge)
 
             for edge in edges_to_render:
                 origin_vertex_index = edge.origin
@@ -59,13 +56,11 @@ class VariableRenderer(ABC):
                     end_vertices_indexes.append(origin_vertex_index)
             edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
             edges_to_render = list(
-                set(
-                    [
-                        edge
-                        for edge in edges_to_render
-                        if edge not in self.done_edges_by_origin_vertex.get(edge.origin, [])
-                    ]
-                )
+                {
+                    edge
+                    for edge in edges_to_render
+                    if edge not in self.done_edges_by_origin_vertex.get(edge.origin, [])
+                }
             )
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
@@ -91,9 +86,7 @@ class VariableRenderer(ABC):
         edge_groups: Dict[str, List[Edge]] = {}
         for edge in edges:
             origin_and_label_hash = calculate_hash(f"{edge.origin}{edge.label}")
-            if not edge_groups.get(origin_and_label_hash):
-                edge_groups[origin_and_label_hash] = []
-            edge_groups[origin_and_label_hash].append(edge)
+            edge_groups.setdefault(origin_and_label_hash, []).append(edge)
         return list(edge_groups.values())
 
     def evaluate_non_rendered_values(self) -> None:
