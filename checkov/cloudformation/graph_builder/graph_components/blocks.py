@@ -35,7 +35,7 @@ class CloudformationBlock(Block):
             return None
 
         if self.block_type == BlockType.PARAMETERS:
-            return "Default" if "Default" in self.attributes else None
+            return "Default" if self.attributes.get("Default") else None
         # else:
         #     print('here')
         #
