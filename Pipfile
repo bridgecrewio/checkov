@@ -18,7 +18,7 @@ jsonschema = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = ">=0.3.18"
+bc-python-hcl2 = ">=0.3.21"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
