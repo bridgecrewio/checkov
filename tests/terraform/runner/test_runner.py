@@ -88,6 +88,16 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
+    def test_runner_passing_multi_line_ternary_tf(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/mutli_line_ternary"
+
+        print("testing dir" + tf_dir_path)
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=None)
+        self.assertListEqual(report.parsing_errors, [])
+
     def test_runner_extra_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
