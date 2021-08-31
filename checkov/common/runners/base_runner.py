@@ -8,7 +8,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
-IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
+IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless,.")
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
@@ -79,8 +79,11 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
     # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
     # mostly this will just remove those problematic directories hardcoded above.
     for path in list(names):
-        if path in ignored_directories or path.startswith("."):
+        if path in ignored_directories:
             names.remove(path)
+        for d in ignored_directories:
+            if path.startswith(d):
+                names.remove(path)
 
     # now apply the new logic
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
