@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation Template to deploy insecure infrastructure
+Parameters:
+  KmsMasterKeyId:
+    Description: Company Name
+    Type: String
+  DBName:
+    Description: Name of the Database
+    Type: String
+    Default: db1
+Resources:
+  MySourceQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref KmsMasterKeyId
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    # Test case for check skip via comment
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    Properties:
+      DBName: !Ref DBName
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+Outputs:
+  MyDBInstanceName:
+    Description: My DB Instance Name
+    Value: !Ref MyDB

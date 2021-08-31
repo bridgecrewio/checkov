@@ -43,10 +43,10 @@ class TestCloudformationGraphManager(TestCase):
         }
         self.assertEqual(40, len(local_graph.vertices))
         self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
-        self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETER]))
-        self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUT]))
-        self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITION]))
-        self.assertEqual(1, len(local_graph.vertices_by_block_type[BlockType.MAPPING]))
+        self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
+        self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
+        self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))
+        self.assertEqual(1, len(local_graph.vertices_by_block_type[BlockType.MAPPINGS]))
 
         for v in local_graph.vertices:
             if v.block_type == BlockType.RESOURCE:

@@ -37,11 +37,11 @@ class TestLocalGraph(TestCase):
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
         self.assertEqual(len(local_graph.vertices), 57)
-        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.CONDITION]), 2)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.CONDITIONS]), 2)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 16)
-        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.PARAMETER]), 30)
-        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUT]), 8)
-        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.MAPPING]), 1)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.PARAMETERS]), 30)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUTS]), 8)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.MAPPINGS]), 1)
 
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, './resources/vertices'))

@@ -3,7 +3,7 @@ from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
 
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.terraform.parser_utils import find_var_blocks
-from checkov.terraform.variable_rendering.safe_eval_functions import evaluate
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
 
