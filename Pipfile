@@ -18,7 +18,7 @@ jsonschema = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = ">=0.3.18"
+bc-python-hcl2 = "==0.3.18"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
@@ -43,7 +43,6 @@ detect_secrets = "*"
 policyuniverse = "*"
 typing-extensions = "*"
 importlib-metadata = ">=0.12"
-cfn-lint = "==0.53.*"
 
 [requires]
 python_version = "3.7"
