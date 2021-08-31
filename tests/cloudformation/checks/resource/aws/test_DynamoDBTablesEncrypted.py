@@ -22,13 +22,13 @@ class TestDynamoDBTablesEncrypted(unittest.TestCase):
             self.assertEqual(record.check_id, check.id)
 
         passing_resources = {
-            "AWS::ECR::Repository.KMSEncryption"
+            "AWS::DynamoDB::Table.KMSEncryption"
         }
 
         failing_resources = {
-            "AWS::ECR::Repository.DefaultEncryption",
-            "AWS::ECR::Repository.EncryptionFalse",
-            "AWS::ECR::Repository.NoEncryptionConfig"
+            "AWS::DynamoDB::Table.DefaultEncryption",
+            "AWS::DynamoDB::Table.EncryptionFalse",
+            "AWS::DynamoDB::Table.NoEncryptionConfig"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
