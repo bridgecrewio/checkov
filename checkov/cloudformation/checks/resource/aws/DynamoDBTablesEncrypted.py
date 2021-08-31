@@ -11,11 +11,14 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        sse_config = conf.get('Properties').get('SSESpecification')
-        sse_enabled = sse_config.get('SSEEnabled')
-        sse_key = sse_config.get('KMSMasterKeyId')
-        if sse_enabled and sse_key is not None:
-            return CheckResult.PASSED
+        properties = conf.get('Properties')
+        if properties is not None:
+            sse_config = properties.get('SSESpecification')
+            if sse_config is not None:
+                sse_enabled = sse_config.get('SSEEnabled')
+                sse_key = sse_config.get('KMSMasterKeyId')
+                if sse_enabled and sse_key is not None:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 
