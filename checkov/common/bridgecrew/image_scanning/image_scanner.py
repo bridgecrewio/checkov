@@ -67,7 +67,7 @@ class ImageScanner:
 
     def scan(self, docker_image_id, dockerfile_path, skip_extract_image_name=False):
         try:
-            # self.setup_scan(docker_image_id, dockerfile_path, skip_extract_image_name)
+            self.setup_scan(docker_image_id, dockerfile_path, skip_extract_image_name)
             scan_result = self.run_image_scan(docker_image_id)
             docker_image_scanning_integration.report_results(self.docker_image_name, dockerfile_path,
                                                              self.dockerfile_content,
