@@ -108,7 +108,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)
         if source == SourceTypes[BCSourceType.DISABLED]:
-            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; setting source to DISABLED')
+            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
         logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
 
