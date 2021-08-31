@@ -50,10 +50,10 @@ class TerraformBlock(Block):
             return attribute[0]
 
         if self.block_type == BlockType.VARIABLE:
-            return "Default" if "Default" in self.attributes else None
+            return "default" if self.attributes.get("default") else None
 
         if self.block_type == BlockType.OUTPUT:
-            return "value" if "value" in self.attributes else None
+            return "value" if self.attributes.get("value") else None
 
         if self.block_type == BlockType.RESOURCE and len(attribute) > 1:
             # handle cases where attribute_at_dest == ['aws_s3_bucket.template_bucket', 'acl']

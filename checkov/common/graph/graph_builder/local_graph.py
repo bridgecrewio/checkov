@@ -27,7 +27,7 @@ class LocalGraph:
             vertex_index for vertex_index, vertex_value in self.out_edges.items() if out_degree_cond(len(vertex_value))
         }
         vertices_with_in_degree = {
-            vertex_index for vertex_index, vertex_value in self.in_edges.keys() if in_degree_cond(len(vertex_value))
+            vertex_index for vertex_index, vertex_value in self.in_edges.items() if in_degree_cond(len(vertex_value))
         }
 
         return list(vertices_with_in_degree.intersection(vertices_with_out_degree))

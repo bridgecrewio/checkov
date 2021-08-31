@@ -61,7 +61,7 @@ class Runner(BaseRunner):
             self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
 
             logging.info("creating cloudformation graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=True)
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 

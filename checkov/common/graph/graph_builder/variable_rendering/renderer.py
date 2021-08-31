@@ -9,8 +9,6 @@ from checkov.common.graph.graph_builder.utils import calculate_hash, run_functio
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
-ATTRIBUTES_NO_EVAL = ["template_body", "template"]
-
 
 class VariableRenderer(ABC):
     MAX_NUMBER_OF_LOOPS = 50

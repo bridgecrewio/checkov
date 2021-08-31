@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
-from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
+from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
 class CloudformationVariableRenderer(VariableRenderer):
     EVALUATION_CFN_FUNCTIONS = (
-        IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.GET_ATT, ConditionFunctions.IF,
-        IntrinsicFunctions.SUB)
+        IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.GET_ATT, IntrinsicFunctions.SUB)
 
     def __init__(self, local_graph: "CloudformationLocalGraph") -> None:
         super().__init__(local_graph)
@@ -23,7 +22,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             IntrinsicFunctions.REF: self._evaluate_ref_connection,
             IntrinsicFunctions.FIND_IN_MAP: self._evaluate_findinmap_connection,
             IntrinsicFunctions.GET_ATT: self._evaluate_getatt_connection,
-            ConditionFunctions.IF: self._evaluate_if_connection,
+            # ConditionFunctions.IF: self._evaluate_if_connection,
             IntrinsicFunctions.SUB: self._evaluate_sub_connection
         }
 
@@ -46,6 +45,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             for curr_evaluation_function in self.EVALUATION_CFN_FUNCTIONS:
                 if curr_evaluation_function in val_to_eval:
                     cfn_evaluation_function = curr_evaluation_function
+                    break
             if cfn_evaluation_function:
                 original_value = val_to_eval.get(cfn_evaluation_function, None)
 
@@ -54,12 +54,12 @@ class CloudformationVariableRenderer(VariableRenderer):
                     evaluated_value = self.evaluation_methods[cfn_evaluation_function](val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
                     if evaluated_value and evaluated_value != original_value:
                         val_to_eval[cfn_evaluation_function] = evaluated_value
-                        self.update_evaluated_value(
-                            changed_attribute_key=edge.label,
-                            changed_attribute_value=evaluated_value,
-                            vertex=edge.origin,
-                            change_origin_id=edge.dest,
-                            attribute_at_dest=edge.label,
+                        self.local_graph.update_vertex_attribute(
+                            edge.origin,
+                            edge.label,
+                            evaluated_value,
+                            edge.dest,
+                            edge.label
                         )
 
     @staticmethod
@@ -135,41 +135,26 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         return evaluated_value
 
-    def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
-        evaluated_value = None
-        condition_name = value[0]
-        value_if_true = value[1]
-        value_if_false = value[2]
+    # def _evaluate_if_connection(self, value: List[str], dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
+    #     evaluated_value = None
+    #     condition_name = value[0]
+    #     value_if_true = value[1]
+    #     value_if_false = value[2]
+    #
+    #     if all(isinstance(element, str) for element in value) and \
+    #             condition_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
+    #             dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.CONDITIONS:
+    #         evaluated_value = self._evaluate_condition(value)
+    #         evaluated_value = str(evaluated_value) if evaluated_value else None
+    #     return evaluated_value
 
-        if all(isinstance(element, str) for element in value) and \
-                condition_name == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and \
-                dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.CONDITIONS:
-            evaluated_value = self._evaluate_condition(value)
-            evaluated_value = str(evaluated_value) if evaluated_value else None
-        return evaluated_value
-
-    def _evaluate_condition(self, value: List[str]) -> Optional[bool]:
-        # value = [condition_name, value_if_true, value_if_false]
-        return None
-
-    def update_evaluated_value(
-            self,
-            changed_attribute_key: str,
-            changed_attribute_value: Union[str, List[str]],
-            vertex: int,
-            change_origin_id: int,
-            attribute_at_dest: Optional[Union[str, List[str]]] = None,
-    ) -> None:
-        """
-        The function updates the value of changed_attribute_key with changed_attribute_value for vertex
-        """
-        self.local_graph.update_vertex_attribute(
-            vertex, changed_attribute_key, changed_attribute_value, change_origin_id, attribute_at_dest
-        )
+    # def _evaluate_condition(self, value: List[str]) -> Optional[bool]:
+    #     # value = [condition_name, value_if_true, value_if_false]
+    #     return None
 
     @staticmethod
     def find_path_from_referenced_vertices(
-            referenced_vertices: List[TerraformVertexReference], vertex_attributes: Dict[str, Any]
+            referenced_vertices: List[VertexReference], vertex_attributes: Dict[str, Any]
     ) -> Tuple[List[str], str]:
         """
         :param referenced_vertices: an array of VertexReference
@@ -182,7 +167,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             block_type = vertex_reference.block_type
             attribute_path = vertex_reference.sub_parts
             if vertex_attributes[CustomAttributes.BLOCK_TYPE] == block_type:
-                for i, _ in enumerate(attribute_path):
+                for i in range(len(attribute_path)):
                     name = ".".join(attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
                         return attribute_path, vertex_reference.origin_value

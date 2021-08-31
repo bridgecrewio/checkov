@@ -42,7 +42,7 @@ class CloudformationGraphManager(GraphManager):
         return local_graph, rendered_definitions
 
     def build_graph_from_definitions(
-        self, definitions: Dict[str, dict_node], render_variables: bool = False
+        self, definitions: Dict[str, dict_node], render_variables: bool = True
     ) -> CloudformationLocalGraph:
         local_graph = CloudformationLocalGraph(definitions, source=self.source)
         local_graph.build_graph(render_variables=render_variables)
