@@ -3,12 +3,14 @@ import os
 import re
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional, Any
+from distutils.util import strtobool
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
-IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless,.")
+IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
+IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
@@ -81,9 +83,8 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
     for path in list(names):
         if path in ignored_directories:
             names.remove(path)
-        for d in ignored_directories:
-            if path.startswith(d):
-                names.remove(path)
+        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:
+            names.remove(path)
 
     # now apply the new logic
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
