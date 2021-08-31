@@ -14,9 +14,8 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
         sse_config = conf.get('Properties').get('SSESpecification')
         sse_enabled = sse_config.get('SSEEnabled')
         sse_key = sse_config.get('KMSMasterKeyId')
-        if see_enabled is not None and sse_key is not None:
-            if sse_enabled is True:
-                return CheckResult.PASSED
+        if sse_enabled and sse_key is not None:
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 
