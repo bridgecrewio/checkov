@@ -5,7 +5,7 @@ from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference im
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions
 
 REMOVE_INTERPOLATION_PATTERN = "[${}]"
-FIND_INTERPOLATION_PATTERN = "\${(.*?)}"
+FIND_INTERPOLATION_PATTERN = "\${([a-zA-Z0-9.]*?)}"
 
 
 def get_vertices_references(str_value: str, vertices_block_name_map: Dict[str, Dict[str, List[int]]]) -> List[CloudformationVertexReference]:
