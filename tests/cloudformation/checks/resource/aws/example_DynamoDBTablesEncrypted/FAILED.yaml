@@ -4,15 +4,39 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
       SSESpecification:
         SSEEnabled: true
   EncryptionFalse: 
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
       SSESpecification:
         SSEEnabled: false
-  DefaultEncryption: 
+  NoEncryptionConfig: 
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
