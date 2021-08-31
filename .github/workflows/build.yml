@@ -11,11 +11,6 @@ on:
       - 'README.md'
 
 jobs:
-  test-bc-jenkins:
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - name: notify BC
-        run: curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=checkov/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
   integration-tests:
     strategy:
       fail-fast: true
@@ -253,7 +248,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: update checkov release
         run: |
-          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/bridgecrew-py/dispatches --data '{"event_type": "build"}'
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=checkov/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
-          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkovdb/dispatches --data '{"event_type": "build"}'
-          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/platform/dispatches --data '{"event_type": "checkov-upgrade"}'

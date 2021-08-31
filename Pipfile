@@ -43,7 +43,6 @@ detect_secrets = "*"
 policyuniverse = "*"
 typing-extensions = "*"
 importlib-metadata = ">=0.12"
-cfn-lint = "==0.53.*"
 
 [requires]
 python_version = "3.7"
