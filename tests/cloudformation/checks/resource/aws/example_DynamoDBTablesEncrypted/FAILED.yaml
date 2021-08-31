@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  DefaultEncryption:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      SSESpecification:
+        SSEEnabled: true
+  EncryptionFalse: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      SSESpecification:
+        SSEEnabled: false
+  DefaultEncryption: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
