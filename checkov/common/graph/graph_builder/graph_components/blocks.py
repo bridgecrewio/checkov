@@ -2,8 +2,8 @@ from copy import deepcopy
 from typing import Union, Dict, Any, List
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
-from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, stringify_value
+from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
+from checkov.common.graph.graph_builder.variable_rendering.previous_breadcrumb import BreadcrumbMetadata
 
 
 class Block:
@@ -93,10 +93,11 @@ class Block:
         return attributes_dict.get(CustomAttributes.HASH, "")
 
     def update_attribute(
-        self, attribute_key: str, attribute_value: Any, change_origin_id: int, previous_breadcrumbs: List[int]
+        self, attribute_key: str, attribute_value: Any, change_origin_id: int,
+            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: str
     ) -> None:
-        if not previous_breadcrumbs or previous_breadcrumbs[-1] != change_origin_id:
-            previous_breadcrumbs.append(change_origin_id)
+        if not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id:
+            previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         self.update_inner_attribute(attribute_key, self.attributes, attribute_value)
         attribute_key_parts = attribute_key.split(".")

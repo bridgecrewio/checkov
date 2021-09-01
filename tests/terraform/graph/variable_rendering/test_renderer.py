@@ -97,11 +97,11 @@ class TestRenderer(TestCase):
             self.assertEqual(1, len(breadcrumbs))
 
         acl_origin_vertex = s3_vertex.changed_attributes.get('acl')[0]
-        matching_acl_vertex = vertices[acl_origin_vertex]
+        matching_acl_vertex = vertices[acl_origin_vertex.vertex_id]
         self.assertEqual('acl', matching_acl_vertex.name)
 
         versioning_origin_vertex = s3_vertex.changed_attributes.get('versioning.enabled')[0]
-        matching_versioning_vertex = vertices[versioning_origin_vertex]
+        matching_versioning_vertex = vertices[versioning_origin_vertex.vertex_id]
         self.assertEqual('is_enabled', matching_versioning_vertex.name)
 
     def test_multiple_breadcrumbs(self):
@@ -116,13 +116,15 @@ class TestRenderer(TestCase):
         bucket_vertices_ids_list = s3_vertex.changed_attributes.get('bucket')
         self.assertEqual(2, len(bucket_vertices_ids_list))
 
-        self.assertEqual(BlockType.VARIABLE, vertices[bucket_vertices_ids_list[0]].block_type)
-        self.assertEqual('bucket_name', vertices[bucket_vertices_ids_list[0]].name)
-        self.assertEqual(vertices[bucket_vertices_ids_list[0]].name, s3_vertex.breadcrumbs['bucket'][0]['name'])
+        first_vertex = vertices[bucket_vertices_ids_list[0].vertex_id]
+        self.assertEqual(BlockType.VARIABLE, first_vertex.block_type)
+        self.assertEqual('bucket_name', first_vertex.name)
+        self.assertEqual(first_vertex.name, s3_vertex.breadcrumbs['bucket'][0]['name'])
 
-        self.assertEqual(BlockType.LOCALS, vertices[bucket_vertices_ids_list[1]].block_type)
-        self.assertEqual('bucket_name', vertices[bucket_vertices_ids_list[1]].name)
-        self.assertEqual(vertices[bucket_vertices_ids_list[1]].name, s3_vertex.breadcrumbs['bucket'][1]['name'])
+        second_vertex = vertices[bucket_vertices_ids_list[1].vertex_id]
+        self.assertEqual(BlockType.LOCALS, second_vertex.block_type)
+        self.assertEqual('bucket_name', second_vertex.name)
+        self.assertEqual(second_vertex.name, s3_vertex.breadcrumbs['bucket'][1]['name'])
 
     def test_render_lambda(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_lambda')
