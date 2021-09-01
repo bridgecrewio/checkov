@@ -72,7 +72,9 @@ class RunnerRegistry(object):
     def print_reports(
         self, scan_reports, config, url=None, created_baseline_path=None, baseline=None
     ):
-        if config.output == "cli":
+        output_formats = config.output
+
+        if "cli" in config.output:
             print(f"{self.banner}\n")
         exit_codes = []
         report_jsons = []
@@ -80,16 +82,16 @@ class RunnerRegistry(object):
         junit_reports = []
         for report in scan_reports:
             if not report.is_empty():
-                if config.output == "json":
+                if "json" in config.output:
                     report_jsons.append(report.get_dict(is_quiet=config.quiet))
-                elif config.output == "junitxml":
+                if "junitxml" in config.output:
                     junit_reports.append(report)
                     # report.print_junit_xml()
-                elif config.output == "github_failed_only":
+                if "github_failed_only" in config.output:
                     report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
-                elif config.output == "sarif":
+                if "sarif" in config.output:
                     sarif_reports.append(report)
-                else:
+                if "cli" in config.output:
                     report.print_console(
                         is_quiet=config.quiet,
                         is_compact=config.compact,
@@ -99,12 +101,31 @@ class RunnerRegistry(object):
                     )
                     if url:
                         print("More details: {}".format(url))
+                    output_formats.remove("cli")
+                    if len(output_formats) > 0:
+                        print("\n--- OUTPUT DELIMITER ---\n")
             exit_codes.append(
                 report.get_exit_code(
                     config.soft_fail, config.soft_fail_on, config.hard_fail_on
                 )
             )
-        if config.output == "junitxml":
+        if "sarif" in config.output:
+            master_report = Report(None)
+            for report in sarif_reports:
+                master_report.failed_checks += report.failed_checks
+            master_report.print_sarif_report()
+            output_formats.remove("sarif")
+            if len(output_formats) > 0:
+                print("\n--- OUTPUT DELIMITER ---\n")
+        if "json" in config.output:
+            if len(report_jsons) == 1:
+                print(json.dumps(report_jsons[0], indent=4))
+            else:
+                print(json.dumps(report_jsons, indent=4))
+            output_formats.remove("json")
+            if len(output_formats) > 0:
+                print("\n--- OUTPUT DELIMITER ---\n")
+        if "junitxml" in config.output:
             if len(junit_reports) == 1:
                 junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
             else:
@@ -114,16 +135,9 @@ class RunnerRegistry(object):
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
                 master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
-        if config.output == "sarif":
-            master_report = Report(None)
-            for report in sarif_reports:
-                master_report.failed_checks += report.failed_checks
-            master_report.print_sarif_report()
-        if config.output == "json":
-            if len(report_jsons) == 1:
-                print(json.dumps(report_jsons[0], indent=4))
-            else:
-                print(json.dumps(report_jsons, indent=4))
+            output_formats.remove("junitxml")
+            if len(output_formats) > 0:
+                print("\n--- OUTPUT DELIMITER ---\n")
         # if config.output == "cli":
         # bc_integration.get_report_to_platform(config,scan_reports)
 
