@@ -27,6 +27,9 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance.skip_suppressions = False
         self.assertFalse(suppressions_integration.is_valid())
 
+        suppressions_integration.integration_feature_failures = True
+        self.assertFalse(suppressions_integration.is_valid())
+
 
     def test_policy_id_regex(self):
         suppressions_integration = SuppressionsIntegration(BcPlatformIntegration())
