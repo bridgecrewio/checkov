@@ -20,12 +20,17 @@ class FixesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=10)
 
     def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
+        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes \
+               and not self.integration_feature_failures
 
     def post_runner(self, scan_report):
-        if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
-            return
-        self._get_platform_fixes(scan_report)
+        try:
+            if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
+                return
+            self._get_platform_fixes(scan_report)
+        except Exception as e:
+            self.integration_feature_failures = True
+            logging.error(f'{e} \n Custom fixes will not be applied.')
 
     def _get_platform_fixes(self, scan_report):
 
