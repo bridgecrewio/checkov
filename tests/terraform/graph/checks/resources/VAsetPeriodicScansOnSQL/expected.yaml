@@ -1,4 +1,5 @@
 pass:
   - "azurerm_mssql_server_security_alert_policy.okExample"
+  - "azurerm_mssql_server_security_alert_policy.okLegacyExample"
 fail:
   - "azurerm_mssql_server_security_alert_policy.badExampleNotEnabled"
