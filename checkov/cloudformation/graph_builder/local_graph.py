@@ -122,10 +122,10 @@ class CloudformationLocalGraph(LocalGraph):
                             if dest_vertex_index is not None:
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
-                            logging.info(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                            logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
                                          f"and vertex_path {vertex_path} as target_id is not a string")
                 else:
-                    logging.info(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                    logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
                                  f"and vertex_path {vertex_path} as target_ids is not a list")
 
     def _extract_source_value_attrs(self, matching_path):
