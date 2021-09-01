@@ -1,5 +1,5 @@
 metadata:
-  name: "Ensure that VA setting Periodic Recurring Scans is enabled on a SQL server"
+  name: "Ensure Azure SQL server ADS VA Send scan reports to is configured"
   id: "CKV2_AZURE_4"
   category: "GENERAL_SECURITY"
 definition:
