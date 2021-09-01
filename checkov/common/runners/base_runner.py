@@ -10,6 +10,25 @@ from checkov.runner_filter import RunnerFilter
 
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 
+
+def strtobool(val):
+    """Convert a string representation of truth to true (1) or false (0).
+
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
+    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = val.lower()
+    if val in ('y', 'yes', 't', 'true', 'on', '1'):
+        return 1
+    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
+        return 0
+    else:
+        raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
+
+
+IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
+
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 
@@ -24,20 +43,20 @@ class BaseRunner(ABC):
 
     @abstractmethod
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True,
     ) -> Report:
         pass
 
     def set_external_data(
-        self,
-        definitions: Optional[Dict[str, Dict[str, Any]]],
-        context: Optional[Dict[str, Dict[str, Any]]],
-        breadcrumbs: Optional[Dict],
+            self,
+            definitions: Optional[Dict[str, Dict[str, Any]]],
+            context: Optional[Dict[str, Dict[str, Any]]],
+            breadcrumbs: Optional[Dict],
     ):
         self.definitions = definitions
         self.context = context
@@ -79,7 +98,9 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
     # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
     # mostly this will just remove those problematic directories hardcoded above.
     for path in list(names):
-        if path in ignored_directories or path.startswith("."):
+        if path in ignored_directories:
+            names.remove(path)
+        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:
             names.remove(path)
 
     # now apply the new logic
