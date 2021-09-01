@@ -38,6 +38,6 @@ definition:
         - cond_type: filter
           attribute: resource_type
           value:
-            - azurerm_mssql_server_security_alert_policy
+            - azurerm_mssql_server_vulnerability_assessment
           operator: within
 
