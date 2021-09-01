@@ -3,7 +3,7 @@ from typing import Union, Dict, Any, List
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
-from checkov.common.graph.graph_builder.variable_rendering.previous_breadcrumb import BreadcrumbMetadata
+from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 
 
 class Block:
