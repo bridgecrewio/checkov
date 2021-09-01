@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  KMSEncryption: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
+      SSESpecification:
+        KMSMasterKeyId: "alias/key"
+        SSEEnabled: true
