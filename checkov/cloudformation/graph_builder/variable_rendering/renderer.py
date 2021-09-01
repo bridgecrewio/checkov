@@ -109,6 +109,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         return None
 
     def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> Optional[str]:
+        if isinstance(value, list):
+            # TODO: Render values of list type
+            return None
         evaluated_value = None
 
         # value = '..${ref/getatt}..${ref/getatt}..${ref/getatt}..'
