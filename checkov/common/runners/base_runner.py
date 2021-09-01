@@ -99,9 +99,9 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
     # mostly this will just remove those problematic directories hardcoded above.
     for path in list(names):
         if path in ignored_directories:
-            names.remove(path)
+            safe_remove(names,path)
         if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:
-            names.remove(path)
+            safe_remove(names,path)
 
     # now apply the new logic
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
@@ -111,3 +111,8 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
         for path in list(names):
             if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled):
                 names.remove(path)
+
+
+def safe_remove(names, path):
+    if path in names:
+        names.remove(path)
