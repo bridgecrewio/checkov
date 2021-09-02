@@ -17,10 +17,10 @@ class TestRenderer(TestCase):
         relative_path = './resources/variable_rendering/render_ref/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
         json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
-        self.validate_render_ref(yaml_test_dir)
-        self.validate_render_ref(json_test_dir)
+        self.validate_render_ref(yaml_test_dir, 'yaml')
+        self.validate_render_ref(json_test_dir, 'json')
 
-    def validate_render_ref(self, test_dir: str):
+    def validate_render_ref(self, test_dir: str, file_ext: str):
         graph_manager = CloudformationGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
@@ -38,14 +38,27 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, my_db_expected_attributes, BlockType.RESOURCE, 'AWS::RDS::DBInstance.MyDB')
         self.compare_vertex_attributes(local_graph, my_db_instance_name_expected_attributes, BlockType.OUTPUTS, 'MyDBInstanceName')
 
+        kms_master_key_id_expected_breadcrumbs = {}
+        db_name_expected_breadcrumbs = {}
+        my_source_queue_expected_breadcrumbs = {}
+        my_db_expected_breadcrumbs = {'DBName': [{'type': BlockType.PARAMETERS, 'name': 'DBName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        my_db_instance_name_expected_breadcrumbs = {}
+
+        self.compare_vertex_breadcrumbs(local_graph, kms_master_key_id_expected_breadcrumbs, BlockType.PARAMETERS, 'KmsMasterKeyId')
+        self.compare_vertex_breadcrumbs(local_graph, db_name_expected_breadcrumbs, BlockType.PARAMETERS, 'DBName')
+        self.compare_vertex_breadcrumbs(local_graph, my_source_queue_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::SQS::Queue.MySourceQueue')
+        self.compare_vertex_breadcrumbs(local_graph, my_db_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::RDS::DBInstance.MyDB')
+        self.compare_vertex_breadcrumbs(local_graph, my_db_instance_name_expected_breadcrumbs, BlockType.OUTPUTS, 'MyDBInstanceName')
+
+
     def test_render_findinmap(self):
         relative_path = './resources/variable_rendering/render_findinmap/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
         json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
-        self.validate_render_findinmap(yaml_test_dir)
-        self.validate_render_findinmap(json_test_dir)
+        self.validate_render_findinmap(yaml_test_dir, 'yaml')
+        self.validate_render_findinmap(json_test_dir, 'json')
 
-    def validate_render_findinmap(self, test_dir: str):
+    def validate_render_findinmap(self, test_dir: str, file_ext: str):
         graph_manager = CloudformationGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
@@ -57,14 +70,21 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, region_map_expected_attributes, BlockType.MAPPINGS, 'RegionMap')
         self.compare_vertex_attributes(local_graph, ec2instance_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::Instance.EC2Instance')
 
+        region_map_expected_breadcrumbs = {}
+        ec2instance_expected_breadcrumbs = {'ImageId': [{'type': BlockType.MAPPINGS, 'name': 'RegionMap', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'us-east-1.AMI'}]}
+
+        self.compare_vertex_breadcrumbs(local_graph, region_map_expected_breadcrumbs, BlockType.MAPPINGS, 'RegionMap')
+        self.compare_vertex_breadcrumbs(local_graph, ec2instance_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::Instance.EC2Instance')
+
+
     def test_render_getatt(self):
         relative_path = './resources/variable_rendering/render_getatt/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
         json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
-        self.validate_render_getatt(yaml_test_dir)
-        self.validate_render_getatt(json_test_dir)
+        self.validate_render_getatt(yaml_test_dir, 'yaml')
+        self.validate_render_getatt(json_test_dir, 'json')
 
-    def validate_render_getatt(self, test_dir: str):
+    def validate_render_getatt(self, test_dir: str, file_ext: str):
         graph_manager = CloudformationGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
@@ -78,14 +98,22 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, my_sg_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::SecurityGroup.MySG')
         self.compare_vertex_attributes(local_graph, web_vpc_default_sg_expected_attributes, BlockType.OUTPUTS, 'WebVPCDefaultSg')
 
+        web_vpc_expected_breadcrumbs = {}
+        my_sg_expected_breadcrumbs = {'SecurityGroupIngress.CidrIp': [{'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+        web_vpc_default_sg_expected_breadcrumbs = {}
+
+        self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
+        self.compare_vertex_breadcrumbs(local_graph, my_sg_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::SecurityGroup.MySG')
+        self.compare_vertex_breadcrumbs(local_graph, web_vpc_default_sg_expected_breadcrumbs, BlockType.OUTPUTS, 'WebVPCDefaultSg')
+
     def test_render_sub(self):
         relative_path = './resources/variable_rendering/render_sub/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
         json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
-        self.validate_render_sub(yaml_test_dir)
-        self.validate_render_sub(json_test_dir)
+        self.validate_render_sub(yaml_test_dir, 'yaml')
+        self.validate_render_sub(json_test_dir, 'json')
 
-    def validate_render_sub(self, test_dir: str):
+    def validate_render_sub(self, test_dir: str, file_ext: str):
         graph_manager = CloudformationGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
@@ -113,14 +141,33 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, cidr_block_associations_expected_attributes, BlockType.OUTPUTS, 'CidrBlockAssociations')
         self.compare_vertex_attributes(local_graph, default_db_name_expected_attributes, BlockType.OUTPUTS, 'DefaultDBName')
 
+        company_name_expected_breadcrumbs = {}
+        environment_expected_breadcrumbs = {}
+        web_vpc_expected_breadcrumbs = {}
+        default_db_expected_breadcrumbs = {'DBName': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        db_endpoint_sg_expected_breadcrumbs = {}
+        web_vpc_cidr_block_expected_breadcrumbs = {'Value': [{'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+        cidr_block_associations_expected_breadcrumbs = {}
+        default_db_name_expected_breadcrumbs = {'Value': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+
+        self.compare_vertex_breadcrumbs(local_graph, company_name_expected_breadcrumbs, BlockType.PARAMETERS, 'CompanyName')
+        self.compare_vertex_breadcrumbs(local_graph, environment_expected_breadcrumbs, BlockType.PARAMETERS, 'Environment')
+        self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
+        self.compare_vertex_breadcrumbs(local_graph, default_db_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::RDS::DBInstance.DefaultDB')
+        self.compare_vertex_breadcrumbs(local_graph, db_endpoint_sg_expected_breadcrumbs, BlockType.OUTPUTS, 'DBEndpoint')
+        self.compare_vertex_breadcrumbs(local_graph, web_vpc_cidr_block_expected_breadcrumbs, BlockType.OUTPUTS, 'WebVPCCidrBlock')
+        self.compare_vertex_breadcrumbs(local_graph, cidr_block_associations_expected_breadcrumbs, BlockType.OUTPUTS, 'CidrBlockAssociations')
+        self.compare_vertex_breadcrumbs(local_graph, default_db_name_expected_breadcrumbs, BlockType.OUTPUTS, 'DefaultDBName')
+
+
     def test_render_subsequent_evals(self):
         relative_path = './resources/variable_rendering/render_subsequent_evals/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
         json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
-        self.validate_render_subsequent_evals(yaml_test_dir)
-        self.validate_render_subsequent_evals(json_test_dir)
+        self.validate_render_subsequent_evals(yaml_test_dir, 'yaml')
+        self.validate_render_subsequent_evals(json_test_dir, 'json')
 
-    def validate_render_subsequent_evals(self, test_dir: str):
+    def validate_render_subsequent_evals(self, test_dir: str, file_ext: str):
         graph_manager = CloudformationGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
@@ -134,10 +181,28 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, web_vpc_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
         self.compare_vertex_attributes(local_graph, my_sg_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::SecurityGroup.MySG')
 
+        cidr_block_expected_breadcrumbs = {}
+        web_vpc_expected_breadcrumbs = {'CidrBlock': [{'type': BlockType.PARAMETERS, 'name': 'CidrBlock', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}, {'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+        my_sg_expected_breadcrumbs = {'SecurityGroupIngress.CidrIp': [{'type': BlockType.PARAMETERS, 'name': 'CidrBlock', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}, {'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+
+        self.compare_vertex_breadcrumbs(local_graph, cidr_block_expected_breadcrumbs, BlockType.PARAMETERS, 'CidrBlock')
+        self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
+        self.compare_vertex_breadcrumbs(local_graph, my_sg_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::SecurityGroup.MySG')
+
+
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
-        print(f'breadcrumbs = {vertex.breadcrumbs}')
         vertex_attributes = vertex.get_attribute_dict()
         for attribute_key, expected_value in expected_attributes.items():
             actual_value = vertex_attributes.get(attribute_key)
             self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+
+    def compare_vertex_breadcrumbs(self, local_graph, expected_breadcrumbs, block_type, block_name):
+        vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
+        vertex_breadcrumbs = vertex.breadcrumbs
+        self.assertEqual(len(vertex_breadcrumbs), len(expected_breadcrumbs))
+        for vertex_id, expected_value in expected_breadcrumbs.items():
+            actual_value = vertex_breadcrumbs.get(vertex_id)
+            self.assertEqual(expected_value, actual_value, f'actual breadcrumbs of vertex {vertex.id} different from'
+                                                           f' expected. expected = {expected_breadcrumbs}'
+                                                           f' and actual = {actual_value}')

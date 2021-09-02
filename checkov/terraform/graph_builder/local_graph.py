@@ -12,16 +12,16 @@ from checkov.common.graph.graph_builder import reserved_attribute_names, Encrypt
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
-from checkov.terraform.graph_builder.utils import (
-    get_referenced_vertices_in_value,
-    filter_sub_keys,
-    attribute_has_nested_attributes, remove_index_pattern_from_str,
-)
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
+from checkov.terraform.graph_builder.utils import (
+    get_referenced_vertices_in_value,
+    filter_sub_keys,
+    attribute_has_nested_attributes, remove_index_pattern_from_str,
+)
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
@@ -339,7 +339,7 @@ class TerraformLocalGraph(LocalGraph):
         if attribute_at_dest:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
         self.vertices[vertex_index].update_attribute(
-            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs
+            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest
         )
 
     def update_vertices_configs(self) -> None:
@@ -385,8 +385,8 @@ class TerraformLocalGraph(LocalGraph):
         for vertex in self.vertices:
             for attribute_key, breadcrumbs_list in vertex.changed_attributes.items():
                 hash_breadcrumbs = []
-                for vertex_id in breadcrumbs_list:
-                    v = self.vertices[vertex_id]
+                for breadcrumb in breadcrumbs_list:
+                    v = self.vertices[breadcrumb.vertex_id]
                     breadcrumb = v.get_export_data()
                     breadcrumb["module_connection"] = self._determine_if_module_connection(breadcrumbs_list, v)
                     hash_breadcrumbs.append(breadcrumb)
