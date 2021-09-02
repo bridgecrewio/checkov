@@ -30,7 +30,7 @@ class FixesIntegration(BaseIntegrationFeature):
             self._get_platform_fixes(scan_report)
         except Exception as e:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nFixes will not be applied.')
+            logging.debug(f'{e} \nFixes will not be applied.', exc_info=True)
 
     def _get_platform_fixes(self, scan_report):
 

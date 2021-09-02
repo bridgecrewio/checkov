@@ -34,7 +34,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
         except Exception as e:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying suppressions configured in the platform.')
+            logging.debug(f'{e} \nScanning without applying suppressions configured in the platform.', exc_info=True)
 
     def post_runner(self, scan_report):
         self._apply_suppressions_to_report(scan_report)

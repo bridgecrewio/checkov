@@ -31,7 +31,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
         except Exception as e:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying custom policies from the platform.')
+            logging.debug(f'{e} \nScanning without applying custom policies from the platform.', exc_info=True)
 
     @staticmethod
     def _convert_raw_check(policy):
