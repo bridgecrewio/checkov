@@ -30,6 +30,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.skip_policy_download = False
         self.assertFalse(custom_policies_integration.is_valid())
 
+        custom_policies_integration.integration_feature_failures = True
+        self.assertFalse(custom_policies_integration.is_valid())
+
     def test_policy_load(self):
         # response from API
         policies = [
