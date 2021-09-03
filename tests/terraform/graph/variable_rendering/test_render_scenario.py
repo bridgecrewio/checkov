@@ -136,30 +136,12 @@ class TestRendererScenarios(TestCase):
 
         # test that the file order is preserved (we expect the os.scandir to return entries in the same order for both
         # of these tests so one of these tests will fail if the tfvars file precedence is not properly applied)
-        main_tf_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', test_dir, 'main.tf'))
+        main_tf_path = os.path.realpath(
+            os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', test_dir, 'main.tf'))
         different_expected = {
-            main_tf_path: {
-                "variable": [
-                    {
-                        "foo": {}
-                    },
-                    {
-                        "list_data": {}
-                    },
-                    {
-                        "map_data": {}
-                    }
-                ],
-                "resource": [
-                    {
-                        "aws_s3_bucket": {
-                            "my_bucket": {
-                                "bucket": [
-                                    "hello-nimrodIsCöol-nine-dev-abc-xyz-qwerty"
-                                ]
-                            }
-                        }
-                    }
+            "my_bucket": {
+                "bucket": [
+                    "hello-nimrodIsCöol-nine-dev-abc-xyz-qwerty"
                 ]
             }
         }
@@ -189,7 +171,7 @@ class TestRendererScenarios(TestCase):
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         expected = load_expected(replace_expected, dir_name, resources_dir)
 
-        for expected_file, expected_block_type_dict in (different_expected or expected).items():
+        for expected_file, expected_block_type_dict in expected.items():
             module_removed_path = expected_file
             got_file = got_tf_definitions.get(module_removed_path)
             self.assertIsNotNone(got_file)
