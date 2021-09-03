@@ -205,8 +205,8 @@ class Report:
                 },
                 "defaultConfiguration": {"level": "error"},
             }
-            if rule not in ruleset:
-                ruleset.add(rule)
+            if record.check_id not in ruleset:
+                ruleset.add(record.check_id)
                 rules.append(rule)
             else:
                 idx = rules.index(rule)
