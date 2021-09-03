@@ -193,6 +193,7 @@ class Report:
         runs = []
         rules = []
         results = []
+        ruleset = set()
         for idx, record in enumerate(self.failed_checks):
             rule = {
                 "id": record.check_id,
@@ -204,6 +205,11 @@ class Report:
                 },
                 "defaultConfiguration": {"level": "error"},
             }
+            if rule not in ruleset:
+                ruleset.add(rule)
+                rules.append(rule)
+            else:
+                idx = rules.index(rule)
             if record.file_line_range[0] == 0:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
@@ -225,7 +231,6 @@ class Report:
                     }
                 ],
             }
-            rules.append(rule)
             results.append(result)
 
         runs.append({
