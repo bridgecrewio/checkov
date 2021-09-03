@@ -79,12 +79,22 @@ class TestRendererScenarios(TestCase):
         self.go("module_matryoshka")
 
     def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
-        self.go("list_default_622", {"log_types_enabled": {'default': [['api',
-                                                                        'audit',
-                                                                        'authenticator',
-                                                                        'controllerManager',
-                                                                        'scheduler']],
-                                                           'type': ['list(string)']}})
+        different_expected = {
+            "log_types_enabled": {
+                'default':
+                    [
+                        [
+                            'api',
+                            'audit',
+                            'authenticator',
+                            'controllerManager',
+                            'scheduler'
+                        ]
+                    ],
+                'type': ['list(string)']
+            }
+        }
+        self.go("list_default_622", different_expected)
 
     def test_module_reference(self):
         self.go("module_reference")
@@ -136,8 +146,6 @@ class TestRendererScenarios(TestCase):
 
         # test that the file order is preserved (we expect the os.scandir to return entries in the same order for both
         # of these tests so one of these tests will fail if the tfvars file precedence is not properly applied)
-        main_tf_path = os.path.realpath(
-            os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', test_dir, 'main.tf'))
         different_expected = {
             "my_bucket": {
                 "bucket": [
