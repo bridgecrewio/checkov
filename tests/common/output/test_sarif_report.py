@@ -50,6 +50,60 @@ class TestSarifReport(unittest.TestCase):
             jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
         )
 
+    def test_multiples_of_same_rule_do_not_break_schema(self):
+        record1 = Record(
+            check_id="CKV_AWS_21",
+            check_name="Some Check",
+            check_result={"result": CheckResult.FAILED},
+            code_block=None,
+            file_path="./s3.tf",
+            file_line_range=[1, 3],
+            resource="aws_s3_bucket.operations",
+            evaluations=None,
+            check_class=None,
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+        )
+
+        record2 = Record(
+            check_id="CKV_AWS_3",
+            check_name="Ensure all data stored in the EBS is securely encrypted",
+            check_result={"result": CheckResult.FAILED},
+            code_block=None,
+            file_path="./ec2.tf",
+            file_line_range=[1, 3],
+            resource="aws_ebs_volume.web_host_storage",
+            evaluations=None,
+            check_class=None,
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+        )
+
+        record3 = Record(
+            check_id="CKV_AWS_3",
+            check_name="Ensure all data stored in the EBS is securely encrypted",
+            check_result={"result": CheckResult.FAILED},
+            code_block=None,
+            file_path="./ec2.tf",
+            file_line_range=[7, 10],
+            resource="aws_ebs_volume.web_host_storage",
+            evaluations=None,
+            check_class=None,
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+        )
+
+        r = Report("terraform")
+        r.add_record(record=record1)
+        r.add_record(record=record2)
+        r.add_record(record=record3)
+        json_structure = r.get_sarif_json()
+        print(json.dumps(json_structure))
+        self.assertEqual(
+            None,
+            jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
+        )
+
 
 def get_sarif_schema():
     file_name, headers = urllib.request.urlretrieve(
