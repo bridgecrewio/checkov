@@ -187,4 +187,9 @@ def evaluate(input_str: str) -> Any:
     if "__" in input_str:
         logging.warning(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
-    return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
+
+
+def remove_unicode_null(input_str: str) -> str:
+    return input_str.replace("\u0000", "\\0")
