@@ -337,3 +337,9 @@ class TestTerraformEvaluation(TestCase):
 """
         evaluated = evaluate_terraform(input_str)
         self.assertEqual(input_str.replace("\n", ""), evaluated)
+
+    def test_evaluate_(self):
+        input_str = '"10\\.0\\.\\0.\\0/8"'
+        expected = '10\\.0\\.\\0.\\0/8'
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(expected, evaluated)
