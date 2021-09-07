@@ -106,7 +106,7 @@ fi
 
 CHECKOV_EXIT_CODE=$?
 
-echo $CHECKOV_RESULTS
+echo "$CHECKOV_RESULTS"
 
 echo "::set-output name=results::$CHECKOV_RESULTS"
 
