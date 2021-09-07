@@ -264,6 +264,9 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+
+        # it's possible that os.scandir returned the var files in a different order than they were specified
+        explicit_var_files.sort(key=lambda f: vars_files.index(f.path))
         for var_file in explicit_var_files:
             data = _load_or_die_quietly(var_file, self.out_parsing_errors)
             if data:
