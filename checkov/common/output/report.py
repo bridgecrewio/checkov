@@ -209,7 +209,9 @@ class Report:
                 ruleset.add(record.check_id)
                 rules.append(rule)
             else:
-                idx = rules.index(rule)
+                for r in rules:
+                    if r['id'] == rule['id']:
+                        idx = rules.index(r)
             if record.file_line_range[0] == 0:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
