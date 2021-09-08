@@ -194,7 +194,7 @@ class TestSarifReport(unittest.TestCase):
             jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
         )
         self.assertFalse(are_duplicates_in_sarif_rules(json_structure))
-        self.assertTrue(are_rules_indexes_correct_in_results(json_structure))
+        self.assertTrue(are_rule_indexes_correct_in_results(json_structure))
 
 
 def get_sarif_schema():
@@ -215,7 +215,7 @@ def are_duplicates_in_sarif_rules(sarif_json) -> bool:
     return len(rules) != len(ruleset)
 
 
-def are_rules_indexes_correct_in_results(sarif_json) -> bool:
+def are_rule_indexes_correct_in_results(sarif_json) -> bool:
     rules = sarif_json["runs"][0]["tool"]["driver"]["rules"]
     results = sarif_json["runs"][0]["results"]
     for rule in rules:
