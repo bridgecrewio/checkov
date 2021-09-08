@@ -1,5 +1,4 @@
 import unittest
-import os
 import json
 import jsonschema
 import urllib.request
