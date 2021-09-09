@@ -146,110 +146,6 @@ def _decode_uXXXX(s, pos):
     raise JSONDecodeError(msg, s, pos)
 
 
-def cfn_json_object(s_and_end, strict, scan_once, object_hook, object_pairs_hook,
-                    memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
-    """ Custom Cfn JSON Object to store keys with start and end times """
-    s, end = s_and_end
-    orginal_end = end
-    pairs = []
-    pairs_append = pairs.append
-    # Backwards compatibility
-    if memo is None:
-        memo = {}
-    memo_get = memo.setdefault
-    # Use a slice to prevent IndexError from being raised, the following
-    # check will raise a more specific ValueError if the string is empty
-    nextchar = s[end:end + 1]
-    # Normally we expect nextchar == '"'
-    if nextchar != '"':
-        if nextchar in _ws:
-            end = _w(s, end).end()
-            nextchar = s[end:end + 1]
-        # Trivial empty object
-        if nextchar == '}':
-            if object_pairs_hook is not None:
-                try:
-                    beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1)
-                    result = object_pairs_hook(pairs, beg_mark, end_mark)
-                    return result, end + 1
-                except DuplicateError as err:
-                    raise JSONDecodeError('Duplicate found {}'.format(err), s, end)
-                except NullError as err:
-                    raise JSONDecodeError('Null Error {}'.format(err), s, end)
-            pairs = {}
-            if object_hook is not None:
-                beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1)
-                pairs = object_hook(pairs, beg_mark, end_mark)
-            return pairs, end + 1
-
-        if nextchar != '"':
-            raise JSONDecodeError('Expecting property name enclosed in double quotes', s, end)
-    end += 1
-    while True:
-        begin = end - 1
-        key, end = py_scanstring(s, end, strict)
-        # print(lineno, colno, obj)
-        # print(key, lineno, colno)
-        key = memo_get(key, key)
-        # To skip some function call overhead we optimize the fast paths where
-        # the JSON key separator is ": " or just ":".
-        if s[end:end + 1] != ':':
-            end = _w(s, end).end()
-            if s[end:end + 1] != ':':
-                raise JSONDecodeError('Expecting \':\' delimiter', s, end)
-        end += 1
-
-        try:
-            if s[end] in _ws:
-                end += 1
-                if s[end] in _ws:
-                    end = _w(s, end + 1).end()
-        except IndexError:
-            pass
-
-        beg_mark, end_mark = get_beg_end_mark(s, begin, begin + len(key))
-        try:
-            value, end = scan_once(s, end)
-        except StopIteration as err:
-            raise JSONDecodeError('Expecting value', s, str(err))
-        key_str = str_node(key, beg_mark, end_mark)
-        pairs_append((key_str, value))
-        try:
-            nextchar = s[end]
-            if nextchar in _ws:
-                end = _w(s, end + 1).end()
-                nextchar = s[end]
-        except IndexError:
-            nextchar = ''
-        end += 1
-
-        if nextchar == '}':
-            break
-        if nextchar != ',':
-            raise JSONDecodeError('Expecting \',\' delimiter', s, end - 1)
-        end = _w(s, end).end()
-        nextchar = s[end:end + 1]
-        end += 1
-        if nextchar != '"':
-            raise JSONDecodeError(
-                'Expecting property name enclosed in double quotes', s, end - 1)
-    if object_pairs_hook is not None:
-        try:
-            beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end)
-            result = object_pairs_hook(pairs, beg_mark, end_mark)
-        except DuplicateError as err:
-            raise JSONDecodeError('Duplicate found {}'.format(err), s, begin, key)
-        except NullError as err:
-            raise JSONDecodeError('Null Error {}'.format(err), s, begin, key)
-        return result, end
-
-    pairs = dict(pairs)
-    if object_hook is not None:
-        beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end)
-        pairs = object_hook(pairs, beg_mark, end_mark)
-    return pairs, end
-
-
 def py_make_scanner(context):
     """
         Make python based scanner
@@ -317,14 +213,37 @@ def py_make_scanner(context):
 
     return _scan_once
 
+def find_indexes(s, ch='\n'):
+    return [i for i, ltr in enumerate(s) if ltr == ch]
 
-def get_beg_end_mark(s, start, end):
+def count_occurrences(arr, key): 
+    n = len(arr)
+    left = 0
+    right = n - 1
+    count = 0
+ 
+    while (left <= right):
+        mid = int((right + left) / 2)
+
+        if (arr[mid] <= key):
+            count = mid + 1
+            left = mid + 1
+        else:
+            right = mid - 1
+    offset = 1 if n > 1 else 0
+    return count - offset
+
+def largest_less_than(indexes, line_num, pos):
+    return indexes[line_num-1] if count_occurrences(indexes, pos) and len(indexes) > 1 else -1
+
+
+def get_beg_end_mark(s, start, end, indexes):
     """Get the Start and End Mark """
-    beg_lineno = s.count('\n', 0, start)
-    beg_colno = start - s.rfind('\n', 0, start)
+    beg_lineno = count_occurrences(indexes, start)
+    beg_colno = start - largest_less_than(indexes, beg_lineno, start)
     beg_mark = Mark(beg_lineno, beg_colno)
-    end_lineno = s.count('\n', 0, end)
-    end_colno = end - s.rfind('\n', 0, end)
+    end_lineno = count_occurrences(indexes, end)
+    end_colno = end - largest_less_than(indexes, end_lineno, end)
     end_mark = Mark(end_lineno, end_colno)
 
     return beg_mark, end_mark
@@ -354,16 +273,125 @@ class CfnJSONDecoder(json.JSONDecoder):
 
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, *args, **kwargs)
-        self.parse_object = cfn_json_object
+        self.parse_object = self.cfn_json_object
         self.parse_array = self.JSONArray
         self.parse_string = py_scanstring
         self.memo = {}
         self.object_pairs_hook = check_duplicates
         self.scan_once = py_make_scanner(self)
+        self.newline_indexes = []
+
+    def decode(self, s):
+        self.newline_indexes = find_indexes(s)
+        obj = super(CfnJSONDecoder, self).decode(s)
+        return obj
 
     def JSONArray(self, s_and_end, scan_once, **kwargs):
         """ Convert JSON array to be a list_node object """
         values, end = json.decoder.JSONArray(s_and_end, scan_once, **kwargs)
         s, start = s_and_end
-        beg_mark, end_mark = get_beg_end_mark(s, start, end)
+        beg_mark, end_mark = get_beg_end_mark(s, start, end, self.newline_indexes)
         return list_node(values, beg_mark, end_mark), end
+
+    def cfn_json_object(self, s_and_end, strict, scan_once, object_hook, object_pairs_hook,
+                        memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
+        """ Custom Cfn JSON Object to store keys with start and end times """
+        s, end = s_and_end
+        orginal_end = end
+        pairs = []
+        pairs_append = pairs.append
+        # Backwards compatibility
+        if memo is None:
+            memo = {}
+        memo_get = memo.setdefault
+        # Use a slice to prevent IndexError from being raised, the following
+        # check will raise a more specific ValueError if the string is empty
+        nextchar = s[end:end + 1]
+        # Normally we expect nextchar == '"'
+        if nextchar != '"':
+            if nextchar in _ws:
+                end = _w(s, end).end()
+                nextchar = s[end:end + 1]
+            # Trivial empty object
+            if nextchar == '}':
+                if object_pairs_hook is not None:
+                    try:
+                        beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1, self.newline_indexes)
+                        result = object_pairs_hook(pairs, beg_mark, end_mark)
+                        return result, end + 1
+                    except DuplicateError as err:
+                        raise JSONDecodeError('Duplicate found {}'.format(err), s, end)
+                    except NullError as err:
+                        raise JSONDecodeError('Null Error {}'.format(err), s, end)
+                pairs = {}
+                if object_hook is not None:
+                    beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1, self.newline_indexes)
+                    pairs = object_hook(pairs, beg_mark, end_mark)
+                return pairs, end + 1
+
+            if nextchar != '"':
+                raise JSONDecodeError('Expecting property name enclosed in double quotes', s, end)
+        end += 1
+        while True:
+            begin = end - 1
+            key, end = py_scanstring(s, end, strict)
+            # print(lineno, colno, obj)
+            # print(key, lineno, colno)
+            key = memo_get(key, key)
+            # To skip some function call overhead we optimize the fast paths where
+            # the JSON key separator is ": " or just ":".
+            if s[end:end + 1] != ':':
+                end = _w(s, end).end()
+                if s[end:end + 1] != ':':
+                    raise JSONDecodeError('Expecting \':\' delimiter', s, end)
+            end += 1
+
+            try:
+                if s[end] in _ws:
+                    end += 1
+                    if s[end] in _ws:
+                        end = _w(s, end + 1).end()
+            except IndexError:
+                pass
+
+            beg_mark, end_mark = get_beg_end_mark(s, begin, begin + len(key), self.newline_indexes)
+            try:
+                value, end = scan_once(s, end)
+            except StopIteration as err:
+                raise JSONDecodeError('Expecting value', s, str(err))
+            key_str = str_node(key, beg_mark, end_mark)
+            pairs_append((key_str, value))
+            try:
+                nextchar = s[end]
+                if nextchar in _ws:
+                    end = _w(s, end + 1).end()
+                    nextchar = s[end]
+            except IndexError:
+                nextchar = ''
+            end += 1
+
+            if nextchar == '}':
+                break
+            if nextchar != ',':
+                raise JSONDecodeError('Expecting \',\' delimiter', s, end - 1)
+            end = _w(s, end).end()
+            nextchar = s[end:end + 1]
+            end += 1
+            if nextchar != '"':
+                raise JSONDecodeError(
+                    'Expecting property name enclosed in double quotes', s, end - 1)
+        if object_pairs_hook is not None:
+            try:
+                beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end, self.newline_indexes)
+                result = object_pairs_hook(pairs, beg_mark, end_mark)
+            except DuplicateError as err:
+                raise JSONDecodeError('Duplicate found {}'.format(err), s, begin, key)
+            except NullError as err:
+                raise JSONDecodeError('Null Error {}'.format(err), s, begin, key)
+            return result, end
+
+        pairs = dict(pairs)
+        if object_hook is not None:
+            beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end, self.newline_indexes)
+            pairs = object_hook(pairs, beg_mark, end_mark)
+        return pairs, end
