@@ -214,9 +214,11 @@ def py_make_scanner(context):
     return _scan_once
 
 def find_indexes(s, ch='\n'):
+    """Finds all instance of given char and returns list of indexes """
     return [i for i, ltr in enumerate(s) if ltr == ch]
 
 def count_occurrences(arr, key): 
+    """Binary search indexes to replace str.count """
     n = len(arr)
     left = 0
     right = n - 1
@@ -233,6 +235,7 @@ def count_occurrences(arr, key):
     return count
 
 def largest_less_than(indexes, line_num, pos):
+    """Replacement func for python str.rfind using indexes """
     return indexes[line_num-1] if count_occurrences(indexes, pos) and len(indexes) > 1 else -1
 
 
@@ -283,6 +286,7 @@ class CfnJSONDecoder(json.JSONDecoder):
         self.newline_indexes = []
 
     def decode(self, s):
+        """Overridden to retrieve indexes """
         self.newline_indexes = find_indexes(s)
         obj = super(CfnJSONDecoder, self).decode(s)
         return obj
