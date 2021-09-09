@@ -230,8 +230,7 @@ def count_occurrences(arr, key):
             left = mid + 1
         else:
             right = mid - 1
-    offset = 1 if n > 1 else 0
-    return count - offset
+    return count
 
 def largest_less_than(indexes, line_num, pos):
     return indexes[line_num-1] if count_occurrences(indexes, pos) and len(indexes) > 1 else -1
@@ -242,7 +241,9 @@ def get_beg_end_mark(s, start, end, indexes):
     beg_lineno = count_occurrences(indexes, start)
     beg_colno = start - largest_less_than(indexes, beg_lineno, start)
     beg_mark = Mark(beg_lineno, beg_colno)
-    end_lineno = count_occurrences(indexes, end)
+
+    offset = 1 if len(indexes) > 1 else 0
+    end_lineno = count_occurrences(indexes, end) - offset
     end_colno = end - largest_less_than(indexes, end_lineno, end)
     end_mark = Mark(end_lineno, end_colno)
 
