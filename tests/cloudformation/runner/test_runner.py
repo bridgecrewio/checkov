@@ -238,7 +238,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(1, len(report.failed_checks))
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs)
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs.get("VersioningConfiguration.Status"))
-        print(report)
 
     def tearDown(self):
         pass
