@@ -121,6 +121,9 @@ class Runner(BaseRunner):
                                     file_abs_path=file_abs_path,
                                     entity_tags=tags,
                                 )
+                                breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                                if breadcrumb:
+                                    record = GraphRecord(record, breadcrumb)
                                 report.add_record(record=record)
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
