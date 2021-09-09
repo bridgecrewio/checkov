@@ -194,7 +194,8 @@ class Report:
         rules = []
         results = []
         ruleset = set()
-        for idx, record in enumerate(self.failed_checks):
+        idx = 0
+        for record in self.failed_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -208,6 +209,7 @@ class Report:
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)
+                idx = rules.index(rule)
             else:
                 for r in rules:
                     if r['id'] == rule['id']:
