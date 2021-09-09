@@ -19,6 +19,7 @@ class BaseIntegrationFeature(ABC):
         bc_integration.setup_http_manager()
         self.order = order
         integration_feature_registry.register(self)
+        self.integration_feature_failures = False
 
     @abstractmethod
     def is_valid(self):

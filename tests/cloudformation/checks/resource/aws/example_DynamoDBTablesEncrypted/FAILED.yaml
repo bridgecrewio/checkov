@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  DefaultEncryption:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
+      SSESpecification:
+        SSEEnabled: true
+  EncryptionFalse: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"
+      SSESpecification:
+        SSEEnabled: false
+  NoEncryptionConfig: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "test"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Test"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Test"
+          KeyType: "HASH"

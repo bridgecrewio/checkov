@@ -225,6 +225,20 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 3)
         pass
 
+    def test_breadcrumbs_report(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "../graph/graph_builder/resources/variable_rendering/render_params")
+
+        dir_abs_path = os.path.abspath(scan_dir_path)
+
+        runner = Runner()
+        report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False, checks=["CKV_AWS_21"]))
+
+        self.assertEqual(1, len(report.failed_checks))
+        self.assertIsNotNone(report.failed_checks[0].breadcrumbs)
+        self.assertIsNotNone(report.failed_checks[0].breadcrumbs.get("VersioningConfiguration.Status"))
+
     def tearDown(self):
         pass
 

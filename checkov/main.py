@@ -57,6 +57,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                add_env_var_help=True)
     add_parser_args(parser)
     config = parser.parse_args(argv)
+
+    # Check if --output value is None. If so, replace with ['cli'] for default cli output.
+    if config.output == None:
+        config.output = ['cli']
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
@@ -68,13 +73,16 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     excluded_paths = config.skip_path or []
 
+    if config.var_file:
+        config.var_file = [os.path.abspath(f) for f in config.var_file]
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
-                                 all_external=config.run_all_external_checks)
+                                 all_external=config.run_all_external_checks, var_files=config.var_file)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -105,7 +113,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)
         if source == SourceTypes[BCSourceType.DISABLED]:
-            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; setting source to DISABLED')
+            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
         logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
 
@@ -239,9 +247,9 @@ def add_parser_args(parser):
                help='Github url of external checks to be added. \n you can specify a subdirectory after a '
                     'double-slash //. \n cannot be used together with --external-checks-dir')
     parser.add('-l', '--list', help='List checks', action='store_true')
-    parser.add('-o', '--output', nargs='?', choices=OUTPUT_CHOICES,
-               default='cli',
-               help='Report output format')
+    parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
+               default=None,
+               help='Report output format. Can be repeated')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
@@ -296,6 +304,10 @@ def add_parser_args(parser):
     parser.add('--download-external-modules',
                help="download external terraform modules from public git repositories and terraform registry",
                default=os.environ.get('DOWNLOAD_EXTERNAL_MODULES', False), env_var='DOWNLOAD_EXTERNAL_MODULES')
+    parser.add('--var-file', action='append',
+               help='Variable files to load in addition to the default files (see '
+                    'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
+                    'Currently only supported for source Terraform (.tf file) scans. Requires using --directory, not --file.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')

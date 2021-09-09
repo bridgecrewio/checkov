@@ -59,7 +59,8 @@ class Parser:
               env_vars: Mapping[str, str],
               download_external_modules: bool,
               external_modules_download_path: str,
-              excluded_paths: Optional[List[str]] = None):
+              excluded_paths: Optional[List[str]] = None,
+              tf_var_files: Optional[List[str]] = None):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -67,6 +68,7 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
+        self.tf_var_files = tf_var_files
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -89,13 +91,14 @@ class Parser:
                         env_vars: Mapping[str, str] = None,
                         download_external_modules: bool = False,
                         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-                        excluded_paths: Optional[List[str]] = None):
+                        excluded_paths: Optional[List[str]] = None,
+                        vars_files: Optional[List[str]] = None):
         self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
                    download_external_modules, external_modules_download_path, excluded_paths)
         self._parsed_directories.clear()
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
-        self._parse_directory(dir_filter=lambda d: self._check_process_dir(d))
+        self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
     @staticmethod
     def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
@@ -105,7 +108,8 @@ class Parser:
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
-                         dir_filter: Callable[[str], bool] = lambda _: True):
+                         dir_filter: Callable[[str], bool] = lambda _: True,
+                         vars_files: Optional[List[str]] = None):
         """
     Load and resolve configuration files starting in the given directory, merging the
     resulting data into `tf_definitions`. This loads data according to the Terraform Code Organization
@@ -138,10 +142,10 @@ class Parser:
                 _filter_ignored_paths(sub_dir, f_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
                     self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
-                                            keys_referenced_as_modules)
+                                            keys_referenced_as_modules, vars_files=vars_files)
         else:
             self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
-                                    keys_referenced_as_modules)
+                                    keys_referenced_as_modules, vars_files=vars_files)
 
         # Ensure anything that was referenced as a module is removed
         for key in keys_referenced_as_modules:
@@ -153,7 +157,8 @@ class Parser:
                            dir_filter: Callable[[str], bool],
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
-                           module_load_context: Optional[str] = None):
+                           module_load_context: Optional[str] = None,
+                           vars_files: Optional[List[str]] = None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
@@ -174,7 +179,8 @@ class Parser:
         var_value_and_file_map: Dict[str, Tuple[Any, str]] = {}
         hcl_tfvars: Optional[os.DirEntry] = None
         json_tfvars: Optional[os.DirEntry] = None
-        auto_vars_files: Optional[List[os.DirEntry]] = None  # lazy creation
+        auto_vars_files: List[os.DirEntry] = []  # *.auto.tfvars / *.auto.tfvars.json
+        explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
         for file in os.scandir(directory):
             # Ignore directories and hidden files
             try:
@@ -193,10 +199,10 @@ class Parser:
                 hcl_tfvars = file
                 continue
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
-                if auto_vars_files is None:
-                    auto_vars_files = [file]
-                else:
-                    auto_vars_files.append(file)
+                auto_vars_files.append(file)
+                continue
+            elif vars_files and file.path in vars_files:
+                explicit_var_files.append(file)
                 continue
 
             # Resource files
@@ -253,12 +259,19 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-        if auto_vars_files:  # *.auto.tfvars / *.auto.tfvars.json
-            for var_file in sorted(auto_vars_files, key=lambda e: e.name):
-                data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-                if data:
-                    var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                    self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
+            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+
+        # it's possible that os.scandir returned the var files in a different order than they were specified
+        explicit_var_files.sort(key=lambda f: vars_files.index(f.path))
+        for var_file in explicit_var_files:
+            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
@@ -436,12 +449,13 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
-    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None, excluded_paths: List[str]=None):
+    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None, excluded_paths: List[str]=None, vars_files: Optional[List[str]]=None):
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
-                             external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths)
+                             external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths,
+                             vars_files=vars_files)
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
         return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)

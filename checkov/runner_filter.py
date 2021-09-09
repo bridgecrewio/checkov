@@ -23,7 +23,8 @@ class RunnerFilter(object):
         runners: Optional[List[str]] = None,
         skip_framework: Optional[str] = None,
         excluded_paths: Optional[List[str]] = None,
-        all_external: bool = False
+        all_external: bool = False,
+        var_files: Optional[List[str]] = None
     ) -> None:
 
         self.checks = convert_csv_string_arg_to_list(checks)
@@ -49,6 +50,7 @@ class RunnerFilter(object):
         self.evaluate_variables = evaluate_variables
         self.excluded_paths = excluded_paths
         self.all_external = all_external
+        self.var_files = var_files
 
     def should_run_check(self, check_id: str, bc_check_id: Optional[str] = None) -> bool:
         if RunnerFilter.is_external_check(check_id) and self.all_external:

@@ -193,7 +193,9 @@ class Report:
         runs = []
         rules = []
         results = []
-        for idx, record in enumerate(self.failed_checks):
+        ruleset = set()
+        idx = 0
+        for record in self.failed_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -204,6 +206,15 @@ class Report:
                 },
                 "defaultConfiguration": {"level": "error"},
             }
+            if record.check_id not in ruleset:
+                ruleset.add(record.check_id)
+                rules.append(rule)
+                idx = rules.index(rule)
+            else:
+                for r in rules:
+                    if r['id'] == rule['id']:
+                        idx = rules.index(r)
+                        break
             if record.file_line_range[0] == 0:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
@@ -225,7 +236,6 @@ class Report:
                     }
                 ],
             }
-            rules.append(rule)
             results.append(result)
 
         runs.append({

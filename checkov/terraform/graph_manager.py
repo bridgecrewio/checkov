@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -11,10 +11,11 @@ class TerraformGraphManager(GraphManager):
         super().__init__(db_connector=db_connector, parser=Parser(), source=source)
 
     def build_graph_from_source_directory(self, source_dir, render_variables=True, local_graph_class=TerraformLocalGraph,
-                                          parsing_errors=None, download_external_modules=False, excluded_paths: List[str]=None):
+                                          parsing_errors=None, download_external_modules=False, excluded_paths: List[str]=None,
+                                          vars_files: Optional[List[str]] = None):
         logging.info('Parsing HCL files in source dir')
         module, module_dependency_map, tf_definitions = \
-            self.parser.parse_hcl_module(source_dir, self.source, download_external_modules, parsing_errors, excluded_paths=excluded_paths)
+            self.parser.parse_hcl_module(source_dir, self.source, download_external_modules, parsing_errors, excluded_paths=excluded_paths, vars_files=vars_files)
 
         logging.info('Building graph from parsed module')
         local_graph = local_graph_class(module, module_dependency_map)

@@ -61,6 +61,7 @@ nav_order: 1
 | 50 | CKV_AZURE_41  | resource  | Microsoft.KeyVault/vaults/secrets                                            | Ensure that the expiration date is set on all secrets                                         | arm   |
 | 51 | CKV_AZURE_42  | resource  | Microsoft.KeyVault/vaults                                                    | Ensure the key vault is recoverable                                                           | arm   |
 | 52 | CKV_AZURE_131 | parameter | secureString                                                                 | SecureString parameter should not have hardcoded default values                               | arm   |
+| 53 | CKV_AZURE_132 | resource  | Microsoft.DocumentDB/databaseAccounts                                        | Ensure cosmosdb does not allow privileged escalation by restricting management plane changes  | arm   |
 
 
 ---

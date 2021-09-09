@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
 
 
@@ -337,3 +337,9 @@ class TestTerraformEvaluation(TestCase):
 """
         evaluated = evaluate_terraform(input_str)
         self.assertEqual(input_str.replace("\n", ""), evaluated)
+
+    def test_evaluate_(self):
+        input_str = '"10\\.0\\.\\0.\\0/8"'
+        expected = '10\\.0\\.\\0.\\0/8'
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(expected, evaluated)

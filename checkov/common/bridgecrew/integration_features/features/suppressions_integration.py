@@ -23,13 +23,18 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
 
     def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_suppressions
+        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_suppressions \
+               and not self.integration_feature_failures
 
     def pre_scan(self):
-        suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
-        # group and map by policy ID
-        self.suppressions = {policy_id: list(sup) for policy_id, sup in groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
-        logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+        try:
+            suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
+            # group and map by policy ID
+            self.suppressions = {policy_id: list(sup) for policy_id, sup in groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
+            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+        except Exception as e:
+            self.integration_feature_failures = True
+            logging.debug(f'{e} \nScanning without applying suppressions configured in the platform.', exc_info=True)
 
     def post_runner(self, scan_report):
         self._apply_suppressions_to_report(scan_report)
