@@ -27,11 +27,11 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         if 'service_account' in conf.keys():
             service_account_conf = conf['service_account'][0]
             if isinstance(service_account_conf, dict):
-                if 'email' in conf['service_account'][0]:
-                    if re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
-                        if FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
+                if 'email' in service_account_conf:
+                    if re.match(DEFAULT_SERVICE_ACCOUNT, service_account_conf['email'][0]):
+                        if len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
                             return CheckResult.FAILED
-                elif FULL_ACCESS_API in conf['service_account'][0]['scopes'][0]:
+                elif len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
