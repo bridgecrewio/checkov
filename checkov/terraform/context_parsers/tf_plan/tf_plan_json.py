@@ -214,7 +214,7 @@ def py_make_scanner(context):
     return _scan_once
 
 def find_indexes(s, ch='\n'):
-    """Finds all instance of given char and returns list of indexes """
+    """Finds all instances of given char and returns list of indexes """
     return [i for i, ltr in enumerate(s) if ltr == ch]
 
 def count_occurrences(arr, key): 
@@ -236,7 +236,7 @@ def count_occurrences(arr, key):
 
 def largest_less_than(indexes, line_num, pos):
     """Replacement func for python str.rfind using indexes """
-    return indexes[line_num-1] if count_occurrences(indexes, pos) and len(indexes) > 1 else -1
+    return indexes[line_num-1] if indexes and count_occurrences(indexes, pos) else -1
 
 
 def get_beg_end_mark(s, start, end, indexes):
@@ -288,7 +288,7 @@ class CfnJSONDecoder(json.JSONDecoder):
     def decode(self, s):
         """Overridden to retrieve indexes """
         self.newline_indexes = find_indexes(s)
-        obj = super(CfnJSONDecoder, self).decode(s)
+        obj = super().decode(s)
         return obj
 
     def JSONArray(self, s_and_end, scan_once, **kwargs):
