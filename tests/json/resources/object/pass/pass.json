@@ -1,0 +1,6 @@
+{
+    "foo": {
+        "prop": "value",
+        "otherProp": "otherValue"
+    }
+}
