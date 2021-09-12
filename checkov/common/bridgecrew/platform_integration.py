@@ -10,10 +10,12 @@ from time import sleep
 from typing import Optional
 
 import boto3
+import cachetools as cachetools
 import dpath.util
 import requests
 import urllib3
 from botocore.exceptions import ClientError
+from cachetools import TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
@@ -83,6 +85,7 @@ class BcPlatformIntegration(object):
     def is_bc_token(token: str) -> bool:
         return re.match(UUID_V4_PATTERN, token) is not None
 
+    @cachetools.cached(TTLCache(maxsize=1, ttl=540))
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
