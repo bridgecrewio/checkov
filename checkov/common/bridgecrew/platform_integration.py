@@ -64,7 +64,7 @@ class BcPlatformIntegration(object):
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_url = os.getenv("PRISMA_API_URL")
         if self.prisma_url:
-            self.api_url = self.prisma_url + '/bridgecrew'
+            self.api_url = f"{self.prisma_url}/bridgecrew"
         self.bc_source = None
         self.bc_source_version = None
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
@@ -91,7 +91,7 @@ class BcPlatformIntegration(object):
         # This is a Prisma Cloud token
         if not self.prisma_url:
             raise ValueError("Got a prisma token, but the env variable PRISMA_API_URL is not set")
-        [username, password] = self.bc_api_key.split['::']
+        username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
                                     headers={"Content-Type": "application/json"})
