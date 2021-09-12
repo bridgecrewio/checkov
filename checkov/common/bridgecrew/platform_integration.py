@@ -71,7 +71,6 @@ class BcPlatformIntegration(object):
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
         self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
-        self.fixes_url = f"{self.api_url}/api/v1/fixes/checkov"
         self.guidelines = None
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None

@@ -17,6 +17,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.suppressions = {}
+        self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
         # bcorgname_provider_timestamp (ex: companyxyz_aws_1234567891011)
         # the provider may be lower or upper depending on where the policy was created
