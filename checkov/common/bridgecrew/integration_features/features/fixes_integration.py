@@ -8,8 +8,7 @@ import requests
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_auth_header, extract_error_message, \
-    get_default_post_headers
+from checkov.common.util.http_utils import extract_error_message, get_default_post_headers
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 
@@ -18,14 +17,20 @@ class FixesIntegration(BaseIntegrationFeature):
 
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=10)
+        self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
     def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes
+        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes \
+               and not self.integration_feature_failures
 
     def post_runner(self, scan_report):
-        if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
-            return
-        self._get_platform_fixes(scan_report)
+        try:
+            if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
+                return
+            self._get_platform_fixes(scan_report)
+        except Exception as e:
+            self.integration_feature_failures = True
+            logging.debug(f'{e} \nFixes will not be applied.', exc_info=True)
 
     def _get_platform_fixes(self, scan_report):
 
@@ -75,7 +80,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         headers = merge_dicts(
             get_default_post_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-            get_auth_header(self.bc_integration.bc_api_key)
+            {"Authorization": self.bc_integration.get_auth_token()}
         )
 
         response = requests.request('POST', self.fixes_url, headers=headers, json=payload)

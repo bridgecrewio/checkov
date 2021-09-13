@@ -11,7 +11,17 @@ class TestBCApiUrl(unittest.TestCase):
     @mock.patch.dict(os.environ, {'BC_API_URL': 'foo'})
     def test_overriding_bc_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.bc_api_url, "foo")
+        self.assertEqual(instance.api_url, "foo")
+
+    @mock.patch.dict(os.environ, {'PRISMA_API_URL': 'prisma'})
+    def test_overriding_pc_api_url(self):
+        instance = BcPlatformIntegration()
+        self.assertEqual(instance.api_url, "prisma/bridgecrew")
+        self.assertEqual(instance.prisma_url, "prisma")
+
+    def test_no_overriding_api_url(self):
+        instance = BcPlatformIntegration()
+        self.assertEqual(instance.api_url, "https://www.bridgecrew.cloud")
 
     @mock.patch.dict(os.environ, {'BC_SKIP_MAPPING': 'TRUE'})
     def test_skip_mapping(self):

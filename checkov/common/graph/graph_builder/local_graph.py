@@ -73,9 +73,8 @@ class LocalGraph:
             attribute_at_dest: Optional[Union[str, List[str]]],
     ) -> None:
         previous_breadcrumbs = []
-        attribute_at_dest = self.vertices[change_origin_id].find_attribute(attribute_at_dest)
         if attribute_at_dest:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
         self.vertices[vertex_index].update_attribute(
-            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs
+            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest
         )

@@ -5,10 +5,10 @@ from typing import Dict, Any, Optional, List
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
+from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
 from checkov.cloudformation.parser.node import dict_node
-from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
@@ -42,7 +42,7 @@ class CloudformationLocalGraph(LocalGraph):
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
-            #self.update_vertices_breadcrumbs_and_module_connections()
+            self.update_vertices_breadcrumbs()
 
     def _create_vertices(self) -> None:
 
@@ -92,17 +92,18 @@ class CloudformationLocalGraph(LocalGraph):
                 self._vertices_indexes[file_path] = {}
             self._vertices_indexes[file_path][name] = len(self.vertices) - 1
 
-    def update_vertices_breadcrumbs_and_module_connections(self) -> None:
+    def update_vertices_breadcrumbs(self) -> None:
         """
         The function processes each vertex's breadcrumbs:
         1. Get more data to each vertex in breadcrumb (name, path, hash and type)
         """
         for vertex in self.vertices:
             for attribute_key, breadcrumbs_list in vertex.changed_attributes.items():
-                hash_breadcrumbs = [
-                    self.vertices[vertex_id].get_export_data()
-                    for vertex_id in breadcrumbs_list
-                ]
+                hash_breadcrumbs = []
+                for breadcrumb in breadcrumbs_list:
+                    breadcrumb_data = self.vertices[breadcrumb.vertex_id].get_export_data()
+                    breadcrumb_data['attribute_key'] = breadcrumb.attribute_key
+                    hash_breadcrumbs.append(breadcrumb_data)
                 vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
 
     def _add_resource_attr_connections(self, attribute):
@@ -122,10 +123,10 @@ class CloudformationLocalGraph(LocalGraph):
                             if dest_vertex_index is not None:
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
-                            logging.info(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                            logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
                                          f"and vertex_path {vertex_path} as target_id is not a string")
                 else:
-                    logging.info(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                    logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
                                  f"and vertex_path {vertex_path} as target_ids is not a list")
 
     def _extract_source_value_attrs(self, matching_path):

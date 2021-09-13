@@ -1,14 +1,19 @@
+import argparse
+import itertools
 import json
 import logging
 import os
 from abc import abstractmethod
-from typing import List
+from typing import List, Union, Dict, Any, Tuple, Optional
 
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import (
-    integration_feature_registry,
-)
+from typing_extensions import Literal
+
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
@@ -16,14 +21,15 @@ from checkov.terraform.parser import Parser
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "json", "junitxml", "github_failed_only", "sarif"]
+OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
-class RunnerRegistry(object):
-    runners = []
-    scan_reports = []
+class RunnerRegistry:
+    runners: List[BaseRunner] = []
+    scan_reports: List[Report] = []
     banner = ""
 
-    def __init__(self, banner, runner_filter, *runners):
+    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: BaseRunner) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
@@ -32,17 +38,17 @@ class RunnerRegistry(object):
         self.filter_runner_framework()
 
     @abstractmethod
-    def extract_entity_details(self, entity):
+    def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
         raise NotImplementedError()
 
     def run(
         self,
-        root_folder=None,
-        external_checks_dir=None,
-        files=None,
-        guidelines=None,
-        collect_skip_comments=True,
-        repo_root_for_plan_enrichment=None,
+        root_folder: Optional[str] = None,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        guidelines: Optional[Dict[str, str]] = None,
+        collect_skip_comments: bool = True,
+        repo_root_for_plan_enrichment: Union[str, os.PathLike] = None,
     ) -> List[Report]:
         for runner in self.runners:
             integration_feature_registry.run_pre_runner()
@@ -57,22 +63,21 @@ class RunnerRegistry(object):
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
             if repo_root_for_plan_enrichment:
-                enriched_resources = RunnerRegistry.get_enriched_resources(
-                    repo_root_for_plan_enrichment
-                )
-                scan_report = Report("terraform_plan").enrich_plan_report(
-                    scan_report, enriched_resources
-                )
-                scan_report = Report("terraform_plan").handle_skipped_checks(
-                    scan_report, enriched_resources
-                )
+                enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+                scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
     def print_reports(
-        self, scan_reports, config, url=None, created_baseline_path=None, baseline=None
-    ):
-        output_formats = config.output
+        self,
+        scan_reports: List[Report],
+        config: argparse.Namespace,
+        url: Optional[str] = None,
+        created_baseline_path: Optional[str] = None,
+        baseline: Optional[Baseline] = None,
+    ) -> Literal[0, 1]:
+        output_formats = set(config.output)
 
         if "cli" in config.output:
             print(f"{self.banner}\n")
@@ -101,30 +106,26 @@ class RunnerRegistry(object):
                     )
                     if url:
                         print("More details: {}".format(url))
-                    output_formats.remove("cli")
-                    if len(output_formats) > 0:
-                        print("\n--- OUTPUT DELIMITER ---\n")
-            exit_codes.append(
-                report.get_exit_code(
-                    config.soft_fail, config.soft_fail_on, config.hard_fail_on
-                )
-            )
+                    output_formats.discard("cli")
+                    if output_formats:
+                        print(OUTPUT_DELIMITER)
+            exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
         if "sarif" in config.output:
             master_report = Report(None)
             for report in sarif_reports:
                 master_report.failed_checks += report.failed_checks
             master_report.print_sarif_report()
             output_formats.remove("sarif")
-            if len(output_formats) > 0:
-                print("\n--- OUTPUT DELIMITER ---\n")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
             output_formats.remove("json")
-            if len(output_formats) > 0:
-                print("\n--- OUTPUT DELIMITER ---\n")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
         if "junitxml" in config.output:
             if len(junit_reports) == 1:
                 junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
@@ -136,44 +137,35 @@ class RunnerRegistry(object):
                     master_report.failed_checks += report.failed_checks
                 master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
             output_formats.remove("junitxml")
-            if len(output_formats) > 0:
-                print("\n--- OUTPUT DELIMITER ---\n")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
         # if config.output == "cli":
         # bc_integration.get_report_to_platform(config,scan_reports)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
 
-    def filter_runner_framework(self):
+    def filter_runner_framework(self) -> None:
         if not self.runner_filter:
             return
         if self.runner_filter.framework is None:
             return
         if self.runner_filter.framework == "all":
             return
-        filtered_runners = []
-        for runner in self.runners:
-            if runner.check_type in self.runner_filter.framework:
-                filtered_runners.append(runner)
-        self.runners = filtered_runners
-        return
+        self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
 
-    def remove_runner(self, runner):
+    def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:
             self.runners.remove(runner)
 
     @staticmethod
-    def enrich_report_with_guidelines(scan_report, guidelines):
-        for record in (
-            scan_report.failed_checks
-            + scan_report.passed_checks
-            + scan_report.skipped_checks
-        ):
+    def enrich_report_with_guidelines(scan_report: Report, guidelines: Dict[str, str]) -> None:
+        for record in itertools.chain(scan_report.failed_checks, scan_report.passed_checks, scan_report.skipped_checks):
             if record.check_id in guidelines:
                 record.set_guideline(guidelines[record.check_id])
 
     @staticmethod
-    def get_enriched_resources(repo_root):
+    def get_enriched_resources(repo_root: Union[str, os.PathLike]) -> Dict[str, Dict[str, Any]]:
         tf_definitions = {}
         parsing_errors = {}
         Parser().parse_directory(
@@ -184,9 +176,7 @@ class RunnerRegistry(object):
 
         enriched_resources = {}
         for full_file_path, definition in tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context(
-                (full_file_path, definition)
-            )
+            definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
             abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
             scanned_file = os.path.relpath(abs_scanned_file, repo_root)
             for block_type, block_value in definition.items():
