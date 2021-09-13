@@ -3,6 +3,7 @@ import unittest
 import os
 from pathlib import Path
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
@@ -81,6 +82,23 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(len(report.skipped_checks), 1)
+
+    def test_runner_bc_ids(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources"
+        runner = Runner()
+        # the other tests will implicitly test this value being None
+        bc_integration.ckv_to_bc_id_mapping = {
+            'CKV_SECRET_2': 'BC_GIT_2'
+        }
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets'))
+        for fc in report.failed_checks:
+            if fc.check_id == 'CKV_SECRET_2':
+                self.assertEqual(fc.bc_check_id, 'BC_GIT_2')
+            else:
+                self.assertIsNone(fc.bc_check_id)
+
 
 if __name__ == '__main__':
     unittest.main()
