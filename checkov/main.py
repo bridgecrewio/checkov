@@ -319,7 +319,7 @@ def add_parser_args(parser):
                help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
     parser.add('--repo-root-for-plan-enrichment',
                help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
-               dest="repo_root_for_plan_enrichment")
+               dest="repo_root_for_plan_enrichment", action='append')
     parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
     parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
                                        'the given path', is_write_out_config_file_arg=True, default=None)
