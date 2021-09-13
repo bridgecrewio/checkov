@@ -13,5 +13,4 @@ class RegexMatchAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        print(1)
         return re.match(str(self.value), str(vertex.get(attribute))) is not None
