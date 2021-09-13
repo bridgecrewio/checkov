@@ -1,6 +1,9 @@
 from typing import Dict, Any, List, Optional
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.checks_infra.solvers.attribute_solvers.not_regex_match_attribute_solver import \
+    NotRegexMatchAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.regex_match_attribute_solver import RegexMatchAttributeSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -10,6 +13,8 @@ from checkov.common.checks_infra.solvers import *
 operators_to_attributes_solver_classes = {
     "equals": EqualsAttributeSolver,
     "not_equals": NotEqualsAttributeSolver,
+    "regex_match": RegexMatchAttributeSolver,
+    "not_regex_match": NotRegexMatchAttributeSolver,
     "exists": ExistsAttributeSolver,
     "any": AnyResourceSolver,
     "contains": ContainsAttributeSolver,
