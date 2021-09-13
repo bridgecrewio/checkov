@@ -31,6 +31,8 @@ class Operators:
     NOT_ENDING_WITH = 'not_ending_with'
     EQUALS = 'equals'
     NOT_EQUALS = 'not_equals'
+    REGEX_MATCH = 'regex_match'
+    NOT_REGEX_MATCH = 'not_regex_match'
     STARTING_WITH = 'starting_with'
     NOT_STARTING_WITH = 'not_starting_with'
     WITHIN = 'within'
