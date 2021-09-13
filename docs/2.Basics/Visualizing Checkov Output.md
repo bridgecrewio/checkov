@@ -40,7 +40,7 @@ The table below details the arguments used when executing the API token:
 
 | Argument | Description |
 | -------- | ----------- |
-| `<key>` | Bridgecrew issued API key |
+| `<key>` | Bridgecrew issued API key or Prisma cloud API key in the following format `ACCESS_KEY::SECRET_KEY` |
 | `<repo_id>` | Identifying string of the scanned repository, following the standard Git repository naming scheme: `<owner>/<name>` |
 | `<branch>` | Branch name to be persisted on platform. Defaults to the master branch. **NOTE:** Ensure the scanned directory (supplied in the `-d` flag) is currently checked out from the given branch name. |
 
