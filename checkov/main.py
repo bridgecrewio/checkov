@@ -123,7 +123,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             source = SourceTypes[BCSourceType.DISABLED]
 
         try:
-            bc_integration.setup_bridgecrew_credentials(bc_api_key=config.bc_api_key, repo_id=config.repo_id,
+            bc_integration.bc_api_key = config.bc_api_key
+            bc_integration.setup_bridgecrew_credentials(repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
                                                         skip_policy_download=config.skip_policy_download,

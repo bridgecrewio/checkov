@@ -15,6 +15,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.policies = {}
         self.platform_policy_parser = NXGraphCheckParser()
+        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
 
     def is_valid(self):
         return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_policy_download \
