@@ -13,7 +13,7 @@ class TestCredentials(unittest.TestCase):
         self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_failure(self):
-        provider_conf = {'token' :['80e54890-f282-3595-ab3d-45f9bd874987']}
+        provider_conf = {'token' :['80e54890-f282-4595-ab3d-45f9bd874987']}
         scan_result = check.scan_provider_conf(conf=provider_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
