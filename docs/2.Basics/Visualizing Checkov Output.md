@@ -62,6 +62,8 @@ To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend th
 | BC_RUN_URL | Link to the run in the CI system | https://github.com/bridgecrewio/checkov/actions/runs/525220526 |
 | BC_REPOSITORY_URL | Link to the GitHub repository | https://github.com/bridgecrewio/checkov/ |
 | BC_SOURCE | Name of CI system being integrated | githubActions |
+| BC_API_URL | URL of BC app for platform integration | https://www.bridgecrew.cloud |
+| PRISMA_API_URL | URL of Prisma app for platform integration | https://app3.prismacloud.io |
 
 ## Bridgecrew platform view
 
