@@ -10,6 +10,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 from typing_extensions import TypedDict
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -140,6 +141,7 @@ class Runner(BaseRunner):
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                bc_check_id = bc_integration.ckv_to_bc_id_mapping.get(check_id) if bc_integration.ckv_to_bc_id_mapping else None
                 if not check_id:
                     continue
                 if runner_filter.checks and check_id not in runner_filter.checks:
@@ -155,6 +157,7 @@ class Runner(BaseRunner):
                 ) or result
                 report.add_record(Record(
                     check_id=check_id,
+                    bc_check_id=bc_check_id,
                     check_name=secret.type,
                     check_result=result,
                     code_block=[(secret.line_number, line_text)],
