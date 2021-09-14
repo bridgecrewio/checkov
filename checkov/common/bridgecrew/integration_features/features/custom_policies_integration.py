@@ -15,18 +15,24 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.policies = {}
         self.platform_policy_parser = NXGraphCheckParser()
+        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
 
     def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_policy_download
+        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_policy_download \
+               and not self.integration_feature_failures
 
     def pre_scan(self):
-        self.policies = self._get_policies_from_platform()
-        for policy in self.policies:
-            converted_check = self._convert_raw_check(policy)
-            resource_types = Registry._get_resource_types(converted_check['metadata'])
-            check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
-            get_graph_checks_registry("terraform").checks.append(check)
-        logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
+        try:
+            self.policies = self._get_policies_from_platform()
+            for policy in self.policies:
+                converted_check = self._convert_raw_check(policy)
+                resource_types = Registry._get_resource_types(converted_check['metadata'])
+                check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
+                get_graph_checks_registry("terraform").checks.append(check)
+            logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
+        except Exception as e:
+            self.integration_feature_failures = True
+            logging.debug(f'{e} \nScanning without applying custom policies from the platform.', exc_info=True)
 
     @staticmethod
     def _convert_raw_check(policy):

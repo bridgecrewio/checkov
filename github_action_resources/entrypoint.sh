@@ -4,7 +4,7 @@
 # https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables
 if [[ $GITHUB_ACTIONS != "true" ]]
 then
-  checkov $@
+  checkov "$@"
   exit $?
 fi
 

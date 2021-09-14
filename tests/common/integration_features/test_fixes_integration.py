@@ -25,6 +25,9 @@ class TestFixesIntegration(unittest.TestCase):
         instance.skip_fixes = False
         self.assertFalse(fixes_integration.is_valid())
 
+        fixes_integration.integration_feature_failures = True
+        self.assertFalse(fixes_integration.is_valid())
+
 
 if __name__ == '__main__':
     unittest.main()

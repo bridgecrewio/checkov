@@ -14,6 +14,7 @@ GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"
 jsonschema = "*"
+
 [packages]
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
@@ -43,6 +44,7 @@ detect_secrets = "*"
 policyuniverse = "*"
 typing-extensions = "*"
 importlib-metadata = ">=0.12"
+cachetools = "*"
 
 [requires]
 python_version = "3.7"

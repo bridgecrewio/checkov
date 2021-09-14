@@ -376,6 +376,39 @@ class TestNSGRuleUDPAccessRestricted(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_unsupported_syntax(self):
+        hcl_res = hcl2.loads("""
+        resource "azurerm_network_security_group" "example" {
+          name = "${var.autoscaler_prefix}autoscaler-nsg"
+          location = azurerm_resource_group.rg.location
+          resource_group_name = azurerm_resource_group.rg.name
+        
+          security_rule = [for idx, rule in var.autoscaler_ssh_permit: {
+            name = "allow-${rule.name}"
+            priority = 100 + idx
+            direction = "Inbound"
+            access = "Allow"
+            protocol = "TCP"
+            source_address_prefix = rule.ip
+            source_port_range = "*"
+            destination_address_prefix = "*"
+            destination_port_range = "22"
+            description = ""
+            destination_address_prefixes = null
+            destination_application_security_group_ids = null
+            destination_port_ranges = null
+            source_address_prefixes = null
+            source_application_security_group_ids = null
+            source_port_ranges = null
+          }]
+        
+          tags = var.autoscaler_tags_nsg
+        }
+        """)
+        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()

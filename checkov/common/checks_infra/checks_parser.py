@@ -10,6 +10,8 @@ from checkov.common.checks_infra.solvers import *
 operators_to_attributes_solver_classes = {
     "equals": EqualsAttributeSolver,
     "not_equals": NotEqualsAttributeSolver,
+    "regex_match": RegexMatchAttributeSolver,
+    "not_regex_match": NotRegexMatchAttributeSolver,
     "exists": ExistsAttributeSolver,
     "any": AnyResourceSolver,
     "contains": ContainsAttributeSolver,
