@@ -142,8 +142,8 @@ class CloudformationVariableRenderer(VariableRenderer):
             values_list = values_list.split(', ')
         if isinstance(delimiter, str) and isinstance(values_list, list):
             for curr_value in values_list:
-                if 'Fn::' in curr_value or "AWS::" in curr_value or 'Ref' in curr_value:
-                    # Don't render if there are non-evaluated values
+                if isinstance(curr_value, dict):
+                    # non-evaluated values then don't render
                     return None
             evaluated_value = delimiter.join(values_list)
         return evaluated_value
