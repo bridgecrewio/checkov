@@ -1,0 +1,26 @@
+name: RegressionTests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  PrismaTest:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dschep/install-pipenv-action@v1
+      - name: Clone Terragoat - vulnerable terraform
+        run: git clone https://github.com/bridgecrewio/terragoat
+      - name: Run checkov with Primsa creds
+        env:
+          PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
+        run: |
+          pipenv run checkov -s -d terragoat --bc-api-key $PRISMA_KEY > checkov_report_prisma.txt
+          grep "prismacloud.io" checkov_report_prisma.txt
+          exit $?
