@@ -242,6 +242,9 @@ class TerraformVariableRenderer(VariableRenderer):
         )
         return new_val
 
+    def _render_variables_from_vertices(self) -> None:
+        pass
+
     def evaluate_non_rendered_values(self) -> None:
         for vertex in self.local_graph.vertices:
             changed_attributes = {}
