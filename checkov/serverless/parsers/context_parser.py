@@ -1,4 +1,4 @@
-from checkov.cloudformation.parser.node import dict_node, list_node, str_node
+from checkov.common.parsers.node import dict_node, list_node, str_node
 from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
     ENVIRONMENT_TOKEN, STACK_TAGS_TOKEN, TAGS_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
