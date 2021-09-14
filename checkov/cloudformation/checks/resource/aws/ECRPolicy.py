@@ -1,6 +1,6 @@
 import json
 
-from checkov.cloudformation.parser.node import str_node
+from checkov.common.parsers.node import str_node
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 

@@ -6,7 +6,7 @@ from checkov.cloudformation.cfn_utils import get_folder_definitions
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import dict_node
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_manager import GraphManager
 

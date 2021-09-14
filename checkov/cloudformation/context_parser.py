@@ -5,7 +5,7 @@ from functools import reduce
 from typing import List, Tuple, Optional, Union, Generator
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.cloudformation.parser.node import dict_node, str_node, list_node
+from checkov.common.parsers.node import dict_node, str_node, list_node
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.typing import _SkippedCheck
 

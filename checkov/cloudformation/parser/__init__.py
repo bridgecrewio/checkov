@@ -1,9 +1,9 @@
 import logging
-from json.decoder import JSONDecodeError
 from typing import Tuple, Optional, List, Union
 
-from checkov.cloudformation.parser import cfn_yaml, cfn_json
-from checkov.cloudformation.parser.node import dict_node
+from checkov.cloudformation.parser import cfn_yaml
+from checkov.common.parsers.json import parse as json_parse
+from checkov.common.parsers.node import dict_node
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.parser import ScannerError
 from yaml import YAMLError
@@ -33,11 +33,7 @@ def parse(filename: str) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
-                (template, template_lines) = cfn_json.load(filename)
-            except cfn_json.JSONDecodeError:
-                pass
-            except JSONDecodeError:
-                pass
+                (template, template_lines) = json_parse(filename, allow_nulls=False)
             except Exception as json_err:  # pylint: disable=W0703
                 LOGGER.error("Template %s is malformed: %s", filename, err.problem)
                 LOGGER.error("Tried to parse %s as JSON but got error: %s", filename, str(json_err))
