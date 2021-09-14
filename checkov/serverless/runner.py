@@ -149,7 +149,10 @@ class Runner(BaseRunner):
                             # "Enriching" copies things like "environment" and "stackTags" down into the
                             # function data from the provider block since logically that's what serverless
                             # does. This allows checks to see what the complete data would be.
-                            sls_context_parser.enrich_function_with_provider(item_name)
+                            try:
+                                sls_context_parser.enrich_function_with_provider(item_name)
+                            except Exception as e:
+                                logging.debug(f'{e} \nContinuing without enrichment for {item_name}.', exc_info=True)
                         entity = EntityDetails(sls_context_parser.provider_type, item_content)
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
