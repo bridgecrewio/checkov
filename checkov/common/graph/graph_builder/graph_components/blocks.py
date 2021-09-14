@@ -98,14 +98,13 @@ class Block:
             self, attribute_key: str, attribute_value: Any, change_origin_id: Optional[int],
             previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]
     ) -> None:
-        if change_origin_id is not None and attribute_at_dest is not None and \
-                (not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id):
+        if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) == 1:
             self.attributes[attribute_key] = attribute_value
-            if change_origin_id is not None and attribute_at_dest is not None:
+            if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                 self.changed_attributes[attribute_key] = previous_breadcrumbs
             return
         for i in range(len(attribute_key_parts)):
@@ -113,8 +112,17 @@ class Block:
             if key.find(".") > -1:
                 self.attributes[key] = attribute_value
                 attribute_value = {attribute_key_parts[len(attribute_key_parts) - 1 - i]: attribute_value}
-                if change_origin_id is not None and attribute_at_dest is not None:
+                if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
+
+    @staticmethod
+    def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
+            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]):
+        return not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id
+
+    @staticmethod
+    def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]):
+        return True
 
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}

@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
@@ -6,14 +6,14 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 class CloudformationBlock(Block):
     def __init__(
-        self,
-        name: str,
-        config: Dict[str, Any],
-        path: str,
-        block_type: str,
-        attributes: Dict[str, Any],
-        id: str = "",
-        source: str = "",
+            self,
+            name: str,
+            config: Dict[str, Any],
+            path: str,
+            block_type: str,
+            attributes: Dict[str, Any],
+            id: str = "",
+            source: str = "",
     ) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
@@ -25,10 +25,11 @@ class CloudformationBlock(Block):
         super().__init__(name, config, path, block_type, attributes, id, source)
 
     def update_attribute(
-        self, attribute_key: str, attribute_value: Any, change_origin_id: int,
+            self, attribute_key: str, attribute_value: Any, change_origin_id: int,
             previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: str
     ) -> None:
-        super().update_attribute(attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest)
+        super().update_attribute(attribute_key, attribute_value, change_origin_id, previous_breadcrumbs,
+                                 attribute_at_dest)
 
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) > 1:
@@ -42,3 +43,14 @@ class CloudformationBlock(Block):
             if isinstance(obj_to_update, list):
                 key_to_update = int(key_to_update)
             obj_to_update[key_to_update] = attribute_value
+
+    @staticmethod
+    def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
+                                         previous_breadcrumbs: List[BreadcrumbMetadata],
+                                         attribute_at_dest: Optional[str]):
+        return change_origin_id is not None and attribute_at_dest is not None and \
+               (not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id)
+
+    @staticmethod
+    def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]):
+        return change_origin_id is not None and attribute_at_dest is not None
