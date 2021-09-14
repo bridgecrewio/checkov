@@ -7,7 +7,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
-from checkov.arm.parser.node import dict_node
+from checkov.common.parsers.node import dict_node
 from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
