@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, Optional
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
@@ -8,14 +8,14 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 class Block:
     def __init__(
-        self,
-        name: str,
-        config: Dict[str, Any],
-        path: str,
-        block_type: str,
-        attributes: Dict[str, Any],
-        id: str = "",
-        source: str = "",
+            self,
+            name: str,
+            config: Dict[str, Any],
+            path: str,
+            block_type: str,
+            attributes: Dict[str, Any],
+            id: str = "",
+            source: str = "",
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -41,7 +41,9 @@ class Block:
         attributes_to_add = {}
         for attribute_key in self.attributes:
             attribute_value = self.attributes[attribute_key]
-            if isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)):
+            if isinstance(attribute_value, dict) or (
+                    isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0],
+                                                                                                  dict)):
                 inner_attributes = get_inner_attributes(attribute_key, attribute_value)
                 attributes_to_add.update(inner_attributes)
         return attributes_to_add
@@ -93,54 +95,26 @@ class Block:
         return attributes_dict.get(CustomAttributes.HASH, "")
 
     def update_attribute(
-        self, attribute_key: str, attribute_value: Any, change_origin_id: int,
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: str
+            self, attribute_key: str, attribute_value: Any, change_origin_id: Optional[int],
+            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]
     ) -> None:
-        if not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id:
+        if change_origin_id is not None and attribute_at_dest is not None and \
+                (not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
-        self.update_inner_attribute(attribute_key, self.attributes, attribute_value)
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) == 1:
             self.attributes[attribute_key] = attribute_value
-            self.changed_attributes[attribute_key] = previous_breadcrumbs
+            if change_origin_id is not None and attribute_at_dest is not None:
+                self.changed_attributes[attribute_key] = previous_breadcrumbs
             return
         for i in range(len(attribute_key_parts)):
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 self.attributes[key] = attribute_value
                 attribute_value = {attribute_key_parts[len(attribute_key_parts) - 1 - i]: attribute_value}
-                self.changed_attributes[key] = previous_breadcrumbs
-
-    def update_inner_attribute(
-        self, attribute_key: str, nested_attributes: Union[List[Any], Dict[str, Any]], value_to_update: Any
-    ) -> None:
-        split_key = attribute_key.split(".")
-        i = 1
-        curr_key = ".".join(split_key[0:i])
-        if isinstance(nested_attributes, list):
-            if curr_key.isnumeric():
-                curr_key_int = int(curr_key)
-                if curr_key_int < len(nested_attributes):
-                    if not isinstance(nested_attributes[curr_key_int], dict):
-                        nested_attributes[curr_key_int] = value_to_update
-                    else:
-                        self.update_inner_attribute(
-                            ".".join(split_key[i:]), nested_attributes[curr_key_int], value_to_update
-                        )
-            else:
-                for inner in nested_attributes:
-                    self.update_inner_attribute(curr_key, inner, value_to_update)
-        elif isinstance(nested_attributes, dict):
-            while curr_key not in nested_attributes and i <= len(split_key):
-                i += 1
-                curr_key = ".".join(split_key[0:i])
-            if attribute_key in nested_attributes.keys():
-                nested_attributes[attribute_key] = value_to_update
-            if len(split_key) == 1 and len(curr_key) > 0:
-                nested_attributes[curr_key] = value_to_update
-            elif curr_key in nested_attributes.keys():
-                self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+                if change_origin_id is not None and attribute_at_dest is not None:
+                    self.changed_attributes[key] = previous_breadcrumbs
 
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
@@ -164,7 +138,8 @@ def get_inner_attributes(attribute_key: str, attribute_value: Union[str, List[st
 
     if isinstance(attribute_value, (dict, list)):
         inner_attributes[attribute_key] = [None] * len(attribute_value) if isinstance(attribute_value, list) else {}
-        iterator: Union[range, List[str]] = range(len(attribute_value)) if isinstance(attribute_value, list) else list(attribute_value.keys())
+        iterator: Union[range, List[str]] = range(len(attribute_value)) if isinstance(attribute_value, list) else list(
+            attribute_value.keys())
         for key in iterator:
             if key != "":
                 inner_key = f"{attribute_key}.{key}"

@@ -1,10 +1,10 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
+from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
@@ -13,18 +13,27 @@ if TYPE_CHECKING:
 
 
 class CloudformationVariableRenderer(VariableRenderer):
-    EVALUATION_CFN_FUNCTIONS = (
+    EDGE_EVALUATION_CFN_FUNCTIONS = (
         IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.GET_ATT, IntrinsicFunctions.SUB)
+    VERTEX_EVALUATION_CFN_FUNCTIONS = (IntrinsicFunctions.SELECT, IntrinsicFunctions.JOIN)
 
     def __init__(self, local_graph: "CloudformationLocalGraph") -> None:
         super().__init__(local_graph)
-        self.evaluation_methods = {
+        self.edge_evaluation_methods = {
             IntrinsicFunctions.REF: self._evaluate_ref_connection,
             IntrinsicFunctions.FIND_IN_MAP: self._evaluate_findinmap_connection,
             IntrinsicFunctions.GET_ATT: self._evaluate_getatt_connection,
             # ConditionFunctions.IF: self._evaluate_if_connection,
             IntrinsicFunctions.SUB: self._evaluate_sub_connection
         }
+        self.vertex_evaluation_methods = {
+            IntrinsicFunctions.SELECT: self._evaluate_select_function,
+            IntrinsicFunctions.JOIN: self._evaluate_join_function
+        }
+
+    """
+     This method will evaluate Ref, Fn::FindInMap, Fn::GetAtt, Fn::Sub
+    """
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         edge = edge_list[0]
@@ -42,7 +51,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         if referenced_vertices:
             # Ref, GetAtt, FindInMap, If, Sub connections
             cfn_evaluation_function = None
-            for curr_evaluation_function in self.EVALUATION_CFN_FUNCTIONS:
+            for curr_evaluation_function in self.EDGE_EVALUATION_CFN_FUNCTIONS:
                 if curr_evaluation_function in val_to_eval:
                     cfn_evaluation_function = curr_evaluation_function
                     break
@@ -51,7 +60,7 @@ class CloudformationVariableRenderer(VariableRenderer):
 
                 for edge in edge_list:
                     dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-                    evaluated_value, attribute_at_dest = self.evaluation_methods[cfn_evaluation_function](val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
+                    evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
                     if evaluated_value and evaluated_value != original_value:
                         val_to_eval[cfn_evaluation_function] = evaluated_value
                         self.local_graph.update_vertex_attribute(
@@ -61,6 +70,83 @@ class CloudformationVariableRenderer(VariableRenderer):
                             change_origin_id=edge.dest,
                             attribute_at_dest=attribute_at_dest
                         )
+
+    """
+        This method will evaluate Fn::Select, Fn::Join
+    """
+
+    def _render_variables_from_vertices(self) -> None:
+        for vertex in self.local_graph.vertices:
+            for attr_key, attr_value in vertex.attributes.items():
+                cfn_evaluation_function = None
+                for curr_evaluation_function in self.VERTEX_EVALUATION_CFN_FUNCTIONS:
+                    # Iterating on Fn::Join, Fn::Select and checking if they are
+                    # in the current attribute value
+                    if isinstance(attr_value, dict) and curr_evaluation_function in attr_value:
+                        cfn_evaluation_function = curr_evaluation_function
+                        break
+                if cfn_evaluation_function:
+                    # Found Fn::Join or Fn::Select to evaluate
+                    val_to_eval = attr_value[cfn_evaluation_function]
+                    evaluated_value = self.vertex_evaluation_methods[cfn_evaluation_function](val_to_eval)
+                    if evaluated_value is not None:
+                        vertex.update_attribute(
+                            attribute_key=attr_key, attribute_value=evaluated_value, change_origin_id=None,
+                            previous_breadcrumbs=[], attribute_at_dest=None
+                        )
+
+    """
+    Valid value for the Select function is:
+    [index, [item1, item2, ...]]
+    while index could an int or a string representing an int
+    and the list could be a list or a string representing a list
+    """
+    @staticmethod
+    def _evaluate_select_function(value: str) -> Optional[str]:
+        evaluated_value = None
+        if len(value) != 2:
+            return None
+        idx_to_select = value[0]
+        selection_list = value[1]
+        if not isinstance(selection_list, (str, list)):
+            return None
+        if isinstance(selection_list, str):
+            selection_list = selection_list.split(', ')
+        # convert idx_to_select to int if possible cause it might me a str_node
+        if isinstance(idx_to_select, str) and str.isdecimal(idx_to_select):
+            idx_to_select = int(idx_to_select)
+        if isinstance(idx_to_select, int) and isinstance(selection_list, list) \
+                and 0 <= idx_to_select < len(selection_list):
+            evaluated_value = selection_list[idx_to_select]
+            if 'Fn::' in evaluated_value or "AWS::" in evaluated_value or 'Ref' in evaluated_value:
+                # Don't render if a non-evaluated value has been selected
+                return None
+        return evaluated_value
+
+    """
+        Valid value for the Join function is:
+        [ delimiter, [ comma-delimited list of values ] ]
+        the list could be a list or a string representing a list
+        """
+
+    @staticmethod
+    def _evaluate_join_function(value: str) -> Optional[str]:
+        evaluated_value = None
+        if len(value) != 2:
+            return None
+        delimiter = value[0]
+        values_list = value[1]
+        if not isinstance(values_list, (str, list)):
+            return None
+        if isinstance(values_list, str):
+            values_list = values_list.split(', ')
+        if isinstance(delimiter, str) and isinstance(values_list, list):
+            for curr_value in values_list:
+                if 'Fn::' in curr_value or "AWS::" in curr_value or 'Ref' in curr_value:
+                    # Don't render if there are non-evaluated values
+                    return None
+            evaluated_value = delimiter.join(values_list)
+        return evaluated_value
 
     @staticmethod
     def _evaluate_ref_connection(value: str, dest_vertex_attributes: Dict[str, Any]) -> (Optional[str], Optional[str]):

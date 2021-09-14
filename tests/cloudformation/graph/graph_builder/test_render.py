@@ -3,6 +3,7 @@ from unittest.case import TestCase
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -21,7 +22,7 @@ class TestRenderer(TestCase):
         self.validate_render_ref(json_test_dir, 'json')
 
     def validate_render_ref(self, test_dir: str, file_ext: str):
-        graph_manager = CloudformationGraphManager('acme', ['acme'])
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
         db_name_default_value = "db1"
@@ -59,7 +60,7 @@ class TestRenderer(TestCase):
         self.validate_render_findinmap(json_test_dir, 'json')
 
     def validate_render_findinmap(self, test_dir: str, file_ext: str):
-        graph_manager = CloudformationGraphManager('acme', ['acme'])
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
         region_map_expected_ami_value = "ami-0ff8a91507f77f867"
@@ -85,7 +86,7 @@ class TestRenderer(TestCase):
         self.validate_render_getatt(json_test_dir, 'json')
 
     def validate_render_getatt(self, test_dir: str, file_ext: str):
-        graph_manager = CloudformationGraphManager('acme', ['acme'])
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
         web_vpc_expected_cidr_block = "172.16.0.0/16"
@@ -114,7 +115,7 @@ class TestRenderer(TestCase):
         self.validate_render_sub(json_test_dir, 'json')
 
     def validate_render_sub(self, test_dir: str, file_ext: str):
-        graph_manager = CloudformationGraphManager('acme', ['acme'])
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
         company_name_expected_value = "acme"
@@ -168,7 +169,7 @@ class TestRenderer(TestCase):
         self.validate_render_subsequent_evals(json_test_dir, 'json')
 
     def validate_render_subsequent_evals(self, test_dir: str, file_ext: str):
-        graph_manager = CloudformationGraphManager('acme', ['acme'])
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
 
         cidr_block_expected_expected_value = "172.16.0.0/16"
@@ -189,6 +190,55 @@ class TestRenderer(TestCase):
         self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
         self.compare_vertex_breadcrumbs(local_graph, my_sg_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::SecurityGroup.MySG')
 
+    def test_render_select(self):
+        relative_path = './resources/variable_rendering/render_select/'
+        yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
+        json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
+        self.validate_render_select(yaml_test_dir, 'yaml')
+        self.validate_render_select(json_test_dir, 'json')
+
+    def validate_render_select(self, test_dir: str, file_ext: str):
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
+
+        subnet0_expected_attributes = {'CidrBlock': '10.0.48.0/24'}
+        grapes_select_expected_attributes = {'Value': 'grapes'}
+        out_of_bound_select_expected_attributes = {'Value.Fn::Select': ['7', ['apples', 'grapes', 'oranges', 'mangoes']]}
+
+        self.compare_vertex_attributes(local_graph, subnet0_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::Subnet.Subnet0')
+        self.compare_vertex_attributes(local_graph, grapes_select_expected_attributes, BlockType.OUTPUTS, 'GrapesSelect')
+        self.compare_vertex_attributes(local_graph, out_of_bound_select_expected_attributes, BlockType.OUTPUTS, 'OutOfBoundSelect')
+
+        subnet0_expected_breadcrumbs = {'CidrBlock.Fn::Select.1': [{'type': BlockType.PARAMETERS, 'name': 'DbSubnetIpBlocks', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}], 'CidrBlock.Fn::Select': [{'type': BlockType.PARAMETERS, 'name': 'DbSubnetIpBlocks', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        grapes_select_expected_breadcrumbs = {}
+        out_of_bound_select_expected_breadcrumbs = {}
+
+        self.compare_vertex_breadcrumbs(local_graph, subnet0_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::Subnet.Subnet0')
+        self.compare_vertex_breadcrumbs(local_graph, grapes_select_expected_breadcrumbs, BlockType.OUTPUTS, 'GrapesSelect')
+        self.compare_vertex_breadcrumbs(local_graph, out_of_bound_select_expected_breadcrumbs, BlockType.OUTPUTS, 'OutOfBoundSelect')
+
+    def test_render_join(self):
+        relative_path = './resources/variable_rendering/render_join/'
+        yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
+        json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
+        self.validate_render_join(yaml_test_dir, 'yaml')
+        self.validate_render_join(json_test_dir, 'json')
+
+    def validate_render_join(self, test_dir: str, file_ext: str):
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
+
+        s3bucket1_expected_attributes = {'BucketName': 'a:b:c'}
+        s3bucket2_expected_attributes = {'BucketName': 'my_bucket_name_test'}
+
+        self.compare_vertex_attributes(local_graph, s3bucket1_expected_attributes, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket1')
+        self.compare_vertex_attributes(local_graph, s3bucket2_expected_attributes, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket2')
+
+        s3bucket1_expected_breadcrumbs = {}
+        s3bucket2_expected_breadcrumbs = {'BucketName.Fn::Join.1.0': [{'type': BlockType.PARAMETERS, 'name': 'BucketName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}], 'BucketName.Fn::Join.1': [{'type': BlockType.PARAMETERS, 'name': 'BucketName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}], 'BucketName.Fn::Join': [{'type': BlockType.PARAMETERS, 'name': 'BucketName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+
+        self.compare_vertex_breadcrumbs(local_graph, s3bucket1_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket1')
+        self.compare_vertex_breadcrumbs(local_graph, s3bucket2_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket2')
 
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
@@ -201,8 +251,9 @@ class TestRenderer(TestCase):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
         vertex_breadcrumbs = vertex.breadcrumbs
         self.assertEqual(len(vertex_breadcrumbs), len(expected_breadcrumbs))
-        for vertex_id, expected_value in expected_breadcrumbs.items():
-            actual_value = vertex_breadcrumbs.get(vertex_id)
-            self.assertEqual(expected_value, actual_value, f'actual breadcrumbs of vertex {vertex.id} different from'
-                                                           f' expected. expected = {expected_breadcrumbs}'
-                                                           f' and actual = {actual_value}')
+        if len(expected_breadcrumbs) > 0:
+            for vertex_id, expected_value in expected_breadcrumbs.items():
+                actual_value = vertex_breadcrumbs.get(vertex_id)
+                self.assertEqual(expected_value, actual_value, f'actual breadcrumbs of vertex {vertex.id} different from'
+                                                               f' expected. expected = {expected_breadcrumbs}'
+                                                               f' and actual = {actual_value}')
