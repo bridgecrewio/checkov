@@ -116,6 +116,16 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_context_enrichment_exception_handling(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "serverless.yml")
+        runner = Runner()
+        try:
+            runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                       runner_filter=RunnerFilter(framework='serverless'))
+        except ValueError as e:
+            self.fail(f"Serverless context enrichment failed with exception:\n{e}")
+
     def tearDown(self):
         pass
 

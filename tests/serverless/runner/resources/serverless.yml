@@ -5,8 +5,7 @@ service:
 provider:
   name: aws
   runtime: nodejs12.x
-  environment:
-    SOME_PROVIDER_VAR: spv_value
+  environment: ${self:custom.environment}
   stackTags:
     MY_TAG: tag_value
 
@@ -20,6 +19,7 @@ package:
 custom:
   my_custom_var: ${self:custom.another_custom_var}
   another_custom_var: sourced-in-value
+  environment: prod
 
 layers:
   hello:
@@ -29,6 +29,8 @@ layers:
 functions:
   myFunction:
     handler: myfunction.invoke
+    environment:
+      VARIABLE: ${self:custom.my_custom_var}
 
 resources:
   Resources:
