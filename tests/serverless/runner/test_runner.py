@@ -118,7 +118,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_context_enrichment_exception_handling(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "serverless.yml")
+        scan_file_path = os.path.join(current_dir, "resources", "serverless.test.yml")
         runner = Runner()
         try:
             runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
