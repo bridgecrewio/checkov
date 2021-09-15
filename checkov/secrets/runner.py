@@ -177,13 +177,12 @@ class Runner(BaseRunner):
         check_id: str,
         bc_check_id: str,
         secret: PotentialSecret,
-        skipped_checks: List[str],
-        output_bc_ids: bool = False
+        skipped_checks: List[str]
     ) -> Optional[_CheckResult]:
         if (check_id in skipped_checks or bc_check_id in skipped_checks) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
-                "suppress_comment": f"Secret scan {bc_check_id if output_bc_ids else check_id} is skipped"
+                "suppress_comment": f"Secret scan {check_id} is skipped"
             }
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
