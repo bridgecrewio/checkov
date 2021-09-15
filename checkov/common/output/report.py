@@ -227,7 +227,7 @@ class Report:
                 "locations": [
                     {
                         "physicalLocation": {
-                            "artifactLocation": {"uri": record.file_path},
+                            "artifactLocation": {"uri": record.file_path.lstrip("/")},
                             "region": {
                                 "startLine": int(record.file_line_range[0]),
                                 "endLine": int(record.file_line_range[1]),
