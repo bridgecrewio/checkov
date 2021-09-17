@@ -29,7 +29,7 @@ def parse(filename: str) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple
     except UnicodeDecodeError as err:
         LOGGER.error("Cannot read file contents: %s", filename)
     except cfn_yaml.CfnParseError as err:
-        pass
+        LOGGER.error("Parsing error", exc_info=True)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
