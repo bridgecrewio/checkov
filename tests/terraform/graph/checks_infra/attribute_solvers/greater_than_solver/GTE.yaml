@@ -1,0 +1,9 @@
+metadata:
+  id: "GTE"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_s3_bucket
+  attribute: bucket
+  operator: greater_than_or_equal
+  value: ccc
