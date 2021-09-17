@@ -51,9 +51,10 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(self.check_type)
+        parsing_errors = {}
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
+            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
@@ -76,6 +77,7 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        report.add_parsing_errors(list(parsing_errors.keys()))
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
