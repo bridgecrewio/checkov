@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  myDistribution1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: 'true'
+          MinimumProtocolVersion: TLSv1.2_2019
+          # SslSupportMethod: sni-only
+          SslSupportMethod: static-ip
+          SslSupportMethod: vip
