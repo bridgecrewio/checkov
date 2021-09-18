@@ -90,7 +90,6 @@ class Runner(BaseRunner):
                             parsing_errors.update(file_parsing_errors)
                             continue
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                print(1)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
