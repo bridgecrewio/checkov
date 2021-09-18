@@ -49,7 +49,6 @@ class Report:
             "skipped": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "resource_count": len(self.resources),
-            "resources": list(self.resources),
             "checkov_version": version,
         }
 
