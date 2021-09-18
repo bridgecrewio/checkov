@@ -7,6 +7,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
@@ -62,6 +63,9 @@ class Runner(BaseRunner):
 
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            for vertex in local_graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    report.add_resource(f'{vertex.path}:{vertex.id}')
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
