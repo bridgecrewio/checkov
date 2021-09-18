@@ -40,8 +40,9 @@ class Module:
             dependencies = [[]]
         else:
             module_dependency_num = self.dep_index_mapping.get(block.path, "")
-        for dep_trail in dependencies:
-            block = deepcopy(block)
+        for i, dep_trail in enumerate(dependencies):
+            if i > 0:
+                block = deepcopy(block)
             block.module_dependency = unify_dependency_path(dep_trail)
             block.module_dependency_num = module_dependency_num
             self.blocks.append(block)
