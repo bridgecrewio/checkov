@@ -329,12 +329,6 @@ class Report:
     def print_json(self) -> None:
         print(self.get_json())
 
-    def _count_resources(self) -> int:
-        unique_resources = set()
-        for record in self.passed_checks + self.failed_checks:
-            unique_resources.add(record.file_path + "." + record.resource)
-        return len(unique_resources)
-
     @staticmethod
     def enrich_plan_report(
         report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
