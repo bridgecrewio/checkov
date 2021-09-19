@@ -15,7 +15,7 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
         if properties is not None:
             env = properties.get('Environment')
             if env is not None:
-                if env.get('Variables') and not properties.get('KmsKeyArn')
+                if env.get('Variables') and not properties.get('KmsKeyArn'):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 		
