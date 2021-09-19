@@ -115,7 +115,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             return None
         if isinstance(selection_list, str):
             selection_list = selection_list.split(', ')
-        # convert idx_to_select to int if possible cause it might me a str_node
+        # convert idx_to_select to int if possible cause it might be a str_node
         if isinstance(idx_to_select, str) and str.isdecimal(idx_to_select):
             idx_to_select = int(idx_to_select)
         if isinstance(idx_to_select, int) and isinstance(selection_list, list) \
