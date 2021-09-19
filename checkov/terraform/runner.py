@@ -233,12 +233,12 @@ class Runner(BaseRunner):
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
                     try:
-                        caller_context = dpath.get(definition_context[abs_caller_file],
-                                                   # HACK ALERT: module data is currently double-nested in
-                                                   #             definition context. If fixed, remove the
-                                                   #             addition of "module." at the beginning.
-                                                   "module." + referrer_id,
-                                                   separator=".")
+                        caller_context = definition_context[abs_caller_file]
+                        # HACK ALERT: module data is currently double-nested in
+                        #             definition context. If fixed, remove the
+                        #             addition of "module." at the beginning.
+                        for part in f"module.{referrer_id}".split("."):
+                            caller_context = caller_context[part]
                     except KeyError:
                         logging.debug("Unable to find caller context for: %s", abs_caller_file)
                         caller_context = None
