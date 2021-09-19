@@ -104,20 +104,19 @@ jobs:
             echo "# $i resource scans (auto generated)" >> "$scansdoc"
             echo "" >> "$scansdoc"
             pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
-            git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
-
+            git add $scansdoc
           done
 
           #add cloudformation scans to serverless
           export scansdoc="docs/5.Policy Index/serverless.md"
           pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
-          git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
+          git add $scansdoc
+          git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
 
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          # git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
           git push origin
           git tag $new_tag
