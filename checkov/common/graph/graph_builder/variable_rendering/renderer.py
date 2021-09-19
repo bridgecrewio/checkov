@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import TYPE_CHECKING, List, Dict, Any
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, List, Dict, Any
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded
@@ -21,6 +21,10 @@ class VariableRenderer(ABC):
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
 
     def render_variables_from_local_graph(self) -> None:
+        self._render_variables_from_edges()
+        self._render_variables_from_vertices()
+
+    def _render_variables_from_edges(self) -> None:
         # find vertices with out-degree = 0 and in-degree > 0
         end_vertices_indexes = self.local_graph.get_vertices_with_degrees_conditions(
             out_degree_cond=lambda degree: degree == 0, in_degree_cond=lambda degree: degree > 0
@@ -69,6 +73,10 @@ class VariableRenderer(ABC):
         logging.info("done evaluating edges")
         self.evaluate_non_rendered_values()
         logging.info("done evaluate_non_rendered_values")
+
+    @abstractmethod
+    def _render_variables_from_vertices(self) -> None:
+        pass
 
     def _edge_evaluation_task(self, edges: List[List[Edge]]) -> List[Edge]:
         inner_edges = edges[0]
