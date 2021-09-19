@@ -32,14 +32,14 @@ class CloudformationBlock(Block):
                                  attribute_at_dest)
 
         attribute_key_parts = attribute_key.split(".")
-        if len(attribute_key_parts) > 1:
+        if attribute_key_parts:
             obj_to_update = self.attributes
-            for key in attribute_key_parts[:-1]:
+            key_to_update = attribute_key_parts.pop()
+            for key in attribute_key_parts:
                 if isinstance(obj_to_update, list):
                     key = int(key)
                 obj_to_update = obj_to_update[key]
 
-            key_to_update = attribute_key_parts[-1]
             if isinstance(obj_to_update, list):
                 key_to_update = int(key_to_update)
             obj_to_update[key_to_update] = attribute_value

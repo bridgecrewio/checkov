@@ -60,7 +60,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
                 for edge in edge_list:
                     dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-                    evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
+                    evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](
+                        val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
                     if evaluated_value and evaluated_value != original_value:
                         val_to_eval[cfn_evaluation_function] = evaluated_value
                         self.local_graph.update_vertex_attribute(
@@ -78,13 +79,14 @@ class CloudformationVariableRenderer(VariableRenderer):
     def _render_variables_from_vertices(self) -> None:
         for vertex in self.local_graph.vertices:
             for attr_key, attr_value in vertex.attributes.items():
-                cfn_evaluation_function = None
-                for curr_evaluation_function in self.VERTEX_EVALUATION_CFN_FUNCTIONS:
-                    # Iterating on Fn::Join, Fn::Select and checking if they are
-                    # in the current attribute value
-                    if isinstance(attr_value, dict) and curr_evaluation_function in attr_value:
-                        cfn_evaluation_function = curr_evaluation_function
-                        break
+                # Iterating on Fn::Join, Fn::Select and checking if they are
+                # in the current attribute value
+                cfn_evaluation_function = next(
+                    (curr_evaluation_function
+                     for curr_evaluation_function in self.VERTEX_EVALUATION_CFN_FUNCTIONS
+                     if isinstance(attr_value, dict) and curr_evaluation_function in attr_value),
+                    None
+                )
                 if cfn_evaluation_function:
                     # Found Fn::Join or Fn::Select to evaluate
                     val_to_eval = attr_value[cfn_evaluation_function]
@@ -101,6 +103,7 @@ class CloudformationVariableRenderer(VariableRenderer):
     while index could an int or a string representing an int
     and the list could be a list or a string representing a list
     """
+
     @staticmethod
     def _evaluate_select_function(value: str) -> Optional[str]:
         evaluated_value = None
@@ -154,15 +157,16 @@ class CloudformationVariableRenderer(VariableRenderer):
         attribute_at_dest = 'Default'
         evaluated_value = dest_vertex_attributes.get(attribute_at_dest)
         if (
-            evaluated_value and
-            value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and
-            dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS
+                evaluated_value and
+                value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and
+                dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS
         ):
             return str(evaluated_value), attribute_at_dest
         return None, None
 
     @staticmethod
-    def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (Optional[str], Optional[str]):
+    def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
+            Optional[str], Optional[str]):
         # value = [ "MapName", "TopLevelKey", "SecondLevelKey"]
         if isinstance(value, list) and len(value) == 3:
             map_name = value[0]
@@ -180,14 +184,16 @@ class CloudformationVariableRenderer(VariableRenderer):
         return None, None
 
     @staticmethod
-    def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (Optional[str], Optional[str]):
+    def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
+            Optional[str], Optional[str]):
         # value = [ "logicalNameOfResource", "attributeName" ]
         if isinstance(value, list) and len(value) == 2:
             resource_name = value[0]
             attribute_name = value[1]
             dest_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME).split('.')[-1]
             attribute_at_dest = attribute_name
-            evaluated_value = dest_vertex_attributes.get(attribute_at_dest)  # we extract only build time atts, not runtime
+            evaluated_value = dest_vertex_attributes.get(
+                attribute_at_dest)  # we extract only build time atts, not runtime
 
             if evaluated_value and \
                     all(isinstance(element, str) for element in value) and \
@@ -197,7 +203,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         return None, None
 
-    def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> (Optional[str], Optional[str]):
+    def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> (
+            Optional[str], Optional[str]):
         if isinstance(value, list):
             # TODO: Render values of list type
             return None, None
@@ -210,8 +217,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         if block_type == BlockType.RESOURCE:
             block_name = block_name.split('.')[-1]
 
-        vars_set = set(find_all_interpolations(value)) # a list of parameters and resources.at.attribute
-        vars_list = [var for var in vars_set if block_name in var] # get only relevant interpolations
+        vars_set = set(find_all_interpolations(value))  # a list of parameters and resources.at.attribute
+        vars_list = [var for var in vars_set if block_name in var]  # get only relevant interpolations
 
         if block_type == BlockType.PARAMETERS:
             block_evaluated_value, block_attribute = self._evaluate_ref_connection(block_name, dest_vertex_attributes)
@@ -222,7 +229,8 @@ class CloudformationVariableRenderer(VariableRenderer):
         elif block_type == BlockType.RESOURCE and block_name:
             for var in vars_list:
                 split_var = var.split('.')
-                block_evaluated_value, block_attribute = self._evaluate_getatt_connection(split_var, dest_vertex_attributes)
+                block_evaluated_value, block_attribute = self._evaluate_getatt_connection(split_var,
+                                                                                          dest_vertex_attributes)
                 if block_evaluated_value:
                     evaluated_value = value.replace(f'${{{var}}}', block_evaluated_value)
                     attribute_at_dest = block_attribute
@@ -274,7 +282,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         updated_resources_blocks_name_map = {}
         for resource_name, blocks_list in resources_blocks_name_map.items():
-            shortened_resource_name = resource_name.split('.')[-1]  # Trims AWS::X::Y.ResourceName and leaves us with ResoruceName
+            shortened_resource_name = resource_name.split('.')[
+                -1]  # Trims AWS::X::Y.ResourceName and leaves us with ResoruceName
             updated_resources_blocks_name_map[shortened_resource_name] = blocks_list
         vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
