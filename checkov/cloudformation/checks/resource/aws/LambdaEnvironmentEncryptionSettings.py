@@ -11,25 +11,12 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        env_vars_in_use = False
-        kms_in_use = False
-
         properties = conf.get('Properties')
         if properties is not None:
-            env_config = properties.get('Environment')
-            kms_config = properties.get('KmsKeyArn')
-
-            if env_config is not None:
-                env_vars_config = env_config.get('Variables', [])
-                if len(env_vars_config) > 0:
-                    env_vars_in_use = True
-
-            if kms_config is not None:
-                kms_in_use = True
-
-        if env_vars_in_use and not kms_in_use:
-            return CheckResult.FAILED
-            
+            env = properties.get('Environment')
+            if env is not None:
+                if env.get('Variables') and not properties.get('KmsKeyArn')
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 		
 
