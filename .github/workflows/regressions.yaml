@@ -19,6 +19,8 @@ jobs:
       - uses: dschep/install-pipenv-action@v1
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
+      - name: Get IP
+        run: curl https://ifconfig.co/
       - name: Test curl
         env:
           PRISMA_USER: ${{ secrets.PRISMA_USER }}
