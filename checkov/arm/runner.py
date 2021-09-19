@@ -87,6 +87,7 @@ class Runner(BaseRunner):
 
                     for resource in definitions[arm_file]['resources']:
                         resource_id = arm_context_parser.extract_arm_resource_id(resource)
+                        report.add_resource(f'{arm_file}:{resource_id}')
                         resource_name = arm_context_parser.extract_arm_resource_name(resource)
                         entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(resource)
                         if entity_lines_range and entity_code_lines:

@@ -144,7 +144,7 @@ class Runner(BaseRunner):
                 bc_check_id = bc_integration.ckv_to_bc_id_mapping.get(check_id) if bc_integration.ckv_to_bc_id_mapping else None
                 if not check_id:
                     continue
-                if runner_filter.checks and check_id not in runner_filter.checks:
+                if runner_filter.checks and (check_id not in runner_filter.checks and bc_check_id not in runner_filter.checks):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -152,9 +152,11 @@ class Runner(BaseRunner):
                     continue
                 result = self.search_for_suppression(
                     check_id=check_id,
+                    bc_check_id=bc_check_id,
                     secret=secret,
                     skipped_checks=runner_filter.skip_checks,
                 ) or result
+                report.add_resource(f'{secret.filename}:{secret.secret_hash}')
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
@@ -174,10 +176,11 @@ class Runner(BaseRunner):
     @staticmethod
     def search_for_suppression(
         check_id: str,
+        bc_check_id: str,
         secret: PotentialSecret,
         skipped_checks: List[str]
     ) -> Optional[_CheckResult]:
-        if check_id in skipped_checks and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if (check_id in skipped_checks or bc_check_id in skipped_checks) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"
@@ -186,7 +189,7 @@ class Runner(BaseRunner):
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
             lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
-            if skip_search and skip_search.group(2) == check_id:
+            if skip_search and (skip_search.group(2) == check_id or skip_search.group(2) == bc_check_id):
                 return {
                     "result": CheckResult.SKIPPED,
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"

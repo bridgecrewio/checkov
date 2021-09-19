@@ -116,6 +116,16 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_provider_function_att_type_mismatch(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
+        file_abs_path = os.path.abspath(scan_file_path)
+
+        report = runner.run(files=[file_abs_path], runner_filter=RunnerFilter(framework='serverless'), root_folder="")
+        self.assertEqual(0, len(report.parsing_errors))
+        self.assertLess(0, len(report.passed_checks + report.failed_checks))
+
     def tearDown(self):
         pass
 

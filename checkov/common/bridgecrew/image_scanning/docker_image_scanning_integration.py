@@ -23,7 +23,7 @@ class DockerImageScanningIntegration:
         os_type = platform.system().lower()
         headers = merge_dicts(
             get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {'Authorization': self.get_bc_api_key}
+            {'Authorization': self.get_bc_api_key()}
         )
         response = requests.request('GET', f"{self.docker_image_scanning_base_url}/twistcli/download?os={os_type}", headers=headers)
         open(cli_file_name, 'wb').write(response.content)
@@ -34,7 +34,7 @@ class DockerImageScanningIntegration:
     def report_results(self, docker_image_name, dockerfile_path, dockerfile_content, twistcli_scan_result):
         headers = merge_dicts(
             get_default_post_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {'Authorization': self.get_bc_api_key}
+            {'Authorization': self.get_bc_api_key()}
         )
         vulnerabilities = list(map(lambda x: {
             'cveId': x['id'],

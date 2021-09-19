@@ -73,7 +73,7 @@ def get_checks(framework="all", use_bc_ids=False):
         add_from_repository(arm_parameter_registry, "parameter", "arm")
     if framework == "secrets" or framework == "all":
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
-            printable_checks_list.append((check_id, check_type, "secrets", check_type, check_type, "secrets"))
+            printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)
 
 

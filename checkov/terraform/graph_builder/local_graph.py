@@ -270,7 +270,7 @@ class TerraformLocalGraph(LocalGraph):
             dest_module_path = Path(curr_module_dir) / dest_module_source
         else:
             try:
-                if not self.relative_paths_cache.get(dest_module_source):
+                if dest_module_source not in self.relative_paths_cache:
                     self.relative_paths_cache[dest_module_source] = list(Path(self.module.source_dir).rglob(dest_module_source))
                 dest_module_path = next(
                     (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path

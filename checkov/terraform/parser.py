@@ -438,14 +438,17 @@ class Parser:
                                     resolved_loc_list.append(new_key)
                             resolved_loc_list.sort()  # For testing, need predictable ordering
 
-                            deep_merge.merge(all_module_definitions, module_definitions)
+                            if all_module_definitions:
+                                deep_merge.merge(all_module_definitions, module_definitions)
+                            else:
+                                all_module_definitions = module_definitions
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
-                        pass
 
         if all_module_definitions:
             deep_merge.merge(self.out_definitions, all_module_definitions)
+        if all_module_evaluations_context:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
@@ -465,8 +468,7 @@ class Parser:
         module = self.get_new_module(source_dir, module_dependency_map, dep_index_mapping)
         self.add_tfvars(module, source)
         copy_of_tf_definitions = deepcopy(tf_definitions)
-        for file_path in copy_of_tf_definitions:
-            blocks = copy_of_tf_definitions.get(file_path)
+        for file_path, blocks in copy_of_tf_definitions.items():
             for block_type in blocks:
                 try:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
@@ -574,9 +576,8 @@ class Parser:
         module_dependency_map = {}
         copy_of_tf_definitions = {}
         dep_index_mapping = {}
-        definitions_keys = list(tf_definitions.keys())
-        origin_keys = list(filter(lambda k: not k.endswith(']'), definitions_keys))
-        unevaluated_keys = list(filter(lambda k: k.endswith(']'), definitions_keys))
+        origin_keys = list(filter(lambda k: not k.endswith(']'), tf_definitions.keys()))
+        unevaluated_keys = list(filter(lambda k: k.endswith(']'), tf_definitions.keys()))
         for file_path in origin_keys:
             dir_name = os.path.dirname(file_path)
             module_dependency_map[dir_name] = [[]]
@@ -602,10 +603,10 @@ class Parser:
             hashes = set()
             deduped = []
             for trail in dep_trails:
-                hash = unify_dependency_path(trail)
-                if hash in hashes:
+                trail_hash = unify_dependency_path(trail)
+                if trail_hash in hashes:
                     continue
-                hashes.add(hash)
+                hashes.add(trail_hash)
                 deduped.append(trail)
             module_dependency_map[key] = deduped
         return module_dependency_map, copy_of_tf_definitions, dep_index_mapping
@@ -661,7 +662,7 @@ def _is_valid_block(block):
 
 
 def validate_malformed_definitions(raw_data):
-    raw_data_cleaned = copy.deepcopy(raw_data)
+    raw_data_cleaned = raw_data
     for block_type, blocks in raw_data.items():
         raw_data_cleaned[block_type] = [block for block in blocks if _is_valid_block(block)]
 

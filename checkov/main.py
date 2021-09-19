@@ -5,9 +5,12 @@ import logging
 import os
 import shutil
 import sys
+import signal
 from pathlib import Path
 
 import configargparse
+
+signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
