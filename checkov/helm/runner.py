@@ -189,6 +189,7 @@ class Runner(BaseRunner):
                     report.passed_checks += chart_results.passed_checks
                     report.parsing_errors += chart_results.parsing_errors
                     report.skipped_checks += chart_results.skipped_checks
+                    report.resources.update(chart_results.resources)
 
                 except:
                     with tempfile.TemporaryDirectory() as save_error_dir:

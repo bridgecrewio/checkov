@@ -24,9 +24,9 @@ class Registry(BaseRegistry):
         self.logger = logging.getLogger(__name__)
 
     def load_checks(self) -> None:
-        self._load_checks_from_dir(self.checks_dir)
+        self._load_checks_from_dir(self.checks_dir, False)
 
-    def _load_checks_from_dir(self, directory: str) -> None:
+    def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
         self.logger.info("Loading external checks from {}".format(dir))
         for root, d_names, f_names in os.walk(dir):
@@ -39,16 +39,20 @@ class Registry(BaseRegistry):
                             self.logger.info(f"loading {file}")
                         check_yaml = yaml.safe_load(f)
                         check_json = json.loads(json.dumps(check_yaml))
+                        if not isinstance(check_json, dict):
+                            self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
+                            continue
                         check = self.parser.parse_raw_check(
                             check_json, resources_types=self._get_resource_types(check_json)
                         )
                         if not any([c for c in self.checks if check.id == c.id]):
-                            # Note the external check; used in the should_run_check logic
-                            RunnerFilter.notify_external_check(check.id)
+                            if external_check:
+                                # Note the external check; used in the should_run_check logic
+                                RunnerFilter.notify_external_check(check.id)
                             self.checks.append(check)
 
     def load_external_checks(self, dir: str) -> None:
-        self._load_checks_from_dir(dir)
+        self._load_checks_from_dir(dir, True)
 
     @staticmethod
     def _get_resource_types(check_json: Dict[str, Dict[str, Any]]) -> Optional[List[str]]:

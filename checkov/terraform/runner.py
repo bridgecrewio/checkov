@@ -23,6 +23,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
@@ -92,6 +93,9 @@ class Runner(BaseRunner):
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
+            for vertex in local_graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    report.add_resource(f'{vertex.path}:{vertex.id}')
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
@@ -229,12 +233,12 @@ class Runner(BaseRunner):
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
                     try:
-                        caller_context = dpath.get(definition_context[abs_caller_file],
-                                                   # HACK ALERT: module data is currently double-nested in
-                                                   #             definition context. If fixed, remove the
-                                                   #             addition of "module." at the beginning.
-                                                   "module." + referrer_id,
-                                                   separator=".")
+                        caller_context = definition_context[abs_caller_file]
+                        # HACK ALERT: module data is currently double-nested in
+                        #             definition context. If fixed, remove the
+                        #             addition of "module." at the beginning.
+                        for part in f"module.{referrer_id}".split("."):
+                            caller_context = caller_context[part]
                     except KeyError:
                         logging.debug("Unable to find caller context for: %s", abs_caller_file)
                         caller_context = None

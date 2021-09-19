@@ -6,16 +6,15 @@ import requests
 from datetime import datetime, timedelta
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.base_integration_feature import BC_API_URL
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_auth_header, get_default_get_headers, get_default_post_headers
+from checkov.common.util.http_utils import get_default_get_headers, get_default_post_headers
 
 
 class DockerImageScanningIntegration:
-    docker_image_scanning_base_url = f"{BC_API_URL}/vulnerabilities/docker-images"
+    docker_image_scanning_base_url = f"{bc_integration.api_url}/api/v1/vulnerabilities/docker-images"
 
     def get_bc_api_key(self):
-        return bc_integration.bc_api_key
+        return bc_integration.get_auth_token()
 
     def get_proxy_address(self):
         return f"{self.docker_image_scanning_base_url}/twistcli/proxy"
@@ -24,7 +23,7 @@ class DockerImageScanningIntegration:
         os_type = platform.system().lower()
         headers = merge_dicts(
             get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            get_auth_header(bc_integration.bc_api_key)
+            {'Authorization': self.get_bc_api_key()}
         )
         response = requests.request('GET', f"{self.docker_image_scanning_base_url}/twistcli/download?os={os_type}", headers=headers)
         open(cli_file_name, 'wb').write(response.content)
@@ -35,7 +34,7 @@ class DockerImageScanningIntegration:
     def report_results(self, docker_image_name, dockerfile_path, dockerfile_content, twistcli_scan_result):
         headers = merge_dicts(
             get_default_post_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            get_auth_header(bc_integration.bc_api_key)
+            {'Authorization': self.get_bc_api_key()}
         )
         vulnerabilities = list(map(lambda x: {
             'cveId': x['id'],
@@ -61,5 +60,6 @@ class DockerImageScanningIntegration:
         }
         response = requests.request('POST', f"{self.docker_image_scanning_base_url}/report", headers=headers, json=payload)
         response.raise_for_status()
+
 
 docker_image_scanning_integration = DockerImageScanningIntegration()

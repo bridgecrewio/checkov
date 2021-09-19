@@ -187,10 +187,12 @@ class Runner(BaseRunner):
                     variable_evaluations = {}
 
                     for check, check_result in results.items():
+                        resource_id = check.get_resource_id(entity_conf)
+                        report.add_resource(f'{k8_file}:{resource_id}')
                         record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                         code_block=entity_code_lines, file_path=k8_file,
                                         file_line_range=entity_lines_range,
-                                        resource=check.get_resource_id(entity_conf), evaluations=variable_evaluations,
+                                        resource=resource_id, evaluations=variable_evaluations,
                                         check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                         report.add_record(record=record)
 

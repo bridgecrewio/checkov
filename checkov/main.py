@@ -5,9 +5,12 @@ import logging
 import os
 import shutil
 import sys
+import signal
 from pathlib import Path
 
 import configargparse
+
+signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -123,7 +126,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             source = SourceTypes[BCSourceType.DISABLED]
 
         try:
-            bc_integration.setup_bridgecrew_credentials(bc_api_key=config.bc_api_key, repo_id=config.repo_id,
+            bc_integration.bc_api_key = config.bc_api_key
+            bc_integration.setup_bridgecrew_credentials(repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
                                                         skip_policy_download=config.skip_policy_download,
@@ -318,7 +322,7 @@ def add_parser_args(parser):
                help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
     parser.add('--repo-root-for-plan-enrichment',
                help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
-               dest="repo_root_for_plan_enrichment")
+               dest="repo_root_for_plan_enrichment", action='append')
     parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
     parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
                                        'the given path', is_write_out_config_file_arg=True, default=None)

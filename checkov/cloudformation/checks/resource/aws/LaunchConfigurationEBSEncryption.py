@@ -20,6 +20,8 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
         ebs_encryption_confs = []
         if 'Properties' in conf.keys() and conf['Properties'].get('BlockDeviceMappings'):
             for block_device_mapping in conf['Properties']['BlockDeviceMappings']:
+                if not isinstance(block_device_mapping, dict):
+                    return CheckResult.UNKNOWN
                 if block_device_mapping.get('Ebs') and not block_device_mapping.get('VirtualName'):
                     ebs_encryption_confs.append(block_device_mapping['Ebs'].get('Encrypted'))
                 else:

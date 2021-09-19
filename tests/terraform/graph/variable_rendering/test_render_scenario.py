@@ -78,13 +78,23 @@ class TestRendererScenarios(TestCase):
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
-    def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
-        self.go("list_default_622", {"log_types_enabled": {'default': [['api',
-              'audit',
-              'authenticator',
-              'controllerManager',
-              'scheduler']],
- 'type': ['list(string)']}})
+    def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
+        different_expected = {
+            "log_types_enabled": {
+                'default':
+                    [
+                        [
+                            'api',
+                            'audit',
+                            'authenticator',
+                            'controllerManager',
+                            'scheduler'
+                        ]
+                    ],
+                'type': ['list(string)']
+            }
+        }
+        self.go("list_default_622", different_expected)
 
     def test_module_reference(self):
         self.go("module_reference")
@@ -129,7 +139,21 @@ class TestRendererScenarios(TestCase):
         # only_here = "hello" (from var definition default)
         # other_var_1 = "abc" (from var definition default - other1.tfvars is not loaded)
         # other_var_2 = "xyz" (from other2.tfvars - overwrites var default)
-        self.go("tfvars", vars_files=['other2.tfvars'])
+
+        test_dir = 'tfvars'
+
+        self.go(test_dir, vars_files=['other2.tfvars', 'other3.tfvars'])
+
+        # test that the file order is preserved (we expect the os.scandir to return entries in the same order for both
+        # of these tests so one of these tests will fail if the tfvars file precedence is not properly applied)
+        different_expected = {
+            "my_bucket": {
+                "bucket": [
+                    "hello-nimrodIsCöol-nine-dev-abc-xyz-qwerty"
+                ]
+            }
+        }
+        self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
 
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
@@ -150,7 +174,8 @@ class TestRendererScenarios(TestCase):
         if vars_files:
             vars_files = [os.path.join(resources_dir, f) for f in vars_files]
         graph_manager = TerraformGraphManager(dir_name, [dir_name])
-        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True, vars_files=vars_files)
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True,
+                                                                         vars_files=vars_files)
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         expected = load_expected(replace_expected, dir_name, resources_dir)
 

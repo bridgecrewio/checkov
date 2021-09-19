@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  BucketName:
+    Type: String
+    Description: 'The name of the S3 Bucket to create, make this unique'
+  Status:
+    Type: String
+    Description: 'VersioningConfiguration status'
+    Default: Disabled
+Resources:
+  VersioningS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: !Ref Status

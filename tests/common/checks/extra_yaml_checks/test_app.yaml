@@ -1,0 +1,12 @@
+metadata:
+  name: "Ensure all resources are tagged with the relevant app"
+  id: "CUSTOM_GRAPH_AWS_1"
+  category: "GENERAL_SECURITY"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "all"
+  attribute: "tags.app"
+  operator: "exists"

@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import List, Dict, Union, Any, Optional
+from typing import List, Dict, Union, Any, Optional, Set
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
@@ -21,6 +21,7 @@ class Report:
         self.failed_checks: List[Record] = []
         self.skipped_checks: List[Record] = []
         self.parsing_errors: List[str] = []
+        self.resources: Set[str] = set()
 
     def add_parsing_errors(self, errors: List[str]) -> None:
         for file in errors:
@@ -29,6 +30,9 @@ class Report:
     def add_parsing_error(self, file: str) -> None:
         if file:
             self.parsing_errors.append(file)
+
+    def add_resource(self, resource: str) -> None:
+        self.resources.add(resource)
 
     def add_record(self, record: Record) -> None:
         if record.check_result["result"] == CheckResult.PASSED:
@@ -44,7 +48,7 @@ class Report:
             "failed": len(self.failed_checks),
             "skipped": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
-            "resource_count": self._count_resources(),
+            "resource_count": len(self.resources),
             "checkov_version": version,
         }
 
@@ -194,7 +198,8 @@ class Report:
         rules = []
         results = []
         ruleset = set()
-        for idx, record in enumerate(self.failed_checks):
+        idx = 0
+        for record in self.failed_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -208,8 +213,12 @@ class Report:
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)
-            else:
                 idx = rules.index(rule)
+            else:
+                for r in rules:
+                    if r['id'] == rule['id']:
+                        idx = rules.index(r)
+                        break
             if record.file_line_range[0] == 0:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
@@ -222,7 +231,7 @@ class Report:
                 "locations": [
                     {
                         "physicalLocation": {
-                            "artifactLocation": {"uri": record.file_path},
+                            "artifactLocation": {"uri": record.file_path.lstrip("/")},
                             "region": {
                                 "startLine": int(record.file_line_range[0]),
                                 "endLine": int(record.file_line_range[1]),
@@ -319,12 +328,6 @@ class Report:
 
     def print_json(self) -> None:
         print(self.get_json())
-
-    def _count_resources(self) -> int:
-        unique_resources = set()
-        for record in self.passed_checks + self.failed_checks:
-            unique_resources.add(record.file_path + "." + record.resource)
-        return len(unique_resources)
 
     @staticmethod
     def enrich_plan_report(
