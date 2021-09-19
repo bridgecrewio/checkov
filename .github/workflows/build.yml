@@ -104,7 +104,7 @@ jobs:
             echo "# $i resource scans (auto generated)" >> "$scansdoc"
             echo "" >> "$scansdoc"
             pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
-            git add $scansdoc
+            git add "$scansdoc"
           done
 
           #add cloudformation scans to serverless
