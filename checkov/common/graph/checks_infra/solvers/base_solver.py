@@ -26,4 +26,4 @@ class BaseSolver:
 
     @staticmethod
     def resource_type_pred(v: Dict[str, Any], resource_types: List[str]) -> bool:
-        return len(resource_types) == 0 or v.get("resource_type") in resource_types
+        return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types)

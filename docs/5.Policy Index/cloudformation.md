@@ -133,6 +133,7 @@ nav_order: 1
 | 122 | CKV_AWS_166 | resource | AWS::Backup::BackupVault                  | Ensure Backup Vault is encrypted at rest using KMS CMK                                                                                                                                                   | Cloudformation |
 | 123 | CKV_AWS_170 | resource | AWS::QLDB::Ledger                         | Ensure QLDB ledger permissions mode is set to STANDARD                                                                                                                                                   | Cloudformation |
 | 124 | CKV_AWS_172 | resource | AWS::QLDB::Ledger                         | Ensure QLDB ledger has deletion protection enabled                                                                                                                                                       | Cloudformation |
+| 125 | CKV_AWS_173 | resource | AWS::Lambda::Function                     | Check encryption settings for Lambda environmental variable                                                                                                                                              | Cloudformation |
 
 
 ---

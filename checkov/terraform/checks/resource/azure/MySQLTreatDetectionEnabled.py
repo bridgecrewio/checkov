@@ -12,7 +12,7 @@ class MySQLTreatDetectionEnabled(BaseResourceValueCheck):
 
 
     def get_inspected_key(self):
-        return "threat_detection_policy/enabled"
+        return "threat_detection_policy/[0]/enabled"
 
 
 check = MySQLTreatDetectionEnabled()

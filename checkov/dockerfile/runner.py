@@ -58,6 +58,7 @@ class Runner(BaseRunner):
                 path_to_convert = (os.path.join(root_folder, docker_file_path)) if root_folder else docker_file_path
 
             file_abs_path = os.path.abspath(path_to_convert)
+            report.add_resource(file_abs_path)
             skipped_checks = collect_skipped_checks(definitions[docker_file_path])
             instructions = definitions[docker_file_path]
 

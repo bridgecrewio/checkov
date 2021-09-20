@@ -156,6 +156,7 @@ class Runner(BaseRunner):
                     secret=secret,
                     skipped_checks=runner_filter.skip_checks,
                 ) or result
+                report.add_resource(f'{secret.filename}:{secret.secret_hash}')
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
