@@ -1,0 +1,144 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "acme AWS CloudTrail and Config Security Audit Integration",
+  "Mappings": {
+    "acmeEnvironment": {
+      "env": {
+        "organizationID": "${account_id}",
+        "SnsNameForConfirmCustomerDeployment": "${sns_name}"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Required Parameters"
+          },
+          "Parameters": [
+            "CustomerName",
+            "ResourceNamePrefix",
+            "ExternalID",
+            "LogFilesExpiration",
+            "CreateTrail"
+          ]
+        },
+        {
+          "Label": {
+            "default": "New Trail Options"
+          },
+          "Parameters": [
+            "NewTrailLogFilePrefix"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Existing Trail Setup"
+          },
+          "Parameters": [
+            "ExistingTrailBucketName",
+            "ExistingTrailTopicArn",
+            "SecurityAccountId"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "ResourceNamePrefix": {
+          "default": "Resource name prefix"
+        },
+        "CustomerName": {
+          "default": "Customer name"
+        },
+        "ExternalID": {
+          "default": "ExternalID"
+        },
+        "CreateTrail": {
+          "default": "Create new trail?"
+        },
+        "NewTrailLogFilePrefix": {
+          "default": "Log file prefix"
+        },
+        "ExistingTrailBucketName": {
+          "default": "Bucket name"
+        },
+        "ExistingTrailTopicArn": {
+          "default": "Topic ARN"
+        },
+        "LogFilesExpiration": {
+          "default": "LifecycleConfigurationExpirationInDays"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "ResourceNamePrefix": {
+      "Description": "Names of resources created by the stack will be prefixed with this value to ensure uniqueness.",
+      "Type": "String",
+      "Default": "acme",
+      "MinLength": "1",
+      "MaxLength": "32",
+      "AllowedPattern": "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$",
+      "ConstraintDescription": "Invalid resource name prefix value.  Must match pattern ^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
+    }
+  },
+  "Resources": {
+    "acmeCWSBucket": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws-",
+              {
+                "Ref": "AWS::AccountId"
+              }
+            ]
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "Delete old log files",
+              "Status": "Enabled",
+              "ExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              },
+              "NoncurrentVersionExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              }
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "Fn::If": [
+                  "CreateNewTrail",
+                  {
+                    "KMSMasterKeyID": {
+                      "Ref": "CloudtrailKMSKeyAlias"
+                    },
+                    "SSEAlgorithm": "aws:kms"
+                  },
+                  {
+                    "SSEAlgorithm": "AES256"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
