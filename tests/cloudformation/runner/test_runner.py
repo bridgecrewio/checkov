@@ -9,6 +9,7 @@ from checkov.cloudformation.parser import parse
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
 from checkov.common.output.report import Report
+from checkov.cloudformation.cfn_utils import create_definitions
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -254,6 +255,11 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_parse_relevant_files_only(self):
+        definitions, _ = create_definitions(None, ['main.tf'])
+        # just check that we skip the file and return normally
+        self.assertFalse('main.tf' in definitions)
 
     def tearDown(self):
         pass
