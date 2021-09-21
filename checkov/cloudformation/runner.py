@@ -7,6 +7,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
@@ -51,9 +52,10 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(self.check_type)
+        parsing_errors = {}
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
+            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
@@ -62,6 +64,9 @@ class Runner(BaseRunner):
 
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            for vertex in local_graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    report.add_resource(f'{vertex.path}:{vertex.id}')
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
@@ -76,6 +81,7 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        report.add_parsing_errors(list(parsing_errors.keys()))
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 

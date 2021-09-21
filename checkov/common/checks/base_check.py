@@ -25,6 +25,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.supported_entities = supported_entities
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
+        self.entity_path = ""
 
     def run(
         self,
@@ -51,6 +52,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         else:
             try:
                 self.evaluated_keys = []
+                self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
                 message = 'File {}, {}  "{}.{}" check "{}" Result: {} '.format(

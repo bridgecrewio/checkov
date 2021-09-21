@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Optional, List, Union
+from typing import Tuple, List, Union, Dict
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.common.parsers.json import parse as json_parse
@@ -11,34 +11,44 @@ from yaml import YAMLError
 LOGGER = logging.getLogger(__name__)
 
 
-def parse(filename: str) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple[None, None]]:
+def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple[None, None]]:
     """
         Decode filename into an object
     """
     template = None
     template_lines = None
+    error = None
     try:
         (template, template_lines) = cfn_yaml.load(filename)
-    except IOError as e:
-        if e.errno == 2:
-            LOGGER.error("Template file not found: %s", filename)
-        elif e.errno == 21:
-            LOGGER.error("Template references a directory, not a file: %s", filename)
-        elif e.errno == 13:
-            LOGGER.error("Permission denied when accessing template file: %s", filename)
+    except IOError as err:
+        if err.errno == 2:
+            error = f"Template file not found: {filename} - {err}"
+            LOGGER.error(error)
+        elif err.errno == 21:
+            error = f"Template references a directory, not a file: {filename} - {err}"
+            LOGGER.error(error)
+        elif err.errno == 13:
+            error = f"Permission denied when accessing template file: {filename} - {err}"
+            LOGGER.error(error)
     except UnicodeDecodeError as err:
-        LOGGER.error("Cannot read file contents: %s", filename)
+        error = f"Cannot read file contents: {filename}"
+        LOGGER.error(error)
     except cfn_yaml.CfnParseError as err:
-        pass
+        error = f"Parsing error in file {filename}"
+        LOGGER.info(error)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
                 (template, template_lines) = json_parse(filename, allow_nulls=False)
             except Exception as json_err:  # pylint: disable=W0703
-                LOGGER.error("Template %s is malformed: %s", filename, err.problem)
-                LOGGER.error("Tried to parse %s as JSON but got error: %s", filename, str(json_err))
+                error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
+                LOGGER.info(error)
     except YAMLError as err:
-        pass
+        error = f"Parsing error in file: {filename} - {err}"
+        LOGGER.info(error)
+
+    if error:
+        out_parsing_errors[filename] = error
 
     if isinstance(template, dict):
         resources = template.get(TemplateSections.RESOURCES.value, None)

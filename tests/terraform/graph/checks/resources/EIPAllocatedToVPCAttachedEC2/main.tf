@@ -51,6 +51,21 @@ resource "aws_nat_gateway" "ok_eip_nat" {
   subnet_id     = "aws_subnet.public.id"
 }
 
+resource "aws_transfer_server" "transfer_server_vpc" {
+  count                        = local.count
+  identity_provider_type       = "SERVICE_MANAGED"
+  endpoint_type                = "VPC"
+
+  endpoint_details {
+    address_allocation_ids     = aws_eip.eip_ok_transer_server.*.id[count.index]
+  }
+}
+
+resource "aws_eip" "eip_ok_transer_server" {
+  count = local.count
+  vpc   = true
+}
+
 resource "aws_eip" "ok_eip_module" {
   count    = 1
   instance = module.example[count.index].instance_id

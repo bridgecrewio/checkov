@@ -26,3 +26,4 @@ nav_order: 2
 | `--repo-id REPO_ID` | The identity string of the repository. It should be in the form: `<repo_owner>/<repo_name>` |
 | `-b BRANCH`, `--branch BRANCH` | The selected branch of the persisted repository. Only has effect when using the `--bc-api-key` flag. |
 | `-ca CA_CERTIFICATE`, `--ca-certificate CA_CERTIFICATE` | Custom CA (bundle) file. |
+| `--repo-root-for-plan-enrichment DIRECTORY` | Directory containing source to enrich plan runs (to associate source files with plan files). Can be repeated. |

@@ -2,11 +2,11 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.gcp.GoogleComupteBlockProjectSSH import check
+from checkov.terraform.checks.resource.gcp.GoogleComputeBlockProjectSSH import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestGoogleComupteBlockProjectSSH(unittest.TestCase):
+class TestGoogleComputeBlockProjectSSH(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""

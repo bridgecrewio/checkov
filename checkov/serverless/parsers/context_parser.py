@@ -56,7 +56,11 @@ class ContextParser(object):
             template_function = self.functions_conf.get(sls_function_name)
             if not template_function:
                 continue
-            if template_function.get(dst_enriched_attribute):
+            function_attribute = template_function.get(dst_enriched_attribute)
+            if function_attribute:
+                if not isinstance(function_attribute, type(provider_attribute)):
+                    # Do not enrich maps with strings etc
+                    continue
                 if isinstance(template_function[dst_enriched_attribute], list_node):
                     template_function[dst_enriched_attribute].extend(provider_attribute)
                 if isinstance(template_function[dst_enriched_attribute], dict_node):

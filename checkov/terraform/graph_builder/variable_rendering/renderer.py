@@ -73,8 +73,8 @@ class TerraformVariableRenderer(VariableRenderer):
                 return
 
         modified_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
-        val_to_eval = deepcopy(modified_vertex_attributes.get(edge.label, ""))
-        origin_val = deepcopy(val_to_eval)
+        origin_val = modified_vertex_attributes.get(edge.label, "")
+        val_to_eval = deepcopy(origin_val)
         first_key_path = None
 
         if referenced_vertices:
@@ -127,8 +127,7 @@ class TerraformVariableRenderer(VariableRenderer):
             if value is not None:
                 return value
 
-        reversed_key_path = deepcopy(key_path)
-        reversed_key_path.reverse()
+        reversed_key_path = key_path[::-1]
         for i, _ in enumerate(reversed_key_path):
             key = join_trimmed_strings(char_to_join=".", str_lst=reversed_key_path, num_to_trim=i)
             value = attributes.get(key, None)
@@ -170,16 +169,16 @@ class TerraformVariableRenderer(VariableRenderer):
         for vertex_reference in referenced_vertices:
             block_type = vertex_reference.block_type
             attribute_path = vertex_reference.sub_parts
-            copy_of_attribute_path = deepcopy(attribute_path)
+            copy_of_attribute_path = attribute_path.copy()
             if vertex_attributes[CustomAttributes.BLOCK_TYPE] == block_type:
-                for i in range(len(copy_of_attribute_path)):
+                for i, _ in enumerate(copy_of_attribute_path):
                     copy_of_attribute_path[i] = remove_index_pattern_from_str(copy_of_attribute_path[i])
                     name = ".".join(copy_of_attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
                         return attribute_path, vertex_reference.origin_value
             elif block_type == BlockType.MODULE:
                 copy_of_attribute_path.reverse()
-                for i in range(len(copy_of_attribute_path)):
+                for i, _ in enumerate(copy_of_attribute_path):
                     copy_of_attribute_path[i] = remove_index_pattern_from_str(copy_of_attribute_path[i])
                     name = ".".join(copy_of_attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
@@ -241,6 +240,9 @@ class TerraformVariableRenderer(VariableRenderer):
             keep_origin=keep_origin,
         )
         return new_val
+
+    def _render_variables_from_vertices(self) -> None:
+        pass
 
     def evaluate_non_rendered_values(self) -> None:
         for vertex in self.local_graph.vertices:

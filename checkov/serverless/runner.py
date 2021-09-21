@@ -113,6 +113,7 @@ class Runner(BaseRunner):
                     if not cf_resource_id:
                         # Not Type attribute for resource
                         continue
+                    report.add_resource(f'{file_abs_path}:{cf_resource_id}')
                     entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
                         resource)
                     if entity_lines_range and entity_code_lines:

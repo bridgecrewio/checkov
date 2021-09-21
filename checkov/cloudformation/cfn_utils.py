@@ -91,7 +91,7 @@ def get_entity_value_as_string(value: Any) -> str:
 
 
 def get_folder_definitions(
-    root_folder: str, excluded_paths: Optional[List[str]]
+    root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
@@ -107,7 +107,7 @@ def get_folder_definitions(
     for file in files_list:
         relative_file_path = f"/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}"
         try:
-            template, template_lines = parse(file)
+            template, template_lines = parse(file, out_parsing_errors)
             if isinstance(template, dict_node) and isinstance(template.get("Resources"), dict_node):
                 definitions[relative_file_path] = template
                 definitions_raw[relative_file_path] = template_lines
@@ -189,16 +189,21 @@ def create_file_abs_path(root_folder: str, cf_file: str) -> str:
 
 
 def create_definitions(
-    root_folder: str, files: Optional[List[str]] = None, runner_filter: RunnerFilter = RunnerFilter()
+    root_folder: str,
+    files: Optional[List[str]] = None,
+    runner_filter: RunnerFilter = RunnerFilter(),
+    out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
     if files:
         for file in files:
-            (definitions[file], definitions_raw[file]) = parse(file)
+            file_ending = os.path.splitext(file)[1]
+            if file_ending in CF_POSSIBLE_ENDINGS:
+                (definitions[file], definitions_raw[file]) = parse(file, out_parsing_errors)
 
     if root_folder:
-        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, out_parsing_errors)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
     definitions = {

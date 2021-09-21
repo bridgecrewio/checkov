@@ -48,7 +48,7 @@ class RunnerRegistry:
         files: Optional[List[str]] = None,
         guidelines: Optional[Dict[str, str]] = None,
         collect_skip_comments: bool = True,
-        repo_root_for_plan_enrichment: Union[str, os.PathLike] = None,
+        repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
         for runner in self.runners:
             integration_feature_registry.run_pre_runner()
@@ -165,40 +165,44 @@ class RunnerRegistry:
                 record.set_guideline(guidelines[record.check_id])
 
     @staticmethod
-    def get_enriched_resources(repo_root: Union[str, os.PathLike]) -> Dict[str, Dict[str, Any]]:
-        tf_definitions = {}
-        parsing_errors = {}
-        Parser().parse_directory(
-            directory=repo_root,  # assume plan file is in the repo-root
-            out_definitions=tf_definitions,
-            out_parsing_errors=parsing_errors,
-        )
+    def get_enriched_resources(repo_roots: List[Union[str, os.PathLike]]) -> Dict[str, Dict[str, Any]]:
+        repo_definitions = {}
+        for repo_root in repo_roots:
+            tf_definitions = {}
+            parsing_errors = {}
+            Parser().parse_directory(
+                directory=repo_root,  # assume plan file is in the repo-root
+                out_definitions=tf_definitions,
+                out_parsing_errors=parsing_errors,
+            )
+            repo_definitions[repo_root] = { 'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors }
 
         enriched_resources = {}
-        for full_file_path, definition in tf_definitions.items():
-            definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
-            abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
-            scanned_file = os.path.relpath(abs_scanned_file, repo_root)
-            for block_type, block_value in definition.items():
-                if block_type in CHECK_BLOCK_TYPES:
-                    for entity in block_value:
-                        context_parser = parser_registry.context_parsers[block_type]
-                        definition_path = context_parser.get_entity_context_path(entity)
-                        entity_id = ".".join(definition_path)
-                        entity_context_path = [block_type] + definition_path
-                        entity_context = data_structures_utils.get_inner_dict(
-                            definitions_context[full_file_path], entity_context_path
-                        )
-                        entity_lines_range = [
-                            entity_context.get("start_line"),
-                            entity_context.get("end_line"),
-                        ]
-                        entity_code_lines = entity_context.get("code_lines")
-                        skipped_checks = entity_context.get("skipped_checks")
-                        enriched_resources[entity_id] = {
-                            "entity_code_lines": entity_code_lines,
-                            "entity_lines_range": entity_lines_range,
-                            "scanned_file": scanned_file,
-                            "skipped_checks": skipped_checks,
-                        }
+        for repo_root, parse_results in repo_definitions.items():
+            for full_file_path, definition in parse_results['tf_definitions'].items():
+                definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
+                abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
+                scanned_file = os.path.relpath(abs_scanned_file, repo_root)
+                for block_type, block_value in definition.items():
+                    if block_type in CHECK_BLOCK_TYPES:
+                        for entity in block_value:
+                            context_parser = parser_registry.context_parsers[block_type]
+                            definition_path = context_parser.get_entity_context_path(entity)
+                            entity_id = ".".join(definition_path)
+                            entity_context_path = [block_type] + definition_path
+                            entity_context = data_structures_utils.get_inner_dict(
+                                definitions_context[full_file_path], entity_context_path
+                            )
+                            entity_lines_range = [
+                                entity_context.get("start_line"),
+                                entity_context.get("end_line"),
+                            ]
+                            entity_code_lines = entity_context.get("code_lines")
+                            skipped_checks = entity_context.get("skipped_checks")
+                            enriched_resources[entity_id] = {
+                                "entity_code_lines": entity_code_lines,
+                                "entity_lines_range": entity_lines_range,
+                                "scanned_file": scanned_file,
+                                "skipped_checks": skipped_checks,
+                            }
         return enriched_resources

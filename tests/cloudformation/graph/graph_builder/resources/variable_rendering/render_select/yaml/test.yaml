@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  DbSubnetIpBlocks:
+    Description: "Comma-delimited list of three CIDR blocks"
+    Type: CommaDelimitedList
+    Default: "10.0.48.0/24, 10.0.112.0/24, 10.0.176.0/24"
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  Subnet0:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Select [ 0, !Ref DbSubnetIpBlocks ]
+Outputs:
+  GrapesSelect:
+    Description: Grapes Select
+    Value: !Select [ "1", [ "apples", "grapes", "oranges", "mangoes" ] ]
+  OutOfBoundSelect:
+    Description: Out of Bound Select
+    Value: !Select [ "7", [ "apples", "grapes", "oranges", "mangoes" ] ]
