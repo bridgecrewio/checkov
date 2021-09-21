@@ -206,6 +206,7 @@ class Decoder(JSONDecoder):
     """
 
     def __init__(self, *args, **kwargs):
+        self.allow_nulls = kwargs.pop("allow_nulls", True)
         JSONDecoder.__init__(self, *args, **kwargs)
         self.parse_object = self.json_object
         self.parse_array = self.json_array
@@ -214,7 +215,6 @@ class Decoder(JSONDecoder):
         self.object_pairs_hook = self.check_duplicates
         self.scan_once = py_make_scanner(self)
         self.newline_indexes = []
-        self.allow_nulls = kwargs.get("allow_nulls", True)
 
     def decode(self, s):
         """Overridden to retrieve indexes """
