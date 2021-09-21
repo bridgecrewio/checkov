@@ -198,7 +198,9 @@ def create_definitions(
     definitions_raw = {}
     if files:
         for file in files:
-            (definitions[file], definitions_raw[file]) = parse(file, out_parsing_errors)
+            file_ending = os.path.splitext(file)[1]
+            if file_ending in CF_POSSIBLE_ENDINGS:
+                (definitions[file], definitions_raw[file]) = parse(file, out_parsing_errors)
 
     if root_folder:
         definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, out_parsing_errors)
