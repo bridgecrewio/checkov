@@ -14,6 +14,7 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
         id = "CKV_AZURE_44"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.NETWORKING]
+        self.evaluated_keys = ['min_tls_version/[0]']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

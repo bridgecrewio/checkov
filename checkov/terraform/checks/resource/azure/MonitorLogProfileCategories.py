@@ -8,6 +8,7 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
         id = "CKV_AZURE_38"
         supported_resources = ['azurerm_monitor_log_profile']
         categories = [CheckCategories.LOGGING]
+        self.evaluated_keys = ['categories']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

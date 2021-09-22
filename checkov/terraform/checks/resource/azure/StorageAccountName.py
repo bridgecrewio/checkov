@@ -11,6 +11,7 @@ class StorageAccountName(BaseResourceCheck):
         id = "CKV_AZURE_43"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.CONVENTION]
+        self.evaluated_keys = ['name']
         super().__init__(name=name, id=id, categories=categories,
                          supported_resources=supported_resources)
 

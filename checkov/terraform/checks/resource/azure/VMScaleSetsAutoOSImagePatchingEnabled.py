@@ -14,8 +14,11 @@ class VMScaleSetsAutoOSImagePatchingEnabled(BaseResourceCheck):
         if 'automatic_os_upgrade' in conf and conf['automatic_os_upgrade'][0]:
             if 'os_profile_windows_config' in conf and conf['os_profile_windows_config'][0]:
                 os_profile_windows_config = conf['os_profile_windows_config'][0]
+                self.evaluated_keys = ['os_profile_windows_config']
                 if 'enable_automatic_upgrades' in os_profile_windows_config \
                         and os_profile_windows_config['enable_automatic_upgrades'][0]:
+                    self.evaluated_keys = ['automatic_os_upgrade',
+                                           'os_profile_windows_config/[0]/enable_automatic_upgrades']
                     return CheckResult.PASSED
         return CheckResult.FAILED
 

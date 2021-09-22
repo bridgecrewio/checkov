@@ -8,13 +8,20 @@ class CosmosDBAccountsRestrictedAccess(BaseResourceCheck):
         id = "CKV_AZURE_99"
         supported_resources = ['azurerm_cosmosdb_account']
         categories = [CheckCategories.NETWORKING]
+        self.evaluated_keys = ['public_network_access_enabled', 'is_virtual_network_filter_enabled',
+                               'virtual_network_rule', 'ip_range_filter']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'public_network_access_enabled' not in conf or conf['public_network_access_enabled'][0]:
+            self.evaluated_keys = ['public_network_access_enabled'] if 'public_network_access_enabled' in conf else []
             if 'is_virtual_network_filter_enabled' in conf and conf['is_virtual_network_filter_enabled'][0]:
-                if ('virtual_network_rule' in conf and conf['virtual_network_rule'][0]) \
-                        or ('ip_range_filter' in conf and conf['ip_range_filter'][0]):
+                self.evaluated_keys.append('is_virtual_network_filter_enabled/[0]')
+                if 'virtual_network_rule' in conf and conf['virtual_network_rule'][0]:
+                    self.evaluated_keys.append('virtual_network_rule/[0]')
+                    return CheckResult.PASSED
+                elif 'ip_range_filter' in conf and conf['ip_range_filter'][0]:
+                    self.evaluated_keys.append('ip_range_filter/[0]')
                     return CheckResult.PASSED
             return CheckResult.FAILED
         return CheckResult.PASSED

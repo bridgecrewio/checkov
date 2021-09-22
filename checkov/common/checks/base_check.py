@@ -51,7 +51,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
             self.logger.debug(message)
         else:
             try:
-                self.evaluated_keys = []
+                #self.evaluated_keys = []
                 self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()

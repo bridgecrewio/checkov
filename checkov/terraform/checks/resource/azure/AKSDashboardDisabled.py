@@ -13,8 +13,10 @@ class AKSDashboardDisabled(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         addon_profile = conf.get('addon_profile', [None])[0]
+        self.evaluated_keys = ['addon_profile']
         if addon_profile and isinstance(addon_profile, dict):
             if addon_profile.get('kube_dashboard') and addon_profile['kube_dashboard'][0].get('enabled', [False])[0]:
+                self.evaluated_keys = ['addon_profile/kube_dashboard', 'addon_profile/kube_dashboard/[0]/enabled']
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

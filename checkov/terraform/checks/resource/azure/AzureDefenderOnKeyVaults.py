@@ -8,6 +8,7 @@ class AzureDefenderOnKeyVaults(BaseResourceCheck):
         id = "CKV_AZURE_87"
         supported_resources = ['azurerm_security_center_subscription_pricing']
         categories = [CheckCategories.GENERAL_SECURITY]
+        self.evaluated_keys = ['resource_type', 'tier']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
