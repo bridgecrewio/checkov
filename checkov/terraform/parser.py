@@ -1,13 +1,14 @@
-import copy
+import datetime
+import io
 import json
 import logging
 import os
 import re
 from copy import deepcopy
-import datetime
+from json import dumps, loads, JSONEncoder
+from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
-from json import dumps, loads, JSONEncoder
 
 import deep_merge
 import hcl2
@@ -649,7 +650,7 @@ Load JSON or HCL, depending on filename.
             if file_name.endswith(".json"):
                 return json.load(f)
             else:
-                raw_data = hcl2.load(f)
+                raw_data = _hcl2_load_with_timeout(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
@@ -660,6 +661,24 @@ Load JSON or HCL, depending on filename.
         parsing_errors[file_path] = e
         return None
 
+
+def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
+    # Start bar as a process
+    raw_data = None
+    q = Queue()  # used by the child process to return its result
+    p = Process(target=_hcl2_load, args=(q, f))
+    p.start()
+    raw_data = q.get(block=True, timeout=60)  # Wait until the file is parsed, up to 60 seconds. A timeout will raise a queue.Empty exception
+    p.join()  # Make sure the process is finished and closed
+    return raw_data
+
+
+def _hcl2_load(q: Queue, f: io.TextIOWrapper) -> None:
+    try:
+        raw_data = hcl2.load(f)
+        q.put(raw_data)
+    except Exception:
+        q.put(None)
 
 def _is_valid_block(block):
     if not isinstance(block, dict):
