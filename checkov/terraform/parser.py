@@ -452,7 +452,16 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
-    def parse_hcl_module(self, source_dir, source, download_external_modules=False, parsing_errors=None, excluded_paths: List[str]=None, vars_files: Optional[List[str]]=None):
+    def parse_hcl_module(
+        self,
+        source_dir: str,
+        source: str,
+        download_external_modules: bool = False,
+        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+        parsing_errors: Optional[Dict[str, Exception]] = None,
+        excluded_paths: Optional[List[str]] = None,
+        vars_files: Optional[List[str]] = None
+    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, Dict[str, Any]]]:
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
