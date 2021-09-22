@@ -98,7 +98,7 @@ class RootContainers(BaseK8Check):
 check = RootContainers()
 
 def check_runAsNonRoot(spec):
-    if "securityContext" in spec:
+    if spec.get("securityContext"):
         if "runAsNonRoot" in spec["securityContext"]:
             if spec["securityContext"]["runAsNonRoot"]:
                 return "PASSED"
@@ -107,7 +107,7 @@ def check_runAsNonRoot(spec):
     return "ABSENT"
 
 def check_runAsUser(spec):
-    if "securityContext" in spec:
+    if spec.get("securityContext"):
         if "runAsUser" in spec["securityContext"]:
             if spec["securityContext"]["runAsUser"] > 0:
                 return "PASSED"
