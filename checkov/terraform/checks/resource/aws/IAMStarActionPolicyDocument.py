@@ -13,28 +13,20 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'policy' in conf.keys():
-            try:
+        try:
+            policy_block = None
+            if 'policy' in conf.keys():
                 policy_block = extract_policy_dict(conf['policy'][0])
-                if policy_block and 'Statement' in policy_block.keys():
-                    for statement in force_list(policy_block['Statement']):
-                        if 'Action' in statement and \
-                                statement.get('Effect', ['Allow']) == 'Allow' and \
-                                '*' in force_list(statement['Action']):
-                            return CheckResult.FAILED
-            except:  # nosec
-                pass
-        if 'inline_policy' in conf.keys():
-            try:
+            elif 'inline_policy' in conf.keys():
                 policy_block = extract_policy_dict(conf['inline_policy'][0])
-                if policy_block and 'Statement' in policy_block.keys():
-                    for statement in force_list(policy_block['Statement']):
-                        if 'Action' in statement and \
-                                statement.get('Effect', ['Allow']) == 'Allow' and \
-                                '*' in force_list(statement['Action']):
-                            return CheckResult.FAILED
-            except:  # nosec
-                pass
+            if policy_block and 'Statement' in policy_block.keys():
+                for statement in force_list(policy_block['Statement']):
+                    if 'Action' in statement and \
+                            statement.get('Effect', ['Allow']) == 'Allow' and \
+                            '*' in force_list(statement['Action']):
+                        return CheckResult.FAILED
+        except:  # nosec
+            pass
         return CheckResult.PASSED
 
 
