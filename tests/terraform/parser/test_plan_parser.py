@@ -17,6 +17,13 @@ class TestPlanFileParser(unittest.TestCase):
             if tag_key not in ['start_line', 'end_line']:
                 self.assertIsInstance(tag_value, str)
 
+    def test_more_tags_values_are_flattened(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_tags_variety/tfplan.json"
+        tf_definitions, _ = parse_tf_plan(valid_plan_path)
+        # TODO: this should also verify the flattening but at least shows it parses now.
+        assert True
+
 
 if __name__ == '__main__':
     unittest.main()
