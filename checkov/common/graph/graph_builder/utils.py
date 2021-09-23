@@ -3,6 +3,7 @@ import hashlib
 import json
 from typing import Union, List, Dict, Any, Callable, Optional
 import concurrent.futures
+from multiprocessing import Pool
 
 
 
@@ -43,3 +44,28 @@ def run_function_multithreaded(
                     future.result()
                 except Exception as e:
                     raise e
+
+
+def print_edge(e):
+    print(e)
+
+
+def run_function_multiprocessed(
+    func: Callable[..., Any], data: List[List[Any]], max_group_size: int, num_of_workers: Optional[int] = None
+) -> None:
+    groups_of_data = [data[i : i + max_group_size] for i in range(0, len(data), max_group_size)]
+    flattened_data = [item for sublist in data for item in sublist]
+    if not num_of_workers:
+        num_of_workers = len(groups_of_data)
+    if num_of_workers > 0:
+        with Pool(num_of_workers) as pool:
+            pool.map(func, flattened_data)
+            # futures = {executor.submit(func, data_group): data_group for data_group in groups_of_data}
+            # wait_result = concurrent.futures.wait(futures)
+            # if wait_result.not_done:
+            #     raise Exception(f"failed to perform {func.__name__}")
+            # for future in futures:
+            #     try:
+            #         future.result()
+            #     except Exception as e:
+            #         raise e

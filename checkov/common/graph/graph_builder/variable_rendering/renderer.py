@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Dict, Any
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded
+from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded, \
+    run_function_multiprocessed
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
@@ -15,7 +16,7 @@ class VariableRenderer(ABC):
 
     def __init__(self, local_graph: "LocalGraph") -> None:
         self.local_graph = local_graph
-        self.run_async = True if os.environ.get("RENDER_VARIABLES_ASYNC") == "True" else False
+        self.run_async = True
         self.max_workers = int(os.environ.get("RENDER_ASYNC_MAX_WORKERS", 50))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
@@ -38,7 +39,7 @@ class VariableRenderer(ABC):
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
-                run_function_multithreaded(
+                run_function_multiprocessed(
                     func=self._edge_evaluation_task,
                     data=edges_groups,
                     max_group_size=1,
