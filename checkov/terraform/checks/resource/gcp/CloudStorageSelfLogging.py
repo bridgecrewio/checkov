@@ -14,13 +14,12 @@ class CloudStorageSelfLogging(BaseResourceCheck):
         bucket_name = conf['name']
         #check for logging
         if 'logging' in conf:
+            self.evaluated_keys = ['logging']
             if conf['logging'][0]:
                 log_bucket_name = conf['logging'][0]['log_bucket']
+                self.evaluated_keys = ['logging/[0]/log_bucket', 'name']
                 if log_bucket_name != bucket_name:
                     return CheckResult.PASSED
-                else:
-                   return CheckResult.FAILED
-            else:
                 return CheckResult.FAILED
             return CheckResult.FAILED
         return CheckResult.UNKNOWN

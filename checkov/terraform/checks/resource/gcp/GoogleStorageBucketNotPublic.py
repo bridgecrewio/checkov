@@ -8,6 +8,7 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         id = "CKV_GCP_28"
         supported_resources = ['google_storage_bucket_iam_member', 'google_storage_bucket_iam_binding']
         categories = [CheckCategories.GENERAL_SECURITY]
+        self.evaluated_keys = ['members', 'member']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

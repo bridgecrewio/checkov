@@ -20,12 +20,14 @@ class GoogleComputeDefaultServiceAccount(BaseResourceCheck):
         :param conf: google_compute_instance configuration
         :return: <CheckResult>
         """
-        if 'service_account' in conf.keys():
-            if 'email' in conf['service_account'][0]:
-                if not re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
-                    return CheckResult.PASSED
-        if 'name' in conf and conf['name'][0].startswith('gke-'):
+        if 'service_account' in conf.keys() and 'email' in conf['service_account'][0] and \
+                not re.match(DEFAULT_SERVICE_ACCOUNT, conf['service_account'][0]['email'][0]):
+            self.evaluated_keys = ['service_account/[0]/email']
             return CheckResult.PASSED
+        if 'name' in conf and conf['name'][0].startswith('gke-'):
+            self.evaluated_keys = ['name']
+            return CheckResult.PASSED
+        self.evaluated_keys = ['service_account/[0]/email', 'name']
         return CheckResult.FAILED
 
 

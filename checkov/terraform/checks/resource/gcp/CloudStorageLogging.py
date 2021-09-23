@@ -13,17 +13,16 @@ class CloudStorageLogging(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         #check for logging
         if 'logging' in conf:
+            self.evaluated_keys = ['logging']
             if conf['logging'][0]:
                 log_bucket_name = conf['logging'][0]['log_bucket']
+                self.evaluated_keys = ['logging/[0]/log_bucket']
                 if log_bucket_name != None:
                     return CheckResult.PASSED
                 else:
-                   return CheckResult.FAILED
+                    return CheckResult.FAILED
             else:
                 return CheckResult.FAILED
-            return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
         return CheckResult.FAILED
 
 check = CloudStorageLogging()

@@ -8,6 +8,7 @@ class GKEBasicAuth(BaseResourceCheck):
         id = "CKV_GCP_19"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
+        self.evaluated_keys = ['master_auth/[0]/username', 'master_auth/[0]/password']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

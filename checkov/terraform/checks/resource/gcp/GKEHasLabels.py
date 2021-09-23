@@ -8,6 +8,7 @@ class GKEHasLabels(BaseResourceCheck):
         id = "CKV_GCP_21"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
+        self.evaluated_keys = ['resource_labels']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

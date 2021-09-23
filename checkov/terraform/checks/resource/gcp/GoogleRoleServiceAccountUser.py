@@ -9,12 +9,13 @@ class GoogleRoleServiceAccountUser(BaseResourceCheck):
         id = "CKV_GCP_41"
         supported_resources = ['google_project_iam_binding', 'google_project_iam_member']
         categories = [CheckCategories.IAM]
+        self.evaluated_keys = ['role']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'role' in conf.keys():
-            if conf['role'][0] not in ['roles/iam.serviceAccountUser', 'roles/iam.serviceAccountTokenCreator']:
-                return CheckResult.PASSED
+        if 'role' in conf.keys() and \
+                conf['role'][0] not in ['roles/iam.serviceAccountUser', 'roles/iam.serviceAccountTokenCreator']:
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 

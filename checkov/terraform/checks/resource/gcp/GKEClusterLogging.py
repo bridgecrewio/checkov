@@ -8,6 +8,7 @@ class GKEClusterLogging(BaseResourceCheck):
         id = "CKV_GCP_1"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
+        self.evaluated_keys = ['logging_service']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

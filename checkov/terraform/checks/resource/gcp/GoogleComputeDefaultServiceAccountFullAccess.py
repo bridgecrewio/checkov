@@ -23,11 +23,15 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         :return: <CheckResult>
         """
         if 'name' in conf and conf['name'][0].startswith('gke-'):
+            self.evaluated_keys = ['name']
             return CheckResult.PASSED
         if 'service_account' in conf.keys():
             service_account_conf = conf['service_account'][0]
+            self.evaluated_keys = ['service_account']
             if isinstance(service_account_conf, dict):
+                self.evaluated_keys = ['service_account/[0]/scopes']
                 if 'email' in service_account_conf:
+                    self.evaluated_keys.append('service_account/[0]/email')
                     if re.match(DEFAULT_SERVICE_ACCOUNT, service_account_conf['email'][0]):
                         if len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
                             return CheckResult.FAILED

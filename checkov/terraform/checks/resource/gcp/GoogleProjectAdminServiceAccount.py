@@ -12,13 +12,13 @@ class GoogleProjectAdminServiceAccount(BaseResourceCheck):
         id = "CKV_GCP_42"
         supported_resources = ['google_project_iam_member']
         categories = [CheckCategories.IAM]
+        self.evaluated_keys = ['member', 'role']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'member' in conf.keys():
-            if re.match(USER_MANAGED_SERVICE_ACCOUNT, str(conf['member'][0])):
-                if re.match(ADMIN_ROLE, str(conf['role'][0])):
-                    return CheckResult.FAILED
+        if 'member' in conf.keys() and re.match(USER_MANAGED_SERVICE_ACCOUNT, str(conf['member'][0])) and \
+                re.match(ADMIN_ROLE, str(conf['role'][0])):
+            return CheckResult.FAILED
         return CheckResult.PASSED
 
 
