@@ -154,7 +154,7 @@ class Runner(BaseRunner):
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     secret=secret,
-                    skipped_checks=runner_filter.skip_checks,
+                    runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
                 report.add_record(Record(
@@ -178,9 +178,9 @@ class Runner(BaseRunner):
         check_id: str,
         bc_check_id: str,
         secret: PotentialSecret,
-        skipped_checks: List[str]
+        runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:
-        if (check_id in skipped_checks or bc_check_id in skipped_checks) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if (check_id in runner_filter.skip_checks or bc_check_id in runner_filter.skip_checks or not runner_filter.should_run_check(check_id, bc_check_id)) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"
