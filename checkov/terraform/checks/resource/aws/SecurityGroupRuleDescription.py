@@ -25,7 +25,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         """
         if 'description' in conf.keys():
             if conf['description']:
-                self.evaluated_keys = 'description'
+                self.evaluated_keys = ['description']
                 return CheckResult.PASSED
         egress_result = self.check_rule(rule_type='egress', conf=conf)
         ingress_result = self.check_rule(rule_type='ingress', conf=conf)
