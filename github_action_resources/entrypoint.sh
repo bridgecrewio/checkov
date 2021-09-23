@@ -110,6 +110,7 @@ echo "$CHECKOV_RESULTS"
 
 { echo "CHECKOV_RESULTS<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_ENV
 
+
 echo "::set-output name=results::$CHECKOV_RESULTS"
 
 if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ]; then
