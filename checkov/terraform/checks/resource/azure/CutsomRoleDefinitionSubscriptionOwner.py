@@ -8,11 +8,11 @@ class CustomRoleDefinitionSubscriptionOwner(BaseResourceCheck):
         id = "CKV_AZURE_39"
         supported_resources = ['azurerm_role_definition']
         categories = [CheckCategories.IAM]
+        self.evaluated_keys = ['permissions/[0]/actions']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'actions' in conf['permissions'][0] and '*' in conf['permissions'][0]['actions'][0]:
-            self.evaluated_keys = ['permissions/[0]/actions/[0]']
             return CheckResult.FAILED
         return CheckResult.PASSED
 

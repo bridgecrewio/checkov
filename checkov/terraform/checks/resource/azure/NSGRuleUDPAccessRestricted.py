@@ -27,10 +27,10 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
                         and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
                     evaluated_key_prefix = f'{evaluated_key_prefix}[{rule_confs.index(rule_conf)}]/' if \
                         evaluated_key_prefix else ''
-                    self.evaluated_keys = [f'{evaluated_key_prefix}protocol/[0]',
-                                           f'{evaluated_key_prefix}direction/[0]',
-                                           f'{evaluated_key_prefix}access/[0]',
-                                           f'{evaluated_key_prefix}source_address_prefix/[0]']
+                    self.evaluated_keys = [f'{evaluated_key_prefix}protocol',
+                                           f'{evaluated_key_prefix}direction',
+                                           f'{evaluated_key_prefix}access',
+                                           f'{evaluated_key_prefix}source_address_prefix']
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

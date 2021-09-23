@@ -9,11 +9,11 @@ class SQLServerAuditPolicyRetentionPeriod(BaseResourceCheck):
         id = "CKV_AZURE_46"
         supported_resources = ['azurerm_mssql_database_extended_auditing_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
+        self.evaluated_keys = ['retention_in_days']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'retention_in_days' in conf:
-            self.evaluated_keys = ['retention_in_days/[0]']
             retention = force_int(conf['retention_in_days'][0])
             if retention:
                 if retention < 90:

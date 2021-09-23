@@ -12,7 +12,7 @@ class NetworkInterfacePublicIPAddressId(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         ip_configurations = conf.get('ip_configuration', [])
-        self.evaluated_keys = ['ip_configuration'] if ip_configurations else []
+        self.evaluated_keys = ['ip_configuration']
         for ip_configuration in ip_configurations:
             if 'public_ip_address_id' in ip_configuration:
                 self.evaluated_keys = [

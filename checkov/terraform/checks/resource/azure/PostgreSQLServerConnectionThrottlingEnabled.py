@@ -8,7 +8,7 @@ class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
         id = "CKV_AZURE_32"
         supported_resources = ['azurerm_postgresql_configuration']
         categories = [CheckCategories.NETWORKING]
-        self.evaluated_keys = ['name/[0]', 'value/[0]']
+        self.evaluated_keys = ['name', 'value']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

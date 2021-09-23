@@ -41,18 +41,19 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
         for rule_conf in rule_confs:
             if not isinstance(rule_conf, dict):
                 return CheckResult.UNKNOWN
-            if 'access' in rule_conf and rule_conf['access'][0].lower() == "allow":
-                if 'direction' in rule_conf and rule_conf['direction'][0].lower() == "inbound":
-                    if 'protocol' in rule_conf and rule_conf['protocol'][0].lower() in ['tcp', '*']:
-                        if 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf):
-                            if 'source_address_prefix' in rule_conf and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
-                                evaluated_key_prefix = f'{evaluated_key_prefix}[{rule_confs.index(rule_conf)}]/' if \
-                                    evaluated_key_prefix else ''
-                                self.evaluated_keys = [f'{evaluated_key_prefix}access/[0]',
-                                                       f'{evaluated_key_prefix}direction/[0]',
-                                                       f'{evaluated_key_prefix}protocol/[0]',
-                                                       f'{evaluated_key_prefix}destination_port_range/[0]',
-                                                       f'{evaluated_key_prefix}source_address_prefix/[0]']
-                                return CheckResult.FAILED
+            if 'access' in rule_conf and rule_conf['access'][0].lower() == "allow" \
+                    and 'direction' in rule_conf and rule_conf['direction'][0].lower() == "inbound" \
+                    and 'protocol' in rule_conf and rule_conf['protocol'][0].lower() in ['tcp', '*'] \
+                    and 'destination_port_range' in rule_conf and self.is_port_in_range(rule_conf) \
+                    and 'source_address_prefix' in rule_conf \
+                    and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
+                evaluated_key_prefix = f'{evaluated_key_prefix}[{rule_confs.index(rule_conf)}]/' if \
+                    evaluated_key_prefix else ''
+                self.evaluated_keys = [f'{evaluated_key_prefix}access',
+                                       f'{evaluated_key_prefix}direction',
+                                       f'{evaluated_key_prefix}protocol',
+                                       f'{evaluated_key_prefix}destination_port_range',
+                                       f'{evaluated_key_prefix}source_address_prefix']
+                return CheckResult.FAILED
         return CheckResult.PASSED
 

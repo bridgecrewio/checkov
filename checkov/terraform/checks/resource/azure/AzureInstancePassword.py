@@ -25,10 +25,10 @@ class AzureInstancePassword(BaseResourceCheck):
                 if disable_password_authentication == [False]:
                     return CheckResult.FAILED
             else:
-                self.evaluated_keys = ['os_profile_linux_config/[0]']
+                self.evaluated_keys = ['os_profile_linux_config']
 
         if not conf.get('disable_password_authentication', [True])[0]:
-            self.evaluated_keys.append('disable_password_authentication/[0]')
+            self.evaluated_keys.append('disable_password_authentication')
             return CheckResult.FAILED
 
         return CheckResult.PASSED

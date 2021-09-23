@@ -8,14 +8,12 @@ class KeyVaultRecoveryEnabled(BaseResourceCheck):
         id = "CKV_AZURE_42"
         supported_resources = ['azurerm_key_vault']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        self.evaluated_keys = ['purge_protection_enabled', 'soft_delete_enabled']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'purge_protection_enabled' in conf and conf['purge_protection_enabled'][0] and \
                 ('soft_delete_enabled' not in conf or conf['soft_delete_enabled'][0]):
-            self.evaluated_keys = ['purge_protection_enabled/[0]']
-            if 'soft_delete_enabled' in conf:
-                self.evaluated_keys.append('soft_delete_enabled/[0]')
             return CheckResult.PASSED
         return CheckResult.FAILED
 

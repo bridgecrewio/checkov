@@ -24,10 +24,10 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
         evaluated_key_prefix = ''
         if 'network_rules' in conf:
             network_conf = conf['network_rules']
-            self.evaluated_keys = ['network_rules/[0]']
+            self.evaluated_keys = ['network_rules']
             evaluated_key_prefix = 'network_rules/[0]/'
         if 'default_action' in network_conf[0]:
-            self.evaluated_keys = [f'{evaluated_key_prefix}default_action/[0]']
+            self.evaluated_keys = [f'{evaluated_key_prefix}default_action']
             if network_conf[0]['default_action'][0] == 'Deny':
                 return CheckResult.PASSED
         return CheckResult.FAILED
