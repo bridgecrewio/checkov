@@ -677,7 +677,9 @@ def _hcl2_load(q: Queue, f: io.TextIOWrapper) -> None:
     try:
         raw_data = hcl2.load(f)
         q.put(raw_data)
-    except Exception:
+    except Exception as e:
+        logging.error(f'Failed to parse file {f.name}. Error:')
+        logging.error(e, exc_info=True)
         q.put(None)
 
 def _is_valid_block(block):

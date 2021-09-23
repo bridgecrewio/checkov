@@ -885,6 +885,15 @@ class TestRunnerValid(unittest.TestCase):
                 self.fail(f"found duplicate results in report: {record.to_string()}")
             unique_checks.append(check_unique)
 
+    def test_malformed_file_in_parsing_error(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unbalanced_eval_brackets")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform'))
+        file_path = os.path.join(resources_path, 'main.tf')
+        self.assertEqual(report.parsing_errors[0], file_path)
+
     def tearDown(self):
         parser_registry.context = {}
 
