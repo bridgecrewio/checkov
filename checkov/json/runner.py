@@ -27,7 +27,7 @@ class Runner(BaseRunner):
                 (definitions[key], definitions_raw[key]) = parse(f)
 
         if not external_checks_dir:
-            logging.error("The json runner requires that external checks are defined.")
+            logging.warning("The json runner requires that external checks are defined.")
             return report
 
         for directory in external_checks_dir:
