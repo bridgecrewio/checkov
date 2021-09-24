@@ -1,3 +1,4 @@
+import fnmatch
 import json
 from collections import defaultdict
 from typing import List, Dict, Union, Any, Optional, Set
@@ -95,7 +96,8 @@ class Report:
         if soft_fail_on:
             soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
             if all(
-                (check_id in soft_fail_on or bc_check_id in soft_fail_on)
+                any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
+                    for pattern in soft_fail_on)
                 for (check_id, bc_check_id) in (
                     (failed_check.check_id, failed_check.bc_check_id)
                     for failed_check in self.failed_checks
