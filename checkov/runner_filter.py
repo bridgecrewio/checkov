@@ -56,7 +56,7 @@ class RunnerFilter(object):
         if RunnerFilter.is_external_check(check_id) and self.all_external:
             pass  # enabled unless skipped
         elif self.checks:
-            if check_id in self.checks or bc_check_id in self.checks:
+            if self.checks and any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in self.checks):
                 return True
             else:
                 return False
