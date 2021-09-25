@@ -12,7 +12,7 @@ class TestNetworkxConnector(TestCase):
     def test_creating_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/encryption'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _ = hcl_config_parser.parse_hcl_module(resources_dir, 'AWS')
+        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir, 'AWS')
         local_graph = TerraformLocalGraph(module, module_dependency_map)
         local_graph._create_vertices()
         nxc = NetworkxConnector()
