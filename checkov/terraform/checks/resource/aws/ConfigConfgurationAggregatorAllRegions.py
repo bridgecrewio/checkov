@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class ConfigConfigurationAggregator(BaseResourceCheck):
@@ -18,8 +19,6 @@ class ConfigConfigurationAggregator(BaseResourceCheck):
         :param conf: aws_config_configuration_aggregator configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = ["account_aggregation_source", "organization_aggregation_source"]
-
         if "account_aggregation_source" in conf:
             aggregation_source = conf.get("account_aggregation_source", {})[0]
             if isinstance(aggregation_source, dict) and aggregation_source.get("all_regions"):
@@ -29,6 +28,9 @@ class ConfigConfigurationAggregator(BaseResourceCheck):
             if isinstance(aggregation_source, dict) and aggregation_source.get("all_regions"):
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["account_aggregation_source", "organization_aggregation_source"]
 
 
 check = ConfigConfigurationAggregator()

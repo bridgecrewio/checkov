@@ -39,22 +39,21 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             for ingress_rule in ingress_conf:
                 ingress_rules = force_list(ingress_rule)
                 for rule in ingress_rules:
-                    if isinstance(rule, dict):
-                        if self.contains_violation(rule):
-                            self.evaluated_keys = [
-                                f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
-                                f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
-                                f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
-                                f'ingress/[{ingress_conf.index(ingress_rule)}]/ipv6_cidr_blocks',
-                            ]
-                            return CheckResult.FAILED
+                    if isinstance(rule, dict) and self.contains_violation(rule):
+                        self.evaluated_keys = [
+                            f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
+                            f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
+                            f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
+                            f'ingress/[{ingress_conf.index(ingress_rule)}]/ipv6_cidr_blocks',
+                        ]
+                        return CheckResult.FAILED
 
             return CheckResult.PASSED
 
         if 'type' in conf:  # This means it's an SG_rule resource.
             type = force_list(conf['type'])[0]
             if type == 'ingress':
-                self.evaluated_keys = ['from_port','to_port','cidr_blocks', 'ipv6_cidr_blocks']
+                self.evaluated_keys = ['from_port', 'to_port', 'cidr_blocks', 'ipv6_cidr_blocks']
                 if self.contains_violation(conf):
                     return CheckResult.FAILED
                 return CheckResult.PASSED

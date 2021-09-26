@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class EKSNodeGroupRemoteAccess(BaseResourceCheck):
@@ -11,13 +12,14 @@ class EKSNodeGroupRemoteAccess(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if "remote_access" in conf.keys():
-            try:
-                if "ec2_ssh_key" in conf["remote_access"][0].keys() and not 'source_security_group_ids' in conf["remote_access"][0].keys():
-                    return CheckResult.FAILED
-            except:
-                return CheckResult.PASSED
+        remote_access = conf.get("remote_access")
+        if remote_access and remote_access[0] and "ec2_ssh_key" in remote_access[0].keys() \
+                and "source_security_group_ids" not in remote_access[0].keys():
+            return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['remote_access/[0]/ec2_ssh_key', 'remote_access/[0]/source_security_group_ids']
 
 
 check = EKSNodeGroupRemoteAccess()

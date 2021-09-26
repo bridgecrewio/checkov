@@ -21,5 +21,8 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ['server_side_encryption/[0]/enabled', 'server_side_encryption/[0]/kms_key_arn']
+
 
 check = DynamoDBTablesEncrypted()

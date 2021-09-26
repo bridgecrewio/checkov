@@ -11,6 +11,7 @@ class ECSTaskDefinitionEFSVolumeEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['volume']
         if 'volume' in conf.keys():
             volume_conf = conf['volume']
             for volume in volume_conf:
@@ -18,10 +19,11 @@ class ECSTaskDefinitionEFSVolumeEncryption(BaseResourceCheck):
                     efs_conf = volume['efs_volume_configuration']
                     for efs in efs_conf:
                         if isinstance(efs, dict):
+                            self.evaluated_keys = [f'volume/[{volume_conf.index(volume)}]/efs_volume_configuration/'
+                                                   f'[{efs_conf.index(efs)}]']
                             if 'transit_encryption' in efs and efs['transit_encryption'] == ['ENABLED']:
                                 return CheckResult.PASSED
-                            else:
-                                return CheckResult.FAILED
+                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 
