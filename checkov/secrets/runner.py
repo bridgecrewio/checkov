@@ -144,7 +144,7 @@ class Runner(BaseRunner):
                 bc_check_id = bc_integration.ckv_to_bc_id_mapping.get(check_id) if bc_integration.ckv_to_bc_id_mapping else None
                 if not check_id:
                     continue
-                if runner_filter.checks and (check_id not in runner_filter.checks and bc_check_id not in runner_filter.checks):
+                if runner_filter.checks and not runner_filter.should_run_check(check_id, bc_check_id):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)

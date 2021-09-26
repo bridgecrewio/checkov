@@ -267,9 +267,9 @@ class Runner(BaseRunner):
                 entity_code_lines = None
                 skipped_checks = None
 
-            if block_type == "module" and skipped_checks is not None:
+            if block_type == "module":
                 self.push_skipped_checks_down(self, definition_context, full_file_path, skipped_checks)
-            
+
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
                 for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
@@ -298,6 +298,12 @@ class Runner(BaseRunner):
     @staticmethod
     def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):
         # this method pushes the skipped_checks down the 1 level to all resource types.
+
+        if skipped_checks is None:
+            return
+
+        if len(skipped_checks) == 0:
+            return
 
         # iterate over definitions to find those that reference the module path
         # definition is in the format <file>[<referrer>#<index>]
