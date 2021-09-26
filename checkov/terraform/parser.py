@@ -6,7 +6,8 @@ import os
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
@@ -665,27 +666,31 @@ Load JSON or HCL, depending on filename.
 def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
     # Start bar as a process
     raw_data = None
-    q = Queue()  # used by the child process to return its result
-    p = Process(target=_hcl2_load, args=(q, f))
+    reader, writer = Pipe(duplex=False)  # used by the child process to return its result
+    p = Process(target=_hcl2_load, args=(writer, f))
     p.start()
-    try:
-        raw_data = q.get(block=True, timeout=60)  # Wait until the file is parsed, up to 60 seconds. A timeout will raise a queue.Empty exception
-    except Exception as e:
-        if p.is_alive():
-            p.terminate()  # aggressive termination of process for cleanup
-            raise e
-    p.join()  # Make sure the process is finished and closed
+
+    # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
+    is_input_available = reader.poll(timeout=60)
+    if is_input_available:
+        raw_data = reader.recv()
+
+    # Resources cleanup
+    if p.is_alive():
+        p.terminate()
+    writer.close()
+
     return raw_data
 
 
-def _hcl2_load(q: Queue, f: io.TextIOWrapper) -> None:
+def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
     try:
         raw_data = hcl2.load(f)
-        q.put(raw_data)
+        writer.send(raw_data)
     except Exception as e:
         logging.error(f'Failed to parse file {f.name}. Error:')
         logging.error(e, exc_info=True)
-        q.put(None)
+        writer.send(None)
 
 
 def _is_valid_block(block):
