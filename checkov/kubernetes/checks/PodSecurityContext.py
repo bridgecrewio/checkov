@@ -41,7 +41,7 @@ class PodSecurityContext(BaseK8Check):
             spec = inner_spec if inner_spec else spec
 
         if spec:
-            if "securityContext" in spec:
+            if spec.get("securityContext"):
                 if spec["securityContext"]:
                     return CheckResult.PASSED
         return CheckResult.FAILED

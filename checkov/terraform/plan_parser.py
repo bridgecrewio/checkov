@@ -51,15 +51,19 @@ def _hclify(obj: dict_node, conf: Optional[dict_node] = None, parent_key: Option
             child_list = []
             conf_val = conf.get(key, []) if conf else []
             for internal_val, internal_conf_val in itertools.zip_longest(value, conf_val):
-                child_list.append(_hclify(internal_val, internal_conf_val))
-            ret_dict[key] = child_list
+                if isinstance(internal_val, dict):
+                    child_list.append(_hclify(internal_val, internal_conf_val, parent_key=key))
+            if key == "tags":
+                ret_dict[key] = [child_list]
+            else:
+                ret_dict[key] = child_list
         if isinstance(value, dict):
             child_dict = _hclify(value, parent_key=key)
             if parent_key == "tags":
                 ret_dict[key] = child_dict
             else:
                 ret_dict[key] = [child_dict]
-    if conf:
+    if conf and isinstance(conf, dict):
         for conf_key in conf.keys() - obj.keys():
             ref = next((x for x in conf[conf_key].get("references", []) if not x.startswith(("var.", "local."))), None)
             if ref:

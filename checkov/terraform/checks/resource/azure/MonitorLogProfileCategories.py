@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class MonitorLogProfileRetentionDays(BaseResourceCheck):
@@ -17,6 +18,9 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
                 all(category in conf['categories'][0] for category in categories):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['categories']
 
 
 check = MonitorLogProfileRetentionDays()

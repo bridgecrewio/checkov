@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class StorageAccountMinimumTlsVersion(BaseResourceCheck):
@@ -21,6 +22,9 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
                 conf['min_tls_version'][0] == 'TLS1_0' or conf['min_tls_version'][0] == 'TLS1_1':
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['min_tls_version']
 
 
 check = StorageAccountMinimumTlsVersion()

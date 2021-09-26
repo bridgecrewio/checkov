@@ -15,6 +15,9 @@ class SQLServerNoPublicAccess(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['start_ip_address']
+        if 'end_ip_address' in conf:
+            self.evaluated_keys.append('end_ip_address')
         if ('start_ip_address' in conf and conf['start_ip_address'][0] in ['0.0.0.0', '0.0.0.0/0'] and  # nosec
                 'end_ip_address' in conf and conf['end_ip_address'][0] == '255.255.255.255'):
             return CheckResult.FAILED
