@@ -72,8 +72,8 @@ class TerraformLocalGraph(LocalGraph):
             self.vertices_by_module_dependency[block.module_dependency][block.block_type].append(i)
             self.vertices_by_module_dependency_by_name[block.module_dependency][block.block_type][block.name].append(i)
 
-            self.in_edges[i] = []
-            self.out_edges[i] = []
+            self.in_edges[i] = set()
+            self.out_edges[i] = set()
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
@@ -223,8 +223,8 @@ class TerraformLocalGraph(LocalGraph):
             return
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         self.edges.append(edge)
-        self.out_edges[origin_vertex_index].append(edge)
-        self.in_edges[dest_vertex_index].append(edge)
+        self.out_edges[origin_vertex_index].add(edge)
+        self.in_edges[dest_vertex_index].add(edge)
 
     def _connect_module(
         self, sub_values: List[str], attribute_key: str, module_node: TerraformBlock, origin_node_index: int

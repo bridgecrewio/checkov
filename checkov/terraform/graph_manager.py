@@ -1,5 +1,8 @@
+import json
 import logging
 from typing import List, Optional, Dict, Type, Tuple, Any
+
+from networkx.readwrite import json_graph
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
@@ -38,6 +41,13 @@ class TerraformGraphManager(GraphManager):
         logging.info('Building graph from parsed module')
         local_graph = local_graph_class(module, module_dependency_map)
         local_graph.build_graph(render_variables=render_variables)
+        #
+        # nx_graph = self.save_graph(local_graph)
+        #
+        # j_g = json_graph.node_link_data(nx_graph)
+        # with open("graph.json", "w") as f:
+        #     f.write(json.dumps(j_g))
+
 
         return local_graph, tf_definitions
 
