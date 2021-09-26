@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class MonitorLogProfileRetentionDays(BaseResourceCheck):
@@ -8,7 +9,6 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
         id = "CKV_AZURE_38"
         supported_resources = ['azurerm_monitor_log_profile']
         categories = [CheckCategories.LOGGING]
-        self.evaluated_keys = ['categories']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -18,6 +18,9 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
                 all(category in conf['categories'][0] for category in categories):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['categories']
 
 
 check = MonitorLogProfileRetentionDays()

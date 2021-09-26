@@ -1,5 +1,6 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from typing import List
 
 
 class GKEHasLabels(BaseResourceCheck):
@@ -8,7 +9,6 @@ class GKEHasLabels(BaseResourceCheck):
         id = "CKV_GCP_21"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
-        self.evaluated_keys = ['resource_labels']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -23,6 +23,9 @@ class GKEHasLabels(BaseResourceCheck):
             if isinstance(resource_labels[0], dict) and len(resource_labels[0].keys()) > 0:
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['resource_labels']
 
 
 check = GKEHasLabels()

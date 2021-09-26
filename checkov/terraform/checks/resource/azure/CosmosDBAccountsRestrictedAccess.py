@@ -8,8 +8,6 @@ class CosmosDBAccountsRestrictedAccess(BaseResourceCheck):
         id = "CKV_AZURE_99"
         supported_resources = ['azurerm_cosmosdb_account']
         categories = [CheckCategories.NETWORKING]
-        self.evaluated_keys = ['public_network_access_enabled', 'is_virtual_network_filter_enabled',
-                               'virtual_network_rule', 'ip_range_filter']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):

@@ -1,5 +1,6 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from typing import List
 
 
 class GKEClusterLogging(BaseResourceCheck):
@@ -8,7 +9,6 @@ class GKEClusterLogging(BaseResourceCheck):
         id = "CKV_GCP_1"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
-        self.evaluated_keys = ['logging_service']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -22,6 +22,9 @@ class GKEClusterLogging(BaseResourceCheck):
             if conf['logging_service'][0] == "none":
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['logging_service']
 
 
 check = GKEClusterLogging()

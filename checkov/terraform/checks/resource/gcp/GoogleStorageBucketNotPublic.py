@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class GoogleStorageBucketNotPublic(BaseResourceCheck):
@@ -8,7 +9,6 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         id = "CKV_GCP_28"
         supported_resources = ['google_storage_bucket_iam_member', 'google_storage_bucket_iam_binding']
         categories = [CheckCategories.GENERAL_SECURITY]
-        self.evaluated_keys = ['members', 'member']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -18,6 +18,9 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         if not any(member in member_conf for member in ['allUsers', 'allAuthenticatedUsers']):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['members', 'member']
 
 
 check = GoogleStorageBucketNotPublic()

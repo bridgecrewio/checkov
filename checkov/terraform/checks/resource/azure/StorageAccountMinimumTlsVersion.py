@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class StorageAccountMinimumTlsVersion(BaseResourceCheck):
@@ -14,7 +15,6 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
         id = "CKV_AZURE_44"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.NETWORKING]
-        self.evaluated_keys = ['min_tls_version']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -22,6 +22,9 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
                 conf['min_tls_version'][0] == 'TLS1_0' or conf['min_tls_version'][0] == 'TLS1_1':
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['min_tls_version']
 
 
 check = StorageAccountMinimumTlsVersion()

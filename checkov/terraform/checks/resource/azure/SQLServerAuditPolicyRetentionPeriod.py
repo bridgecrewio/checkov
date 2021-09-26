@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class SQLServerAuditPolicyRetentionPeriod(BaseResourceCheck):
@@ -9,7 +10,6 @@ class SQLServerAuditPolicyRetentionPeriod(BaseResourceCheck):
         id = "CKV_AZURE_46"
         supported_resources = ['azurerm_mssql_database_extended_auditing_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
-        self.evaluated_keys = ['retention_in_days']
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -21,6 +21,9 @@ class SQLServerAuditPolicyRetentionPeriod(BaseResourceCheck):
                 else:
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['retention_in_days']
 
 
 check = SQLServerAuditPolicyRetentionPeriod()
