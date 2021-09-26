@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class GKEBasicAuth(BaseResourceCheck):
@@ -28,6 +29,9 @@ class GKEBasicAuth(BaseResourceCheck):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['master_auth/[0]/username', 'master_auth/[0]/password']
 
 
 check = GKEBasicAuth()

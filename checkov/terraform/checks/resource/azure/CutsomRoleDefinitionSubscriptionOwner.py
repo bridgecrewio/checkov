@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class CustomRoleDefinitionSubscriptionOwner(BaseResourceCheck):
@@ -14,6 +15,9 @@ class CustomRoleDefinitionSubscriptionOwner(BaseResourceCheck):
         if 'actions' in conf['permissions'][0] and '*' in conf['permissions'][0]['actions'][0]:
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['permissions/[0]/actions']
 
 
 check = CustomRoleDefinitionSubscriptionOwner()

@@ -1,6 +1,7 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 import re
+from typing import List
 
 STO_NAME_REGEX = re.compile('^[a-z0-9]{3,24}$')
 
@@ -22,6 +23,9 @@ class StorageAccountName(BaseResourceCheck):
         :return: <CheckResult>
         """
         return CheckResult.PASSED if conf.get('name') and re.findall(STO_NAME_REGEX, str(conf['name'][0])) else CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['name']
 
 
 check = StorageAccountName()

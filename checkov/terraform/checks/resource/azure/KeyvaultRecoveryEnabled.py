@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class KeyVaultRecoveryEnabled(BaseResourceCheck):
@@ -15,6 +16,9 @@ class KeyVaultRecoveryEnabled(BaseResourceCheck):
                 ('soft_delete_enabled' not in conf or conf['soft_delete_enabled'][0]):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['purge_protection_enabled', 'soft_delete_enabled']
 
 
 check = KeyVaultRecoveryEnabled()

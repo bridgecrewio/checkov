@@ -39,15 +39,13 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
     def check_rule(self, rule_type, conf):
         if rule_type == 'group_or_rule_description':
             if 'description' in conf.keys():
-                self.evaluated_keys = 'description'
+                self.evaluated_keys = ['description']
                 if conf['description']:
                     return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
 
         if rule_type in conf.keys():
-            if isinstance(self.evaluated_keys, str):
-                self.evaluated_keys = self.evaluated_keys.split()
             for rule in conf[rule_type]:
                 if isinstance(rule, dict):
                     if 'description' not in rule.keys() or not rule['description']:
