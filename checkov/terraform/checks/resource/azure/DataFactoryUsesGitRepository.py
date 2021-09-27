@@ -15,10 +15,13 @@ class DataFactoryUsesGitRepository(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         github = conf.get("github_configuration", [{}])[0]
         if github.get("repository_name"):
+            self.evaluated_keys = ['github_configuration/[0]/repository_name']
             return CheckResult.PASSED
         vsts = conf.get("vsts_configuration", [{}])[0]
         if vsts.get("repository_name"):
+            self.evaluated_keys = ['vsts_configuration/[0]/repository_name']
             return CheckResult.PASSED
+        self.evaluated_keys = ['github_configuration', 'vsts_configuration']
         return CheckResult.FAILED
 
 
