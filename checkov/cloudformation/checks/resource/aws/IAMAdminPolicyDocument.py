@@ -6,7 +6,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no IAM policies documents allow \"*\" as a statement's actions"
         id = "CKV_AWS_63"
-        supported_resources = ['AWS::IAM::Policy','AWS::IAM::Group']
+        supported_resources = ['AWS::IAM::Policy','AWS::IAM::Group','AWS::IAM::Role']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
