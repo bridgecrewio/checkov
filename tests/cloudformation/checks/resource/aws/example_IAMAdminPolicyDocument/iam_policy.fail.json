@@ -30,13 +30,13 @@
           }
         ]
       }
-},
-"CFNUserGroup" : {
-  "Type" : "AWS::IAM::Group",
-  "Properties" : {
-     "Path" : "/myapplication/",
-     "Policies" : []
-  }
-}
+    },
+    "CFNUserGroup": {
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "Path": "/myapplication/",
+        "Policies": []
+      }
+    }
   }
 }

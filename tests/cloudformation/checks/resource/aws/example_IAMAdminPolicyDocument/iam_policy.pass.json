@@ -3,48 +3,48 @@
   "Description": "Create a variable number of IAM resources.",
   "Resources": {
     "NEWPolicy": {
-  "Type": "AWS::IAM::Policy",
-  "Properties": {
-    "PolicyName": "CFNUsers",
-    "PolicyDocument": {
-      "Statement": [
-        {
-          "Action": [
-            "s3:ListBucket*",
-            "s3:HeadBucket",
-            "s3:Get*"
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CFNUsers",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:ListBucket*",
+                "s3:HeadBucket",
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::b1",
+                "arn:aws:s3:::b1/*",
+                "arn:aws:s3:::b2",
+                "arn:aws:s3:::b2/*"
+              ],
+              "Sid": ""
+            },
+            {
+              "Action": "s3:PutObject*",
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::b1/*",
+              "Sid": ""
+            }
           ],
-          "Effect": "Allow",
-          "Resource": [
-            "arn:aws:s3:::b1",
-            "arn:aws:s3:::b1/*",
-            "arn:aws:s3:::b2",
-            "arn:aws:s3:::b2/*"
-          ],
-          "Sid": ""
+          "Version": "2012-10-17"
         },
-        {
-          "Action": "s3:PutObject*",
-          "Effect": "Allow",
-          "Resource": "arn:aws:s3:::b1/*",
-          "Sid": ""
-        }
-      ],
-      "Version": "2012-10-17"
-    },
-    "Groups": [
-      {
-        "Ref": "CFNUserGroup"
+        "Groups": [
+          {
+            "Ref": "CFNUserGroup"
+          }
+        ]
       }
-    ]
-  }
-},
-"CFNUserGroup" : {
-  "Type" : "AWS::IAM::Group",
-  "Properties" : {
-     "Path" : "/myapplication/",
-     "Policies" : []
-  }
-}
+    },
+    "CFNUserGroup": {
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "Path": "/myapplication/",
+        "Policies": []
+      }
+    }
   }
 }
