@@ -15,8 +15,10 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
         if 'extended_auditing_policy' in conf:
             policy = conf['extended_auditing_policy'][0]
             if not isinstance(policy, dict):
+                self.evaluated_keys = ['extended_auditing_policy']
                 return CheckResult.UNKNOWN
             retention = force_int(conf['extended_auditing_policy'][0]['retention_in_days'][0])
+            self.evaluated_keys = ['extended_auditing_policy/[0]/retention_in_days']
             if retention and retention >= 90:
                 return CheckResult.PASSED
         return CheckResult.FAILED

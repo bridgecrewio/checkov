@@ -1,5 +1,6 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from typing import List
 
 
 class GKEHasLabels(BaseResourceCheck):
@@ -22,6 +23,9 @@ class GKEHasLabels(BaseResourceCheck):
             if isinstance(resource_labels[0], dict) and len(resource_labels[0].keys()) > 0:
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['resource_labels']
 
 
 check = GKEHasLabels()

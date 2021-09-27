@@ -203,7 +203,7 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
-            if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125'):
+            if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125', 'CKV_AWS_151'):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
@@ -632,6 +632,43 @@ class TestRunnerValid(unittest.TestCase):
         runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
         # If we get here all is well. :-)  Failure would throw an exception.
 
+    def test_module_skip(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        report = Runner().run(root_folder=f"{current_dir}/resources/module_skip",
+                              external_checks_dir=None,
+                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+
+        self.assertEqual(len(report.skipped_checks), 5)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+
+        found_inside = False
+        found_outside = False
+
+        for record in report.failed_checks:
+            if "inside" in record.resource:
+                found_inside = True
+                print(record)
+                self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
+                assert record.file_path == "/module/module.tf"
+                self.assertEqual(record.file_line_range, [7, 9])
+                assert record.caller_file_path == "/main.tf"
+                # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
+                #             A bug might have been fixed.
+                self.assertEqual(record.caller_file_line_range, [6, 8])
+
+            if "outside" in record.resource:
+                found_outside = True
+                self.assertEqual(record.resource, "aws_s3_bucket.outside")
+                assert record.file_path == "/main.tf"
+                self.assertEqual(record.file_line_range, [12, 16])
+                self.assertIsNone(record.caller_file_path)
+                self.assertIsNone(record.caller_file_line_range)
+
+        self.assertFalse(found_inside)
+        self.assertFalse(found_outside)
+
     def test_module_failure_reporting_772(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -667,6 +704,7 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertTrue(found_inside)
         self.assertTrue(found_outside)
+
 
     def test_loading_external_checks_yaml(self):
         runner = Runner()
@@ -846,6 +884,15 @@ class TestRunnerValid(unittest.TestCase):
             if check_unique in unique_checks:
                 self.fail(f"found duplicate results in report: {record.to_string()}")
             unique_checks.append(check_unique)
+
+    def test_malformed_file_in_parsing_error(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unbalanced_eval_brackets")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform'))
+        file_path = os.path.join(resources_path, 'main.tf')
+        self.assertEqual(report.parsing_errors[0], file_path)
 
     def tearDown(self):
         parser_registry.context = {}

@@ -12,9 +12,11 @@ class AzureManagedDiskEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'disk_encryption_set_id' in conf:
+            self.evaluated_keys = ['disk_encryption_set_id']
             return CheckResult.PASSED
         if 'encryption_settings' in conf:
             if isinstance(conf['encryption_settings'][0], dict):
+                self.evaluated_keys = ['encryption_settings]/[0]/[enabled]']
                 return CheckResult.PASSED if conf['encryption_settings'][0]['enabled'][0] else CheckResult.FAILED
         return CheckResult.PASSED  # enabled by default
 

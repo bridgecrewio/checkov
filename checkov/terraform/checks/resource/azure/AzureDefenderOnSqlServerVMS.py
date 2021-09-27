@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
@@ -13,6 +14,9 @@ class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         return CheckResult.PASSED if conf.get('resource_type', [None])[0] != 'SqlServerVirtualMachines' \
                                      or conf.get('tier', [None])[0] == 'Standard' else CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['resource_type', 'tier']
 
 
 check = AzureDefenderOnSqlServersVMS()

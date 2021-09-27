@@ -93,7 +93,7 @@ class RootContainersHighUID(BaseK8Check):
 check = RootContainersHighUID()
 
 def check_runAsUser(spec):
-    if "securityContext" in spec:
+    if spec.get("securityContext"):
         if "runAsUser" in spec["securityContext"]:
             if spec["securityContext"]["runAsUser"] >= 10000:
                 return "PASSED"

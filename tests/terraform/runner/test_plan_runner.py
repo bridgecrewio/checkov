@@ -68,7 +68,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 18)
+        self.assertEqual(report.get_summary()["failed"], 15)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -77,7 +77,6 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
             "CUSTOM_GRAPH_AWS_1"
         }
 
@@ -104,7 +103,7 @@ class TestRunnerValid(unittest.TestCase):
         # 4 checks fail on test data for single eks resource as of present
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
-        self.assertEqual(report.get_summary()["failed"], 5)
+        self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -113,7 +112,6 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
         }
 
         assert failed_check_ids == expected_failed_check_ids
@@ -146,7 +144,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 5)
+        self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -155,7 +153,6 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
         }
 
         assert failed_check_ids == expected_failed_check_ids
@@ -174,7 +171,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertGreaterEqual(report.get_summary()["failed"], 88)
+        self.assertGreaterEqual(report.get_summary()["failed"], 85)
         self.assertGreaterEqual(report.get_summary()["passed"], 76)
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))

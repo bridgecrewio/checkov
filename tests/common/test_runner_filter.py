@@ -29,6 +29,14 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=["BC_CHECK_1"])
         self.assertTrue(instance.should_run_check("CHECK_1", "BC_CHECK_1"))
 
+    def test_should_run_wildcard_enable(self):
+        instance = RunnerFilter(checks=["CHECK_*"])
+        self.assertTrue(instance.should_run_check("CHECK_1"))
+
+    def test_should_run_wildcard_enable_bc(self):
+        instance = RunnerFilter(checks=["BC_CHECK_*"])
+        self.assertTrue(instance.should_run_check("CHECK_1", "BC_CHECK_1"))
+
     def test_should_run_omitted_specific_enable(self):
         instance = RunnerFilter(checks=["CHECK_1"])
         self.assertFalse(instance.should_run_check("CHECK_999"))
