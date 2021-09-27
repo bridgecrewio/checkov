@@ -16,6 +16,7 @@ import hcl2
 from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
@@ -71,6 +72,7 @@ class Parser:
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.tf_var_files = tf_var_files
+        self.scan_hcl = should_scan_hcl_files()
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -208,7 +210,7 @@ class Parser:
                 continue
 
             # Resource files
-            if file.name.endswith(".tf"):  # TODO: add support for .tf.json
+            if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 data = _load_or_die_quietly(file, self.out_parsing_errors)
             else:
                 continue

@@ -1,5 +1,8 @@
+import os
 import unittest
 
+from checkov.common.models.consts import SCAN_HCL_FLAG
+from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.data_structures_utils import merge_dicts
 
 
@@ -33,6 +36,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(res), 2)
         self.assertEqual(res['a'], '1')
         self.assertEqual(res['b'], '2')
+
+
+    def test_should_scan_hcl_env_var(self):
+        orig_value = os.getenv(SCAN_HCL_FLAG)
+
+        os.unsetenv(SCAN_HCL_FLAG)
+        self.assertFalse(should_scan_hcl_files())
+
+        os.environ[SCAN_HCL_FLAG] = 'FALSE'
+        self.assertFalse(should_scan_hcl_files())
+
+        os.environ[SCAN_HCL_FLAG] = 'TrUe'
+        self.assertTrue(should_scan_hcl_files())
+
+        if orig_value:
+            os.environ[SCAN_HCL_FLAG] = orig_value
 
 
 if __name__ == '__main__':

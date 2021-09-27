@@ -6,6 +6,7 @@ import dis
 from pathlib import Path
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -893,6 +894,25 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform'))
         file_path = os.path.join(resources_path, 'main.tf')
         self.assertEqual(report.parsing_errors[0], file_path)
+
+    def test_runner_scan_hcl(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
+        orig_value = os.getenv(SCAN_HCL_FLAG)
+
+        os.environ[SCAN_HCL_FLAG] = 'false'
+        runner = Runner()
+        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
+        self.assertEqual(len(report.resources), 1)
+
+        os.environ[SCAN_HCL_FLAG] = 'true'
+        runner = Runner()
+        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
+        self.assertEqual(len(report.resources), 2)
+
+        if orig_value:
+            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def tearDown(self):
         parser_registry.context = {}

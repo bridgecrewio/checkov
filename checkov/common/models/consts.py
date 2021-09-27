@@ -1,4 +1,9 @@
+from checkov.common.util.config_utils import should_scan_hcl_files
+
+SCAN_HCL_FLAG = "CKV_SCAN_HCL"
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
+if should_scan_hcl_files():
+    SUPPORTED_FILE_EXTENSIONS.append(".hcl")
 ANY_VALUE = "CKV_ANY"
 DOCKER_IMAGE_REGEX = r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)'
 access_key_pattern = "(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])" # nosec
