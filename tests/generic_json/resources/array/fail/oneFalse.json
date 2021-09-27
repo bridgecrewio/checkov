@@ -6,6 +6,9 @@
     },
     {
         "bar": {
+            "toggle": true
+        },
+        "baz": {
             "toggle": false
         }
     }

@@ -7,6 +7,9 @@
     {
         "bar": {
             "toggle": false
+        },
+        "baz": {
+            "toggle": false
         }
     }
 ]

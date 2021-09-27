@@ -20,8 +20,8 @@ class PropHasValue(BaseJsonCheck):
 
     def scan_entity_conf(self, conf):
         if "prop" in conf and conf["prop"] == "value":
-            return CheckResult.PASSED, conf
-        return CheckResult.FAILED, conf
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = PropHasValue()

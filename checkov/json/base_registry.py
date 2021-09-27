@@ -1,3 +1,4 @@
+from typing import Any, Dict, Tuple
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
 from checkov.json.enums import BlockType
@@ -77,6 +78,7 @@ class Registry(BaseCheckRegistry):
                             target = target[p]
                 else:
                     target = entity
+
                 scanner(
                     scanned_file,
                     check,
@@ -129,7 +131,7 @@ class Registry(BaseCheckRegistry):
         scanned_file,
         skip_info,
     ):
-        result = self.run_check(
+        check_result = self.run_check(
             check,
             entity_configuration,
             entity_name,
@@ -138,13 +140,25 @@ class Registry(BaseCheckRegistry):
             skip_info,
         )
 
-        results[check] = {}
-        if result["result"] == CheckResult.SKIPPED:
-            results[check]["result"] = result["result"]
-            results[check]["suppress_comment"] = result["suppress_comment"]
-            results[check]["results_configuration"] = None
-        else:
-            results[check]["result"] = result["result"][0]
-            results[check]["results_configuration"] = result["result"][1]
+        result = check_result["result"]
 
-        return result["result"][0]
+        if result == CheckResult.SKIPPED:
+            results[check] = {
+                "result": result,
+                "suppress_comment": check_result["suppress_comment"],
+                "results_configuration": None,
+            }
+            return result
+
+        if isinstance(result, tuple):
+            results[check] = {
+                "result": result[0],
+                "results_configuration": result[1],
+            }
+            return result[0]
+
+        results[check] = {
+            "result": result,
+            "results_configuration": entity_configuration,
+        }
+        return result
