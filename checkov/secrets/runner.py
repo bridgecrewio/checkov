@@ -45,6 +45,7 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
+ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 
@@ -56,8 +57,14 @@ class _CheckResult(TypedDict, total=False):
 class Runner(BaseRunner):
     check_type = 'secrets'
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
-            collect_skip_comments=True) -> Report:
+    def run(
+        self,
+        root_folder: str,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True
+    ) -> Report:
         current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
         with transient_settings({
@@ -105,7 +112,7 @@ class Runner(BaseRunner):
                 {
                     'name': 'EntropyKeywordCombinator',
                     'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
-                    'limit': 4.5
+                    'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
         }) as settings:
@@ -124,7 +131,7 @@ class Runner(BaseRunner):
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            def _scan_file(file_paths: List[str]):
+            def _scan_file(file_paths: List[str]) -> None:
                 for file_path in file_paths:
                     start = time.time()
                     try:
@@ -154,7 +161,7 @@ class Runner(BaseRunner):
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     secret=secret,
-                    skipped_checks=runner_filter.skip_checks,
+                    runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
                 report.add_record(Record(
@@ -178,9 +185,9 @@ class Runner(BaseRunner):
         check_id: str,
         bc_check_id: str,
         secret: PotentialSecret,
-        skipped_checks: List[str]
+        runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:
-        if (check_id in skipped_checks or bc_check_id in skipped_checks) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id, bc_check_id) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

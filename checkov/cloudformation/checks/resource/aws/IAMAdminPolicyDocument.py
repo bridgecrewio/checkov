@@ -4,7 +4,7 @@ from checkov.common.util.type_forcers import force_list
 
 class IAMAdminPolicyDocument(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
+        name = "Ensure no IAM policies that allow full \"*-*\" administrative privileges are not created"
         id = "CKV_AWS_62"
         supported_resources = ['AWS::IAM::Policy','AWS::IAM::Group','AWS::IAM::Role','AWS::IAM::User']
         categories = [CheckCategories.IAM]

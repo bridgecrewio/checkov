@@ -73,6 +73,12 @@ class TestGetExitCode(unittest.TestCase):
         negative_test_soft_fail_on_code = r.get_exit_code(None, soft_fail_on=['CKV_AWS_157'], hard_fail_on=None)
         negative_test_soft_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=['BC_AWS_157'], hard_fail_on=None)
 
+        positive_test_soft_fail_on_wildcard_code = r.get_exit_code(None, soft_fail_on=['CKV_AWS*'])
+        positive_test_soft_fail_on_wildcard_code_bc_id = r.get_exit_code(None, soft_fail_on=['BC_AWS*'])
+
+        negative_test_soft_fail_on_wildcard_code = r.get_exit_code(None, soft_fail_on=['CKV_OTHER*'])
+        negative_test_soft_fail_on_wildcard_code_bc_id = r.get_exit_code(None, soft_fail_on=['BC_OTHER*'])
+
         # When hard_fail_on=['check1', 'check2'], exit code should be 1 if any checks in the hard_fail_on list fail
         positive_test_hard_fail_on_code = r.get_exit_code(None, soft_fail_on=None, hard_fail_on=['CKV_AWS_157'])
         positive_test_hard_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=None, hard_fail_on=['BC_AWS_157'])
@@ -87,6 +93,12 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(positive_test_soft_fail_on_code_bc_id, 0)
         self.assertEqual(negative_test_soft_fail_on_code, 1)
         self.assertEqual(negative_test_soft_fail_on_code_bc_id, 1)
+
+        self.assertEqual(positive_test_soft_fail_on_wildcard_code, 0)
+        self.assertEqual(positive_test_soft_fail_on_wildcard_code_bc_id, 0)
+        self.assertEqual(negative_test_soft_fail_on_wildcard_code, 1)
+        self.assertEqual(negative_test_soft_fail_on_wildcard_code_bc_id, 1)
+
         self.assertEqual(positive_test_hard_fail_on_code, 1)
         self.assertEqual(positive_test_hard_fail_on_code_bc_id, 1)
         self.assertEqual(negative_test_hard_fail_on_code, 0)
