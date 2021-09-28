@@ -105,10 +105,11 @@ class Parser:
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
     @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
-        if not file.endswith(".tf") and not file.endswith(".tf.json"):
+    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+        if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
+            return _load_or_die_quietly(Path(file), parsing_errors)
+        else:
             return None
-        return _load_or_die_quietly(Path(file), parsing_errors)
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,

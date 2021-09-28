@@ -88,7 +88,7 @@ class Runner(BaseRunner):
                 for file in files:
                     if file.endswith(".tf") or (scan_hcl and file.endswith(".hcl")):
                         file_parsing_errors = {}
-                        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+                        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
                         if parse_result is not None:
                             self.definitions[file] = parse_result
                         if file_parsing_errors:

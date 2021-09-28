@@ -914,6 +914,25 @@ class TestRunnerValid(unittest.TestCase):
         if orig_value:
             os.environ[SCAN_HCL_FLAG] = orig_value
 
+    def test_runner_scan_hcl_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
+        orig_value = os.getenv(SCAN_HCL_FLAG)
+
+        os.environ[SCAN_HCL_FLAG] = 'false'
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
+        self.assertEqual(len(report.resources), 0)
+
+        os.environ[SCAN_HCL_FLAG] = 'true'
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
+        self.assertEqual(len(report.resources), 1)
+
+        if orig_value:
+            os.environ[SCAN_HCL_FLAG] = orig_value
+
     def tearDown(self):
         parser_registry.context = {}
 
