@@ -312,11 +312,11 @@
         },
         "policy-sentry": {
             "hashes": [
-                "sha256:49d154f87154fd409c57c71d4035d802d9a05667c328ba5c9ce2bef4d9de2a0a",
-                "sha256:8b88cb58a390ae7e0e06db13b3bbb5ece0d32d7d7c38a92259eb9c4722198fb5"
+                "sha256:17f4be5a88b6adb4a0a61d3a1660718b8a8915a96682128e4db484425ca3176b",
+                "sha256:ec4d6df39fb194ca551e6c4340be6ae04e6b9f76c956648e7371a571be881285"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==0.11.16"
+            "version": "==0.11.17"
         },
         "policyuniverse": {
             "hashes": [
@@ -473,11 +473,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:39fb8672126159acb139a7718dd10806104dec1e2f0f6c88aab05d17df10c8d4",
-                "sha256:f57b4c16c62fa2760b7e3d97c35b255512fb6b59a259730f36ba32ce9f8e342f"
+                "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece",
+                "sha256:c4fdf4019605b6e5423637e01bc9fe4daef873709a7973e195ceba0a62bbc844"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
-            "version": "==1.26.6"
+            "version": "==1.26.7"
         },
         "websocket-client": {
             "hashes": [
