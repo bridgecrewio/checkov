@@ -2,11 +2,11 @@ import datetime
 import io
 import json
 import logging
+import multiprocessing
 import os
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing import Process, Pipe
 from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
@@ -666,8 +666,12 @@ Load JSON or HCL, depending on filename.
 def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
     # Start bar as a process
     raw_data = None
-    reader, writer = Pipe(duplex=False)  # used by the child process to return its result
-    p = Process(target=_hcl2_load, args=(writer, f))
+    reader, writer = multiprocessing.Pipe(duplex=False)  # used by the child process to return its result
+    # certain Python and OS versions (for sure 3.8/3.9 + Mac) have issues with 'multiprocessing.Process'
+    # see: https://github.com/pytorch/pytorch/issues/36515
+    # https://bugs.python.org/issue33725
+    # This is the correct approach to use fork on newer python versions on Mac, and should be compatible
+    p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, f))
     p.start()
 
     # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
