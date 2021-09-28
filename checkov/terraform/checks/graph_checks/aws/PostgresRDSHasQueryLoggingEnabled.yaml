@@ -1,5 +1,5 @@
 metadata:
-  name: "Postgres RDS has Query Logging enabled"
+  name: "Postgres RDS as aws_rds_cluster has Query Logging enabled"
   id: "CKV2_AWS_27"
   category: "LOGGING"
 definition:
