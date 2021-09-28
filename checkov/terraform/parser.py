@@ -5,6 +5,7 @@ import logging
 import multiprocessing
 import os
 import re
+import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
 from multiprocessing.connection import Connection
@@ -648,27 +649,27 @@ Load JSON or HCL, depending on filename.
     try:
         logging.debug(f"Parsing {file_path}")
 
-        # if file_name.endswith(".json"):
-        #     with open(file, "r") as f:
-        #         return json.load(f)
-        # else:
-        #     raw_data = _hcl2_load_with_timeout(file_name)
-        #     non_malformed_definitions = validate_malformed_definitions(raw_data)
-        #     if clean_definitions:
-        #         return clean_bad_definitions(non_malformed_definitions)
-        #     else:
-        #         return non_malformed_definitions
-        with open(file, "r") as f:
-            if file_name.endswith(".json"):
+        if file_name.endswith(".json"):
+            with open(file_name, "r") as f:
                 return json.load(f)
+        else:
+            raw_data = _hcl2_load_with_timeout(file_name)
+            non_malformed_definitions = validate_malformed_definitions(raw_data)
+            if clean_definitions:
+                return clean_bad_definitions(non_malformed_definitions)
             else:
-                raw_data = _hcl2_load_with_timeout(file_name)
-                non_malformed_definitions = validate_malformed_definitions(raw_data)
-                if clean_definitions:
-                    return clean_bad_definitions(non_malformed_definitions)
-                else:
-                    return non_malformed_definitions
-                
+                return non_malformed_definitions
+        # with open(file_name, "r") as f:
+        #     if file_name.endswith(".json"):
+        #         return json.load(f)
+        #     else:
+        #         raw_data = _hcl2_load_with_timeout(f)
+        #         non_malformed_definitions = validate_malformed_definitions(raw_data)
+        #         if clean_definitions:
+        #             return clean_bad_definitions(non_malformed_definitions)
+        #         else:
+        #             return non_malformed_definitions
+
     except Exception as e:
         logging.debug(f'failed while parsing file {file_path}', exc_info=e)
         parsing_errors[file_path] = e
@@ -682,9 +683,12 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
     # certain Python and OS versions (for sure 3.8/3.9 + Mac) have issues with 'multiprocessing.Process'
     # see: https://github.com/pytorch/pytorch/issues/36515
     # https://bugs.python.org/issue33725
-    # This is the correct approach to use fork on newer python versions on Mac, and should be compatible
-    p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, filename))
-    # p = multiprocessing.Process(target=_hcl2_load, args=(writer, filename))
+    # "Fork" is the correct approach on 3.8+ on Mac, and should be compatible with *nix. and generally 3.7+
+    # It is faster, and therefore we prefer it. However, it is not supported on Windows
+    if sys.platform == 'win32':
+        p = multiprocessing.Process(target=_hcl2_load, args=(writer, filename))
+    else:
+        p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, filename))
     p.start()
 
     # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
@@ -708,8 +712,8 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
 #     # see: https://github.com/pytorch/pytorch/issues/36515
 #     # https://bugs.python.org/issue33725
 #     # This is the correct approach to use fork on newer python versions on Mac, and should be compatible
-#     p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, f))
-#     # p = multiprocessing.Process(target=_hcl2_load, args=(writer, filename))
+#     # p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, f))
+#     p = multiprocessing.Process(target=_hcl2_load, args=(writer, f))
 #     p.start()
 #
 #     # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
@@ -737,9 +741,11 @@ def _hcl2_load(writer: Connection, filename: str) -> None:
 
 
 # def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
+#     print(123)
 #     try:
 #         raw_data = hcl2.load(f)
 #         writer.send(raw_data)
+#         print(123)
 #     except Exception as e:
 #         logging.error(f'Failed to parse file {f.name}. Error:')
 #         logging.error(e, exc_info=True)
