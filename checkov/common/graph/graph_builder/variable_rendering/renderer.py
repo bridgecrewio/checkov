@@ -32,9 +32,12 @@ class VariableRenderer(ABC):
 
         # all the edges entering `end_vertices`
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
+        end_vertices_indexes = []
         loops = 0
+        previous_loops_mem = [[], []]
         while len(edges_to_render) > 0:
-            logging.info(f"evaluating {len(edges_to_render)} edges")
+            total_updated_values = 0
+            print(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
@@ -46,24 +49,25 @@ class VariableRenderer(ABC):
                 )
             else:
                 for edge_group in edges_groups:
-                    self._edge_evaluation_task([edge_group])
+                    total_updated_values += self._edge_evaluation_task([edge_group])
             for edge in edges_to_render:
                 origin = edge.origin
                 self.done_edges_by_origin_vertex.setdefault(origin, []).append(edge)
 
             for edge in edges_to_render:
                 origin_vertex_index = edge.origin
-                out_edges = self.local_graph.out_edges.get(origin_vertex_index, [])
-                if all(e in self.done_edges_by_origin_vertex.get(origin_vertex_index, []) for e in out_edges):
+                out_edges = set(self.local_graph.out_edges.get(origin_vertex_index, []))
+                done_edges_for_origin = self.done_edges_by_origin_vertex.get(origin_vertex_index, set())
+                if out_edges.issubset(done_edges_for_origin):
                     end_vertices_indexes.append(origin_vertex_index)
-            edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
-            edges_to_render = list(
-                {
-                    edge
-                    for edge in edges_to_render
-                    if edge not in self.done_edges_by_origin_vertex.get(edge.origin, [])
-                }
-            )
+            new_edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
+            print(f"total_updated_values = {total_updated_values}")
+            edges_to_render = list(set(new_edges_to_render) - set(edges_to_render))
+
+            two_iteration_ago_edges = previous_loops_mem[-2]
+            previous_loops_mem.append(edges_to_render)
+            intersection_edges = set(edges_to_render).intersection(two_iteration_ago_edges)
+            print(f"next round has {len(edges_to_render)} edges, two rounds ago it had {len(two_iteration_ago_edges)}, the size of intersection is {len(intersection_edges)} which is {(len(intersection_edges)/len(new_edges_to_render)*100)}%")
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
                 logging.warning(f"Reached 50 graph edge iterations, breaking.")
@@ -78,13 +82,13 @@ class VariableRenderer(ABC):
     def _render_variables_from_vertices(self) -> None:
         pass
 
-    def _edge_evaluation_task(self, edges: List[List[Edge]]) -> List[Edge]:
+    def _edge_evaluation_task(self, edges: List[List[Edge]]) -> int:
         inner_edges = edges[0]
-        self.evaluate_vertex_attribute_from_edge(inner_edges)
-        return inner_edges
+        update_count = self.evaluate_vertex_attribute_from_edge(inner_edges)
+        return update_count
 
     @abstractmethod
-    def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
+    def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> int:
         pass
 
     @staticmethod

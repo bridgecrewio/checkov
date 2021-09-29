@@ -61,8 +61,8 @@ class LocalGraph:
     def get_resources_types_in_graph(self) -> List[str]:
         pass
 
-    def get_vertex_attributes_by_index(self, index: int) -> Dict[str, Any]:
-        return self.vertices[index].get_attribute_dict()
+    def get_vertex_attributes_by_index(self, index: int, add_hash=True) -> Dict[str, Any]:
+        return self.vertices[index].get_attribute_dict(add_hash)
 
     def update_vertex_attribute(
             self,
