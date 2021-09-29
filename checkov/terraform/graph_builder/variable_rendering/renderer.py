@@ -36,8 +36,7 @@ class TerraformVariableRenderer(VariableRenderer):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         super().__init__(local_graph)
 
-    def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> int:
-        updates_count = 0
+    def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
         origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
@@ -57,8 +56,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
                 )
-                updates_count += 1
-                return updates_count
+                return
             if (
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
@@ -72,8 +70,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
                 )
-                updates_count += 1
-                return updates_count
+                return
 
         modified_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         origin_val = modified_vertex_attributes.get(edge.label, "")
@@ -104,7 +101,6 @@ class TerraformVariableRenderer(VariableRenderer):
                         change_origin_id=edge.dest,
                         attribute_at_dest=key_path_in_dest_vertex,
                     )
-                    updates_count += 1
 
         if multiple_edges and val_to_eval != origin_val:
             self.update_evaluated_value(
@@ -114,7 +110,6 @@ class TerraformVariableRenderer(VariableRenderer):
                 change_origin_id=edge.dest,
                 attribute_at_dest=first_key_path,
             )
-            updates_count += 1
 
         # Avoid loops on output => output edges
         if (
@@ -124,8 +119,6 @@ class TerraformVariableRenderer(VariableRenderer):
             if edge.origin not in self.done_edges_by_origin_vertex:
                 self.done_edges_by_origin_vertex[edge.origin] = []
             self.done_edges_by_origin_vertex[edge.origin].append(edge)
-
-        return updates_count
 
     def extract_value_from_vertex(self, key_path: List[str], attributes: Dict[str, Any]) -> Any:
         for i, _ in enumerate(key_path):

@@ -1,5 +1,3 @@
-import json
-import logging
 import os
 from unittest import TestCase
 
@@ -7,7 +5,6 @@ from checkov.cloudformation.graph_builder.graph_components.block_types import Bl
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.cloudformation.parser import parse
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.terraform.graph_manager import TerraformGraphManager
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -88,11 +85,3 @@ class TestCloudformationGraphManager(TestCase):
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
         self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"], resource_vertex.attributes)
-
-    def test_build_graph_from_definitions_brex(self):
-        logging.basicConfig(level=logging.INFO)
-        with open("/Users/ravni/bridgecrew/checkov/checkov/tf_definitions.json", "r") as f:
-            definitions = json.loads(f.read())
-            graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
-            local_graph = graph_manager.build_graph_from_definitions(definitions)
-
