@@ -35,6 +35,7 @@ class VariableRenderer(ABC):
         end_vertices_indexes = []
         loops = 0
         previous_loops_mem = [[], []]
+        duplicates_count = 0
         while len(edges_to_render) > 0:
             total_updated_values = 0
             print(f"evaluating {len(edges_to_render)} edges")
@@ -67,7 +68,17 @@ class VariableRenderer(ABC):
             two_iteration_ago_edges = previous_loops_mem[-2]
             previous_loops_mem.append(edges_to_render)
             intersection_edges = set(edges_to_render).intersection(two_iteration_ago_edges)
-            print(f"next round has {len(edges_to_render)} edges, two rounds ago it had {len(two_iteration_ago_edges)}, the size of intersection is {len(intersection_edges)} which is {(len(intersection_edges)/len(new_edges_to_render)*100)}%")
+            match_percent = 0
+            try:
+                match_percent = int((len(intersection_edges)/len(edges_to_render))*100)
+            except ZeroDivisionError:
+                pass
+            print(f"next round has {len(edges_to_render)} edges, two rounds ago it had {len(two_iteration_ago_edges)}, the size of intersection is {len(intersection_edges)} which is {match_percent}%")
+            if match_percent > 90:
+                duplicates_count += 1
+            if duplicates_count > 5:
+                logging.warning(f"Reached too many edge duplications. breaking.")
+                break
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
                 logging.warning(f"Reached 50 graph edge iterations, breaking.")
