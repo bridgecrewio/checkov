@@ -27,7 +27,7 @@ class ALBListenerHTTPS(BaseResourceCheck):
                 if 'default_action' in conf.keys():
                     default_action = conf['default_action'][0]
                     action_type = default_action['type']
-                    if action_type == ['redirect'] and default_action.get('redirect'):
+                    if action_type == ['redirect'] and 'redirect' in default_action:
                         protocol = default_action['redirect'][0].get('protocol')
                         if protocol == ['HTTPS']:
                             self.evaluated_keys = 'default_action/[0]/redirect/[0]/protocol'
