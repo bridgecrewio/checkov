@@ -6,9 +6,9 @@ from checkov.kubernetes.registry import registry
 
 
 class BaseK8Check(BaseCheck):
-    def __init__(self, name, id, categories, supported_entities):
+    def __init__(self, name, id, categories, supported_entities, **kwargs):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
-                         block_type="k8")
+                         block_type="k8", **kwargs)
         self.supported_specs = supported_entities
         registry.register(self)
 

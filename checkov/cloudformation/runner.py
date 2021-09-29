@@ -126,6 +126,7 @@ class Runner(BaseRunner):
                                     check_class=check.__class__.__module__,
                                     file_abs_path=file_abs_path,
                                     entity_tags=tags,
+                                    guideline=check.guideline
                                 )
                                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                                 if breadcrumb:

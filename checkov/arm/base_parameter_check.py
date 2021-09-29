@@ -6,9 +6,9 @@ from checkov.common.multi_signature import multi_signature
 
 
 class BaseParameterCheck(BaseCheck):
-    def __init__(self, name, id, categories, supported_resources):
+    def __init__(self, name, id, categories, supported_resources, **kwargs):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type="parameter")
+                         block_type="parameter", **kwargs)
         self.supported_resources = supported_resources
         arm_parameter_registry.register(self)
 

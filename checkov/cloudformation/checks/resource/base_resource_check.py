@@ -8,9 +8,11 @@ from checkov.common.multi_signature import multi_signature
 
 
 class BaseResourceCheck(BaseCheck):
-    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_resources: List[str]) -> None:
+    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_resources: List[str],
+                 **kwargs) -> None:
         super().__init__(
-            name=name, id=id, categories=categories, supported_entities=supported_resources, block_type="resource"
+            name=name, id=id, categories=categories, supported_entities=supported_resources,
+            block_type="resource", **kwargs
         )
         self.supported_resources = supported_resources
         cfn_registry.register(self)

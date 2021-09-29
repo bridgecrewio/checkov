@@ -15,7 +15,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: List[str] = []
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str],
+            block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None, **_
     ) -> None:
         self.name = name
         self.id = id
@@ -26,6 +27,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
+        self.guideline = guideline
 
     def run(
         self,
@@ -55,6 +57,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
+                check_result["guideline"] = self.guideline
                 message = 'File {}, {}  "{}.{}" check "{}" Result: {} '.format(
                     scanned_file, self.block_type, entity_type, entity_name, self.name, check_result
                 )
