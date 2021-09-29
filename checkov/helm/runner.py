@@ -191,7 +191,8 @@ class Runner(BaseRunner):
                     report.skipped_checks += chart_results.skipped_checks
                     report.resources.update(chart_results.resources)
 
-                except:
+                except Exception as e:
+                    logging.warning(e, stack_info=True)
                     with tempfile.TemporaryDirectory() as save_error_dir:
                         logging.debug(
                             f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
