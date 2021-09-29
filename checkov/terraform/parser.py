@@ -659,16 +659,6 @@ Load JSON or HCL, depending on filename.
                 return clean_bad_definitions(non_malformed_definitions)
             else:
                 return non_malformed_definitions
-        # with open(file_name, "r") as f:
-        #     if file_name.endswith(".json"):
-        #         return json.load(f)
-        #     else:
-        #         raw_data = _hcl2_load_with_timeout(f)
-        #         non_malformed_definitions = validate_malformed_definitions(raw_data)
-        #         if clean_definitions:
-        #             return clean_bad_definitions(non_malformed_definitions)
-        #         else:
-        #             return non_malformed_definitions
 
     except Exception as e:
         logging.debug(f'failed while parsing file {file_path}', exc_info=e)
@@ -680,11 +670,12 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
     # Start bar as a process
     raw_data = None
     reader, writer = multiprocessing.Pipe(duplex=False)  # used by the child process to return its result
+
     # certain Python and OS versions (for sure 3.8/3.9 + Mac) have issues with 'multiprocessing.Process'
     # see: https://github.com/pytorch/pytorch/issues/36515
     # https://bugs.python.org/issue33725
-    # "Fork" is the correct approach on 3.8+ on Mac, and should be compatible with *nix. and generally 3.7+
-    # It is faster, and therefore we prefer it. However, it is not supported on Windows
+    # "Fork" is the correct approach on 3.8+ on Mac, and should be compatible with *nix, and generally 3.7+
+    # It is faster to open processes, and therefore we prefer it. However, it is not supported on Windows
     if sys.platform == 'win32':
         p = multiprocessing.Process(target=_hcl2_load, args=(writer, filename))
     else:
@@ -704,31 +695,6 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
     return raw_data
 
 
-# def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
-#     # Start bar as a process
-#     raw_data = None
-#     reader, writer = multiprocessing.Pipe(duplex=False)  # used by the child process to return its result
-#     # certain Python and OS versions (for sure 3.8/3.9 + Mac) have issues with 'multiprocessing.Process'
-#     # see: https://github.com/pytorch/pytorch/issues/36515
-#     # https://bugs.python.org/issue33725
-#     # This is the correct approach to use fork on newer python versions on Mac, and should be compatible
-#     # p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, f))
-#     p = multiprocessing.Process(target=_hcl2_load, args=(writer, f))
-#     p.start()
-#
-#     # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
-#     is_input_available = reader.poll(timeout=60)
-#     if is_input_available:
-#         raw_data = reader.recv()
-#
-#     # Resources cleanup
-#     if p.is_alive():
-#         p.terminate()
-#     writer.close()
-#
-#     return raw_data
-
-
 def _hcl2_load(writer: Connection, filename: str) -> None:
     with open(filename, 'r') as f:
         try:
@@ -738,18 +704,6 @@ def _hcl2_load(writer: Connection, filename: str) -> None:
             logging.error(f'Failed to parse file {f.name}. Error:')
             logging.error(e, exc_info=True)
             writer.send(None)
-
-
-# def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
-#     print(123)
-#     try:
-#         raw_data = hcl2.load(f)
-#         writer.send(raw_data)
-#         print(123)
-#     except Exception as e:
-#         logging.error(f'Failed to parse file {f.name}. Error:')
-#         logging.error(e, exc_info=True)
-#         writer.send(None)
 
 
 def _is_valid_block(block):
