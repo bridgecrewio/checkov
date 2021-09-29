@@ -9,24 +9,24 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestCheckovJsonReport(unittest.TestCase):
 
     def test_terragoat_report(self):
-        report_path = current_dir + "/../checkov_report_terragoat.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_terragoat.json')
         self.validate_report(os.path.abspath(report_path))
 
     def test_cfngoat_report(self):
-        report_path = current_dir + "/../checkov_report_cfngoat.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_cfngoat.json')
         self.validate_report(os.path.abspath(report_path))
         self.validate_check_in_report(report_path, "CKV2_AWS_26")
 
     def test_k8goat_report(self):
-        report_path = current_dir + "/../checkov_report_kubernetes-goat.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_kubernetes-goat.json')
         self.validate_report(os.path.abspath(report_path))
 
     def test_k8goat_report(self):
-        report_path = current_dir + "/../checkov_report_kubernetes-goat-helm.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_kubernetes-goat-helm.json')
         self.validate_report(os.path.abspath(report_path))
 
     def test_checkov_report_terragoat_with_skip(self):
-        report_path = current_dir + "/../checkov_report_terragoat_with_skip.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_terragoat_with_skip.json')
         checkov2_graph_findings = 0
         with open(report_path) as json_file:
             data = json.load(json_file)
@@ -53,7 +53,7 @@ class TestCheckovJsonReport(unittest.TestCase):
                            f"expecting more than 1 failed checks, got: {report['summary']['failed']}")
 
     def validate_json_quiet(self):
-        report_path = current_dir + "/../checkov_report_cfngoat_quiet.json"
+        report_path = os.path.join(current_dir, '..', 'checkov_report_cfngoat_quiet.json')
         with open(report_path) as json_file:
             data = json.load(json_file)
             self.assertTrue(data["results"]["failed_checks"])
