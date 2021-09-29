@@ -17,6 +17,7 @@ import hcl2
 from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
@@ -72,6 +73,7 @@ class Parser:
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.tf_var_files = tf_var_files
+        self.scan_hcl = should_scan_hcl_files()
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -104,10 +106,11 @@ class Parser:
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
     @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
-        if not file.endswith(".tf") and not file.endswith(".tf.json"):
+    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+        if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
+            return _load_or_die_quietly(Path(file), parsing_errors)
+        else:
             return None
-        return _load_or_die_quietly(Path(file), parsing_errors)
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
@@ -209,7 +212,7 @@ class Parser:
                 continue
 
             # Resource files
-            if file.name.endswith(".tf"):  # TODO: add support for .tf.json
+            if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 data = _load_or_die_quietly(file, self.out_parsing_errors)
             else:
                 continue
@@ -653,7 +656,7 @@ Load JSON or HCL, depending on filename.
             with open(file_name, "r") as f:
                 return json.load(f)
         else:
-            raw_data = _hcl2_load_with_timeout(file_name)
+            raw_data = _hcl2_load_with_timeout(file_path)
             non_malformed_definitions = validate_malformed_definitions(raw_data)
             if clean_definitions:
                 return clean_bad_definitions(non_malformed_definitions)
@@ -709,6 +712,11 @@ def _hcl2_load(writer: Connection, filename: str) -> None:
 def _is_valid_block(block):
     if not isinstance(block, dict):
         return True
+
+    # if the block is empty, there's no need to process it further
+    if len(block) == 0:
+        return False
+
     entity_name, _ = next(iter(block.items()))
     if re.fullmatch(r'[^\W0-9][\w-]*', entity_name):
         return True
