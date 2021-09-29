@@ -909,7 +909,16 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
+
+        orig_value = None  # just in case this was set in the env for some reason
+        if SCAN_HCL_FLAG in os.environ:
+            orig_value = os.getenv(SCAN_HCL_FLAG)
+            del os.environ[SCAN_HCL_FLAG]
+
+        # test default value (true)
+        runner = Runner()
+        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
+        self.assertEqual(len(report.resources), 2)
 
         os.environ[SCAN_HCL_FLAG] = 'false'
         runner = Runner()
@@ -928,7 +937,16 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
+
+        orig_value = None  # just in case this was set in the env for some reason
+        if SCAN_HCL_FLAG in os.environ:
+            orig_value = os.getenv(SCAN_HCL_FLAG)
+            del os.environ[SCAN_HCL_FLAG]
+
+        # test default value (true)
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
+        self.assertEqual(len(report.resources), 1)
 
         os.environ[SCAN_HCL_FLAG] = 'false'
         runner = Runner()

@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 
 
-
-
 def config_file_paths(dir_path):
     return [os.path.join(dir_path, '.checkov.yaml'), os.path.join(dir_path, '.checkov.yml')]
 
@@ -28,4 +26,4 @@ def get_default_config_paths(argv):
 
 def should_scan_hcl_files():
     from checkov.common.models.consts import SCAN_HCL_FLAG  # prevent circular import
-    return os.getenv(SCAN_HCL_FLAG, default="false").lower() == "true"
+    return os.getenv(SCAN_HCL_FLAG, default="true").lower() == "true"
