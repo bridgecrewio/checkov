@@ -19,7 +19,7 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :return: <CheckResult>
         """
         log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-        if "enabled_cluster_log_types" in conf.keys() \
+        if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"][0] is not None \
                 and all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
             return CheckResult.PASSED
         return CheckResult.FAILED
