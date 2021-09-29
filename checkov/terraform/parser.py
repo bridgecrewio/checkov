@@ -1,5 +1,7 @@
+from contextlib import contextmanager
+import threading
+import _thread
 import datetime
-import io
 import json
 import logging
 import multiprocessing
@@ -8,7 +10,6 @@ import re
 import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
@@ -45,6 +46,24 @@ class DefinitionsEncoder(JSONEncoder):
 def _filter_ignored_paths(root, paths, excluded_paths):
     filter_ignored_paths(root, paths, excluded_paths)
     [paths.remove(path) for path in list(paths) if path in [default_ml_registry.external_modules_folder_name]]
+
+
+class TimeoutException(Exception):
+    def __init__(self, msg=''):
+        self.msg = msg
+
+
+@contextmanager
+def time_limit(seconds, msg=''):
+    timer = threading.Timer(seconds, lambda: _thread.interrupt_main())
+    timer.start()
+    try:
+        yield
+    except KeyboardInterrupt:
+        raise TimeoutException("Timed out for operation {}".format(msg))
+    finally:
+        # if the action ends in specified time, timer is canceled
+        timer.cancel()
 
 
 class Parser:
@@ -281,13 +300,6 @@ class Parser:
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
-
-        # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
-        #                      may be a little overboard, but I don't want to just pass the entire data map down
-        #                      because it break encapsulations and I don't want to cause confusion about what data
-        #                      set it being processed. To avoid this, here's a Callable that will get the data
-        #                      map for a particular module reference. (Might be OCD, but...)
-        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)
 
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
@@ -656,22 +668,13 @@ Load JSON or HCL, depending on filename.
             with open(file_name, "r") as f:
                 return json.load(f)
         else:
-            raw_data = _hcl2_load_with_timeout(file_path)
+            with time_limit(60, f'Parsing the file {file_path} timed out'):
+                raw_data = _hcl2_load(file_path)
             non_malformed_definitions = validate_malformed_definitions(raw_data)
             if clean_definitions:
                 return clean_bad_definitions(non_malformed_definitions)
             else:
                 return non_malformed_definitions
-        # with open(file_name, "r") as f:
-        #     if file_name.endswith(".json"):
-        #         return json.load(f)
-        #     else:
-        #         raw_data = _hcl2_load_with_timeout(f)
-        #         non_malformed_definitions = validate_malformed_definitions(raw_data)
-        #         if clean_definitions:
-        #             return clean_bad_definitions(non_malformed_definitions)
-        #         else:
-        #             return non_malformed_definitions
 
     except Exception as e:
         logging.debug(f'failed while parsing file {file_path}', exc_info=e)
@@ -694,8 +697,8 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
         p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, filename))
     p.start()
 
-    # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
-    is_input_available = reader.poll(timeout=60)
+    # Wait until the file is parsed, up to 90 seconds, and fetch the raw data
+    is_input_available = reader.poll(timeout=90)
     if is_input_available:
         raw_data = reader.recv()
 
@@ -707,52 +710,13 @@ def _hcl2_load_with_timeout(filename: str) -> Dict:
     return raw_data
 
 
-# def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
-#     # Start bar as a process
-#     raw_data = None
-#     reader, writer = multiprocessing.Pipe(duplex=False)  # used by the child process to return its result
-#     # certain Python and OS versions (for sure 3.8/3.9 + Mac) have issues with 'multiprocessing.Process'
-#     # see: https://github.com/pytorch/pytorch/issues/36515
-#     # https://bugs.python.org/issue33725
-#     # This is the correct approach to use fork on newer python versions on Mac, and should be compatible
-#     # p = multiprocessing.get_context("fork").Process(target=_hcl2_load, args=(writer, f))
-#     p = multiprocessing.Process(target=_hcl2_load, args=(writer, f))
-#     p.start()
-#
-#     # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
-#     is_input_available = reader.poll(timeout=60)
-#     if is_input_available:
-#         raw_data = reader.recv()
-#
-#     # Resources cleanup
-#     if p.is_alive():
-#         p.terminate()
-#     writer.close()
-#
-#     return raw_data
-
-
-def _hcl2_load(writer: Connection, filename: str) -> None:
+def _hcl2_load(filename: str) -> dict:
     with open(filename, 'r') as f:
         try:
-            raw_data = hcl2.load(f)
-            writer.send(raw_data)
+            return hcl2.load(f)
         except Exception as e:
-            logging.error(f'Failed to parse file {f.name}. Error:')
-            logging.error(e, exc_info=True)
-            writer.send(None)
-
-
-# def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
-#     print(123)
-#     try:
-#         raw_data = hcl2.load(f)
-#         writer.send(raw_data)
-#         print(123)
-#     except Exception as e:
-#         logging.error(f'Failed to parse file {f.name}. Error:')
-#         logging.error(e, exc_info=True)
-#         writer.send(None)
+            logging.warning(f'Failed to parse file {f.name}. Error:')
+            raise e
 
 
 def _is_valid_block(block):
