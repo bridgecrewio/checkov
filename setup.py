@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2>=0.3.21",
+        "bc-python-hcl2>=0.3.23",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
