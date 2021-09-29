@@ -15,10 +15,10 @@ class VariableRenderer(ABC):
 
     def __init__(self, local_graph: "LocalGraph") -> None:
         self.local_graph = local_graph
-        self.run_async = True if os.environ.get("RENDER_VARIABLES_ASYNC") == "True" else False
-        self.max_workers = int(os.environ.get("RENDER_ASYNC_MAX_WORKERS", 50))
-        self.duplicate_percent = int(os.environ.get("RENDER_EDGES_DUPLICATE_PERCENT", 90))
-        self.duplicate_iter_count = int(os.environ.get("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
+        self.run_async = True if os.getenv("RENDER_VARIABLES_ASYNC") == "True" else False
+        self.max_workers = int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
+        self.duplicate_percent = int(os.getenv("RENDER_EDGES_DUPLICATE_PERCENT", 90))
+        self.duplicate_iter_count = int(os.getenv("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
 
