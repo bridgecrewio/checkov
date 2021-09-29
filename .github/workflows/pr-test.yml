@@ -73,7 +73,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
-          ./integration_tests/prepare_data.sh 3.8  # Just making sure the API key tests don't run on PRs
+          ./integration_tests/prepare_data.sh ${{ matrix.os }} 3.8  # Just making sure the API key tests don't run on PRs
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
