@@ -61,7 +61,7 @@ jobs:
           pipenv run pip install --upgrade pip==21.1.1
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install dist/checkov-*.whl
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
