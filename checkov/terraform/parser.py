@@ -6,8 +6,6 @@ import os
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing import Process, Pipe
-from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
@@ -654,7 +652,7 @@ Load JSON or HCL, depending on filename.
             if file_name.endswith(".json"):
                 return json.load(f)
             else:
-                raw_data = _hcl2_load_with_timeout(f)
+                raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
@@ -664,36 +662,6 @@ Load JSON or HCL, depending on filename.
         logging.debug(f'failed while parsing file {file_path}', exc_info=e)
         parsing_errors[file_path] = e
         return None
-
-
-def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
-    # Start bar as a process
-    raw_data = None
-    reader, writer = Pipe(duplex=False)  # used by the child process to return its result
-    p = Process(target=_hcl2_load, args=(writer, f))
-    p.start()
-
-    # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
-    is_input_available = reader.poll(timeout=60)
-    if is_input_available:
-        raw_data = reader.recv()
-
-    # Resources cleanup
-    if p.is_alive():
-        p.terminate()
-    writer.close()
-
-    return raw_data
-
-
-def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
-    try:
-        raw_data = hcl2.load(f)
-        writer.send(raw_data)
-    except Exception as e:
-        logging.error(f'Failed to parse file {f.name}. Error:')
-        logging.error(e, exc_info=True)
-        writer.send(None)
 
 
 def _is_valid_block(block):
