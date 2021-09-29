@@ -2,8 +2,10 @@ import datetime
 import io
 import json
 import logging
+import multiprocessing
 import os
 import re
+import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
 from pathlib import Path
@@ -648,9 +650,15 @@ Load JSON or HCL, depending on filename.
 
     try:
         logging.debug(f"Parsing {file_path}")
-        with open(file, "r") as f:
-            if file_name.endswith(".json"):
+
+        if file_name.endswith(".json"):
+            with open(file_name, "r") as f:
                 return json.load(f)
+        else:
+            raw_data = _hcl2_load_with_timeout(file_path)
+            non_malformed_definitions = validate_malformed_definitions(raw_data)
+            if clean_definitions:
+                return clean_bad_definitions(non_malformed_definitions)
             else:
                 raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)

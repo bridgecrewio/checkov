@@ -15,8 +15,10 @@ class VariableRenderer(ABC):
 
     def __init__(self, local_graph: "LocalGraph") -> None:
         self.local_graph = local_graph
-        self.run_async = True if os.environ.get("RENDER_VARIABLES_ASYNC") == "True" else False
-        self.max_workers = int(os.environ.get("RENDER_ASYNC_MAX_WORKERS", 50))
+        self.run_async = True if os.getenv("RENDER_VARIABLES_ASYNC") == "True" else False
+        self.max_workers = int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
+        self.duplicate_percent = int(os.getenv("RENDER_EDGES_DUPLICATE_PERCENT", 90))
+        self.duplicate_iter_count = int(os.getenv("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
 
@@ -32,8 +34,21 @@ class VariableRenderer(ABC):
 
         # all the edges entering `end_vertices`
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
+        end_vertices_indexes = set()
         loops = 0
+        evaluated_edges_cache = [[], []]
+        duplicates_count = 0
         while len(edges_to_render) > 0:
+            evaluated_edges_two_iter_ago = evaluated_edges_cache[-2]
+            intersection_edges = set(edges_to_render).intersection(evaluated_edges_two_iter_ago)
+            match_percent = int((len(intersection_edges) / len(edges_to_render)) * 100)
+            if match_percent > self.duplicate_percent:
+                duplicates_count += 1
+            if duplicates_count > self.duplicate_iter_count:
+                logging.warning(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
+                break
+            evaluated_edges_cache.append(edges_to_render)
+
             logging.info(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
@@ -53,17 +68,13 @@ class VariableRenderer(ABC):
 
             for edge in edges_to_render:
                 origin_vertex_index = edge.origin
-                out_edges = self.local_graph.out_edges.get(origin_vertex_index, [])
-                if all(e in self.done_edges_by_origin_vertex.get(origin_vertex_index, []) for e in out_edges):
-                    end_vertices_indexes.append(origin_vertex_index)
-            edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
-            edges_to_render = list(
-                {
-                    edge
-                    for edge in edges_to_render
-                    if edge not in self.done_edges_by_origin_vertex.get(edge.origin, [])
-                }
-            )
+                out_edges = set(self.local_graph.out_edges.get(origin_vertex_index, []))
+                done_edges_for_origin = self.done_edges_by_origin_vertex.get(origin_vertex_index, set())
+                if out_edges.issubset(done_edges_for_origin):
+                    end_vertices_indexes.add(origin_vertex_index)
+            new_edges_to_render = self.local_graph.get_in_edges(list(end_vertices_indexes))
+            edges_to_render = list(set(new_edges_to_render) - set(edges_to_render))
+
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
                 logging.warning(f"Reached 50 graph edge iterations, breaking.")

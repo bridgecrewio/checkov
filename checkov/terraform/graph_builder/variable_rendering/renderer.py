@@ -79,7 +79,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
         if referenced_vertices:
             for edge in edge_list:
-                dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
+                dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest, add_hash=False)
                 key_path_in_dest_vertex, replaced_key = self.find_path_from_referenced_vertices(
                     referenced_vertices, dest_vertex_attributes
                 )
@@ -211,7 +211,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     def evaluate_vertices_attributes(self) -> None:
         for vertex in self.local_graph.vertices:
-            decoded_attributes = vertex.get_attribute_dict()
+            decoded_attributes = vertex.get_attribute_dict(add_hash=False)
             for attr in decoded_attributes:
                 if attr in vertex.changed_attributes:
                     continue
