@@ -2,10 +2,10 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 
-class IAMAdminPolicyDocument(BaseResourceCheck):
+class IAMStarActionPolicyDocument(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure no IAM policies that allow full \"*-*\" administrative privileges are not created"
-        id = "CKV_AWS_62"
+        name = "Ensure no IAM policies documents allow \"*\" as a statement's actions"
+        id = "CKV_AWS_63"
         supported_resources = ['AWS::IAM::Policy','AWS::IAM::Group','AWS::IAM::Role','AWS::IAM::User']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -20,7 +20,6 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                 policies=myproperties['Policies']
                 if len(policies) > 0:
                     for policy in policies:
-
                         result=check_policy(policy['PolicyDocument'])
                         if result==CheckResult.FAILED:
                            return result
@@ -33,18 +32,16 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
         return CheckResult.UNKNOWN
 
 
-check = IAMAdminPolicyDocument()
+check = IAMStarActionPolicyDocument()
 
 def check_policy(policy_block):
+    if policy_block and 'Statement' in policy_block.keys():
+        for statement in force_list(policy_block['Statement']):
+            if 'Action' in statement and statement.get('Effect', ['Allow']) == 'Allow' and '*' in force_list(statement['Action']):
+                return CheckResult.FAILED
+            return CheckResult.PASSED
+    else:
+        return CheckResult.PASSED
 
-        if policy_block and 'Statement' in policy_block.keys():
-            for statement in force_list(policy_block['Statement']):
-                if 'Action' in statement:
-                    effect = statement.get('Effect', 'Allow')
-                    action = force_list(statement.get('Action', ['']))
-                    resource = force_list(statement.get('Resource', ['']))
-                    if effect == 'Allow' and '*' in action and '*' in resource:
-                        return CheckResult.FAILED
-            return CheckResult.PASSED
-        else:
-            return CheckResult.PASSED
+
+        
