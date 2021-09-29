@@ -6,7 +6,8 @@ import os
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
@@ -15,6 +16,7 @@ import hcl2
 from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
@@ -70,6 +72,7 @@ class Parser:
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.tf_var_files = tf_var_files
+        self.scan_hcl = should_scan_hcl_files()
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -102,10 +105,11 @@ class Parser:
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
     @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None) -> Optional[Dict]:
-        if not file.endswith(".tf") and not file.endswith(".tf.json"):
+    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+        if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
+            return _load_or_die_quietly(Path(file), parsing_errors)
+        else:
             return None
-        return _load_or_die_quietly(Path(file), parsing_errors)
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
@@ -207,7 +211,7 @@ class Parser:
                 continue
 
             # Resource files
-            if file.name.endswith(".tf"):  # TODO: add support for .tf.json
+            if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 data = _load_or_die_quietly(file, self.out_parsing_errors)
             else:
                 continue
@@ -665,32 +669,41 @@ Load JSON or HCL, depending on filename.
 def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
     # Start bar as a process
     raw_data = None
-    q = Queue()  # used by the child process to return its result
-    p = Process(target=_hcl2_load, args=(q, f))
+    reader, writer = Pipe(duplex=False)  # used by the child process to return its result
+    p = Process(target=_hcl2_load, args=(writer, f))
     p.start()
-    try:
-        raw_data = q.get(block=True, timeout=60)  # Wait until the file is parsed, up to 60 seconds. A timeout will raise a queue.Empty exception
-    except Exception as e:
-        if p.is_alive():
-            p.terminate()  # aggressive termination of process for cleanup
-            raise e
-    p.join()  # Make sure the process is finished and closed
+
+    # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
+    is_input_available = reader.poll(timeout=60)
+    if is_input_available:
+        raw_data = reader.recv()
+
+    # Resources cleanup
+    if p.is_alive():
+        p.terminate()
+    writer.close()
+
     return raw_data
 
 
-def _hcl2_load(q: Queue, f: io.TextIOWrapper) -> None:
+def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
     try:
         raw_data = hcl2.load(f)
-        q.put(raw_data)
+        writer.send(raw_data)
     except Exception as e:
         logging.error(f'Failed to parse file {f.name}. Error:')
         logging.error(e, exc_info=True)
-        q.put(None)
+        writer.send(None)
 
 
 def _is_valid_block(block):
     if not isinstance(block, dict):
         return True
+
+    # if the block is empty, there's no need to process it further
+    if len(block) == 0:
+        return False
+
     entity_name, _ = next(iter(block.items()))
     if re.fullmatch(r'[^\W0-9][\w-]*', entity_name):
         return True
