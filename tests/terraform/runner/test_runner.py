@@ -633,6 +633,16 @@ class TestRunnerValid(unittest.TestCase):
         runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
         # If we get here all is well. :-)  Failure would throw an exception.
 
+    def test_runner_empty_locals(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        passing_tf_file_path = current_dir + "/resources/empty_locals"
+
+        runner = Runner()
+        r = runner.run(root_folder=passing_tf_file_path, external_checks_dir=None)
+
+        assert len(r.parsing_errors) == 0
+
     def test_module_skip(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
