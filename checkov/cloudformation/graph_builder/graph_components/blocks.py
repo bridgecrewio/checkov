@@ -38,9 +38,11 @@ class CloudformationBlock(Block):
             for i, key in enumerate(attribute_key_parts):
                 if isinstance(obj_to_update, list):
                     key = int(key)
-                try:
+                if (isinstance(obj_to_update, dict) and key in obj_to_update) or \
+                        (isinstance(obj_to_update, list) and isinstance(key, int) and 0 <= key < len(
+                            obj_to_update)):
                     obj_to_update = obj_to_update[key]
-                except KeyError:
+                else:
                     attribute_key_parts.append(key_to_update)
                     key_to_update = ".".join(attribute_key_parts[i:])
                     break
