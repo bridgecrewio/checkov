@@ -699,6 +699,11 @@ def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
 def _is_valid_block(block):
     if not isinstance(block, dict):
         return True
+
+    # if the block is empty, there's no need to process it further
+    if len(block) == 0:
+        return False
+
     entity_name, _ = next(iter(block.items()))
     if re.fullmatch(r'[^\W0-9][\w-]*', entity_name):
         return True
