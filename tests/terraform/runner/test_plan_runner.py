@@ -171,7 +171,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertGreaterEqual(report.get_summary()["failed"], 85)
+        self.assertGreaterEqual(report.get_summary()["failed"], 82)
         self.assertGreaterEqual(report.get_summary()["passed"], 76)
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
@@ -186,7 +186,7 @@ class TestRunnerValid(unittest.TestCase):
         scan_dir_path = os.path.join(current_dir, "resources", "plan")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
         checks_allowlist = ["CKV_AWS_20"]

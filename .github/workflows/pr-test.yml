@@ -22,10 +22,10 @@ jobs:
       fail-fast: true
       matrix:
         python: [3.7, 3.8, 3.9]
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
@@ -39,16 +39,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+          pipenv run python -m pytest tests
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
         python: [3.7, 3.8, 3.9]
-    runs-on: ubuntu-latest
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -63,7 +62,7 @@ jobs:
           pipenv run pip install --upgrade pip==21.1.1
           pipenv run pip install pytest
           pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install dist/checkov-*.whl
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -75,8 +74,8 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
-          sleep $((RANDOM % 11))
-          ./integration_tests/prepare_data.sh 3.8  # Just making sure the API key tests don't run on PRs
+          # Just making sure the API key tests don't run on PRs
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
