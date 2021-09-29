@@ -12,7 +12,7 @@ class CustomRoleDefinitionSubscriptionOwner(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'actions' in conf['permissions'][0] and '*' in conf['permissions'][0]['actions'][0]:
+        if "*" in conf.get("permissions", [{}])[0].get("actions", [""])[0]:
             return CheckResult.FAILED
         return CheckResult.PASSED
 
