@@ -653,7 +653,7 @@ Load JSON or HCL, depending on filename.
             with open(file_name, "r") as f:
                 return json.load(f)
         else:
-            raw_data = _hcl2_load_with_timeout(file_name)
+            raw_data = _hcl2_load_with_timeout(file_path)
             non_malformed_definitions = validate_malformed_definitions(raw_data)
             if clean_definitions:
                 return clean_bad_definitions(non_malformed_definitions)
