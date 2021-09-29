@@ -20,7 +20,8 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
                 policy = Policy(conf['policy'][0])
                 if policy.is_internet_accessible():
                     return CheckResult.FAILED
-            return CheckResult.UNKNOWN
+            else:
+                return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:

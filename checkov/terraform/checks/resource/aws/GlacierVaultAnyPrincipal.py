@@ -7,8 +7,8 @@ from typing import List
 
 DATA_TO_JSON_PATTERN = r"\$?\{?(.+?)(?=.json).json\}?"
 
-class GlacierVaultAnyPrincipal(BaseResourceCheck):
 
+class GlacierVaultAnyPrincipal(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Glacier Vault access policy is not public by only allowing specific services or principals to access it"
         id = "CKV_AWS_167"
@@ -25,6 +25,7 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
         policy = Policy(policy_obj)
         if policy.is_internet_accessible():
             return CheckResult.FAILED
+        return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
         return ['access_policy']

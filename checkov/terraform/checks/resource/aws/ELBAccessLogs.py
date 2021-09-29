@@ -19,6 +19,7 @@ class ELBAccessLogs(BaseResourceCheck):
         self.evaluated_keys = ['access_logs/[0]/enabled']
         if conf['access_logs'][0]['enabled'] == [True]:
             return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = ELBAccessLogs()

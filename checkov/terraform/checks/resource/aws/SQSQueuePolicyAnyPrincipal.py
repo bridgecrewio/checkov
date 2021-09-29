@@ -21,7 +21,8 @@ class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
                 policy = Policy(conf_policy[0])
                 if policy.is_internet_accessible():
                     return CheckResult.FAILED
-            return CheckResult.UNKNOWN
+            else:
+                return CheckResult.UNKNOWN
 
         return CheckResult.PASSED
 
