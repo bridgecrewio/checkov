@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+import sys
 import unittest
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -22,8 +23,9 @@ class TestCheckovJsonReport(unittest.TestCase):
         self.validate_report(os.path.abspath(report_path))
 
     def test_k8goat_report(self):
-        report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kubernetes-goat-helm.json')
-        self.validate_report(os.path.abspath(report_path))
+        if not sys.platform.startswith('win'):
+            report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kubernetes-goat-helm.json')
+            self.validate_report(os.path.abspath(report_path))
 
     def test_checkov_report_terragoat_with_skip(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat_with_skip.json')
