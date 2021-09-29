@@ -3,6 +3,7 @@ import re
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from policyuniverse.policy import Policy
+from typing import List
 
 DATA_TO_JSON_PATTERN = r"\$?\{?(.+?)(?=.json).json\}?"
 
@@ -16,15 +17,17 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'access_policy' in conf:
-            policy_obj = conf['access_policy'][0]
-            if isinstance(policy_obj, str):
-                if re.match(DATA_TO_JSON_PATTERN, policy_obj):
-                    return CheckResult.UNKNOWN
-            policy = Policy(policy_obj)
-            if policy.is_internet_accessible():
-                return CheckResult.FAILED
-        return CheckResult.PASSED
+        if 'access_policy' not in conf:
+            return CheckResult.PASSED
+        policy_obj = conf['access_policy'][0]
+        if isinstance(policy_obj, str) and re.match(DATA_TO_JSON_PATTERN, policy_obj):
+            return CheckResult.UNKNOWN
+        policy = Policy(policy_obj)
+        if policy.is_internet_accessible():
+            return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['access_policy']
 
 
 check = GlacierVaultAnyPrincipal()

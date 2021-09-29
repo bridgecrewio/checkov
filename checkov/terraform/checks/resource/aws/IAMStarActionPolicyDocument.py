@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list, extract_policy_dict
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class IAMStarActionPolicyDocument(BaseResourceCheck):
@@ -28,6 +29,9 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
         except:  # nosec
             pass
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['policy', 'inline_policy']
 
 
 check = IAMStarActionPolicyDocument()

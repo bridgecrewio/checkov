@@ -2,6 +2,7 @@ from policyuniverse.policy import Policy
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
@@ -20,10 +21,13 @@ class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
                 policy = Policy(conf_policy[0])
                 if policy.is_internet_accessible():
                     return CheckResult.FAILED
-            else:
-                return CheckResult.UNKNOWN
+            return CheckResult.UNKNOWN
 
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['policy']
+
 
 check = SQSQueuePolicyAnyPrincipal()
 

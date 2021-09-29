@@ -31,8 +31,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
             ingress_result = self.check_rule(rule_type='ingress', conf=conf)
             if group_result == CheckResult.PASSED and egress_result == CheckResult.PASSED and ingress_result == CheckResult.PASSED:
                 return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
+            return CheckResult.FAILED
 
         return group_result
 
@@ -42,15 +41,13 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
                 self.evaluated_keys = ['description']
                 if conf['description']:
                     return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
+            return CheckResult.FAILED
 
         if rule_type in conf.keys():
             for rule in conf[rule_type]:
-                if isinstance(rule, dict):
-                    if 'description' not in rule.keys() or not rule['description']:
-                        self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
-                        return CheckResult.FAILED
+                if isinstance(rule, dict) and 'description' not in rule.keys() or not rule['description']:
+                    self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 

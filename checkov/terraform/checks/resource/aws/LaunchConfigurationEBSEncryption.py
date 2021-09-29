@@ -21,21 +21,11 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         :return: <CheckResult>
         """
         for key in conf.keys():
-            if (
-                "block_device" in key
-                and
-                "ephemeral" not in key
-            ):
-                if (
-                    isinstance(conf[key][0], dict)
-                    and
-                    conf[key][0].get("encrypted") != [True]
-                    and
-                    # If present, the encrypted flag will be determined by the snapshot
-                    # Note: checkov does not know if snapshot is encrypted, so we default to PASSED
-                    not conf[key][0].get("snapshot_id")
-                ):
-                    return CheckResult.FAILED
+            # If present, the encrypted flag will be determined by the snapshot
+            # Note: checkov does not know if snapshot is encrypted, so we default to PASSED
+            if "block_device" in key and "ephemeral" not in key and isinstance(conf[key][0], dict) \
+                    and conf[key][0].get("encrypted") != [True] and not conf[key][0].get("snapshot_id"):
+                return CheckResult.FAILED
 
         # Issue 496 - TF will create unencrypted EBS root by default if whole root_block_device block is omitted.
         if "root_block_device" not in conf.keys():

@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list, extract_policy_dict
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class IAMAdminPolicyDocument(BaseResourceCheck):
@@ -14,25 +15,29 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'policy' in conf.keys():
-            policyStr='policy'
+            policy_str = 'policy'
         elif 'inline_policy' in conf.keys():
-            policyStr='inline_policy'
+            policy_str = 'inline_policy'
+        else:
+            return CheckResult.PASSED
 
-        if "policyStr" in locals():
-            try:
-                policy_block = extract_policy_dict(conf[policyStr][0])
-                if policy_block and 'Statement' in policy_block.keys():
-                    for statement in force_list(policy_block['Statement']):
-                        if 'Action' in statement:
-                            effect = statement.get('Effect', 'Allow')
-                            action = force_list(statement.get('Action', ['']))
-                            resource = force_list(statement.get('Resource', ['']))
-                            if effect == 'Allow' and '*' in action and '*' in resource:
-                                return CheckResult.FAILED
-            except:  # nosec
-                pass
-
+        try:
+            policy_block = extract_policy_dict(conf[policy_str][0])
+            if policy_block and 'Statement' in policy_block.keys():
+                for statement in force_list(policy_block['Statement']):
+                    if 'Action' in statement:
+                        effect = statement.get('Effect', 'Allow')
+                        action = force_list(statement.get('Action', ['']))
+                        resource = force_list(statement.get('Resource', ['']))
+                        if effect is 'Allow' and '*' in action and '*' in resource:
+                            return CheckResult.FAILED
+        except:  # nosec
+            pass
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['policy', 'inline_policy']
+
 
 
 check = IAMAdminPolicyDocument()
