@@ -17,7 +17,7 @@ class SSMSessionManagerDocumentLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get("document_type") is not ["Session"] or "content" not in conf.keys():
+        if conf.get("document_type") != ["Session"] or "content" not in conf.keys():
             return CheckResult.UNKNOWN
 
         doc_format = conf.get("document_format", ["JSON"])

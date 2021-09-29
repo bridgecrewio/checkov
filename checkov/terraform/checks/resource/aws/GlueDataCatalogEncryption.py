@@ -42,6 +42,7 @@ class GlueDataCatalogEncryption(BaseResourceCheck):
 
         if encrypted_at_rest and connection_encrypted:
             return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = GlueDataCatalogEncryption()
