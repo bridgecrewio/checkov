@@ -49,12 +49,7 @@ class Runner(BaseRunner):
                             files_list.append(full_path)
 
             for file in files_list:
-                relative_file_path = file
-                try:
-                    relative_file_path = os.path.relpath(file, os.path.commonprefix((root_folder, file)))
-                except Exception as e:
-                    logging.debug(f'File path is not relative to origin file, returning the abs path of the temp file')
-                    logging.debug(f'Error: {e}')
+                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
                 try:
                     parse_result = parse(file)
                     if parse_result:
