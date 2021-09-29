@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Received $1 and then $2"
+
 if [[ "$1" == "windows-latest" ]]
 then
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o json > checkov_report_terragoat.json
