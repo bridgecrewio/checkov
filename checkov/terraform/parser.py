@@ -651,14 +651,9 @@ Load JSON or HCL, depending on filename.
     try:
         logging.debug(f"Parsing {file_path}")
 
-        if file_name.endswith(".json"):
-            with open(file_name, "r") as f:
+        with open(file_name, "r") as f:
+            if file_name.endswith(".json"):
                 return json.load(f)
-        else:
-            raw_data = _hcl2_load_with_timeout(file_path)
-            non_malformed_definitions = validate_malformed_definitions(raw_data)
-            if clean_definitions:
-                return clean_bad_definitions(non_malformed_definitions)
             else:
                 raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
