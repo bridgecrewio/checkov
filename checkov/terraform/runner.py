@@ -14,6 +14,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
+from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -63,6 +64,7 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
+        scan_hcl = should_scan_hcl_files()
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
@@ -84,9 +86,9 @@ class Runner(BaseRunner):
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
                 for file in files:
-                    if file.endswith(".tf"):
+                    if file.endswith(".tf") or (scan_hcl and file.endswith(".hcl")):
                         file_parsing_errors = {}
-                        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+                        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
                         if parse_result is not None:
                             self.definitions[file] = parse_result
                         if file_parsing_errors:
