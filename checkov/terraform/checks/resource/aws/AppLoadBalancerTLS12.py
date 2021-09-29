@@ -31,13 +31,12 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
                 return CheckResult.FAILED
             elif conf[key] in (["TCP"], ["UDP"], ["TCP_UDP"]):
                 return CheckResult.PASSED
-            for action in conf.get("default_action", []):
+            for action_idx, action in enumerate(conf.get("default_action", [])):
                 redirects = action.get("redirect", [])
-                for redirect in force_list(redirects):
+                for redirect_idx, redirect in enumerate(force_list(redirects)):
                     if redirect.get("protocol", []) == ["HTTPS"]:
-                        redirect_index = f"[{redirects.index(redirect)}]/" if isinstance(redirects, list) else ""
-                        self.evaluated_keys.append(f'default_action/[{conf.get("default_action", []).index(action)}]'
-                                                   f'/redirect/{redirect_index}protocol')
+                        redirect_index = f"[{redirect_idx}]/" if isinstance(redirects, list) else ""
+                        self.evaluated_keys.append(f'default_action/[{action_idx}]/redirect/{redirect_index}protocol')
                         return CheckResult.PASSED
         return CheckResult.FAILED
 
