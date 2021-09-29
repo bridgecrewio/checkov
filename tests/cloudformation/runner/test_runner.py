@@ -3,9 +3,12 @@ import inspect
 import os
 import unittest
 from pathlib import Path
+from typing import Dict, Any, List
 
 from checkov.cloudformation import cfn_utils
+from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.parser import parse
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
 from checkov.common.output.report import Report
@@ -102,6 +105,34 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
+
+    def test_record_includes_custom_guideline(self):
+        custom_guideline_url = "https://my.custom.url"
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"],
+                    guideline=custom_guideline_url
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        AnyFailingCheck()
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework='cloudformation', checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].guideline, custom_guideline_url)
 
     def test_get_tags(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

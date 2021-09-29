@@ -159,6 +159,7 @@ class Runner(BaseRunner):
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,
                     entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags")),
+                    guideline=check.guideline
                 )
                 if self.breadcrumbs:
                     breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)

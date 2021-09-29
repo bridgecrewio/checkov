@@ -85,7 +85,7 @@ class Runner(BaseRunner):
                                                         result_instruction,
                                                         startline),
                                 evaluations=None, check_class=check.__class__.__module__,
-                                file_abs_path=file_abs_path, entity_tags=None)
+                                file_abs_path=file_abs_path, entity_tags=None, guideline=check.guideline)
                 report.add_record(record=record)
 
         return report
