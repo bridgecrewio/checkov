@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -13,37 +12,45 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     check_type = "json"
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
-            collect_skip_comments=True):
-        report = Report(self.check_type)
+    @staticmethod
+    def _load_files(files_to_load, definitions, definitions_raw, filename_fn=None):
+        for file in files_to_load:
+            f = filename_fn(file) if filename_fn else file
+            (definitions[f], definitions_raw[f]) = parse(f)
+
+    def run(self, root_folder=None, external_checks_dir=None, files=None,
+            runner_filter=RunnerFilter(), collect_skip_comments=True):
+
         definitions = {}
         definitions_raw = {}
-        parsing_errors = {}
 
-        def load_files(files_to_load, filename_fn=None, key_fn=None):
-            for file in files_to_load:
-                f = filename_fn(file) if filename_fn else file
-                key = key_fn(f) if key_fn else f
-                (definitions[key], definitions_raw[key]) = parse(f)
+        report = Report(self.check_type)
+
+        if not files and not root_folder:
+            logging.warning("No resources to scan.")
+            return report
 
         if not external_checks_dir:
-            logging.warning("The json runner requires that external checks are defined.")
+            logging.warning(
+                "The json runner requires that external checks are defined."
+            )
             return report
 
         for directory in external_checks_dir:
             registry.load_external_checks(directory)
 
         if files:
-            load_files(files)
+            self._load_files(files, definitions, definitions_raw)
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                load_files(
+                self._load_files(
                     f_names,
-                    lambda f: os.path.join(root, f),
-                    # lambda k: f"{os.sep}{os.path.relpath(k, os.path.commonprefix((root_folder, k)))}"
+                    definitions,
+                    definitions_raw,
+                    lambda f: os.path.join(root, f)
                 )
 
         for json_file_path in definitions.keys():
