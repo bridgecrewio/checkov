@@ -1,5 +1,5 @@
 metadata:
-  name: "Postgres RDS as aws_db_instance has Query Logging enabled for "
+  name: "Ensure Postgres RDS as aws_db_instance has Query Logging enabled"
   id: "CKV2_AWS_30"
   category: "LOGGING"
 definition:
