@@ -45,7 +45,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
 
         if rule_type in conf.keys():
             for rule in conf[rule_type]:
-                if isinstance(rule, dict) and 'description' not in rule.keys() or not rule['description']:
+                if isinstance(rule, dict) and ('description' not in rule.keys() or not rule['description']):
                     self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
                     return CheckResult.FAILED
         return CheckResult.PASSED
