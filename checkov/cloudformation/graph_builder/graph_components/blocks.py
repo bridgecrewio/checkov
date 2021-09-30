@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
@@ -35,10 +35,17 @@ class CloudformationBlock(Block):
         if attribute_key_parts:
             obj_to_update = self.attributes
             key_to_update = attribute_key_parts.pop()
-            for key in attribute_key_parts:
+            for i, key in enumerate(attribute_key_parts):
                 if isinstance(obj_to_update, list):
                     key = int(key)
-                obj_to_update = obj_to_update[key]
+                if (isinstance(obj_to_update, dict) and key in obj_to_update) or \
+                        (isinstance(obj_to_update, list) and isinstance(key, int) and 0 <= key < len(
+                            obj_to_update)):
+                    obj_to_update = obj_to_update[key]
+                else:
+                    attribute_key_parts.append(key_to_update)
+                    key_to_update = ".".join(attribute_key_parts[i:])
+                    break
 
             if isinstance(obj_to_update, list):
                 key_to_update = int(key_to_update)
