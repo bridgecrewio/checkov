@@ -1,8 +1,8 @@
 import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
-from checkov.terraform.context_parsers.tf_plan import parse, dict_node
-from checkov.terraform.context_parsers.tf_plan.node import list_node
+from checkov.terraform.context_parsers.tf_plan import parse
+from checkov.common.parsers.node import dict_node, list_node
 
 simple_types = (str, int, float, bool)
 

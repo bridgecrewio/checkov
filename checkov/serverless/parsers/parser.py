@@ -11,7 +11,7 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser.node import dict_node, str_node
+from checkov.common.parsers.node import dict_node, str_node
 
 logger = logging.getLogger(__name__)
 

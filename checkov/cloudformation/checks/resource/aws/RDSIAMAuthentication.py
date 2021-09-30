@@ -1,4 +1,4 @@
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import dict_node
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 

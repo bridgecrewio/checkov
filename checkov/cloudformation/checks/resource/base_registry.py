@@ -1,7 +1,7 @@
 from typing import Tuple, Dict
 
 from checkov.cloudformation.parser import dict_node
-from checkov.cloudformation.parser.node import str_node
+from checkov.common.parsers.node import str_node
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 

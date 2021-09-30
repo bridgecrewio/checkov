@@ -1,13 +1,12 @@
 import logging
-from checkov.arm.parser.node import dict_node
+from checkov.arm.parser import cfn_yaml
 
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
 from yaml.parser import ParserError, ScannerError
 from yaml import YAMLError
-from checkov.arm.parser import cfn_yaml, cfn_json
+
+from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.json import parse as json_parse
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,11 +37,7 @@ def parse(filename):
             'found character \'\\t\' that cannot start any token',
             'found unknown escape character']:
             try:
-                (template, template_lines) = cfn_json.load(filename)
-            except cfn_json.JSONDecodeError:
-                pass
-            except JSONDecodeError:
-                pass
+                (template, template_lines) = json_parse(filename, allow_nulls=False)
             except Exception as json_err:  # pylint: disable=W0703
                 LOGGER.error(
                     'Template %s is malformed: %s', filename, err.problem)

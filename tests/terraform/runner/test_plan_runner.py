@@ -6,6 +6,7 @@ from checkov.terraform.plan_runner import Runner
 
 
 class TestRunnerValid(unittest.TestCase):
+
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan/tfplan.json"
@@ -198,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -221,7 +222,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_relative_file(self):
 
@@ -246,7 +247,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_abs_file(self):
 
@@ -270,7 +271,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_runner_unexpected_eks_node_group_remote_access(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

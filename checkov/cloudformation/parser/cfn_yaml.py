@@ -14,7 +14,7 @@ from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 
-from checkov.cloudformation.parser.node import str_node, dict_node, list_node
+from checkov.common.parsers.node import str_node, dict_node, list_node
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
