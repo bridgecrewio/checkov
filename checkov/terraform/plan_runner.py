@@ -109,8 +109,8 @@ class Runner(TerraformRunner):
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, evaluations=None,
-                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,
-                                    guideline=check.guideline)
+                                    check_class=check.__class__.__module__, file_abs_path=full_file_path)
+                    record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
     def get_entity_context(self, definition_path, full_file_path):

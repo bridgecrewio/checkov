@@ -57,7 +57,6 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
-                check_result["guideline"] = self.guideline
                 message = 'File {}, {}  "{}.{}" check "{}" Result: {} '.format(
                     scanned_file, self.block_type, entity_type, entity_name, self.name, check_result
                 )
