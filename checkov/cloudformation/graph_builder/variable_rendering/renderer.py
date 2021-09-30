@@ -1,10 +1,10 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions
+from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
@@ -16,6 +16,8 @@ class CloudformationVariableRenderer(VariableRenderer):
     EDGE_EVALUATION_CFN_FUNCTIONS = (
         IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.GET_ATT, IntrinsicFunctions.SUB)
     VERTEX_EVALUATION_CFN_FUNCTIONS = (IntrinsicFunctions.SELECT, IntrinsicFunctions.JOIN)
+    CONDITIONS_EVALUATED_FUNCTIONS = (ConditionFunctions.OR, ConditionFunctions.AND, ConditionFunctions.EQUALS,
+                                      ConditionFunctions.NOT, IntrinsicFunctions.CONDITION)
 
     def __init__(self, local_graph: "CloudformationLocalGraph") -> None:
         super().__init__(local_graph)
@@ -37,7 +39,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         edge = edge_list[0]
-        origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
+        origin_vertex = self.local_graph.vertices[edge.origin]
+        origin_vertex_attributes = origin_vertex.attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
         vertices_block_name_map = self._extract_vertices_block_name_map()
 
@@ -46,9 +49,13 @@ class CloudformationVariableRenderer(VariableRenderer):
         )
         if not referenced_vertices:
             # DependsOn or Condition connections
-            pass
-
-        if referenced_vertices:
+            if edge.label == IntrinsicFunctions.CONDITION:
+                dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
+                evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
+                if isinstance(evaluated_condition, bool):
+                    # evaluated the condition successfully, add the result to the origin vertex
+                    origin_vertex.condition = evaluated_condition
+        else:
             # Ref, GetAtt, FindInMap, If, Sub connections
             cfn_evaluation_function = None
             for curr_evaluation_function in self.EDGE_EVALUATION_CFN_FUNCTIONS:
@@ -163,6 +170,91 @@ class CloudformationVariableRenderer(VariableRenderer):
         ):
             return str(evaluated_value), attribute_at_dest
         return None, None
+
+    def _evaluate_condition_by_name(self, condition_name: str) -> Optional[bool]:
+        """
+        Evaluate CFN condition by the condition name.
+        This method simply fetches the vertex from the local graph by the condition name,
+        and calls the method _evaluate_condition_by_vertex_attributes
+        """
+
+        condition_vertex_index_list = self.local_graph.vertices_block_name_map.get(BlockType.CONDITIONS, None).get(condition_name, None)
+        if isinstance(condition_vertex_index_list, list):
+            condition_vertex_index = condition_vertex_index_list[0]
+            condition_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(condition_vertex_index)
+            evaluated_condition = self._evaluate_condition_by_vertex_attributes(condition_vertex_attributes)
+            return evaluated_condition
+        return None
+
+    def _evaluate_condition_by_vertex_attributes(self, vertex_attributes: Dict[str, Any]) -> Optional[bool]:
+        """
+        Evaluate CFN vertex condition by the vertex's attributes.
+        This method searches for a condition function in the attributes, and when found,
+        calls the method _evaluate_condition with the condition found and its value to evaluate
+        """
+
+        condition_to_evaluate, value_to_evaluate = next(
+            ((current_condition_function, vertex_attributes[current_condition_function])
+             for current_condition_function in self.CONDITIONS_EVALUATED_FUNCTIONS
+             if current_condition_function in vertex_attributes),
+            (None, None))
+
+        return self._evaluate_condition(condition_to_evaluate, value_to_evaluate)
+
+    def _evaluate_condition(self, condition_fn: str, value: Any) -> Optional[bool]:
+        """
+        Evaluate CFN condition function's value
+        Examples
+        --------
+        _evaluate_condition('Fn::Equals', ['test', 'prod']) -> False
+        _evaluate_condition('Fn::Not', {'Fn::Equals': ['test', 'prod']}) -> True
+        _evaluate_condition('Fn::Not', {'Fn::Equals': ['test', 'prod']}) -> True
+        _evaluate_condition('Fn::Or', [{'Fn::Equals': ['parameter1name', 'parameter1name']}, {'Fn::Equals': ['parameter2name', 'wrongname']}] -> True
+        _evaluate_condition('Condition', 'IsProduction'] -> True
+        """
+
+        if condition_fn == IntrinsicFunctions.CONDITION:
+            return self._evaluate_condition_by_name(value)
+        elif condition_fn == ConditionFunctions.EQUALS:
+            if isinstance(value, list) and len(value) == 2 and isinstance(value[0], str) and isinstance(value[1], str):
+                return value[0] == value[1]
+        elif condition_fn == ConditionFunctions.NOT:
+            evaluated_condition = self._fetch_condition_dict(value)
+            if isinstance(evaluated_condition, bool):
+                return not evaluated_condition
+        elif condition_fn == ConditionFunctions.AND and isinstance(value, list) and len(value) == 2:
+            operand1 = self._fetch_condition_dict(value[0])
+            operand2 = self._fetch_condition_dict(value[1])
+            if isinstance(operand1, bool) and isinstance(operand2, bool):
+                return operand1 and operand2
+        elif condition_fn == ConditionFunctions.OR and isinstance(value, list) and len(value) == 2:
+            operand1 = self._fetch_condition_dict(value[0])
+            operand2 = self._fetch_condition_dict(value[1])
+            if isinstance(operand1, bool) and isinstance(operand2, bool):
+                return operand1 or operand2
+        return None  # failed to evaluate the condition
+
+    def _fetch_condition_dict(self, condition_dict: Dict[str, Any]) -> Optional[bool]:
+        """
+        Evaluate a complex . This method basically receives a complex value which is a dict of
+        a CFN fn and its value to evaluate, extracts them and calls _evaluate_condition for evaluation
+        Examples
+        --------
+        _fetch_condition_operand_value({'Fn::Equals': ['parameter1name', 'parameter1name']}) -> True
+        _fetch_condition_operand_value({'Fn::Equals': ['parameter1name', 'wrongname'], '__startline__': 144, '__endline__': 151}) -> False
+        _fetch_condition_operand_value({'Condition': 'IsProduction', '__startline__': 109, '__endline__': 111}) -> True
+        _fetch_condition_operand_value({'Condition': 'IsDevelop'}] -> False
+        """
+
+        if isinstance(condition_dict, dict):
+            inner_condition, inner_value = next(
+                ((current_condition_function, condition_dict[current_condition_function])
+                 for current_condition_function in self.CONDITIONS_EVALUATED_FUNCTIONS
+                 if current_condition_function in condition_dict),
+                (None, None))
+            if inner_condition and inner_value:
+                return self._evaluate_condition(inner_condition, inner_value)
+        return None
 
     @staticmethod
     def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
