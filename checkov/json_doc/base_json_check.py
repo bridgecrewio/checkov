@@ -1,6 +1,6 @@
 from checkov.common.checks.base_check import BaseCheck
 
-from checkov.json.registry import registry
+from checkov.json_doc.registry import registry
 
 
 class BaseJsonCheck(BaseCheck):

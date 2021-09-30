@@ -2,7 +2,7 @@ import unittest
 
 import os
 
-from checkov.json.runner import Runner
+from checkov.json_doc.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 

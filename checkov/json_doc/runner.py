@@ -5,7 +5,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.parsers.json import parse
-from checkov.json.registry import registry
+from checkov.json_doc.registry import registry
 from checkov.runner_filter import RunnerFilter
 
 
