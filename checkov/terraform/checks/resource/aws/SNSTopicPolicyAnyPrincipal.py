@@ -1,10 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.type_forcers import force_list
-
 from policyuniverse.policy import Policy
-
-import json
+from typing import List
 
 
 class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
@@ -22,10 +19,14 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
             if isinstance(conf_policy[0], dict):
                 policy = Policy(conf['policy'][0])
                 if policy.is_internet_accessible():
-                     return CheckResult.FAILED
+                    return CheckResult.FAILED
             else:
                 return CheckResult.UNKNOWN
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['policy']
+
 
 check = SNSTopicPolicyAnyPrincipal()
 

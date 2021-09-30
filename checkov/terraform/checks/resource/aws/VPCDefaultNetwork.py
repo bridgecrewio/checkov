@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class VPCDefaultNetwork(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no default VPC is planned to be provisioned"
@@ -16,8 +17,9 @@ class VPCDefaultNetwork(BaseResourceCheck):
             :param conf: aws_default_vpc configuration
             :return: <CheckResult>
         """
-    
         return CheckResult.FAILED
+
+
 check = VPCDefaultNetwork()
 
 

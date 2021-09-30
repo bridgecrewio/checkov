@@ -3,6 +3,7 @@ from checkov.common.models.enums import (
     CheckResult,
 )
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class IMDSv1Disabled(BaseResourceCheck):
@@ -29,17 +30,16 @@ class IMDSv1Disabled(BaseResourceCheck):
         :param conf: dict of supported resource configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = ['metadata_options/[0]/http_tokens', 'metadata_options/[0]/http_endpoint']
-        if 'metadata_options' not in conf.keys():
+        if 'metadata_options' not in conf.keys() or not isinstance(conf['metadata_options'][0], dict):
             return CheckResult.FAILED
-        else:
-            if not isinstance(conf['metadata_options'][0], dict):
-                return CheckResult.FAILED
-            metadata_options = conf['metadata_options'][0]
-            if ('http_tokens' in metadata_options and metadata_options["http_tokens"] == ["required"]) or \
+        metadata_options = conf['metadata_options'][0]
+        if ('http_tokens' in metadata_options and metadata_options["http_tokens"] == ["required"]) or \
                 ('http_endpoint' in metadata_options and metadata_options["http_endpoint"] == ["disabled"]):
-                return CheckResult.PASSED
+            return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['metadata_options/[0]/http_tokens', 'metadata_options/[0]/http_endpoint']
 
 
 check = IMDSv1Disabled()

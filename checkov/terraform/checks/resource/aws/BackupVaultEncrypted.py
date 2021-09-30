@@ -17,4 +17,5 @@ class BackupVaultEncrypted(BaseResourceValueCheck):
     def get_expected_value(self):
         return ANY_VALUE
 
+
 check = BackupVaultEncrypted()

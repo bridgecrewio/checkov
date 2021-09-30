@@ -1,8 +1,10 @@
+from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from typing import Any
 
 
-class SagemakerEndpointConfigurationEncryption(BaseResourceCheck):
+class SagemakerEndpointConfigurationEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the Sagemaker Endpoint is securely encrypted at rest"
         id = "CKV_AWS_98"
@@ -10,10 +12,11 @@ class SagemakerEndpointConfigurationEncryption(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if 'kms_key_arn' in conf.keys():
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self) -> str:
+        return 'kms_key_arn'
+
+    def get_expected_value(self) -> Any:
+        return ANY_VALUE
 
 
 check = SagemakerEndpointConfigurationEncryption()

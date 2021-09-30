@@ -2,6 +2,7 @@ from policyuniverse.policy import Policy
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
@@ -24,6 +25,10 @@ class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
                 return CheckResult.UNKNOWN
 
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['policy']
+
 
 check = SQSQueuePolicyAnyPrincipal()
 

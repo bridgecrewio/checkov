@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck):
@@ -17,12 +18,13 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
         :param conf: aws_elasticache_replication_group configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = ['transit_encryption_enabled', 'auth_token']
-        if "transit_encryption_enabled" in conf.keys():
-            if conf["transit_encryption_enabled"][0]:
-                if "auth_token" in conf.keys():
-                    return CheckResult.PASSED
+        if "transit_encryption_enabled" in conf.keys() and conf["transit_encryption_enabled"][0] \
+                and "auth_token" in conf.keys():
+            return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['transit_encryption_enabled', 'auth_token']
 
 
 check = ElasticacheReplicationGroupEncryptionAtTransitAuthToken()

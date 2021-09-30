@@ -31,16 +31,16 @@ class EC2PublicIP(BaseResourceCheck):
         """
         # For aws_instance
         if 'associate_public_ip_address' in conf.keys():
-            self.evaluated_keys = 'associate_public_ip_address'
+            self.evaluated_keys = ['associate_public_ip_address']
             if conf['associate_public_ip_address'] == [True]:
                 return CheckResult.FAILED
 
         # For aws_launch_template
         if 'network_interfaces' in conf and isinstance(conf['network_interfaces'][0], dict):
-            self.evaluated_keys = 'network_interfaces/[0]/associate_public_ip_address'
-            if 'associate_public_ip_address' in conf['network_interfaces'][0]:
-                if conf['network_interfaces'][0]['associate_public_ip_address'] == [True]:
-                    return CheckResult.FAILED
+            self.evaluated_keys = ['network_interfaces/[0]/associate_public_ip_address']
+            if 'associate_public_ip_address' in conf['network_interfaces'][0] \
+                    and conf['network_interfaces'][0]['associate_public_ip_address'] == [True]:
+                return CheckResult.FAILED
 
         # Note: checkov does not know, so we default to PASSED
         # There is no default value for associate_public_ip_address, it depends on the subnet

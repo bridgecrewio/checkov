@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
@@ -12,7 +13,6 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        self.evaluated_keys = ['user', 'users']
         if 'user' in conf.keys():
             return CheckResult.FAILED
         if 'users' in conf.keys() and conf['users'][0] is None: #"users": null case 
@@ -20,6 +20,9 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
         if 'users' in conf.keys() and len(conf['users'][0]) > 0:
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['user', 'users']
 
 
 check = IAMPolicyAttachedToGroupOrRoles()

@@ -18,7 +18,7 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "default_cache_behavior" in conf.keys():
-            self.evaluated_keys = 'default_cache_behavior/[0]/viewer_protocol_policy'
+            self.evaluated_keys = ['default_cache_behavior/[0]/viewer_protocol_policy']
             if isinstance(conf["default_cache_behavior"][0], dict):
                 default_viewer_policy = conf["default_cache_behavior"][0]["viewer_protocol_policy"]
                 if default_viewer_policy and default_viewer_policy[0] == "allow-all":
@@ -28,7 +28,7 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
                 if isinstance(behavior, dict):
                     # behavior which is a string will return PASSED
                     if behavior["viewer_protocol_policy"][0] == "allow-all":
-                        self.evaluated_keys = f'ordered_cache_behavior/[{conf["ordered_cache_behavior"].index(behavior)}]/viewer_protocol_policy'
+                        self.evaluated_keys = [f'ordered_cache_behavior/[{conf["ordered_cache_behavior"].index(behavior)}]/viewer_protocol_policy']
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
