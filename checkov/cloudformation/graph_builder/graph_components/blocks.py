@@ -14,6 +14,7 @@ class CloudformationBlock(Block):
             attributes: Dict[str, Any],
             id: str = "",
             source: str = "",
+            condition: bool = True,
     ) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
@@ -23,6 +24,7 @@ class CloudformationBlock(Block):
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
         super().__init__(name, config, path, block_type, attributes, id, source)
+        self.condition = condition
 
     def update_attribute(
             self, attribute_key: str, attribute_value: Any, change_origin_id: int,
