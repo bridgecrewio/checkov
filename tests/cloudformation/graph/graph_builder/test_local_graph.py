@@ -74,7 +74,7 @@ class TestLocalGraph(TestCase):
     def test_json_conditioned_vertices_from_local_graph(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, './resources/conditioned_vertices/json'))
         file_name = 'test.json'
-        self.validate_conditioned_vertices_from_local_graph(root_dir)
+        self.validate_conditioned_vertices_from_local_graph(root_dir, file_name)
 
     def validate_conditioned_vertices_from_local_graph(self, root_dir, file_name):
         true_condition_resources = {'BucketFnEqualsTrue', 'BucketFnNotTrue', 'BucketFnNotTrueThroughCondition',
