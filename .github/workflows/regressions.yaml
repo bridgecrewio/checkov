@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 1 * * *'
+  push:
+    branches:
+      - update_regression_tests
 
 jobs:
   PrismaTest:
@@ -22,7 +25,7 @@ jobs:
           PRISMA_PASS: ${{ secrets.PRISMA_PASS }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         run: |
-          curl -X POST -H 'Content-Type: application/json' -d "{\"username\":\"$PRISMA_USER\",\"password\":\"$PRISMA_PASS\"}" "$PRISMA_API_URL/login"
+          curl -X POST -H 'Content-Type: application/json' -d "{\"username\":\"$PRISMA_USER\",\"password\":\"$PRISMA_PASS\"}" "$PRISMA_API_URL/login" -f
       - name: Build & install checkov package
         run: |
           pipenv --python 3.7
