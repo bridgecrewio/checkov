@@ -49,7 +49,7 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-  prisma-test:
+  prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@v2
