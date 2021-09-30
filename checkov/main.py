@@ -38,7 +38,7 @@ from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
-from checkov.json.runner import Runner as json_runner
+from checkov.json_doc.runner import Runner as json_runner
 from checkov.version import version
 
 outer_registry = None

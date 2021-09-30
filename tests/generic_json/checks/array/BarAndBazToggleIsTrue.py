@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.json.base_json_check import BaseJsonCheck
-from checkov.json.enums import BlockType
+from checkov.json_doc.base_json_check import BaseJsonCheck
+from checkov.json_doc.enums import BlockType
 
 
 class BarAndBazToggleIsTrue(BaseJsonCheck):
