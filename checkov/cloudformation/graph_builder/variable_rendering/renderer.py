@@ -236,7 +236,7 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def _fetch_condition_dict(self, condition_dict: Dict[str, Any]) -> Optional[bool]:
         """
-        Evaluate a complex . This method basically receives a complex value which is a dict of
+        Evaluate a condition dict of fn and value. This method basically receives a complex parameter which is a dict of
         a CFN fn and its value to evaluate, extracts them and calls _evaluate_condition for evaluation
         Examples
         --------
