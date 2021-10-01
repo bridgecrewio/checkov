@@ -4,7 +4,7 @@ from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
 class HealthcheckExists(BaseDockerfileCheck):
     def __init__(self):
-        name = "Ensure that HEALTHCHECK instructions have been added to container images "
+        name = "Ensure that HEALTHCHECK instructions have been added to container images"
         id = "CKV_DOCKER_2"
         supported_instructions = ["*"]
         categories = [CheckCategories.NETWORKING]

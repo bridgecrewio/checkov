@@ -67,7 +67,7 @@ class Runner(BaseRunner):
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
                 startline = 0
-                endline = 0
+                endline = len(definitions_raw[docker_file_path]) - 1
                 result_instruction = ""
                 if result_configuration:
                     startline = result_configuration['startline']
@@ -79,8 +79,8 @@ class Runner(BaseRunner):
                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                 code_block=codeblock,
                                 file_path=docker_file_path,
-                                file_line_range=[startline,
-                                                 endline],
+                                file_line_range=[startline + 1,
+                                                 endline + 1],
                                 resource="{}.{}".format(docker_file_path,
                                                         result_instruction,
                                                         startline),
