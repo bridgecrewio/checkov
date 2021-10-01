@@ -1,6 +1,6 @@
 import logging
 import os
-from dockerfile_parse.constants import DOCKERFILE_FILENAME
+import re
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -9,11 +9,15 @@ from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-DOCKER_FILE_MASK = [DOCKERFILE_FILENAME]
+DOCKER_FILE_MASK = r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$"
 
 
 class Runner(BaseRunner):
     check_type = "dockerfile"
+
+    @staticmethod
+    def __is_docker_file(file):
+        return re.search(DOCKER_FILE_MASK, file) != None
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
@@ -28,15 +32,18 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if os.path.basename(file) in DOCKER_FILE_MASK:
-                    (definitions[file], definitions_raw[file]) = parse(file)
+                if Runner.__is_docker_file(os.path.basename(file)):
+                    try:
+                        (definitions[file], definitions_raw[file]) = parse(file)
+                    except TypeError:
+                       logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
-                    if file in DOCKER_FILE_MASK:
+                    if Runner.__is_docker_file(file):
                         files_list.append(os.path.join(root, file))
 
             for file in files_list:

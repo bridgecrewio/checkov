@@ -10,8 +10,9 @@ from checkov.common.comment.enum import COMMENT_REGEX
 
 
 def parse(filename):
-    dfp = DockerfileParser(path=filename)
-    return dfp_group_by_instructions(dfp)
+    with open(filename) as dockerfile:
+        dfp = DockerfileParser(fileobj=dockerfile)
+        return dfp_group_by_instructions(dfp)
 
 
 def dfp_group_by_instructions(dfp):
