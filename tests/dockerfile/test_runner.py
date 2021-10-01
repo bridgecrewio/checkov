@@ -22,6 +22,17 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
+    
+    def test_runner_name_variations(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/name_variations"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='all'))
+        self.assertEqual(len(report.resources), 2)
+        self.assertEqual(len([file for file in report.resources if 'Dockerfile.prod' in file]), 1)
+        self.assertEqual(len([file for file in report.resources if 'prod.dockerfile' in file]), 1)
+        report.print_console()
 
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
