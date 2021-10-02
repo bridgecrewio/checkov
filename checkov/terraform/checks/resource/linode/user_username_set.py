@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
-class EmailExists(BaseResourceCheck):
+class UsernameExists(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure email is set"
         id = "CKV_LIN_4"
@@ -18,4 +18,4 @@ class EmailExists(BaseResourceCheck):
         return CheckResult.FAILED
 
 
-check = EmailExists()
+check = UsernameExists()
