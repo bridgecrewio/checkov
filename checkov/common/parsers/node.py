@@ -1,7 +1,6 @@
 import sys
 import logging
 from copy import deepcopy
-import six
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ def create_str_node_class(cls):
             if sys.version_info >= (3, 0):
                 return cls.__new__(self, x)
 
-            if isinstance(x, six.string_types):
+            if isinstance(x, str):
                 return cls.__new__(self, x.encode('ascii', 'ignore'))
 
             return cls.__new__(self, x)
