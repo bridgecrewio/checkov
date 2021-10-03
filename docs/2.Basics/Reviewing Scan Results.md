@@ -7,7 +7,7 @@ nav_order: 5
 
 # Reviewing Scan Results
 
-The results of Checkov scans can be viewed in CLI, JSON, JUnit XML, or Markdown
+The results of Checkov scans can be viewed in CLI, JSON, JUnit XML, SARIF, or Markdown
 
 > Note: For Markdown output, you need to use `github_failed_only` as the `--output` type
 
