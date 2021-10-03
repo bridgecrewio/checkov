@@ -21,10 +21,10 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                 policies = my_properties['Policies']
                 if len(policies) > 0:
                     for policy in policies:
-
-                        result = check_policy(policy['PolicyDocument'])
-                        if result == CheckResult.FAILED:
-                            return result
+                        if 'PolicyDocument' in policy:
+                            result = check_policy(policy['PolicyDocument'])
+                            if result == CheckResult.FAILED:
+                                return result
                     return CheckResult.PASSED
                 # not empty and had non failing policies
                 return CheckResult.UNKNOWN

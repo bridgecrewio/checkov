@@ -55,7 +55,7 @@ class CloudformationVariableRenderer(VariableRenderer):
                 if isinstance(evaluated_condition, bool):
                     # evaluated the condition successfully, add the result to the origin vertex
                     origin_vertex.condition = evaluated_condition
-        else:
+        elif isinstance(val_to_eval, dict):
             # Ref, GetAtt, FindInMap, If, Sub connections
             cfn_evaluation_function = None
             for curr_evaluation_function in self.EDGE_EVALUATION_CFN_FUNCTIONS:
