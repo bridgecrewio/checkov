@@ -1,5 +1,5 @@
 metadata:
-  name: "Postgres RDS has Query Logging enabled"
+  name: "Ensure Postgres RDS as aws_rds_cluster has Query Logging enabled"
   id: "CKV2_AWS_27"
   category: "LOGGING"
 definition:
@@ -7,17 +7,11 @@ definition:
  - cond_type: filter
    attribute: resource_type
    value:
-   - aws_db_instance
+   - aws_rds_cluster
    operator: within
- - cond_type: filter
-   resource_types:
-   - aws_db_instance
-   attribute: engine
-   operator: within
-   value: "postgres"  
  - cond_type: connection
    resource_types:
-   - aws_db_instance
+   - aws_rds_cluster
    connected_resource_types:
    - aws_rds_cluster_parameter_group
    operator: exists
@@ -26,10 +20,10 @@ definition:
    - aws_rds_cluster_parameter_group
    attribute: "parameter.*.name"
    operator: contains
-   value: "log_statement"
+   value: "log_statement"  
  - cond_type: attribute
    resource_types:
    - aws_rds_cluster_parameter_group
    attribute: "parameter.*.name"
    operator: contains
-   value: "log_min_duration_statement"
+   value: "log_min_duration_statement" 

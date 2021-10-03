@@ -1,8 +1,6 @@
 pass:
-  - "aws_db_instance.pass"
-
+  - "aws_rds_cluster.pass"
 
 fail:
-  - "aws_db_instance.fail"
-  - "aws_db_instance.fail3"
-  - "aws_db_instance.fail4"
+  - "aws_rds_cluster.fail"
+  - "aws_rds_cluster.fail2"
