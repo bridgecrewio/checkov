@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 
 RUN apk update && apk add --no-cache git util-linux bash openssl
 
