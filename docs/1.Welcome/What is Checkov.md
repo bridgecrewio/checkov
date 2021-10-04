@@ -35,6 +35,7 @@ Checkov integrates with advanced features in the [Bridgecew platform](https://br
 
 Bridgecrew can validate the same Checkov IaC policies against your runtime cloud environments in AWS, Azure and Google Cloud, allowing you to find and fix issues in existing deployments and detect cloud drifts. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-2-integrate-with-cloud-provider).
 
+
 ### Pull Request Annotations
 
 Enable automated pull/merge request annotations on your repositories without having to build a CI pipeline or run scheduled checks. The Bridgecrew platform will automatically scan new pull requests and annotate them with comments for any policy violations discovered. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-3-integrate-with-code-repository).
