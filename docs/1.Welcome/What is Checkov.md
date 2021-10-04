@@ -7,17 +7,17 @@ nav_order: 1
 
 # What is Checkov?
 
-Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of of [custom policies](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
+Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of [custom policies](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
 
 ## Supported IaC types
 
 Checkov scans these IaC file types:
 
-* Terraform (for AWS, GCP and Azure)
-* CloudFormation
-* Azure Resource Manager (ARM)
-* Kubernetes
-* Docker
+-   Terraform (for AWS, GCP and Azure)
+-   CloudFormation
+-   Azure Resource Manager (ARM)
+-   Kubernetes
+-   Docker
 
 ## Custom policies
 
@@ -35,8 +35,7 @@ Checkov integrates with advanced features in the [Bridgecew platform](https://br
 
 Bridgecrew can validate the same Checkov IaC policies against your runtime cloud environments in AWS, Azure and Google Cloud, allowing you to find and fix issues in existing deployments and detect cloud drifts. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-2-integrate-with-cloud-provider).
 
-
-### Pull Request Annotations 
+### Pull Request Annotations
 
 Enable automated pull/merge request annotations on your repositories without having to build a CI pipeline or run scheduled checks. The Bridgecrew platform will automatically scan new pull requests and annotate them with comments for any policy violations discovered. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/step-3-integrate-with-code-repository).
 
@@ -47,7 +46,6 @@ Enable automated pull/merge request annotations on your repositories without hav
 ### Repository Badges
 
 Dynamic git repository badges to show compliance targets or currently failing policies. Read more in [Bridgecrew's documentation](https://docs.bridgecrew.io/docs/code-repository-badges).
-
 
 ![Readme Badges](readme-badges.png)
 

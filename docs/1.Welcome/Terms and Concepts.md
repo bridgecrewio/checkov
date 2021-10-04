@@ -15,13 +15,13 @@ nav_order: 2
 
 **Resource:** A Resource is a Cloud Platform entity, for example, an Amazon EC2 instance, a CloudFormation stack, or an Amazon S3 bucket.
 
-**Suppression:** This is an action that can be taken to indicate that an Incident reported by Checkov is actually not problematic. When Suppressing an Incident, you can Suppress it for all relevant Resources or only specific Resources.
+**Suppression:** This is an action that can be taken to indicate that an Incident reported by Checkov is not problematic. When Suppressing an Incident, you can Suppress it for all relevant Resources or only specific Resources.
 
 ## Commonly used terms
 
-**Infrastructure as code** frameworks are systems for automating infrastructure deployment, scaling and management through the use of machine-readable configuration files.
+**Infrastructure as code** frameworks are systems for automating infrastructure deployment, scaling and management using machine-readable configuration files.
 
-**Declarative** configurations are absolute methods to design the execution of well-defined infrastructure building blocks.  
+**Declarative** configurations are absolute methods to design the execution of well-defined infrastructure building blocks.
 
 **Imperative** configurations are procedural methods to design the steps required to build a required end-result.
 
