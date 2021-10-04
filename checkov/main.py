@@ -229,7 +229,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             return
         bc_integration.commit_repository(config.branch)
         image_scanner.scan(config.docker_image, config.dockerfile_path)
-    else:
+    elif not config.quiet:
         print(f"{banner}")
 
         bc_integration.onboarding()
