@@ -16,8 +16,8 @@ class Runner(BaseRunner):
     check_type = "dockerfile"
 
     @staticmethod
-    def __is_docker_file(file):
-        return re.search(DOCKER_FILE_MASK, file) != None
+    def _is_docker_file(file):
+        return re.fullmatch(DOCKER_FILE_MASK, file) is not None
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
@@ -32,7 +32,7 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if Runner.__is_docker_file(os.path.basename(file)):
+                if Runner._is_docker_file(os.path.basename(file)):
                     try:
                         (definitions[file], definitions_raw[file]) = parse(file)
                     except TypeError:
@@ -43,7 +43,7 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
-                    if Runner.__is_docker_file(file):
+                    if Runner._is_docker_file(file):
                         files_list.append(os.path.join(root, file))
 
             for file in files_list:
