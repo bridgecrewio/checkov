@@ -13,11 +13,11 @@ Checkov is a static code analysis tool for scanning infrastructure as code (IaC)
 
 Checkov scans these IaC file types:
 
-*   Terraform (for AWS, GCP and Azure)
-*   CloudFormation
-*   Azure Resource Manager (ARM)
-*   Kubernetes
-*   Docker
+* Terraform (for AWS, GCP and Azure)
+* CloudFormation
+* Azure Resource Manager (ARM)
+* Kubernetes
+* Docker
 
 ## Custom policies
 
