@@ -134,7 +134,7 @@ terraform plan -out tf.plan
 terraform show -json tf.plan  > tf.json 
 checkov -f tf.json
 ```
-Note: `terraform show` output  file `tf.json` will be single line. 
+Note: `terraform show` output file `tf.json` will be a single line. 
 For that reason all findings will be reported line number 0 by checkov
 ```sh
 check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
@@ -228,7 +228,7 @@ checkov -d . --skip-check kube-system
 
 Like any static-analysis tool it is limited by its analysis scope. 
 For example, if a resource is managed manually, or using subsequent configuration management tooling, 
-a suppression can be inserted as a simple code annotation.
+suppression can be inserted as a simple code annotation.
 
 #### Suppression comment format
 
@@ -241,8 +241,8 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 
 #### Example
 
-The following comment skip the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
-In the example, the bucket is configured with a public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
+The following comment skips the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
+In the example, the bucket is configured with public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
 
 ```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
@@ -294,7 +294,7 @@ spec:
 
 #### Logging
 
-For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
+For detailed logging to stdout set up the environment variable `LOG_LEVEL` to `DEBUG`. 
 
 Default is `LOG_LEVEL=WARNING`.
 
@@ -309,7 +309,7 @@ You can override the default set of directories to skip by setting the environme
 
 #### VSCODE Extension
 
-If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use checkov's within vscode, give a try to the vscode extension available at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
 ### Configuration using a config file
 
