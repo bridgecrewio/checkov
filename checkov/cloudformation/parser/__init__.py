@@ -31,10 +31,10 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
             error = f"Permission denied when accessing template file: {filename} - {err}"
             LOGGER.error(error)
     except UnicodeDecodeError as err:
-        error = f"Cannot read file contents: {filename}"
+        error = f"Cannot read file contents: {filename} - {err}"
         LOGGER.error(error)
     except cfn_yaml.CfnParseError as err:
-        error = f"Parsing error in file {filename}"
+        error = f"Parsing error in file: {filename} - {err}"
         LOGGER.info(error)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:

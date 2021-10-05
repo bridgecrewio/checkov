@@ -22,7 +22,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                 policies = myproperties['Policies']
                 if len(policies) > 0:
                     for policy in policies:
-                        if policy.get('PolicyDocument'):
+                        if isinstance(policy, dict) and policy.get('PolicyDocument'):
                             result = check_policy(policy['PolicyDocument'])
                             if result == CheckResult.FAILED:
                                 return result
