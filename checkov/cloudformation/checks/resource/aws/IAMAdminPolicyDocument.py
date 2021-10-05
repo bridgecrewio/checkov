@@ -21,6 +21,8 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                 policies = my_properties['Policies']
                 if len(policies) > 0:
                     for policy in policies:
+                        if not isinstance(policy, dict):
+                            return CheckResult.UNKNOWN
                         if policy.get('PolicyDocument'):
                             result = check_policy(policy['PolicyDocument'])
                             if result == CheckResult.FAILED:
