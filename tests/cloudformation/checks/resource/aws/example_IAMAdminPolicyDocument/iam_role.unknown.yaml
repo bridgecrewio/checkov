@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 
 Conditions:
-  CreateExecPolicy: true
+  CreateExecPolicy: !Equals [0, 0]
 
 Resources:
   ExecRole:
