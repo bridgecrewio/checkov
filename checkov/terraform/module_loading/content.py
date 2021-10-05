@@ -1,10 +1,16 @@
 import tempfile
-from typing import Optional, Union
+from types import TracebackType
+from typing import Optional, Union, Type
 
 
 class ModuleContent(object):
-    def __init__(self, dir: Optional[Union[tempfile.TemporaryDirectory, str]], next_url=None, failed_url=None) -> None:
-        self.dir = dir.replace('//', '/') if dir else None
+    def __init__(
+        self,
+        dir: Optional[Union[tempfile.TemporaryDirectory, str]],
+        next_url: Optional[str] = None,
+        failed_url: Optional[str] = None,
+    ) -> None:
+        self.dir = dir.replace("//", "/") if dir else None
         self.next_url = next_url
         self.failed_url = failed_url
 
@@ -23,7 +29,7 @@ Returns the directory path containing module resources.
         else:
             return self.dir
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
 Clean up any temporary resources, if applicable.
         """
@@ -31,10 +37,15 @@ Clean up any temporary resources, if applicable.
             self.dir.cleanup()
 
     def __repr__(self) -> str:
-        return self.path()
+        return self.path() or ""
 
-    def __enter__(self):
+    def __enter__(self) -> "ModuleContent":
         return self
 
-    def __exit__(self, exc, value, tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.cleanup()
