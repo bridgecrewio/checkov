@@ -25,7 +25,7 @@ setup(
     extras_require={
         "dev": [
             "pytest==5.3.1",
-            "coverage",
+            "coverage==5.5",
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
