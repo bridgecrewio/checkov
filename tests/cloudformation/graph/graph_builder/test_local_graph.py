@@ -66,6 +66,33 @@ class TestLocalGraph(TestCase):
         self.assertIsNotNone(breadcrumbs)
         self.assertDictEqual(breadcrumbs, {})  # Will be changed when we add breadcrumbs to cfn vertices
 
+    def test_yaml_conditioned_vertices_from_local_graph(self):
+        root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, './resources/conditioned_vertices/yaml'))
+        file_name = 'test.yaml'
+        self.validate_conditioned_vertices_from_local_graph(root_dir, file_name)
+
+    def test_json_conditioned_vertices_from_local_graph(self):
+        root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, './resources/conditioned_vertices/json'))
+        file_name = 'test.json'
+        self.validate_conditioned_vertices_from_local_graph(root_dir, file_name)
+
+    def validate_conditioned_vertices_from_local_graph(self, root_dir, file_name):
+        true_condition_resources = {'BucketFnEqualsTrue', 'BucketFnNotTrue', 'BucketFnNotTrueThroughCondition',
+                             'BucketFnAndTrue', 'BucketFnAndTrueWithCondition',
+                             'BucketFnOrTrue', 'BucketFnOrTrueWithCondition'}
+        definitions, _ = create_definitions(root_folder=root_dir, files=None, runner_filter=RunnerFilter())
+        local_graph = CloudformationLocalGraph(definitions)
+        local_graph.build_graph(render_variables=True)
+        definitions, breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_dir)
+
+        self.assertIsNotNone(definitions)
+        self.assertEqual(len(definitions.items()), 1)
+
+        test_yaml_definitions = definitions[os.path.join(root_dir, file_name)][TemplateSections.RESOURCES]
+        definitions_set = set(test_yaml_definitions.keys())
+        self.assertEqual(len(definitions_set), 7)
+        self.assertSetEqual(true_condition_resources, definitions_set)
+
     def test_yaml_edges(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, 'resources/edges_yaml'))
         self.validate_edges_count(root_dir)

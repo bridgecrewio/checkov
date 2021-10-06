@@ -155,7 +155,7 @@ class Runner(BaseRunner):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
-                if line_text != "" and line_text.split()[0] == 'git_commit':
+                if line_text != "" and len(line_text.split()) > 0 and line_text.split()[0] == 'git_commit':
                     continue
                 result = self.search_for_suppression(
                     check_id=check_id,

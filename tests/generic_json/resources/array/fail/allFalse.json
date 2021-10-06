@@ -1,0 +1,15 @@
+[
+    {
+        "bar": {
+            "toggle": false
+        }
+    },
+    {
+        "bar": {
+            "toggle": false
+        },
+        "baz": {
+            "toggle": false
+        }
+    }
+]

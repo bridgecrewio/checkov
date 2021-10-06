@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.serverless.parsers.parser import parse
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import dict_node
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
 
 SLS_FILE_MASK = ["serverless.yml", "serverless.yaml"]

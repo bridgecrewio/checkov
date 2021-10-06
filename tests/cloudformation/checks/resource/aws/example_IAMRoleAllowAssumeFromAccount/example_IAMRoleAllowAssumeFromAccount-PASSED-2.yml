@@ -756,5 +756,5 @@ Resources:
 
       Handler: index.lambda_handler
       Role: !GetAtt ScalingLambdaRole.Arn
-      Runtime: python2.7
+      Runtime: python3.8
       Timeout: 10

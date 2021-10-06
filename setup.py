@@ -25,7 +25,7 @@ setup(
     extras_require={
         "dev": [
             "pytest==5.3.1",
-            "coverage",
+            "coverage==5.5",
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2>=0.3.21",
+        "bc-python-hcl2>=0.3.24",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",

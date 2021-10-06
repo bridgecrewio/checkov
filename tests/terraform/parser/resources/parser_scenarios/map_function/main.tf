@@ -11,9 +11,9 @@ locals {
 
   INVALID_ODD_ARGS = map("only one")
 
-  common_tags = "${map(
+  common_tags = map(
     "App", "my_app",
     "Product", "my_product",
     "Team", "my_team",
-  )}"
+  )
 }

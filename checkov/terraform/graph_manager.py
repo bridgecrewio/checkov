@@ -24,7 +24,7 @@ class TerraformGraphManager(GraphManager):
         vars_files: Optional[List[str]] = None
     ) -> Tuple[LocalGraph, Dict[str, Dict[str, Any]]]:
         logging.info('Parsing HCL files in source dir')
-        module, module_dependency_map, tf_definitions = \
+        module, module_dependency_map, external_modules_source_map, tf_definitions = \
             self.parser.parse_hcl_module(
                 source_dir=source_dir,
                 source=self.source,
@@ -36,7 +36,7 @@ class TerraformGraphManager(GraphManager):
             )
 
         logging.info('Building graph from parsed module')
-        local_graph = local_graph_class(module, module_dependency_map)
+        local_graph = local_graph_class(module, module_dependency_map, external_modules_source_map)
         local_graph.build_graph(render_variables=render_variables)
 
         return local_graph, tf_definitions

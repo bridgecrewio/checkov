@@ -2,14 +2,14 @@ import datetime
 import io
 import json
 import logging
+import multiprocessing
 import os
 import re
+import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
-from multiprocessing import Process, Pipe
-from multiprocessing.connection import Connection
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
 
 import deep_merge
 import hcl2
@@ -47,7 +47,7 @@ def _filter_ignored_paths(root, paths, excluded_paths):
 
 
 class Parser:
-    def __init__(self, module_class=Module):
+    def __init__(self, module_class: Type[Module] = Module):
         self.module_class = module_class
         self._parsed_directories = set()
 
@@ -71,6 +71,7 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
+        self.external_modules_source_map: Dict[str, str] = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
 
@@ -447,6 +448,8 @@ class Parser:
                                 deep_merge.merge(all_module_definitions, module_definitions)
                             else:
                                 all_module_definitions = module_definitions
+
+                            self.external_modules_source_map[source] = content.path()
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
@@ -466,7 +469,7 @@ class Parser:
         parsing_errors: Optional[Dict[str, Exception]] = None,
         excluded_paths: Optional[List[str]] = None,
         vars_files: Optional[List[str]] = None
-    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, Dict[str, Any]]]:
+    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, str], Dict[str, Dict[str, Any]]]:
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -475,7 +478,9 @@ class Parser:
                              vars_files=vars_files)
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
-        return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+
+        module, module_dependency_map, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        return module, module_dependency_map, self.external_modules_source_map, tf_definitions
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
         module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
@@ -650,11 +655,12 @@ Load JSON or HCL, depending on filename.
 
     try:
         logging.debug(f"Parsing {file_path}")
-        with open(file, "r") as f:
+
+        with open(file_path, "r") as f:
             if file_name.endswith(".json"):
                 return json.load(f)
             else:
-                raw_data = _hcl2_load_with_timeout(f)
+                raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
@@ -664,36 +670,6 @@ Load JSON or HCL, depending on filename.
         logging.debug(f'failed while parsing file {file_path}', exc_info=e)
         parsing_errors[file_path] = e
         return None
-
-
-def _hcl2_load_with_timeout(f: io.TextIOWrapper) -> Dict:
-    # Start bar as a process
-    raw_data = None
-    reader, writer = Pipe(duplex=False)  # used by the child process to return its result
-    p = Process(target=_hcl2_load, args=(writer, f))
-    p.start()
-
-    # Wait until the file is parsed, up to 60 seconds, and fetch the raw data
-    is_input_available = reader.poll(timeout=60)
-    if is_input_available:
-        raw_data = reader.recv()
-
-    # Resources cleanup
-    if p.is_alive():
-        p.terminate()
-    writer.close()
-
-    return raw_data
-
-
-def _hcl2_load(writer: Connection, f: io.TextIOWrapper) -> None:
-    try:
-        raw_data = hcl2.load(f)
-        writer.send(raw_data)
-    except Exception as e:
-        logging.error(f'Failed to parse file {f.name}. Error:')
-        logging.error(e, exc_info=True)
-        writer.send(None)
 
 
 def _is_valid_block(block):

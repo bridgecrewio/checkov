@@ -1,9 +1,9 @@
 import logging
-from json.decoder import JSONDecodeError
-from typing import Tuple, Optional, List, Union, Dict
+from typing import Tuple, List, Union, Dict
 
-from checkov.cloudformation.parser import cfn_yaml, cfn_json
-from checkov.cloudformation.parser.node import dict_node
+from checkov.cloudformation.parser import cfn_yaml
+from checkov.common.parsers.json import parse as json_parse
+from checkov.common.parsers.node import dict_node
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.parser import ScannerError
 from yaml import YAMLError
@@ -31,19 +31,15 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
             error = f"Permission denied when accessing template file: {filename} - {err}"
             LOGGER.error(error)
     except UnicodeDecodeError as err:
-        error = f"Cannot read file contents: {filename}"
+        error = f"Cannot read file contents: {filename} - {err}"
         LOGGER.error(error)
     except cfn_yaml.CfnParseError as err:
-        error = f"Parsing error in file {filename}"
+        error = f"Parsing error in file: {filename} - {err}"
         LOGGER.info(error)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
-                (template, template_lines) = cfn_json.load(filename)
-            except cfn_json.JSONDecodeError:
-                pass
-            except JSONDecodeError:
-                pass
+                (template, template_lines) = json_parse(filename, allow_nulls=False)
             except Exception as json_err:  # pylint: disable=W0703
                 error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
                 LOGGER.info(error)

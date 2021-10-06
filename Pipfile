@@ -8,12 +8,13 @@ verify_ssl = true
 # REMINDER: Update "dev" deps on setup.py when changing
 #
 pytest = "*"
-coverage ="*"
+coverage ="==5.5"
 coverage-badge = "*"
 GitPython = "*"
 bandit = "*"
 urllib3-mock = "*"
 jsonschema = "*"
+atomicwrites = "*"
 
 [packages]
 #

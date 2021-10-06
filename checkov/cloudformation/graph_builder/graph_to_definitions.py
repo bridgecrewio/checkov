@@ -12,7 +12,8 @@ def convert_graph_vertices_to_definitions(
     definitions: Dict[str, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
     for vertex in vertices:
-        if vertex.block_type != BlockType.RESOURCE and vertex.block_type != BlockType.PARAMETERS:
+        if (vertex.block_type != BlockType.RESOURCE and vertex.block_type != BlockType.PARAMETERS) or \
+                (vertex.block_type == BlockType.RESOURCE and not vertex.condition):
             continue
         block_path = vertex.path
         block_type = TemplateSections.RESOURCES.value if vertex.block_type == 'resource' else TemplateSections.PARAMETERS.value

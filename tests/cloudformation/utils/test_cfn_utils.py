@@ -2,7 +2,7 @@ import os
 import unittest
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import dict_node
 from checkov.cloudformation.parser import TemplateSections
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))

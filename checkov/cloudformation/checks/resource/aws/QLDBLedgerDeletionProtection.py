@@ -1,6 +1,6 @@
 from typing import Dict
 
-from checkov.cloudformation.parser.node import str_node, dict_node
+from checkov.common.parsers.node import str_node, dict_node
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 

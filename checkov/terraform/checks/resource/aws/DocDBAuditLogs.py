@@ -11,18 +11,14 @@ class DocDBAuditLogs(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['parameter']
         if 'parameter' in conf:
-            for elem in conf["parameter"]:
+            elements = conf["parameter"]
+            for idx, elem in enumerate(conf["parameter"]):
                 if isinstance(elem, dict) and elem["name"][0] == "audit_logs" and elem["value"][0] == "enabled":
-                    self.evaluated_keys = [f'parameter/[{conf["parameter"].index(elem)}]/name', f'parameter/[{conf["parameter"].index(elem)}]/value']
+                    self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']
                     return CheckResult.PASSED
-
-            #no matching params
-            return CheckResult.FAILED
-
-        else:
-          # no params at all
-          return CheckResult.FAILED
+        return CheckResult.FAILED
 
 
 check = DocDBAuditLogs()

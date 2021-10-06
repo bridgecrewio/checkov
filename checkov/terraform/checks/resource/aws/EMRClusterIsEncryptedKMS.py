@@ -11,13 +11,14 @@ class EMRClusterIsEncryptedKMS(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'configuration' in conf:
-            configuration = conf['configuration'][0]
-            if "SSE-KMS" in configuration:
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        return CheckResult.SKIPPED
+        if 'configuration' not in conf:
+            return CheckResult.SKIPPED
+        self.evaluated_keys = ['configuration']
+        configuration = conf['configuration'][0]
+        if "SSE-KMS" in configuration:
+            self.evaluated_keys = ['configuration/[0]/SSE-KMS']
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = EMRClusterIsEncryptedKMS()

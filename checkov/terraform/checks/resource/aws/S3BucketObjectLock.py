@@ -14,7 +14,9 @@ class S3BucketObjectLock(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         lock_conf = conf.get("object_lock_configuration")
+        self.evaluated_keys = ['object_lock_configuration']
         if lock_conf and lock_conf[0]:
+            self.evaluated_keys = ['object_lock_configuration/[0]/object_lock_enabled']
             lock_enabled = lock_conf[0].get("object_lock_enabled")
             if lock_enabled in ["Enabled", ["Enabled"]]:
                 return CheckResult.PASSED

@@ -16,18 +16,16 @@ class RedShiftSSL(BaseResourceCheck):
         )
 
     def scan_resource_conf(self, conf):
-        if 'parameter' in conf:
-            for elem in conf["parameter"]:
-                if isinstance(elem, dict) and elem["name"][0] == "require_ssl" and elem["value"] == [True]:
-                    self.evaluated_keys = [f'parameter/[{conf["parameter"].index(elem)}]/name', f'parameter/[{conf["parameter"].index(elem)}]/value']
-                    return CheckResult.PASSED
-
-            #no matching params
+        if 'parameter' not in conf:
             return CheckResult.FAILED
+        self.evaluated_keys = ['parameter']
+        for idx, elem in enumerate(conf["parameter"]):
+            if isinstance(elem, dict) and elem["name"][0] == "require_ssl" and elem["value"] == [True]:
+                self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']
+                return CheckResult.PASSED
 
-        else:
-          # no params at all
-          return CheckResult.FAILED
+        #no matching params
+        return CheckResult.FAILED
 
 
 check = RedShiftSSL()

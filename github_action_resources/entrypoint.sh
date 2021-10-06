@@ -108,6 +108,10 @@ CHECKOV_EXIT_CODE=$?
 
 echo "$CHECKOV_RESULTS"
 
+CHECKOV_RESULTS="${CHECKOV_RESULTS//$'\\n'/''}"
+
+{ echo "CHECKOV_RESULTS<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_ENV
+
 echo "::set-output name=results::$CHECKOV_RESULTS"
 
 if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ]; then

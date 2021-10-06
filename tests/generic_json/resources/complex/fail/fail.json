@@ -1,0 +1,26 @@
+{
+    "array_of_objects": [
+        {
+            "id": 1,
+            "prop_is_array_of_object": [
+                {
+                    "name": "foo",
+                    "value": 3
+                },
+                {
+                    "name": "bar",
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "prop_is_array_of_object": [
+                {
+                    "name": "baz",
+                    "value": 2
+                }
+            ]
+        }
+    ]
+}

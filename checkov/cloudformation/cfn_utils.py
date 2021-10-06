@@ -9,7 +9,7 @@ from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
 from checkov.cloudformation.parser import parse, TemplateSections
-from checkov.cloudformation.parser.node import dict_node, list_node, str_node
+from checkov.common.parsers.node import dict_node, list_node, str_node
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.models.consts import YAML_COMMENT_MARK

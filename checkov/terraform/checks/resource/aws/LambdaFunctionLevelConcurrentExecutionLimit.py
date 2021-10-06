@@ -1,20 +1,22 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from typing import List, Any
 
 
-class LambdaFunctionLevelConcurrentExecutionLimit(BaseResourceCheck):
+class LambdaFunctionLevelConcurrentExecutionLimit(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that AWS Lambda function is configured for function-level concurrent execution limit"
         id = "CKV_AWS_115"
         supported_resources = ['aws_lambda_function']
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_attribute_result=CheckResult.FAILED)
 
-    def scan_resource_conf(self, conf):
-        key = 'reserved_concurrent_executions'
-        if key not in conf.keys() or conf.get(key)[0] == '${-1}':
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def get_inspected_key(self) -> str:
+        return 'reserved_concurrent_executions/[0]'
+
+    def get_forbidden_values(self) -> List[Any]:
+        return ['${-1}']
 
 
 check = LambdaFunctionLevelConcurrentExecutionLimit()

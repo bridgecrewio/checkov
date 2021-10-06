@@ -57,15 +57,15 @@ nav_order: 1
 |  46 | CKV_K8S_19  | resource | CronJob                | Containers should not share the host network namespace                                                 | Kubernetes |
 |  47 | CKV_K8S_20  | resource | containers             | Containers should not run with allowPrivilegeEscalation                                                | Kubernetes |
 |  48 | CKV_K8S_20  | resource | initContainers         | Containers should not run with allowPrivilegeEscalation                                                | Kubernetes |
-|  49 | CKV_K8S_21  | resource | Pod                    | The default namespace should not be used                                                               | Kubernetes |
-|  50 | CKV_K8S_21  | resource | Deployment             | The default namespace should not be used                                                               | Kubernetes |
-|  51 | CKV_K8S_21  | resource | DaemonSet              | The default namespace should not be used                                                               | Kubernetes |
-|  52 | CKV_K8S_21  | resource | StatefulSet            | The default namespace should not be used                                                               | Kubernetes |
-|  53 | CKV_K8S_21  | resource | ReplicaSet             | The default namespace should not be used                                                               | Kubernetes |
-|  54 | CKV_K8S_21  | resource | ReplicationController  | The default namespace should not be used                                                               | Kubernetes |
-|  55 | CKV_K8S_21  | resource | Job                    | The default namespace should not be used                                                               | Kubernetes |
-|  56 | CKV_K8S_21  | resource | CronJob                | The default namespace should not be used                                                               | Kubernetes |
-|  57 | CKV_K8S_21  | resource | ServiceAccount         | The default namespace should not be used                                                               | Kubernetes |
+|  49 | CKV_K8S_21  | resource | ServiceAccount         | The default namespace should not be used                                                               | Kubernetes |
+|  50 | CKV_K8S_21  | resource | Pod                    | The default namespace should not be used                                                               | Kubernetes |
+|  51 | CKV_K8S_21  | resource | Deployment             | The default namespace should not be used                                                               | Kubernetes |
+|  52 | CKV_K8S_21  | resource | DaemonSet              | The default namespace should not be used                                                               | Kubernetes |
+|  53 | CKV_K8S_21  | resource | StatefulSet            | The default namespace should not be used                                                               | Kubernetes |
+|  54 | CKV_K8S_21  | resource | ReplicaSet             | The default namespace should not be used                                                               | Kubernetes |
+|  55 | CKV_K8S_21  | resource | ReplicationController  | The default namespace should not be used                                                               | Kubernetes |
+|  56 | CKV_K8S_21  | resource | Job                    | The default namespace should not be used                                                               | Kubernetes |
+|  57 | CKV_K8S_21  | resource | CronJob                | The default namespace should not be used                                                               | Kubernetes |
 |  58 | CKV_K8S_21  | resource | Service                | The default namespace should not be used                                                               | Kubernetes |
 |  59 | CKV_K8S_21  | resource | Secret                 | The default namespace should not be used                                                               | Kubernetes |
 |  60 | CKV_K8S_21  | resource | Role                   | The default namespace should not be used                                                               | Kubernetes |
