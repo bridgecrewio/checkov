@@ -356,4 +356,4 @@ def get_external_checks_dir(config):
 
 
 if __name__ == '__main__':
-    exit(run())
+    sys.exit(run())
