@@ -39,16 +39,16 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
  ## Features
 
- * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Dockerfile, Serverless framework and ARM template files.
+ * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure, and Google Cloud.
+ * Scans Terraform, Terraform Plan, CloudFormation, Kubernetes, Dockerfile, Serverless framework, and ARM template files.
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
- * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
- * [Identifies secrets](https://bridgecrew.io/blog/checkov-secrets-scanning-find-exposed-credentials-in-iac/) using regular expressions, keywords, and entropy based detection.
+ * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables, and Terraform providers.
+ * [Identifies secrets](https://bridgecrew.io/blog/checkov-secrets-scanning-find-exposed-credentials-in-iac/) using regular expressions, keywords, and entropy-based detection.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
- * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
- * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
-* [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * Policies support the evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
+ * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false positives to reduce recurring scan failures. Also supports global skip from using CLI.
+* [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, JSON, JUnit XML, and GitHub markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 
@@ -56,7 +56,7 @@ Scan results in CLI
 
 ![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-recording.gif)
 
-Scheduled scan result in Jenkins
+Scheduled scan results in Jenkins
 
 ![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
 
@@ -81,7 +81,7 @@ pip3 install checkov
 
 Installation on Ubuntu 18.04 LTS:
 
-Ubuntu 18.04 ships with Python 3.6. Install python 3.7 (from ppa repository)
+Ubuntu 18.04 ships with Python 3.6. Install Python 3.7 (from ppa repository)
 
 ```sh
 sudo apt update
@@ -134,7 +134,7 @@ terraform plan -out tf.plan
 terraform show -json tf.plan  > tf.json 
 checkov -f tf.json
 ```
-Note: `terraform show` output  file `tf.json` will be single line. 
+Note: `terraform show` output  file `tf.json` will be a single line. 
 For that reason all findings will be reported line number 0 by checkov
 ```sh
 check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
@@ -147,7 +147,7 @@ If you have installed `jq` you can convert json file into multiple lines with th
 ```sh
 terraform show -json tf.plan | jq '.' > tf.json 
 ```
-Scan result would be much user friendly.
+Scan results would be more user-friendly.
 ```sh
 checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
@@ -226,7 +226,7 @@ checkov -d . --skip-check kube-system
 
 ### Suppressing/Ignoring a check
 
-Like any static-analysis tool it is limited by its analysis scope. 
+Like any static-analysis tool, it is limited by its analysis scope. 
 For example, if a resource is managed manually, or using subsequent configuration management tooling, 
 a suppression can be inserted as a simple code annotation.
 
@@ -241,8 +241,8 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 
 #### Example
 
-The following comment skip the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
-In the example, the bucket is configured with a public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
+The following comment skips the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
+In the example, the bucket is configured with public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
 
 ```hcl-terraform
 resource "aws_s3_bucket" "foo-bucket" {
@@ -294,12 +294,12 @@ spec:
 
 #### Logging
 
-For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DEBUG`. 
+For detailed logging to stdout set up the environment variable `LOG_LEVEL` to `DEBUG`. 
 
 Default is `LOG_LEVEL=WARNING`.
 
 #### Skipping directories
-To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
+To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and/or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
 To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECTORY_ENV` environment variable `export IGNORE_HIDDEN_DIRECTORY_ENV=false`
@@ -309,7 +309,7 @@ You can override the default set of directories to skip by setting the environme
 
 #### VSCODE Extension
 
-If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use checkov's within vscode, give a try to the vscode extension available at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
 ### Configuration using a config file
 
@@ -318,7 +318,7 @@ Checkov can be configured using a YAML configuration file. By default, checkov l
 * Current working directory where checkov is called.
 * User's home directory.
 
-**Attention**: it is a best practice for checkov configuration file to be loaded from a trusted source composed by a verified identity, so that scanned files, check ids and loaded custom checks are as desired.
+**Attention**: it is a best practice for checkov configuration files to be loaded from a trusted source composed by a verified identity, so that scanned files, check ids, and loaded custom checks are as desired.
 
 Users can also pass in the path to a config file via the command line. In this case, the other config files will be ignored. For example:
 ```sh
