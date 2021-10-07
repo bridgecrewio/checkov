@@ -103,4 +103,4 @@ checkov:
 ```
 
 See the [GitLab CI documentation](https://docs.gitlab.com/ee/ci/) for additional information.
-The there is also a working example of using GitLab CI with Checkov [here](https://gitlab.com/guided-explorations/ci-cd-plugin-extensions/checkov-iac-sast).  This example shows how to use the same Checkov YAML file as an includable extension so that all your jobs reuse the same job definition.
+There is also a working example of using GitLab CI with Checkov [here](https://gitlab.com/guided-explorations/ci-cd-plugin-extensions/checkov-iac-sast).  This example shows how to use the same Checkov YAML file as an includable extension so that all your jobs reuse the same job definition.
