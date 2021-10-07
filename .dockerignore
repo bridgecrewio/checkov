@@ -1,0 +1,6 @@
+bin/
+checkov/
+docs/
+integration_tests/
+kubernetes/
+tests/
