@@ -31,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run Trivy vulnerability scanner to scan for Critical Vulnerabilities
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.0.20
         with:
           scan-type: 'fs'
           ignore-unfixed: true
