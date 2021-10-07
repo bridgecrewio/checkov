@@ -8,10 +8,10 @@ from checkov.terraform.checks.provider.registry import provider_registry
 
 class BaseProviderCheck(BaseCheck):
     def __init__(self, name: str, id: str, categories: List[CheckCategories],
-                 supported_provider: List[str], **kwargs) -> None:
+                 supported_provider: List[str], guideline=None) -> None:
         super().__init__(
             name=name, id=id, categories=categories, supported_entities=supported_provider,
-            block_type="provider", **kwargs
+            block_type="provider", guideline=guideline
         )
         self.supported_provider = supported_provider
         provider_registry.register(self)

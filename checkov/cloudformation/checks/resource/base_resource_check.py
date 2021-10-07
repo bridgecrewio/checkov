@@ -9,10 +9,10 @@ from checkov.common.multi_signature import multi_signature
 
 class BaseResourceCheck(BaseCheck):
     def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_resources: List[str],
-                 **kwargs) -> None:
+                 guideline=None) -> None:
         super().__init__(
             name=name, id=id, categories=categories, supported_entities=supported_resources,
-            block_type="resource", **kwargs
+            block_type="resource", guideline=guideline
         )
         self.supported_resources = supported_resources
         cfn_registry.register(self)

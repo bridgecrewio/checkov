@@ -16,7 +16,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     def __init__(
         self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str],
-            block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None, **_
+            block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None
     ) -> None:
         self.name = name
         self.id = id

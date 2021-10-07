@@ -69,17 +69,6 @@ class TestBaseCheck(unittest.TestCase):
             context.exception.args[0]
         )
 
-    def test_base_check_accepts_variable_kwargs_for_future_proofing(self):
-        class SubclassWithNewKwarg(BaseCheck):
-            def __init__(self):
-                super().__init__(name="Example check", id="CKV_T_1", categories=[], supported_entities=["module"],
-                                 block_type="module", unused_kwarg="any")
-
-            def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
-                pass
-
-        SubclassWithNewKwarg()
-
 
 if __name__ == '__main__':
     unittest.main()

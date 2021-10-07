@@ -9,7 +9,7 @@ from checkov.terraform.checks.module.registry import module_registry
 class BaseModuleCheck(BaseCheck):
     def __init__(
         self, name: str, id: str, categories: List[CheckCategories], supported_resources: Optional[List[str]] = None,
-            **kwargs) -> None:
+            guideline=None) -> None:
         """
         Base class for terraform module call related checks.
 
@@ -25,7 +25,7 @@ class BaseModuleCheck(BaseCheck):
             supported_resources = ["module"]
         super().__init__(
             name=name, id=id, categories=categories, supported_entities=supported_resources,
-            block_type="module", **kwargs
+            block_type="module", guideline=guideline
         )
         self.supported_resources = supported_resources
         module_registry.register(self)
