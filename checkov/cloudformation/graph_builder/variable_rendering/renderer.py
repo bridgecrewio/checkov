@@ -1,11 +1,12 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
 if TYPE_CHECKING:
@@ -49,62 +50,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         )
         if not referenced_vertices:
             # DependsOn or Condition connections
-            if edge.label == IntrinsicFunctions.CONDITION:
-                dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-                evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
-                if isinstance(evaluated_condition, bool):
-                    # evaluated the condition successfully, add the result to the origin vertex
-                    origin_vertex.condition = evaluated_condition
+            self._handle_dependson_condition_connections(edge, origin_vertex)
         elif isinstance(val_to_eval, dict):
-            # Ref, GetAtt, FindInMap, If, Sub connections
-            cfn_evaluation_function = None
-            for curr_evaluation_function in self.EDGE_EVALUATION_CFN_FUNCTIONS:
-                if curr_evaluation_function in val_to_eval:
-                    cfn_evaluation_function = curr_evaluation_function
-                    break
-            if cfn_evaluation_function:
-                original_value = val_to_eval.get(cfn_evaluation_function, None)
-
-                evaluated_edges = list()
-                for edge in edge_list:
-                    dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
-
-                    if cfn_evaluation_function == ConditionFunctions.IF:
-                        # We evaluate Fn::IF differently from Ref, GetAtt, FindInMap, Sub
-                        evaluated_value, evaluated_value_hierarchy = self._evaluate_if_connection(
-                            val_to_eval[ConditionFunctions.IF], dest_vertex_attributes)
-                        if evaluated_value and evaluated_value_hierarchy:
-                            evaluated_value_hierarchy = f'{edge.label}.{ConditionFunctions.IF}.{evaluated_value_hierarchy}'
-                            changed_attribute = origin_vertex.changed_attributes.get(evaluated_value_hierarchy, None)
-                            (attribute_at_dest, changed_origin_id) = (changed_attribute[0].attribute_key, changed_attribute[0].vertex_id) \
-                                if isinstance(changed_attribute, list) and len(changed_attribute) == 1 else (None, None)
-                    else:
-                        # Ref, GetAtt, FindInMap, Sub evaluation
-                        evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](
-                            val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
-                        changed_origin_id = edge.dest
-
-                    if evaluated_value and evaluated_value != original_value:
-                        val_to_eval[cfn_evaluation_function] = evaluated_value
-                        evaluated_edges.append({
-                            'vertex_index': edge.origin,
-                            'attribute_key': edge.label,
-                            'attribute_value': evaluated_value,
-                            'change_origin_id': changed_origin_id,
-                            'attribute_at_dest': attribute_at_dest
-                        })
-                    else:
-                        break
-
-                if len(evaluated_edges) == len(edge_list):
-                    for evaluated_value in evaluated_edges:
-                        self.local_graph.update_vertex_attribute(
-                            vertex_index=evaluated_value['vertex_index'],
-                            attribute_key=evaluated_value['attribute_key'],
-                            attribute_value=evaluated_value['attribute_value'],
-                            change_origin_id=evaluated_value['change_origin_id'],
-                            attribute_at_dest=evaluated_value['attribute_at_dest']
-                        )
+            self._handle_edge_list_evaluation_functions(edge_list, origin_vertex, val_to_eval)
 
     """
         This method will evaluate Fn::Select, Fn::Join
@@ -439,3 +387,77 @@ class CloudformationVariableRenderer(VariableRenderer):
             updated_resources_blocks_name_map[shortened_resource_name] = blocks_list
         vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
+
+    def _handle_dependson_condition_connections(self, edge: Edge, origin_vertex: Block) -> None:
+        if edge.label == IntrinsicFunctions.CONDITION:
+            dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
+            evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
+            if isinstance(evaluated_condition, bool):
+                # evaluated the condition successfully, add the result to the origin vertex
+                origin_vertex.condition = evaluated_condition
+
+    def _handle_edge_list_evaluation_functions(self, edge_list: List[Edge], origin_vertex: Block,
+                                               val_to_eval: Dict[str, Any]) -> None:
+        # Ref, GetAtt, FindInMap, If, Sub connections
+        cfn_evaluation_function = next((
+            curr_evaluation_function
+            for curr_evaluation_function in self.EDGE_EVALUATION_CFN_FUNCTIONS
+            if curr_evaluation_function in val_to_eval
+        ), None)
+
+        if cfn_evaluation_function:
+            original_value = val_to_eval.get(cfn_evaluation_function, None)
+
+            evaluated_edges = list()
+            for edge in edge_list:
+                dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
+
+                (evaluated_value, changed_origin_id, attribute_at_dest) = self._evaluate_cfn_function(
+                    edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
+
+                if evaluated_value and evaluated_value != original_value:
+                    # succeeded to evaluate an edge
+                    val_to_eval[cfn_evaluation_function] = evaluated_value
+                    evaluated_edges.append({
+                        'vertex_index': edge.origin,
+                        'attribute_key': edge.label,
+                        'attribute_value': evaluated_value,
+                        'change_origin_id': changed_origin_id,
+                        'attribute_at_dest': attribute_at_dest
+                    })
+                else:
+                    # failed to evaluate an edge
+                    break
+
+            if len(evaluated_edges) == len(edge_list):
+                # succeeded in evaluation all of the edges
+                for evaluated_value in evaluated_edges:
+                    self.local_graph.update_vertex_attribute(
+                        vertex_index=evaluated_value['vertex_index'],
+                        attribute_key=evaluated_value['attribute_key'],
+                        attribute_value=evaluated_value['attribute_value'],
+                        change_origin_id=evaluated_value['change_origin_id'],
+                        attribute_at_dest=evaluated_value['attribute_at_dest']
+                    )
+
+    def _evaluate_cfn_function(self, edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes):
+        (evaluated_value, changed_origin_id, attribute_at_dest) = (None, None, None)
+
+        if cfn_evaluation_function == ConditionFunctions.IF:
+            # We evaluate Fn::IF differently from Ref, GetAtt, FindInMap, Sub
+            evaluated_value, evaluated_value_hierarchy = self._evaluate_if_connection(
+                val_to_eval[ConditionFunctions.IF], dest_vertex_attributes)
+            if evaluated_value and evaluated_value_hierarchy:
+                evaluated_value_hierarchy = f'{edge.label}.{ConditionFunctions.IF}.{evaluated_value_hierarchy}'
+                changed_attribute = origin_vertex.changed_attributes.get(evaluated_value_hierarchy, None)
+                (attribute_at_dest, changed_origin_id) = \
+                    (changed_attribute[0].attribute_key, changed_attribute[0].vertex_id)\
+                    if isinstance(changed_attribute, list) and len(changed_attribute) == 1\
+                    else (None, None)
+        else:
+            # Ref, GetAtt, FindInMap, Sub evaluation
+            evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](
+                val_to_eval[cfn_evaluation_function], dest_vertex_attributes)
+            changed_origin_id = edge.dest
+
+        return evaluated_value, changed_origin_id, attribute_at_dest
