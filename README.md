@@ -1,6 +1,6 @@
 [![Hacktoberfest](docs/web/images/Hacktoberfest-1.png)](https://bridgecrew.io/blog/happy-hacktoberfest-2021/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 
-[![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/web/images/checkov_by_bridgecrew.png)](#)
+[![checkov](https://github.com/idivyanshbansal/checkov/blob/4a449aeecdb944b19f34aff05babb50803870d21/docs/web/images/logo.png)](#)
        
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
