@@ -6,7 +6,7 @@ on:
       - '*'
   push:
     branches:
-      - master
+      - '*'
 jobs:
   bandit:
     runs-on: [self-hosted, public, linux, x64]
