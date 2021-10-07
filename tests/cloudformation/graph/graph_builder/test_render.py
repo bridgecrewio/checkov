@@ -126,12 +126,12 @@ class TestRenderer(TestCase):
         environment_expected_attributes = {'Default': None}
         # Resources
         web_vpc_expected_attributes = {'CidrBlock': web_vpc_expected_cidr_block}
-        default_db_expected_attributes = {'DBName': f"rds-${{AWS::AccountId}}-{company_name_expected_value}-${{Environment}}"}
+        default_db_expected_attributes = {'DBName': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
         # Outputs
         db_endpoint_sg_expected_attributes = {'Value.Fn::Sub': "${DefaultDB.Endpoint.Address}:${DefaultDB.Endpoint.Port}"}
         web_vpc_cidr_block_expected_attributes = {'Value': web_vpc_expected_cidr_block}
         cidr_block_associations_expected_attributes = {'Value.Fn::Sub': "${WebVPC.CidrBlockAssociations}"}
-        default_db_name_expected_attributes = {'Value': f"rds-${{AWS::AccountId}}-{company_name_expected_value}-${{Environment}}"}
+        default_db_name_expected_attributes = {'Value': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
 
         self.compare_vertex_attributes(local_graph, company_name_expected_attributes, BlockType.PARAMETERS, 'CompanyName')
         self.compare_vertex_attributes(local_graph, environment_expected_attributes, BlockType.PARAMETERS, 'Environment')
@@ -145,11 +145,11 @@ class TestRenderer(TestCase):
         company_name_expected_breadcrumbs = {}
         environment_expected_breadcrumbs = {}
         web_vpc_expected_breadcrumbs = {}
-        default_db_expected_breadcrumbs = {'DBName': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        default_db_expected_breadcrumbs = {}
         db_endpoint_sg_expected_breadcrumbs = {}
         web_vpc_cidr_block_expected_breadcrumbs = {'Value': [{'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
         cidr_block_associations_expected_breadcrumbs = {}
-        default_db_name_expected_breadcrumbs = {'Value': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        default_db_name_expected_breadcrumbs = {}
 
         self.compare_vertex_breadcrumbs(local_graph, company_name_expected_breadcrumbs, BlockType.PARAMETERS, 'CompanyName')
         self.compare_vertex_breadcrumbs(local_graph, environment_expected_breadcrumbs, BlockType.PARAMETERS, 'Environment')
@@ -279,7 +279,12 @@ class TestRenderer(TestCase):
         vertex_attributes = vertex.get_attribute_dict()
         for attribute_key, expected_value in expected_attributes.items():
             actual_value = vertex_attributes.get(attribute_key)
-            self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+            if not isinstance(expected_value, dict):
+                self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+            else:
+                for cfn_func, evaluated_value in expected_value.items():
+                    self.assertIn(cfn_func, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+                    self.assertIn(actual_value[cfn_func], evaluated_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
 
     def compare_vertex_breadcrumbs(self, local_graph, expected_breadcrumbs, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]

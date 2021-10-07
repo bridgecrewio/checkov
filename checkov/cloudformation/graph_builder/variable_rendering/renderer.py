@@ -65,6 +65,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             if cfn_evaluation_function:
                 original_value = val_to_eval.get(cfn_evaluation_function, None)
 
+                evaluated_edges = list()
                 for edge in edge_list:
                     dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
 
@@ -72,10 +73,11 @@ class CloudformationVariableRenderer(VariableRenderer):
                         # We evaluate Fn::IF differently from Ref, GetAtt, FindInMap, Sub
                         evaluated_value, evaluated_value_hierarchy = self._evaluate_if_connection(
                             val_to_eval[ConditionFunctions.IF], dest_vertex_attributes)
-                        evaluated_value_hierarchy = f'{edge.label}.{ConditionFunctions.IF}.{evaluated_value_hierarchy}'
-                        changed_attribute = origin_vertex.changed_attributes.get(evaluated_value_hierarchy, None)
-                        (attribute_at_dest, changed_origin_id) = (changed_attribute[0].attribute_key, changed_attribute[0].vertex_id) \
-                            if isinstance(changed_attribute, list) and len(changed_attribute) == 1 else (None, None)
+                        if evaluated_value and evaluated_value_hierarchy:
+                            evaluated_value_hierarchy = f'{edge.label}.{ConditionFunctions.IF}.{evaluated_value_hierarchy}'
+                            changed_attribute = origin_vertex.changed_attributes.get(evaluated_value_hierarchy, None)
+                            (attribute_at_dest, changed_origin_id) = (changed_attribute[0].attribute_key, changed_attribute[0].vertex_id) \
+                                if isinstance(changed_attribute, list) and len(changed_attribute) == 1 else (None, None)
                     else:
                         # Ref, GetAtt, FindInMap, Sub evaluation
                         evaluated_value, attribute_at_dest = self.edge_evaluation_methods[cfn_evaluation_function](
@@ -84,12 +86,24 @@ class CloudformationVariableRenderer(VariableRenderer):
 
                     if evaluated_value and evaluated_value != original_value:
                         val_to_eval[cfn_evaluation_function] = evaluated_value
+                        evaluated_edges.append({
+                            'vertex_index': edge.origin,
+                            'attribute_key': edge.label,
+                            'attribute_value': evaluated_value,
+                            'change_origin_id': changed_origin_id,
+                            'attribute_at_dest': attribute_at_dest
+                        })
+                    else:
+                        break
+
+                if len(evaluated_edges) == len(edge_list):
+                    for evaluated_value in evaluated_edges:
                         self.local_graph.update_vertex_attribute(
-                            vertex_index=edge.origin,
-                            attribute_key=edge.label,
-                            attribute_value=evaluated_value,
-                            change_origin_id=changed_origin_id,
-                            attribute_at_dest=attribute_at_dest
+                            vertex_index=evaluated_value['vertex_index'],
+                            attribute_key=evaluated_value['attribute_key'],
+                            attribute_value=evaluated_value['attribute_value'],
+                            change_origin_id=evaluated_value['change_origin_id'],
+                            attribute_at_dest=evaluated_value['attribute_at_dest']
                         )
 
     """
@@ -177,7 +191,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         attribute_at_dest = 'Default'
         evaluated_value = dest_vertex_attributes.get(attribute_at_dest)
         if (
-                evaluated_value and
+                evaluated_value is not None and
                 value == dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME) and
                 dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.PARAMETERS
         ):
