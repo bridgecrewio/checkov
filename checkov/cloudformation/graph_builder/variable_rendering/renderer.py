@@ -6,6 +6,7 @@ from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_i
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
 if TYPE_CHECKING:
@@ -51,7 +52,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             # DependsOn or Condition connections
             self._handle_dependson_condition_connections(edge, origin_vertex)
         elif isinstance(val_to_eval, dict):
-            self._handle_edge_list_evaluation_functions(edge_list, val_to_eval, origin_vertex)
+            self._handle_edge_list_evaluation_functions(edge_list, origin_vertex, val_to_eval)
 
     """
         This method will evaluate Fn::Select, Fn::Join
@@ -387,7 +388,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
 
-    def _handle_dependson_condition_connections(self, edge, origin_vertex):
+    def _handle_dependson_condition_connections(self, edge: Edge, origin_vertex: Block) -> None:
         if edge.label == IntrinsicFunctions.CONDITION:
             dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
             evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
@@ -395,7 +396,8 @@ class CloudformationVariableRenderer(VariableRenderer):
                 # evaluated the condition successfully, add the result to the origin vertex
                 origin_vertex.condition = evaluated_condition
 
-    def _handle_edge_list_evaluation_functions(self, edge_list, val_to_eval, origin_vertex):
+    def _handle_edge_list_evaluation_functions(self, edge_list: List[Edge], origin_vertex: Block,
+                                               val_to_eval: Dict[str: any]) -> None:
         # Ref, GetAtt, FindInMap, If, Sub connections
         cfn_evaluation_function = next((
             curr_evaluation_function
