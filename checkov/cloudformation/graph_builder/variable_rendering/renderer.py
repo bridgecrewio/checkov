@@ -397,7 +397,7 @@ class CloudformationVariableRenderer(VariableRenderer):
                 origin_vertex.condition = evaluated_condition
 
     def _handle_edge_list_evaluation_functions(self, edge_list: List[Edge], origin_vertex: Block,
-                                               val_to_eval: Dict[str: any]) -> None:
+                                               val_to_eval: Dict[str: Any]) -> None:
         # Ref, GetAtt, FindInMap, If, Sub connections
         cfn_evaluation_function = next((
             curr_evaluation_function
