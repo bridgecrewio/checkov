@@ -27,13 +27,11 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
 
         if not files and not root_folder:
-            logging.warning("No resources to scan.")
+            logging.debug("No resources to scan.")
             return report
 
         if not external_checks_dir:
-            logging.warning(
-                "The json runner requires that external checks are defined."
-            )
+            logging.debug("The json runner requires that external checks are defined.")
             return report
 
         for directory in external_checks_dir:
