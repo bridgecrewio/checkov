@@ -77,6 +77,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureUnattachedDisksAreEncrypted(self):
         self.go("AzureUnattachedDisksAreEncrypted")
 
+    def test_AzureNetworkInterfacePublicIPAddressId(self):
+        self.go("AzureNetworkInterfacePublicIPAddressId")
+
     def test_AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs(self):
         self.go("AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs")
 
