@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
+
 class BaseIntegrationFeature(ABC):
     def __init__(self, bc_integration: BcPlatformIntegration, order):
         self.bc_integration = bc_integration
