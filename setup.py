@@ -44,7 +44,6 @@ setup(
         "pyyaml>=5.4.1",
         "boto3==1.17.*",
         "GitPython",
-        "six==1.15.0",
         "jmespath",
         "tqdm",
         "update_checker",
