@@ -18,7 +18,7 @@ class BaseVariableEvaluation(ABC):
         tf_definitions: Dict[str, Dict[str, Any]],
         definitions_context: Dict[str, Dict[str, Any]],
     ) -> None:
-        self.logger = logging.getLogger("{}".format(self.__module__))
+        self.logger = logging.getLogger(f"{self.__module__}")
         self.root_folder = root_folder
         self.tf_definitions = tf_definitions
         self.definitions_context = definitions_context

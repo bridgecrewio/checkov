@@ -23,8 +23,8 @@ class TestCodeBuildProjectEncryption(unittest.TestCase):
             "aws_codebuild_project.fail",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
 
         self.assertEqual(summary["passed"], 2)

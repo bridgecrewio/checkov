@@ -7,7 +7,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class ConnectionSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(ConnectionSolver, self).setUp()
+        super().setUp()
 
     def test_and_connection(self):
         root_folder = '../../../resources/ec2_instance_network_interfaces'

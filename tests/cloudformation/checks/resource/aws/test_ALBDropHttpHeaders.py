@@ -36,8 +36,8 @@ class TestALBDropHttpHeaders(unittest.TestCase):
 
         # 2 Unknown resources are tested which are properly silently ignored
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], 3)
         self.assertEqual(summary['failed'], 4)

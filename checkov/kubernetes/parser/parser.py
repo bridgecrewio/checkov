@@ -29,7 +29,7 @@ def parse(filename):
                 return
         else:
             return
-    except IOError as e:
+    except OSError as e:
         if e.errno == 2:
             logger.error('Template file not found: %s', filename)
             return

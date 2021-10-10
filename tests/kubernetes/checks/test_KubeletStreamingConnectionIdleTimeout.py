@@ -1,4 +1,3 @@
-
 import os
 import unittest
 
@@ -35,4 +34,3 @@ class TestKubeletStreamingConnectionIdleTimeout(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
         
-    

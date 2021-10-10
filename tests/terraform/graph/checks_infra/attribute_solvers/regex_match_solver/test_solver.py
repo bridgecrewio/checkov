@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestRegexMatchSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestRegexMatchSolver, self).setUp()
+        super().setUp()
 
     def test_regex_match_solver_simple(self):
         root_folder = '../../../resources/tag_includes'

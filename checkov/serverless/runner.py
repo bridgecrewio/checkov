@@ -104,7 +104,7 @@ class Runner(BaseRunner):
                 if not cf_sub_template.get('Resources'):
                     continue
                 cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
-                logging.debug("Template Dump for {}: {}".format(sls_file, sls_file_data, indent=2))
+                logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                 cf_context_parser.evaluate_default_refs()
                 for resource_name, resource in cf_sub_template['Resources'].items():
                     if not isinstance(resource, dict_node):

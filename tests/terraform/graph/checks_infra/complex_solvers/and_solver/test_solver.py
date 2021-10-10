@@ -6,7 +6,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestAndQuery(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestAndQuery, self).setUp()
+        super().setUp()
 
     def test_buckets_with_option_env_tag(self):
         root_folder = '../../../resources/s3_bucket_2'

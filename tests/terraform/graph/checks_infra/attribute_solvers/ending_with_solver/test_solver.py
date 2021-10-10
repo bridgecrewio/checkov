@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestEndingWithSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestEndingWithSolver, self).setUp()
+        super().setUp()
 
     def test_ami_ending_with(self):
         root_folder = '../../../resources/public_virtual_machines'

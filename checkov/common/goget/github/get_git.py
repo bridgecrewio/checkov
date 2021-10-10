@@ -49,7 +49,7 @@ class GitGetter(BaseGetter):
         return clone_dir
 
     def _clone(self, git_url, clone_dir):
-        self.logger.debug("cloning {} to {}".format(self.url, clone_dir))
+        self.logger.debug(f"cloning {self.url} to {clone_dir}")
         if self.tag:
             Repo.clone_from(git_url, clone_dir, b=self.tag)
         else:

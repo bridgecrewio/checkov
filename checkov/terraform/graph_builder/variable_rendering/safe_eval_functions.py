@@ -115,7 +115,7 @@ def wrap_func(f: Callable[..., Any], *args: Any) -> Any:
 
 
 SAFE_EVAL_FUNCTIONS: List[str] = []
-SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
+SAFE_EVAL_DICT = {k: locals().get(k, None) for k in SAFE_EVAL_FUNCTIONS}
 
 # math functions
 SAFE_EVAL_DICT["abs"] = abs

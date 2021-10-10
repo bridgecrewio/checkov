@@ -132,7 +132,7 @@ class TestBlocks(TestCase):
 
         block.update_inner_attribute(attribute_key="labels.app.kubernetes.io/name", nested_attributes=attributes,
                                            value_to_update="dummy value")
-        self.assertEquals("dummy value", block.attributes["labels.app.kubernetes.io/name"])
+        self.assertEqual("dummy value", block.attributes["labels.app.kubernetes.io/name"])
 
     def test_update_complex_key2(self):
         config = {}

@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestNotEqualsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestNotEqualsSolver, self).setUp()
+        super().setUp()
 
     def test_not_equals_solver_simple(self):
         root_folder = '../../../resources/public_security_groups'

@@ -75,7 +75,7 @@ class Runner(BaseRunner):
                 for i in range(len(definitions[k8_file])):
                     if (not 'apiVersion' in definitions[k8_file][i].keys()) and (not 'kind' in definitions[k8_file][i].keys()):
                         continue
-                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+                    logging.debug(f"Template Dump for {k8_file}: {definitions[k8_file][i]}")
 
                     entity_conf = definitions[k8_file][i]
                     if entity_conf is None:
@@ -89,7 +89,7 @@ class Runner(BaseRunner):
                 for i in range(len(definitions[k8_file])):
                     if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
-                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+                    logging.debug(f"Template Dump for {k8_file}: {definitions[k8_file][i]}")
 
                     entity_conf = definitions[k8_file][i]
 
@@ -140,7 +140,7 @@ class Runner(BaseRunner):
                 for i in range(len(definitions[k8_file])):
                     if _is_invalid_k8_definition(definitions[k8_file][i]):
                         continue
-                    logging.debug("Template Dump for {}: {}".format(k8_file, definitions[k8_file][i], indent=2))
+                    logging.debug(f"Template Dump for {k8_file}: {definitions[k8_file][i]}")
 
                     entity_conf = definitions[k8_file][i]
                     if entity_conf is None:
@@ -254,14 +254,12 @@ def find_lines(node, kv):
         return node
     if isinstance(node, list):
         for i in node:
-            for x in find_lines(i, kv):
-                yield x
+            yield from find_lines(i, kv)
     elif isinstance(node, dict):
         if kv in node:
             yield node[kv]
         for j in node.values():
-            for x in find_lines(j, kv):
-                yield x
+            yield from find_lines(j, kv)
 
 
 def _is_invalid_k8_definition(definition: dict) -> bool:

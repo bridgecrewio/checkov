@@ -28,7 +28,7 @@ def create_str_node_class(cls):
             return cls.__new__(self, x)
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(f'{self.__class__.__name__}.{name} is invalid')
 
         def __deepcopy__(self, memo):
             result = str_node(self, self.start_mark, self.end_mark)
@@ -97,7 +97,7 @@ def create_dict_node_class(cls):
             """ Override the default get """
             if isinstance(default, dict):
                 default = dict_node(default, self.start_mark, self.end_mark)
-            return super(node_class, self).get(key, default)
+            return super().get(key, default)
 
         def get_safe(self, key, default=None, path=None, type_t=()):
             """
@@ -145,7 +145,7 @@ def create_dict_node_class(cls):
                     yield self, path[:]
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(f'{self.__class__.__name__}.{name} is invalid')
 
     node_class.__name__ = '%s_node' % cls.__name__
     return node_class
@@ -191,7 +191,7 @@ def create_dict_list_class(cls):
                         yield v, path[:] + [i]
 
         def __getattr__(self, name):
-            raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+            raise TemplateAttributeError(f'{self.__class__.__name__}.{name} is invalid')
 
     node_class.__name__ = '%s_node' % cls.__name__
     return node_class

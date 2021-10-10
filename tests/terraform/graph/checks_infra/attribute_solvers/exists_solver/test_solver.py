@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class ExistsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(ExistsSolver, self).setUp()
+        super().setUp()
 
     def test_nested_attribute_exists(self):
         root_folder = '../../../resources/s3_bucket'

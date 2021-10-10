@@ -1,5 +1,3 @@
-
-
 class IntegrationFeatureRegistry:
 
     def __init__(self):

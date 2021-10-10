@@ -15,7 +15,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestGreaterThanLessThanSolvers, self).setUp()
+        super().setUp()
 
     def test_greater_than_solver_simple(self):
         # this is just a basic check to make sure the operator works

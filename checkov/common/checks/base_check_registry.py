@@ -15,7 +15,7 @@ from checkov.common.typing import _SkippedCheck
 from checkov.runner_filter import RunnerFilter
 
 
-class BaseCheckRegistry(object):
+class BaseCheckRegistry:
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
     __loading_external_checks = False
@@ -131,7 +131,7 @@ class BaseCheckRegistry(object):
         scanned_file: str,
         skip_info: _SkippedCheck,
     ) -> Dict[str, Any]:
-        self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
+        self.logger.debug(f"Running check: {check.name} on file {scanned_file}")
         result = check.run(
             scanned_file=scanned_file,
             entity_configuration=entity_configuration,
@@ -162,12 +162,12 @@ class BaseCheckRegistry(object):
         when a .py file has syntax error
         """
         directory = os.path.expanduser(directory)
-        self.logger.debug("Loading external checks from {}".format(directory))
+        self.logger.debug(f"Loading external checks from {directory}")
         sys.path.insert(1, directory)
 
         with os.scandir(directory) as directory_content:
             if not self._directory_has_init_py(directory):
-                self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
+                self.logger.info(f"No __init__.py found in {directory}. Cannot load any check here.")
             else:
                 for entry in directory_content:
                     if self._file_can_be_imported(entry):
@@ -177,7 +177,7 @@ class BaseCheckRegistry(object):
                         # of the checks, which need to be handled specially.
                         try:
                             BaseCheckRegistry.__loading_external_checks = True
-                            self.logger.debug("Importing external check '{}'".format(check_name))
+                            self.logger.debug(f"Importing external check '{check_name}'")
                             importlib.import_module(check_name)
                         except SyntaxError as e:
                             self.logger.error(

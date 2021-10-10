@@ -6,7 +6,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 
 
-class RunnerFilter(object):
+class RunnerFilter:
     # NOTE: This needs to be static because different filters may be used at load time versus runtime
     #       (see note in BaseCheckRegistery.register). The concept of which checks are external is
     #       logically a "static" concept anyway, so this makes logical sense.

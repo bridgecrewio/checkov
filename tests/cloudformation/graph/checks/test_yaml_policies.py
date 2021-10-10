@@ -132,7 +132,7 @@ def load_yaml_data(source_file_name, dir_path):
     if not os.path.exists(expected_path):
         return None
 
-    with open(expected_path, "r") as f:
+    with open(expected_path) as f:
         expected_data = yaml.safe_load(f)
 
     return json.loads(json.dumps(expected_data))

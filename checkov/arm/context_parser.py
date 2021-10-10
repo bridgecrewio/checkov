@@ -10,7 +10,7 @@ from checkov.common.util.type_forcers import force_list
 COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
 
 
-class ContextParser(object):
+class ContextParser:
     """
     ARM template context parser
     """
@@ -47,7 +47,7 @@ class ContextParser(object):
         # Substitute Parameters and Variables
         for key_entry in keys_w_params:
             try:
-                param = re.sub("\[parameters\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
+                param = re.sub(r"\[parameters\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
                                                                                key_entry[:-1])[key_entry[-1]])
                 if param in parameter_defaults:
                     logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
@@ -58,7 +58,7 @@ class ContextParser(object):
 
         for key_entry in keys_w_vars:
             try:
-                param = re.sub("\[variables\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
+                param = re.sub(r"\[variables\('|'\)]", "", self._get_from_dict(dict(self.arm_template),
                                                                               key_entry[:-1])[key_entry[-1]])
                 if param in variable_values.keys():
                     self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
@@ -66,7 +66,7 @@ class ContextParser(object):
                         "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
                                                                                          variable_values[param]))
                 else:
-                    logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
+                    logging.debug(f"Variable {param} not found in evaluated variables in file {self.arm_file}")
             except TypeError as e:
                 logging.debug(f'Failed to evaluate param in {self.arm_file}, error:')
                 logging.debug(e, stack_info=True)
@@ -108,14 +108,12 @@ class ContextParser(object):
     def find_lines(node, kv):
         if isinstance(node, list):
             for i in node:
-                for x in ContextParser.find_lines(i, kv):
-                    yield x
+                yield from ContextParser.find_lines(i, kv)
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
             for j in node.values():
-                for x in ContextParser.find_lines(j, kv):
-                    yield x
+                yield from ContextParser.find_lines(j, kv)
 
     @staticmethod
     def collect_skip_comments(resource):

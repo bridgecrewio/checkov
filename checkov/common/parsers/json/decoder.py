@@ -6,7 +6,7 @@ from checkov.common.parsers.node import str_node, dict_node, list_node
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
 
 
-class Mark(object):
+class Mark:
     """Mark of line and column"""
     line = 1
     column = 1
@@ -45,7 +45,7 @@ def py_scanstring(s, end, strict=True,
             break
         if terminator != '\\':
             if strict:
-                msg = 'Invalid control character {0!r} at'.format(terminator)
+                msg = f'Invalid control character {terminator!r} at'
                 raise DecodeError(msg, s, end)
             _append(terminator)
             continue
@@ -58,7 +58,7 @@ def py_scanstring(s, end, strict=True,
             try:
                 char = _b[esc]
             except KeyError:
-                msg = 'Invalid \\escape: {0!r}'.format(esc)
+                msg = f'Invalid \\escape: {esc!r}'
                 raise DecodeError(msg, s, end)
             end += 1
         else:
@@ -256,9 +256,9 @@ class Decoder(JSONDecoder):
                         result = object_pairs_hook(pairs, beg_mark, end_mark)
                         return result, end + 1
                     except DuplicateError as err:
-                        raise DecodeError('Duplicate found {}'.format(err), s, end)
+                        raise DecodeError(f'Duplicate found {err}', s, end)
                     except NullError as err:
-                        raise DecodeError('Null Error {}'.format(err), s, end)
+                        raise DecodeError(f'Null Error {err}', s, end)
                 pairs = {}
                 if object_hook is not None:
                     beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1, self.newline_indexes)
@@ -321,9 +321,9 @@ class Decoder(JSONDecoder):
                 beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end, self.newline_indexes)
                 result = object_pairs_hook(pairs, beg_mark, end_mark)
             except DuplicateError as err:
-                raise DecodeError('Duplicate found {}'.format(err), s, begin, key)
+                raise DecodeError(f'Duplicate found {err}', s, begin, key)
             except NullError as err:
-                raise DecodeError('Null Error {}'.format(err), s, begin, key)
+                raise DecodeError(f'Null Error {err}', s, begin, key)
             return result, end
 
         pairs = dict(pairs)
@@ -341,8 +341,8 @@ class Decoder(JSONDecoder):
         mapping = dict_node({}, beg_mark, end_mark)
         for key, value in ordered_pairs:
             if not self.allow_nulls and value is None:
-                raise NullError('"{}"'.format(key))
+                raise NullError(f'"{key}"')
             if key in mapping:
-                raise DuplicateError('"{}"'.format(key))
+                raise DuplicateError(f'"{key}"')
             mapping[key] = value
         return mapping

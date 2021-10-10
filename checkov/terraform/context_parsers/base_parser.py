@@ -26,7 +26,7 @@ class BaseContextParser(ABC):
 
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
-        self.logger = logging.getLogger("{}".format(self.__module__))
+        self.logger = logging.getLogger(f"{self.__module__}")
         if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
@@ -63,7 +63,7 @@ class BaseContextParser(ABC):
         return self.filtered_lines
 
     def _read_file_lines(self) -> List[Tuple[int, str]]:
-        with (open(self.tf_file, "r")) as file:
+        with (open(self.tf_file)) as file:
             file.seek(0)
             file_lines = [(ind + 1, line) for (ind, line) in list(enumerate(file.readlines()))]
             return file_lines

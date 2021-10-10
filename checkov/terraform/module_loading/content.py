@@ -3,7 +3,7 @@ from types import TracebackType
 from typing import Optional, Union, Type
 
 
-class ModuleContent(object):
+class ModuleContent:
     def __init__(
         self,
         dir: Optional[Union[tempfile.TemporaryDirectory, str]],

@@ -23,8 +23,8 @@ class TestAppLoadBalancerTLS12(unittest.TestCase):
             "aws_ebs_encryption_by_default.disabled",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 1)

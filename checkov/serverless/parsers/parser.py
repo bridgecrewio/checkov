@@ -36,7 +36,7 @@ def parse(filename):
         (template, template_lines) = cfn_yaml.load(filename)
         if not template or not is_checked_sls_template(template):
             return
-    except IOError as e:
+    except OSError as e:
         if e.errno == 2:
             logger.error('Template file not found: %s', filename)
             return
@@ -250,7 +250,7 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
     data = file_data_cache.get(file_location)
     if data is None:
         try:
-            with open(file_location, "r") as f:
+            with open(file_location) as f:
                 if file_location.endswith(".json"):
                     data = json.load(f)
                 elif file_location.endswith(".yml") or file_location.endswith(".yaml"):

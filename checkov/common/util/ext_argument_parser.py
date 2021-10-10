@@ -19,7 +19,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             try:
                 with self._config_file_open_func(output_file_path, "w") as output_file:
                     pass
-            except IOError as e:
+            except OSError as e:
                 raise ValueError("Couldn't open {} for writing: {}".format(
                     output_file_path, e))
         if output_file_paths:

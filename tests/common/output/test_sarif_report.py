@@ -201,7 +201,7 @@ def get_sarif_schema():
     file_name, headers = urllib.request.urlretrieve(
         "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
     )
-    with open(file_name, "r") as file:
+    with open(file_name) as file:
         schema = json.load(file)
     return schema
 

@@ -4,7 +4,7 @@ from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, I
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 
 
-class ContextParser(object):
+class ContextParser:
     """
     serverless functions template context parser
     """

@@ -27,8 +27,8 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
             "aws_elasticsearch_domain.node_to_node_encryption_doesnt_exist",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 5)
         self.assertEqual(summary["failed"], 2)

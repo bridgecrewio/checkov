@@ -74,6 +74,6 @@ class Baseline:
     def from_json(self, file_path: str) -> None:
 
         self.path = file_path
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             baseline_raw = json.load(f)
             self.failed_checks = baseline_raw.get("failed_checks", {})

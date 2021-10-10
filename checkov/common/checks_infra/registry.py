@@ -28,13 +28,13 @@ class Registry(BaseRegistry):
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
-        self.logger.info("Loading external checks from {}".format(dir))
+        self.logger.info(f"Loading external checks from {dir}")
         for root, d_names, f_names in os.walk(dir):
             self.logger.info(f"Searching through {d_names} and {f_names}")
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
-                    with open(f"{root}/{file}", "r") as f:
+                    with open(f"{root}/{file}") as f:
                         if dir != self.checks_dir:
                             self.logger.info(f"loading {file}")
                         check_yaml = yaml.safe_load(f)

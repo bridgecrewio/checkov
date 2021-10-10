@@ -13,7 +13,7 @@ ENDLINE = "__endline__"
 STARTLINE = "__startline__"
 
 
-class ContextParser(object):
+class ContextParser:
     """
     CloudFormation template context parser
     """
@@ -104,14 +104,12 @@ class ContextParser(object):
 
         if isinstance(node, list):
             for i in node:
-                for x in ContextParser.find_lines(i, kv):
-                    yield x
+                yield from ContextParser.find_lines(i, kv)
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
             for j in node.values():
-                for x in ContextParser.find_lines(j, kv):
-                    yield x
+                yield from ContextParser.find_lines(j, kv)
 
     @staticmethod
     def collect_skip_comments(entity_code_lines: List[Tuple[int, str]]) -> List[_SkippedCheck]:

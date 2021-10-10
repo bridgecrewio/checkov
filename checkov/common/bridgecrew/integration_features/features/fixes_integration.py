@@ -45,7 +45,7 @@ class FixesIntegration(BaseIntegrationFeature):
                 continue
             # file path always starts with /
             file_abs_path = os.path.abspath(os.path.join(os.getcwd(), file[1:]))
-            with open(file_abs_path, 'r') as reader:
+            with open(file_abs_path) as reader:
                 file_contents = reader.read()
 
             fixes = self._get_fixes_for_file(scan_report.check_type, file, file_contents, failed_checks)

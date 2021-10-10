@@ -18,8 +18,8 @@ class TestSSMSessionManagerDocumentEncryption(unittest.TestCase):
         passing_resources = {"aws_ssm_document.enabled", "aws_ssm_document.enabled_yaml"}
         failing_resources = {"aws_ssm_document.disabled", "aws_ssm_document.disabled_yaml"}
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 2)

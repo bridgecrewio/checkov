@@ -77,7 +77,7 @@ class Runner(BaseRunner):
             if file_definition is not None and file_definition_raw is not None:
                 cf_context_parser = ContextParser(cf_file, file_definition, file_definition_raw)
                 logging.debug(
-                    "Template Dump for {}: {}".format(cf_file, json.dumps(file_definition, indent=2, default=str))
+                    f"Template Dump for {cf_file}: {json.dumps(file_definition, indent=2, default=str)}"
                 )
                 cf_context_parser.evaluate_default_refs()
 

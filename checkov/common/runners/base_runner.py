@@ -24,7 +24,7 @@ def strtobool(val):
     elif val in ('n', 'no', 'f', 'false', 'off', '0'):
         return 0
     else:
-        raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
+        raise ValueError(f"invalid boolean value {val!r} for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES")
 
 
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
@@ -107,7 +107,7 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
     #  paths specified via the CLI argument will presumably use \\
     if excluded_paths:
-        compiled = [re.compile(p.replace(".terraform", "\.terraform")) for p in excluded_paths]
+        compiled = [re.compile(p.replace(".terraform", r"\.terraform")) for p in excluded_paths]
         for path in list(names):
             if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled):
                 names.remove(path)

@@ -23,7 +23,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.categories = categories
         self.block_type = block_type
         self.supported_entities = supported_entities
-        self.logger = logging.getLogger("{}".format(self.__module__))
+        self.logger = logging.getLogger(f"{self.__module__}")
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
 

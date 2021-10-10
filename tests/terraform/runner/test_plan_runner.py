@@ -71,7 +71,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 15)
         self.assertEqual(report.get_summary()["passed"], 0)
 
-        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        failed_check_ids = {c.check_id for c in report.failed_checks}
         expected_failed_check_ids = {
             "CKV_AWS_37",
             "CKV_AWS_38",
@@ -106,7 +106,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
-        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        failed_check_ids = {c.check_id for c in report.failed_checks}
         expected_failed_check_ids = {
             "CKV_AWS_37",
             "CKV_AWS_38",
@@ -147,7 +147,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
-        failed_check_ids = set([c.check_id for c in report.failed_checks])
+        failed_check_ids = {c.check_id for c in report.failed_checks}
         expected_failed_check_ids = {
             "CKV_AWS_37",
             "CKV_AWS_38",

@@ -105,7 +105,7 @@ class RunnerRegistry:
                         use_bc_ids=config.output_bc_ids,
                     )
                     if url:
-                        print("More details: {}".format(url))
+                        print(f"More details: {url}")
                     output_formats.discard("cli")
                     if output_formats:
                         print(OUTPUT_DELIMITER)

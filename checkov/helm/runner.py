@@ -64,7 +64,7 @@ class Runner(BaseRunner):
 
     @staticmethod
     def parse_helm_chart_details(chart_path):
-        with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
+        with open(f"{chart_path}/Chart.yaml") as chartyaml:
             try:
                 chart_meta = yaml.safe_load(chartyaml)
             except yaml.YAMLError as exc:
@@ -244,11 +244,9 @@ def find_lines(node, kv):
         return node
     if isinstance(node, list):
         for i in node:
-            for x in find_lines(i, kv):
-                yield x
+            yield from find_lines(i, kv)
     elif isinstance(node, dict):
         if kv in node:
             yield node[kv]
         for j in node.values():
-            for x in find_lines(j, kv):
-                yield x
+            yield from find_lines(j, kv)

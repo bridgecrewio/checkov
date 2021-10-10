@@ -18,7 +18,7 @@ class TerraformBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source)
+        super().__init__(name, config, path, block_type, attributes, id, source)
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:

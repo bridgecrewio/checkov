@@ -90,7 +90,7 @@ class Record:
             status_color = 'blue'
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result['suppress_comment'])
 
-        check_message = colored("Check: {}: \"{}\"\n".format(self.get_output_id(use_bc_ids), self.check_name), "white")
+        check_message = colored(f"Check: {self.get_output_id(use_bc_ids)}: \"{self.check_name}\"\n", "white")
         guideline_message = ''
         if self.guideline:
             guideline_message = "\tGuide: " + Style.BRIGHT + colored(f"{self.guideline}\n", 'blue', attrs=['underline']) + Style.RESET_ALL
@@ -118,7 +118,7 @@ class Record:
                             f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(var_evaluations["value"], "yellow")}" '
                             f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
                             'white')
-        status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+        status_message = colored(f"\t{status} for resource: {self.resource}\n", status_color)
         if self.check_result['result'] == CheckResult.FAILED and code_lines and not compact:
             return check_message + status_message + file_details + caller_file_details + guideline_message + code_lines + evaluation_message
 

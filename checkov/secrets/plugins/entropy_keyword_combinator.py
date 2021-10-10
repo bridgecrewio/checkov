@@ -29,7 +29,7 @@ class EntropyKeywordCombinator(BasePlugin):
                 matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
                 if matches:
                     return matches
-        return set([])
+        return set()
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         raise NotImplementedError()

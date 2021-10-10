@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestNotStartingWithSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestNotStartingWithSolver, self).setUp()
+        super().setUp()
 
     def test_name_starting_with(self):
         root_folder = '../../../resources/public_virtual_machines'

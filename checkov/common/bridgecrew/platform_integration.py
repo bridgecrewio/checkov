@@ -47,7 +47,7 @@ SIGNUP_HEADER = {
 }
 
 
-class BcPlatformIntegration(object):
+class BcPlatformIntegration:
     def __init__(self):
         self.bc_api_key = read_key()
         self.s3_client = None
@@ -349,17 +349,17 @@ class BcPlatformIntegration(object):
         if not self.bc_api_key:
             print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
                                          attrs=['bold'])  + colored(
-                u"\u2022 " + "Command line docker Image scanning\n"
-                u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
-                u"\u2022 " + "Auto-fix remediation suggestions\n"
-                u"\u2022 " + "Enabling of VS Code Plugin\n"
-                u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
-                u"\u2022 " + "Integration with GitHub for:\n"
-                "\t" + u"\u25E6 " + "\tAutomated Pull Request scanning\n"
-                "\t" + u"\u25E6 " + "\tAuto remediation PR generation\n"
-                u"\u2022 " + "Integration with up to 100 cloud resources for:\n"
-                "\t" + u"\u25E6 " + "\tAutomated cloud resource checks\n"
-                "\t" + u"\u25E6 " + "\tResource drift detection\n"
+                "\u2022 " + "Command line docker Image scanning\n"
+                "\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
+                "\u2022 " + "Auto-fix remediation suggestions\n"
+                "\u2022 " + "Enabling of VS Code Plugin\n"
+                "\u2022 " + "Dashboard visualisation of Checkov scans\n"
+                "\u2022 " + "Integration with GitHub for:\n"
+                "\t" + "\u25E6 " + "\tAutomated Pull Request scanning\n"
+                "\t" + "\u25E6 " + "\tAuto remediation PR generation\n"
+                "\u2022 " + "Integration with up to 100 cloud resources for:\n"
+                "\t" + "\u25E6 " + "\tAutomated cloud resource checks\n"
+                "\t" + "\u25E6 " + "\tResource drift detection\n"
                 "\n"           
                 "\n" + "and much more...",'yellow') +
                 colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
@@ -381,7 +381,7 @@ class BcPlatformIntegration(object):
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print(Style.BRIGHT + colored("\nComplete!",'green', attrs=['bold']))
-                        print('\nSaving API key to {}'.format(bridgecrew_file))
+                        print(f'\nSaving API key to {bridgecrew_file}')
                         print(Style.BRIGHT + colored("\nCheckov will automatically check this location for a key.  If you forget it you’ll find it here\nhttps://bridgecrew.cloud/integrations/api-token\n\n",'green'))
                         persist_key(self.bc_api_key)
                         print(Style.BRIGHT + colored("Checkov Dashboard is configured, opening https://bridgecrew.cloud to explore your new powers.", 'green', attrs=['bold']))
@@ -527,7 +527,7 @@ class BcPlatformIntegration(object):
             if re.search(EMAIL_PATTERN, email):
                 valid_email = True
             else:
-                print("email should match the following pattern: {}".format(EMAIL_PATTERN))
+                print(f"email should match the following pattern: {EMAIL_PATTERN}")
         return email
 
     @staticmethod

@@ -37,7 +37,7 @@ class CfnParseError(ConstructorError):
 
     def __init__(self, filename, message, line_number, column_number, key=' '):
         # Call the base class constructor with the parameters it needs
-        super(CfnParseError, self).__init__(message)
+        super().__init__(message)
 
         # Now for your custom code...
         self.filename = filename
@@ -53,7 +53,7 @@ class NodeConstructor(SafeConstructor):
 
     def __init__(self, filename):
         # Call the base class constructor
-        super(NodeConstructor, self).__init__()
+        super().__init__()
 
         self.filename = filename
 
@@ -98,25 +98,25 @@ class NodeConstructor(SafeConstructor):
         """Throw a null error"""
         raise CfnParseError(
             self.filename,
-            'Null value at line {0} column {1}'.format(
+            'Null value at line {} column {}'.format(
                 node.start_mark.line + 1, node.start_mark.column + 1),
             node.start_mark.line, node.start_mark.column, ' ')
 
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:map',
+    'tag:yaml.org,2002:map',
     NodeConstructor.construct_yaml_map)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:str',
+    'tag:yaml.org,2002:str',
     NodeConstructor.construct_yaml_str)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:seq',
+    'tag:yaml.org,2002:seq',
     NodeConstructor.construct_yaml_seq)
 
 NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:null',
+    'tag:yaml.org,2002:null',
     NodeConstructor.construct_yaml_null_error)
 
 
@@ -140,7 +140,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         NodeConstructor.__init__(self, filename)
 
     def construct_mapping(self, node, deep=False):
-        mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
+        mapping = super().construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
@@ -154,7 +154,7 @@ def multi_constructor(loader, tag_suffix, node):
     """
 
     if tag_suffix not in UNCONVERTED_SUFFIXES:
-        tag_suffix = '{}{}'.format(FN_PREFIX, tag_suffix)
+        tag_suffix = f'{FN_PREFIX}{tag_suffix}'
 
     constructor = None
     if tag_suffix == 'Fn::GetAtt':
@@ -166,7 +166,7 @@ def multi_constructor(loader, tag_suffix, node):
     elif isinstance(node, MappingNode):
         constructor = loader.construct_mapping
     else:
-        raise 'Bad tag: !{}'.format(tag_suffix)
+        raise f'Bad tag: !{tag_suffix}'
 
     return dict_node({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
 
@@ -181,7 +181,7 @@ def construct_getatt(node):
     if isinstance(node.value, list):
         return list_node([s.value for s in node.value], node.start_mark, node.end_mark)
 
-    raise ValueError('Unexpected node type: {}'.format(type(node.value)))
+    raise ValueError(f'Unexpected node type: {type(node.value)}')
 
 
 def loads(yaml_string, fname=None):

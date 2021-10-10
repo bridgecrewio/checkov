@@ -249,7 +249,7 @@ def load_expected_data(source_file_name, dir_path):
     if not os.path.exists(expected_path):
         return None
 
-    with open(expected_path, "r") as f:
+    with open(expected_path) as f:
         expected_data = json.load(f)
 
     # Convert to absolute path:   "buckets/bucket.tf[main.tf#0]"

@@ -24,8 +24,8 @@ class TestRDSIAMAuthentication(unittest.TestCase):
             "aws_db_instance.disabled_postgres",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 4)

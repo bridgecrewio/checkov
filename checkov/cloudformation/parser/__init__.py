@@ -20,7 +20,7 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
     error = None
     try:
         (template, template_lines) = cfn_yaml.load(filename)
-    except IOError as err:
+    except OSError as err:
         if err.errno == 2:
             error = f"Template file not found: {filename} - {err}"
             LOGGER.error(error)

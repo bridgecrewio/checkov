@@ -62,7 +62,7 @@ class Runner(BaseRunner):
 
             if isinstance(definitions[arm_file], dict_node):
                 arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
-                logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
+                logging.debug(f"Template Dump for {arm_file}: {definitions[arm_file]}")
 
                 if 'resources' in definitions[arm_file].keys():
                     arm_context_parser.evaluate_default_parameters()

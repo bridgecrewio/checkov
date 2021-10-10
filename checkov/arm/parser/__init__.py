@@ -19,7 +19,7 @@ def parse(filename):
     template_lines = None
     try:
         (template, template_lines) = cfn_yaml.load(filename)
-    except IOError as e:
+    except OSError as e:
         if e.errno == 2:
             LOGGER.error('Template file not found: %s', filename)
         elif e.errno == 21:

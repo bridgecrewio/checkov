@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestContainsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestContainsSolver, self).setUp()
+        super().setUp()
 
     def test_public_virtual_machines(self):
         root_folder = '../../../resources/public_virtual_machines'

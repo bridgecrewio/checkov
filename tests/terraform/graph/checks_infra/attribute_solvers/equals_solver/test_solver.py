@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestEqualsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestEqualsSolver, self).setUp()
+        super().setUp()
 
     def test_equals_solver_simple(self):
         root_folder = '../../../resources/public_security_groups'
@@ -26,5 +26,5 @@ class TestEqualsSolver(TestBaseSolver):
         should_fail = ['aws_rds_cluster.rds_cluster_unencrypted', 'aws_s3_bucket.unencrypted_bucket', 'aws_neptune_cluster.unencrypted_neptune']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
-        super(TestEqualsSolver, self).run_test(root_folder=root_folder, expected_results=expected_results,
+        super().run_test(root_folder=root_folder, expected_results=expected_results,
                                                check_id=check_id)

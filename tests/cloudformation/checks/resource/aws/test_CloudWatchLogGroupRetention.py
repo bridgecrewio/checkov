@@ -31,8 +31,8 @@ class TestCloudWatchLogGroupRetention(unittest.TestCase):
 
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], 1)
         self.assertEqual(summary['failed'], 1)
