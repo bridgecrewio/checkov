@@ -37,7 +37,9 @@ class Seccomp(BaseK8Check):
             security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
             if security_profile:
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
-            if "metadata" in conf:
+
+            metadata = self.get_inner_entry(conf, "metadata")
+            if not metadata and "metadata" in conf:
                 metadata = conf["metadata"]
         elif conf['kind'] == 'CronJob':
             if "spec" in conf:

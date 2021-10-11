@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test
+  name: seccomp-passed-metadata-annotations
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: test
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: "docker/default"
+    spec:
+      containers:
+      - name: test
+        image: quay.io/test:0.1
+        ports:
+        - containerPort: 1234
