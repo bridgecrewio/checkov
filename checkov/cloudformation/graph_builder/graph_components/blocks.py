@@ -1,4 +1,5 @@
-from typing import List, Dict, Any, Optional, Union
+import logging
+from typing import List, Dict, Any, Optional
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
@@ -51,7 +52,10 @@ class CloudformationBlock(Block):
 
             if isinstance(obj_to_update, list):
                 key_to_update = int(key_to_update)
-            obj_to_update[key_to_update] = attribute_value
+            if isinstance(obj_to_update, (dict, list)):
+                obj_to_update[key_to_update] = attribute_value
+            else:
+                logging.info(f"Failed to update an attribute, values: {obj_to_update}, {key_to_update}, {attribute_value}")
 
     @staticmethod
     def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
