@@ -47,4 +47,4 @@ importlib-metadata = ">=0.12"
 cachetools = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
