@@ -1,4 +1,5 @@
 import fnmatch
+import itertools
 import json
 import sys
 from collections import defaultdict
@@ -76,7 +77,7 @@ class Report:
             this_tool = Tool(vendor='bridgecrew', name='checkov', version='UNKNOWN')
         bom.get_metadata().add_tool(this_tool)
 
-        for check in self.passed_checks + self.skipped_checks:
+        for check in itertools.chain(self.passed_checks, self.skipped_checks):
             component = Component.for_file(
                 absolute_file_path=check.file_abs_path,
                 path_for_bom=check.file_path
@@ -99,7 +100,7 @@ class Report:
             component.add_vulnerability(
                 Vulnerability(
                     id=failed_check.check_id, source_name='checkov',
-                    description='Resource: {}. {}'.format(failed_check.resource, failed_check.check_name),
+                    description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
                     recommendations=[failed_check.guideline]
                 )
             )
@@ -454,7 +455,7 @@ def report_to_cyclonedx(report: Report) -> Bom:
         component.add_vulnerability(
             Vulnerability(
                 id=failed_check.check_id, source_name='checkov',
-                description='Resource: {}. {}'.format(failed_check.resource, failed_check.check_name),
+                description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
                 recommendations=[failed_check.guideline]
             )
         )
