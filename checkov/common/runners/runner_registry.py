@@ -147,7 +147,7 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
 
         if "cyclonedx" in config.output:
-            if len(cyclonedx_reports) > 1:
+            if cyclonedx_reports:
                 # More than one Report - combine Reports first
                 report = Report(None)
                 for r in cyclonedx_reports:
