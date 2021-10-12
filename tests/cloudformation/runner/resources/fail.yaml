@@ -1,0 +1,5 @@
+Resources:
+  UnencryptedQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: any

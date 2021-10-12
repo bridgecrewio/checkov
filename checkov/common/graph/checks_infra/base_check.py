@@ -19,6 +19,7 @@ class BaseGraphCheck:
         self.sub_checks: List["BaseGraphCheck"] = []
         self.type: Optional[SolverType] = None
         self.solver: Optional[BaseSolver] = None
+        self.guideline: Optional[str] = None
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver

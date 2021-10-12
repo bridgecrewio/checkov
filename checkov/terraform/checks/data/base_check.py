@@ -8,8 +8,10 @@ from checkov.terraform.checks.data.registry import data_registry
 
 
 class BaseDataCheck(BaseCheck):
-    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_data: List[str]) -> None:
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_data, block_type="data")
+    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_data: List[str],
+                 guideline=None) -> None:
+        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_data,
+                         block_type="data", guideline=guideline)
         self.supported_data = supported_data
         data_registry.register(self)
 

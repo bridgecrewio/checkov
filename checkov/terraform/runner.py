@@ -139,19 +139,22 @@ class Runner(BaseRunner):
                             copy_of_check_result['suppress_comment'] = skipped_check['suppress_comment']
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
-                    record = Record(check_id=check.id,
-                                    bc_check_id=check.bc_id,
-                                    check_name=check.name,
-                                    check_result=copy_of_check_result,
-                                    code_block=entity_context.get('code_lines'),
-                                    file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
-                                    file_line_range=[entity_context.get('start_line'),
-                                                     entity_context.get('end_line')],
-                                    resource=".".join(entity_context['definition_path']),
-                                    entity_tags=entity.get('tags', {}),
-                                    evaluations=entity_evaluations,
-                                    check_class=check.__class__.__module__,
-                                    file_abs_path=os.path.abspath(full_file_path))
+                    record = Record(
+                        check_id=check.id,
+                        bc_check_id=check.bc_id,
+                        check_name=check.name,
+                        check_result=copy_of_check_result,
+                        code_block=entity_context.get('code_lines'),
+                        file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
+                        file_line_range=[entity_context.get('start_line'),
+                                         entity_context.get('end_line')],
+                        resource=".".join(entity_context['definition_path']),
+                        entity_tags=entity.get('tags', {}),
+                        evaluations=entity_evaluations,
+                        check_class=check.__class__.__module__,
+                        file_abs_path=os.path.abspath(full_file_path)
+                    )
+                    record.set_guideline(check.guideline)
                     if self.breadcrumbs:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                         if breadcrumb:
@@ -292,6 +295,7 @@ class Runner(BaseRunner):
                                 entity_tags=tags,
                                 caller_file_path=caller_file_path,
                                 caller_file_line_range=caller_file_line_range)
+                record.set_guideline(check.guideline)
                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
                 if breadcrumb:
                     record = GraphRecord(record, breadcrumb)

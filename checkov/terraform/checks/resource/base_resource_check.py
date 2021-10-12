@@ -8,9 +8,11 @@ from checkov.terraform.checks.resource.registry import resource_registry
 
 
 class BaseResourceCheck(BaseCheck):
-    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_resources: List[str]) -> None:
+    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_resources: List[str],
+                 guideline=None) -> None:
         super().__init__(
-            name=name, id=id, categories=categories, supported_entities=supported_resources, block_type="resource"
+            name=name, id=id, categories=categories, supported_entities=supported_resources,
+            block_type="resource", guideline=guideline
         )
         self.supported_resources = supported_resources
         resource_registry.register(self)
