@@ -176,7 +176,6 @@ class Parser:
                                        the directory.
         :param specified_vars:     Specifically defined variable values, overriding values from any other source.
         """
-        print("here we go")
         # Stage 1: Look for applicable files in the directory:
         #          https://www.terraform.io/docs/configuration/index.html#code-organization
         #          Load the raw data for non-variable files, but perform no processing other than loading
