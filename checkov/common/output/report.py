@@ -71,10 +71,10 @@ class Report:
 
         try:
             this_tool = Tool(vendor='bridgecrew', name='checkov', version=meta_version('checkov'))
-            bom.get_metadata().add_tool(this_tool)
         except Exception:
             # Unable to determine current version of 'checkov'
-            pass
+            this_tool = Tool(vendor='bridgecrew', name='checkov', version='UNKNOWN')
+        bom.get_metadata().add_tool(this_tool)
 
         for check in self.passed_checks + self.skipped_checks:
             component = Component.for_file(
