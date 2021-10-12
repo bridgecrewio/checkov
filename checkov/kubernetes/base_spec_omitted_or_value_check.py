@@ -18,7 +18,7 @@ class BaseSpecOmittedOrValueCheck(BaseK8Check):
 
     @abstractmethod
     def get_inspected_key(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def get_expected_value(self):
         # default expected value. can be override by derived class
