@@ -12,4 +12,4 @@ Custom Policies allow monitoring and enforcing of cloud infrastructure configura
 * You can create custom policies in [Python](https://www.checkov.io/3.Custom%20Policies/Python%20Custom%20Policies.html) that check for the status of configuration attributes.
 * You can create custom policies in [YAML](https://www.checkov.io/3.Custom%20Policies/YAML%20Custom%20Policies.html) that can both check for the status of configuration attributes and check the connection state between types of resources.
 * You can also apply sophisticated logic to multiple conditions within a Custom Policy. Check out our [custom policy examples](https://www.checkov.io/3.Custom%20Policies/Examples.html).
-* After creating tests for your custom policies, you can contribute them back to Checkov! Learn how to [contibute your policies](https://www.checkov.io/6.Contribution/Contribution%20Overview.html).
+* After creating tests for your custom policies, you can contribute them back to Checkov! Learn how to [contribute your policies](https://www.checkov.io/6.Contribution/Contribution%20Overview.html).
