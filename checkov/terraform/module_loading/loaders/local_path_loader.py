@@ -15,6 +15,7 @@ class LocalPathLoader(ModuleLoader):
             or self.module_source.startswith("../")
             or self.module_source.startswith(self.current_dir)
             or self.module_source.startswith("/")
+            or self.module_source.startswith("C:\\")
         )
 
     def _load_module(self) -> ModuleContent:
