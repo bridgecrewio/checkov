@@ -1,8 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, List, Dict, Any
+from typing import TYPE_CHECKING, List, Dict, Any, Iterable
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded

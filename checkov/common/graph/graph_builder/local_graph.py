@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from collections import defaultdict
-from collections.abc import Iterable
-from typing import List, Dict, Callable, Union, Any, Optional, Set
+from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
