@@ -227,11 +227,12 @@ def evaluate_directives(input_str: str) -> str:
 def evaluate_map(input_str: str) -> str:
     # first replace maps ":" with "="
     all_curly_brackets = find_brackets_pairs(input_str, "{", "}")
-    for curly_match in all_curly_brackets:
-        curly_start = curly_match["start"]
-        curly_end = curly_match["end"]
-        replaced_matching_map = input_str[curly_start : curly_end + 1].replace("=", ":")
-        input_str = input_str.replace(input_str[curly_start : curly_end + 1], replaced_matching_map)
+    if "=" in input_str:
+        for curly_match in all_curly_brackets:
+            curly_start = curly_match["start"]
+            curly_end = curly_match["end"]
+            replaced_matching_map = input_str[curly_start : curly_end + 1].replace("=", ":")
+            input_str = input_str.replace(input_str[curly_start : curly_end + 1], replaced_matching_map)
 
     # find map access like {a: b}[a] and extract the right value - b
     all_square_brackets = find_brackets_pairs(input_str, "[", "]")
@@ -303,6 +304,6 @@ def find_brackets_pairs(input_str: str, starting: str, closing: str) -> List[Dic
 
     all_brackets = []
     for start, end in enumerate(brackets_pairs):
-        if end != -1:
+        if end != -1 and end - start > 1:
             all_brackets.append({"start": start, "end": end})
     return all_brackets

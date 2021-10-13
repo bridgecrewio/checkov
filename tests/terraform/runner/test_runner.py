@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+import shutil
 import unittest
 import dis
 from pathlib import Path
@@ -8,12 +9,14 @@ from pathlib import Path
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.output.report import Report
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner, resource_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
+EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -342,6 +345,49 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+
+    def test_terraform_multiple_module_versions(self):
+        # given
+        root_dir = Path(__file__).parent / "resources/multiple_module_versions"
+
+        # when
+        result = Runner().run(
+            root_folder=str(root_dir),
+            runner_filter=RunnerFilter(
+                checks=["CKV_AWS_88"],
+                framework="terraform",
+                download_external_modules=True
+            )
+        )
+
+        # then
+        summary = result.get_summary()
+        passed_resources = [check.resource for check in result.passed_checks]
+        failed_resources = [check.resource for check in result.failed_checks]
+
+        self.assertEqual(4, summary["passed"])
+        self.assertEqual(4, summary["failed"])
+        self.assertEqual(0, summary['skipped'])
+        self.assertEqual(0, summary['parsing_errors'])
+
+        expected_passed_resources = [
+            "module.ec2_private_latest.aws_instance.this",
+            "module.ec2_private_latest_2.aws_instance.this",
+            "module.ec2_private_old.aws_instance.this",
+            "module.ec2_private_old_2.aws_instance.this",
+        ]
+        expected_failed_resources = [
+            "module.ec2_public_latest.aws_instance.this",
+            "module.ec2_public_latest_2.aws_instance.this",
+            "module.ec2_public_old.aws_instance.this",
+            "module.ec2_public_old_2.aws_instance.this",
+        ]
+        self.assertCountEqual(expected_passed_resources, passed_resources)
+        self.assertCountEqual(expected_failed_resources, failed_resources)
+
+        # cleanup
+        if (root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH).exists():
+            shutil.rmtree(root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH)
 
     def test_parser_error_handled_for_directory_target(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

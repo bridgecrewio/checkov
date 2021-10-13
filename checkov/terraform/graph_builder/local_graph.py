@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, Set
+from typing import List, Optional, Union, Any, Dict, Set, Tuple
 
 from typing_extensions import TypedDict
 
@@ -35,22 +35,15 @@ class Undetermined(TypedDict):
 
 
 class TerraformLocalGraph(LocalGraph):
-    def __init__(
-        self,
-        module: Module,
-        module_dependency_map: Dict[str, List[List[str]]],
-        external_modules_source_map: Optional[Dict[str, str]] = None
-    ) -> None:
+    def __init__(self, module: Module) -> None:
         super().__init__()
         self.module = module
-        self.module_dependency_map = module_dependency_map
-        self.external_modules_source_map = external_modules_source_map or {}
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
-        self.vertices_by_module_dependency_by_name: Dict[str, Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        self.vertices_by_module_dependency: Dict[str, Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
@@ -75,8 +68,8 @@ class TerraformLocalGraph(LocalGraph):
                 # map between file paths and module vertices indexes from that file
                 self.map_path_to_module.setdefault(block.path, []).append(i)
 
-            self.vertices_by_module_dependency[block.module_dependency][block.block_type].append(i)
-            self.vertices_by_module_dependency_by_name[block.module_dependency][block.block_type][block.name].append(i)
+            self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(i)
+            self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(i)
 
             self.in_edges[i] = []
             self.out_edges[i] = []
@@ -92,7 +85,7 @@ class TerraformLocalGraph(LocalGraph):
                     # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
                     #   therefore this condition is always false. Fixing it results in some variables not being rendered.
                     #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
-                    if module_vertex.path in self.module_dependency_map.get(variable_dir, []):
+                    if module_vertex.path in self.module.module_dependency_map.get(variable_dir, []):
                         has_var_reference = get_referenced_vertices_in_value(
                             value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
                         )
@@ -132,26 +125,32 @@ class TerraformLocalGraph(LocalGraph):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
-        block_dirs_to_modules: Dict[str, Set[int]] = {}
-        for dir_name, paths_to_modules in self.module_dependency_map.items():
+        block_dirs_to_modules: Dict[Tuple[str, str], Set[int]] = {}
+        for dir_name, paths_to_modules in self.module.module_dependency_map.items():
             # for each directory, find the module vertex that imported it
-            if block_dirs_to_modules.get(dir_name):
-                continue
             for path_to_module in paths_to_modules:
                 if not path_to_module:
                     continue
                 path_to_module_str = unify_dependency_path(path_to_module)
-                module_list = self.map_path_to_module.get(path_to_module_str, [])
+                if block_dirs_to_modules.get((dir_name, path_to_module_str)):
+                    continue
+                module_list = self.map_path_to_module.get(path_to_module[-1], [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
                     module_vertex_dir = self.get_dirname(module_vertex.path)
                     module_source = module_vertex.attributes.get("source", [""])[0]
-                    if self._get_dest_module_path(module_vertex_dir, module_source) == dir_name:
-                        block_dirs_to_modules.setdefault(dir_name, set()).add(module_index)
+                    module_version = module_vertex.attributes.get("version", ["latest"])[0]
+                    dest_module_path = self._get_dest_module_path(
+                        curr_module_dir=module_vertex_dir,
+                        dest_module_source=module_source,
+                        dest_module_version=module_version
+                    )
+                    if dest_module_path == dir_name:
+                        block_dirs_to_modules.setdefault((dir_name, path_to_module_str), set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_indices = block_dirs_to_modules.get(self.get_dirname(vertex.path), set())
+            module_indices = block_dirs_to_modules.get((self.get_dirname(vertex.path), vertex.module_dependency), set())
             if module_indices:
                 vertex.source_module = module_indices
 
@@ -174,19 +173,19 @@ class TerraformLocalGraph(LocalGraph):
                     # for certain blocks such as data and resource, the block name is composed from several parts.
                     # the purpose of the loop is to avoid not finding the node if the name has several parts
                     sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
-                    for i in range(len(sub_values)):
+                    for i, _ in enumerate(sub_values):
                         reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
                         if vertex.module_dependency:
                             dest_node_index = self._find_vertex_index_relative_to_path(
-                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency
+                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency, vertex.module_dependency_num
                             )
                             if dest_node_index == -1:
                                 dest_node_index = self._find_vertex_index_relative_to_path(
-                                    vertex_reference.block_type, reference_name, vertex.path, vertex.path
+                                    vertex_reference.block_type, reference_name, vertex.path, vertex.path, vertex.module_dependency_num
                                 )
                         else:
                             dest_node_index = self._find_vertex_index_relative_to_path(
-                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency
+                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency, vertex.module_dependency_num
                             )
                         if dest_node_index > -1 and origin_node_index > -1:
                             if vertex_reference.block_type == BlockType.MODULE:
@@ -207,9 +206,16 @@ class TerraformLocalGraph(LocalGraph):
                 target_path = vertex.path
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
-                dest_module_path = self._get_dest_module_path(self.get_dirname(vertex.path), vertex.attributes['source'][0])
-                target_variables = list(filter(lambda index: self.get_dirname(self.vertices[index].path) == dest_module_path,
-                                               self.vertices_by_module_dependency.get(target_path, {}).get(BlockType.VARIABLE, [])))
+                dest_module_path = self._get_dest_module_path(
+                    curr_module_dir=self.get_dirname(vertex.path),
+                    dest_module_source=vertex.attributes["source"][0],
+                    dest_module_version=vertex.attributes.get("version", ["latest"])[0]
+                )
+                target_variables = [
+                    index
+                    for index in self.vertices_by_module_dependency.get((target_path, self.module.module_address_map.get((vertex.path, vertex.name))), {}).get(BlockType.VARIABLE, [])
+                    if self.get_dirname(self.vertices[index].path) == dest_module_path
+                ]
                 for attribute, value in vertex.attributes.items():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
                         continue
@@ -218,9 +224,11 @@ class TerraformLocalGraph(LocalGraph):
                         self._create_edge(target_variable, origin_node_index, "default")
             elif vertex.block_type == BlockType.TF_VARIABLE:
                 # Assuming the tfvars file is in the same directory as the variables file (best practice)
-                target_variables = list(
-                    filter(lambda index: self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path),
-                           self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])))
+                target_variables = [
+                    index
+                    for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
+                    if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path)
+                ]
                 if len(target_variables) == 1:
                     self._create_edge(target_variables[0], origin_node_index, "default")
 
@@ -247,7 +255,12 @@ class TerraformLocalGraph(LocalGraph):
         """
         curr_module_dir = self.get_dirname(module_node.path)
         dest_module_source = module_node.attributes["source"][0]
-        dest_module_path = self._get_dest_module_path(curr_module_dir, dest_module_source)
+        dest_module_version = module_node.attributes.get("version", ["latest"])[0]
+        dest_module_path = self._get_dest_module_path(
+            curr_module_dir=curr_module_dir,
+            dest_module_source=dest_module_source,
+            dest_module_version=dest_module_version
+        )
 
         if len(sub_values) > 1:
             block_name_in_other_module = sub_values[1]
@@ -265,7 +278,7 @@ class TerraformLocalGraph(LocalGraph):
                     self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break
 
-    def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str) -> str:
+    def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
         """
         :param curr_module_dir: current source directory
         :param dest_module_source: the value of module.source
@@ -274,8 +287,8 @@ class TerraformLocalGraph(LocalGraph):
         dest_module_path = Path()
         if is_local_path(curr_module_dir, dest_module_source):
             dest_module_path = Path(curr_module_dir) / dest_module_source
-        elif dest_module_source in self.external_modules_source_map:
-            return self.external_modules_source_map[dest_module_source]
+        elif (dest_module_source, dest_module_version) in self.module.external_modules_source_map:
+            return self.module.external_modules_source_map[(dest_module_source, dest_module_version)]
         else:
             try:
                 if dest_module_source not in self.relative_paths_cache:
@@ -290,10 +303,10 @@ class TerraformLocalGraph(LocalGraph):
         return os.path.realpath(dest_module_path)
 
     def _find_vertex_index_relative_to_path(
-        self, block_type: BlockType, name: str, block_path: str, module_path: str
+        self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str
     ) -> int:
         relative_vertices = []
-        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_path, {}).get(block_type, {}).get(name, [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get((module_path, module_num), {}).get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):

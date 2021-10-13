@@ -41,7 +41,7 @@ class GenericGitLoader(ModuleLoader):
 
     def _find_module_path(self) -> str:
         module_source = self._parse_module_source()
-        module_path = Path(self.current_dir).joinpath(
+        module_path = Path(self.root_dir).joinpath(
             self.external_modules_folder_name,
             module_source.root_module,
             module_source.version,
@@ -83,7 +83,7 @@ class GenericGitLoader(ModuleLoader):
 
         if module_source.inner_module:
             self.dest_dir = str(
-                Path(self.current_dir).joinpath(
+                Path(self.root_dir).joinpath(
                     self.external_modules_folder_name, module_source.root_module, module_source.version
                 )
             )
@@ -93,7 +93,7 @@ class GenericGitLoader(ModuleLoader):
                 self.module_source += f"?ref={module_source.version}"
         else:
             self.dest_dir = str(
-                Path(self.current_dir).joinpath(
+                Path(self.root_dir).joinpath(
                     self.external_modules_folder_name, module_source.root_module, module_source.version
                 )
             )

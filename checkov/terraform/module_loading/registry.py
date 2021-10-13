@@ -20,6 +20,7 @@ class ModuleLoaderRegistry:
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()
+        self.root_dir = ""  # root dir for storing external modules
 
     def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
@@ -30,9 +31,9 @@ information, see `loader.ModuleLoader.load`.
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
             # https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
             source_hash = hashlib.md5(source.encode())  # nosec
-            local_dir = os.path.join(current_dir, self.external_modules_folder_name, source_hash.hexdigest())
+            local_dir = os.path.join(self.root_dir, self.external_modules_folder_name, source_hash.hexdigest())
         else:
-            local_dir = os.path.join(current_dir, self.external_modules_folder_name, source)
+            local_dir = os.path.join(self.root_dir, self.external_modules_folder_name, source)
         inner_module = ""
         next_url = source
         last_exception = None
@@ -46,6 +47,7 @@ information, see `loader.ModuleLoader.load`.
                     continue
                 try:
                     content = loader.load(
+                        root_dir=self.root_dir,
                         current_dir=current_dir,
                         source=source,
                         source_version=source_version,

@@ -23,9 +23,11 @@ class ModuleLoader(ABC):
         self.version = "latest"
         self.is_external = True
         self.inner_module: Optional[str] = None
+        self.root_dir = ""  # root dir for storing external modules
 
     def load(
         self,
+        root_dir: str,
         current_dir: str,
         source: str,
         source_version: Optional[str],
@@ -50,6 +52,8 @@ There are three resulting states that can occur when calling this function:
         :param dest_dir: where to save the downloaded module
         :return: A ModuleContent object which may or may not being loaded.
         """
+        self.root_dir = root_dir
+
         self.module_source = source
         self.current_dir = current_dir
         self.version = str(source_version)
