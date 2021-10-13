@@ -10,7 +10,7 @@ def convert_cloudformation_conf_to_iam_policy(conf: DictNode) -> DictNode:
     result = copy.deepcopy(conf)
     if "Statement" in result.keys():
         result["Statement"] = result.pop("Statement")
-        for statement in result["Statement"]:
+        for statement in map(dict, result["Statement"]):
             if "Action" in statement:
                 statement["Action"] = str(statement.pop("Action")[0])
             if "Resource" in statement:
@@ -31,5 +31,4 @@ def convert_cloudformation_conf_to_iam_policy(conf: DictNode) -> DictNode:
                 statement["Effect"] = str(statement.pop("Effect"))
             if "Effect" not in statement:
                 statement["Effect"] = "Allow"
-            statement = dict(statement)
     return result

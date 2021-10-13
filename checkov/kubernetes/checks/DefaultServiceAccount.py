@@ -19,8 +19,6 @@ class DefaultServiceAccount(BaseK8Check):
             return "ServiceAccount.{}.{}".format(conf["metadata"]["name"], conf["metadata"]["namespace"])
         else:
             return "ServiceAccount.{}.default".format(conf["metadata"]["name"])
-        return 'ServiceAccount.automountServiceAccountToken'
-
     def scan_spec_conf(self, conf):
         if "metadata" in conf:
             if "name" in conf["metadata"]:

@@ -15,7 +15,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: List[str] = []
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str],
+            block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None
     ) -> None:
         self.name = name
         self.id = id
@@ -26,6 +27,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
+        self.guideline = guideline
 
     def run(
         self,

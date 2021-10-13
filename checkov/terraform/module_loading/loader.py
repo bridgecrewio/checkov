@@ -16,14 +16,23 @@ class ModuleLoader(ABC):
     def __init__(self) -> None:
         module_loader_registry.register(self)
         self.logger = logging.getLogger(__name__)
-        self.module_source = None
-        self.current_dir = None
-        self.dest_dir = None
-        self.version = 'latest'
+        self.module_source: str = ""
+        self.current_dir: str = ""
+        self.dest_dir: str = ""
+        self.external_modules_folder_name: str = ""
+        self.version = "latest"
         self.is_external = True
-        self.inner_module = ''
+        self.inner_module: Optional[str] = None
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str], dest_dir, inner_module=Optional[str]) -> ModuleContent:
+    def load(
+        self,
+        current_dir: str,
+        source: str,
+        source_version: Optional[str],
+        dest_dir: str,
+        external_modules_folder_name: str,
+        inner_module: Optional[str] = None,
+    ) -> ModuleContent:
         """
 This function provides an opportunity for the loader to load a module's content if it chooses to do so.
 There are three resulting states that can occur when calling this function:
@@ -46,13 +55,17 @@ There are three resulting states that can occur when calling this function:
         self.version = str(source_version)
 
         self.dest_dir = dest_dir
+        self.external_modules_folder_name = external_modules_folder_name
         self.inner_module = inner_module
-        if os.path.exists(self.dest_dir):
-            return ModuleContent(dir=self.dest_dir)
 
         if not self._is_matching_loader():
             return ModuleContent(dir=None)
-        self.logger.debug(f'getting module {self.module_source} version: {self.version}')
+
+        module_path = self._find_module_path()
+        if os.path.exists(module_path):
+            return ModuleContent(dir=module_path)
+
+        self.logger.debug(f"getting module {self.module_source} version: {self.version}")
         return self._load_module()
 
     @abstractmethod
@@ -61,4 +74,8 @@ There are three resulting states that can occur when calling this function:
 
     @abstractmethod
     def _load_module(self) -> ModuleContent:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _find_module_path(self) -> str:
         raise NotImplementedError()

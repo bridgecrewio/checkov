@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Dict, Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.multi_signature import multi_signature
@@ -6,9 +7,9 @@ from checkov.kubernetes.registry import registry
 
 
 class BaseK8Check(BaseCheck):
-    def __init__(self, name, id, categories, supported_entities):
+    def __init__(self, name, id, categories, supported_entities, guideline=None):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
-                         block_type="k8")
+                         block_type="k8", guideline=guideline)
         self.supported_specs = supported_entities
         registry.register(self)
 
@@ -34,7 +35,7 @@ class BaseK8Check(BaseCheck):
         return wrapper
 
     @staticmethod
-    def get_inner_entry(conf, entry_name):
+    def get_inner_entry(conf: Dict[str, Any], entry_name: str) -> Dict[str, Any]:
         spec = {}
         if conf.get("spec") and conf.get("spec").get("template"):
             spec = conf.get("spec").get("template").get(entry_name, {})

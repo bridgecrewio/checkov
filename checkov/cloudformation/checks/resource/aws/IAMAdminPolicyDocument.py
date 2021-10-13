@@ -16,20 +16,22 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
         type = conf['Type']
 
         # catch for inline policies
-        if type != 'AWS::IAM::Policy':
+        if isinstance(my_properties, dict) and type != 'AWS::IAM::Policy':
             if 'Policies' in my_properties.keys():
                 policies = my_properties['Policies']
                 if len(policies) > 0:
                     for policy in policies:
-
-                        result = check_policy(policy['PolicyDocument'])
-                        if result == CheckResult.FAILED:
-                            return result
+                        if not isinstance(policy, dict):
+                            return CheckResult.UNKNOWN
+                        if policy.get('PolicyDocument'):
+                            result = check_policy(policy['PolicyDocument'])
+                            if result == CheckResult.FAILED:
+                                return result
                     return CheckResult.PASSED
                 # not empty and had non failing policies
                 return CheckResult.UNKNOWN
         # this is just for Policy resources
-        if 'PolicyDocument' in my_properties.keys():
+        if isinstance(my_properties, dict) and 'PolicyDocument' in my_properties.keys():
             return check_policy(my_properties['PolicyDocument'])
         return CheckResult.UNKNOWN
 

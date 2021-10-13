@@ -35,10 +35,16 @@ class Undetermined(TypedDict):
 
 
 class TerraformLocalGraph(LocalGraph):
-    def __init__(self, module: Module, module_dependency_map: Dict[str, List[List[str]]]) -> None:
-        super(TerraformLocalGraph, self).__init__()
+    def __init__(
+        self,
+        module: Module,
+        module_dependency_map: Dict[str, List[List[str]]],
+        external_modules_source_map: Optional[Dict[str, str]] = None
+    ) -> None:
+        super().__init__()
         self.module = module
         self.module_dependency_map = module_dependency_map
+        self.external_modules_source_map = external_modules_source_map or {}
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
         self.abspath_cache: Dict[str, str] = {}
@@ -268,6 +274,8 @@ class TerraformLocalGraph(LocalGraph):
         dest_module_path = Path()
         if is_local_path(curr_module_dir, dest_module_source):
             dest_module_path = Path(curr_module_dir) / dest_module_source
+        elif dest_module_source in self.external_modules_source_map:
+            return self.external_modules_source_map[dest_module_source]
         else:
             try:
                 if dest_module_source not in self.relative_paths_cache:

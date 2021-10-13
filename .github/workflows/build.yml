@@ -275,5 +275,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: update checkov release
         run: |
-          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=checkov/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
           curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'

@@ -1,6 +1,6 @@
 import logging
 import os
-from dockerfile_parse.constants import DOCKERFILE_FILENAME
+import re
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -9,11 +9,15 @@ from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-DOCKER_FILE_MASK = [DOCKERFILE_FILENAME]
+DOCKER_FILE_MASK = r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$"
 
 
 class Runner(BaseRunner):
     check_type = "dockerfile"
+
+    @staticmethod
+    def _is_docker_file(file):
+        return re.fullmatch(DOCKER_FILE_MASK, file) is not None
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
@@ -28,15 +32,18 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                if os.path.basename(file) in DOCKER_FILE_MASK:
-                    (definitions[file], definitions_raw[file]) = parse(file)
+                if Runner._is_docker_file(os.path.basename(file)):
+                    try:
+                        (definitions[file], definitions_raw[file]) = parse(file)
+                    except TypeError:
+                       logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
-                    if file in DOCKER_FILE_MASK:
+                    if Runner._is_docker_file(file):
                         files_list.append(os.path.join(root, file))
 
             for file in files_list:
@@ -66,8 +73,8 @@ class Runner(BaseRunner):
                                     runner_filter)
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
-                startline = 1
-                endline = 1
+                startline = 0
+                endline = len(definitions_raw[docker_file_path]) - 1
                 result_instruction = ""
                 if result_configuration:
                     startline = result_configuration['startline']
@@ -79,17 +86,18 @@ class Runner(BaseRunner):
                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                 code_block=codeblock,
                                 file_path=docker_file_path,
-                                file_line_range=[startline,
-                                                 endline],
+                                file_line_range=[startline + 1,
+                                                 endline + 1],
                                 resource="{}.{}".format(docker_file_path,
                                                         result_instruction,
                                                         startline),
                                 evaluations=None, check_class=check.__class__.__module__,
                                 file_abs_path=file_abs_path, entity_tags=None)
+                record.set_guideline(check.guideline)
                 report.add_record(record=record)
 
         return report
 
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
-            codeblock.append((line, definitions_raw[docker_file_path][line - 1]))
+            codeblock.append((line + 1, definitions_raw[docker_file_path][line]))

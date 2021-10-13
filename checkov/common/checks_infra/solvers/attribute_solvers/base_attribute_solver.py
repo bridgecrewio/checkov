@@ -24,8 +24,8 @@ class BaseAttributeSolver(BaseSolver):
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
-        passed_vertices = []
-        failed_vertices = []
+        passed_vertices: List[Dict[str, Any]] = []
+        failed_vertices: List[Dict[str, Any]] = []
         for _, data in graph_connector.nodes(data=True):
             jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
 
@@ -51,7 +51,9 @@ class BaseAttributeSolver(BaseSolver):
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
 
-    def _process_node(self, data, passed_vartices, failed_vertices):
+    def _process_node(
+        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]]
+    ) -> None:
         if not self.resource_type_pred(data, self.resource_types):
             return
         if self.get_operation(vertex=data):
@@ -61,7 +63,7 @@ class BaseAttributeSolver(BaseSolver):
 
     @staticmethod
     def get_attribute_patterns(attribute: str) -> Tuple[Pattern[str], Pattern[str]]:
-        index_pattern = r"[\d+]"
+        index_pattern = r"[\d]+"
         split_by_dots = attribute.split(".")
 
         pattern_parts = []

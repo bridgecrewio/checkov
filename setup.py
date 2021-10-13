@@ -25,7 +25,7 @@ setup(
     extras_require={
         "dev": [
             "pytest==5.3.1",
-            "coverage",
+            "coverage==5.5",
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
@@ -44,7 +44,6 @@ setup(
         "pyyaml>=5.4.1",
         "boto3==1.17.*",
         "GitPython",
-        "six==1.15.0",
         "jmespath",
         "tqdm",
         "update_checker",

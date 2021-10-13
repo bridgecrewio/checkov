@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: seccomp-passed
+  name: seccomp-passed-metadata-annotations-runtime
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: runtime/default
 spec:

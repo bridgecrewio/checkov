@@ -8,7 +8,7 @@ verify_ssl = true
 # REMINDER: Update "dev" deps on setup.py when changing
 #
 pytest = "*"
-coverage ="*"
+coverage ="==5.5"
 coverage-badge = "*"
 GitPython = "*"
 bandit = "*"
@@ -30,7 +30,6 @@ dpath = ">=1.5.0,<2"
 pyyaml = ">=5.4.1"
 boto3 = "==1.17.*"
 GitPython = "*"
-six = "==1.16.0"
 jmespath = "*"
 tqdm = "*"
 update_checker = "*"

@@ -61,8 +61,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
-                edge = edge_list[-1]  # evaluate the last specified variable based on .tfvars precedence
-                destination_vertex = self.local_graph.vertices[edge.dest]
+                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]  # evaluate the last specified variable based on .tfvars precedence
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
                     changed_attribute_value=destination_vertex.attributes["default"],

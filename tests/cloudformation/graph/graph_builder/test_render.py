@@ -126,12 +126,12 @@ class TestRenderer(TestCase):
         environment_expected_attributes = {'Default': None}
         # Resources
         web_vpc_expected_attributes = {'CidrBlock': web_vpc_expected_cidr_block}
-        default_db_expected_attributes = {'DBName': f"rds-${{AWS::AccountId}}-{company_name_expected_value}-${{Environment}}"}
+        default_db_expected_attributes = {'DBName': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
         # Outputs
         db_endpoint_sg_expected_attributes = {'Value.Fn::Sub': "${DefaultDB.Endpoint.Address}:${DefaultDB.Endpoint.Port}"}
         web_vpc_cidr_block_expected_attributes = {'Value': web_vpc_expected_cidr_block}
         cidr_block_associations_expected_attributes = {'Value.Fn::Sub': "${WebVPC.CidrBlockAssociations}"}
-        default_db_name_expected_attributes = {'Value': f"rds-${{AWS::AccountId}}-{company_name_expected_value}-${{Environment}}"}
+        default_db_name_expected_attributes = {'Value': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
 
         self.compare_vertex_attributes(local_graph, company_name_expected_attributes, BlockType.PARAMETERS, 'CompanyName')
         self.compare_vertex_attributes(local_graph, environment_expected_attributes, BlockType.PARAMETERS, 'Environment')
@@ -145,11 +145,11 @@ class TestRenderer(TestCase):
         company_name_expected_breadcrumbs = {}
         environment_expected_breadcrumbs = {}
         web_vpc_expected_breadcrumbs = {}
-        default_db_expected_breadcrumbs = {'DBName': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        default_db_expected_breadcrumbs = {}
         db_endpoint_sg_expected_breadcrumbs = {}
         web_vpc_cidr_block_expected_breadcrumbs = {'Value': [{'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
         cidr_block_associations_expected_breadcrumbs = {}
-        default_db_name_expected_breadcrumbs = {'Value': [{'type': BlockType.PARAMETERS, 'name': 'CompanyName', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}]}
+        default_db_name_expected_breadcrumbs = {}
 
         self.compare_vertex_breadcrumbs(local_graph, company_name_expected_breadcrumbs, BlockType.PARAMETERS, 'CompanyName')
         self.compare_vertex_breadcrumbs(local_graph, environment_expected_breadcrumbs, BlockType.PARAMETERS, 'Environment')
@@ -240,12 +240,51 @@ class TestRenderer(TestCase):
         self.compare_vertex_breadcrumbs(local_graph, s3bucket1_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket1')
         self.compare_vertex_breadcrumbs(local_graph, s3bucket2_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3Bucket2')
 
+    def test_render_if(self):
+        relative_path = './resources/variable_rendering/render_if/'
+        yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))
+        json_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'json'))
+        self.valiate_render_if(yaml_test_dir, 'yaml')
+        self.valiate_render_if(json_test_dir, 'json')
+
+    def valiate_render_if(self, test_dir: str, file_ext: str):
+        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(test_dir, render_variables=True)
+
+        ec2instance_expected_attributes = {'InstanceType': 'm1.large'}
+        s3bucketsuspended_expected_attributes = {'VersioningConfiguration.Status': 'Suspended'}
+        s3bucketenabled_expected_attributes = {'VersioningConfiguration.Status': 'Enabled'}
+
+        self.compare_vertex_attributes(local_graph, ec2instance_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::Instance.EC2Instance')
+        self.compare_vertex_attributes(local_graph, s3bucketsuspended_expected_attributes, BlockType.RESOURCE, 'AWS::S3::Bucket.S3BucketSuspended')
+        self.compare_vertex_attributes(local_graph, s3bucketenabled_expected_attributes, BlockType.RESOURCE, 'AWS::S3::Bucket.S3BucketEnabled')
+
+        instancesize_breadcrumb = {'type': BlockType.PARAMETERS, 'name': 'InstanceSize', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}
+        ec2instance_expected_breadcrumbs = {
+            'InstanceType.Fn::If.2.Fn::If.1': [instancesize_breadcrumb],
+            'InstanceType.Fn::If.2.Fn::If': [instancesize_breadcrumb],
+            'InstanceType.Fn::If.2': [instancesize_breadcrumb],
+            'InstanceType.Fn::If': [instancesize_breadcrumb],
+            'InstanceType': [instancesize_breadcrumb],
+        }
+        s3bucketsuspended_expected_breadcrumbs = {}
+        s3bucketenabled_expected_breadcrumbs = {}
+
+        self.compare_vertex_breadcrumbs(local_graph, ec2instance_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::Instance.EC2Instance')
+        self.compare_vertex_breadcrumbs(local_graph, s3bucketsuspended_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3BucketSuspended')
+        self.compare_vertex_breadcrumbs(local_graph, s3bucketenabled_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::S3::Bucket.S3BucketEnabled')
+
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
         vertex_attributes = vertex.get_attribute_dict()
         for attribute_key, expected_value in expected_attributes.items():
             actual_value = vertex_attributes.get(attribute_key)
-            self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+            if not isinstance(expected_value, dict):
+                self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+            else:
+                for cfn_func, evaluated_value in expected_value.items():
+                    self.assertIn(cfn_func, actual_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
+                    self.assertIn(actual_value[cfn_func], evaluated_value, f'error during comparing {block_type} in attribute key: {attribute_key}')
 
     def compare_vertex_breadcrumbs(self, local_graph, expected_breadcrumbs, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]

@@ -1,7 +1,5 @@
-import sys
 import logging
 from copy import deepcopy
-import six
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,14 +19,8 @@ class StrNode(str):
         self.end_mark = end_mark
 
     # pylint: disable=bad-classmethod-argument, unused-argument
-    def __new__(cls, x, start_mark, end_mark):
-        if sys.version_info >= (3, 0):
-            return super().__new__(cls, x)
-
-        if isinstance(x, six.string_types):
-            return super().__new__(cls, x.encode('ascii', 'ignore'))
-
-        return super().__new__(cls, x)
+    def __new__(self, x, start_mark, end_mark):
+        return str.__new__(self, x)
 
     def __getattr__(self, name):
         raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))

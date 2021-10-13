@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: dev
+    Type: String
+  InstanceSize:
+    Description: EC2 Instance small Size
+    Type: String
+    Default: m1.large
+Conditions:
+  CreateProdResources: !Equals
+    - !Ref EnvType
+    - prod
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - dev
+Resources:
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !If
+        - CreateProdResources
+        - c1.xlarge
+        - !If
+          - CreateDevResources
+          - !Ref InstanceSize
+          - m1.small
+  S3BucketSuspended:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      VersioningConfiguration:
+        Status: !If
+          - CreateProdResources
+          - Enabled
+          - Suspended
+  S3BucketEnabled:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      VersioningConfiguration:
+        Status: !If
+          - CreateDevResources
+          - Enabled
+          - Suspended

@@ -9,7 +9,7 @@ import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
 
 import deep_merge
 import hcl2
@@ -47,7 +47,7 @@ def _filter_ignored_paths(root, paths, excluded_paths):
 
 
 class Parser:
-    def __init__(self, module_class=Module):
+    def __init__(self, module_class: Type[Module] = Module):
         self.module_class = module_class
         self._parsed_directories = set()
 
@@ -71,6 +71,7 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
+        self.external_modules_source_map: Dict[str, str] = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
 
@@ -447,6 +448,8 @@ class Parser:
                                 deep_merge.merge(all_module_definitions, module_definitions)
                             else:
                                 all_module_definitions = module_definitions
+
+                            self.external_modules_source_map[source] = content.path()
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
@@ -466,7 +469,7 @@ class Parser:
         parsing_errors: Optional[Dict[str, Exception]] = None,
         excluded_paths: Optional[List[str]] = None,
         vars_files: Optional[List[str]] = None
-    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, Dict[str, Any]]]:
+    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, str], Dict[str, Dict[str, Any]]]:
         tf_definitions = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -475,7 +478,9 @@ class Parser:
                              vars_files=vars_files)
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
-        return self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+
+        module, module_dependency_map, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        return module, module_dependency_map, self.external_modules_source_map, tf_definitions
 
     def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
         module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)

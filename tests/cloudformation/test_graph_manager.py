@@ -40,9 +40,12 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::EKS::Cluster.eksCluster",
                 "Custom::acmeSnsCustomResource.acmeSnsCustomResource",
                 ],
+            os.path.join(root_dir, "fail.yaml"): [
+                "AWS::SQS::Queue.UnencryptedQueue"
+            ]
         }
-        self.assertEqual(40, len(local_graph.vertices))
-        self.assertEqual(20, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(41, len(local_graph.vertices))
+        self.assertEqual(21, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
         self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
         self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
         self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))
