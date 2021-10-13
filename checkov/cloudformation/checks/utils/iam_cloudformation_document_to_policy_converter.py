@@ -1,9 +1,9 @@
 import copy
 
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 
 
-def convert_cloudformation_conf_to_iam_policy(conf: dict_node) -> dict_node:
+def convert_cloudformation_conf_to_iam_policy(conf: DictNode) -> DictNode:
     """
         converts terraform parsed configuration to iam policy document
     """

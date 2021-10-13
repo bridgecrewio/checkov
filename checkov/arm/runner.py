@@ -7,7 +7,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
@@ -60,7 +60,7 @@ class Runner(BaseRunner):
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if isinstance(definitions[arm_file], dict_node):
+            if isinstance(definitions[arm_file], DictNode):
                 arm_context_parser = ContextParser(arm_file, definitions[arm_file], definitions_raw[arm_file])
                 logging.debug("Template Dump for {}: {}".format(arm_file, definitions[arm_file], indent=2))
 
