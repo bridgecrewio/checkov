@@ -45,7 +45,7 @@ class VariableRenderer(ABC):
             if match_percent > self.duplicate_percent:
                 duplicates_count += 1
             if duplicates_count > self.duplicate_iter_count:
-                logging.warning(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
+                logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
             evaluated_edges_cache.append(edges_to_render)
 
