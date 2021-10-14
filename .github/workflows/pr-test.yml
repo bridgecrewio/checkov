@@ -60,7 +60,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv run pip install --upgrade pip==21.1.1
-          pipenv run pip install pytest
+          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
