@@ -97,9 +97,7 @@ jobs:
           pipenv run pip install pytest
       - name: Test with pytest
         run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+          pipenv run pytest --cov-report term --cov=checkov tests
           pipenv run python -m coverage_badge -o coverage.svg -f
       - name: version
         env:
