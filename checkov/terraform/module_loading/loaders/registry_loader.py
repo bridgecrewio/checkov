@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import List
+from typing import List, Dict
 
 import requests
 
@@ -15,9 +15,11 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
 class RegistryLoader(ModuleLoader):
     REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
 
+    modules_versions_cache: Dict[str, List[str]] = {}
+
     def __init__(self) -> None:
         super().__init__()
-        self.available_versions: List[str] = []
+        self.module_version_url = ""
 
     def _is_matching_loader(self) -> bool:
         # Since the registry loader is the first one to be checked,
@@ -29,17 +31,21 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(self.dest_dir):
             return True
 
-        get_version_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, "versions")
-        if not get_version_url.startswith(self.REGISTRY_URL_PREFIX):
+        self.module_version_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, "versions")
+        if not self.module_version_url.startswith(self.REGISTRY_URL_PREFIX):
             # Local paths don't get the prefix appended
             return False
-        response = requests.get(url=get_version_url)
+        if self.module_version_url in RegistryLoader.modules_versions_cache.keys():
+            return True
+
+        response = requests.get(url=self.module_version_url)
         if response.status_code != HTTPStatus.OK:
             return False
         else:
-            self.available_versions = [
+            available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
             ]
+            RegistryLoader.modules_versions_cache[self.module_version_url] = order_versions_in_descending_order(available_versions)
             return True
 
     def _load_module(self) -> ModuleContent:
@@ -60,7 +66,7 @@ class RegistryLoader(ModuleLoader):
         return ""
 
     def _find_best_version(self) -> str:
-        versions_by_size = order_versions_in_descending_order(self.available_versions)
+        versions_by_size = RegistryLoader.modules_versions_cache.get(self.module_version_url, [])
         if self.version == "latest":
             self.version = versions_by_size[0]
         version_constraints = get_version_constraints(self.version)

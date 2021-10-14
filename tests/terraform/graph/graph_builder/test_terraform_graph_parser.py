@@ -48,14 +48,14 @@ class TestParser(TestCase):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
         old_tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_old'
-        _, _, _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
-        _, _, _, old_tf_definitions = Parser().parse_hcl_module(old_tf_dir, 'AWS')
+        _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
+        _, old_tf_definitions = Parser().parse_hcl_module(old_tf_dir, 'AWS')
         self.assertDictEqual(tf_definitions[f'{tf_dir}/main.tf'], old_tf_definitions[f'{old_tf_dir}/main.tf'])
 
     def test_hcl_parsing_old_booleans_correctness(self):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
-        _, _, _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
+        _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
         expected = [
             {'aws_cloudtrail': {
                 'tfer--cashdash_trail': {'enable_log_file_validation': [True], 'enable_logging': [True], 'include_global_service_events': [True],
@@ -98,7 +98,7 @@ class TestParser(TestCase):
         source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                    '../resources/tf_parsing_comparison/modifications_diff'))
         config_parser = Parser()
-        _, _, _, tf_definitions = config_parser.parse_hcl_module(source_dir, 'AWS')
+        _, tf_definitions = config_parser.parse_hcl_module(source_dir, 'AWS')
         expected = ['https://www.googleapis.com/auth/devstorage.read_only', 'https://www.googleapis.com/auth/logging.write',
                     'https://www.googleapis.com/auth/monitoring.write', 'https://www.googleapis.com/auth/service.management.readonly',
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']

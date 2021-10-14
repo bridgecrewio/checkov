@@ -24,6 +24,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_terraform_registry(self):
         registry = ModuleLoaderRegistry(True, DEFAULT_EXTERNAL_MODULES_DIR)
+        registry.root_dir = self.current_dir
         source = "terraform-aws-modules/security-group/aws"
         with registry.load(current_dir=self.current_dir, source=source, source_version="~> 3.0") as content:
             assert content.loaded()
@@ -36,6 +37,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_terraform_registry_check_cache(self):
         registry = ModuleLoaderRegistry(download_external_modules=True)
+        registry.root_dir = self.current_dir
         source1 = "git::https://github.com/bridgecrewio/checkov_not_working1.git"
         registry.load(current_dir=self.current_dir, source=source1, source_version="latest")
         self.assertIn(source1, registry.failed_urls_cache)
@@ -370,12 +372,12 @@ def test_load_terraform_registry(
 
     # then
     assert content.loaded()
-    assert content.path() == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_content_path)
+    assert content.path() == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_content_path)
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
     git_loader = next(loader for loader in registry.loaders if isinstance(loader, GenericGitLoader))
-    assert git_loader.dest_dir == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_dest_dir)
+    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
 
@@ -437,12 +439,12 @@ def test_load_generic_git(
 
     # then
     assert content.loaded()
-    assert content.path() == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_content_path)
+    assert content.path() == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_content_path)
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
     git_loader = next(loader for loader in registry.loaders if isinstance(loader, GenericGitLoader))
-    assert git_loader.dest_dir == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_dest_dir)
+    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
 
@@ -504,12 +506,12 @@ def test_load_github(
 
     # then
     assert content.loaded()
-    assert content.path() == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_content_path)
+    assert content.path() == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_content_path)
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
     git_loader = next(loader for loader in registry.loaders if isinstance(loader, GithubLoader))
-    assert git_loader.dest_dir == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_dest_dir)
+    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
 
@@ -572,12 +574,12 @@ def test_load_bitbucket(
 
     # then
     assert content.loaded()
-    assert content.path() == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_content_path)
+    assert content.path() == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_content_path)
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
     git_loader = next(loader for loader in registry.loaders if isinstance(loader, BitbucketLoader))
-    assert git_loader.dest_dir == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_dest_dir)
+    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
 

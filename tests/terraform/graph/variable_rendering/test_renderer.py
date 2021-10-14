@@ -91,7 +91,7 @@ class TestRenderer(TestCase):
         vertices = local_graph.vertices
         s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
         changed_attributes = list(s3_vertex.changed_attributes.keys())
-        self.assertListEqual(changed_attributes, ['versioning.enabled', 'acl'])
+        self.assertCountEqual(changed_attributes, ['versioning.enabled', 'acl'])
 
         for breadcrumbs in s3_vertex.changed_attributes.values():
             self.assertEqual(1, len(breadcrumbs))
