@@ -50,6 +50,8 @@ class Parser:
     def __init__(self, module_class: Type[Module] = Module):
         self.module_class = module_class
         self._parsed_directories = set()
+        self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
+        self.module_address_map: Dict[Tuple[str, str], str] = {}
 
         # This ensures that we don't try to double-load modules
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
@@ -71,7 +73,8 @@ class Parser:
         self.env_vars = env_vars
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
-        self.external_modules_source_map: Dict[str, str] = {}
+        self.external_modules_source_map = {}
+        self.module_address_map = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
 
@@ -101,6 +104,7 @@ class Parser:
         self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
                    download_external_modules, external_modules_download_path, excluded_paths)
         self._parsed_directories.clear()
+        default_ml_registry.root_dir = directory
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
@@ -442,6 +446,8 @@ class Parser:
                                 del self.out_definitions[key]
                                 if new_key not in resolved_loc_list:
                                     resolved_loc_list.append(new_key)
+                                if (file, module_call_name) not in self.module_address_map:
+                                    self.module_address_map[(file, module_call_name)] = str(module_index)
                             resolved_loc_list.sort()  # For testing, need predictable ordering
 
                             if all_module_definitions:
@@ -449,7 +455,7 @@ class Parser:
                             else:
                                 all_module_definitions = module_definitions
 
-                            self.external_modules_source_map[source] = content.path()
+                            self.external_modules_source_map[(source, version)] = content.path()
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
@@ -469,8 +475,8 @@ class Parser:
         parsing_errors: Optional[Dict[str, Exception]] = None,
         excluded_paths: Optional[List[str]] = None,
         vars_files: Optional[List[str]] = None
-    ) -> Tuple[Module, Dict[str, List[List[str]]], Dict[str, str], Dict[str, Dict[str, Any]]]:
-        tf_definitions = {}
+    ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
+        tf_definitions: Dict[str, Dict[str, Any]] = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
@@ -479,12 +485,23 @@ class Parser:
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
 
-        module, module_dependency_map, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
-        return module, module_dependency_map, self.external_modules_source_map, tf_definitions
+        module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        return module, tf_definitions
 
-    def parse_hcl_module_from_tf_definitions(self, tf_definitions, source_dir, source, excluded_paths: List[str]=None):
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: Dict[str, Dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
         module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
-        module = self.get_new_module(source_dir, module_dependency_map, dep_index_mapping)
+        module = self.get_new_module(
+            source_dir=source_dir,
+            module_dependency_map=module_dependency_map,
+            module_address_map=self.module_address_map,
+            external_modules_source_map=self.external_modules_source_map,
+            dep_index_mapping=dep_index_mapping,
+        )
         self.add_tfvars(module, source)
         copy_of_tf_definitions = deepcopy(tf_definitions)
         for file_path, blocks in copy_of_tf_definitions.items():
@@ -494,7 +511,7 @@ class Parser:
                 except Exception as e:
                     logging.error(f'Failed to add block {blocks[block_type]}. Error:')
                     logging.error(e, exc_info=True)
-        return module, module_dependency_map, tf_definitions
+        return module, tf_definitions
 
     @staticmethod
     def _clean_parser_types(conf: dict) -> dict:
@@ -594,7 +611,7 @@ class Parser:
         """
         module_dependency_map = {}
         copy_of_tf_definitions = {}
-        dep_index_mapping = {}
+        dep_index_mapping: Dict[Tuple[str, str], List[str]] = {}
         origin_keys = list(filter(lambda k: not k.endswith(']'), tf_definitions.keys()))
         unevaluated_keys = list(filter(lambda k: k.endswith(']'), tf_definitions.keys()))
         for file_path in origin_keys:
@@ -616,7 +633,7 @@ class Parser:
                     module_dependency_map[dir_name] += current_deps
                 copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
                 origin_keys.append(path)
-                dep_index_mapping[path] = module_dependency_num
+                dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
             next_level, unevaluated_keys = Parser.get_next_vertices(origin_keys, unevaluated_keys)
         for key, dep_trails in module_dependency_map.items():
             hashes = set()
@@ -631,8 +648,20 @@ class Parser:
         return module_dependency_map, copy_of_tf_definitions, dep_index_mapping
 
     @staticmethod
-    def get_new_module(source_dir, module_dependency_map, dep_index_mapping):
-        return Module(source_dir, module_dependency_map, dep_index_mapping)
+    def get_new_module(
+            source_dir: str,
+            module_dependency_map: Dict[str, List[List[str]]],
+            module_address_map: Dict[Tuple[str, str], str],
+            external_modules_source_map: Dict[Tuple[str, str], str],
+            dep_index_mapping: Dict[Tuple[str, str], List[str]],
+    ) -> Module:
+        return Module(
+            source_dir=source_dir,
+            module_dependency_map=module_dependency_map,
+            module_address_map=module_address_map,
+            external_modules_source_map=external_modules_source_map,
+            dep_index_mapping=dep_index_mapping
+        )
 
     def add_tfvars(self, module, source):
         if not self.external_variables_data:

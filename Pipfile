@@ -15,6 +15,8 @@ bandit = "*"
 urllib3-mock = "*"
 jsonschema = "*"
 atomicwrites = "*"
+responses = "*"
+types-requests = "*"
 
 [packages]
 #

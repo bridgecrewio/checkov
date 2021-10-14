@@ -8,6 +8,6 @@ module "module1" {
 }
 
 module "module2" {
-  source = "./module1"
+  source = "./module2"
   v = var.v
 }

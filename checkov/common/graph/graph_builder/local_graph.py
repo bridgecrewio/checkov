@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import defaultdict
-from typing import List, Dict, Callable, Union, Any, Optional
+from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -22,7 +22,7 @@ class LocalGraph:
 
     def get_vertices_with_degrees_conditions(
         self, out_degree_cond: Callable[[int], bool], in_degree_cond: Callable[[int], bool]
-    ) -> List[int]:
+    ) -> Set[int]:
         vertices_with_out_degree = {
             vertex_index for vertex_index, vertex_value in self.out_edges.items() if out_degree_cond(len(vertex_value))
         }
@@ -30,15 +30,21 @@ class LocalGraph:
             vertex_index for vertex_index, vertex_value in self.in_edges.items() if in_degree_cond(len(vertex_value))
         }
 
-        return list(vertices_with_in_degree.intersection(vertices_with_out_degree))
+        return vertices_with_in_degree.intersection(vertices_with_out_degree)
 
-    def get_in_edges(self, end_vertices: List[int]) -> List[Edge]:
+    def get_in_edges(self, end_vertices: Iterable[int]) -> List[Edge]:
         res = []
         for vertex in end_vertices:
             res.extend(self.in_edges.get(vertex, []))
         return self.sort_edged_by_dest_out_degree(res)
 
-    def sort_edged_by_dest_out_degree(self, edges: List[Edge]) -> List[Edge]:
+    def get_in_edges_deduped(self, end_vertices: Iterable[int]) -> Set[Edge]:
+        res = set()
+        for vertex in end_vertices:
+            res.update(self.in_edges.get(vertex, []))
+        return res
+
+    def sort_edged_by_dest_out_degree(self, edges: Iterable[Edge]) -> List[Edge]:
         edged_by_out_degree: Dict[int, List[Edge]] = {}
         for edge in edges:
             dest_out_degree = len(self.out_edges[edge.dest])

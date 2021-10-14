@@ -79,6 +79,7 @@ class BcPlatformIntegration(object):
         self.platform_integration_configured = False
         self.http = None
         self.excluded_paths = []
+        self.bc_skip_mapping = False
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -328,8 +329,7 @@ class BcPlatformIntegration(object):
         return self.ckv_to_bc_id_mapping
 
     def get_checkov_mapping_metadata(self) -> Optional[dict]:
-        BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING", "FALSE")
-        if BC_SKIP_MAPPING.upper() == "TRUE":
+        if self.bc_skip_mapping is True:
             logging.debug(f"Skipped mapping API call")
             self.ckv_to_bc_id_mapping = {}
             return

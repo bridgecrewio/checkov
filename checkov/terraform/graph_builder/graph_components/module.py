@@ -1,7 +1,7 @@
 import json
 import os
 from copy import deepcopy
-from typing import List, Dict, Any, Set, Callable
+from typing import List, Dict, Any, Set, Callable, Tuple
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -14,10 +14,14 @@ class Module:
         self,
         source_dir: str,
         module_dependency_map: Dict[str, List[List[str]]],
-        dep_index_mapping: Dict[str, str]
+        module_address_map: Dict[Tuple[str, str], str],
+        external_modules_source_map: Dict[Tuple[str, str], str],
+        dep_index_mapping: Dict[Tuple[str, str], List[str]],
     ) -> None:
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
+        self.module_address_map = module_address_map
+        self.external_modules_source_map = external_modules_source_map
         self.path = ""
         self.blocks: List[TerraformBlock] = []
         self.customer_name = ""
@@ -34,18 +38,25 @@ class Module:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
-        dependencies = [dep_trail for dep_trail in self.module_dependency_map.get(os.path.dirname(block.path), [])]
+        dependencies = self.module_dependency_map.get(os.path.dirname(block.path), [])
         module_dependency_num = ""
         if not dependencies:
             dependencies = [[]]
-        else:
-            module_dependency_num = self.dep_index_mapping.get(block.path, "")
-        for i, dep_trail in enumerate(dependencies):
-            if i > 0:
+        for dep_idx, dep_trail in enumerate(dependencies):
+            if dep_idx > 0:
                 block = deepcopy(block)
             block.module_dependency = unify_dependency_path(dep_trail)
-            block.module_dependency_num = module_dependency_num
-            self.blocks.append(block)
+
+            if block.module_dependency:
+                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), [])
+                for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
+                    if mod_idx > 0:
+                        block = deepcopy(block)
+                    block.module_dependency_num = module_dep_num
+                    self.blocks.append(block)
+            else:
+                block.module_dependency_num = module_dependency_num
+                self.blocks.append(block)
 
     def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for provider_dict in blocks:
@@ -61,7 +72,7 @@ class Module:
                     config=provider_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(provider_block)
 
@@ -75,7 +86,7 @@ class Module:
                     config=variable_dict,
                     path=path,
                     attributes=attributes,
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(variable_block)
 
@@ -88,7 +99,7 @@ class Module:
                     config={name: blocks_section[name]},
                     path=path,
                     attributes={name: blocks_section[name]},
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(local_block)
 
@@ -103,7 +114,7 @@ class Module:
                     config=output_dict,
                     path=path,
                     attributes={"value": output_dict[name].get("value")},
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(output_block)
 
@@ -116,7 +127,7 @@ class Module:
                     config=module_dict,
                     path=path,
                     attributes=module_dict[name],
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(module_block)
 
@@ -137,7 +148,7 @@ class Module:
                         path=path,
                         attributes=attributes,
                         id=f"{resource_type}.{name}",
-                        source=self.source
+                        source=self.source,
                     )
                     self._add_to_blocks(resource_block)
 
@@ -159,7 +170,7 @@ class Module:
                         path=path,
                         attributes=data_dict.get(data_type, {}).get(name, {}),
                         id=data_type + "." + name,
-                        source=self.source
+                        source=self.source,
                     )
                     self._add_to_blocks(data_block)
 
@@ -172,7 +183,7 @@ class Module:
                     config=terraform_dict,
                     path=path,
                     attributes={},
-                    source=self.source
+                    source=self.source,
                 )
                 self._add_to_blocks(terraform_block)
 
@@ -184,7 +195,7 @@ class Module:
                 config={tf_var_name: attributes},
                 path=path,
                 attributes=attributes,
-                source=self.source
+                source=self.source,
             )
             self._add_to_blocks(tfvar_block)
 
