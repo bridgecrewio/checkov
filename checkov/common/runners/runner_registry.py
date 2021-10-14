@@ -7,6 +7,7 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
+from multiprocessing import Pipe, Process
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -50,15 +51,19 @@ class RunnerRegistry:
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
+        integration_feature_registry.run_pre_runner()
+
+        processes = []
         for runner in self.runners:
-            integration_feature_registry.run_pre_runner()
-            scan_report = runner.run(
-                root_folder,
-                external_checks_dir=external_checks_dir,
-                files=files,
-                runner_filter=self.runner_filter,
-                collect_skip_comments=collect_skip_comments,
-            )
+            parent_conn, child_conn = Pipe()
+            process = Process(target=self._run_runner, args=(runner, root_folder, external_checks_dir, files,
+                                                             collect_skip_comments, child_conn))
+            processes.append((process, parent_conn))
+            process.start()
+
+        for process, parent_conn in processes:
+            scan_report = parent_conn.recv()
+            process.join()
             integration_feature_registry.run_post_runner(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
@@ -68,6 +73,13 @@ class RunnerRegistry:
                 scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
             self.scan_reports.append(scan_report)
         return self.scan_reports
+
+    def _run_runner(self, runner, root_folder, external_checks_dir, files, collect_skip_comments,
+                    child_conn):
+        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                            runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+        child_conn.send(report)
+        child_conn.close()
 
     def print_reports(
         self,

@@ -12,15 +12,15 @@ class StrNode(str):
     """Node class created based on the input class"""
     def __init__(self, x, start_mark, end_mark):
         try:
-            super().__init__(self, x)
+            super().__init__(x)
         except TypeError:
-            super().__init__(self)
+            super().__init__()
         self.start_mark = start_mark
         self.end_mark = end_mark
 
     # pylint: disable=bad-classmethod-argument, unused-argument
-    def __new__(self, x, start_mark, end_mark):
-        return str.__new__(self, x)
+    def __new__(cls, x, start_mark=None, end_mark=None):
+        return str.__new__(cls, x)
 
     def __getattr__(self, name):
         raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
@@ -43,9 +43,9 @@ class DictNode(dict):
 
     def __init__(self, x, start_mark, end_mark):
         try:
-            super().__init__(self, x)
+            super().__init__(x)
         except TypeError:
-            super().__init__(self)
+            super().__init__()
         self.start_mark = start_mark
         self.end_mark = end_mark
         self.condition_functions = ['Fn::If']
@@ -149,9 +149,9 @@ class ListNode(list):
 
     def __init__(self, x, start_mark, end_mark):
         try:
-            super().__init__(self, x)
+            super().__init__(x)
         except TypeError:
-            super().__init__(self)
+            super().__init__()
         self.start_mark = start_mark
         self.end_mark = end_mark
         self.condition_functions = ['Fn::If']
