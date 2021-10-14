@@ -18,12 +18,12 @@ class TestLocalPathLoader(unittest.TestCase):
     def test_bad_source(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         with self.assertRaises(FileNotFoundError):
-            loader.load(current_dir, "./path_that_doesnt_exist", None, '', '')
+            loader.load(current_dir, current_dir, "./path_that_doesnt_exist", None, '', '')
 
     def test_absolute_path(self):
         # Generate absolute path dynamically so test is OS agnostic
         current_dir = os.path.dirname(os.path.realpath(__file__))
         target_dir = os.path.join(current_dir, "resources")
-        with loader.load(current_dir, target_dir, None, '', '') as content:
+        with loader.load(current_dir, current_dir, target_dir, None, '', '') as content:
             assert content.loaded()
             assert content.path() == os.path.join(current_dir, "resources")
