@@ -1,7 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Dict, Any
+from typing import TYPE_CHECKING, List, Dict, Any, Iterable
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded
@@ -38,14 +38,14 @@ class VariableRenderer(ABC):
         loops = 0
         evaluated_edges_cache = [[], []]
         duplicates_count = 0
-        while len(edges_to_render) > 0:
+        while edges_to_render:
             evaluated_edges_two_iter_ago = evaluated_edges_cache[-2]
             intersection_edges = set(edges_to_render).intersection(evaluated_edges_two_iter_ago)
             match_percent = int((len(intersection_edges) / len(edges_to_render)) * 100)
             if match_percent > self.duplicate_percent:
                 duplicates_count += 1
             if duplicates_count > self.duplicate_iter_count:
-                logging.warning(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
+                logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
             evaluated_edges_cache.append(edges_to_render)
 
@@ -69,11 +69,13 @@ class VariableRenderer(ABC):
             for edge in edges_to_render:
                 origin_vertex_index = edge.origin
                 out_edges = set(self.local_graph.out_edges.get(origin_vertex_index, []))
-                done_edges_for_origin = self.done_edges_by_origin_vertex.get(origin_vertex_index, set())
+                done_edges_for_origin = self.done_edges_by_origin_vertex.get(origin_vertex_index, [])
                 if out_edges.issubset(done_edges_for_origin):
                     end_vertices_indexes.add(origin_vertex_index)
-            new_edges_to_render = self.local_graph.get_in_edges(list(end_vertices_indexes))
-            edges_to_render = list(set(new_edges_to_render) - set(edges_to_render))
+            new_edges_to_render = self.local_graph.get_in_edges_deduped(end_vertices_indexes)
+            edges_to_render = self.local_graph.sort_edged_by_dest_out_degree(
+                new_edges_to_render - set(edges_to_render)
+            )
 
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
@@ -99,11 +101,10 @@ class VariableRenderer(ABC):
         pass
 
     @staticmethod
-    def group_edges_by_origin_and_label(edges: List[Edge]) -> List[List[Edge]]:
+    def group_edges_by_origin_and_label(edges: Iterable[Edge]) -> List[List[Edge]]:
         edge_groups: Dict[str, List[Edge]] = {}
         for edge in edges:
-            origin_and_label_hash = calculate_hash(f"{edge.origin}{edge.label}")
-            edge_groups.setdefault(origin_and_label_hash, []).append(edge)
+            edge_groups.setdefault(f"{edge.origin}{edge.label}", []).append(edge)
         return list(edge_groups.values())
 
     def evaluate_non_rendered_values(self) -> None:

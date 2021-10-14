@@ -24,7 +24,7 @@ class TestLocalGraph(TestCase):
     def test_update_vertices_configs_attribute_like_resource_name(self):
         config = {"resource_type": {"resource_name": {"attribute1": 1, "attribute2": 2, "resource_name": ["caution!"]}}}
         attributes = {"attribute1": 1, "attribute2": 2, "resource_name": "ok"}
-        local_graph = TerraformLocalGraph(None, {})
+        local_graph = TerraformLocalGraph(None)
         vertex = TerraformBlock(name="resource_type.resource_name", config=config, path='', block_type=BlockType.RESOURCE, attributes=attributes)
         vertex.changed_attributes["resource_name"] = ""
         local_graph.vertices.append(vertex)
@@ -53,9 +53,8 @@ class TestLocalGraph(TestCase):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, tf_definitions = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                                           source=self.source)
-        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
+        local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
 
         variables_before_module_definitions = {
@@ -105,9 +104,8 @@ class TestLocalGraph(TestCase):
     def test_encryption_aws(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/encryption'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                              self.source)
-        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
         local_graph.calculate_encryption_attribute()
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
@@ -133,9 +131,8 @@ class TestLocalGraph(TestCase):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                              self.source)
-        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
         tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         self.assertIsNotNone(tf_definitions)
@@ -144,26 +141,25 @@ class TestLocalGraph(TestCase):
     def test_module_dependencies(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        self.assertEqual(module_dependency_map[f'{resources_dir}/prod'], [[]])
-        self.assertEqual(module_dependency_map[f'{resources_dir}/stage'], [[]])
-        self.assertEqual(module_dependency_map[f'{resources_dir}/test'], [[]])
-        self.assertEqual(module_dependency_map[f'{resources_dir}/prod/sub-prod'], [[f'{resources_dir}/prod/main.tf']])
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/stage'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/test'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod/sub-prod'], [[f'{resources_dir}/prod/main.tf']])
         expected_inner_modules = [
             [f'{resources_dir}/prod/main.tf', f'{resources_dir}/prod/sub-prod/main.tf'],
             [f'{resources_dir}/stage/main.tf'],
             [f'{resources_dir}/test/main.tf']
         ]
-        self.assertEqual(module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
-        self.assertEqual(module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'],
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'],
                          list(map(lambda dep_list: dep_list + [f'{os.path.dirname(resources_dir)}/s3_inner_modules/main.tf'],
                                   expected_inner_modules)))
 
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                              self.source)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.RESOURCE and block.name == 'aws_s3_bucket.inner_s3', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'inner_module_call', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 's3', module.blocks))), 3)
@@ -172,9 +168,8 @@ class TestLocalGraph(TestCase):
     def test_vertices_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                              self.source)
-        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
 
         self.assertEqual(12, len(local_graph.edges))
@@ -182,9 +177,8 @@ class TestLocalGraph(TestCase):
     def test_variables_same_name_different_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
         hcl_config_parser = Parser()
-        module, module_dependency_map, _, _ = hcl_config_parser.parse_hcl_module(resources_dir,
-                                                                              self.source)
-        local_graph = TerraformLocalGraph(module, module_dependency_map)
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
         print(local_graph.edges)
         self.assertEqual(12, len(local_graph.edges))

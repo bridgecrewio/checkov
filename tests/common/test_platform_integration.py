@@ -23,19 +23,19 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         self.assertEqual(instance.api_url, "https://www.bridgecrew.cloud")
 
-    @mock.patch.dict(os.environ, {'BC_SKIP_MAPPING': 'TRUE'})
-    def test_skip_mapping(self):
-        instance = BcPlatformIntegration()
-        instance.setup_http_manager()
-        instance.get_id_mapping()
-        self.assertDictEqual({}, instance.ckv_to_bc_id_mapping)
-
-    @mock.patch.dict(os.environ, {'BC_SKIP_MAPPING': 'FALSE'})
-    def test_skip_mapping_false(self):
+    def test_skip_mapping_default(self):
+        # Default is False so mapping is obtained
         instance = BcPlatformIntegration()
         instance.setup_http_manager()
         instance.get_id_mapping()
         self.assertIsNotNone(instance.ckv_to_bc_id_mapping)
+
+    def test_skip_mapping_true(self):
+        instance = BcPlatformIntegration()
+        instance.bc_skip_mapping = True
+        instance.setup_http_manager()
+        instance.get_id_mapping()
+        self.assertDictEqual({}, instance.ckv_to_bc_id_mapping)
 
     def test_should_upload(self):
         self.assertFalse(get_source_type('vscode').upload_results)

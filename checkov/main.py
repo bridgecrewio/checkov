@@ -150,7 +150,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     integration_feature_registry.run_pre_scan()
 
     guidelines = {}
-    if not config.no_guide:
+    BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING", "FALSE")
+    if config.no_guide or BC_SKIP_MAPPING.upper() == "TRUE":
+        bc_integration.bc_skip_mapping = True
+    else:
         guidelines = bc_integration.get_guidelines()
 
         ckv_to_bc_mapping = bc_integration.get_ckv_to_bc_id_mapping()
