@@ -9,6 +9,7 @@ verify_ssl = true
 #
 pytest = "*"
 pytest-xdist = "*"
+pytest-cov = "*"
 coverage ="==5.5"
 coverage-badge = "*"
 GitPython = "*"
