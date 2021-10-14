@@ -7,7 +7,7 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, freeze_support
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -54,6 +54,7 @@ class RunnerRegistry:
         integration_feature_registry.run_pre_runner()
 
         processes = []
+        freeze_support()
         for runner in self.runners:
             parent_conn, child_conn = Pipe()
             process = Process(target=self._run_runner, args=(runner, root_folder, external_checks_dir, files,
