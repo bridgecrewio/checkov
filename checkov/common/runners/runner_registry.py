@@ -54,6 +54,7 @@ class RunnerRegistry:
         integration_feature_registry.run_pre_runner()
 
         processes = []
+        logging.info("Running the runners parallel in runner_registry")
         for runner in self.runners:
             parent_conn, child_conn = Pipe()
             process = Process(target=self._run_runner, args=(runner, root_folder, external_checks_dir, files,
@@ -63,6 +64,7 @@ class RunnerRegistry:
 
         for process, parent_conn in processes:
             scan_report = parent_conn.recv()
+            logging.info(f"runner_registry: got report: {scan_report}")
             integration_feature_registry.run_post_runner(scan_report)
             if guidelines:
                 RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
@@ -77,6 +79,7 @@ class RunnerRegistry:
                     child_conn):
         report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                             runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+        logging.info(f"_run_runner: got report: {report}")
         child_conn.send(report)
         child_conn.close()
 
