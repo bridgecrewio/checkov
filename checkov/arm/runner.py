@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional, List
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
@@ -16,7 +17,14 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 class Runner(BaseRunner):
     check_type = "arm"
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True,
+    ) -> Report:
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
