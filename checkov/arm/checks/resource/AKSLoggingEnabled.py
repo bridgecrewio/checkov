@@ -11,15 +11,15 @@ class AKSLoggingEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if "apiVersion" in conf:
+        if conf.get("apiVersion") is not None:
             if conf["apiVersion"] == "2017-08-31":
                 # No addonProfiles option to configure
                 return CheckResult.FAILED
-
-        if "properties" in conf:
-            if "addonProfiles" in conf["properties"]:
-                if "omsagent" in conf["properties"]["addonProfiles"]:
-                    if "enabled" in conf["properties"]["addonProfiles"]["omsagent"]:
+        
+        if conf.get("properties") is not None:
+            if conf["properties"].get("addonProfiles") is not None:
+                if conf["properties"]["addonProfiles"].get("omsagent") is not None:
+                    if conf["properties"]["addonProfiles"]["omsagent"].get("enabled") is not None:
                         if str(conf["properties"]["addonProfiles"]["omsagent"]["enabled"]).lower() == "true":
                             return CheckResult.PASSED
 
