@@ -380,7 +380,7 @@ Defaults:
 
 ## Contributing
 
-Contribution is welcomed! 
+Contributions are welcomed! 
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
