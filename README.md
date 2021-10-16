@@ -227,7 +227,7 @@ checkov -d . --skip-check kube-system
 ### Suppressing/Ignoring a check
 
 Like any static-analysis tool it is limited by its analysis scope. 
-For example, if a resource is managed manually, or using subsequent configuration management tooling, 
+For example, if a resource is managed manually, or using subsequent configuration management tools, 
 a suppression can be inserted as a simple code annotation.
 
 #### Suppression comment format
@@ -299,7 +299,7 @@ For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DE
 Default is `LOG_LEVEL=WARNING`.
 
 #### Skipping directories
-To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
+To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. it can be used to skip entire directories and / or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
 To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECTORY_ENV` environment variable `export IGNORE_HIDDEN_DIRECTORY_ENV=false`
