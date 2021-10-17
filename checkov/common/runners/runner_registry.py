@@ -77,10 +77,10 @@ class RunnerRegistry:
 
     def _run_runner(self, runner, root_folder, external_checks_dir, files, collect_skip_comments,
                     child_conn):
-        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                            runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-        logging.info(f"_run_runner: got report: {report}")
-        child_conn.send(report)
+        child_conn.send(Report('test_report'))
+        # report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+        #                     runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+        # child_conn.send(report)
         child_conn.close()
 
     def print_reports(
