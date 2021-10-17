@@ -60,7 +60,7 @@ Scheduled scan result in Jenkins
 
 ![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
 
-## Getting started
+## Getting started:-
 
 ### Requirements
  * Python >= 3.7 (Data classes are available for Python 3.7+)
@@ -111,7 +111,7 @@ if you installed checkov with pip3
 pip3 install -U checkov
 ```
 
-### Configure an input folder or file
+### Configure an input Folder or File
 
 ```sh
 checkov --directory /user/path/to/iac/code
@@ -182,7 +182,7 @@ Check: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
 
 Start using Checkov by reading the [Getting Started](docs/1.Welcome/Quick%20Start.md) page.
 
-### Using Docker
+### Using Docker:-
 
 
 ```sh
@@ -224,7 +224,7 @@ kube-system namespace:
 checkov -d . --skip-check kube-system
 ```
 
-### Suppressing/Ignoring a check
+### Suppressing or Ignoring a check
 
 Like any static-analysis tool it is limited by its analysis scope. 
 For example, if a resource is managed manually, or using subsequent configuration management tooling, 
@@ -239,7 +239,7 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 * `<check_id>` is one of the [available check scanners](docs/5.Policy Index/all.md)
 * `<suppression_comment>` is an optional suppression reason to be included in the output
 
-#### Example
+#### Example:-
 
 The following comment skip the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
 In the example, the bucket is configured with a public read access; Adding the suppress comment would skip the appropriate check instead of the check to fail.
@@ -298,7 +298,7 @@ For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DE
 
 Default is `LOG_LEVEL=WARNING`.
 
-#### Skipping directories
+#### Skipping the directories
 To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
@@ -307,7 +307,7 @@ To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECT
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`.
  Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
 
-#### VSCODE Extension
+#### VS Code Extension
 
 If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
@@ -380,11 +380,11 @@ Defaults:
 
 ## Contributing
 
-Contribution is welcomed! 
+Contribution is Welcomed! 
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/6.Contribution/Contribution%20Overview.md).
+Looking to contribute to new checks? Learn how to write a new check (AKA policy) [here](docs/6.Contribution/Contribution%20Overview.md).
 
 ## Disclaimer
 `checkov` does not save, publish or share with anyone any identifiable customer information.  
@@ -398,4 +398,4 @@ To skip this API call use the flag `--no-guide`.
 
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io.
+If you need direct support you can always contact us at info@bridgecrew.io.
