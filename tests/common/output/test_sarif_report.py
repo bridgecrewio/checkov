@@ -199,7 +199,7 @@ class TestSarifReport(unittest.TestCase):
 
 def get_sarif_schema():
     file_name, headers = urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+        "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Documents/CommitteeSpecifications/2.1.0/sarif-schema-2.1.0.json"
     )
     with open(file_name, "r") as file:
         schema = json.load(file)

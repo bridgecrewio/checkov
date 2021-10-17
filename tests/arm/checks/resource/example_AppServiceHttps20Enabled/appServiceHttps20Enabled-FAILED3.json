@@ -33,6 +33,7 @@
     }
   },
   "variables": {
+    "webAppPortalName": "[concat(parameters('webAppName'), '-webapp')]",
     "appServicePlanName": "[concat('AppServicePlan-', parameters('webAppName'))]"
   },
   "resources": [
@@ -52,23 +53,15 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2018-11-01",
-      "name": "enabled",
+      "name": "null",
       "location": "[parameters('location')]",
       "kind": "app",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
       ],
-      "identity": {
-        "type": "SystemAssigned"
-      },
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
-        "siteConfig": {
-          "linuxFxVersion": "[parameters('linuxFxVersion')]",
-          "http20Enabled": "true",
-          "minTlsVersion": "1.2"
-        },
-        "clientCertEnabled": true
+        "siteConfig": null
       }
     }
   ]

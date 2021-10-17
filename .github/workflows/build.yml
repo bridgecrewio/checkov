@@ -30,7 +30,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv run pip install --upgrade pip==21.1.1
-          pipenv run pip install pytest
+          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -63,7 +63,7 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv run pip install --upgrade pip==21.1.1
-          pipenv run pip install pytest
+          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
       - name: Run checkov with Primsa creds
@@ -97,9 +97,7 @@ jobs:
           pipenv run pip install pytest
       - name: Test with pytest
         run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+          pipenv run pytest --cov-report term --cov=checkov tests
           pipenv run python -m coverage_badge -o coverage.svg -f
       - name: version
         env:
