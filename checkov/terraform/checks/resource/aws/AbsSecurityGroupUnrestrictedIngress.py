@@ -71,7 +71,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
 
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
             conf_cidr_blocks = conf.get('cidr_blocks', [[]])
-            if len(conf_cidr_blocks) > 0:
+            if conf_cidr_blocks and len(conf_cidr_blocks) > 0:
                 conf_cidr_blocks = conf_cidr_blocks[0]
             cidr_blocks = force_list(conf_cidr_blocks)
             if "0.0.0.0/0" in cidr_blocks:
