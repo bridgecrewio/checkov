@@ -121,10 +121,11 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         expected_skipped_check_ids = []
 
         enriched_data = set(
-            [(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks]
+            [(c.file_path.replace('\\', '/'), tuple(c.file_line_range),
+             tuple(c.code_block)) for c in report.failed_checks]
         )
         expected_enriched_data = {
-            (f"/{Path.relative_to(valid_plan_path, Path.cwd())}", (16, 16), (),),
+            (f"/{Path.relative_to(valid_plan_path, Path.cwd())}".replace('\\', '/'), (16, 16), (),),
             (
                 "log_group/main.tf",
                 (1, 2),
