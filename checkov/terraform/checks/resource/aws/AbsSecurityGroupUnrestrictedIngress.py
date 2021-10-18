@@ -77,7 +77,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             if "0.0.0.0/0" in cidr_blocks:
                 return True
             ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [])
-            if len(ipv6_cidr_blocks) > 0 and ipv6_cidr_blocks[0] is not None and \
+            if ipv6_cidr_blocks and len(ipv6_cidr_blocks) > 0 and ipv6_cidr_blocks[0] is not None and \
                     any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks[0]):
                 return True
         return False
