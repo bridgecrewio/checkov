@@ -7,7 +7,7 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, freeze_support
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -53,6 +53,7 @@ class RunnerRegistry:
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
 
+        freeze_support()
         processes = []
         logging.info("Running the runners parallel in runner_registry")
         for runner in self.runners:
