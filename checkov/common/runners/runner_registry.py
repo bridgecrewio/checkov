@@ -8,9 +8,11 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
 
+from cyclonedx.output import get_instance as get_cyclonedx_outputter
+
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, report_to_cyclonedx
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.runner_filter import RunnerFilter
@@ -20,7 +22,7 @@ from checkov.terraform.parser import Parser
 
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ["cli", "json", "junitxml", "github_failed_only", "sarif"]
+OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
@@ -85,6 +87,7 @@ class RunnerRegistry:
         report_jsons = []
         sarif_reports = []
         junit_reports = []
+        cyclonedx_reports = []
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
@@ -109,7 +112,10 @@ class RunnerRegistry:
                     output_formats.discard("cli")
                     if output_formats:
                         print(OUTPUT_DELIMITER)
+                if "cyclonedx" in config.output:
+                    cyclonedx_reports.append(report)
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
+
         if "sarif" in config.output:
             master_report = Report(None)
             for report in sarif_reports:
@@ -139,8 +145,24 @@ class RunnerRegistry:
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)
-        # if config.output == "cli":
-        # bc_integration.get_report_to_platform(config,scan_reports)
+
+        if "cyclonedx" in config.output:
+            if cyclonedx_reports:
+                # More than one Report - combine Reports first
+                report = Report(None)
+                for r in cyclonedx_reports:
+                    report.passed_checks += r.passed_checks
+                    report.skipped_checks += r.skipped_checks
+                    report.failed_checks += r.failed_checks
+            else:
+                report = cyclonedx_reports[0]
+            cyclonedx_output = get_cyclonedx_outputter(
+                bom=report.get_cyclonedx_bom()
+            )
+            print(cyclonedx_output.output_as_string())
+            output_formats.remove("cyclonedx")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code

@@ -1,8 +1,14 @@
 import fnmatch
+import itertools
 import json
+import sys
 from collections import defaultdict
 from typing import List, Dict, Union, Any, Optional, Set
+
 from colorama import init
+from cyclonedx.model.bom import Bom, Tool
+from cyclonedx.model.component import Component
+from cyclonedx.model.vulnerability import Vulnerability
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
@@ -56,6 +62,52 @@ class Report:
     def get_json(self) -> str:
         return json.dumps(self.get_dict(), indent=4)
 
+    def get_cyclonedx_bom(self) -> Bom:
+        bom = Bom()
+
+        if sys.version_info >= (3, 8, 0):
+            from importlib.metadata import version as meta_version
+        else:
+            from importlib_metadata import version as meta_version
+
+        try:
+            this_tool = Tool(vendor='bridgecrew', name='checkov', version=meta_version('checkov'))
+        except Exception:
+            # Unable to determine current version of 'checkov'
+            this_tool = Tool(vendor='bridgecrew', name='checkov', version='UNKNOWN')
+        bom.get_metadata().add_tool(this_tool)
+
+        for check in itertools.chain(self.passed_checks, self.skipped_checks):
+            component = Component.for_file(
+                absolute_file_path=check.file_abs_path,
+                path_for_bom=check.file_path
+            )
+
+            if bom.has_component(component=component):
+                component = bom.get_component_by_purl(purl=component.get_purl())
+
+            bom.add_component(component=component)
+
+        for failed_check in self.failed_checks:
+            component = Component.for_file(
+                absolute_file_path=failed_check.file_abs_path,
+                path_for_bom=failed_check.file_path
+            )
+
+            if bom.has_component(component=component):
+                component = bom.get_component_by_purl(purl=component.get_purl())
+
+            component.add_vulnerability(
+                Vulnerability(
+                    id=failed_check.check_id, source_name='checkov',
+                    description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
+                    recommendations=[failed_check.guideline]
+                )
+            )
+            bom.add_component(component=component)
+
+        return bom
+
     def get_dict(self, is_quiet=False) -> dict:
         if is_quiet:
             return {
@@ -78,10 +130,10 @@ class Report:
             }
 
     def get_exit_code(
-        self,
-        soft_fail: bool,
-        soft_fail_on: Optional[list] = None,
-        hard_fail_on: Optional[list] = None,
+            self,
+            soft_fail: bool,
+            soft_fail_on: Optional[list] = None,
+            hard_fail_on: Optional[list] = None,
     ) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
@@ -96,12 +148,12 @@ class Report:
         if soft_fail_on:
             soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
             if all(
-                any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
-                    for pattern in soft_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
+                    any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
+                        for pattern in soft_fail_on)
+                    for (check_id, bc_check_id) in (
+                            (failed_check.check_id, failed_check.bc_check_id)
+                            for failed_check in self.failed_checks
+                    )
             ):
                 # List of "failed checks" is a subset of the "soft fail on" list.
                 return 0
@@ -110,11 +162,11 @@ class Report:
         if hard_fail_on:
             hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
             if any(
-                (check_id in hard_fail_on or bc_check_id in hard_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
+                    (check_id in hard_fail_on or bc_check_id in hard_fail_on)
+                    for (check_id, bc_check_id) in (
+                            (failed_check.check_id, failed_check.bc_check_id)
+                            for failed_check in self.failed_checks
+                    )
             ):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".
                 return 1
@@ -128,18 +180,18 @@ class Report:
 
     def is_empty(self) -> bool:
         return (
-            len(self.passed_checks + self.failed_checks + self.skipped_checks)
-            + len(self.parsing_errors)
-            == 0
+                len(self.passed_checks + self.failed_checks + self.skipped_checks)
+                + len(self.parsing_errors)
+                == 0
         )
 
     def print_console(
-        self,
-        is_quiet=False,
-        is_compact=False,
-        created_baseline_path=None,
-        baseline=None,
-        use_bc_ids=False,
+            self,
+            is_quiet=False,
+            is_compact=False,
+            created_baseline_path=None,
+            baseline=None,
+            use_bc_ids=False,
     ) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
@@ -333,7 +385,7 @@ class Report:
 
     @staticmethod
     def enrich_plan_report(
-        report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
+            report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
@@ -346,7 +398,7 @@ class Report:
 
     @staticmethod
     def handle_skipped_checks(
-        report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
+            report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
         skip_records = []
         for record in report.failed_checks:
@@ -389,3 +441,24 @@ def remove_duplicate_results(report):
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)
     return report
+
+
+def report_to_cyclonedx(report: Report) -> Bom:
+    bom = Bom()
+
+    for failed_check in report.failed_checks:
+        component = Component.for_file(
+            absolute_file_path=failed_check.file_abs_path,
+            path_for_bom=failed_check.file_path
+        )
+
+        component.add_vulnerability(
+            Vulnerability(
+                id=failed_check.check_id, source_name='checkov',
+                description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
+                recommendations=[failed_check.guideline]
+            )
+        )
+        bom.add_component(component=component)
+
+    return bom
