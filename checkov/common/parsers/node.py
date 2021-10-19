@@ -22,8 +22,8 @@ class StrNode(str):
     def __new__(cls, x, start_mark=None, end_mark=None):
         return str.__new__(cls, x)
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__class__.__name__, name))
+    # def __getattr__(self, name):
+    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     def __deepcopy__(self, memo):
         result = StrNode(self, self.start_mark, self.end_mark)
@@ -32,6 +32,9 @@ class StrNode(str):
 
     def __copy__(self):
         return self
+
+    # def __getstate__(self):
+    #     return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'self': self}
 
     @staticmethod
     def __name__():
@@ -136,8 +139,8 @@ class DictNode(dict):
             if isinstance(self, type_t) or not type_t:
                 yield self, path[:]
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+    # def __getattr__(self, name):
+    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     @staticmethod
     def __name__():
@@ -179,8 +182,8 @@ class ListNode(list):
                 if isinstance(v, type_t) or not type_t:
                     yield v, path[:] + [i]
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+    # def __getattr__(self, name):
+    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     @staticmethod
     def __name__():
