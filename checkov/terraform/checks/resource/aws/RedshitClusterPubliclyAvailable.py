@@ -1,10 +1,8 @@
-from typing import List
-
 from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class RedshiftClusterPubliclyAccessible(BaseResourceNegativeValueCheck):
+class RedshiftClusterPubliclyAccessible(BaseResourceValueCheck):
     def __init__(self):
         name = "Redshift cluster should not be publicly accessible"
         id = "CKV_AWS_87"
@@ -15,8 +13,8 @@ class RedshiftClusterPubliclyAccessible(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'publicly_accessible'
 
-    def get_forbidden_values(self) -> List[bool]:
-        return [True]
+    def get_expected_value(self):
+        return False
 
 
 check = RedshiftClusterPubliclyAccessible()

@@ -1,9 +1,8 @@
-from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class RDSPubliclyAccessible(BaseResourceNegativeValueCheck):
+class RDSPubliclyAccessible(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in RDS is not publicly accessible"
         id = "CKV_AWS_17"
@@ -14,8 +13,8 @@ class RDSPubliclyAccessible(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return 'publicly_accessible'
 
-    def get_forbidden_values(self):
-        return [True]
+    def get_expected_value(self):
+        return False
 
 
 check = RDSPubliclyAccessible()
