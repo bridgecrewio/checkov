@@ -9,6 +9,12 @@ definition:
    value:
    - aws_rds_cluster
    operator: within
+ - cond_type: filter
+   resource_types:
+   - aws_rds_cluster
+   attribute: engine
+   operator: within
+   value: "postgres"     
  - cond_type: connection
    resource_types:
    - aws_rds_cluster
