@@ -22,8 +22,8 @@ class StrNode(str):
     def __new__(cls, x, start_mark=None, end_mark=None):
         return str.__new__(cls, x)
 
-    # def __getattr__(self, name):
-    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+    def __getattr__(self, name):
+        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     def __deepcopy__(self, memo):
         result = StrNode(self, self.start_mark, self.end_mark)
@@ -33,8 +33,11 @@ class StrNode(str):
     def __copy__(self):
         return self
 
-    # def __getstate__(self):
-    #     return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'self': self}
+    def __getstate__(self):
+        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': self.__str__()}
+
+    def __setstate__(self, state):
+        self.__init__(state['x'], state['start_mark'], state['end_mark'])
 
     @staticmethod
     def __name__():
@@ -63,6 +66,12 @@ class DictNode(dict):
 
     def __copy__(self):
         return self
+
+    def __getstate__(self):
+        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': dict(self)}
+
+    def __setstate__(self, state):
+        self.__init__(state['x'], state['start_mark'], state['end_mark'])
 
     def is_function_returning_object(self, mappings=None):
         """
@@ -139,8 +148,8 @@ class DictNode(dict):
             if isinstance(self, type_t) or not type_t:
                 yield self, path[:]
 
-    # def __getattr__(self, name):
-    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+    def __getattr__(self, name):
+        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     @staticmethod
     def __name__():
@@ -170,6 +179,12 @@ class ListNode(list):
     def __copy__(self):
         return self
 
+    def __getstate__(self):
+        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': list(self)}
+
+    def __setstate__(self, state):
+        self.__init__(state['x'], state['start_mark'], state['end_mark'])
+
     def items_safe(self, path=None, type_t=()):
         """Get items while handling IFs"""
         path = path or []
@@ -182,8 +197,8 @@ class ListNode(list):
                 if isinstance(v, type_t) or not type_t:
                     yield v, path[:] + [i]
 
-    # def __getattr__(self, name):
-    #     raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+    def __getattr__(self, name):
+        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
 
     @staticmethod
     def __name__():
