@@ -628,7 +628,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         # this is the relative path to the file to scan (what would actually get passed to the -f arg)
         file_rel_path = os.path.relpath(scan_file_path)
@@ -652,7 +652,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         file_rel_path = os.path.relpath(scan_file_path)
         file_abs_path = os.path.abspath(scan_file_path)
@@ -988,6 +988,21 @@ class TestRunnerValid(unittest.TestCase):
 
         if orig_value:
             os.environ[SCAN_HCL_FLAG] = orig_value
+
+    def test_runner_exclude_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir', 'dir1')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['example.tf']))
+        self.assertEqual(0, len(report.resources))
+
+    def test_runner_exclude_dir(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['dir1']))
+        self.assertEqual(1, len(report.resources))
+
 
     def tearDown(self):
         parser_registry.context = {}
