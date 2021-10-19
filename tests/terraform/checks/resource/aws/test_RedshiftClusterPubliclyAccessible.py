@@ -34,7 +34,7 @@ class TestRedshitClusterPubliclyAccessible(unittest.TestCase):
         """)
         resource_conf = hcl_res['resource'][0]['aws_redshift_cluster']['public']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_success(self):
         hcl_res = hcl2.loads("""
