@@ -69,6 +69,7 @@ class BcPlatformIntegration(object):
         self.bc_source_version = None
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
         self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
@@ -333,15 +334,20 @@ class BcPlatformIntegration(object):
             logging.debug(f"Skipped mapping API call")
             self.ckv_to_bc_id_mapping = {}
             return
+        guidelines_url = self.guidelines_api_url
+        headers = {}
         try:
-            request = self.http.request("GET", self.guidelines_api_url)
+            if (self.bc_api_key is not None):
+                guidelines_url = self.customer_all_guidelines_api_url
+                headers = {"Authorization": self.get_auth_token(), "Content-Type": "application/json"}
+            request = self.http.request("GET", guidelines_url, headers=headers)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")
             self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug(f"Got checkov mappings from Bridgecrew BE")
         except Exception as e:
-            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.debug(f"Failed to get the guidelines from {guidelines_url}, error:\n{e}")
             self.ckv_to_bc_id_mapping = {}
             return
 
