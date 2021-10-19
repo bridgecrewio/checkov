@@ -7,7 +7,9 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-from multiprocessing import Pipe, Process, freeze_support
+import sys
+import multiprocessing
+from multiprocessing import Pipe, Process, freeze_support, set_start_method
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -57,9 +59,16 @@ class RunnerRegistry:
         processes = []
         logging.info("Running the runners parallel in runner_registry")
         for runner in self.runners:
-            parent_conn, child_conn = Pipe()
-            process = Process(target=self._run_runner, args=(runner, root_folder, external_checks_dir, files,
-                                                             collect_skip_comments, child_conn))
+            parent_conn, child_conn = Pipe(duplex=False)
+            if sys.platform == 'win32':
+                process = Process(target=RunnerRegistry._run_runner, args=(runner, root_folder, external_checks_dir,
+                                                                           files, self.runner_filter,
+                                                                           collect_skip_comments, child_conn))
+            else:
+                process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
+                                                                      args=(runner, root_folder, external_checks_dir,
+                                                                            files, self.runner_filter,
+                                                                            collect_skip_comments, child_conn))
             processes.append((process, parent_conn))
             process.start()
 
@@ -76,12 +85,18 @@ class RunnerRegistry:
             self.scan_reports.append(scan_report)
         return self.scan_reports
 
-    def _run_runner(self, runner, root_folder, external_checks_dir, files, collect_skip_comments,
+    @staticmethod
+    def _run_runner(runner, root_folder, external_checks_dir, files, runner_filter, collect_skip_comments,
                     child_conn):
-        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                            runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-        child_conn.send(report)
-        child_conn.close()
+        try:
+            report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+            child_conn.send(report)
+        except Exception as e:
+            logging.error(f'Failed run runner {runner.check_type}. Error: {e}', exc_info=True)
+            child_conn.send(None)
+        finally:
+            child_conn.close()
 
     def print_reports(
         self,
