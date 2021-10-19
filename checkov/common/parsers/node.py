@@ -33,12 +33,6 @@ class StrNode(str):
     def __copy__(self):
         return self
 
-    def __getstate__(self):
-        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': self.__str__()}
-
-    def __setstate__(self, state):
-        self.__init__(state['x'], state['start_mark'], state['end_mark'])
-
     @staticmethod
     def __name__():
         return '%s_node' % super().__name__
@@ -66,12 +60,6 @@ class DictNode(dict):
 
     def __copy__(self):
         return self
-
-    def __getstate__(self):
-        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': dict(self)}
-
-    def __setstate__(self, state):
-        self.__init__(state['x'], state['start_mark'], state['end_mark'])
 
     def is_function_returning_object(self, mappings=None):
         """
@@ -178,12 +166,6 @@ class ListNode(list):
 
     def __copy__(self):
         return self
-
-    def __getstate__(self):
-        return {'start_mark': self.start_mark, 'end_mark': self.end_mark, 'x': list(self)}
-
-    def __setstate__(self, state):
-        self.__init__(state['x'], state['start_mark'], state['end_mark'])
 
     def items_safe(self, path=None, type_t=()):
         """Get items while handling IFs"""
