@@ -137,11 +137,11 @@ class DictNode(dict):
                 yield self, path[:]
 
     def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+        raise TemplateAttributeError(f'{self.__name__()}.{name} is invalid')
 
     @staticmethod
     def __name__():
-        return '%s_node' % super().__name__
+        return f'{super().__name__}_node'
 
 
 class ListNode(list):
@@ -180,8 +180,8 @@ class ListNode(list):
                     yield v, path[:] + [i]
 
     def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
 
     @staticmethod
     def __name__():
-        return '%s_node' % list.__name__
+        return f'{list.__name__}_node' % list.__name__

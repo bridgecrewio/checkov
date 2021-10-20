@@ -7,7 +7,7 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-import sys
+import platform
 import multiprocessing
 from multiprocessing import Pipe
 
@@ -55,7 +55,7 @@ class RunnerRegistry:
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
-        if sys.platform == 'win32':
+        if platform.system() == 'Windows':
             integration_feature_registry.run_pre_runner()
             for runner in self.runners:
                 report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
