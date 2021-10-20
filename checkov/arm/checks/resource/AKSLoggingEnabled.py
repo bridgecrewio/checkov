@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.parsers.node import dict_node
 
 class AKSLoggingEnabled(BaseResourceCheck):
     def __init__(self):
@@ -17,7 +18,7 @@ class AKSLoggingEnabled(BaseResourceCheck):
                 return CheckResult.FAILED
         
         if conf.get("properties") is not None:
-            if conf["properties"].get("addonProfiles") is not None:
+            if isinstance(conf["properties"].get("addonProfiles"), dict_node):
                 if conf["properties"]["addonProfiles"].get("omsagent") is not None:
                     if conf["properties"]["addonProfiles"]["omsagent"].get("enabled") is not None:
                         if str(conf["properties"]["addonProfiles"]["omsagent"]["enabled"]).lower() == "true":
