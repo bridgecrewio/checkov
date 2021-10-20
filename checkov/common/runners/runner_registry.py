@@ -9,7 +9,7 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 from typing_extensions import Literal
 import sys
 import multiprocessing
-from multiprocessing import Pipe, Process, freeze_support, set_start_method
+from multiprocessing import Pipe
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -57,7 +57,7 @@ class RunnerRegistry:
             integration_feature_registry.run_pre_runner()
             for runner in self.runners:
                 report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                    runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+                                    runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
                 self._handle_report(report, guidelines, repo_root_for_plan_enrichment)
             return self.scan_reports
 
