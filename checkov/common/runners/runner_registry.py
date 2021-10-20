@@ -53,20 +53,18 @@ class RunnerRegistry:
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
-        integration_feature_registry.run_pre_runner()
         if sys.platform == 'win32':
-            reports = []
+            integration_feature_registry.run_pre_runner()
             for runner in self.runners:
                 report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                     runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-                reports.append(report)
-            for report in reports:
                 self._handle_report(report, guidelines, repo_root_for_plan_enrichment)
             return self.scan_reports
 
         # use multiprocessing for unix os
         logging.info("Running the runners using multiprocessing")
         processes = []
+        integration_feature_registry.run_pre_runner()
         for runner in self.runners:
             parent_conn, child_conn = Pipe(duplex=False)
             process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
