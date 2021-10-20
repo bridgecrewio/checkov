@@ -14,11 +14,14 @@ class GKESecureBootforShieldedNodes(BaseResourceValueCheck):
         if 'node_config' in conf.keys():
             node = conf["node_config"][0]
             if isinstance(node, dict) and 'shielded_instance_config' in node:
-                monitor = node["shielded_instance_config"][0]
-                if monitor.get("enable_secure_boot", None) == [True]:
-                    return CheckResult.PASSED
-                else:
-                    return CheckResult.FAILED
+                monitors = node["shielded_instance_config"][0]
+                if not isinstance(monitors, list):
+                    monitors = [monitors]
+                self.evaluated_keys = []
+                for index, monitor in enumerate(monitors):
+                    if not monitor.get("enable_secure_boot", None) == [True]:
+                        return CheckResult.FAILED
+                return CheckResult.PASSED
             else:
                 # as default is true this is a pass
                 return CheckResult.FAILED
