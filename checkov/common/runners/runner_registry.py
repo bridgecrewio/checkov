@@ -61,7 +61,7 @@ class RunnerRegistry:
                                     runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
                 reports.append(report)
             for report in reports:
-                self._handle_report(report)
+                self._handle_report(report, guidelines, repo_root_for_plan_enrichment)
             return self.scan_reports
 
         # use multiprocessing for unix os
@@ -77,10 +77,10 @@ class RunnerRegistry:
 
         for process, parent_conn in processes:
             scan_report = parent_conn.recv()
-            self._handle_report(scan_report)
+            self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
         return self.scan_reports
 
-    def _handle_report(self, scan_report):
+    def _handle_report(self, scan_report, guidelines, repo_root_for_plan_enrichment):
         integration_feature_registry.run_post_runner(scan_report)
         if guidelines:
             RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
