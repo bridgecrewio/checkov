@@ -50,6 +50,7 @@ typing-extensions = "*"
 importlib-metadata = ">=0.12"
 cachetools = "*"
 cyclonedx-python-lib = "==0.6.*"
+deprecated = "*"
 
 [requires]
 python_version = "3.7"

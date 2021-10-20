@@ -1,12 +1,12 @@
 import unittest
 from pathlib import Path
 
-from checkov.cloudformation.checks.resource.aws.RedshiftClusterPubliclyAccessible import check
+from checkov.cloudformation.checks.resource.aws.RedshiftClusterPublicAccessibility import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestRedshiftClusterPubliclyAccessible(unittest.TestCase):
+class TestRedshiftClusterPublicAccessibility(unittest.TestCase):
     def test_summary(self):
         test_files_dir = Path(__file__).parent / "example_RedshiftClusterPubliclyAccessible"
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
