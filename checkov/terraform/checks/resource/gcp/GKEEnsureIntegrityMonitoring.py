@@ -15,12 +15,17 @@ class GKEEnsureIntegrityMonitoring(BaseResourceCheck):
             node = conf["node_config"][0]
             self.evaluated_keys = ['node_config']
             if isinstance(node, dict) and 'shielded_instance_config' in node.keys():
-                monitor = node["shielded_instance_config"][0]
-                if monitor.get("enable_integrity_monitoring") == [True]:
-                    self.evaluated_keys = ['node_config/[0]/shielded_instance_config/[0]/enable_integrity_monitoring']
-                    return CheckResult.PASSED
-                self.evaluated_keys = ['node_config/[0]/shielded_instance_config']
-                return CheckResult.FAILED
+                monitors = node["shielded_instance_config"][0]
+                if not isinstance(monitors, list):
+                    monitors = [monitors]
+                self.evaluated_keys = []
+                for index, monitor in enumerate(monitors):
+                    if monitor.get("enable_integrity_monitoring") == [True]:
+                        self.evaluated_keys.append(f'node_config/[0]/shielded_instance_config/[{index}]/enable_integrity_monitoring')
+                    else:
+                        self.evaluated_keys = ['node_config/[0]/shielded_instance_config']
+                        return CheckResult.FAILED
+                return CheckResult.PASSED
             # as default is true this is a pass
             return CheckResult.PASSED
         # no config is valid it could be in the the node_pool
