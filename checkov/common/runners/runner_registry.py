@@ -54,49 +54,49 @@ class RunnerRegistry:
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
+        if sys.platform == 'win32':
+            reports = []
+            for runner in self.runners:
+                report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                    runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+                reports.append(report)
+            for report in reports:
+                self._handle_report(report)
+            return self.scan_reports
 
-        freeze_support()
+        # use multiprocessing for unix os
+        logging.info("Running the runners using multiprocessing")
         processes = []
-        logging.info("Running the runners parallel in runner_registry")
         for runner in self.runners:
             parent_conn, child_conn = Pipe(duplex=False)
-            if sys.platform == 'win32':
-                process = Process(target=RunnerRegistry._run_runner, args=(runner, root_folder, external_checks_dir,
-                                                                           files, self.runner_filter,
-                                                                           collect_skip_comments, child_conn))
-            else:
-                process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
-                                                                      args=(runner, root_folder, external_checks_dir,
-                                                                            files, self.runner_filter,
-                                                                            collect_skip_comments, child_conn))
+            process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
+                                                                  args=(runner, root_folder, external_checks_dir, files,
+                                                                  self.runner_filter, collect_skip_comments, child_conn))
             processes.append((process, parent_conn))
             process.start()
 
         for process, parent_conn in processes:
             scan_report = parent_conn.recv()
-            logging.info(f"runner_registry: got report: {scan_report}")
-            integration_feature_registry.run_post_runner(scan_report)
-            if guidelines:
-                RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
-            if repo_root_for_plan_enrichment:
-                enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
-                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
-                scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
-            self.scan_reports.append(scan_report)
+            self._handle_report(scan_report)
         return self.scan_reports
+
+    def _handle_report(self, scan_report):
+        integration_feature_registry.run_post_runner(scan_report)
+        if guidelines:
+            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
+        if repo_root_for_plan_enrichment:
+            enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+            scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+            scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+        self.scan_reports.append(scan_report)
 
     @staticmethod
     def _run_runner(runner, root_folder, external_checks_dir, files, runner_filter, collect_skip_comments,
                     child_conn):
-        try:
-            report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-            child_conn.send(report)
-        except Exception as e:
-            logging.error(f'Failed run runner {runner.check_type}. Error: {e}', exc_info=True)
-            child_conn.send(None)
-        finally:
-            child_conn.close()
+        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                            runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        child_conn.send(report)
+        child_conn.close()
 
     def print_reports(
         self,
