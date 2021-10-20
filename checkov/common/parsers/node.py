@@ -23,7 +23,7 @@ class StrNode(str):
         return str.__new__(cls, x)
 
     def __getattr__(self, name):
-        raise TemplateAttributeError('%s.%s is invalid' % (self.__name__, name))
+        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
 
     def __deepcopy__(self, memo):
         result = StrNode(self, self.start_mark, self.end_mark)
