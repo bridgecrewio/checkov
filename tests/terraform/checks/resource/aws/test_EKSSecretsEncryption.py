@@ -18,8 +18,14 @@ class TestEKSSecretsEncryption(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_success_provider(self):
         resource_conf = {'name': ['good-eks2'], 'role_arn': ['${var.role_arn}'], 'vpc_config': [{'subnet_ids': [[]], 'endpoint_public_access': [True]}], 'encryption_config': [{'provider': [{'key_arn': ['${var.key_arn}']}], 'resources': [['secrets']]}]}
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_module(self):
+        resource_conf = {'name': ['good-eks2'], 'role_arn': ['${var.role_arn}'], 'vpc_config': [{'subnet_ids': [[]], 'endpoint_public_access': [True]}], 'cluster_encryption_config': [{'provider': [{'key_arn': ['${var.key_arn}']}], 'resources': ['secrets']}]}
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
