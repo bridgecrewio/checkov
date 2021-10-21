@@ -66,7 +66,7 @@ jobs:
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
-      - name: Run checkov with Primsa creds
+      - name: Run checkov with Prisma creds
         env:
           PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
