@@ -23,7 +23,8 @@ class NetworkWatcherFlowLogPeriod(BaseResourceCheck):
                         if "enabled" in conf["properties"]["retentionPolicy"]:
                             if str(conf["properties"]["retentionPolicy"]["enabled"]).lower() == "true":
                                 if "days" in conf["properties"]["retentionPolicy"]:
-                                    if force_int(conf["properties"]["retentionPolicy"]["days"]) >= 90:
+                                    days = force_int(conf["properties"]["retentionPolicy"]["days"])
+                                    if days and days >= 90:
                                         return CheckResult.PASSED
         return CheckResult.FAILED
 
