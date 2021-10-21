@@ -232,6 +232,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
+                continue  # this rules has been refactored into a v2 graph implementation
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
