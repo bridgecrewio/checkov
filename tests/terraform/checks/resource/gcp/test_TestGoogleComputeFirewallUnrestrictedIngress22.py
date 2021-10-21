@@ -88,6 +88,23 @@ resource "google_compute_firewall" "allow_all" {
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_null(self):
+        hcl_res = hcl2.loads("""
+resource "google_compute_firewall" "allow_all" {
+  name = "terragoat-${var.environment}-firewall"
+  network = google_compute_network.vpc.id
+  source_ranges = ["0.0.0.0/0"]
+  allow {
+    protocol = "tcp"
+    ports = null
+  }
+}
+        """)
+        resource_conf = hcl_res['resource'][0]['google_compute_firewall']['allow_all']
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
