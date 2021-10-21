@@ -108,7 +108,9 @@ class Report:
 
         return bom
 
-    def get_dict(self, is_quiet=False) -> dict:
+    def get_dict(self, is_quiet=False, url="") -> dict:
+        if not url:
+            url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
             return {
                 "check_type": self.check_type,
@@ -127,6 +129,7 @@ class Report:
                     "parsing_errors": list(self.parsing_errors),
                 },
                 "summary": self.get_summary(),
+                "url": url,
             }
 
     def get_exit_code(

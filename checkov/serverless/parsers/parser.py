@@ -11,7 +11,7 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.common.parsers.node import dict_node, str_node
+from checkov.common.parsers.node import DictNode, StrNode
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +63,11 @@ def parse(filename):
 def is_checked_sls_template(template):
     if template.__contains__('provider'):
         # Case provider is a dictionary
-        if isinstance(template['provider'], dict_node):
+        if isinstance(template['provider'], DictNode):
             if template['provider'].get('name').lower() not in SUPPORTED_PROVIDERS:
                 return False
         # Case provider is direct provider name
-        if isinstance(template['provider'], str_node):
+        if isinstance(template['provider'], StrNode):
             if template['provider'] not in SUPPORTED_PROVIDERS:
                 return False
         return True
@@ -75,7 +75,7 @@ def is_checked_sls_template(template):
 
 
 def template_contains_cfn_resources(template):
-    if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], dict_node):
+    if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], DictNode):
         if template[CFN_RESOURCES_TOKEN].get('Resources'):
             return True
     return False

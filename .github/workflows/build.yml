@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: [3.7, 3.8, 3.9]
+        python: ["3.7", "3.8", "3.9", "3.10"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -66,7 +66,7 @@ jobs:
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
-      - name: Run checkov with Primsa creds
+      - name: Run checkov with Prisma creds
         env:
           PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}

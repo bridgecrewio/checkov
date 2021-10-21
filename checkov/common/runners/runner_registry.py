@@ -7,6 +7,9 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
+import platform
+import multiprocessing
+from multiprocessing import Pipe
 
 from cyclonedx.output import get_instance as get_cyclonedx_outputter
 
@@ -52,24 +55,48 @@ class RunnerRegistry:
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
-        for runner in self.runners:
+        if platform.system() == 'Windows':
             integration_feature_registry.run_pre_runner()
-            scan_report = runner.run(
-                root_folder,
-                external_checks_dir=external_checks_dir,
-                files=files,
-                runner_filter=self.runner_filter,
-                collect_skip_comments=collect_skip_comments,
-            )
-            integration_feature_registry.run_post_runner(scan_report)
-            if guidelines:
-                RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
-            if repo_root_for_plan_enrichment:
-                enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
-                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
-                scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
-            self.scan_reports.append(scan_report)
+            for runner in self.runners:
+                report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                    runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
+                self._handle_report(report, guidelines, repo_root_for_plan_enrichment)
+            return self.scan_reports
+
+        # use multiprocessing for unix os
+        logging.info("Running the runners using multiprocessing")
+        processes = []
+        integration_feature_registry.run_pre_runner()
+        for runner in self.runners:
+            parent_conn, child_conn = Pipe(duplex=False)
+            process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
+                                                                  args=(runner, root_folder, external_checks_dir, files,
+                                                                  self.runner_filter, collect_skip_comments, child_conn))
+            processes.append((process, parent_conn))
+            process.start()
+
+        for process, parent_conn in processes:
+            scan_report = parent_conn.recv()
+            self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
         return self.scan_reports
+
+    def _handle_report(self, scan_report, guidelines, repo_root_for_plan_enrichment):
+        integration_feature_registry.run_post_runner(scan_report)
+        if guidelines:
+            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
+        if repo_root_for_plan_enrichment:
+            enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+            scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+            scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+        self.scan_reports.append(scan_report)
+
+    @staticmethod
+    def _run_runner(runner, root_folder, external_checks_dir, files, runner_filter, collect_skip_comments,
+                    child_conn):
+        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                            runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        child_conn.send(report)
+        child_conn.close()
 
     def print_reports(
         self,
@@ -91,7 +118,7 @@ class RunnerRegistry:
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
-                    report_jsons.append(report.get_dict(is_quiet=config.quiet))
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
                     # report.print_junit_xml()
