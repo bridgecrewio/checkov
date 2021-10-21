@@ -118,7 +118,7 @@ class RunnerRegistry:
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
-                    report_jsons.append(report.get_dict(is_quiet=config.quiet))
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
                     # report.print_junit_xml()
