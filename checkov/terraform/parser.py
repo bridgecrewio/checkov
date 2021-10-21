@@ -114,6 +114,7 @@ class Parser:
             parse_result = _load_or_die_quietly(Path(file), parsing_errors)
             if parse_result:
                 parse_result = self._serialize_definitions(parse_result)
+                parse_result = self._clean_parser_types(parse_result)
                 return parse_result
         else:
             return None
