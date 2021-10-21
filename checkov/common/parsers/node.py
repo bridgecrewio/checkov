@@ -184,4 +184,4 @@ class ListNode(list):
 
     @staticmethod
     def __name__():
-        return f'{list.__name__}_node' % list.__name__
+        return f'{super().__name__}_node'
