@@ -75,7 +75,8 @@ jobs:
 #          grep "prismacloud.io" checkov_report_prisma.txt
 #          exit $?
   bump-version:
-    needs: [integration-tests, prisma-tests]
+#    needs: [integration-tests, prisma-tests]
+    needs: [integration-tests]
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
