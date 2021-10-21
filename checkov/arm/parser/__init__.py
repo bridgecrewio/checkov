@@ -4,7 +4,7 @@ from checkov.arm.parser import cfn_yaml
 from yaml.parser import ParserError, ScannerError
 from yaml import YAMLError
 
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.common.parsers.json import parse as json_parse
 
 
@@ -46,6 +46,6 @@ def parse(filename):
     except YAMLError as err:
         pass
 
-    if template is not None and isinstance(template, dict_node) and '$schema' in template and 'resources' in template:
+    if template is not None and isinstance(template, DictNode) and '$schema' in template and 'resources' in template:
         return template, template_lines
     return None, None

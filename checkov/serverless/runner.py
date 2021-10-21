@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.serverless.parsers.parser import parse
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
 
 SLS_FILE_MASK = ["serverless.yml", "serverless.yaml"]
@@ -96,10 +96,10 @@ class Runner(BaseRunner):
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if not isinstance(sls_file_data, dict_node):
+            if not isinstance(sls_file_data, DictNode):
                 continue
 
-            if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], dict_node):
+            if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
                 cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
                 if not cf_sub_template.get('Resources'):
                     continue
@@ -107,7 +107,7 @@ class Runner(BaseRunner):
                 logging.debug("Template Dump for {}: {}".format(sls_file, sls_file_data, indent=2))
                 cf_context_parser.evaluate_default_refs()
                 for resource_name, resource in cf_sub_template['Resources'].items():
-                    if not isinstance(resource, dict_node):
+                    if not isinstance(resource, DictNode):
                         continue
                     cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     if not cf_resource_id:
@@ -142,7 +142,7 @@ class Runner(BaseRunner):
                 if not template_items or not isinstance(template_items, dict):
                     continue
                 for item_name, item_content in template_items.items():
-                    if not isinstance(item_content, dict_node):
+                    if not isinstance(item_content, DictNode):
                         continue
                     entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
                     if entity_lines_range and entity_code_lines:

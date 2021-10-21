@@ -8,7 +8,7 @@ from checkov.cloudformation.graph_builder.graph_components.blocks import Cloudfo
 from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
@@ -19,7 +19,7 @@ class CloudformationLocalGraph(LocalGraph):
     SUPPORTED_FN_CONNECTION_KEYS = (IntrinsicFunctions.GET_ATT, ConditionFunctions.IF,
                                     IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.CONDITION)
 
-    def __init__(self, cfn_definitions: Dict[str, dict_node], source: str = "CloudFormation") -> None:
+    def __init__(self, cfn_definitions: Dict[str, DictNode], source: str = "CloudFormation") -> None:
         super().__init__()
         self.definitions = cfn_definitions
         self.source = source
@@ -47,7 +47,7 @@ class CloudformationLocalGraph(LocalGraph):
 
     def _create_vertices(self) -> None:
 
-        def extract_resource_attributes(resource: dict_node) -> dict_node:
+        def extract_resource_attributes(resource: DictNode) -> DictNode:
             resource_type = resource.get("Type")
             attributes = resource.get("Properties", {})
             attributes["resource_type"] = resource_type

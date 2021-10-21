@@ -13,7 +13,7 @@ from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 
-from checkov.common.parsers.node import str_node, dict_node, list_node
+from checkov.common.parsers.node import StrNode, DictNode, ListNode
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
@@ -82,17 +82,17 @@ class NodeConstructor(SafeConstructor):
             mapping[key] = value
 
         obj, = SafeConstructor.construct_yaml_map(self, node)
-        return dict_node(obj, node.start_mark, node.end_mark)
+        return DictNode(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_str(self, node):
         obj = SafeConstructor.construct_yaml_str(self, node)
         assert isinstance(obj, str)  # nosec
-        return str_node(obj, node.start_mark, node.end_mark)
+        return StrNode(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
         obj, = SafeConstructor.construct_yaml_seq(self, node)
         assert isinstance(obj, list) # nosec
-        return list_node(obj, node.start_mark, node.end_mark) # nosec
+        return ListNode(obj, node.start_mark, node.end_mark) # nosec
 
     def construct_yaml_null_error(self, node):
         """Throw a null error"""
@@ -168,7 +168,7 @@ def multi_constructor(loader, tag_suffix, node):
     else:
         raise 'Bad tag: !{}'.format(tag_suffix)
 
-    return dict_node({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
+    return DictNode({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
 
 
 def construct_getatt(node):
@@ -177,9 +177,9 @@ def construct_getatt(node):
     """
 
     if isinstance(node.value, str):
-        return list_node(node.value.split('.'), node.start_mark, node.end_mark)
+        return ListNode(node.value.split('.'), node.start_mark, node.end_mark)
     if isinstance(node.value, list):
-        return list_node([s.value for s in node.value], node.start_mark, node.end_mark)
+        return ListNode([s.value for s in node.value], node.start_mark, node.end_mark)
 
     raise ValueError('Unexpected node type: {}'.format(type(node.value)))
 
