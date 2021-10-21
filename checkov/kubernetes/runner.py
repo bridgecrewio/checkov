@@ -127,6 +127,7 @@ class Runner(BaseRunner):
                             namespace = "default"
                         containerDef["containers"] = containers.pop()
                         if containerDef["containers"] is not None:
+                            containerDef["containers"] = force_list(containerDef["containers"])
                             for cd in containerDef["containers"]:
                                 i = containerDef["containers"].index(cd)
                                 containerDef["containers"][i]["apiVersion"] = entity_conf["apiVersion"]

@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AZURE_22"
+  id: "CKV_AZURE_119"
   name: "Ensure that Network Interfaces don't use public IPs"
   category: "NETWORKING"
 definition:
