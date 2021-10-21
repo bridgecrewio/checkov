@@ -1,4 +1,5 @@
 from typing import Generator, Any, Union
+from checkov.common.util.type_forcers import force_list
 
 
 def get_inner_dict(source_dict, path_as_list):
@@ -38,7 +39,8 @@ def search_deep_keys(searchText, obj, path):
             pathprop = path[:]
             pathprop.append(key)
             if key == searchText:
-                pathprop.append(obj[key])
+                obj_to_add = force_list(obj[key])
+                pathprop.append(obj_to_add)
                 keys.append(pathprop)
                 # pop the last element off for nesting of found elements for
                 # dict and list checks
