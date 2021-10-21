@@ -13,8 +13,6 @@ class TestPlanFileParser(unittest.TestCase):
         dir_path = current_dir + '/resources/parse_file_vs_dir'
         tf_definitions_file = parser.parse_file(file_path)
         _, tf_definitions_dir = parser.parse_hcl_module(dir_path, 'terraform')
-        print(tf_definitions_dir)
-        print(f"\n{tf_definitions_file}")
         self.assertDictEqual(tf_definitions_file, tf_definitions_dir.get(list(tf_definitions_dir.keys())[0]))
 
 
