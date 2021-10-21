@@ -137,7 +137,7 @@ class DictNode(dict):
                 yield self, path[:]
 
     def __getattr__(self, name):
-        raise TemplateAttributeError(f'{self.__name__()}.{name} is invalid')
+        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
 
     @staticmethod
     def __name__():
