@@ -4,7 +4,7 @@ import unittest
 from checkov.terraform.parser import Parser
 
 
-class TestPlanFileParser(unittest.TestCase):
+class TestFileVsDirParser(unittest.TestCase):
 
     def test_file_dir_parser_results_match(self):
         parser = Parser()
