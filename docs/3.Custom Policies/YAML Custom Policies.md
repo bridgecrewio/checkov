@@ -161,7 +161,7 @@ The Custom Policy in this example ensures that all ELBs are attached to security
 | Not Exists | `not_exists` |
 
 ```yaml
-defintion:
+definition:
  and:
       - cond_type: "filter"
         resource_types:
@@ -194,7 +194,7 @@ The logic in the policy definition shown below is:
 
 ```yaml
 #....
-defintion:
+definition:
            and:
                - #filter block 1
                - #block 2
