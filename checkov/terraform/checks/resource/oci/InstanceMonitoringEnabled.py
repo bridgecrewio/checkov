@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class InstanceMonitoringEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "OCI Compute Instance has monitoring disabled"
+        name = "Ensure OCI Compute Instance has monitoring enabled"
         id = "CKV_OCI_6"
         supported_resources = ['oci_core_instance']
         categories = [CheckCategories.GENERAL_SECURITY]
