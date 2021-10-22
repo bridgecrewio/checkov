@@ -1,5 +1,5 @@
 import os
-import unittestgi
+import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.oci.InstanceMetadataServiceEnabled import check
