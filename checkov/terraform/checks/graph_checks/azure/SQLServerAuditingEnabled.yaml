@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV_AZURE_23"
+  name: "Ensure that 'Auditing' is set to 'On' for SQL servers"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_sql_server
+        - azurerm_mssql_server
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - azurerm_sql_server
+        - azurerm_mssql_server
+      attribute: extended_auditing_policy
+      operator: exists

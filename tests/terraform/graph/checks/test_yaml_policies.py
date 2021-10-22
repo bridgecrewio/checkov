@@ -188,6 +188,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_APIProtectedByWAF(self):
         self.go("APIProtectedByWAF")
 
+    def test_SQLServerAuditingEnabled(self):
+        self.go("SQLServerAuditingEnabled")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

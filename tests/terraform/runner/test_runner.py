@@ -228,12 +228,14 @@ class TestRunnerValid(unittest.TestCase):
 
         azure_checks = sorted(list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
         for i in range(1, len(azure_checks) + 1):
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_23':
+                continue  # this rule has been refactored into a v2 graph implementation
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
-                continue  # this rules has been refactored into a v2 graph implementation
+                continue  # this rule has been refactored into a v2 graph implementation
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
