@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class IAMPasswordPolicyNumeric(BaseResourceValueCheck):
     def __init__(self):
-        name = "OCI IAM password policy - must contain Numerica characters"
+        name = "OCI IAM password policy - must contain Numeric characters"
         id = "CKV_OCI_12"
         supported_resources = ['oci_identity_authentication_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
