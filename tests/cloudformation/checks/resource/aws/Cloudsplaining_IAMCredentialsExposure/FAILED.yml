@@ -10,3 +10,5 @@ Resources:
           - Action: 'iam:UpdateAccessKey'
             Effect: Allow
             Resource: '*'
+      Roles:
+        - example_role
