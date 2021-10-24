@@ -425,7 +425,6 @@ class TestRunnerValid(unittest.TestCase):
 
         from checkov.common.models.enums import CheckResult
         from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-        from checkov.terraform.checks.resource.registry import resource_registry
 
         class ResourceCheck(BaseResourceCheck):
 

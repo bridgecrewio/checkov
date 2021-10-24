@@ -5,7 +5,6 @@ import re
 import webbrowser
 from concurrent import futures
 from json import JSONDecodeError
-from os import path
 from time import sleep
 from typing import Optional
 
