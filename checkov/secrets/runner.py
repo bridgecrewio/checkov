@@ -1,6 +1,7 @@
 import linecache
 import logging
 import os
+import platform
 import re
 import time
 from typing import Optional, List
@@ -12,7 +13,7 @@ from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.graph.graph_builder.utils import run_function_multithreaded
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded, run_function_multiprocessing
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -144,7 +145,11 @@ class Runner(BaseRunner):
                     if scan_time > 10:
                         logging.info(f'Scanned {file_path}, took {scan_time} seconds')
 
-            run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
+            if platform.system() == 'Windows':
+                run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
+            else:
+                # the scan_files function is using multiprocessing
+                secrets.scan_files(*files_to_scan, num_processors=os.cpu_count())
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
