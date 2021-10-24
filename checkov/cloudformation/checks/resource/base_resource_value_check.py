@@ -48,7 +48,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param key: JSONPath key of an attribute
         :return: True/False
         """
-        return any([x in key for x in inspected_attributes])
+        return any(x in key for x in inspected_attributes)
+
 
     def scan_resource_conf(self, conf: Dict[StrNode, DictNode]) -> CheckResult:
         inspected_key = self.get_inspected_key()

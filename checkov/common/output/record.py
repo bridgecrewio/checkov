@@ -60,7 +60,7 @@ class Record:
 
     def _is_expression_in_code_lines(self, expression):
         stripped_expression = self._trim_special_chars(expression)
-        return any([stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block])
+        return any(stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block)
 
     @staticmethod
     def _code_line_string(code_block):

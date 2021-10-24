@@ -45,7 +45,7 @@ class Registry(BaseRegistry):
                         check = self.parser.parse_raw_check(
                             check_json, resources_types=self._get_resource_types(check_json)
                         )
-                        if not any([c for c in self.checks if check.id == c.id]):
+                        if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
                                 # Note the external check; used in the should_run_check logic
                                 RunnerFilter.notify_external_check(check.id)
