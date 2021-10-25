@@ -66,7 +66,7 @@ Scheduled scan result in Jenkins
  * Python >= 3.7 (Data classes are available for Python 3.7+)
  * Terraform >= 0.12
 
-### Installation
+### Installation:
 
 ```sh
 pip3 install checkov
@@ -91,7 +91,7 @@ sudo apt install python3-pip
 sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
 ```
 
-or using homebrew (MacOS only)
+or using Homebrew (MacOS only)
 
 ```sh
 brew install checkov
@@ -103,30 +103,30 @@ or
 brew upgrade checkov
 ```
 
-### Upgrade
+### Upgrade:
 
 if you installed checkov with pip3
 ```sh
 pip3 install -U checkov
 ```
 
-### Configure an input folder or file
+### Configure an input folder or file:
 
 ```sh
 checkov --directory /user/path/to/iac/code
 ```
 
-Or a specific file or files
+Or a specific file or files:
 
 ```sh
 checkov --file /user/tf/example.tf
 ```
-Or
+Or,
 ```sh
 checkov -f /user/cloudformation/example1.yml -f /user/cloudformation/example2.yml
 ```
 
-Or a terraform plan file in json format
+Or a terraform plan file in json format:
 ```sh
 terraform init
 terraform plan -out tf.plan
@@ -142,7 +142,7 @@ check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
   ```
 
-If you have installed `jq` you can convert json file into multiple lines with the following command:
+If you have installed `jq` you can convert the json file into multiple lines with the following command:
 ```sh
 terraform show -json tf.plan | jq '.' > tf.json 
 ```
@@ -161,7 +161,7 @@ Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 
 ```
 
-Alternatively, specify the repo root of the hcl files used to generate the plan file, using the `--repo-root-for-plan-enrichment` flag, to enrich the output with the appropriate file path, line numbers, and codeblock of the resource(s). An added benefit is that check suppressions will be handled accordingly.
+Alternatively, specify the repo root of the hcl files is being used to generate the plan file, using the `--repo-root-for-plan-enrichment` flag, to enrich the output with the appropriate file path, line numbers, and codeblock of the resource(s). An added benefit would be that check suppressions will be handled accordingly.
 ```sh
 checkov -f tf.json --repo-root-for-plan-enrichment /user/path/to/iac/code
 ```
@@ -190,11 +190,11 @@ docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
 
-Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
+Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - shall cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
 
 ### Running or skipping checks 
 
-Using command line flags you can specify to run only named checks (allow list) or run all checks except 
+Using command line flags that you can specify to run only named checks (allow list) or run all checks except 
 those listed (deny list).
 
 List available checks:
@@ -298,13 +298,13 @@ For detailed logging to stdout setup the environment variable `LOG_LEVEL` to `DE
 Default is `LOG_LEVEL=WARNING`.
 
 #### Skipping directories
-To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
+To skip files or directories, the argument `--skip-path` can be used,which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
 To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECTORY_ENV` environment variable `export IGNORE_HIDDEN_DIRECTORY_ENV=false`
 
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`.
- Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
+ Kindly note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
 
 #### VSCODE Extension
 
