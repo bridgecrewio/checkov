@@ -7,7 +7,7 @@ class ObjectStorageEmitEvents(BaseResourceValueCheck):
         name = "Ensure OCI Object Storage bucket can emit object events"
         id = "CKV_OCI_7"
         supported_resources = ['oci_objectstorage_bucket']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
