@@ -17,14 +17,14 @@ class TestCloudFrontTLS12(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'AWS::CloudFront::Distribution.cloudfrontdistribution-PASSED1',
-            'AWS::CloudFront::Distribution.cloudfrontdistribution-PASSED2',
-            'AWS::CloudFront::Distribution.cloudfrontdistribution-PASSED3'
+            'AWS::CloudFront::Distribution.cloudfrontdistributionPASSED1',
+            'AWS::CloudFront::Distribution.cloudfrontdistributionPASSED2',
+            'AWS::CloudFront::Distribution.cloudfrontdistributionPASSED3'
         }
 
         failing_resources = {
-            'AWS::CloudFront::Distribution.cloudfrontdistribution-FAILED1',
-            'AWS::CloudFront::Distribution.cloudfrontdistribution-FAILED2'
+            'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED1',
+            'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED2'
         }
         
         passed_check_resources = set([c.resource for c in report.passed_checks])
