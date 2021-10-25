@@ -24,14 +24,15 @@ class TestCloudFrontTLS12(unittest.TestCase):
 
         failing_resources = {
             'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED1',
-            'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED2'
+            'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED2',
+            'AWS::CloudFront::Distribution.cloudfrontdistributionFAILED3',
         }
         
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], 3)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
         self.assertEqual(passing_resources, passed_check_resources)

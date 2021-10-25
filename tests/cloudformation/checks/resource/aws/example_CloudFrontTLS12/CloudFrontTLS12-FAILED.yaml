@@ -51,3 +51,32 @@ Resources:
               OriginProtocolPolicy: "http-only"
             DomainName: "testing"
             Id: "id"
+
+  cloudfrontdistributionFAILED3:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate : true
