@@ -2,7 +2,7 @@ import itertools
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
@@ -77,7 +77,7 @@ class BaseRunner(ABC):
         return checks_results
 
 
-def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Optional[List[str]]) -> None:
+def filter_ignored_paths(root_dir: str, names: List[Union[str, os.DirEntry]], excluded_paths: Optional[List[str]]) -> None:
     # we need to handle legacy logic, where directories to skip could be specified using the env var (default value above)
     # or a directory starting with '.'; these look only at directory basenames, not relative paths.
     #
@@ -97,20 +97,22 @@ def filter_ignored_paths(root_dir: str, names: List[str], excluded_paths: Option
 
     # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
     # mostly this will just remove those problematic directories hardcoded above.
-    for path in list(names):
+    for entry in list(names):
+        path = entry if type(entry) == str else entry.name
         if path in ignored_directories:
-            safe_remove(names,path)
+            safe_remove(names, entry)
         if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:
-            safe_remove(names,path)
+            safe_remove(names, entry)
 
     # now apply the new logic
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
     #  paths specified via the CLI argument will presumably use \\
     if excluded_paths:
-        compiled = [re.compile(p.replace(".terraform", "\.terraform")) for p in excluded_paths]
-        for path in list(names):
+        compiled = [re.compile(p.replace(".terraform", r"\.terraform")) for p in excluded_paths]
+        for entry in list(names):
+            path = entry if type(entry) == str else entry.name
             if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled):
-                names.remove(path)
+                names.remove(entry)
 
 
 def safe_remove(names, path):

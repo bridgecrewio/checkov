@@ -105,6 +105,8 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_extra_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
+        # should load checks recursively
+
         tf_dir_path = current_dir + "/resources/extra_check_test"
         extra_checks_dir_path = [current_dir + "/extra_checks"]
 
@@ -113,7 +115,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CUSTOM_AWS_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
@@ -122,14 +124,14 @@ class TestRunnerValid(unittest.TestCase):
         passing_custom = 0
         failed_custom = 0
         for record in report.passed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 passing_custom = passing_custom + 1
         for record in report.failed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 failed_custom = failed_custom + 1
 
-        self.assertEqual(1, passing_custom)
-        self.assertEqual(2, failed_custom)
+        self.assertEqual(2, passing_custom)
+        self.assertEqual(4, failed_custom)
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
@@ -143,7 +145,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CKV2_CUSTOM_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
@@ -232,6 +234,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
+                continue  # this rules has been refactored into a v2 graph implementation
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
@@ -628,7 +632,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         # this is the relative path to the file to scan (what would actually get passed to the -f arg)
         file_rel_path = os.path.relpath(scan_file_path)
@@ -652,7 +656,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         file_rel_path = os.path.relpath(scan_file_path)
         file_abs_path = os.path.abspath(scan_file_path)
@@ -988,6 +992,21 @@ class TestRunnerValid(unittest.TestCase):
 
         if orig_value:
             os.environ[SCAN_HCL_FLAG] = orig_value
+
+    def test_runner_exclude_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir', 'dir1')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['example.tf']))
+        self.assertEqual(0, len(report.resources))
+
+    def test_runner_exclude_dir(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['dir1']))
+        self.assertEqual(1, len(report.resources))
+
 
     def tearDown(self):
         parser_registry.context = {}

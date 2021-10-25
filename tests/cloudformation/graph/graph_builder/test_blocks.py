@@ -17,4 +17,4 @@ class TestBlocks(TestCase):
 
         block.update_attribute(attribute_key="labels.app.kubernetes.io/name", change_origin_id=0,
                                            attribute_value="dummy value", previous_breadcrumbs=[], attribute_at_dest="")
-        self.assertEquals("dummy value", block.attributes["labels.app.kubernetes.io/name"])
+        self.assertEqual("dummy value", block.attributes["labels.app.kubernetes.io/name"])

@@ -1,0 +1,103 @@
+Description: MSK Cluster with required properties.
+Resources:
+  ClusterBadNoLoggingInfo:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      Tags:
+        - Key: yor_trace
+          Value: "mock_trace"
+  ClusterBadNoLoggingDisabled:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: false
+  ClusterCloudWatchLogsGood:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+  ClusterFirehoseGood:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      LoggingInfo:
+        BrokerLogs:
+          Firehose:
+            Enabled: true
+  Clusters3Good:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      LoggingInfo:
+        BrokerLogs:
+          S3:
+            Enabled: true
+  ClusterAllGood:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      ClusterName: ClusterWithRequiredProperties
+      KafkaVersion: 2.2.1
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets:
+          - ReplaceWithSubnetId1
+          - ReplaceWithSubnetId2
+          - ReplaceWithSubnetId3
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+          Firehose:
+            Enabled: true
+          S3:
+            Enabled: true
+
+

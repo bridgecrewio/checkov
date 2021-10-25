@@ -4,8 +4,8 @@ from typing import List, Any, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser import dict_node
-from checkov.common.parsers.node import str_node
+from checkov.cloudformation.parser import DictNode
+from checkov.common.parsers.node import StrNode
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
@@ -50,7 +50,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         return any([x in key for x in inspected_attributes])
 
-    def scan_resource_conf(self, conf: Dict[str_node, dict_node]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[StrNode, DictNode]) -> CheckResult:
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         path_elements = inspected_key.split("/")

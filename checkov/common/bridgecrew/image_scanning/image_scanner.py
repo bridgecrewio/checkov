@@ -1,5 +1,7 @@
 import logging
 import subprocess  # nosec
+from typing import Union, Dict, Any
+
 import docker
 import json
 import os
@@ -11,7 +13,7 @@ TWISTCLI_FILE_NAME = 'twistcli'
 DOCKER_IMAGE_SCAN_RESULT_FILE_NAME = 'docker-image-scan-results.json'
 
 
-def _get_docker_image_name(docker_image_id):
+def _get_docker_image_name(docker_image_id: str) -> str:
     try:
         docker_client = docker.from_env()
         return docker_client.images.get(docker_image_id).attrs['RepoDigests'][0].split('@')[0]
@@ -20,7 +22,7 @@ def _get_docker_image_name(docker_image_id):
         raise e
 
 
-def _get_dockerfile_content(dockerfile_path):
+def _get_dockerfile_content(dockerfile_path: Union[str, "os.PathLike[str]"]) -> str:
     try:
         with open(dockerfile_path) as f:
             return f.read()
@@ -33,11 +35,16 @@ def _get_dockerfile_content(dockerfile_path):
 
 
 class ImageScanner:
-    def __init__(self):
+    def __init__(self) -> None:
         self.docker_image_name = ''
         self.dockerfile_content = ''
 
-    def setup_scan(self, docker_image_id, dockerfile_path, skip_extract_image_name):
+    def setup_scan(
+        self,
+        docker_image_id: str,
+        dockerfile_path: Union[str, "os.PathLike[str]"],
+        skip_extract_image_name: bool,
+    ) -> None:
         try:
             if skip_extract_image_name:
                 # Provide a default image name in case the image has not been tagged with a name
@@ -45,18 +52,20 @@ class ImageScanner:
             else:
                 self.docker_image_name = _get_docker_image_name(docker_image_id)
             self.dockerfile_content = _get_dockerfile_content(dockerfile_path)
-            docker_image_scanning_integration.download_twistcli(TWISTCLI_FILE_NAME)
+
+            if not os.path.exists(TWISTCLI_FILE_NAME):
+                docker_image_scanning_integration.download_twistcli(TWISTCLI_FILE_NAME)
         except Exception as e:
             logging.error(f"Failed to setup docker image scanning\n{e}")
             raise e
 
     @staticmethod
-    def cleanup_scan():
+    def cleanup_scan() -> None:
         os.remove(TWISTCLI_FILE_NAME)
         logging.info(f'twistcli file removed')
 
     @staticmethod
-    def run_image_scan(docker_image_id):
+    def run_image_scan(docker_image_id: str) -> Dict[str, Any]:
         command_args = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file {DOCKER_IMAGE_SCAN_RESULT_FILE_NAME} {docker_image_id}".split()
         subprocess.run(command_args, check=True, shell=True)  # nosec
         logging.info(f'TwistCLI ran successfully on image {docker_image_id}')
@@ -65,7 +74,7 @@ class ImageScanner:
             scan_result = json.load(docker_image_scan_result_file)
         return scan_result
 
-    def scan(self, docker_image_id, dockerfile_path, skip_extract_image_name=False):
+    def scan(self, docker_image_id: str, dockerfile_path: str, skip_extract_image_name: bool = False) -> None:
         try:
             self.setup_scan(docker_image_id, dockerfile_path, skip_extract_image_name)
             scan_result = self.run_image_scan(docker_image_id)

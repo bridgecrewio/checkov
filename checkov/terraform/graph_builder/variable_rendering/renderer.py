@@ -1,5 +1,5 @@
 import re
-from collections import Hashable
+from collections.abc import Hashable
 from copy import deepcopy
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 

@@ -2,7 +2,7 @@ import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
 from checkov.terraform.context_parsers.tf_plan import parse
-from checkov.common.parsers.node import dict_node, list_node
+from checkov.common.parsers.node import DictNode, ListNode
 
 simple_types = (str, int, float, bool)
 
@@ -33,7 +33,7 @@ def _is_list_of_dicts(l: Any) -> bool:
     return False
 
 
-def _hclify(obj: dict_node, conf: Optional[dict_node] = None, parent_key: Optional[str] = None) -> Dict[str, List[Any]]:
+def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional[str] = None) -> Dict[str, List[Any]]:
     ret_dict = {}
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
@@ -72,7 +72,7 @@ def _hclify(obj: dict_node, conf: Optional[dict_node] = None, parent_key: Option
     return ret_dict
 
 
-def _prepare_resource_block(resource: dict_node, conf: Optional[dict_node]) -> Tuple[Dict[str, Dict[str, Any]], bool]:
+def _prepare_resource_block(resource: DictNode, conf: Optional[DictNode]) -> Tuple[Dict[str, Dict[str, Any]], bool]:
     """hclify resource if pre-conditions met.
 
     :param resource: tf planned_values resource block
@@ -98,7 +98,7 @@ def _prepare_resource_block(resource: dict_node, conf: Optional[dict_node]) -> T
     return resource_block, prepared
 
 
-def _find_child_modules(child_modules: list_node) -> List[Dict[str, Dict[str, Any]]]:
+def _find_child_modules(child_modules: ListNode) -> List[Dict[str, Dict[str, Any]]]:
     """
     Find all child modules if any. Including any amount of nested child modules.
     :type: child_modules: list of tf child_module objects

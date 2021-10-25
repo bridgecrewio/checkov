@@ -9,7 +9,7 @@ from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
 from checkov.cloudformation.parser import parse, TemplateSections
-from checkov.common.parsers.node import dict_node, list_node, str_node
+from checkov.common.parsers.node import DictNode, ListNode, StrNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.models.consts import YAML_COMMENT_MARK
@@ -17,7 +17,7 @@ from checkov.common.models.consts import YAML_COMMENT_MARK
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
 
 
-def get_resource_tags(entity: Dict[str_node, dict_node], registry: Registry = cfn_registry) -> Optional[Dict[str, str]]:
+def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_registry) -> Optional[Dict[str, str]]:
     entity_details = registry.extract_entity_details(entity)
 
     if not entity_details:
@@ -40,8 +40,8 @@ def get_resource_tags(entity: Dict[str_node, dict_node], registry: Registry = cf
     return None
 
 
-def parse_entity_tags(tags: Union[list_node, Dict[str, Any]]) -> Optional[Dict[str, str]]:
-    if isinstance(tags, list_node):
+def parse_entity_tags(tags: Union[ListNode, Dict[str, Any]]) -> Optional[Dict[str, str]]:
+    if isinstance(tags, ListNode):
         tag_dict = {get_entity_value_as_string(tag["Key"]): get_entity_value_as_string(tag["Value"]) for tag in tags}
         return tag_dict
     elif isinstance(tags, dict):
@@ -92,7 +92,7 @@ def get_entity_value_as_string(value: Any) -> str:
 
 def get_folder_definitions(
     root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
-) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
+) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -102,13 +102,13 @@ def get_folder_definitions(
             if file_ending in CF_POSSIBLE_ENDINGS:
                 files_list.append(os.path.join(root, file))
 
-    definitions: Dict[str, dict_node] = {}
+    definitions: Dict[str, DictNode] = {}
     definitions_raw: Dict[str, List[Tuple[int, str]]] = {}
     for file in files_list:
         relative_file_path = f"/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}"
         try:
             template, template_lines = parse(file, out_parsing_errors)
-            if isinstance(template, dict_node) and isinstance(template.get("Resources"), dict_node):
+            if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
                 definitions[relative_file_path] = template
                 definitions_raw[relative_file_path] = template_lines
             else:
@@ -124,7 +124,7 @@ def get_folder_definitions(
 
 
 def build_definitions_context(
-    definitions: Dict[str, dict_node], definitions_raw: Dict[str, List[Tuple[int, str]]], root_folder: str
+    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]], root_folder: str
 ) -> Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     # iterate on the files
@@ -132,13 +132,13 @@ def build_definitions_context(
         # iterate on the definitions (Parameters, Resources, Outputs...)
         for file_path_definition, definition in file_path_definitions.items():
             if (
-                isinstance(file_path_definition, str_node)
+                isinstance(file_path_definition, StrNode)
                 and file_path_definition.upper() in TemplateSections.__members__
-                and isinstance(definition, dict_node)
+                and isinstance(definition, DictNode)
             ):
                 # iterate on the actual objects of each definition
                 for attribute, attr_value in definition.items():
-                    if isinstance(attr_value, dict_node):
+                    if isinstance(attr_value, DictNode):
                         start_line = attr_value.start_mark.line
                         end_line = attr_value.end_mark.line
                         # fix lines number for yaml and json files
@@ -193,7 +193,7 @@ def create_definitions(
     files: Optional[List[str]] = None,
     runner_filter: RunnerFilter = RunnerFilter(),
     out_parsing_errors: Dict[str, str] = {}
-) -> Tuple[Dict[str, dict_node], Dict[str, List[Tuple[int, str]]]]:
+) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
     if files:
@@ -209,7 +209,7 @@ def create_definitions(
     definitions = {
         k: v
         for k, v in definitions.items()
-        if v and isinstance(v, dict_node) and v.__contains__("Resources") and isinstance(v["Resources"], dict_node)
+        if v and isinstance(v, DictNode) and v.__contains__("Resources") and isinstance(v["Resources"], DictNode)
     }
     definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
     return definitions, definitions_raw

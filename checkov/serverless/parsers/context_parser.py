@@ -1,4 +1,4 @@
-from checkov.common.parsers.node import dict_node, list_node, str_node
+from checkov.common.parsers.node import DictNode, ListNode, StrNode
 from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
     ENVIRONMENT_TOKEN, STACK_TAGS_TOKEN, TAGS_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
@@ -45,7 +45,7 @@ class ContextParser(object):
         :param sls_function_name: scanned function
         :return: None
         """
-        if not self.provider_conf or not isinstance(self.provider_conf, dict_node):
+        if not self.provider_conf or not isinstance(self.provider_conf, DictNode):
             return
 
         for src_attribute, dst_enriched_attribute in self.ENRICHED_ATTRIBUTES:
@@ -61,15 +61,15 @@ class ContextParser(object):
                 if not isinstance(function_attribute, type(provider_attribute)):
                     # Do not enrich maps with strings etc
                     continue
-                if isinstance(template_function[dst_enriched_attribute], list_node):
+                if isinstance(template_function[dst_enriched_attribute], ListNode):
                     template_function[dst_enriched_attribute].extend(provider_attribute)
-                if isinstance(template_function[dst_enriched_attribute], dict_node):
+                if isinstance(template_function[dst_enriched_attribute], DictNode):
                     template_function[dst_enriched_attribute].update(provider_attribute)
             else:
                 template_function[dst_enriched_attribute] = provider_attribute
 
     def _infer_provider_type(self):
-        if isinstance(self.provider_conf, dict_node):
+        if isinstance(self.provider_conf, DictNode):
             return self.provider_conf.get('name')
-        if isinstance(self.provider_conf, str_node):
+        if isinstance(self.provider_conf, StrNode):
             return self.provider_conf

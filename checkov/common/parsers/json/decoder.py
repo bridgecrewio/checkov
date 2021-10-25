@@ -2,7 +2,7 @@ from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
 from json.scanner import NUMBER_RE
 
-from checkov.common.parsers.node import str_node, dict_node, list_node
+from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
 
 
@@ -227,7 +227,7 @@ class Decoder(JSONDecoder):
         values, end = JSONArray(s_and_end, scan_once, **kwargs)
         s, start = s_and_end
         beg_mark, end_mark = get_beg_end_mark(s, start, end, self.newline_indexes)
-        return list_node(values, beg_mark, end_mark), end
+        return ListNode(values, beg_mark, end_mark), end
 
     def json_object(self, s_and_end, strict, scan_once, object_hook, object_pairs_hook,
                     memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
@@ -295,7 +295,7 @@ class Decoder(JSONDecoder):
                 value, end = scan_once(s, end)
             except StopIteration as err:
                 raise DecodeError('Expecting value', s, str(err))
-            key_str = str_node(key, beg_mark, end_mark)
+            key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
             try:
                 nextchar = s[end]
@@ -338,7 +338,7 @@ class Decoder(JSONDecoder):
             because a dict does not support this. It overwrites it with the last
             occurance, which can give unexpected results
         """
-        mapping = dict_node({}, beg_mark, end_mark)
+        mapping = DictNode({}, beg_mark, end_mark)
         for key, value in ordered_pairs:
             if not self.allow_nulls and value is None:
                 raise NullError('"{}"'.format(key))

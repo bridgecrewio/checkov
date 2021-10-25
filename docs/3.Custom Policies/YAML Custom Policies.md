@@ -161,13 +161,13 @@ The Custom Policy in this example ensures that all ELBs are attached to security
 | Not Exists | `not_exists` |
 
 ```yaml
-defintion:
+definition:
  and:
       - cond_type: "filter"
-        resource_types:
+        attribute: "resource_type"
+        value:
            - "aws_elb"
-        attribute: “resource_type”
-        operator: "within”
+        operator: "within"
       - cond_type: "connection"
         resource_types:
            - "aws_elb"

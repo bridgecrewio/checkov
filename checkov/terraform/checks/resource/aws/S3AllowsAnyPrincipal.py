@@ -30,7 +30,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                     if 'AWS' in statement['Principal']:
                         # Can be a string or an array of strings
                         aws = statement['Principal']['AWS']
-                        if (isinstance(aws, str) and aws is '*') or (isinstance(aws, list) and '*' in aws):
+                        if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
                             return CheckResult.FAILED
         except: # nosec
             pass

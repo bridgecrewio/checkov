@@ -109,10 +109,13 @@ class Parser:
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
-    @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+    def parse_file(self, file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
         if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
-            return _load_or_die_quietly(Path(file), parsing_errors)
+            parse_result = _load_or_die_quietly(Path(file), parsing_errors)
+            if parse_result:
+                parse_result = self._serialize_definitions(parse_result)
+                parse_result = self._clean_parser_types(parse_result)
+                return parse_result
         else:
             return None
 
@@ -148,11 +151,12 @@ class Parser:
 
         if include_sub_dirs:
             for sub_dir, d_names, f_names in os.walk(self.directory):
+                # filter subdirectories for future iterations (we filter files while iterating the directory)
                 _filter_ignored_paths(sub_dir, d_names, self.excluded_paths)
-                _filter_ignored_paths(sub_dir, f_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
                     self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
-                                            keys_referenced_as_modules, vars_files=vars_files)
+                                            keys_referenced_as_modules, vars_files=vars_files,
+                                            root_dir=self.directory, excluded_paths=self.excluded_paths)
         else:
             self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
                                     keys_referenced_as_modules, vars_files=vars_files)
@@ -168,7 +172,9 @@ class Parser:
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
                            module_load_context: Optional[str] = None,
-                           vars_files: Optional[List[str]] = None):
+                           vars_files: Optional[List[str]] = None,
+                           root_dir: Optional[str] = None,
+                           excluded_paths: Optional[List[str]] = None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
@@ -191,7 +197,12 @@ class Parser:
         json_tfvars: Optional[os.DirEntry] = None
         auto_vars_files: List[os.DirEntry] = []  # *.auto.tfvars / *.auto.tfvars.json
         explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
-        for file in os.scandir(directory):
+
+        dir_contents = list(os.scandir(directory))
+        if excluded_paths:
+            filter_ignored_paths(root_dir, dir_contents, excluded_paths)
+
+        for file in dir_contents:
             # Ignore directories and hidden files
             try:
                 if not file.is_file() or file.name.startswith("."):

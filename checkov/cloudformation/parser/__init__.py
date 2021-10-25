@@ -3,7 +3,7 @@ from typing import Tuple, List, Union, Dict
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.common.parsers.json import parse as json_parse
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.parser import ScannerError
 from yaml import YAMLError
@@ -11,7 +11,7 @@ from yaml import YAMLError
 LOGGER = logging.getLogger(__name__)
 
 
-def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple[dict_node, List[Tuple[int, str]]], Tuple[None, None]]:
+def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple[DictNode, List[Tuple[int, str]]], Tuple[None, None]]:
     """
         Decode filename into an object
     """

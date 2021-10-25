@@ -1,6 +1,6 @@
 import json
 
-from checkov.common.parsers.node import str_node
+from checkov.common.parsers.node import StrNode
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -23,7 +23,7 @@ class ECRPolicy(BaseResourceCheck):
         if 'Properties' in conf.keys():
             if 'RepositoryPolicyText' in conf['Properties'].keys():
                 policy_text = conf['Properties']['RepositoryPolicyText']
-                if type(policy_text) in (str, str_node):
+                if type(policy_text) in (str, StrNode):
                     policy_text = json.loads(str(policy_text))
                 if 'Statement' in policy_text.keys():
                     for statement in policy_text['Statement']:

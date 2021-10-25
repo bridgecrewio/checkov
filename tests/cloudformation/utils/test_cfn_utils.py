@@ -2,7 +2,7 @@ import os
 import unittest
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.cloudformation.parser import TemplateSections
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -17,7 +17,7 @@ class TestCfnUtils(unittest.TestCase):
         definitions, definitions_raw = get_folder_definitions(self.test_root_dir, None)
         self.definitions_context = build_definitions_context(definitions, definitions_raw, self.test_root_dir)
 
-    def validate_definition_lines(self, definition: dict_node, start_line, end_line, code_lines):
+    def validate_definition_lines(self, definition: DictNode, start_line, end_line, code_lines):
         self.assertEqual(definition['start_line'], start_line)
         self.assertEqual(definition['end_line'], end_line)
         self.assertEqual(len(definition['code_lines']), code_lines)

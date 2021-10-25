@@ -1,5 +1,5 @@
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.parsers.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 
@@ -11,7 +11,7 @@ class RedShiftSSL(BaseResourceCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict_node) -> CheckResult:
+    def scan_resource_conf(self, conf: DictNode) -> CheckResult:
         params = conf.get("Properties", {}).get("Parameters", {})
 
         for param in params:

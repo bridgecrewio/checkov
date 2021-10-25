@@ -5,7 +5,7 @@ from functools import reduce
 from typing import List, Tuple, Optional, Union, Generator
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.parsers.node import dict_node, str_node, list_node
+from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.typing import _SkippedCheck
 
@@ -18,7 +18,7 @@ class ContextParser(object):
     CloudFormation template context parser
     """
 
-    def __init__(self, cf_file: str, cf_template: dict_node, cf_template_lines: List[Tuple[int, str]]) -> None:
+    def __init__(self, cf_file: str, cf_template: DictNode, cf_template_lines: List[Tuple[int, str]]) -> None:
         self.cf_file = cf_file
         self.cf_template = cf_template
         self.cf_template_lines = cf_template_lines
@@ -46,7 +46,7 @@ class ContextParser(object):
                 # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
     @staticmethod
-    def extract_cf_resource_id(cf_resource: dict_node, cf_resource_name: str_node) -> Optional[str]:
+    def extract_cf_resource_id(cf_resource: DictNode, cf_resource_name: StrNode) -> Optional[str]:
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
             return None
         if "Type" not in cf_resource:
@@ -55,7 +55,7 @@ class ContextParser(object):
         return f"{cf_resource['Type']}.{cf_resource_name}"
 
     def extract_cf_resource_code_lines(
-        self, cf_resource: dict_node
+        self, cf_resource: DictNode
     ) -> Tuple[Optional[List[int]], Optional[List[Tuple[int, str]]]]:
         find_lines_result_set = set(self.find_lines(cf_resource, STARTLINE))
         if len(find_lines_result_set) >= 1:
@@ -92,7 +92,7 @@ class ContextParser(object):
         return code_lines[start:end]
 
     @staticmethod
-    def find_lines(node: Union[list_node, dict_node], kv: str) -> Generator[int, None, None]:
+    def find_lines(node: Union[ListNode, DictNode], kv: str) -> Generator[int, None, None]:
         # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker
@@ -137,7 +137,7 @@ class ContextParser(object):
 
     @staticmethod
     def search_deep_keys(
-        search_text: str, cfn_dict: Union[str_node, list_node, dict_node], path: List[str]
+        search_text: str, cfn_dict: Union[StrNode, ListNode, DictNode], path: List[str]
     ) -> List[List[Union[int, str]]]:
         """Search deep for keys and get their values"""
         keys: List[List[Union[int, str]]] = []
@@ -166,7 +166,7 @@ class ContextParser(object):
 
         return keys
 
-    def _set_in_dict(self, data_dict: dict_node, map_list: List[Union[int, str]], value: str_node) -> None:
+    def _set_in_dict(self, data_dict: DictNode, map_list: List[Union[int, str]], value: StrNode) -> None:
         v = self._get_from_dict(data_dict, map_list[:-1])
         # save the original marks so that we do not copy in the line numbers of the parameter element
         # but not all ref types will have these attributes
@@ -183,5 +183,5 @@ class ContextParser(object):
             v[map_list[-1]].end_mark = end
 
     @staticmethod
-    def _get_from_dict(data_dict: dict_node, map_list: List[Union[int, str]]) -> Union[list_node, dict_node]:
+    def _get_from_dict(data_dict: DictNode, map_list: List[Union[int, str]]) -> Union[ListNode, DictNode]:
         return reduce(operator.getitem, map_list, data_dict)
