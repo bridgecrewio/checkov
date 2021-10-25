@@ -7,7 +7,7 @@ class InstanceMonitoringEnabled(BaseResourceValueCheck):
         name = "Ensure OCI Compute Instance has monitoring enabled"
         id = "CKV_OCI_6"
         supported_resources = ['oci_core_instance']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
