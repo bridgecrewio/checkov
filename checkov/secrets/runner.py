@@ -151,7 +151,7 @@ class Runner(BaseRunner):
             if platform.system() == 'Windows':
                 run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
             else:
-                Runner._scan_files_multiprocess(files_to_scan, secrets)
+                Runner._scan_files_multiprocess(files_to_scan, secrets, num_of_workers=os.cpu_count())
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -188,18 +188,23 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files_multiprocess(files_to_scan, secrets):
+    def _scan_files_multiprocess(files_to_scan, secrets, num_of_workers):
         # implemented the function like secrets.scan_files without using Pool object
-        def _scan_file(filename, connection):
-            results = list(scan.scan_file(filename))
+        def _scan_files(files, connection):
+            results = []
+            for file in files:
+                filename = os.path.join(secrets.root, file)
+                results += list(scan.scan_file(filename))
             connection.send(results)
             connection.close()
 
+        max_group_size = int(len(files_to_scan) / num_of_workers) + 1
+        groups_of_files = [files_to_scan[i: i + max_group_size] for i in range(0, len(files_to_scan), max_group_size)]
         processes = []
-        for file in files_to_scan:
+        for files_group in groups_of_files:
             parent_conn, child_conn = Pipe(duplex=False)
-            process = multiprocessing.get_context("fork").Process(target=_scan_file,
-                                                                  args=(os.path.join(secrets.root, file), child_conn))
+            process = multiprocessing.get_context("fork").Process(
+                target=_scan_files, args=(files_group, child_conn))
             processes.append((process, parent_conn))
             process.start()
 
