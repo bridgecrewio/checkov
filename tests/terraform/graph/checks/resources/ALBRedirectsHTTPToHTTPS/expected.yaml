@@ -2,6 +2,8 @@ pass:
   - "aws_lb.lb_good_1"
   - "aws_lb.lb_good_2"
   - "aws_lb.lb_good_3"
+  - "aws_alb.alb_good_1"
 fail:
   - "aws_lb.lb_bad_1"
   - "aws_lb.lb_bad_2"
+  - "aws_alb.alb_bad_1"

@@ -16,8 +16,14 @@ class TestALBListenerHTTPS(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_success(self):
+    def test_success_1(self):
         resource_conf = {'load_balancer_arn': ['${aws_lb.front_end.arn}'], 'port': ['443'], 'protocol': ['HTTPS']}
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_2(self):
+        resource_conf = {'load_balancer_arn': ['${aws_alb.front_end.arn}'], 'port': ['443'], 'protocol': ['HTTPS']}
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
@@ -40,8 +46,13 @@ class TestALBListenerHTTPS(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_failure(self):
+    def test_failure_1(self):
         resource_conf = {'load_balancer_arn': ['${aws_lb.front_end.arn}'], 'port': ['80'], 'protocol': ['HTTP']}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_failure_2(self):
+        resource_conf = {'load_balancer_arn': ['${aws_alb.front_end.arn}'], 'port': ['80'], 'protocol': ['HTTP']}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
