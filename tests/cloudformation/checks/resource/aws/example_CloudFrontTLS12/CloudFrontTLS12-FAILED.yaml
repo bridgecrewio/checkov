@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This template deploys CloudFront Distribution"
+Resources:
+  cloudfrontdistribution-FAILED1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: string-value
+                LambdaFunctionARN: string-value
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: string-value
+              LambdaFunctionARN: string-value
+        IPV6Enabled: boolean-value
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: integer-value
+              OriginReadTimeout: integer-value
+        ViewerCertificate:
+          AcmCertificateArn:
+            Ref: SSLCertificate
+          MinimumProtocolVersion: SSLv3
+          SslSupportMethod: sni-only
+
+  cloudfrontdistribution-FAILED2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: string-value
+                LambdaFunctionARN: string-value
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: string-value
+              LambdaFunctionARN: string-value
+        IPV6Enabled: boolean-value
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: integer-value
+              OriginReadTimeout: integer-value

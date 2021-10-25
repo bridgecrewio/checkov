@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This template deploys CloudFront Distribution"
+Resources:
+  cloudfrontdistribution-PASSED1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: string-value
+                LambdaFunctionARN: string-value
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: string-value
+              LambdaFunctionARN: string-value
+        IPV6Enabled: boolean-value
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: integer-value
+              OriginReadTimeout: integer-value
+        ViewerCertificate:
+          AcmCertificateArn:
+            Ref: SSLCertificate
+          MinimumProtocolVersion: TLSv1.2_2018
+          SslSupportMethod: sni-only
+
+  cloudfrontdistribution-PASSED2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: string-value
+                LambdaFunctionARN: string-value
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: string-value
+              LambdaFunctionARN: string-value
+        IPV6Enabled: boolean-value
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: integer-value
+              OriginReadTimeout: integer-value
+        ViewerCertificate:
+          AcmCertificateArn:
+            Ref: SSLCertificate
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+
+  cloudfrontdistribution-PASSED3:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: string-value
+                LambdaFunctionARN: string-value
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: string-value
+              LambdaFunctionARN: string-value
+        IPV6Enabled: boolean-value
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: integer-value
+              OriginReadTimeout: integer-value
+        ViewerCertificate:
+          AcmCertificateArn:
+            Ref: SSLCertificate
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
