@@ -152,7 +152,9 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
-            if len(report_jsons) == 1:
+            if not report_jsons:
+                print(json.dumps(Report(None).get_summary(), indent=4))
+            elif len(report_jsons) == 1:
                 print(json.dumps(report_jsons[0], indent=4))
             else:
                 print(json.dumps(report_jsons, indent=4))
