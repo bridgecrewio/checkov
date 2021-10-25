@@ -247,20 +247,27 @@ class Parser:
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
             self.external_variables_data.append((key[7:], value, f"env:{key}"))
         if hcl_tfvars:  # terraform.tfvars
-            jobs.append(executor.submit(self._load_hcl_tfvars_file, hcl_tfvars, var_value_and_file_map))
+            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, clean_definitions=False)
+            if data:
+                var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
         if json_tfvars:  # terraform.tfvars.json
-            jobs.append(executor.submit(self._load_json_tfvars_file, json_tfvars, var_value_and_file_map))
-        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
-            jobs.append(executor.submit(self._load_auto_var_file, var_file, var_value_and_file_map))
-
-        concurrent.futures.wait(jobs)
-        jobs = []
+            data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
+            if data:
+                var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
+        auto_var_files_to_data = executor.map(self._file_to_load_or_die_quietly_result, auto_vars_files)
+        for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0].name):
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
 
         # it's possible that os.scandir returned the var files in a different order than they were specified
-        explicit_var_files.sort(key=lambda f: vars_files.index(f.path))
-        for var_file in explicit_var_files:
-            jobs.append(executor.submit(self._load_explicit_var_file, var_file, var_value_and_file_map))
-        concurrent.futures.wait(jobs)
+        explicit_var_files_to_data = executor.map(self._file_to_load_or_die_quietly_result, explicit_var_files)
+        for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0].path)):
+            if data:
+                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
 
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
@@ -323,24 +330,8 @@ class Parser:
                         self.external_variables_data.append((var_name, default_value[0], file.path))
                         var_value_and_file_map[var_name] = default_value[0], file.path
 
-    def _load_hcl_tfvars_file(self, hcl_tfvars, var_value_and_file_map):
-        data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors,
-                                    clean_definitions=False)
-        if data:
-            var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
-            self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
-
-    def _load_json_tfvars_file(self, json_tfvars, var_value_and_file_map):
-        data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
-        if data:
-            var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
-            self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-
-    def _load_auto_var_file(self, var_file, var_value_and_file_map):
-        data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-        if data:
-            var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-            self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+    def _file_to_load_or_die_quietly_result(self, file):
+        return file, _load_or_die_quietly(file, self.out_parsing_errors)
 
     def _load_explicit_var_file(self, var_file, var_value_and_file_map):
         data = _load_or_die_quietly(var_file, self.out_parsing_errors)
