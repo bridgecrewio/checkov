@@ -14,7 +14,7 @@ class ObjectStorageVersioning(BaseResourceValueCheck):
         return "versioning"
 
     def get_expected_value(self):
-        return True
+        return "Enabled"
 
 
 check = ObjectStorageVersioning()
