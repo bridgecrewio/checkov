@@ -308,7 +308,7 @@ You can override the default set of directories to skip by setting the environme
 
 #### VSCODE Extension
 
-If you want to use checkov's within vscode, give a try to the vscode extension availble at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use checkov's within vscode, give a try to the vscode extension available at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
 ### Configuration using a config file
 
