@@ -1,19 +1,22 @@
 import linecache
 import logging
+import multiprocessing
 import os
 import platform
 import re
 import time
+from multiprocessing import Pipe
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
+from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.graph.graph_builder.utils import run_function_multithreaded, run_function_multiprocessing
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -148,8 +151,7 @@ class Runner(BaseRunner):
             if platform.system() == 'Windows':
                 run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
             else:
-                # the scan_files function is using multiprocessing
-                secrets.scan_files(*files_to_scan, num_processors=os.cpu_count())
+                Runner._scan_files_multiprocess(files_to_scan, secrets)
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -184,6 +186,27 @@ class Runner(BaseRunner):
                 ))
 
             return report
+
+    @staticmethod
+    def _scan_files_multiprocess(files_to_scan, secrets):
+        # implemented the function like secrets.scan_files without using Pool object
+        def _scan_file(filename, connection):
+            results = list(scan.scan_file(filename))
+            connection.send(results)
+            connection.close()
+
+        processes = []
+        for file in files_to_scan:
+            parent_conn, child_conn = Pipe(duplex=False)
+            process = multiprocessing.get_context("fork").Process(target=_scan_file,
+                                                                  args=(os.path.join(secrets.root, file), child_conn))
+            processes.append((process, parent_conn))
+            process.start()
+
+        for process, parent_conn in processes:
+            secrets_results = parent_conn.recv()
+            for secret in secrets_results:
+                secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
 
     @staticmethod
     def search_for_suppression(
