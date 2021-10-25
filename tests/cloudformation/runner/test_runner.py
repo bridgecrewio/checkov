@@ -82,7 +82,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{file_rel_path}'.replace('\\', '/'))
+            self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
     def test_record_relative_path_with_abs_file(self):
 
@@ -104,7 +104,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{file_rel_path}'.replace('\\', '/'))
+            self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
     def test_record_includes_custom_guideline(self):
         custom_guideline_url = "https://my.custom.url"
