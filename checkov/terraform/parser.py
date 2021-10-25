@@ -109,10 +109,13 @@ class Parser:
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
-    @staticmethod
-    def parse_file(file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+    def parse_file(self, file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
         if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
-            return _load_or_die_quietly(Path(file), parsing_errors)
+            parse_result = _load_or_die_quietly(Path(file), parsing_errors)
+            if parse_result:
+                parse_result = self._serialize_definitions(parse_result)
+                parse_result = self._clean_parser_types(parse_result)
+                return parse_result
         else:
             return None
 
