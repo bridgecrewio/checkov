@@ -115,7 +115,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CUSTOM_AWS_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
@@ -145,7 +145,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CKV2_CUSTOM_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
