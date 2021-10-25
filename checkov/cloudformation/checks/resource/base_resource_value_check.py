@@ -61,7 +61,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # The tesult is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
                 # those, allowing inspected_keys in checks to use the same syntax.
                 for i in range(0, len(match)):
-                    if type(match[i]) == int:
+                    if type(match[i]) is int:
                         match[i] = f"[{match[i]}]"
 
                 if match[:-1] == path_elements:

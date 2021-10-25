@@ -98,7 +98,7 @@ def filter_ignored_paths(root_dir: str, names: List[Union[str, os.DirEntry]], ex
     # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
     # mostly this will just remove those problematic directories hardcoded above.
     for entry in list(names):
-        path = entry if type(entry) == str else entry.name
+        path = entry if type(entry) is str else entry.name
         if path in ignored_directories:
             safe_remove(names, entry)
         if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:

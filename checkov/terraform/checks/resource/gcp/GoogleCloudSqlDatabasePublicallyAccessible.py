@@ -26,7 +26,7 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
                 for network in auth_networks:
                     if 'value' in network:
                         val = network['value']
-                        if type(val) == list:  # handle possible parsing discrepancies
+                        if type(val) is list:  # handle possible parsing discrepancies
                             val = val[0]
                         if val.endswith('/0'):
                             self.evaluated_keys = [f'settings/[0]/ip_configuration/authorized_networks/[0]/value',

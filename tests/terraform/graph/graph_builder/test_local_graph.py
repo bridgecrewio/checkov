@@ -72,7 +72,7 @@ class TestLocalGraph(TestCase):
             vertex_index = local_graph.vertices_block_name_map[BlockType.VARIABLE].get(var_name)[0]
             vertex = local_graph.vertices[vertex_index]
             default_val = vertex.attributes['default']
-            if type(default_val) == list:
+            if type(default_val) is list:
                 self.assertEqual(var_value, default_val[0])
             else:
                 self.assertEqual(var_value, default_val)
@@ -96,7 +96,7 @@ class TestLocalGraph(TestCase):
             vertex_index = local_graph.vertices_block_name_map[BlockType.VARIABLE].get(var_name)[0]
             vertex = local_graph.vertices[vertex_index]
             default_val = vertex.attributes['default']
-            if type(default_val) == list:
+            if type(default_val) is list:
                 self.assertEqual(var_value, default_val[0])
             else:
                 self.assertEqual(var_value, default_val)

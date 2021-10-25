@@ -32,7 +32,7 @@ class S3ProtectAgainstPolicyLockout(BaseResourceCheck):
                     if 'AWS' in statement['Principal']:
                         # Can be a string or an array of strings
                         aws = statement['Principal']['AWS']
-                        if (type(aws) == str and aws == '*') or (type(aws) == list and '*' in aws):
+                        if (type(aws) is str and aws == '*') or (type(aws) is list and '*' in aws):
                             return CheckResult.FAILED
 
                     action = statement['Action']
@@ -41,7 +41,7 @@ class S3ProtectAgainstPolicyLockout(BaseResourceCheck):
                     if 's3' in statement['Action']:
                         # Can be a string or an array of strings
                         s3 = statement['Action']['s3']
-                        if (type(s3) == str and s3 == '*') or (type(s3) == list and '*' in s3):
+                        if (type(s3) is str and s3 == '*') or (type(s3) is list and '*' in s3):
                             return CheckResult.FAILED
         except: # nosec
             pass
