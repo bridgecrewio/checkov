@@ -1,11 +1,9 @@
 import linecache
 import logging
-import multiprocessing
 import os
 import platform
 import re
 import time
-from multiprocessing import Pipe
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
@@ -16,7 +14,7 @@ from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.graph.graph_builder.utils import run_function_multithreaded
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded, run_function_multiprocess
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -190,26 +188,15 @@ class Runner(BaseRunner):
     @staticmethod
     def _scan_files_multiprocess(files_to_scan, secrets, num_of_workers):
         # implemented the function like secrets.scan_files without using Pool object
-        def _scan_files(files, connection):
+        def _scan_files(files):
             results = []
             for file in files:
                 filename = os.path.join(secrets.root, file)
                 results += list(scan.scan_file(filename))
-            connection.send(results)
-            connection.close()
+            return results
 
-        max_group_size = int(len(files_to_scan) / num_of_workers) + 1
-        groups_of_files = [files_to_scan[i: i + max_group_size] for i in range(0, len(files_to_scan), max_group_size)]
-        processes = []
-        for files_group in groups_of_files:
-            parent_conn, child_conn = Pipe(duplex=False)
-            process = multiprocessing.get_context("fork").Process(
-                target=_scan_files, args=(files_group, child_conn))
-            processes.append((process, parent_conn))
-            process.start()
-
-        for process, parent_conn in processes:
-            secrets_results = parent_conn.recv()
+        results = run_function_multiprocess(_scan_files, files_to_scan)
+        for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
 

@@ -1,7 +1,10 @@
 import concurrent
 import hashlib
 import json
-from typing import Union, List, Dict, Any, Callable, Optional
+import multiprocessing
+import os
+from multiprocessing import Pipe
+from typing import Union, List, Dict, Any, Callable, Optional, Generator
 import concurrent.futures
 
 
@@ -43,3 +46,28 @@ def run_function_multithreaded(
                     future.result()
                 except Exception as e:
                     raise e
+
+
+def run_function_multiprocess(
+    func: Callable[..., Any], data: List[Any], const_params: List[Any] = [], num_of_workers: Optional[int] = None
+) -> Generator[Any, None, None]:
+    if not num_of_workers:
+        num_of_workers = os.cpu_count()
+    max_group_size = int(len(data) / num_of_workers) + 1
+    groups_of_data = [data[i: i + max_group_size] for i in range(0, len(data), max_group_size)]
+
+    def func_wrapper(original_func, data_group, params, connection):
+        results = original_func(data_group, *params)
+        connection.send(results)
+        connection.close()
+
+    processes = []
+    for group_of_data in groups_of_data:
+        parent_conn, child_conn = Pipe(duplex=False)
+        process = multiprocessing.get_context("fork").Process(target=func_wrapper,
+                                                              args=(func, group_of_data, const_params, child_conn))
+        processes.append((process, parent_conn))
+        process.start()
+
+    for process, parent_conn in processes:
+        yield parent_conn.recv()

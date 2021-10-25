@@ -1,9 +1,11 @@
 import logging
 import operator
 import os
+import platform
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.graph.graph_builder.utils import run_function_multiprocess
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
@@ -30,10 +32,14 @@ class Runner(BaseRunner):
                 registry.load_external_checks(directory)
 
         if files:
-            for file in files:
-                parse_result = parse(file)
-                if parse_result:
-                    (definitions[file], definitions_raw[file]) = parse_result
+            if platform.system() == 'Windows':
+                for file in files:
+                    parse_result = parse(file)
+                    if parse_result:
+                        (definitions[file], definitions_raw[file]) = parse_result
+            else:
+
+                self._run_parse_files_multiprocess(files, definitions, definitions_raw, os.cpu_count())
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
@@ -48,15 +54,22 @@ class Runner(BaseRunner):
                             # skip temp directories
                             files_list.append(full_path)
 
+            files_to_relative_path = {}
             for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                try:
-                    parse_result = parse(file)
-                    if parse_result:
-                        (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
-                except (TypeError, ValueError) as e:
-                    logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
-                    continue
+                files_to_relative_path[file] = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
+            if platform.system() == 'Windows':
+                for file in files_list:
+                    try:
+                        parse_result = parse(file)
+                        if parse_result:
+                            relative_file_path = files_to_relative_path[file]
+                            (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+                    except (TypeError, ValueError) as e:
+                        logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+                        continue
+            else:
+                self._run_parse_files_multiprocess(files_list, definitions, definitions_raw, os.cpu_count(),
+                                                   files_to_relative_path)
 
         for k8_file in definitions.keys():
 
@@ -201,6 +214,25 @@ class Runner(BaseRunner):
 
         return report
 
+    @staticmethod
+    def _run_parse_files_multiprocess(files, definitions, definitions_raw, num_of_workers,
+                                      files_to_relative_path=None):
+        def _parse_files(files_group):
+            results = []
+            for filename in files_group:
+                try:
+                    results.append((filename, parse(filename)))
+                except (TypeError, ValueError) as e:
+                    logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+                    continue
+            return results
+
+        results = run_function_multiprocess(_parse_files, files)
+        for parse_results in results:
+            for file, parse_result in parse_results:
+                if parse_result:
+                    path = files_to_relative_path[file] if files_to_relative_path else file
+                    (definitions[path], definitions_raw[path]) = parse_result
 
 
 def get_skipped_checks(entity_conf):
