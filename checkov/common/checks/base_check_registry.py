@@ -165,7 +165,6 @@ class BaseCheckRegistry(object):
         self.logger.debug("Loading external checks from {}".format(directory))
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
-            self.logger.warning(sys.path)
             with os.scandir(root) as directory_content:
                 if not self._directory_has_init_py(root):
                     self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
