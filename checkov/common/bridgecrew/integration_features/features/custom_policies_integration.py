@@ -1,6 +1,6 @@
 import logging
-
 import requests
+import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -8,6 +8,9 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
+
+# service-provider::service-name::data-type-name
+CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
@@ -28,7 +31,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 converted_check = self._convert_raw_check(policy)
                 resource_types = Registry._get_resource_types(converted_check['metadata'])
                 check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
-                get_graph_checks_registry("terraform").checks.append(check)
+                if re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
+                    get_graph_checks_registry("cloudformation").checks.append(check)
+                else:
+                    get_graph_checks_registry("terraform").checks.append(check)
             logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
         except Exception as e:
             self.integration_feature_failures = True
