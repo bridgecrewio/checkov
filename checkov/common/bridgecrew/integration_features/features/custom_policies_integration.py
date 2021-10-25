@@ -10,7 +10,7 @@ from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 
 # service-provider::service-name::data-type-name
-CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^.*::.*::.*")
+CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
