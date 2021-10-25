@@ -163,32 +163,33 @@ class BaseCheckRegistry(object):
         """
         directory = os.path.expanduser(directory)
         self.logger.debug("Loading external checks from {}".format(directory))
-        sys.path.insert(1, directory)
+        for root, _, _ in os.walk(directory):
+            sys.path.insert(1, root)
+            self.logger.warning(sys.path)
+            with os.scandir(root) as directory_content:
+                if not self._directory_has_init_py(root):
+                    self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
+                else:
+                    for entry in directory_content:
+                        if self._file_can_be_imported(entry):
+                            check_name = entry.name.replace(".py", "")
 
-        with os.scandir(directory) as directory_content:
-            if not self._directory_has_init_py(directory):
-                self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
-            else:
-                for entry in directory_content:
-                    if self._file_can_be_imported(entry):
-                        check_name = entry.name.replace(".py", "")
-
-                        # Filter is set while loading external checks so the filter can be informed
-                        # of the checks, which need to be handled specially.
-                        try:
-                            BaseCheckRegistry.__loading_external_checks = True
-                            self.logger.debug("Importing external check '{}'".format(check_name))
-                            importlib.import_module(check_name)
-                        except SyntaxError as e:
-                            self.logger.error(
-                                "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
-                                "{error_line}:{error_column}) ".format(
-                                    check_name=check_name,
-                                    check_full_path=e.args[1][0],
-                                    error_message=e.args[0],
-                                    error_line=e.args[1][1],
-                                    error_column=e.args[1][2],
+                            # Filter is set while loading external checks so the filter can be informed
+                            # of the checks, which need to be handled specially.
+                            try:
+                                BaseCheckRegistry.__loading_external_checks = True
+                                self.logger.debug("Importing external check '{}'".format(check_name))
+                                importlib.import_module(check_name)
+                            except SyntaxError as e:
+                                self.logger.error(
+                                    "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
+                                    "{error_line}:{error_column}) ".format(
+                                        check_name=check_name,
+                                        check_full_path=e.args[1][0],
+                                        error_message=e.args[0],
+                                        error_line=e.args[1][1],
+                                        error_column=e.args[1][2],
+                                    )
                                 )
-                            )
-                        finally:
-                            BaseCheckRegistry.__loading_external_checks = False
+                            finally:
+                                BaseCheckRegistry.__loading_external_checks = False

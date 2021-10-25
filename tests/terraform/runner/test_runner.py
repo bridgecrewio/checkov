@@ -105,6 +105,8 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_extra_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
+        # should load checks recursively
+
         tf_dir_path = current_dir + "/resources/extra_check_test"
         extra_checks_dir_path = [current_dir + "/extra_checks"]
 
@@ -113,7 +115,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CUSTOM_AWS_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
@@ -122,14 +124,14 @@ class TestRunnerValid(unittest.TestCase):
         passing_custom = 0
         failed_custom = 0
         for record in report.passed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 passing_custom = passing_custom + 1
         for record in report.failed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 failed_custom = failed_custom + 1
 
-        self.assertEqual(1, passing_custom)
-        self.assertEqual(2, failed_custom)
+        self.assertEqual(2, passing_custom)
+        self.assertEqual(4, failed_custom)
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
@@ -143,7 +145,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CKV2_CUSTOM_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
