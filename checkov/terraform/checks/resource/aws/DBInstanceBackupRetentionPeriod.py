@@ -8,7 +8,7 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that RDS instances has backup policy"
         id = "CKV_AWS_133"
-        supported_resources = ['aws_rds_cluster']
+        supported_resources = ['aws_rds_cluster','aws_db_instance']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -18,7 +18,9 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
             period = force_int(conf[key][0])
             if period and 0 < period <= 35:
                 return CheckResult.PASSED
-        return CheckResult.FAILED
+            return CheckResult.FAILED
+        #Default value is 1 which passes ^^^
+        return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
         return ['backup_retention_period']
