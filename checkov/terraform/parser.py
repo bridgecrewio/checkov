@@ -2,7 +2,6 @@ import datetime
 import json
 import logging
 import os
-import platform
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
@@ -13,7 +12,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.graph.graph_builder.utils import run_function_multiprocess
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -25,7 +24,6 @@ from checkov.terraform.graph_builder.utils import remove_module_dependency_in_pa
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.terraform.parser_utils import eval_string, find_var_blocks
-from concurrent.futures import ThreadPoolExecutor
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
@@ -230,12 +228,7 @@ class Parser:
             if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
-        # Use multithreading for windows and multiprocessing for unix
-        if platform.system() == 'Windows':
-            executor = ThreadPoolExecutor(max_workers=os.cpu_count())
-            files_to_data = executor.map(self._load_file, tf_files_to_load)
-        else:
-            files_to_data = self._load_files_multiprocess(tf_files_to_load)
+        files_to_data = self._load_files_parallel(tf_files_to_load)
 
         for file, data in sorted(files_to_data, key=lambda x: x[0]):
             self._process_loading_file_data(file, data, var_value_and_file_map)
@@ -267,13 +260,8 @@ class Parser:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
 
-        # Use multithreading for windows and multiprocessing for unix
-        if platform.system() == 'Windows':
-            auto_var_files_to_data = executor.map(self._load_file, auto_vars_files)
-            explicit_var_files_to_data = executor.map(self._load_file, explicit_var_files)
-        else:
-            auto_var_files_to_data = self._load_files_multiprocess(auto_vars_files)
-            explicit_var_files_to_data = self._load_files_multiprocess(explicit_var_files)
+        auto_var_files_to_data = self._load_files_parallel(auto_vars_files)
+        explicit_var_files_to_data = self._load_files_parallel(explicit_var_files)
 
         for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
@@ -325,7 +313,7 @@ class Parser:
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
 
-    def _load_files_multiprocess(self, files):
+    def _load_files_parallel(self, files):
         def _load_file(file):
             parsing_errors = {}
             result = _load_or_die_quietly(file, parsing_errors)
@@ -335,16 +323,12 @@ class Parser:
 
             return (file.path, result), parsing_errors
 
-        results = run_function_multiprocess(_load_file, files)
+        results = parallel_function_runner.run_func_parallel(_load_file, files)
         files_to_data = []
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
         return files_to_data
-
-    def _load_file(self, file):
-        data = _load_or_die_quietly(file, self.out_parsing_errors)
-        return file.path, data
 
     def _process_loading_file_data(self, file, data, var_value_and_file_map):
         if not data:

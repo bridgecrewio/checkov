@@ -5,7 +5,7 @@ import platform
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.graph.graph_builder.utils import run_function_multiprocess
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
@@ -32,14 +32,7 @@ class Runner(BaseRunner):
                 registry.load_external_checks(directory)
 
         if files:
-            if platform.system() == 'Windows':
-                for file in files:
-                    parse_result = parse(file)
-                    if parse_result:
-                        (definitions[file], definitions_raw[file]) = parse_result
-            else:
-
-                self._run_parse_files_multiprocess(files, definitions, definitions_raw, os.cpu_count())
+            self._run_parse_files_parallel(files, definitions, definitions_raw)
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
@@ -57,19 +50,7 @@ class Runner(BaseRunner):
             files_to_relative_path = {}
             for file in files_list:
                 files_to_relative_path[file] = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-            if platform.system() == 'Windows':
-                for file in files_list:
-                    try:
-                        parse_result = parse(file)
-                        if parse_result:
-                            relative_file_path = files_to_relative_path[file]
-                            (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
-                    except (TypeError, ValueError) as e:
-                        logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
-                        continue
-            else:
-                self._run_parse_files_multiprocess(files_list, definitions, definitions_raw, os.cpu_count(),
-                                                   files_to_relative_path)
+            self._run_parse_files_parallel(files_list, definitions, definitions_raw, files_to_relative_path)
 
         for k8_file in definitions.keys():
 
@@ -215,16 +196,14 @@ class Runner(BaseRunner):
         return report
 
     @staticmethod
-    def _run_parse_files_multiprocess(files, definitions, definitions_raw, num_of_workers,
-                                      files_to_relative_path=None):
+    def _run_parse_files_parallel(files, definitions, definitions_raw, files_to_relative_path=None):
         def _parse_file(filename):
             try:
                 return filename, parse(filename)
             except (TypeError, ValueError) as e:
                 logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
 
-
-        results = run_function_multiprocess(_parse_file, files)
+        results = parallel_function_runner.run_func_parallel(_parse_file, files)
         for result in results:
             if result:
                 (file, parse_result) = result

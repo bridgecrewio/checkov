@@ -1,9 +1,7 @@
 import linecache
 import logging
 import os
-import platform
 import re
-import time
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
@@ -14,7 +12,7 @@ from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.graph.graph_builder.utils import run_function_multithreaded, run_function_multiprocess
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -133,23 +131,7 @@ class Runner(BaseRunner):
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            def _scan_file(file_paths: List[str]) -> None:
-                for file_path in file_paths:
-                    start = time.time()
-                    try:
-                        secrets.scan_file(file_path)
-                    except Exception as err:
-                        logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
-                        continue
-                    end = time.time()
-                    scan_time = end - start
-                    if scan_time > 10:
-                        logging.info(f'Scanned {file_path}, took {scan_time} seconds')
-
-            if platform.system() == 'Windows':
-                run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
-            else:
-                Runner._scan_files_multiprocess(files_to_scan, secrets)
+            Runner._scan_files_parallel(files_to_scan, secrets)
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -186,13 +168,13 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files_multiprocess(files_to_scan, secrets):
+    def _scan_files_parallel(files_to_scan, secrets):
         # implemented the function like secrets.scan_files without using Pool object
         def _scan_file(file):
             filename = os.path.join(secrets.root, file)
             return list(scan.scan_file(filename))
 
-        results = run_function_multiprocess(_scan_file, files_to_scan)
+        results = parallel_function_runner.run_func_parallel(_scan_file, files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
