@@ -61,7 +61,7 @@ def is_hash(s: str) -> bool:
     :param s:
     :return:
     """
-    return any([pattern.search(s) for pattern in _hash_patterns])
+    return any(pattern.search(s) for pattern in _hash_patterns)
 
 
 def string_has_secrets(s: str, *categories) -> bool:
