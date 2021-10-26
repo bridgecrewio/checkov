@@ -2,7 +2,7 @@ import concurrent.futures
 import multiprocessing
 import os
 import platform
-from typing import Any, List, Generator, Iterator, Callable
+from typing import Any, List, Generator, Iterator, Callable, Optional
 
 
 class ParallelFunctionRunner:
@@ -10,14 +10,16 @@ class ParallelFunctionRunner:
         self.workers_number = workers_number if workers_number else os.cpu_count()
         self.os = platform.system()
 
-    def run_func_parallel(self, func: Callable[..., Any], data: List[Any]) -> Iterator:
+    def run_func_parallel(self, func: Callable[[Any], Any], data: List[Any], group_size: Optional[int]=None) -> Iterator:
         if self.os == 'Windows':
             return self._run_function_multithreaded(func, data)
         else:
-            return self._run_function_multiprocess(func, data)
+            return self._run_function_multiprocess(func, data, group_size)
 
-    def _run_function_multiprocess(self, func: Callable[..., Any], data: List[Any]) -> Generator[Any, None, None]:
-        group_size = int(len(data) / self.workers_number) + 1
+    def _run_function_multiprocess(self, func: Callable[[Any], Any], data: List[Any], group_size: Optional[int]) \
+            -> Generator[Any, None, None]:
+        if not group_size:
+            group_size = int(len(data) / self.workers_number) + 1
         groups_of_data = [data[i: i + group_size] for i in range(0, len(data), group_size)]
 
         def func_wrapper(original_func, data_group, connection):
@@ -38,7 +40,7 @@ class ParallelFunctionRunner:
             for i in range(group_len):
                 yield parent_conn.recv()
 
-    def _run_function_multithreaded(self, func: Callable[..., Any], data: List[Any]) -> Iterator:
+    def _run_function_multithreaded(self, func: Callable[[Any], Any], data: List[Any]) -> Iterator:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             return executor.map(func, data)
 
