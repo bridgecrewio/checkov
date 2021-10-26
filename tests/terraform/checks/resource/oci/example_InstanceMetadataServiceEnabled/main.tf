@@ -215,10 +215,6 @@ resource "oci_core_instance" "fail2" {
   fault_domain  = var.instance_fault_domain
   freeform_tags = { "Department" = "Finance" }
 
-  instance_options {
-    are_legacy_imds_endpoints_disabled = false
-  }
-
   ipxe_script                         = var.instance_ipxe_script
   is_pv_encryption_in_transit_enabled = var.instance_is_pv_encryption_in_transit_enabled
 
