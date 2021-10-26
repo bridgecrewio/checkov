@@ -318,11 +318,13 @@ class Runner(BaseRunner):
             return file, parse_result, file_parsing_errors
 
         results = run_function_multiprocess(parse_file, files)
-        for file, parse_result, file_parsing_errors in results:
-            if parse_result is not None:
-                self.definitions[file] = parse_result
-            if file_parsing_errors:
-                parsing_errors.update(file_parsing_errors)
+        for result in results:
+            if result:
+                file, parse_result, file_parsing_errors = result
+                if parse_result is not None:
+                    self.definitions[file] = parse_result
+                if file_parsing_errors:
+                    parsing_errors.update(file_parsing_errors)
 
     @staticmethod
     def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):
