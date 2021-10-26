@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: IAM policy
+Resources:
+  IAMUpdateAccessKeyPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: IAMUpdateAccessKeyPolicy
+      PolicyDocument:
+        Statement:
+          - Action: 'iam:UpdateAccessKey'
+            Effect: Allow
+            Resource: '*'
+      Roles:
+        - example_role

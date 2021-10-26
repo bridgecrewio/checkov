@@ -131,9 +131,9 @@ class BaseContextParser(ABC):
         """
         parsed_file_lines = self.filtered_lines
         start_line_idx = [line_num for (line_num, _) in parsed_file_lines].index(start_line_num)
-        i = 1
+        i = 0
         end_line_num = 0
-        for (line_num, line) in islice(parsed_file_lines, start_line_idx + 1, None):
+        for (line_num, line) in islice(parsed_file_lines, start_line_idx, None):
             if OPEN_CURLY in line:
                 i = i + 1
             if CLOSE_CURLY in line:

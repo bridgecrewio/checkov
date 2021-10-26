@@ -142,6 +142,7 @@ nav_order: 1
 | 131 | CKV_AWS_170 | resource | AWS::QLDB::Ledger                         | Ensure QLDB ledger permissions mode is set to STANDARD                                                                                                                                                   | Cloudformation |
 | 132 | CKV_AWS_172 | resource | AWS::QLDB::Ledger                         | Ensure QLDB ledger has deletion protection enabled                                                                                                                                                       | Cloudformation |
 | 133 | CKV_AWS_173 | resource | AWS::Lambda::Function                     | Check encryption settings for Lambda environmental variable                                                                                                                                              | Cloudformation |
+| 134 | CKV_AWS_174 | resource | AWS::CloudFront::Distribution             | Verify CloudFront Distribution Viewer Certificate is using TLS v1.2                                                                                                                                      | Cloudformation |
 
 
 ---

@@ -6,9 +6,11 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
-from checkov.terraform.runner import Runner
+from checkov.terraform.runner import Runner as TerraformRunner
+from checkov.cloudformation.runner import Runner as CFNRunner
 from checkov.runner_filter import RunnerFilter
 from pathlib import Path
+
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
 
@@ -74,7 +76,17 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 },
                 "benchmarks": {},
                 "createdBy": "mike+policies@bridgecrew.io",
-                "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: \"yaml1\" #add text that explains the configuration the policy looks for, its implications, and how to fix it\n  category: \"general\" #choose one: \"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: \"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: \"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: \"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: \"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n"
+                "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: "
+                        "\"yaml1\" #add text that explains the configuration the policy looks for, its implications, "
+                        "and how to fix it\n  category: \"general\" #choose one: "
+                        "\"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking"
+                        "\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: "
+                        "\"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: "
+                        "\"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n "
+                        "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
+                        "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
+                        "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
+                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n "
             },
             {
                 "provider": "AWS",
@@ -111,6 +123,102 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
                 "createdBy": "mike+policies@bridgecrew.io",
                 "code": None
+            },
+            {
+                "provider": "AWS",
+                "id": "kpande_AWS_1635180094606",
+                "title": "Check that all EC2 instances are tagged with yor_trace",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "LOW",
+                "pcSeverity": "null",
+                "category": "General",
+                "resourceTypes": [
+                    "AWS::EC2::Instance"
+                ],
+                "guideline": "Check for YOR tagging",
+                "isCustom": True,
+                "conditionQuery": {
+                    "operator": "exists",
+                    "attribute": "Tags.yor_trace",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "AWS::EC2::Instance"
+                    ]
+                },
+                "benchmarks": {},
+                "createdBy": "kpande@paloaltonetworks.com",
+                "code": "---\nmetadata:\n name: \"Check that all resources are tagged with the key - yor_trace\"\n "
+                        "guidelines: \"Check for YOR tagging\"\n category: \"general\"\n severity: \"low\"\nscope:\n  "
+                        "provider: \"aws\"\ndefinition:\n       cond_type: \"attribute\"\n       resource_types: \n   "
+                        "    - \"AWS::EC2::Instance\"\n       attribute: \"Tags.yor_trace\"\n       operator: "
+                        "\"exists\"",
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ]
+            },
+            {
+                "provider": "AWS",
+                "id": "kpande_AWS_1635187541652",
+                "title": "Custom - ensure MSK Cluster logging is enabled",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "MEDIUM",
+                "pcSeverity": "null",
+                "category": "Logging",
+                "resourceTypes": [
+                    "AWS::MSK::Cluster"
+                ],
+                "accountsData": {},
+                "guideline": "Some sample guidelines",
+                "isCustom": True,
+                "conditionQuery": {
+                    "or": [
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.S3.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.Firehose.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        }
+                    ]
+                },
+                "benchmarks": {},
+                "createdBy": "kpande@paloaltonetworks.com",
+                "code": "---\nmetadata:\n  name: \"Custom - ensure MSK Cluster logging is enabled\"\n  category: "
+                        "\"logging\"\n  severity: \"medium\"\n  guidelines: \"Some sample guidelines\"\nscope:\n  "
+                        "provider: \"aws\"\ndefinition:\n  or:\n    - cond_type: attribute\n      attribute: "
+                        "LoggingInfo.BrokerLogs.S3.Enabled\n      operator: equals\n      value: \"true\"\n      "
+                        "resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: attribute\n      "
+                        "attribute: LoggingInfo.BrokerLogs.Firehose.Enabled\n      operator: equals\n      value: "
+                        "\"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: "
+                        "attribute\n      attribute: LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled\n      operator: "
+                        "equals\n      value: \"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"",
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ]
             }
         ]
 
@@ -124,22 +232,35 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
 
-        runner = Runner(external_registries=[registry])
+        tf_runner = TerraformRunner(external_registries=[registry])
+        cfn_runner = CFNRunner(external_registries=[registry])
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         test_files_dir = current_dir + "/example_custom_policy_dir"
 
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter())
+        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter())
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
 
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 0)
 
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+
+        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
+
+        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 0)
+
+        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
 
 
 if __name__ == '__main__':

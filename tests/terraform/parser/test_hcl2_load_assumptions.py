@@ -293,3 +293,10 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
             #                      missing quotes on outer tokens :-(
         }
         self.go(tf, expect)
+
+    def test_splat_expression(self):
+        tf = 'instances = flatten(aws_instance.ubuntu[*].id)'
+        expect = {
+            'instances': ["${flatten(Tree('full_splat_expr_term', ['aws_instance.ubuntu', 'id']))}"]
+        }
+        self.go(tf, expect)
