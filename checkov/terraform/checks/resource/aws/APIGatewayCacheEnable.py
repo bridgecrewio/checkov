@@ -14,5 +14,7 @@ class APIGatewayCacheEnable(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "cache_cluster_enabled"
 
+    def get_expected_value(self):
+        return True
 
 check = APIGatewayCacheEnable()
