@@ -202,6 +202,7 @@ class Parser:
 
         tf_files_to_load = []
         for file in dir_contents:
+            # Ignore directories and hidden files
             try:
                 if not file.is_file() or file.name.startswith("."):
                     continue
@@ -213,19 +214,15 @@ class Parser:
             # See: https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
             if file.name == "terraform.tfvars.json":
                 json_tfvars = file
-                continue
             elif file.name == "terraform.tfvars":
                 hcl_tfvars = file
-                continue
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
                 auto_vars_files.append(file)
-                continue
             elif vars_files and file.path in vars_files:
                 explicit_var_files.append(file)
-                continue
 
             # Resource files
-            if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
+            elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
         files_to_data = self._load_files_parallel(tf_files_to_load)

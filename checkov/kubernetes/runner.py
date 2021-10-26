@@ -1,7 +1,6 @@
 import logging
 import operator
 import os
-import platform
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration

@@ -169,7 +169,7 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _scan_files_parallel(files_to_scan, secrets):
-        # implemented the function like secrets.scan_files without using Pool object
+        # implemented the function like secrets.scan_files, the original function uses the Pool that is unsupported in AWS lambdas
         def _scan_file(file):
             filename = os.path.join(secrets.root, file)
             return list(scan.scan_file(filename))

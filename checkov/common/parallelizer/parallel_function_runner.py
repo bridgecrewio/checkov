@@ -2,8 +2,7 @@ import concurrent.futures
 import multiprocessing
 import os
 import platform
-from collections import Callable
-from typing import Any, List, Generator, Iterator
+from typing import Any, List, Generator, Iterator, Callable
 
 
 class ParallelFunctionRunner:
