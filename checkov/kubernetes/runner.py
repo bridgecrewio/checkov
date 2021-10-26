@@ -223,12 +223,13 @@ class Runner(BaseRunner):
             except (TypeError, ValueError) as e:
                 logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
 
+
         results = run_function_multiprocess(_parse_file, files)
-        for parse_results in results:
-            for file, parse_result in parse_results:
-                if parse_result:
-                    path = files_to_relative_path[file] if files_to_relative_path else file
-                    (definitions[path], definitions_raw[path]) = parse_result
+        for result in results:
+            if result:
+                (file, parse_result) = result
+                path = files_to_relative_path[file] if files_to_relative_path else file
+                (definitions[path], definitions_raw[path]) = parse_result
 
 
 def get_skipped_checks(entity_conf):
