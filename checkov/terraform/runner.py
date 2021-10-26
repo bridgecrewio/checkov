@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-import pickle
+import dill
 import platform
 from typing import Dict, Optional, Tuple, List
 
@@ -313,10 +313,7 @@ class Runner(BaseRunner):
             file_parsing_errors = {}
             parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
             for path, e in file_parsing_errors.items():
-                try:
-                    buf = pickle.dumps(e)
-                    pickle.loads(buf)
-                except TypeError:
+                if not dill.pickles(e):
                     file_parsing_errors[path] = Exception(str(e))
             return file, parse_result, file_parsing_errors
 

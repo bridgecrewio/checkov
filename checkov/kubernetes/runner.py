@@ -228,8 +228,9 @@ class Runner(BaseRunner):
         for result in results:
             if result:
                 (file, parse_result) = result
-                path = files_to_relative_path[file] if files_to_relative_path else file
-                (definitions[path], definitions_raw[path]) = parse_result
+                if parse_result:
+                    path = files_to_relative_path[file] if files_to_relative_path else file
+                    (definitions[path], definitions_raw[path]) = parse_result
 
 
 def get_skipped_checks(entity_conf):

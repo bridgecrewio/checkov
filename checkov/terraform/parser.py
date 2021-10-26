@@ -2,7 +2,7 @@ import datetime
 import json
 import logging
 import os
-import pickle
+import dill
 import platform
 import re
 from copy import deepcopy
@@ -332,10 +332,7 @@ class Parser:
             result = _load_or_die_quietly(file, parsing_errors)
             # check if the exception can pickle, if not - create a new exception with the message
             for path, e in parsing_errors.items():
-                try:
-                    buf = pickle.dumps(e)
-                    pickle.loads(buf)
-                except TypeError:
+                if not dill.pickles(e):
                     parsing_errors[path] = Exception(str(e))
 
             return (file.path, result), parsing_errors
