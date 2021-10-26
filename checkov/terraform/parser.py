@@ -2,6 +2,8 @@ import datetime
 import json
 import logging
 import os
+import pickle
+import platform
 import re
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
@@ -12,6 +14,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
+from checkov.common.graph.graph_builder.utils import run_function_multiprocess
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -24,7 +27,6 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
     ModuleLoaderRegistry
 from checkov.terraform.parser_utils import eval_string, find_var_blocks
 from concurrent.futures import ThreadPoolExecutor
-import concurrent
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
@@ -198,8 +200,7 @@ class Parser:
         if excluded_paths:
             filter_ignored_paths(root_dir, dir_contents, excluded_paths)
 
-        jobs = []
-        executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+        tf_files_to_load = []
         for file in dir_contents:
             try:
                 if not file.is_file() or file.name.startswith("."):
@@ -225,10 +226,17 @@ class Parser:
 
             # Resource files
             if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
-                jobs.append(executor.submit(self._load_file, file, var_value_and_file_map))
+                tf_files_to_load.append(file)
 
-        concurrent.futures.wait(jobs)
-        jobs = []
+        # Use multithreading for windows and multiprocessing for unix
+        if platform.system() == 'Windows':
+            executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+            files_to_data = executor.map(self._load_file, tf_files_to_load)
+        else:
+            files_to_data = self._load_files_multiprocess(tf_files_to_load)
+
+        for file, data in sorted(files_to_data, key=lambda x: x[0]):
+            self._process_loading_file_data(file, data, var_value_and_file_map)
 
         # Stage 2: Load vars in proper order:
         #          https://www.terraform.io/docs/configuration/variables.html#variable-definition-precedence
@@ -256,15 +264,22 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-        auto_var_files_to_data = executor.map(self._file_to_load_or_die_quietly_result, auto_vars_files)
-        for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0].name):
+
+        # Use multithreading for windows and multiprocessing for unix
+        if platform.system() == 'Windows':
+            auto_var_files_to_data = executor.map(self._load_file, auto_vars_files)
+            explicit_var_files_to_data = executor.map(self._load_file, explicit_var_files)
+        else:
+            auto_var_files_to_data = self._load_files_multiprocess(auto_vars_files)
+            explicit_var_files_to_data = self._load_files_multiprocess(explicit_var_files)
+
+        for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
                 var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
 
         # it's possible that os.scandir returned the var files in a different order than they were specified
-        explicit_var_files_to_data = executor.map(self._file_to_load_or_die_quietly_result, explicit_var_files)
-        for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0].path)):
+        for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
             if data:
                 var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
@@ -308,11 +323,35 @@ class Parser:
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
 
-    def _load_file(self, file, var_value_and_file_map):
+    def _load_files_multiprocess(self, files):
+        def _load_file(file):
+            parsing_errors = {}
+            result = _load_or_die_quietly(file, parsing_errors)
+            # check if the exception can pickle, if not - create a new exception with the message
+            for path, e in parsing_errors.items():
+                try:
+                    buf = pickle.dumps(e)
+                    pickle.loads(buf)
+                except TypeError:
+                    parsing_errors[path] = Exception(str(e))
+
+            return (file.path, result), parsing_errors
+
+        results = run_function_multiprocess(_load_file, files)
+        files_to_data = []
+        for result, parsing_errors in results:
+            self.out_parsing_errors.update(parsing_errors)
+            files_to_data.append(result)
+        return files_to_data
+
+    def _load_file(self, file):
         data = _load_or_die_quietly(file, self.out_parsing_errors)
+        return file.path, data
+
+    def _process_loading_file_data(self, file, data, var_value_and_file_map):
         if not data:
             return
-        self.out_definitions[file.path] = data
+        self.out_definitions[file] = data
 
         # Load variable defaults
         #  (see https://www.terraform.io/docs/configuration/variables.html#declaring-an-input-variable)
@@ -327,17 +366,8 @@ class Parser:
 
                     default_value = var_definition.get("default")
                     if default_value is not None and isinstance(default_value, list):
-                        self.external_variables_data.append((var_name, default_value[0], file.path))
-                        var_value_and_file_map[var_name] = default_value[0], file.path
-
-    def _file_to_load_or_die_quietly_result(self, file):
-        return file, _load_or_die_quietly(file, self.out_parsing_errors)
-
-    def _load_explicit_var_file(self, var_file, var_value_and_file_map):
-        data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-        if data:
-            var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-            self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+                        self.external_variables_data.append((var_name, default_value[0], file))
+                        var_value_and_file_map[var_name] = default_value[0], file
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool], module_load_context: Optional[str],

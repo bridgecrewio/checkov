@@ -2,12 +2,14 @@ import copy
 import dataclasses
 import logging
 import os
+import platform
 from typing import Dict, Optional, Tuple, List
 
 import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.utils import run_function_multiprocess
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
@@ -85,15 +87,17 @@ class Runner(BaseRunner):
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
-                for file in files:
-                    if file.endswith(".tf") or (scan_hcl and file.endswith(".hcl")):
-                        file_parsing_errors = {}
-                        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
-                        if parse_result is not None:
-                            self.definitions[file] = parse_result
-                        if file_parsing_errors:
-                            parsing_errors.update(file_parsing_errors)
-                            continue
+                if platform.system() == 'Windows':
+                    for file in files:
+                        if file.endswith(".tf") or (scan_hcl and file.endswith(".hcl")):
+                            file_parsing_errors = {}
+                            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
+                            if parse_result is not None:
+                                self.definitions[file] = parse_result
+                            if file_parsing_errors:
+                                parsing_errors.update(file_parsing_errors)
+                else:
+                    self._run_parse_file_multiprocess(files, scan_hcl, parsing_errors)
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
@@ -300,6 +304,22 @@ class Runner(BaseRunner):
                 if breadcrumb:
                     record = GraphRecord(record, breadcrumb)
                 report.add_record(record=record)
+
+    def _run_parse_file_multiprocess(self, files, scan_hcl, parsing_errors):
+        def parse_file(file):
+            if not (file.endswith(".tf") or (scan_hcl and file.endswith(".hcl"))):
+                return
+            file_parsing_errors = {}
+            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
+            return file, parse_result, file_parsing_errors
+
+        results = run_function_multiprocess(parse_file, files)
+        for results_group in results:
+            for file, parse_result, file_parsing_errors in results_group:
+                if parse_result is not None:
+                    self.definitions[file] = parse_result
+                if file_parsing_errors:
+                    parsing_errors.update(file_parsing_errors)
 
     @staticmethod
     def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):

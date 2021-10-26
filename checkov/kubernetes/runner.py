@@ -217,17 +217,13 @@ class Runner(BaseRunner):
     @staticmethod
     def _run_parse_files_multiprocess(files, definitions, definitions_raw, num_of_workers,
                                       files_to_relative_path=None):
-        def _parse_files(files_group):
-            results = []
-            for filename in files_group:
-                try:
-                    results.append((filename, parse(filename)))
-                except (TypeError, ValueError) as e:
-                    logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
-                    continue
-            return results
+        def _parse_file(filename):
+            try:
+                return filename, parse(filename)
+            except (TypeError, ValueError) as e:
+                logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
 
-        results = run_function_multiprocess(_parse_files, files)
+        results = run_function_multiprocess(_parse_file, files)
         for parse_results in results:
             for file, parse_result in parse_results:
                 if parse_result:

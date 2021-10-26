@@ -149,7 +149,7 @@ class Runner(BaseRunner):
             if platform.system() == 'Windows':
                 run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
             else:
-                Runner._scan_files_multiprocess(files_to_scan, secrets, num_of_workers=os.cpu_count())
+                Runner._scan_files_multiprocess(files_to_scan, secrets)
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -186,16 +186,13 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files_multiprocess(files_to_scan, secrets, num_of_workers):
+    def _scan_files_multiprocess(files_to_scan, secrets):
         # implemented the function like secrets.scan_files without using Pool object
-        def _scan_files(files):
-            results = []
-            for file in files:
-                filename = os.path.join(secrets.root, file)
-                results += list(scan.scan_file(filename))
-            return results
+        def _scan_file(file):
+            filename = os.path.join(secrets.root, file)
+            return list(scan.scan_file(filename))
 
-        results = run_function_multiprocess(_scan_files, files_to_scan)
+        results = run_function_multiprocess(_scan_file, files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
