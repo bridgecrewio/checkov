@@ -1,5 +1,6 @@
 from typing import Dict, List, Any
 
+from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 
@@ -17,7 +18,7 @@ class CodeBuildEncrypted(BaseResourceCheck):
         if not artifacts:
             return CheckResult.UNKNOWN
 
-        artifacts = artifacts[0]
+        artifacts = force_list(artifacts)[0]
         if isinstance(artifacts, dict):
             self.evaluated_keys.append("artifacts/[0]/type")
             if artifacts["type"] == ["NO_ARTIFACTS"]:
