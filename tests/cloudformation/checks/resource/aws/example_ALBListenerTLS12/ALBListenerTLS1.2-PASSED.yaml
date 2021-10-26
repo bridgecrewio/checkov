@@ -52,7 +52,7 @@ Resources:
           RedirectConfig:
             Host: "localhost"
             Path: "/images"
-            Port: 443
+            Port: "443"
             Protocol: "HTTPS"
             Query: "query"
             StatusCode: HTTP_301
