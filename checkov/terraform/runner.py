@@ -2,7 +2,6 @@ import copy
 import dataclasses
 import logging
 import os
-from dill import pickles
 import platform
 from typing import Dict, Optional, Tuple, List
 
@@ -312,9 +311,9 @@ class Runner(BaseRunner):
                 return
             file_parsing_errors = {}
             parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
+            # the exceptions type can un-pickleable so we need to cast them to Exception
             for path, e in file_parsing_errors.items():
-                if not pickles(e):
-                    file_parsing_errors[path] = Exception(str(e))
+                file_parsing_errors[path] = Exception(str(e))
             return file, parse_result, file_parsing_errors
 
         results = run_function_multiprocess(parse_file, files)

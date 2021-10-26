@@ -57,8 +57,7 @@ setup(
         "policyuniverse",
         "typing-extensions",
         "cachetools",
-        "cyclonedx-python-lib>=0.6.1",
-        "dill"
+        "cyclonedx-python-lib>=0.6.1"
     ],
     license="Apache License 2.0",
     name="checkov",
