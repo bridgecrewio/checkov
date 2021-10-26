@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys an Application Load Balancer 
+Parameters:
+  Subnets:
+    Description: Choose a minimum of 2 subnets the ALB should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - sg-1234567
+
+  ListenerHTTPSFAILED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates: 
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-2016-08
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerHTTPSFAILED2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates: 
+        - CertificateArn: test-cert
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
