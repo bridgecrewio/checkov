@@ -275,14 +275,14 @@ class Parser:
 
         for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
-                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+                var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 
         # it's possible that os.scandir returned the var files in a different order than they were specified
         for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
             if data:
-                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+                var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
