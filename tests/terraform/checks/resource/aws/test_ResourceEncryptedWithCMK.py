@@ -33,7 +33,6 @@ class TestResourceEncryptedWithCMK(unittest.TestCase):
             "aws_redshift_cluster.pass",
             "aws_s3_bucket_object.pass",
             "aws_sagemaker_domain.pass",
-            "aws_sagemaker_notebook_instance.pass",
         }
         failing_resources = {
             "aws_cloudtrail.fail",
@@ -52,14 +51,13 @@ class TestResourceEncryptedWithCMK(unittest.TestCase):
             "aws_redshift_cluster.fail",
             "aws_s3_bucket_object.fail",
             "aws_sagemaker_domain.fail",
-            "aws_sagemaker_notebook_instance.fail",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 17)
-        self.assertEqual(summary["failed"], 17)
+        self.assertEqual(summary["passed"], 16)
+        self.assertEqual(summary["failed"], 16)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

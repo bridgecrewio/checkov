@@ -12,7 +12,7 @@ class ResourceEncryptedWithCMK(BaseResourceValueCheck):
                                'aws_fsx_windows_file_system','aws_imagebuilder_component','aws_s3_object_copy',
                                'aws_docdb_cluster','aws_ebs_snapshot_copy','aws_ebs_volume','aws_efs_file_system',
                                'aws_elasticache_replication_group','aws_kinesis_stream','aws_kinesis_video_stream',
-                               'aws_redshift_cluster','aws_s3_bucket_object','aws_sagemaker_domain','aws_sagemaker_notebook_instance']
+                               'aws_redshift_cluster','aws_s3_bucket_object','aws_sagemaker_domain']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
