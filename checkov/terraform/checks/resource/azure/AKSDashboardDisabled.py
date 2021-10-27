@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AKSDashboardDisabled(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure Kube Dashboard is disabled"
+        name = "Ensure Kubernetes Dashboard is disabled"
         id = "CKV_AZURE_8"
         supported_resources = ['azurerm_kubernetes_cluster']
         categories = [CheckCategories.KUBERNETES]
