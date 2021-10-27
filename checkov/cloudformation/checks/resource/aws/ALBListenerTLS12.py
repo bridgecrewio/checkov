@@ -31,7 +31,6 @@ class ALBListenerTLS12(BaseResourceCheck):
                             return CheckResult.FAILED
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):
                         return CheckResult.PASSED
-                print("hei2")
                 for idx_action, action in enumerate(conf['Properties']['DefaultActions']):
                     redirects = action.get("RedirectConfig", [])
                     for idx_redirect, redirect in enumerate(force_list(redirects)):
