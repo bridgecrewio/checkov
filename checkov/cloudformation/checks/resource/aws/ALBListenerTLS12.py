@@ -27,8 +27,7 @@ class ALBListenerTLS12(BaseResourceCheck):
                     if 'SslPolicy' in conf['Properties'].keys():
                         if conf['Properties']['SslPolicy'].startswith(("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2")):
                             return CheckResult.PASSED
-                        else:
-                            return CheckResult.FAILED
+                    return CheckResult.FAILED
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):
                         return CheckResult.PASSED
                 print("hei2")
