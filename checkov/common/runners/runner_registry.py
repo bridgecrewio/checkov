@@ -59,7 +59,7 @@ class RunnerRegistry:
                               runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
 
         integration_feature_registry.run_pre_runner()
-        reports = parallel_function_runner.run_func_parallel(_run_runner, self.runners, len(self.runners))
+        reports = parallel_function_runner.run_func_parallel(_run_runner, self.runners, 1)
         for scan_report in reports:
             self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
         return self.scan_reports
