@@ -9,6 +9,7 @@ from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
 from checkov.cloudformation.parser import parse, TemplateSections
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.parsers.node import DictNode, ListNode, StrNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -94,28 +95,18 @@ def get_folder_definitions(
     root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
+    files_to_relative_path = {}
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
         filter_ignored_paths(root, f_names, excluded_paths)
         for file in f_names:
             file_ending = os.path.splitext(file)[1]
             if file_ending in CF_POSSIBLE_ENDINGS:
-                files_list.append(os.path.join(root, file))
+                file_path = os.path.join(root, file)
+                files_list.append(file_path)
+                files_to_relative_path[file_path] = f"/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}"
 
-    definitions: Dict[str, DictNode] = {}
-    definitions_raw: Dict[str, List[Tuple[int, str]]] = {}
-    for file in files_list:
-        relative_file_path = f"/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}"
-        try:
-            template, template_lines = parse(file, out_parsing_errors)
-            if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
-                definitions[relative_file_path] = template
-                definitions_raw[relative_file_path] = template_lines
-            else:
-                logging.debug(f"Parsed file {file} incorrectly {template}")
-        except (TypeError, ValueError) as e:
-            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
-            continue
+    definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors, files_to_relative_path)
 
     definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
     definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
@@ -197,19 +188,43 @@ def create_definitions(
     definitions = {}
     definitions_raw = {}
     if files:
+        files_list = []
         for file in files:
             file_ending = os.path.splitext(file)[1]
             if file_ending in CF_POSSIBLE_ENDINGS:
-                (definitions[file], definitions_raw[file]) = parse(file, out_parsing_errors)
+                files_list.append(file)
+        definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors)
 
     if root_folder:
         definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, out_parsing_errors)
 
-        # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
-    definitions = {
-        k: v
-        for k, v in definitions.items()
-        if v and isinstance(v, DictNode) and v.__contains__("Resources") and isinstance(v["Resources"], DictNode)
-    }
-    definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+    return definitions, definitions_raw
+
+
+def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], files_to_relative_path=None) \
+        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+    def _parse_file(file):
+        parsing_errors = {}
+        result = parse(file, parsing_errors)
+        return (file, result), parsing_errors
+
+    results = parallel_function_runner.run_func_parallel(_parse_file, files)
+
+    definitions = {}
+    definitions_raw = {}
+    for result, parsing_errors in results:
+        out_parsing_errors.update(parsing_errors)
+        (file, parse_result) = result
+        path = files_to_relative_path[file] if files_to_relative_path else file
+        try:
+            template, template_lines = parse_result
+            if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
+                definitions[path] = template
+                definitions_raw[path] = template_lines
+            else:
+                logging.debug(f"Parsed file {file} incorrectly {template}")
+        except (TypeError, ValueError) as e:
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
+            continue
+
     return definitions, definitions_raw
