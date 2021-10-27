@@ -3,9 +3,9 @@ from typing import List, Optional, Dict, Any, Tuple
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
-from networkx import edge_dfs, DiGraph
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from networkx import edge_dfs, DiGraph
 
 
 class ConnectionExistsSolver(BaseConnectionSolver):

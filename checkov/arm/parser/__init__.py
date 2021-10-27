@@ -1,11 +1,13 @@
 import logging
 from checkov.arm.parser import cfn_yaml
 
-from yaml.parser import ParserError, ScannerError
-from yaml import YAMLError
 
 from checkov.common.parsers.node import DictNode
 from checkov.common.parsers.json import parse as json_parse
+
+from yaml.parser import ParserError, ScannerError
+from yaml import YAMLError
+
 
 
 LOGGER = logging.getLogger(__name__)
