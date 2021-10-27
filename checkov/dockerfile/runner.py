@@ -1,9 +1,12 @@
 import logging
 import os
 import re
+from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
@@ -22,36 +25,26 @@ class Runner(BaseRunner):
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = {}
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
 
         if files:
-            for file in files:
-                if Runner._is_docker_file(os.path.basename(file)):
-                    try:
-                        (definitions[file], definitions_raw[file]) = parse(file)
-                    except TypeError:
-                       logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
+            files_list = [file for file in files if Runner._is_docker_file(os.path.basename(file))]
 
+        files_to_relative_path = {}
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
                     if Runner._is_docker_file(file):
-                        files_list.append(os.path.join(root, file))
+                        file_path = os.path.join(root, file)
+                        files_list.append(file_path)
+                        files_to_relative_path[file_path] = f'/{os.path.relpath(file_path, os.path.commonprefix((root_folder, file_path)))}'
 
-            for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                try:
-                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
-                except TypeError:
-                    logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
+        definitions, definitions_raw = get_files_definitions(files_list, files_to_relative_path)
 
         for docker_file_path in definitions.keys():
 
@@ -101,3 +94,23 @@ class Runner(BaseRunner):
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
+
+
+def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, str]=None) \
+        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+    def _parse_file(file):
+        try:
+            return file, parse(file)
+        except TypeError:
+            logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
+            return file, None
+
+    results = parallel_function_runner.run_func_parallel(_parse_file, files)
+    definitions = {}
+    definitions_raw = {}
+    for file, result in results:
+        if result:
+            path = files_to_relative_path[file] if files_to_relative_path else file
+            definitions[path], definitions_raw[path] = result
+
+    return definitions, definitions_raw

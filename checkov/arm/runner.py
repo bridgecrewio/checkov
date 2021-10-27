@@ -1,11 +1,12 @@
 import logging
 import os
-from typing import Optional, List
+from typing import Optional, List, Dict, Tuple
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
@@ -26,9 +27,6 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = {}
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -36,8 +34,9 @@ class Runner(BaseRunner):
 
         if files:
             for file in files:
-                (definitions[file], definitions_raw[file]) = parse(file)
+                files_list.append(file)
 
+        files_to_relative_path = {}
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
@@ -45,11 +44,11 @@ class Runner(BaseRunner):
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in ARM_POSSIBLE_ENDINGS:
-                        files_list.append(os.path.join(root, file))
+                        file_path = os.path.join(root, file)
+                        files_list.append(file_path)
+                        files_to_relative_path[file_path] = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
 
-            for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse(file)
+        definitions, definitions_raw = get_files_definitions(files_list, files_to_relative_path)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
@@ -138,3 +137,19 @@ class Runner(BaseRunner):
                                 report.add_record(record=record)
 
         return report
+
+
+def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, str]=None) \
+        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+    def _parse_file(file):
+        return file, parse(file)
+
+    results = parallel_function_runner.run_func_parallel(_parse_file, files)
+    definitions = {}
+    definitions_raw = {}
+    for file, result in results:
+        path = files_to_relative_path[file] if files_to_relative_path else file
+        definitions[path], definitions_raw[path] = result
+
+    return definitions, definitions_raw
+

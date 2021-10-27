@@ -10,6 +10,7 @@ from functools import reduce
 import yaml
 
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.registry import registry
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -105,9 +106,13 @@ class Runner(BaseRunner):
 
         report = Report(self.check_type)
 
-        for chart_dir in chart_directories:
+        def _get_chart_meta(chart_dir):
+            return chart_dir, self.parse_helm_chart_details(chart_dir)
+
+        chart_dir_and_meta = parallel_function_runner.run_func_parallel(_get_chart_meta, chart_directories)
+
+        for chart_dir, chart_meta in chart_dir_and_meta:
             # chart_name = os.path.basename(chart_dir)
-            chart_meta = self.parse_helm_chart_details(chart_dir)
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             with tempfile.TemporaryDirectory() as target_dir:

@@ -201,7 +201,7 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], files_to_relative_path=None) \
+def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], files_to_relative_path: Dict[str, str]=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     def _parse_file(file):
         parsing_errors = {}
