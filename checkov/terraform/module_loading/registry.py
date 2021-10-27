@@ -1,7 +1,8 @@
+import dataclasses
 import logging
 import os
 import hashlib
-from typing import Optional, List, TYPE_CHECKING, Set
+from typing import Optional, List, TYPE_CHECKING, Set, Dict, Callable
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
@@ -10,17 +11,40 @@ if TYPE_CHECKING:
     from checkov.terraform.module_loading.loader import ModuleLoader
 
 
+@dataclasses.dataclass
+class ModuleDownloadData:
+    root_dir: str
+    source: str
+    version: str
+    file: str
+    module_call_data: Dict
+    dir_filter: Callable[[str], bool]
+    keys_referenced_as_modules: Set[str]
+    module_index: int
+    module_call_name: str
+    module_load_context: Optional[str]
+    content: ModuleContent = None
+
+    @property
+    def specified_vars(self):
+        return {k: v[0] if isinstance(v, list) else v for k, v in self.module_call_data.items()
+                if k != "source" and k != "version"}
+
+
+
 class ModuleLoaderRegistry:
     loaders: List["ModuleLoader"] = []
 
     def __init__(
-        self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
+            self, download_external_modules: bool = False,
+            external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()
         self.root_dir = ""  # root dir for storing external modules
+        self.modules_to_load: List[ModuleDownloadData] = []
 
     def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
@@ -83,6 +107,9 @@ information, see `loader.ModuleLoader.load`.
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()
+
+    def add_module_download(self, module_to_load: ModuleDownloadData):
+        self.modules_to_load.append(module_to_load)
 
 
 module_loader_registry = ModuleLoaderRegistry()

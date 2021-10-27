@@ -24,7 +24,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
-    ModuleLoaderRegistry
+    ModuleLoaderRegistry, ModuleDownloadData
 from checkov.terraform.parser_utils import eval_string, find_var_blocks
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
@@ -409,64 +409,78 @@ class Parser:
                     if version and isinstance(version, list):
                         version = version[0]
                     try:
-                        with module_loader_registry.load(root_dir, source, version) as content:
-                            if not content.loaded():
-                                continue
-
-                            self._internal_dir_load(directory=content.path(),
-                                                    module_loader_registry=module_loader_registry,
-                                                    dir_filter=dir_filter, specified_vars=specified_vars,
-                                                    module_load_context=module_load_context,
-                                                    keys_referenced_as_modules=keys_referenced_as_modules)
-
-                            module_definitions = {path: self.out_definitions[path] for path in
-                                                  list(self.out_definitions.keys()) if
-                                                  os.path.dirname(path) == content.path()}
-
-                            if not module_definitions:
-                                continue
-
-                            # NOTE: Modules are put into the main TF definitions structure "as normal" with the
-                            #       notable exception of the file name. For loaded modules referrer information is
-                            #       appended to the file name to create this format:
-                            #         <file_name>[<referred_file>#<referrer_index>]
-                            #       For example:
-                            #         /the/path/module/my_module.tf[/the/path/main.tf#0]
-                            #       The referrer and index allow a module allow a module to be loaded multiple
-                            #       times with differing data.
-                            #
-                            #       In addition, the referring block will have a "__resolved__" key added with a
-                            #       list pointing to the location of the module data that was resolved. For example:
-                            #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
-
-                            resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
-                            if resolved_loc_list is None:
-                                resolved_loc_list = []
-                                module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
-
-                            # NOTE: Modules can load other modules, so only append referrer information where it
-                            #       has not already been added.
-                            keys = list(module_definitions.keys())
-                            for key in keys:
-                                if key.endswith("]") or file.endswith("]"):
-                                    continue
-                                keys_referenced_as_modules.add(key)
-                                new_key = f"{key}[{file}#{module_index}]"
-                                module_definitions[new_key] = module_definitions[key]
-                                del module_definitions[key]
-                                del self.out_definitions[key]
-                                if new_key not in resolved_loc_list:
-                                    resolved_loc_list.append(new_key)
-                                if (file, module_call_name) not in self.module_address_map:
-                                    self.module_address_map[(file, module_call_name)] = str(module_index)
-                            resolved_loc_list.sort()  # For testing, need predictable ordering
-
-                            if all_module_definitions:
-                                deep_merge.merge(all_module_definitions, module_definitions)
-                            else:
-                                all_module_definitions = module_definitions
-
-                            self.external_modules_source_map[(source, version)] = content.path()
+                        module_download_data = ModuleDownloadData(
+                            root_dir=root_dir,
+                            source=source,
+                            version=version,
+                            file=file,
+                            module_call_data=module_call_data,
+                            dir_filter=dir_filter,
+                            keys_referenced_as_modules=keys_referenced_as_modules,
+                            module_index=module_index,
+                            module_call_name=module_call_name,
+                            module_load_context=module_load_context,
+                        )
+                        module_loader_registry.add_module_download(module_download_data)
+                        continue
+                        # with module_loader_registry.load(root_dir, source, version) as content:
+                        #     if not content.loaded():
+                        #         continue
+                        #
+                        #     self._internal_dir_load(directory=content.path(),
+                        #                             module_loader_registry=module_loader_registry,
+                        #                             dir_filter=dir_filter, specified_vars=specified_vars,
+                        #                             module_load_context=module_load_context,
+                        #                             keys_referenced_as_modules=keys_referenced_as_modules)
+                        #
+                        #     module_definitions = {path: self.out_definitions[path] for path in
+                        #                           list(self.out_definitions.keys()) if
+                        #                           os.path.dirname(path) == content.path()}
+                        #
+                        #     if not module_definitions:
+                        #         continue
+                        #
+                        #     # NOTE: Modules are put into the main TF definitions structure "as normal" with the
+                        #     #       notable exception of the file name. For loaded modules referrer information is
+                        #     #       appended to the file name to create this format:
+                        #     #         <file_name>[<referred_file>#<referrer_index>]
+                        #     #       For example:
+                        #     #         /the/path/module/my_module.tf[/the/path/main.tf#0]
+                        #     #       The referrer and index allow a module allow a module to be loaded multiple
+                        #     #       times with differing data.
+                        #     #
+                        #     #       In addition, the referring block will have a "__resolved__" key added with a
+                        #     #       list pointing to the location of the module data that was resolved. For example:
+                        #     #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
+                        #
+                        #     resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
+                        #     if resolved_loc_list is None:
+                        #         resolved_loc_list = []
+                        #         module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
+                        #
+                        #     # NOTE: Modules can load other modules, so only append referrer information where it
+                        #     #       has not already been added.
+                        #     keys = list(module_definitions.keys())
+                        #     for key in keys:
+                        #         if key.endswith("]") or file.endswith("]"):
+                        #             continue
+                        #         keys_referenced_as_modules.add(key)
+                        #         new_key = f"{key}[{file}#{module_index}]"
+                        #         module_definitions[new_key] = module_definitions[key]
+                        #         del module_definitions[key]
+                        #         del self.out_definitions[key]
+                        #         if new_key not in resolved_loc_list:
+                        #             resolved_loc_list.append(new_key)
+                        #         if (file, module_call_name) not in self.module_address_map:
+                        #             self.module_address_map[(file, module_call_name)] = str(module_index)
+                        #     resolved_loc_list.sort()  # For testing, need predictable ordering
+                        #
+                        #     if all_module_definitions:
+                        #         deep_merge.merge(all_module_definitions, module_definitions)
+                        #     else:
+                        #         all_module_definitions = module_definitions
+                        #
+                        #     self.external_modules_source_map[(source, version)] = content.path()
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
