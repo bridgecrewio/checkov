@@ -1,11 +1,9 @@
 import datetime
-import io
 import json
 import logging
-import multiprocessing
 import os
 import re
-import sys
+from concurrent import futures
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
 from pathlib import Path
@@ -65,7 +63,8 @@ class Parser:
               download_external_modules: bool,
               external_modules_download_path: str,
               excluded_paths: Optional[List[str]] = None,
-              tf_var_files: Optional[List[str]] = None):
+              tf_var_files: Optional[List[str]] = None,
+              module_loader_registry: ModuleLoaderRegistry = default_ml_registry):
         self.directory = directory
         self.out_definitions = out_definitions
         self.out_evaluations_context = out_evaluations_context
@@ -77,6 +76,7 @@ class Parser:
         self.module_address_map = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
+        self.module_loader_registry = module_loader_registry
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -120,7 +120,6 @@ class Parser:
             return None
 
     def _parse_directory(self, include_sub_dirs: bool = True,
-                         module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
                          dir_filter: Callable[[str], bool] = lambda _: True,
                          vars_files: Optional[List[str]] = None):
         """
@@ -140,9 +139,6 @@ class Parser:
 
         :param include_sub_dirs:           If true, subdirectories will be walked.
 
-        :param module_loader_registry:     Registry used for resolving modules. This allows customization of how
-                                           much resolution is performed (and easier testing) by using a manually
-                                           constructed registry rather than the default.
         :param dir_filter:                 Determines whether or not a directory should be processed. Returning
                                            True will allow processing. The argument will be the absolute path of
                                            the directory.
@@ -154,12 +150,10 @@ class Parser:
                 # filter subdirectories for future iterations (we filter files while iterating the directory)
                 _filter_ignored_paths(sub_dir, d_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
-                    self._internal_dir_load(sub_dir, module_loader_registry, dir_filter,
-                                            keys_referenced_as_modules, vars_files=vars_files,
+                    self._internal_dir_load(sub_dir, dir_filter, keys_referenced_as_modules, vars_files=vars_files,
                                             root_dir=self.directory, excluded_paths=self.excluded_paths)
         else:
-            self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
-                                    keys_referenced_as_modules, vars_files=vars_files)
+            self._internal_dir_load(self.directory, dir_filter, keys_referenced_as_modules, vars_files=vars_files)
 
         # Ensure anything that was referenced as a module is removed
         for key in keys_referenced_as_modules:
@@ -167,7 +161,6 @@ class Parser:
                 del self.out_definitions[key]
 
     def _internal_dir_load(self, directory: str,
-                           module_loader_registry: ModuleLoaderRegistry,
                            dir_filter: Callable[[str], bool],
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
@@ -178,9 +171,6 @@ class Parser:
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
-        :param module_loader_registry:     Registry used for resolving modules. This allows customization of how
-                                       much resolution is performed (and easier testing) by using a manually
-                                       constructed registry rather than the default.
         :param dir_filter:                 Determines whether or not a directory should be processed. Returning
                                        True will allow processing. The argument will be the absolute path of
                                        the directory.
@@ -318,8 +308,7 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
-            has_more_modules = self._load_modules(directory, module_loader_registry,
-                                                  dir_filter, module_load_context,
+            has_more_modules = self._load_modules(directory,dir_filter, module_load_context,
                                                   keys_referenced_as_modules,
                                                   force_final_module_load)
 
@@ -332,8 +321,7 @@ class Parser:
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
 
-    def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
-                      dir_filter: Callable[[str], bool], module_load_context: Optional[str],
+    def _load_modules(self, root_dir: str, dir_filter: Callable[[str], bool], module_load_context: Optional[str],
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
@@ -343,8 +331,6 @@ class Parser:
         :return:                            True if there were modules that were not loaded due to unresolved
                                             parameters.
         """
-        all_module_definitions = {}
-        all_module_evaluations_context = {}
         skipped_a_module = False
         for file in list(self.out_definitions.keys()):
             # Don't process a file in a directory other than the directory we're processing. For example,
@@ -421,75 +407,79 @@ class Parser:
                             module_call_name=module_call_name,
                             module_load_context=module_load_context,
                         )
-                        module_loader_registry.add_module_download(module_download_data)
-                        continue
-                        # with module_loader_registry.load(root_dir, source, version) as content:
-                        #     if not content.loaded():
-                        #         continue
-                        #
-                        #     self._internal_dir_load(directory=content.path(),
-                        #                             module_loader_registry=module_loader_registry,
-                        #                             dir_filter=dir_filter, specified_vars=specified_vars,
-                        #                             module_load_context=module_load_context,
-                        #                             keys_referenced_as_modules=keys_referenced_as_modules)
-                        #
-                        #     module_definitions = {path: self.out_definitions[path] for path in
-                        #                           list(self.out_definitions.keys()) if
-                        #                           os.path.dirname(path) == content.path()}
-                        #
-                        #     if not module_definitions:
-                        #         continue
-                        #
-                        #     # NOTE: Modules are put into the main TF definitions structure "as normal" with the
-                        #     #       notable exception of the file name. For loaded modules referrer information is
-                        #     #       appended to the file name to create this format:
-                        #     #         <file_name>[<referred_file>#<referrer_index>]
-                        #     #       For example:
-                        #     #         /the/path/module/my_module.tf[/the/path/main.tf#0]
-                        #     #       The referrer and index allow a module allow a module to be loaded multiple
-                        #     #       times with differing data.
-                        #     #
-                        #     #       In addition, the referring block will have a "__resolved__" key added with a
-                        #     #       list pointing to the location of the module data that was resolved. For example:
-                        #     #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
-                        #
-                        #     resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
-                        #     if resolved_loc_list is None:
-                        #         resolved_loc_list = []
-                        #         module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
-                        #
-                        #     # NOTE: Modules can load other modules, so only append referrer information where it
-                        #     #       has not already been added.
-                        #     keys = list(module_definitions.keys())
-                        #     for key in keys:
-                        #         if key.endswith("]") or file.endswith("]"):
-                        #             continue
-                        #         keys_referenced_as_modules.add(key)
-                        #         new_key = f"{key}[{file}#{module_index}]"
-                        #         module_definitions[new_key] = module_definitions[key]
-                        #         del module_definitions[key]
-                        #         del self.out_definitions[key]
-                        #         if new_key not in resolved_loc_list:
-                        #             resolved_loc_list.append(new_key)
-                        #         if (file, module_call_name) not in self.module_address_map:
-                        #             self.module_address_map[(file, module_call_name)] = str(module_index)
-                        #     resolved_loc_list.sort()  # For testing, need predictable ordering
-                        #
-                        #     if all_module_definitions:
-                        #         deep_merge.merge(all_module_definitions, module_definitions)
-                        #     else:
-                        #         all_module_definitions = module_definitions
-                        #
-                        #     self.external_modules_source_map[(source, version)] = content.path()
+                        self.module_loader_registry.add_module_download(module_download_data)
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
+
+        all_module_definitions = {}
+        all_module_evaluations_context = {}
+
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(self.handle_module, mdd, file.path, keys_referenced_as_modules, all_module_definitions) for
+                 mdd in self.module_loader_registry.modules_to_load],
+                return_when=futures.FIRST_EXCEPTION,
+            )
 
         if all_module_definitions:
             deep_merge.merge(self.out_definitions, all_module_definitions)
         if all_module_evaluations_context:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
+
+    def handle_module(self, mdd: ModuleDownloadData, file: str, keys_referenced_as_modules: dict,
+                      all_module_definitions: dict):
+        with self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version) as content:
+            if not content.loaded():
+                return
+            self._internal_dir_load(directory=content.path(),
+                                    dir_filter=mdd.dir_filter, specified_vars=mdd.specified_vars,
+                                    module_load_context=mdd.module_load_context,
+                                    keys_referenced_as_modules=mdd.keys_referenced_as_modules)
+
+            module_definitions = {path: self.out_definitions[path] for path in
+                                  list(self.out_definitions.keys()) if
+                                  os.path.dirname(path) == content.path()}
+            if not module_definitions:
+                return
+            # NOTE: Modules are put into the main TF definitions structure "as normal" with the
+            #       notable exception of the file name. For loaded modules referrer information is
+            #       appended to the file name to create this format:
+            #         <file_name>[<referred_file>#<referrer_index>]
+            #       For example:
+            #         /the/path/module/my_module.tf[/the/path/main.tf#0]
+            #       The referrer and index allow a module allow a module to be loaded multiple
+            #       times with differing data.
+            #
+            #       In addition, the referring block will have a "__resolved__" key added with a
+            #       list pointing to the location of the module data that was resolved. For example:
+            #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
+            resolved_loc_list = mdd.module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
+            if resolved_loc_list is None:
+                resolved_loc_list = []
+                mdd.module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
+
+            # NOTE: Modules can load other modules, so only append referrer information where it
+            #       has not already been added.
+            keys = list(module_definitions.keys())
+            for key in keys:
+                if key.endswith("]") or file.endswith("]"):
+                    continue
+                keys_referenced_as_modules.add(key)
+                new_key = f"{key}[{file}#{mdd.module_index}]"
+                module_definitions[new_key] = module_definitions[key]
+                del module_definitions[key]
+                del self.out_definitions[key]
+                if new_key not in resolved_loc_list:
+                    resolved_loc_list.append(new_key)
+                if (file, mdd.module_call_name) not in self.module_address_map:
+                    self.module_address_map[(file, mdd.module_call_name)] = str(mdd.module_index)
+            resolved_loc_list.sort()  # For testing, need predictable ordering
+
+            deep_merge.merge(all_module_definitions, module_definitions)
+
+            self.external_modules_source_map[(mdd.source, mdd.version)] = content.path()
 
     def parse_hcl_module(
         self,
