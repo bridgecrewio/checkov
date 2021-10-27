@@ -25,7 +25,7 @@ class ALBListenerTLS12(BaseResourceCheck):
                 # Other protocols are not intresting within the context of this check.
                 if conf['Properties']['Protocol'] in ('HTTPS', 'TLS'):
                     if 'SslPolicy' in conf['Properties'].keys():
-                        if conf['Properties']['SslPolicy'].startswith("ELBSecurityPolicy-FS-1-2") or conf['Properties']['SslPolicy'].startswith("ELBSecurityPolicy-TLS-1-2"):
+                        if conf['Properties']['SslPolicy'].startswith(("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2")):
                             return CheckResult.PASSED
                         else:
                             return CheckResult.FAILED
