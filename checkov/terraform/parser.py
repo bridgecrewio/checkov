@@ -287,13 +287,6 @@ class Parser:
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
 
-        # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
-        #                      may be a little overboard, but I don't want to just pass the entire data map down
-        #                      because it break encapsulations and I don't want to cause confusion about what data
-        #                      set it being processed. To avoid this, here's a Callable that will get the data
-        #                      map for a particular module reference. (Might be OCD, but...)
-        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)
-
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
         #          be loadable until other modules are loaded. This happens when parameters to one module
@@ -376,7 +369,6 @@ class Parser:
                         if has_unresolved_params:
                             skipped_a_module = True
                             continue
-                    self._loaded_modules.add(module_address)
 
                     source = module_call_data.get("source")
                     if not source or not isinstance(source, list):
@@ -430,6 +422,11 @@ class Parser:
 
     def handle_module(self, mdd: ModuleDownloadData, keys_referenced_as_modules: dict,
                       all_module_definitions: dict):
+        module_address = (mdd.file, mdd.module_index, mdd.module_call_name)
+        if module_address in self._loaded_modules:
+            logging.info('Module has already been downloaded')
+            return
+        self._loaded_modules.add(module_address)
         logging.info(f'Handling {mdd.source}:{mdd.version}')
         with self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version) as content:
             logging.info(f'Downloaded {mdd.source}:{mdd.version}')
