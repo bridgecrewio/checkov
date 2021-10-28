@@ -445,6 +445,7 @@ class Parser:
                                   os.path.dirname(path) == content.path()}
             if not module_definitions:
                 return
+
             # NOTE: Modules are put into the main TF definitions structure "as normal" with the
             #       notable exception of the file name. For loaded modules referrer information is
             #       appended to the file name to create this format:
