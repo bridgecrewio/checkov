@@ -4,7 +4,7 @@ import os
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
@@ -33,6 +33,7 @@ class Runner(BaseRunner):
             self._run_parse_files_parallel(files, definitions, definitions_raw)
 
         if root_folder:
+            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
@@ -45,10 +46,7 @@ class Runner(BaseRunner):
                             # skip temp directories
                             files_list.append(full_path)
 
-            files_to_relative_path = {}
-            for file in files_list:
-                files_to_relative_path[file] = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-            self._run_parse_files_parallel(files_list, definitions, definitions_raw, files_to_relative_path)
+            self._run_parse_files_parallel(files_list, definitions, definitions_raw, filepath_fn)
 
         for k8_file in definitions.keys():
 
@@ -194,19 +192,19 @@ class Runner(BaseRunner):
         return report
 
     @staticmethod
-    def _run_parse_files_parallel(files, definitions, definitions_raw, files_to_relative_path=None):
+    def _run_parse_files_parallel(files, definitions, definitions_raw, filepath_fn=None):
         def _parse_file(filename):
             try:
                 return filename, parse(filename)
             except (TypeError, ValueError) as e:
                 logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
 
-        results = parallel_function_runner.run_func_parallel(_parse_file, files)
+        results = parallel_runner.run_function(_parse_file, files)
         for result in results:
             if result:
                 (file, parse_result) = result
                 if parse_result:
-                    path = files_to_relative_path[file] if files_to_relative_path else file
+                    path = filepath_fn(file) if filepath_fn else file
                     (definitions[path], definitions_raw[path]) = parse_result
 
 

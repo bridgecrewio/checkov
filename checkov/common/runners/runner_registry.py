@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -59,7 +59,7 @@ class RunnerRegistry:
                               runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
 
         integration_feature_registry.run_pre_runner()
-        reports = parallel_function_runner.run_func_parallel(_run_runner, self.runners, 1)
+        reports = parallel_runner.run_function(_run_runner, self.runners, 1)
         for scan_report in reports:
             self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
         return self.scan_reports

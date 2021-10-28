@@ -12,7 +12,7 @@ from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -170,7 +170,7 @@ class Runner(BaseRunner):
     @staticmethod
     def _scan_files_parallel(files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
-        results = parallel_function_runner.run_func_parallel(
+        results = parallel_runner.run_function(
             lambda f: list(scan.scan_file(os.path.join(secrets.root, f))), files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:

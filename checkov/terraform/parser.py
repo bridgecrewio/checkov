@@ -12,7 +12,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -228,7 +228,25 @@ class Parser:
         files_to_data = self._load_files_parallel(tf_files_to_load)
 
         for file, data in sorted(files_to_data, key=lambda x: x[0]):
-            self._process_loading_file_data(file, data, var_value_and_file_map)
+            if not data:
+                continue
+            self.out_definitions[file] = data
+
+            # Load variable defaults
+            #  (see https://www.terraform.io/docs/configuration/variables.html#declaring-an-input-variable)
+            var_blocks = data.get("variable")
+            if var_blocks and isinstance(var_blocks, list):
+                for var_block in var_blocks:
+                    if not isinstance(var_block, dict):
+                        continue
+                    for var_name, var_definition in var_block.items():
+                        if not isinstance(var_definition, dict):
+                            continue
+
+                        default_value = var_definition.get("default")
+                        if default_value is not None and isinstance(default_value, list):
+                            self.external_variables_data.append((var_name, default_value[0], file))
+                            var_value_and_file_map[var_name] = default_value[0], file
 
         # Stage 2: Load vars in proper order:
         #          https://www.terraform.io/docs/configuration/variables.html#variable-definition-precedence
@@ -258,13 +276,12 @@ class Parser:
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
 
         auto_var_files_to_data = self._load_files_parallel(auto_vars_files)
-        explicit_var_files_to_data = self._load_files_parallel(explicit_var_files)
-
         for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
                 var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 
+        explicit_var_files_to_data = self._load_files_parallel(explicit_var_files)
         # it's possible that os.scandir returned the var files in a different order than they were specified
         for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
             if data:
@@ -314,39 +331,18 @@ class Parser:
         def _load_file(file):
             parsing_errors = {}
             result = _load_or_die_quietly(file, parsing_errors)
-            # the exceptions type can un-pickleable so we need to cast them to Exception
+            # the exceptions type can un-pickleable
             for path, e in parsing_errors.items():
                 parsing_errors[path] = Exception(str(e))
 
             return (file.path, result), parsing_errors
 
-        results = parallel_function_runner.run_func_parallel(_load_file, files)
+        results = parallel_runner.run_function(_load_file, files)
         files_to_data = []
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
         return files_to_data
-
-    def _process_loading_file_data(self, file, data, var_value_and_file_map):
-        if not data:
-            return
-        self.out_definitions[file] = data
-
-        # Load variable defaults
-        #  (see https://www.terraform.io/docs/configuration/variables.html#declaring-an-input-variable)
-        var_blocks = data.get("variable")
-        if var_blocks and isinstance(var_blocks, list):
-            for var_block in var_blocks:
-                if not isinstance(var_block, dict):
-                    continue
-                for var_name, var_definition in var_block.items():
-                    if not isinstance(var_definition, dict):
-                        continue
-
-                    default_value = var_definition.get("default")
-                    if default_value is not None and isinstance(default_value, list):
-                        self.external_variables_data.append((var_name, default_value[0], file))
-                        var_value_and_file_map[var_name] = default_value[0], file
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool], module_load_context: Optional[str],

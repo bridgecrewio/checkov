@@ -9,7 +9,7 @@ from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser, ENDLINE, STARTLINE
 from checkov.cloudformation.parser import parse, TemplateSections
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode, ListNode, StrNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -206,7 +206,7 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
         result = parse(file, parsing_errors)
         return (file, result), parsing_errors
 
-    results = parallel_function_runner.run_func_parallel(_parse_file, files)
+    results = parallel_runner.run_function(_parse_file, files)
 
     definitions = {}
     definitions_raw = {}

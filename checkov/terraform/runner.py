@@ -8,7 +8,7 @@ import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
@@ -305,7 +305,7 @@ class Runner(BaseRunner):
                 file_parsing_errors[path] = Exception(str(e))
             return file, parse_result, file_parsing_errors
 
-        results = parallel_function_runner.run_func_parallel(parse_file, files)
+        results = parallel_runner.run_function(parse_file, files)
         for result in results:
             if result:
                 file, parse_result, file_parsing_errors = result

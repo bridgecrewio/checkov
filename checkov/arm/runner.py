@@ -6,7 +6,7 @@ from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
@@ -140,7 +140,7 @@ class Runner(BaseRunner):
 
 def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_function_runner.run_func_parallel(lambda f: (f, parse(f)), files)
+    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:

@@ -5,7 +5,7 @@ from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.dockerfile.parser import parse, collect_skipped_checks
@@ -105,7 +105,7 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
             return file, None
 
-    results = parallel_function_runner.run_func_parallel(_parse_file, files)
+    results = parallel_runner.run_function(_parse_file, files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:
