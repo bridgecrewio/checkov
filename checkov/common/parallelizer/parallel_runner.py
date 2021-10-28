@@ -37,7 +37,7 @@ class ParallelRunner:
             process.start()
 
         for process, parent_conn, group_len in processes:
-            for i in range(group_len):
+            for _ in range(group_len):
                 yield parent_conn.recv()
 
     def _run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
