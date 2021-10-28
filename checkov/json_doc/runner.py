@@ -3,6 +3,7 @@ import os
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.parsers.json import parse
 from checkov.json_doc.registry import registry
@@ -14,9 +15,13 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _load_files(files_to_load, definitions, definitions_raw, filename_fn=None):
-        for file in files_to_load:
-            f = filename_fn(file) if filename_fn else file
-            (definitions[f], definitions_raw[f]) = parse(f)
+        def _load_file(f):
+            return f, parse(f)
+
+        files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
+        results = parallel_function_runner.run_func_parallel(_load_file, files_to_load)
+        for file, result in results:
+            (definitions[file], definitions_raw[file]) = result
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):

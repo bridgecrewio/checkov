@@ -28,6 +28,7 @@ class Runner(BaseRunner):
     ) -> Report:
         report = Report(self.check_type)
         files_list = []
+        filepath_fn = None
         if external_checks_dir:
             for directory in external_checks_dir:
                 arm_resource_registry.load_external_checks(directory)
@@ -36,19 +37,17 @@ class Runner(BaseRunner):
             for file in files:
                 files_list.append(file)
 
-        files_to_relative_path = {}
         if root_folder:
+            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
                     file_ending = os.path.splitext(file)[1]
                     if file_ending in ARM_POSSIBLE_ENDINGS:
-                        file_path = os.path.join(root, file)
-                        files_list.append(file_path)
-                        files_to_relative_path[file_path] = f'/{os.path.relpath(file_path, os.path.commonprefix((root_folder, file_path)))}'
+                        files_list.append(os.path.join(root, file))
 
-        definitions, definitions_raw = get_files_definitions(files_list, files_to_relative_path)
+        definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         # Filter out empty files that have not been parsed successfully, and filter out non-CF template files
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
@@ -139,7 +138,7 @@ class Runner(BaseRunner):
         return report
 
 
-def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, str]=None) \
+def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     def _parse_file(file):
         return file, parse(file)
@@ -148,8 +147,7 @@ def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, st
     definitions = {}
     definitions_raw = {}
     for file, result in results:
-        path = files_to_relative_path[file] if files_to_relative_path else file
+        path = filepath_fn(file) if filepath_fn else file
         definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
-

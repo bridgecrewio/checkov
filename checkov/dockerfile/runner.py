@@ -26,6 +26,7 @@ class Runner(BaseRunner):
             collect_skip_comments=True):
         report = Report(self.check_type)
         files_list = []
+        filepath_fn = None
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
@@ -33,8 +34,8 @@ class Runner(BaseRunner):
         if files:
             files_list = [file for file in files if Runner._is_docker_file(os.path.basename(file))]
 
-        files_to_relative_path = {}
         if root_folder:
+            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
@@ -42,9 +43,8 @@ class Runner(BaseRunner):
                     if Runner._is_docker_file(file):
                         file_path = os.path.join(root, file)
                         files_list.append(file_path)
-                        files_to_relative_path[file_path] = f'/{os.path.relpath(file_path, os.path.commonprefix((root_folder, file_path)))}'
 
-        definitions, definitions_raw = get_files_definitions(files_list, files_to_relative_path)
+        definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         for docker_file_path in definitions.keys():
 
@@ -96,7 +96,7 @@ class Runner(BaseRunner):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
 
 
-def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, str]=None) \
+def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     def _parse_file(file):
         try:
@@ -110,7 +110,7 @@ def get_files_definitions(files: List[str], files_to_relative_path: Dict[str, st
     definitions_raw = {}
     for file, result in results:
         if result:
-            path = files_to_relative_path[file] if files_to_relative_path else file
+            path = filepath_fn(file) if filepath_fn else file
             definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw

@@ -95,18 +95,16 @@ def get_folder_definitions(
     root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
-    files_to_relative_path = {}
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
         filter_ignored_paths(root, f_names, excluded_paths)
         for file in f_names:
             file_ending = os.path.splitext(file)[1]
             if file_ending in CF_POSSIBLE_ENDINGS:
-                file_path = os.path.join(root, file)
-                files_list.append(file_path)
-                files_to_relative_path[file_path] = f"/{os.path.relpath(file_path, os.path.commonprefix((root_folder, file_path)))}"
+                files_list.append(os.path.join(root, file))
 
-    definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors, files_to_relative_path)
+    definitions, definitions_raw = get_files_definitions(
+        files_list, out_parsing_errors, lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}')
 
     definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
     definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
@@ -201,7 +199,7 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], files_to_relative_path: Dict[str, str]=None) \
+def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     def _parse_file(file):
         parsing_errors = {}
@@ -215,7 +213,7 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
     for result, parsing_errors in results:
         out_parsing_errors.update(parsing_errors)
         (file, parse_result) = result
-        path = files_to_relative_path[file] if files_to_relative_path else file
+        path = filepath_fn(file) if filepath_fn else file
         try:
             template, template_lines = parse_result
             if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
