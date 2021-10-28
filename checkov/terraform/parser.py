@@ -430,7 +430,9 @@ class Parser:
 
     def handle_module(self, mdd: ModuleDownloadData, file: str, keys_referenced_as_modules: dict,
                       all_module_definitions: dict):
+        logging.info(f'Handling {mdd.source}:{mdd.version}')
         with self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version) as content:
+            logging.info(f'Downloaded {mdd.source}:{mdd.version}')
             if not content.loaded():
                 return
             self._internal_dir_load(directory=content.path(),
