@@ -46,7 +46,7 @@ class Runner(BaseRunner):
                     if file_ending in ARM_POSSIBLE_ENDINGS:
                         file_path = os.path.join(root, file)
                         files_list.append(file_path)
-                        files_to_relative_path[file_path] = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
+                        files_to_relative_path[file_path] = f'/{os.path.relpath(file_path, os.path.commonprefix((root_folder, file_path)))}'
 
         definitions, definitions_raw = get_files_definitions(files_list, files_to_relative_path)
 
