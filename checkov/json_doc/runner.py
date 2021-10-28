@@ -15,7 +15,7 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _load_files(files_to_load, definitions, definitions_raw, filename_fn=None):
-        files_to_load = [filename_fn(file) for file in files_to_load if filename_fn else file]
+        files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, parse(f)), files_to_load)
         for file, result in results:
             (definitions[file], definitions_raw[file]) = result

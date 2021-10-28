@@ -186,11 +186,7 @@ def create_definitions(
     definitions = {}
     definitions_raw = {}
     if files:
-        files_list = []
-        for file in files:
-            file_ending = os.path.splitext(file)[1]
-            if file_ending in CF_POSSIBLE_ENDINGS:
-                files_list.append(file)
+        files_list = [file for file in files if os.path.splitext(file)[1] in CF_POSSIBLE_ENDINGS]
         definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors)
 
     if root_folder:

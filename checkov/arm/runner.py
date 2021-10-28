@@ -34,8 +34,7 @@ class Runner(BaseRunner):
                 arm_resource_registry.load_external_checks(directory)
 
         if files:
-            for file in files:
-                files_list.append(file)
+            files_list = files.copy()
 
         if root_folder:
             filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
