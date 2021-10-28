@@ -1,8 +1,10 @@
 import logging
 import os
+from typing import List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
+from checkov.common.parallelizer.parallel_function_runner import parallel_function_runner
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -42,22 +44,17 @@ class Runner(BaseRunner):
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = {}
         files_list = []
+        filepath_fn = None
         if external_checks_dir:
             for directory in external_checks_dir:
                 function_registry.load_external_checks(directory)
 
         if files:
-            for file in files:
-                if os.path.basename(file) in SLS_FILE_MASK:
-                    parse_result = parse(file)
-                    if parse_result:
-                        (definitions[file], definitions_raw[file]) = parse_result
+            files_list = [file for file in files if os.path.basename(file) in SLS_FILE_MASK]
 
         if root_folder:
+            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
             for root, d_names, f_names in os.walk(root_folder):
                 # Don't walk in to "node_modules" directories under the root folder. If –for some reason–
                 # scanning one of these is desired, it can be directly specified.
@@ -73,11 +70,7 @@ class Runner(BaseRunner):
                             # skip temp directories
                             files_list.append(full_path)
 
-            for file in files_list:
-                relative_file_path = f'/{os.path.relpath(file, os.path.commonprefix((root_folder, file)))}'
-                parse_result = parse(file)
-                if parse_result:
-                    (definitions[relative_file_path], definitions_raw[relative_file_path]) = parse_result
+        definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         # Filter out empty files that have not been parsed successfully
         definitions = {k: v for k, v in definitions.items() if v}
@@ -211,3 +204,16 @@ class Runner(BaseRunner):
                     report.add_record(record=record)
 
         return report
+
+
+def get_files_definitions(files: List[str], filepath_fn=None) \
+        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+    results = parallel_function_runner.run_func_parallel(lambda f: (f, parse(f)), files)
+    definitions = {}
+    definitions_raw = {}
+    for file, result in results:
+        if result:
+            path = filepath_fn(file) if filepath_fn else file
+            definitions[path], definitions_raw[path] = result
+
+    return definitions, definitions_raw

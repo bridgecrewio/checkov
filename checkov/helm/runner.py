@@ -106,11 +106,8 @@ class Runner(BaseRunner):
 
         report = Report(self.check_type)
 
-        def _get_chart_meta(chart_dir):
-            return chart_dir, self.parse_helm_chart_details(chart_dir)
-
-        chart_dir_and_meta = parallel_function_runner.run_func_parallel(_get_chart_meta, chart_directories)
-
+        chart_dir_and_meta = parallel_function_runner.run_func_parallel(
+            lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories)
         for chart_dir, chart_meta in chart_dir_and_meta:
             # chart_name = os.path.basename(chart_dir)
             logging.info(

@@ -169,12 +169,9 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _scan_files_parallel(files_to_scan, secrets):
-        # implemented the function like secrets.scan_files, the original function uses the Pool that is unsupported in AWS lambdas
-        def _scan_file(file):
-            filename = os.path.join(secrets.root, file)
-            return list(scan.scan_file(filename))
-
-        results = parallel_function_runner.run_func_parallel(_scan_file, files_to_scan)
+        # implemented the scan function like secrets.scan_files
+        results = parallel_function_runner.run_func_parallel(
+            lambda f: list(scan.scan_file(os.path.join(secrets.root, f))), files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)

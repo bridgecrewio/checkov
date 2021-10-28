@@ -24,7 +24,6 @@ class Runner(BaseRunner):
         report = Report(self.check_type)
         definitions = {}
         definitions_raw = {}
-        parsing_errors = {}
         files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
