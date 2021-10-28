@@ -417,7 +417,7 @@ class Parser:
 
         with futures.ThreadPoolExecutor() as executor:
             futures.wait(
-                [executor.submit(self.handle_module, mdd, file.path, keys_referenced_as_modules, all_module_definitions) for
+                [executor.submit(self.handle_module, mdd, keys_referenced_as_modules, all_module_definitions) for
                  mdd in self.module_loader_registry.modules_to_load],
                 return_when=futures.FIRST_EXCEPTION,
             )
@@ -428,7 +428,7 @@ class Parser:
             deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
-    def handle_module(self, mdd: ModuleDownloadData, file: str, keys_referenced_as_modules: dict,
+    def handle_module(self, mdd: ModuleDownloadData, keys_referenced_as_modules: dict,
                       all_module_definitions: dict):
         logging.info(f'Handling {mdd.source}:{mdd.version}')
         with self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version) as content:
@@ -466,17 +466,17 @@ class Parser:
             #       has not already been added.
             keys = list(module_definitions.keys())
             for key in keys:
-                if key.endswith("]") or file.endswith("]"):
+                if key.endswith("]") or mdd.file.endswith("]"):
                     continue
                 keys_referenced_as_modules.add(key)
-                new_key = f"{key}[{file}#{mdd.module_index}]"
+                new_key = f"{key}[{mdd.file}#{mdd.module_index}]"
                 module_definitions[new_key] = module_definitions[key]
                 del module_definitions[key]
                 del self.out_definitions[key]
                 if new_key not in resolved_loc_list:
                     resolved_loc_list.append(new_key)
-                if (file, mdd.module_call_name) not in self.module_address_map:
-                    self.module_address_map[(file, mdd.module_call_name)] = str(mdd.module_index)
+                if (mdd.file, mdd.module_call_name) not in self.module_address_map:
+                    self.module_address_map[(mdd.file, mdd.module_call_name)] = str(mdd.module_index)
             resolved_loc_list.sort()  # For testing, need predictable ordering
 
             deep_merge.merge(all_module_definitions, module_definitions)
