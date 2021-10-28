@@ -30,7 +30,7 @@ class Runner(BaseRunner):
                 registry.load_external_checks(directory)
 
         if files:
-            self._run_parse_files_parallel(files, definitions, definitions_raw)
+            _parse_files(files, definitions, definitions_raw)
 
         if root_folder:
             filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
@@ -46,7 +46,7 @@ class Runner(BaseRunner):
                             # skip temp directories
                             files_list.append(full_path)
 
-            self._run_parse_files_parallel(files_list, definitions, definitions_raw, filepath_fn)
+            _parse_files(files_list, definitions, definitions_raw, filepath_fn)
 
         for k8_file in definitions.keys():
 
@@ -191,22 +191,6 @@ class Runner(BaseRunner):
 
         return report
 
-    @staticmethod
-    def _run_parse_files_parallel(files, definitions, definitions_raw, filepath_fn=None):
-        def _parse_file(filename):
-            try:
-                return filename, parse(filename)
-            except (TypeError, ValueError) as e:
-                logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
-
-        results = parallel_runner.run_function(_parse_file, files)
-        for result in results:
-            if result:
-                (file, parse_result) = result
-                if parse_result:
-                    path = filepath_fn(file) if filepath_fn else file
-                    (definitions[path], definitions_raw[path]) = parse_result
-
 
 def get_skipped_checks(entity_conf):
     skipped = []
@@ -248,6 +232,23 @@ def get_skipped_checks(entity_conf):
                         logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
                         continue
     return skipped
+
+
+def _parse_files(files, definitions, definitions_raw, filepath_fn=None):
+    def _parse_file(filename):
+        try:
+            return filename, parse(filename)
+        except (TypeError, ValueError) as e:
+            logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+
+    results = parallel_runner.run_function(_parse_file, files)
+    for result in results:
+        if result:
+            (file, parse_result) = result
+            if parse_result:
+                path = filepath_fn(file) if filepath_fn else file
+                (definitions[path], definitions_raw[path]) = parse_result
+
 
 def _get_from_dict(data_dict, map_list):
     return reduce(operator.getitem, map_list, data_dict)

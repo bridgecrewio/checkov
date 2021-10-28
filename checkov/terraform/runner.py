@@ -86,7 +86,7 @@ class Runner(BaseRunner):
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
-                self._run_parse_file_parallel(files, scan_hcl, parsing_errors)
+                self._parse_files(files, scan_hcl, parsing_errors)
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
@@ -294,7 +294,7 @@ class Runner(BaseRunner):
                     record = GraphRecord(record, breadcrumb)
                 report.add_record(record=record)
 
-    def _run_parse_file_parallel(self, files, scan_hcl, parsing_errors):
+    def _parse_files(self, files, scan_hcl, parsing_errors):
         def parse_file(file):
             if not (file.endswith(".tf") or (scan_hcl and file.endswith(".hcl"))):
                 return

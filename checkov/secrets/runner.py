@@ -131,7 +131,7 @@ class Runner(BaseRunner):
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            Runner._scan_files_parallel(files_to_scan, secrets)
+            Runner._scan_files(files_to_scan, secrets)
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -168,7 +168,7 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files_parallel(files_to_scan, secrets):
+    def _scan_files(files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
         results = parallel_runner.run_function(
             lambda f: list(scan.scan_file(os.path.join(secrets.root, f))), files_to_scan)

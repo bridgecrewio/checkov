@@ -225,7 +225,7 @@ class Parser:
             elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
-        files_to_data = self._load_files_parallel(tf_files_to_load)
+        files_to_data = self._load_files(tf_files_to_load)
 
         for file, data in sorted(files_to_data, key=lambda x: x[0]):
             if not data:
@@ -275,13 +275,13 @@ class Parser:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
 
-        auto_var_files_to_data = self._load_files_parallel(auto_vars_files)
+        auto_var_files_to_data = self._load_files(auto_vars_files)
         for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
                 var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 
-        explicit_var_files_to_data = self._load_files_parallel(explicit_var_files)
+        explicit_var_files_to_data = self._load_files(explicit_var_files)
         # it's possible that os.scandir returned the var files in a different order than they were specified
         for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
             if data:
@@ -327,7 +327,7 @@ class Parser:
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
 
-    def _load_files_parallel(self, files):
+    def _load_files(self, files):
         def _load_file(file):
             parsing_errors = {}
             result = _load_or_die_quietly(file, parsing_errors)
