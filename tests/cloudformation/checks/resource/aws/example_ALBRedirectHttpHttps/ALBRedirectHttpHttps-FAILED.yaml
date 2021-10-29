@@ -39,7 +39,7 @@ Resources:
         - Type: "redirect"
           RedirectConfig:
            Protocol: "HTTP"
-           Port: 8080
+           Port: "8080"
            Host: "#{host}"
            Path: "/#{path}"
            Query: "#{query}"
