@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
 
-from cyclonedx.output import get_instance as get_cyclonedx_outputter
+# from cyclonedx.output import get_instance as get_cyclonedx_outputter
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -20,6 +20,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.ext_cyclonedx_xml import ExtXml
 
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -160,9 +161,10 @@ class RunnerRegistry:
                     report.failed_checks += r.failed_checks
             else:
                 report = cyclonedx_reports[0]
-            cyclonedx_output = get_cyclonedx_outputter(
-                bom=report.get_cyclonedx_bom()
-            )
+            # cyclonedx_output = get_cyclonedx_outputter(
+            #     bom=report.get_cyclonedx_bom()
+            # )
+            cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
             print(cyclonedx_output.output_as_string())
             output_formats.remove("cyclonedx")
             if output_formats:
