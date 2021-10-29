@@ -1,11 +1,8 @@
 import datetime
-import io
 import json
 import logging
-import multiprocessing
 import os
 import re
-import sys
 from copy import deepcopy
 from json import dumps, loads, JSONEncoder
 from pathlib import Path
@@ -15,6 +12,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -202,6 +200,7 @@ class Parser:
         if excluded_paths:
             filter_ignored_paths(root_dir, dir_contents, excluded_paths)
 
+        tf_files_to_load = []
         for file in dir_contents:
             # Ignore directories and hidden files
             try:
@@ -215,27 +214,23 @@ class Parser:
             # See: https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
             if file.name == "terraform.tfvars.json":
                 json_tfvars = file
-                continue
             elif file.name == "terraform.tfvars":
                 hcl_tfvars = file
-                continue
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
                 auto_vars_files.append(file)
-                continue
             elif vars_files and file.path in vars_files:
                 explicit_var_files.append(file)
-                continue
 
             # Resource files
-            if file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
-                data = _load_or_die_quietly(file, self.out_parsing_errors)
-            else:
-                continue
+            elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
+                tf_files_to_load.append(file)
 
-            if not data:  # failed loads or empty files
-                continue
+        files_to_data = self._load_files(tf_files_to_load)
 
-            self.out_definitions[file.path] = data
+        for file, data in sorted(files_to_data, key=lambda x: x[0]):
+            if not data:
+                continue
+            self.out_definitions[file] = data
 
             # Load variable defaults
             #  (see https://www.terraform.io/docs/configuration/variables.html#declaring-an-input-variable)
@@ -250,8 +245,8 @@ class Parser:
 
                         default_value = var_definition.get("default")
                         if default_value is not None and isinstance(default_value, list):
-                            self.external_variables_data.append((var_name, default_value[0], file.path))
-                            var_value_and_file_map[var_name] = default_value[0], file.path
+                            self.external_variables_data.append((var_name, default_value[0], file))
+                            var_value_and_file_map[var_name] = default_value[0], file
 
         # Stage 2: Load vars in proper order:
         #          https://www.terraform.io/docs/configuration/variables.html#variable-definition-precedence
@@ -270,8 +265,7 @@ class Parser:
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
             self.external_variables_data.append((key[7:], value, f"env:{key}"))
         if hcl_tfvars:  # terraform.tfvars
-            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors,
-                                        clean_definitions=False)
+            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, clean_definitions=False)
             if data:
                 var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
@@ -280,19 +274,20 @@ class Parser:
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
-        for var_file in sorted(auto_vars_files, key=lambda e: e.name):
-            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
-            if data:
-                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
 
-        # it's possible that os.scandir returned the var files in a different order than they were specified
-        explicit_var_files.sort(key=lambda f: vars_files.index(f.path))
-        for var_file in explicit_var_files:
-            data = _load_or_die_quietly(var_file, self.out_parsing_errors)
+        auto_var_files_to_data = self._load_files(auto_vars_files)
+        for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
-                var_value_and_file_map.update({k: (v, var_file.path) for k, v in data.items()})
-                self.external_variables_data.extend([(k, v, var_file.path) for k, v in data.items()])
+                var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
+
+        explicit_var_files_to_data = self._load_files(explicit_var_files)
+        # it's possible that os.scandir returned the var files in a different order than they were specified
+        for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
+            if data:
+                var_value_and_file_map.update({k: (v, var_file) for k, v in data.items()})
+                self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
+
         if specified_vars:  # specified
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
@@ -331,6 +326,23 @@ class Parser:
                 # If there are more modules to load but no variables were resolved, then to a final module
                 # load, forcing things through without complete resolution.
                 force_final_module_load = True
+
+    def _load_files(self, files):
+        def _load_file(file):
+            parsing_errors = {}
+            result = _load_or_die_quietly(file, parsing_errors)
+            # the exceptions type can un-pickleable
+            for path, e in parsing_errors.items():
+                parsing_errors[path] = Exception(str(e))
+
+            return (file.path, result), parsing_errors
+
+        results = parallel_runner.run_function(_load_file, files)
+        files_to_data = []
+        for result, parsing_errors in results:
+            self.out_parsing_errors.update(parsing_errors)
+            files_to_data.append(result)
+        return files_to_data
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool], module_load_context: Optional[str],
