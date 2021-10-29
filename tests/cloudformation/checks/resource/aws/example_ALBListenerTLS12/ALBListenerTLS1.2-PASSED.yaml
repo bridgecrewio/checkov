@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys an Application Load Balancer 
+Parameters:
+  Subnets:
+    Description: Choose a minimum of 2 subnets the ALB should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - sg-1234567
+
+  ListenerHTTPSPASSED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates: 
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerHTTPSPASSED2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates: 
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerHTTPPASSED3:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Host: "localhost"
+            Path: "/images"
+            Port: "443"
+            Protocol: "HTTPS"
+            Query: "query"
+            StatusCode: HTTP_301

@@ -10,6 +10,7 @@ class SourceType:
 @dataclass
 class BCSourceType:
     VSCODE = 'vscode'
+    JETBRAINS = 'jetbrains'
     CLI = 'cli'
     KUBERNETES_WORKLOADS = 'kubernetesWorkloads'
     GITHUB_ACTIONS = 'githubActions'
@@ -18,6 +19,7 @@ class BCSourceType:
 
 SourceTypes = {
     BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
+    BCSourceType.JETBRAINS: SourceType(BCSourceType.JETBRAINS, False),
     BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
     BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
     BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),

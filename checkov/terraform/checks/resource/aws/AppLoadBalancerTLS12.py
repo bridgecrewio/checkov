@@ -7,7 +7,7 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that load balancer is using TLS 1.2"
         id = "CKV_AWS_103"
-        supported_resources = ["aws_lb_listener"]
+        supported_resources = ["aws_lb_listener", "aws_alb_listener"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(
             name=name,

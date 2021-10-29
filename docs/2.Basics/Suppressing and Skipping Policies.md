@@ -20,7 +20,7 @@ To skip a check on a given Terraform definition block or CloudFormation resource
 
 ### Example
 The following comment skips the `CKV_AWS_20` check on the resource identified by `foo-bucket`, where the scan checks if an AWS S3 bucket is private.
-In the example, the bucket is configured with a public read access; Adding the suppress comment skips the appropriate check instead of the check failing.
+In the example, the bucket is configured with a public read access; Adding the suppression comment skips the appropriate check instead of the check failing.
 
 ```python
 resource "aws_s3_bucket" "foo-bucket" {
@@ -76,4 +76,21 @@ metadata:
 spec:
   containers:
 ...
+```
+
+### Secrets Example
+To suppress secrets checks in any configuration file a comment needs to be added directly before, after or next to the infringing line.
+
+```yaml
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      # checkov:skip=CKV_SECRET_6 before it
+      MasterUserPassword: 'password' # checkov:skip=CKV_SECRET_6 or next to it
+      # checkov:skip=CKV_SECRET_6 or after it
 ```
