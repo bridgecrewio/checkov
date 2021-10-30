@@ -459,7 +459,7 @@ def report_to_cyclonedx(report: Report) -> Bom:
             Vulnerability(
                 id=failed_check.check_id, source_name='checkov',
                 description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
-                recommendations=[failed_check.guideline]
+                advisories=[failed_check.guideline]
             )
         )
         bom.add_component(component=component)
