@@ -439,16 +439,21 @@ class Parser:
 
     def load_distinct_module(self, mdd: ModuleDownloadData):
         module_address = mdd.module_address
-        content = self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version)
-        logging.info(f'Downloaded {mdd.source}:{mdd.version}')
-        if not content.loaded():
-            self.module_loader_registry.module_content_cache[module_address] = None
-            return
-        self.module_loader_registry.module_content_cache[module_address] = content
+        try:
+            content = self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version)
+            logging.info(f'Downloaded {mdd.source}:{mdd.version}')
+            if not content.loaded():
+                self.module_loader_registry.module_content_cache[module_address] = None
+                return
+            self.module_loader_registry.module_content_cache[module_address] = content
+        except Exception as e:
+            logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
+                            mdd.source, mdd.version, e)
+
 
     def parse_module_definitions(self, mdd: ModuleDownloadData, module_definition_results: list):
         module_address = mdd.module_address
-        content = self.module_loader_registry.module_content_cache[module_address]
+        content = self.module_loader_registry.module_content_cache.get(module_address)
         if not content:
             logging.info(f'Got no content for module address {module_address}')
             return
