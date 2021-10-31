@@ -449,6 +449,7 @@ class Parser:
         except Exception as e:
             logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                             mdd.source, mdd.version, e)
+            self.module_loader_registry.module_content_cache[module_address] = None
 
 
     def parse_module_definitions(self, mdd: ModuleDownloadData, module_definition_results: list):
