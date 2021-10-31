@@ -413,14 +413,16 @@ class Parser:
 
         module_definition_list = []
 
-        distinct_new_module_addresses = {m.module_address: m for m in modules_to_download}.values()
+        distinct_new_module_addresses = list({m.module_address: m for m in modules_to_download}.values())
 
         # with futures.ThreadPoolExecutor() as executor:
         #     resp = futures.wait(
         #         [executor.submit(self.load_distinct_module, mdd) for mdd in distinct_new_module_addresses],
         #         return_when=futures.ALL_COMPLETED,
         #     )
-        #     all(d.exception() is None for d in resp.done)
+        #     for d in resp.done:
+        #         if d.exception() is not None:
+        #             raise d.exception()
 
         for m in distinct_new_module_addresses:
             self.load_distinct_module(m)
@@ -450,7 +452,6 @@ class Parser:
             logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                             mdd.source, mdd.version, e)
             self.module_loader_registry.module_content_cache[module_address] = None
-
 
     def parse_module_definitions(self, mdd: ModuleDownloadData, module_definition_results: list):
         module_address = mdd.module_address
