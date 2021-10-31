@@ -301,9 +301,8 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
-            has_more_modules = self._load_modules(directory,dir_filter, module_load_context,
-                                                  keys_referenced_as_modules,
-                                                  force_final_module_load)
+            has_more_modules = self._load_modules(directory, dir_filter, module_load_context,
+                                                  keys_referenced_as_modules, force_final_module_load)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -325,6 +324,7 @@ class Parser:
                                             parameters.
         """
         skipped_a_module = False
+        modules_to_download: List[ModuleDownloadData] = []
         for file in list(self.out_definitions.keys()):
             # Don't process a file in a directory other than the directory we're processing. For example,
             # if we're down dealing with <top_dir>/<module>/something.tf, we don't want to rescan files
@@ -399,32 +399,29 @@ class Parser:
                             module_call_name=module_call_name,
                             module_load_context=module_load_context,
                         )
-                        self.module_loader_registry.add_module_download(module_download_data)
+                        modules_to_download.append(module_download_data)
                     except Exception as e:
                         logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
 
-        all_module_definitions = {}
-        all_module_evaluations_context = {}
+        module_definition_list = []
 
         with futures.ThreadPoolExecutor() as executor:
             futures.wait(
-                [executor.submit(self.handle_module, mdd, keys_referenced_as_modules, all_module_definitions) for
-                 mdd in self.module_loader_registry.modules_to_load],
-                return_when=futures.FIRST_EXCEPTION,
+                [executor.submit(self.handle_module, mdd, keys_referenced_as_modules, module_definition_list) for
+                 mdd in modules_to_download],
+                return_when=futures.ALL_COMPLETED,
             )
 
-        if all_module_definitions:
-            deep_merge.merge(self.out_definitions, all_module_definitions)
-        if all_module_evaluations_context:
-            deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
+        for md in module_definition_list:
+            deep_merge.merge(self.out_definitions, md)
         return skipped_a_module
 
     def handle_module(self, mdd: ModuleDownloadData, keys_referenced_as_modules: dict,
-                      all_module_definitions: dict):
+                      module_definition_results: list):
         module_address = (mdd.file, mdd.module_index, mdd.module_call_name)
         if module_address in self._loaded_modules:
-            logging.info('Module has already been downloaded')
+            logging.info(f'Module {module_address[0]} has already been downloaded')
             return
         self._loaded_modules.add(module_address)
         logging.info(f'Handling {mdd.source}:{mdd.version}')
@@ -477,7 +474,7 @@ class Parser:
                     self.module_address_map[(mdd.file, mdd.module_call_name)] = str(mdd.module_index)
             resolved_loc_list.sort()  # For testing, need predictable ordering
 
-            deep_merge.merge(all_module_definitions, module_definitions)
+            module_definition_results.append(module_definitions)
 
             self.external_modules_source_map[(mdd.source, mdd.version)] = content.path()
 
@@ -491,6 +488,7 @@ class Parser:
         excluded_paths: Optional[List[str]] = None,
         vars_files: Optional[List[str]] = None
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
+        self._loaded_modules.clear()
         tf_definitions: Dict[str, Dict[str, Any]] = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
