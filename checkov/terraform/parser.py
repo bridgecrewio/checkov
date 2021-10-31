@@ -429,8 +429,9 @@ class Parser:
             self.parse_module_definitions(mdd, module_definition_list)
 
         for m in distinct_new_module_addresses:
-            if m:
-                self.module_loader_registry.module_content_cache[m.module_address].cleanup()
+            content = self.module_loader_registry.module_content_cache[m.module_address]
+            if content:
+                content.cleanup()
 
         for md in module_definition_list:
             deep_merge.merge(self.out_definitions, md)
