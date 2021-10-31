@@ -51,10 +51,6 @@ class Parser:
         self._parsed_directories = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
-
-        # This ensures that we don't try to double-load modules
-        # Tuple is <file>, <module_index>, <name> (see _load_modules)
-        self._loaded_modules: Set[Tuple[str, int, str]] = set()
         self.external_variables_data = []
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
@@ -367,10 +363,6 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
-                    module_address = (file, module_index, module_call_name)
-                    if module_address in self._loaded_modules:
-                        continue
-
                     # Variables being passed to module, "source" and "version" are reserved
                     specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
                                       if k != "source" and k != "version"}
@@ -421,77 +413,92 @@ class Parser:
 
         module_definition_list = []
 
-        with futures.ThreadPoolExecutor() as executor:
-            futures.wait(
-                [executor.submit(self.handle_module, mdd, keys_referenced_as_modules, module_definition_list) for
-                 mdd in modules_to_download],
-                return_when=futures.ALL_COMPLETED,
-            )
+        distinct_new_module_addresses = {m.module_address: m for m in modules_to_download}.values()
+
+        # with futures.ThreadPoolExecutor() as executor:
+        #     resp = futures.wait(
+        #         [executor.submit(self.load_distinct_module, mdd) for mdd in distinct_new_module_addresses],
+        #         return_when=futures.ALL_COMPLETED,
+        #     )
+        #     all(d.exception() is None for d in resp.done)
+
+        for m in distinct_new_module_addresses:
+            self.load_distinct_module(m)
+
+        for mdd in modules_to_download:
+            self.parse_module_definitions(mdd, module_definition_list)
+
+        for m in distinct_new_module_addresses:
+            self.module_loader_registry.module_content_cache[m.module_address].cleanup()
 
         for md in module_definition_list:
             deep_merge.merge(self.out_definitions, md)
         return skipped_a_module
 
-    def handle_module(self, mdd: ModuleDownloadData, keys_referenced_as_modules: dict,
-                      module_definition_results: list):
-        module_address = (mdd.file, mdd.module_index, mdd.module_call_name)
-        if module_address in self._loaded_modules:
-            logging.info(f'Module {module_address[0]} has already been downloaded')
+    def load_distinct_module(self, mdd: ModuleDownloadData):
+        module_address = mdd.module_address
+        content = self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version)
+        logging.info(f'Downloaded {mdd.source}:{mdd.version}')
+        if not content.loaded():
+            self.module_loader_registry.module_content_cache[module_address] = None
             return
-        self._loaded_modules.add(module_address)
-        logging.info(f'Handling {mdd.source}:{mdd.version}')
-        with self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version) as content:
-            logging.info(f'Downloaded {mdd.source}:{mdd.version}')
-            if not content.loaded():
-                return
-            self._internal_dir_load(directory=content.path(),
-                                    dir_filter=mdd.dir_filter, specified_vars=mdd.specified_vars,
-                                    module_load_context=mdd.module_load_context,
-                                    keys_referenced_as_modules=mdd.keys_referenced_as_modules)
+        self.module_loader_registry.module_content_cache[module_address] = content
 
-            module_definitions = {path: self.out_definitions[path] for path in
-                                  list(self.out_definitions.keys()) if
-                                  os.path.dirname(path) == content.path()}
-            if not module_definitions:
-                return
+    def parse_module_definitions(self, mdd: ModuleDownloadData, module_definition_results: list):
+        module_address = mdd.module_address
+        content = self.module_loader_registry.module_content_cache[module_address]
+        if not content:
+            logging.info(f'Got no content for module address {module_address}')
+            return
+        logging.info(f'Handling {module_address}')
+        self._internal_dir_load(directory=content.path(),
+                                dir_filter=mdd.dir_filter, specified_vars=mdd.specified_vars,
+                                module_load_context=mdd.module_load_context,
+                                keys_referenced_as_modules=mdd.keys_referenced_as_modules)
 
-            # NOTE: Modules are put into the main TF definitions structure "as normal" with the
-            #       notable exception of the file name. For loaded modules referrer information is
-            #       appended to the file name to create this format:
-            #         <file_name>[<referred_file>#<referrer_index>]
-            #       For example:
-            #         /the/path/module/my_module.tf[/the/path/main.tf#0]
-            #       The referrer and index allow a module allow a module to be loaded multiple
-            #       times with differing data.
-            #
-            #       In addition, the referring block will have a "__resolved__" key added with a
-            #       list pointing to the location of the module data that was resolved. For example:
-            #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
-            resolved_loc_list = mdd.module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
-            if resolved_loc_list is None:
-                resolved_loc_list = []
-                mdd.module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
+        module_definitions = {path: self.out_definitions[path] for path in
+                              list(self.out_definitions.keys()) if
+                              os.path.dirname(path) == content.path()}
+        if not module_definitions:
+            return
 
-            # NOTE: Modules can load other modules, so only append referrer information where it
-            #       has not already been added.
-            keys = list(module_definitions.keys())
-            for key in keys:
-                if key.endswith("]") or mdd.file.endswith("]"):
-                    continue
-                keys_referenced_as_modules.add(key)
-                new_key = f"{key}[{mdd.file}#{mdd.module_index}]"
-                module_definitions[new_key] = module_definitions[key]
-                del module_definitions[key]
-                del self.out_definitions[key]
-                if new_key not in resolved_loc_list:
-                    resolved_loc_list.append(new_key)
-                if (mdd.file, mdd.module_call_name) not in self.module_address_map:
-                    self.module_address_map[(mdd.file, mdd.module_call_name)] = str(mdd.module_index)
-            resolved_loc_list.sort()  # For testing, need predictable ordering
+        # NOTE: Modules are put into the main TF definitions structure "as normal" with the
+        #       notable exception of the file name. For loaded modules referrer information is
+        #       appended to the file name to create this format:
+        #         <file_name>[<referred_file>#<referrer_index>]
+        #       For example:
+        #         /the/path/module/my_module.tf[/the/path/main.tf#0]
+        #       The referrer and index allow a module allow a module to be loaded multiple
+        #       times with differing data.
+        #
+        #       In addition, the referring block will have a "__resolved__" key added with a
+        #       list pointing to the location of the module data that was resolved. For example:
+        #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
+        resolved_loc_list = mdd.module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
+        if resolved_loc_list is None:
+            resolved_loc_list = []
+            mdd.module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
 
-            module_definition_results.append(module_definitions)
+        # NOTE: Modules can load other modules, so only append referrer information where it
+        #       has not already been added.
+        keys = list(module_definitions.keys())
+        for key in keys:
+            if key.endswith("]") or mdd.file.endswith("]"):
+                continue
+            mdd.keys_referenced_as_modules.add(key)
+            new_key = f"{key}[{mdd.file}#{mdd.module_index}]"
+            module_definitions[new_key] = module_definitions[key]
+            del module_definitions[key]
+            del self.out_definitions[key]
+            if new_key not in resolved_loc_list:
+                resolved_loc_list.append(new_key)
+            if (mdd.file, mdd.module_call_name) not in self.module_address_map:
+                self.module_address_map[(mdd.file, mdd.module_call_name)] = str(mdd.module_index)
+        resolved_loc_list.sort()  # For testing, need predictable ordering
 
-            self.external_modules_source_map[(mdd.source, mdd.version)] = content.path()
+        module_definition_results.append(module_definitions)
+
+        self.external_modules_source_map[(mdd.source, mdd.version)] = content.path()
 
     def parse_hcl_module(
         self,
@@ -503,7 +510,6 @@ class Parser:
         excluded_paths: Optional[List[str]] = None,
         vars_files: Optional[List[str]] = None
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
-        self._loaded_modules.clear()
         tf_definitions: Dict[str, Dict[str, Any]] = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},

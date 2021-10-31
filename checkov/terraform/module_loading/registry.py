@@ -30,6 +30,9 @@ class ModuleDownloadData:
         return {k: v[0] if isinstance(v, list) else v for k, v in self.module_call_data.items()
                 if k != "source" and k != "version"}
 
+    @property
+    def module_address(self) -> str:
+        return f'{self.source}::{self.version}'
 
 
 class ModuleLoaderRegistry:
@@ -44,7 +47,7 @@ class ModuleLoaderRegistry:
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()
         self.root_dir = ""  # root dir for storing external modules
-        self.modules_to_load: List[ModuleDownloadData] = []
+        self.module_content_cache: Dict[str, Optional[ModuleContent]] = {}
 
     def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
         """
@@ -107,9 +110,6 @@ information, see `loader.ModuleLoader.load`.
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()
-
-    def add_module_download(self, module_to_load: ModuleDownloadData):
-        self.modules_to_load.append(module_to_load)
 
 
 module_loader_registry = ModuleLoaderRegistry()
