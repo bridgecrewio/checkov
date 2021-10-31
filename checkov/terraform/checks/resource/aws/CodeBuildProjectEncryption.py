@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -14,7 +15,7 @@ class CodeBuildProjectEncryption(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'artifacts' not in conf:
             return CheckResult.UNKNOWN
-        artifact = conf['artifacts'][0]
+        artifact = force_list(conf['artifacts'])[0]
         if isinstance(artifact, dict):
             if artifact['type'] == ["NO_ARTIFACTS"]:
                 self.evaluated_keys = ['artifacts/[0]/type']

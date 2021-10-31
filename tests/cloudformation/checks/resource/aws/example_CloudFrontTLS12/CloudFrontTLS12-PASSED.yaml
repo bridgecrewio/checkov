@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This template deploys CloudFront Distribution"
+Resources:
+  cloudfrontdistributionPASSED1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          AcmCertificateArn: "cert-test"
+          MinimumProtocolVersion: TLSv1.2_2018
+          SslSupportMethod: sni-only
+
+  cloudfrontdistributionPASSED2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          AcmCertificateArn: "cert-test"
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+
+  cloudfrontdistributionPASSED3:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          AcmCertificateArn: "cert-test"
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only

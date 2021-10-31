@@ -2,17 +2,17 @@ import linecache
 import logging
 import os
 import re
-import time
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
+from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.graph.graph_builder.utils import run_function_multithreaded
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -131,20 +131,7 @@ class Runner(BaseRunner):
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            def _scan_file(file_paths: List[str]) -> None:
-                for file_path in file_paths:
-                    start = time.time()
-                    try:
-                        secrets.scan_file(file_path)
-                    except Exception as err:
-                        logging.warning(f"Secret scanning:could not process file {file_path}, {err}")
-                        continue
-                    end = time.time()
-                    scan_time = end - start
-                    if scan_time > 10:
-                        logging.info(f'Scanned {file_path}, took {scan_time} seconds')
-
-            run_function_multithreaded(_scan_file, files_to_scan, 1, num_of_workers=os.cpu_count())
+            Runner._scan_files(files_to_scan, secrets)
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -179,6 +166,15 @@ class Runner(BaseRunner):
                 ))
 
             return report
+
+    @staticmethod
+    def _scan_files(files_to_scan, secrets):
+        # implemented the scan function like secrets.scan_files
+        results = parallel_runner.run_function(
+            lambda f: list(scan.scan_file(os.path.join(secrets.root, f))), files_to_scan)
+        for secrets_results in results:
+            for secret in secrets_results:
+                secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
 
     @staticmethod
     def search_for_suppression(
