@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 
 class ResourceEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure resource is encrypted by KMS"
+        name = "Ensure resource is encrypted by KMS using a customer managed Key (CMK)"
         id = "CKV_AWS_175"
         supported_resources = ['aws_cloudtrail',
                                'aws_fsx_lustre_file_system','aws_fsx_ontap_file_system',
