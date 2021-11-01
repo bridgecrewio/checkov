@@ -24,7 +24,6 @@ Note: The Terraform show output file `tf.json` will be a single line. For that r
 If you have installed jq, you can convert a JSON file into multiple lines making it easier to read the scan result.
 
 ```json
-terraform plan --out tfplan.binary
 terraform show -json tfplan.binary | jq '.' > tfplan.json
 
 checkov -f tfplan.json
