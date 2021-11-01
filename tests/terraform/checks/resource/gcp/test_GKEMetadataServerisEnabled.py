@@ -17,8 +17,10 @@ class TestGKEMetadataServerisEnabled(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'google_container_cluster.success',
-            'google_container_node_pool.success'
+            'google_container_cluster.success_mode',
+            'google_container_cluster.success_node_metadata',
+            'google_container_node_pool.success_mode',
+            'google_container_node_pool.success_node_metadata'
         }
         failing_resources = {
             'google_container_cluster.fail',
@@ -28,7 +30,7 @@ class TestGKEMetadataServerisEnabled(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
