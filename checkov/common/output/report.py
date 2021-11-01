@@ -198,19 +198,17 @@ class Report:
     ) -> None:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
-        if self.parsing_errors:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
-                summary["passed"],
-                summary["failed"],
-                summary["skipped"],
-                summary["parsing_errors"],
-            )
-        else:
-            message = (
-                "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
-                    summary["passed"], summary["failed"], summary["skipped"]
-                )
-            )
+        message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
+            summary["passed"],
+            summary["failed"],
+            summary["skipped"],
+            summary["parsing_errors"],
+        )
+        # message = (
+        #     "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
+        #         summary["passed"], summary["failed"], summary["skipped"]
+        #     )
+        )
         print(colored(message, "cyan"))
         if not is_quiet:
             for record in self.passed_checks:
