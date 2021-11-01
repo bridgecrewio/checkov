@@ -58,6 +58,30 @@ resource "aws_codebuild_project" "pass_codebuild" {
   }
 }
 
+# Codestar
+
+resource "aws_security_group" "pass_codestar" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_codestarconnections_host" "pass_codestar" {
+  name              = "star"
+  provider_endpoint = "https://github.com/bridgecrewio/checkov"
+  provider_type     = "GitHubEnterpriseServer"
+  vpc_configuration {
+    vpc_id             = "aws_vpc.vpc.id"
+    security_group_ids = [aws_security_group.pass_codestar.id]
+    subnet_ids         = ["aws_subnet.public_a.id"]
+  }
+  provider = aws.primary
+}
+
 # DMS
 
 resource "aws_security_group" "pass_dms" {
