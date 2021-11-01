@@ -308,21 +308,33 @@ class Parser:
                 force_final_module_load = True
 
     def _load_files(self, files):
-        def _load_file(file):
+        files_to_data = []
+        for file in files:
             parsing_errors = {}
             result = _load_or_die_quietly(file, parsing_errors)
             # the exceptions type can un-pickleable
             for path, e in parsing_errors.items():
                 parsing_errors[path] = Exception(str(e))
-
-            return (file.path, result), parsing_errors
-
-        results = parallel_runner.run_function(_load_file, files)
-        files_to_data = []
-        for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
-            files_to_data.append(result)
+            files_to_data.append((file.path, result))
+
         return files_to_data
+
+        # def _load_file(file):
+        #     parsing_errors = {}
+        #     result = _load_or_die_quietly(file, parsing_errors)
+        #     # the exceptions type can un-pickleable
+        #     for path, e in parsing_errors.items():
+        #         parsing_errors[path] = Exception(str(e))
+        #
+        #     return (file.path, result), parsing_errors
+        #
+        # results = parallel_runner.run_function(_load_file, files)
+        # files_to_data = []
+        # for result, parsing_errors in results:
+        #     self.out_parsing_errors.update(parsing_errors)
+        #     files_to_data.append(result)
+        # return files_to_data
 
     def _load_modules(self, root_dir: str, dir_filter: Callable[[str], bool], module_load_context: Optional[str],
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
@@ -441,9 +453,11 @@ class Parser:
 
     def load_distinct_module(self, mdd: ModuleDownloadData):
         module_address = mdd.module_address
+        if module_address in self.module_loader_registry.module_content_cache:
+            return
         try:
             content = self.module_loader_registry.load(mdd.root_dir, mdd.source, mdd.version)
-            logging.info(f'Downloaded {mdd.source}:{mdd.version}')
+            logging.info(f'Downloaded {module_address}')
             if not content.loaded():
                 self.module_loader_registry.module_content_cache[module_address] = None
                 return

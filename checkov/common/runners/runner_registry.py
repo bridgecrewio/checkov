@@ -54,10 +54,16 @@ class RunnerRegistry:
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
-        reports = parallel_runner.run_function(
-            lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                      runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments),
-            self.runners, 1)
+        if len(self.runners) == 1:
+            report = self.runners[0].run(root_folder, external_checks_dir, files,
+                                         collect_skip_comments=collect_skip_comments,
+                                         runner_filter=self.runner_filter)
+            reports = [report]
+        else:
+            reports = parallel_runner.run_function(
+                lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                          runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments),
+                self.runners, 1)
 
         for scan_report in reports:
             self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
