@@ -8,8 +8,6 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
 
-# from cyclonedx.output import get_instance as get_cyclonedx_outputter
-
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
@@ -161,9 +159,6 @@ class RunnerRegistry:
                     report.failed_checks += r.failed_checks
             else:
                 report = cyclonedx_reports[0]
-            # cyclonedx_output = get_cyclonedx_outputter(
-            #     bom=report.get_cyclonedx_bom()
-            # )
             cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
             print(cyclonedx_output.output_as_string())
             output_formats.remove("cyclonedx")
