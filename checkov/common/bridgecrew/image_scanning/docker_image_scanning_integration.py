@@ -48,12 +48,12 @@ class DockerImageScanningIntegration:
             {'Authorization': self.get_bc_api_key()}
         )
         vulnerabilities = list(map(lambda x: {
-            'cveId': x['id'],
+            'cveId': x.get('id'),
             'status': x.get('status', 'open'),
-            'severity': x['severity'],
-            'packageName': x['packageName'],
-            'packageVersion': x['packageVersion'],
-            'link': x['link'],
+            'severity': x.get('severity'),
+            'packageName': x.get('packageName'),
+            'packageVersion': x.get('packageVersion'),
+            'link': x.get('link'),
             'cvss': x.get('cvss'),
             'vector': x.get('vector'),
             'description': x.get('description'),

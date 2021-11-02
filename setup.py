@@ -57,7 +57,7 @@ setup(
         "policyuniverse",
         "typing-extensions",
         "cachetools",
-        "cyclonedx-python-lib>=0.6.1",
+        "cyclonedx-python-lib==0.6.2",
         "click==7.1.2"
     ],
     license="Apache License 2.0",

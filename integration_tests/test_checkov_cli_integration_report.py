@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 import unittest
 
@@ -16,7 +17,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         self.validate_report(os.path.abspath(report_path))
 
     def validate_report(self, report_path):
-        if sys.version_info[1] == 7:
+        if sys.version_info[1] == 7 and platform.system() == 'Linux':
             platform_url_found = False
             with open(report_path) as f:
                 if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
