@@ -38,7 +38,10 @@ class ParallelRunner:
 
         for process, parent_conn, group_len in processes:
             for _ in range(group_len):
-                yield parent_conn.recv()
+                try:
+                    yield parent_conn.recv()
+                except EOFError:
+                    pass
 
     def _run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:

@@ -239,7 +239,7 @@ def _parse_files(files, definitions, definitions_raw, filepath_fn=None):
         try:
             return filename, parse(filename)
         except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
 
     results = parallel_runner.run_function(_parse_file, files)
     for result in results:
