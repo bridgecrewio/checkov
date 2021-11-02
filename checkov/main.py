@@ -1,4 +1,35 @@
 #!/usr/bin/env python
+from checkov.version import version
+from checkov.json_doc.runner import Runner as json_runner
+from checkov.terraform.runner import Runner as tf_graph_runner
+from checkov.terraform.plan_runner import Runner as tf_plan_runner
+from checkov.serverless.runner import Runner as sls_runner
+from checkov.secrets.runner import Runner as secrets_runner
+from checkov.runner_filter import RunnerFilter
+from checkov.logging_init import init as logging_init
+from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.helm.runner import Runner as helm_runner
+from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
+from checkov.common.util.ext_argument_parser import ExtArgumentParser
+from checkov.common.util.docs_generator import print_checks
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.config_utils import get_default_config_paths
+from checkov.common.util.banner import banner as checkov_banner
+from checkov.common.util import prompt
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.output.baseline import Baseline
+from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.cloudformation.runner import Runner as cfn_runner
+from checkov.arm.runner import Runner as arm_runner
+from pathlib import Path
+
 import atexit
 import json
 import logging
@@ -6,40 +37,10 @@ import os
 import shutil
 import sys
 import signal
-from pathlib import Path
-
 import configargparse
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
-from checkov.arm.runner import Runner as arm_runner
-from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
-from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
-from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.output.baseline import Baseline
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.util.banner import banner as checkov_banner
-from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.docs_generator import print_checks
-from checkov.common.util.ext_argument_parser import ExtArgumentParser
-from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
-from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.dockerfile.runner import Runner as dockerfile_runner
-from checkov.helm.runner import Runner as helm_runner
-from checkov.kubernetes.runner import Runner as k8_runner
-from checkov.logging_init import init as logging_init
-from checkov.runner_filter import RunnerFilter
-from checkov.secrets.runner import Runner as secrets_runner
-from checkov.serverless.runner import Runner as sls_runner
-from checkov.terraform.plan_runner import Runner as tf_plan_runner
-from checkov.terraform.runner import Runner as tf_graph_runner
-from checkov.json_doc.runner import Runner as json_runner
-from checkov.version import version
 
 outer_registry = None
 
@@ -62,6 +63,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     add_parser_args(parser)
     config = parser.parse_args(argv)
 
+    if config.add_check:
+        prompt.Prompt().go()
+        return
+
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output == None:
         config.output = ['cli']
@@ -82,7 +87,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check,
-                                 download_external_modules=convert_str_to_bool(config.download_external_modules),
+                                 download_external_modules=convert_str_to_bool(
+                                     config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
@@ -144,7 +150,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     if config.check and config.skip_check:
         if any(item in runner_filter.checks for item in runner_filter.skip_checks):
-            parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
+            parser.error(
+                "The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
             return
 
     integration_feature_registry.run_pre_scan()
@@ -184,7 +191,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths)
+                bc_integration.persist_repository(
+                    root_folder, excluded_paths=runner_filter.excluded_paths)
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
@@ -192,10 +200,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 overall_baseline = Baseline()
                 for report in scan_reports:
                     overall_baseline.add_findings_from_report(report)
-                created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
+                created_baseline_path = os.path.join(
+                    os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
+            exit_codes.append(runner_registry.print_reports(
+                scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -208,14 +218,16 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             overall_baseline = Baseline()
             for report in scan_reports:
                 overall_baseline.add_findings_from_report(report)
-            created_baseline_path = os.path.join(os.path.abspath(os.path.commonprefix(config.file)), '.checkov.baseline')
+            created_baseline_path = os.path.join(os.path.abspath(
+                os.path.commonprefix(config.file)), '.checkov.baseline')
             with open(created_baseline_path, 'w') as f:
                 json.dump(overall_baseline.to_dict(), f, indent=4)
 
         if bc_integration.is_integration_configured():
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
-            bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
+            bc_integration.persist_repository(
+                root_folder, files, excluded_paths=runner_filter.excluded_paths)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
@@ -243,6 +255,7 @@ def add_parser_args(parser):
                help='version', action='version', version=version)
     parser.add('-d', '--directory', action='append',
                help='IaC root directory (can not be used together with --file).')
+    parser.add('--add-check', action='store_true', help="Generate a new check via CLI prompt")
     parser.add('-f', '--file', action='append',
                help='IaC file(can not be used together with --directory)')
     parser.add('--skip-path', action='append',
@@ -327,7 +340,8 @@ def add_parser_args(parser):
     parser.add('--repo-root-for-plan-enrichment',
                help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
                dest="repo_root_for_plan_enrichment", action='append')
-    parser.add('--config-file', help='path to the Checkov configuration YAML file', is_config_file=True, default=None)
+    parser.add('--config-file', help='path to the Checkov configuration YAML file',
+               is_config_file=True, default=None)
     parser.add('--create-config', help='takes the current command line args and writes them out to a config file at '
                                        'the given path', is_write_out_config_file_arg=True, default=None)
     parser.add('--show-config', help='prints all args and config settings and where they came from '
@@ -340,7 +354,8 @@ def add_parser_args(parser):
                                   'with respect to the provided baseline', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
-    exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
+    exit_code_group.add('-s', '--soft-fail',
+                        help='Runs checks but suppresses error code', action='store_true')
     exit_code_group.add('--soft-fail-on', help='Exits with a 0 exit code for specified checks. You can specify '
                                                'multiple checks separated by comma delimiter', action='append',
                         default=None)

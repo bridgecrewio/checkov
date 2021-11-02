@@ -1,1 +1,2 @@
 recursive-include checkov/terraform/checks/graph_checks *.yaml *.yml
+recursive-include checkov/common/util/templates *.jinja2
