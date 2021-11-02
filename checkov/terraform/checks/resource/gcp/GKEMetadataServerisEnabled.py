@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GKEMetadataServerisEnabled(BaseResourceValueCheck):
+class GKEMetadataServerisEnabled(BaseResourceCheck):
     def __init__(self):
         name = "Ensure the GKE Metadata Server is Enabled"
         id = "CKV_GCP_69"
@@ -19,23 +19,19 @@ class GKEMetadataServerisEnabled(BaseResourceValueCheck):
         :return: <CheckResult>
         """
         if 'node_config' in conf.keys():
-            if 'workload_metadata_config' in conf['node_config'][0].keys():
-                workload_metadata_config = conf['node_config'][0]["workload_metadata_config"]
-                
+            node = conf["node_config"][0]
+            if isinstance(node, dict) and 'workload_metadata_config' in node:
+                workload_metadata = node["workload_metadata_config"][0]
+              
+                if workload_metadata.get("mode", None) == ["GKE_METADATA"]:
+                    return CheckResult.PASSED
                 # deprecated in newer google provider
-                if 'node_metadata' in workload_metadata_config[0].keys():
-                    node_metadata = workload_metadata_config[0]["node_metadata"]
-                    return CheckResult.PASSED if node_metadata == "GKE_METADATA_SERVER" else CheckResult.FAILED
-
-                if 'mode' in workload_metadata_config[0].keys():
-                    mode = workload_metadata_config[0]["mode"]
-                    return CheckResult.PASSED if mode == "GKE_METADATA" else CheckResult.FAILED
-
-                return CheckResult.FAILED
+                elif workload_metadata.get("node_metadata", None) == ["GKE_METADATA_SERVER"]:
+                    return CheckResult.PASSED
+                else:
+                    return CheckResult.FAILED
+            
             return CheckResult.FAILED
         return CheckResult.FAILED
-
-    def get_inspected_key(self):
-        return 'node_config/[0]/workload_metadata_config'
 
 check = GKEMetadataServerisEnabled()
