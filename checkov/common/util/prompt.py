@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from pathlib import Path
@@ -15,8 +14,6 @@ TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
 
 
 class Prompt(object):
-    __metaclass__ = ABCMeta
-
     ACTIONS = ["add"]
     CHECK_CLASS = ["terraform"]
     CATEGORIES = ["application_security", "backup_and_recovery" "convention", "encryption",
