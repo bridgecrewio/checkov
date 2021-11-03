@@ -23,6 +23,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
+from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
@@ -53,7 +54,7 @@ DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner())
 
 
-def run(banner=checkov_banner, argv=sys.argv[1:]):
+def run(banner=checkov_banner, tool=tool_name, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
                                default_config_files=default_config_paths,
@@ -91,7 +92,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
+        runner_registry = RunnerRegistry(banner, tool, runner_filter, *DEFAULT_RUNNERS)
 
     runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
     runnerDependencyHandler.validate_runner_deps()

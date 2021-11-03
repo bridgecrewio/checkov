@@ -11,7 +11,7 @@ class TestCycloneDxReport(unittest.TestCase):
 
     def test_valid_cyclonedx_bom(self):
         runners = (tf_graph_runner(), tf_plan_runner(),)
-        registry = RunnerRegistry(None, RunnerFilter(), *runners)
+        registry = RunnerRegistry("", "", RunnerFilter(), *runners)
         scan_reports = registry.run(files=[
             join(dirname(__file__), 'fixtures/main.tf')
         ])
