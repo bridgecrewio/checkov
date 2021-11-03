@@ -256,6 +256,8 @@ class Report:
         results = []
         ruleset = set()
         idx = 0
+        level = "note"
+
         for record in self.failed_checks:
             rule = {
                 "id": record.check_id,
@@ -280,10 +282,16 @@ class Report:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
                 record.file_line_range[1] = 1
+
+            if record.check_result.get("result", None) == CheckResult.FAILED:
+                level = "error"
+            elif record.check_result.get("result", None) == CheckResult.SKIPPED:
+                level = "warning"
+
             result = {
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
-                "level": "error",
+                "level": level,
                 "message": {"text": record.check_name},
                 "locations": [
                     {
@@ -318,8 +326,9 @@ class Report:
         }
         return sarif_template_report
 
-    def print_sarif_report(self) -> None:
-        print(json.dumps(self.get_sarif_json()))
+    def write_sarif_output(self) -> None:
+        with open("results.sarif", "w") as f:
+            f.write(json.dumps(self.get_sarif_json()))
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
