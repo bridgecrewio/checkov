@@ -327,8 +327,13 @@ class Report:
         return sarif_template_report
 
     def write_sarif_output(self) -> None:
-        with open("results.sarif", "w") as f:
-            f.write(json.dumps(self.get_sarif_json()))
+        try:
+            with open("results.sarif", "w") as f:
+                f.write(json.dumps(self.get_sarif_json()))
+                print("\nWrote output in SARIF format to the file 'results.sarif'")
+        except EnvironmentError as e:
+            print("\nAn error occurred while writing SARIF results to file: results.sarif")
+            print(f"More details: \n {e}")
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
