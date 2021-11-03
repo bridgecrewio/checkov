@@ -256,7 +256,9 @@ class Report:
         results = []
         ruleset = set()
         idx = 0
-        for record in self.failed_checks:
+        level = "warning"
+
+        for record in self.failed_checks + self.skipped_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -280,10 +282,16 @@ class Report:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
                 record.file_line_range[1] = 1
+
+            if record.check_result.get("result", None) == CheckResult.FAILED:
+                level = "error"
+            elif record.check_result.get("result", None) == CheckResult.SKIPPED:
+                level = "warning"
+
             result = {
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
-                "level": "error",
+                "level": level,
                 "message": {"text": record.check_name},
                 "locations": [
                     {
@@ -318,8 +326,14 @@ class Report:
         }
         return sarif_template_report
 
-    def print_sarif_report(self) -> None:
-        print(json.dumps(self.get_sarif_json()))
+    def write_sarif_output(self) -> None:
+        try:
+            with open("results.sarif", "w") as f:
+                f.write(json.dumps(self.get_sarif_json()))
+                print("\nWrote output in SARIF format to the file 'results.sarif'")
+        except EnvironmentError as e:
+            print("\nAn error occurred while writing SARIF results to file: results.sarif")
+            print(f"More details: \n {e}")
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
