@@ -26,10 +26,10 @@ class BaseRegistry:
                 continue
             logging.debug(f'Running graph check: {check.id}')
             passed, failed = check.run(graph_connector)
-            check_result = self._process_check_result(passed, [], CheckResult.PASSED, check.get_evaluated_keys())
-            check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, check.get_evaluated_keys())
+            evaluated_keys = check.get_evaluated_keys()
+            check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
+            check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
             check_results[check] = check_result
-            # check_results[check] = (check_result, check.get_evaluated_keys())
         return check_results
 
     @staticmethod
