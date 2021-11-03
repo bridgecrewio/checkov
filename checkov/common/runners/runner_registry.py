@@ -132,7 +132,6 @@ class RunnerRegistry:
                 )
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks
-                master_report.parsing_errors += report.parsing_errors
             if url:
                 print("More details: {}".format(url))
             master_report.write_sarif_output()

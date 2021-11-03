@@ -256,9 +256,9 @@ class Report:
         results = []
         ruleset = set()
         idx = 0
-        level = "note"
+        level = "warning"
 
-        for record in self.failed_checks:
+        for record in self.failed_checks + self.skipped_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
