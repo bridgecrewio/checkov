@@ -6,7 +6,7 @@ class WAFHasAnyRules(BaseResourceCheck):
     def __init__(self):
         name = "Ensure WAF has any rules"
         id = "CKV_AWS_175"
-        supported_resources = ['aws_waf_web_acl', 'aws_wafv2_web_acl']
+        supported_resources = ['aws_waf_web_acl', 'aws_wafregional_web_acl', 'aws_wafv2_web_acl']
         categories = [CheckCategories.APPLICATION_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

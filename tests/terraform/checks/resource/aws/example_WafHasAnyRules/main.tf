@@ -44,3 +44,45 @@ resource "aws_waf_web_acl" "pass" {
     }
   }
 }
+
+resource "aws_wafregional_web_acl" "pass" {
+  name        = "tfWebACLregional"
+  metric_name = "tfWebACLregional"
+
+  default_action {
+    type = "ALLOW"
+  }
+
+  rule {
+    action {
+      type = "BLOCK"
+    }
+
+    priority = 1
+    rule_id  = aws_wafregional_rule.wafrule.id
+    type     = "REGULAR"
+  }
+}
+
+resource "aws_wafregional_web_acl" "fail" {
+  name        = "tfWebACLregionalfail"
+  metric_name = "tfWebACLregionalfail"
+
+  default_action {
+    type = "ALLOW"
+  }
+
+}
+
+resource "aws_wafregional_web_acl" "fail2" {
+  name        = "tfWebACLregionalfail2"
+  metric_name = "tfWebACLregionalfail2"
+
+  default_action {
+    type = "ALLOW"
+  }
+
+  rule {
+  }
+}
+
