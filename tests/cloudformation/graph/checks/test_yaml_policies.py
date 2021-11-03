@@ -64,9 +64,11 @@ class TestYamlPolicies(unittest.TestCase):
                     expected_to_fail = expected.get('fail', [])
                     expected_to_pass = expected.get('pass', [])
                     expected_to_skip = expected.get('skip', [])
+                    expected_evaluated_keys = expected.get('evaluated_keys', [])
                     self.assert_entities(expected_to_pass, report.passed_checks, True)
                     self.assert_entities(expected_to_fail, report.failed_checks, False)
                     self.assert_entities(expected_to_skip, report.skipped_checks, True)
+                    self.assert_evaluated_keys(expected_evaluated_keys, report.passed_checks + report.failed_checks)
 
         assert found
 
@@ -82,6 +84,10 @@ class TestYamlPolicies(unittest.TestCase):
                     found = True
                     break
             self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
+
+    def assert_evaluated_keys(self, expected_evaluated_keys: List[str], results: List[Record]):
+        for record in results:
+            self.assertEqual(expected_evaluated_keys, record.check_result["evaluated_keys"])
 
 
 def get_checks_registry():
