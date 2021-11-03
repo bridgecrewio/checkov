@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_31"
-  name: "Ensure WAF2 has Logs"
+  name: "Ensure WAF2 has a Logging Configuration"
   category: "LOGGING"
 definition:
   and:
