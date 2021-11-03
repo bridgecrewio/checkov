@@ -17,7 +17,7 @@ class TestRunnerRegistry(unittest.TestCase):
         test_files_dir = current_dir + "/example_multi_iac"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
         runner_registry = RunnerRegistry(
-            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+            banner, "", runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
         reports = runner_registry.run(root_folder=test_files_dir)
         for report in reports:
@@ -28,7 +28,7 @@ class TestRunnerRegistry(unittest.TestCase):
         test_files_dir = current_dir + "/example_multi_iac"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
         runner_registry = RunnerRegistry(
-            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+            banner, "", runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
         reports = runner_registry.run(root_folder=test_files_dir)
 
@@ -65,7 +65,7 @@ class TestRunnerRegistry(unittest.TestCase):
     def verify_empty_report(self, test_files_dir, files=None):
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
         runner_registry = RunnerRegistry(
-            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+            banner, "", runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
         reports = runner_registry.run(root_folder=test_files_dir, files=files)
         for report in reports:
