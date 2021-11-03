@@ -20,7 +20,6 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.util.banner import banner
 
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -32,12 +31,14 @@ class RunnerRegistry:
     runners: List[BaseRunner] = []
     scan_reports: List[Report] = []
     banner = ""
+    tool = ""
 
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: BaseRunner) -> None:
+    def __init__(self, banner: str, tool: str, runner_filter: RunnerFilter, *runners: BaseRunner) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
+        self.tool = tool
         self.scan_reports = []
         self.filter_runner_framework()
 
@@ -121,7 +122,7 @@ class RunnerRegistry:
 
         if "sarif" in config.output:
             master_report = Report("merged")
-            print(banner)
+            print(self.banner)
             for report in sarif_reports:
                 report.print_console(
                         is_quiet=config.quiet,
@@ -134,7 +135,7 @@ class RunnerRegistry:
                 master_report.skipped_checks += report.skipped_checks
             if url:
                 print("More details: {}".format(url))
-            master_report.write_sarif_output()
+            master_report.write_sarif_output(self.tool)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)

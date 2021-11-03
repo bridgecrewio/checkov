@@ -250,13 +250,15 @@ class Report:
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_sarif_json(self) -> Dict[str, Any]:
+    def get_sarif_json(self, tool) -> Dict[str, Any]:
         runs = []
         rules = []
         results = []
         ruleset = set()
         idx = 0
         level = "warning"
+        tool = tool if tool else "Bridgecrew"
+        information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
 
         for record in self.failed_checks + self.skipped_checks:
             rule = {
@@ -310,9 +312,9 @@ class Report:
         runs.append({
             "tool": {
                 "driver": {
-                    "name": "checkov",
+                    "name": tool,
                     "version": version,
-                    "informationUri": "https://github.com/bridgecrewio/checkov/",
+                    "informationUri": information_uri,
                     "rules": rules,
                     "organization": "bridgecrew",
                 }
@@ -326,10 +328,10 @@ class Report:
         }
         return sarif_template_report
 
-    def write_sarif_output(self) -> None:
+    def write_sarif_output(self, tool) -> None:
         try:
             with open("results.sarif", "w") as f:
-                f.write(json.dumps(self.get_sarif_json()))
+                f.write(json.dumps(self.get_sarif_json(tool)))
                 print("\nWrote output in SARIF format to the file 'results.sarif'")
         except EnvironmentError as e:
             print("\nAn error occurred while writing SARIF results to file: results.sarif")
