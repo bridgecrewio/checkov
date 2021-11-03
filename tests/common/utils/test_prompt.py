@@ -45,7 +45,10 @@ class TestPrompt(unittest.TestCase):
 
         mock_click = click
         mock_click.prompt = MagicMock(name="prompt", side_effect=choices)
-        prompt.Prompt().go()
+        resp = prompt.Prompt()
+        check = prompt.Check(resp.responses)
+        check.action()
+
         captured = self.capsys.readouterr()
 
         expected = [
@@ -66,7 +69,10 @@ class TestPrompt(unittest.TestCase):
 
         mock_click = click
         mock_click.prompt = MagicMock(name="prompt", side_effect=choices)
-        prompt.Prompt().go()
+        resp = prompt.Prompt()
+        check = prompt.Check(resp.responses)
+        check.action()
+
         captured = self.capsys.readouterr()
 
         expected = [
@@ -87,7 +93,10 @@ class TestPrompt(unittest.TestCase):
 
         mock_click = click
         mock_click.prompt = MagicMock(name="prompt", side_effect=choices)
-        prompt.Prompt().go()
+        resp = prompt.Prompt()
+        check = prompt.Check(resp.responses)
+        check.action()
+
         captured = self.capsys.readouterr()
 
         expected = [

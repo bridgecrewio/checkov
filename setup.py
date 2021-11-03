@@ -58,7 +58,7 @@ setup(
         "typing-extensions",
         "cachetools",
         "cyclonedx-python-lib==0.6.2",
-        "click==7.1.2"
+        "click>=8.0.0"
     ],
     license="Apache License 2.0",
     name="checkov",

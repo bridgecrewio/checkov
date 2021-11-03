@@ -64,7 +64,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     config = parser.parse_args(argv)
 
     if config.add_check:
-        prompt.Prompt().go()
+        resp = prompt.Prompt()
+        check = prompt.Check(resp.responses)
+        check.action()
         return
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.

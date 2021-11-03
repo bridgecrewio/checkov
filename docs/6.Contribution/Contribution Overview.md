@@ -44,9 +44,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
        | (__| | | |  __/ (__|   < (_) \ V /
         \___|_| |_|\___|\___|_|\_\___/ \_/
 
-      By bridgecrew.io | version: 2.0.524
-      Update available 2.0.524 -> 2.0.536
-      Run pip3 install -U checkov to update
+      By bridgecrew.io | version: ...
 
       What action would you like to take? (add) [add]: add
 
@@ -56,7 +54,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
 
       Describe what this check does [Ensure that X does Y...]: Makes sure that aws_iam_policy resources have a tag that says {'Checkov' = IsAwesome'}
 
-      What what kind of check would you like to add? (terraform) [terraform]: terraform
+      What kind of check would you like to add? (terraform) [terraform]: terraform
 
       Select the cloud provider this will run on (azure, aws, gcp) [aws]: aws
 
@@ -73,7 +71,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
 
       Next steps:
           1) Edit your new check located in the checks/ directory listed above
-          2) Add both a PASS and FAIL unit test to the newly created unit test under the test/ directory to show others how to fix failures
+          2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures
       ```
 3. Go to your new Check at `/path/to/checkov/checkov/terraform/checks/resource/aws/CheckovIsAwesomeTag.py`
 4. Edit the `scan_resource_conf()` function to look like the following:

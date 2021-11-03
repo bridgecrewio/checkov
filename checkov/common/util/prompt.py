@@ -13,7 +13,7 @@ CHECKOV_ROOT_DIRECTORY = os.path.join(".", "checkov")
 TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
 
 
-class Prompt(object):
+class Prompt():
     ACTIONS = ["add"]
     CHECK_CLASS = ["terraform"]
     CATEGORIES = ["application_security", "backup_and_recovery" "convention", "encryption",
@@ -22,52 +22,52 @@ class Prompt(object):
     PROVIDERS = ["azure", "aws", "gcp"]
 
     PROMPTS = {
-        "action": {
+        "chosen_action": {
             "text": 'What action would you like to take?',
-            "typ": click.Choice(ACTIONS),
+            "type": click.Choice(ACTIONS),
             "default": "add",
             "sub_prompts": [
                 {
                     "title": {
                         "text": 'Enter the title of your new check (without a .py)',
-                        "typ": str,
+                        "type": str,
                         "default": "MyNewTest"
                     },
                     "category": {
                         "text": 'Select a category for this check',
-                        "typ": click.Choice(CATEGORIES),
+                        "type": click.Choice(CATEGORIES),
                         "default": "iam"
                     },
                     "desc": {
                         "text": 'Describe what this check does',
-                        "typ": str,
+                        "type": str,
                         "default": "Ensure that X does Y..."
                     },
                     "check_class": {
                         "prompt_if": 'add',
-                        "text": 'What what kind of check would you like to add?',
-                        "typ": click.Choice(CHECK_CLASS),
+                        "text": 'What kind of check would you like to add?',
+                        "type": click.Choice(CHECK_CLASS),
                         "default": "terraform",
                         "sub_prompts": [
                             {  # Terraform
                                 "provider": {
                                     "prompt_if": 'terraform',
                                     "text": 'Select the cloud provider this will run on',
-                                    "typ": click.Choice(PROVIDERS),
+                                    "type": click.Choice(PROVIDERS),
                                     "default": "aws",
                                     "sub_prompts": [
                                         {  # AWS
                                             "context": {
                                                 "prompt_if": 'aws',
                                                 "text": 'Select a terraform object for this check',
-                                                "typ": click.Choice(TERRAFORM_OBJECT_TYPE),
+                                                "type": click.Choice(TERRAFORM_OBJECT_TYPE),
                                                 "default": "resource",
                                                 "sub_prompts": [
                                                     {
                                                         "supported_resource": {
                                                             "prompt_if": 'resource',
                                                             "text": 'Enter the terraform object type',
-                                                            "typ": str,
+                                                            "type": str,
                                                             "default": "aws_iam_policy"
                                                         },
                                                     },
@@ -75,7 +75,7 @@ class Prompt(object):
                                                         "supported_resource": {
                                                             "prompt_if": 'data',
                                                             "text": 'Enter the terraform object type',
-                                                            "typ": str,
+                                                            "type": str,
                                                             "default": "aws_iam_policy_document"
                                                         },
                                                     },
@@ -83,7 +83,7 @@ class Prompt(object):
                                                         "supported_resource": {
                                                             "prompt_if": 'provider',
                                                             "text": 'Enter the terraform object type',
-                                                            "typ": str,
+                                                            "type": str,
                                                             "default": "aws"
                                                         },
                                                     }
@@ -94,14 +94,14 @@ class Prompt(object):
                                             "context": {
                                                 "prompt_if": 'azure',
                                                 "text": 'Select a terraform object for this check',
-                                                "typ": click.Choice(['resource']),
+                                                "type": click.Choice(['resource']),
                                                 "default": "resource",
                                                 "sub_prompts": [
                                                     {
                                                         "supported_resource": {
                                                             "prompt_if": 'resource',
                                                             "text": 'Enter the terraform object type',
-                                                            "typ": str,
+                                                            "type": str,
                                                             "default": "azurerm_policy_definition"
                                                         },
                                                     }
@@ -112,14 +112,14 @@ class Prompt(object):
                                             "context": {
                                                 "prompt_if": 'gcp',
                                                 "text": 'Select a terraform object for this check',
-                                                "typ": click.Choice(['resource']),
+                                                "type": click.Choice(['resource']),
                                                 "default": "resource",
                                                 "sub_prompts": [
                                                     {
                                                         "supported_resource": {
                                                             "prompt_if": 'resource',
                                                             "text": 'Enter the terraform object type',
-                                                            "typ": str,
+                                                            "type": str,
                                                             "default": "google_project_iam_policy"
                                                         },
                                                     }
@@ -141,29 +141,17 @@ class Prompt(object):
         self.responses = {}
         self.prompt()
 
-    def go(self):
-        print("Please ensure you are at the root of the Checkov repository before completing this prompt")
-
-        # Load our prompts
-        module = importlib.import_module("checkov.common.util.prompt")
-
-        # Load an instance of our Check class (this could be expanded to do more later)
-        instance = getattr(module, "Check")(self.responses)
-
-        # Call the action on that Class (add, remove, modify - leaves room for more actions)
-        getattr(instance, self.action)()
-
     # Recurse over our prompt, populating new class attributes from the keys and
     # user-supplied answers
     def prompt(self, prompt_map=PROMPTS, prompt_if=None):
         for k, v in prompt_map.items():
             if "prompt_if" not in v or v["prompt_if"] == prompt_if:
                 # Prompt the user
-                p = click.prompt(v["text"], type=v["typ"], default=v["default"])
+                p = click.prompt(v["text"], type=v["type"], default=v["default"])
 
                 # Create the action on our object
-                if k is 'action':
-                    setattr(self, k, p)
+                if k == 'chosen_action':
+                    self.chosen_action = p
 
                 # Record user responses
                 self.responses[k] = p
@@ -181,10 +169,22 @@ class Prompt(object):
 
 class Check(Prompt):
     def __init__(self, user_responses={}):
-        for k, v in user_responses.items():
-            setattr(self, k, v)
+        self.chosen_action = user_responses.get("chosen_action", None)
+        self.title = user_responses.get("title", None)
+        self.category = user_responses.get("category", None)
+        self.desc = user_responses.get("desc", None)
+        self.check_class = user_responses.get("check_class", None)
+        self.provider = user_responses.get("provider", None)
+        self.context = user_responses.get("context", None)
+        self.supported_resource = user_responses.get("supported_resource", None)
+
+    def action(self):
+        # Call the user-selected action (add, remove, modify - leaves room for more actions)
+        getattr(self, self.chosen_action)()
 
     def add(self):
+        print("Please ensure you are at the root of the Checkov repository before completing this prompt")
+
         self.populate_templates()
         self.create_check()
         self.create_unit_test_stubs()
@@ -268,6 +268,4 @@ class Check(Prompt):
     def print_instructions(self):
         print(f"\nNext steps:")
         print(f"\t1) Edit your new check located in the checks/ directory listed above")
-        print(f"\t2) Add both a PASS and FAIL unit test to the newly created unit test under the test/ directory to show others how to fix failures")
-
-# End
+        print(f"\t2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures")
