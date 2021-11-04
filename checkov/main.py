@@ -92,7 +92,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, tool_name, runner_filter, *DEFAULT_RUNNERS)
+        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
     runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
     runnerDependencyHandler.validate_runner_deps()
