@@ -164,7 +164,7 @@ class Prompt():
 
     def template_env(self):
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIRECTORY)
-        return jinja2.Environment(loader=template_loader)
+        return jinja2.Environment(loader=template_loader, autoescape=True)
 
 
 class Check(Prompt):
