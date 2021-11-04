@@ -39,6 +39,7 @@ class RunnerRegistry:
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
+        self.tool = tool_name
 
     @abstractmethod
     def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
@@ -133,7 +134,7 @@ class RunnerRegistry:
                 master_report.skipped_checks += report.skipped_checks
             if url:
                 print("More details: {}".format(url))
-            master_report.write_sarif_output(tool_name)
+            master_report.write_sarif_output(self.tool)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
