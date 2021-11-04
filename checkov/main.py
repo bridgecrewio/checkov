@@ -54,7 +54,7 @@ DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner())
 
 
-def run(banner=checkov_banner, tool=tool_name, argv=sys.argv[1:]):
+def run(banner=checkov_banner, argv=sys.argv[1:]):
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
                                default_config_files=default_config_paths,
@@ -92,7 +92,7 @@ def run(banner=checkov_banner, tool=tool_name, argv=sys.argv[1:]):
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
     else:
-        runner_registry = RunnerRegistry(banner, tool, runner_filter, *DEFAULT_RUNNERS)
+        runner_registry = RunnerRegistry(banner, tool_name, runner_filter, *DEFAULT_RUNNERS)
 
     runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
     runnerDependencyHandler.validate_runner_deps()
@@ -196,7 +196,7 @@ def run(banner=checkov_banner, tool=tool_name, argv=sys.argv[1:]):
                 created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline, tool=tool_name))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -220,7 +220,7 @@ def run(banner=checkov_banner, tool=tool_name, argv=sys.argv[1:]):
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
-                                             baseline=baseline)
+                                             baseline=baseline, tool=tool_name)
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")

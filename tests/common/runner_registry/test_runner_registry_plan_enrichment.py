@@ -13,7 +13,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_enrichment_of_plan_report(self):
         allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
         runner_registry = RunnerRegistry(
-            banner, "", RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
+            banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
         )
 
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
@@ -105,7 +105,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_enrichment_of_plan_report_with_modules(self):
         allowed_checks = ["CKV_AWS_66", "CKV_AWS_158"]
         runner_registry = RunnerRegistry(
-            banner, "", RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
+            banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
         )
 
         repo_root = Path(__file__).parent / "plan_with_tf_modules_for_enrichment"
@@ -143,7 +143,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_skip_check(self):
         allowed_checks = ["CKV_AWS_20", "CKV_AWS_28"]
         runner_registry = RunnerRegistry(
-            banner, "", RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
+            banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
         )
 
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
