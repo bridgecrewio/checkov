@@ -11,13 +11,11 @@ class WAFHasAnyRules(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if "rules" not in conf.keys() and "rule" not in conf.keys():
-            return CheckResult.FAILED
-        if "rules" in conf.keys() and conf["rules"] == [{}]:
-            return CheckResult.FAILED
-        if "rule" in conf.keys() and conf["rule"] == [{}]:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+        if "rules" in conf.keys() and conf["rules"] != [{}]:
+            return CheckResult.PASSED
+        if "rule" in conf.keys() and conf["rule"] != [{}]:
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = WAFHasAnyRules()
