@@ -20,7 +20,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-
+from checkov.common.util.banner import tool as tool_name
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -39,6 +39,7 @@ class RunnerRegistry:
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
+        self.tool = tool_name
 
     @abstractmethod
     def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
@@ -119,10 +120,21 @@ class RunnerRegistry:
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "sarif" in config.output:
-            master_report = Report(None)
+            master_report = Report("merged")
+            print(self.banner)
             for report in sarif_reports:
+                report.print_console(
+                        is_quiet=config.quiet,
+                        is_compact=config.compact,
+                        created_baseline_path=created_baseline_path,
+                        baseline=baseline,
+                        use_bc_ids=config.output_bc_ids,
+                )
                 master_report.failed_checks += report.failed_checks
-            master_report.print_sarif_report()
+                master_report.skipped_checks += report.skipped_checks
+            if url:
+                print("More details: {}".format(url))
+            master_report.write_sarif_output(self.tool)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -178,7 +190,7 @@ class RunnerRegistry:
             return
         if self.runner_filter.framework == "all":
             return
-        self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
+        self.runners = [runner for runner in self.runners if runner.check_type == self.runner_filter.framework]
 
     def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:
