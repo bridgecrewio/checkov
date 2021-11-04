@@ -23,7 +23,6 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
-from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
@@ -196,7 +195,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline, tool=tool_name))
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -220,7 +219,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
-                                             baseline=baseline, tool=tool_name)
+                                             baseline=baseline)
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")

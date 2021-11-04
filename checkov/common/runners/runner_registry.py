@@ -20,7 +20,7 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-
+from checkov.common.util.banner import tool as tool_name
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -77,7 +77,6 @@ class RunnerRegistry:
         self,
         scan_reports: List[Report],
         config: argparse.Namespace,
-        tool: str,
         url: Optional[str] = None,
         created_baseline_path: Optional[str] = None,
         baseline: Optional[Baseline] = None,
@@ -134,7 +133,7 @@ class RunnerRegistry:
                 master_report.skipped_checks += report.skipped_checks
             if url:
                 print("More details: {}".format(url))
-            master_report.write_sarif_output(tool)
+            master_report.write_sarif_output(tool_name)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
