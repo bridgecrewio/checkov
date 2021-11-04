@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.aws.WAFEnabled import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestS3MFADelete(unittest.TestCase):
+class TestWAFEnabled(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
