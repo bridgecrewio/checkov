@@ -3,7 +3,7 @@ import re
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
-MULTI_STAGE_PATTERN = re.compile(r"(\S+)\s+as\s+(\S+)")
+MULTI_STAGE_PATTERN = re.compile(r"(\S+)\s+as\s+(\S+)", re.IGNORECASE)
 
 
 class ReferenceLatestTag(BaseDockerfileCheck):
