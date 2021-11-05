@@ -31,6 +31,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 converted_check = self._convert_raw_check(policy)
                 resource_types = Registry._get_resource_types(converted_check['metadata'])
                 check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
+                if bc_integration.guidelines:
+                    bc_integration.guidelines[check.id] = policy['guideline']
                 if re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
                     get_graph_checks_registry("cloudformation").checks.append(check)
                 else:
