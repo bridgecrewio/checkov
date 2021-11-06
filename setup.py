@@ -42,7 +42,7 @@ setup(
         "junit-xml>=1.9",
         "dpath>=1.5.0,<2",
         "pyyaml>=5.4.1",
-        "boto3==1.17.*",
+        "boto3>=1.17",
         "GitPython",
         "jmespath",
         "tqdm",
