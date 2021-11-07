@@ -16,8 +16,7 @@ class SecretManagerSecretEncrypted(BaseResourceCheck):
         properties = conf.get("Properties")
         if properties:
             kms_key_id = properties.get("KmsKeyId")
-            if kms_key_id:
-                if aws_kms_alias not in kms_key_id:
+            if kms_key_id and aws_kms_alias not in kms_key_id:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
