@@ -31,4 +31,4 @@ class BaseGraphCheck:
         return self.bc_id if self.bc_id and use_bc_ids else self.id
 
     def get_evaluated_keys(self) -> List[str]:
-        return [self.attribute] if self.attribute else []
+        return ["/".join(self.attribute.split('.'))] if self.attribute else []
