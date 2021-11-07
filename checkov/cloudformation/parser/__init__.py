@@ -36,6 +36,9 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
     except cfn_yaml.CfnParseError as err:
         error = f"Parsing error in file: {filename} - {err}"
         LOGGER.info(error)
+    except ValueError as err:
+        error = f"Parsing error in file: {filename} - {err}"
+        LOGGER.info(error)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
