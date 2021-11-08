@@ -25,7 +25,7 @@ class GKEMetadataServerisEnabled(BaseResourceCheck):
               
                 if workload_metadata.get("mode", None) == ["GKE_METADATA"]:
                     return CheckResult.PASSED
-                # deprecated in newer google provider
+                # deprecated in newer Google provider
                 elif workload_metadata.get("node_metadata", None) == ["GKE_METADATA_SERVER"]:
                     return CheckResult.PASSED
             
