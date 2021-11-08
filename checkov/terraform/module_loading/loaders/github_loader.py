@@ -7,6 +7,10 @@ class GithubLoader(GenericGitLoader):
         if self.module_source.startswith("github.com"):
             self.module_source = f"git::https://{self.module_source}"
             return True
+        if self.module_source.startswith("git@github.com"):
+            source = self.module_source.replace(":", "/")
+            self.module_source = f"git::ssh://{source}"
+            return True
         return False
 
 
