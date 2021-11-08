@@ -24,17 +24,11 @@ class NginxIngressCVE202125742Lua(BaseK8Check):
         badInjectionPatterns = "\\blua_|_lua\\b|_lua_|\\bkubernetes\\.io\\b"
 
         if conf["metadata"]:
-            if conf["metadata"]["annotations"]:
-                if conf["metadata"].get('annotations'):
-                    for annotation in force_list(conf["metadata"]["annotations"]):
-                        for key in annotation:
-                            if "snippet" in key:
-                                if re.match(badInjectionPatterns ,annotation[key]):
-                                    return CheckResult.FAILED
-                            else:
-                                return CheckResult.PASSED
-                else:
-                    CheckResult.PASSED
+            if conf["metadata"].get('annotations'):
+                for annotation in force_list(conf["metadata"]["annotations"]):
+                    for key, value in annotation.items():
+                        if "snippet" in key and  re.match(badInjectionPatterns, value):
+                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 check = NginxIngressCVE202125742Lua()
