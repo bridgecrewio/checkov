@@ -86,10 +86,8 @@ class TestYamlPolicies(unittest.TestCase):
             self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
 
     def assert_evaluated_keys(self, expected_evaluated_keys: List[str], results: List[Record]):
-        expected_evaluated_keys.sort()
         evaluated_keys_results = results[0].check_result["evaluated_keys"]
-        evaluated_keys_results.sort()
-        self.assertListEqual(expected_evaluated_keys, evaluated_keys_results)
+        self.assertCountEqual(expected_evaluated_keys, evaluated_keys_results)
 
 
 def get_checks_registry():

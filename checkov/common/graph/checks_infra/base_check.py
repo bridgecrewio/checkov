@@ -33,5 +33,5 @@ class BaseGraphCheck:
 
     def get_evaluated_keys(self) -> List[str]:
         if self.sub_checks:
-            return list(set(itertools.chain(*[check.get_evaluated_keys() for check in self.sub_checks])))
+            return list(set(itertools.chain.from_iterable(check.get_evaluated_keys() for check in self.sub_checks)))
         return ["/".join(self.attribute.split('.'))] if self.attribute else []
