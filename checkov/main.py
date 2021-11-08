@@ -27,6 +27,7 @@ from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
+from checkov.common.util import prompt
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.dockerfile.runner import Runner as dockerfile_runner
@@ -61,6 +62,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                add_env_var_help=True)
     add_parser_args(parser)
     config = parser.parse_args(argv)
+
+    if config.add_check:
+        resp = prompt.Prompt()
+        check = prompt.Check(resp.responses)
+        check.action()
+        return
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output == None:
@@ -243,6 +250,7 @@ def add_parser_args(parser):
                help='version', action='version', version=version)
     parser.add('-d', '--directory', action='append',
                help='IaC root directory (can not be used together with --file).')
+    parser.add('--add-check', action='store_true', help="Generate a new check via CLI prompt")
     parser.add('-f', '--file', action='append',
                help='IaC file(can not be used together with --directory)')
     parser.add('--skip-path', action='append',
