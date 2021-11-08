@@ -4,7 +4,7 @@ COPY kubernetes/requirements.txt /requirements.txt
 
 # Install checkov
 RUN pip install -r /requirements.txt
-RUN apt-get update && apt-get install -y --no-install-recommends git && \
+RUN apt-get update && apt-get install -y --no-install-recommends git curl && \
   rm -rf /var/lib/apt/lists/*;
 
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl \
