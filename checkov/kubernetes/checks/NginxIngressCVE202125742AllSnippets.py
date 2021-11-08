@@ -23,16 +23,11 @@ class NginxIngressCVE202125742AllSnippets(BaseK8Check):
     def scan_spec_conf(self, conf):
 
         if conf["metadata"]:
-            if conf["metadata"]["annotations"]:
-                if conf["metadata"].get('annotations'):
-                    for annotation in force_list(conf["metadata"]["annotations"]):
-                        for key in annotation:
-                            if "snippet" in key:
-                                return CheckResult.FAILED
-                            else:
-                                return CheckResult.PASSED
-                else:
-                    CheckResult.PASSED
+            if conf["metadata"].get('annotations'):
+                for annotation in force_list(conf["metadata"]["annotations"]):
+                    for key in annotation:
+                        if "snippet" in key:
+                            return CheckResult.FAILED
         return CheckResult.PASSED
 
 check = NginxIngressCVE202125742AllSnippets()
