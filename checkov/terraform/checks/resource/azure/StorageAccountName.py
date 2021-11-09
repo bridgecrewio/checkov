@@ -8,7 +8,7 @@ STO_NAME_REGEX = re.compile('^[a-z0-9]{3,24}$')
 
 class StorageAccountName(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure the Storage Account naming rules"
+        name = "Ensure Storage Accounts adhere to the naming rules"
         id = "CKV_AZURE_43"
         supported_resources = ['azurerm_storage_account']
         categories = [CheckCategories.CONVENTION]
