@@ -143,8 +143,17 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except Exception as e:
-            logger.error('An error occurred setting up the Bridgecrew platform integration. Please check your API token'
-                         ' and try again.', exc_info=True)
+            if bc_integration.prisma_url:
+                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
+                          'token and PRISMA_API_URL environment variable and try again. The PRISMA_API_URL value ' \
+                          'should be similar to: `https://api0.prismacloud.io`'
+            else:
+                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
+                          'token and try again.'
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(message, exc_info=True)
+            else:
+                logger.error(message)
             return
     else:
         logger.debug('No API key found. Scanning locally only.')
