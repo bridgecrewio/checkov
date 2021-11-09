@@ -287,7 +287,7 @@ class TerraformVariableRenderer(VariableRenderer):
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < val_length:
             logging.info(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                         f'to {str(val_length + 1)} or to -1 to allow rendering of any length')
+                         f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
             return val
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val
