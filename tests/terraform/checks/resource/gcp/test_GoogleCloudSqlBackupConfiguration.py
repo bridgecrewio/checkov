@@ -22,6 +22,12 @@ class GoogleCloudSqlDatabaseBackupConfiguration(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_replica_success(self):
+        resource_conf = {'name': ['google_cluster'], 'monitoring_service': ['none'], 'master_instance_name': 'foo'}
+
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
