@@ -119,9 +119,6 @@ jobs:
       - name: Clone aws-cloudformation-templates
         run: git clone --branch 0.0.1 https://github.com/awslabs/aws-cloudformation-templates.git
         working-directory: ${{ env.working-directory }}
-      - name: Clone terraform-aws-components
-        run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
-        working-directory: ${{ env.working-directory }}
       - name: Clone aws-samples/eks-workshop
         run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
         working-directory: ${{ env.working-directory }}
