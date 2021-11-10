@@ -10,19 +10,19 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
 
 # Ensure repo_name is a cloned repository into performance_tests directory.
-# Thresholds are in ms, and are set to the current maximum duration
+# Thresholds are in ms, and are set to the current maximum duration of checkov on the repository
 performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
-        'threshold': 32.6493
+        'threshold': 28.5597
     },
     'cloudformation': {
-        'repo_name': 'terraform-aws-components',
-        'threshold': 66.5699
+        'repo_name': 'aws-cloudformation-templates',
+        'threshold': 746.7401
     },
     'kubernetes': {
         'repo_name': 'kubernetes-yaml-templates',
-        'threshold': 673.8789
+        'threshold': 631.3357
     }
 }
 

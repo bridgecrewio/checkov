@@ -91,10 +91,9 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.7", "3.8", "3.9", "3.10"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       working-directory: ./performance_tests
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -119,7 +118,7 @@ jobs:
       - name: Clone aws-cloudformation-templates
         run: git clone --branch 0.0.1 https://github.com/awslabs/aws-cloudformation-templates.git
         working-directory: ${{ env.working-directory }}
-      - name: Clone aws-samples/eks-workshop
+      - name: Clone kubernetes-yaml-templates
         run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
         working-directory: ${{ env.working-directory }}
       - name: Run performance tests
