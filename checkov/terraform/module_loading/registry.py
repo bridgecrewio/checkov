@@ -78,6 +78,7 @@ information, see `loader.ModuleLoader.load`.
                 elif not content.loaded():
                     if content.failed_url:
                         self.failed_urls_cache.add(content.failed_url)
+                    self.module_content_cache[module_address] = ModuleContent(None)
                     continue
                 else:
                     self.module_content_cache[module_address] = content

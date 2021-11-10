@@ -108,9 +108,6 @@ class Parser:
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
-        for content in default_ml_registry.module_content_cache.values():
-            if content and content.loaded():
-                content.cleanup()
 
     def parse_file(self, file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
         if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):

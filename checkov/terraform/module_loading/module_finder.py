@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from concurrent import futures
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 from checkov.terraform.module_loading.registry import module_loader_registry
 
@@ -54,7 +54,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 curr_md.module_link = match.group('LINK')
                                 continue
 
-                            match = re.match('.*\\bversion\\s*=\\s*"(?P<VERSION>.*)"', line)
+                            match = re.match('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"', line)
                             if match:
                                 curr_md.version = match.group('VERSION')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
@@ -84,9 +84,27 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
             except Exception as e:
                 logging.warning("Unable to load module (%s): %s", m.address, e)
 
+    # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = {m.address: m for m in modules_to_load}.values()
-    with futures.ThreadPoolExecutor() as executor:
-        futures.wait(
-            [executor.submit(_download_module, m) for m in distinct_modules],
-            return_when=futures.ALL_COMPLETED,
-        )
+
+    # To get the modules without conllisions and constraints, we need to make sure we don't run git commands on the
+    # same repository. It seems to break things as git might not be thread safe.
+    batches: List[Dict[str, ModuleDownload]] = []
+    for m in distinct_modules:
+        found = -1
+        for i, batch in enumerate(batches):
+            if m.module_link in batch:
+                found = i
+            else:
+                break
+        if found == len(batches) - 1:
+            batches.append({m.module_link: m})
+        else:
+            batches[found + 1][m.module_link] = m
+
+    for b in batches:
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(_download_module, m) for m in b.values()],
+                return_when=futures.ALL_COMPLETED,
+            )

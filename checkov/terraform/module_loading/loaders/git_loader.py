@@ -30,14 +30,16 @@ class GenericGitLoader(ModuleLoader):
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = self.dest_dir
             git_getter.do_get()
-
-            return_dir = self.dest_dir
-            if self.inner_module:
-                return_dir = os.path.join(self.dest_dir, self.inner_module)
-            return ModuleContent(dir=return_dir)
         except Exception as e:
-            self.logger.error(f"failed to get {self.module_source} because of {e}")
-            return ModuleContent(dir=None, failed_url=self.module_source)
+            if 'File exists' not in str(e) and 'already exists and is not an empty directory' not in str(e):
+                self.logger.error(f"failed to get {self.module_source} because of {e}")
+                return ModuleContent(dir=None, failed_url=self.module_source)
+            else:
+                print('hi')
+        return_dir = self.dest_dir
+        if self.inner_module:
+            return_dir = os.path.join(self.dest_dir, self.inner_module)
+        return ModuleContent(dir=return_dir)
 
     def _find_module_path(self) -> str:
         module_source = self._parse_module_source()
