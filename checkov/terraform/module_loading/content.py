@@ -38,14 +38,3 @@ Clean up any temporary resources, if applicable.
 
     def __repr__(self) -> str:
         return self.path() or ""
-
-    def __enter__(self) -> "ModuleContent":
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.cleanup()
