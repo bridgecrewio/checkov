@@ -178,10 +178,9 @@ class BcPlatformIntegration(object):
         token = self.get_auth_token()
         request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                     headers={"Authorization": token, "Content-Type": "application/json"})
-        response_data = request.data.decode("utf8")
         if request.status == 403:
             raise BridgecrewAuthError()
-        response = json.loads(response_data)
+        response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
