@@ -1,7 +1,7 @@
 import logging
 import os
 import hashlib
-from typing import Optional, List, TYPE_CHECKING, Set
+from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class ModuleLoaderRegistry:
     loaders: List["ModuleLoader"] = []
+    module_content_cache: Dict[str, Optional[ModuleContent]] = {}
 
     def __init__(
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
@@ -27,6 +28,13 @@ class ModuleLoaderRegistry:
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
         """
+        module_address = f'{source}:{source_version}'
+        if module_address in self.module_content_cache:
+            logging.info(f'Used the cache for module {module_address}')
+            return self.module_content_cache[module_address]
+        else:
+            logging.debug(f'Cache miss for {module_address}')
+
         if os.name == 'nt':
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
             # https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
@@ -37,6 +45,7 @@ information, see `loader.ModuleLoader.load`.
         inner_module = ""
         next_url = source
         last_exception = None
+        content = ModuleContent(None)
         while next_url:
             source = next_url
             next_url = ""
@@ -70,13 +79,16 @@ information, see `loader.ModuleLoader.load`.
                     if content.failed_url:
                         self.failed_urls_cache.add(content.failed_url)
                     content.cleanup()
+                    self.module_content_cache[module_address] = ModuleContent(None)
                     continue
                 else:
                     return content
 
         if last_exception is not None:
             raise last_exception
-        return ModuleContent(None)
+
+        self.module_content_cache[module_address] = content
+        return content
 
     def register(self, loader: "ModuleLoader") -> None:
         self.loaders.append(loader)
