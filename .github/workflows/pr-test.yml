@@ -85,3 +85,38 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
+
+  performance-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.7", "3.8", "3.9", "3.10"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      working-directory: ./performance_tests
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v2
+      - uses: azure/setup-helm@v1
+      - uses: dschep/install-pipenv-action@v1
+        with:
+          # version 2021.11.5, 2021.11.5.post0 do not work
+          version: 2021.5.29
+      - name: Build & install checkov package
+        run: |
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install --upgrade pip==21.1.1
+          pipenv run pip install pytest pytest-benchmark
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone Terragoat - vulnerable terraform
+        run: git clone https://github.com/bridgecrewio/terragoat
+        working-directory: ${{ env.working-directory }}
+      - name: Run performance tests
+        run: |
+          pipenv run pytest
+        working-directory: ${{ env.working-directory }}
