@@ -34,8 +34,6 @@ class GenericGitLoader(ModuleLoader):
             if 'File exists' not in str(e) and 'already exists and is not an empty directory' not in str(e):
                 self.logger.error(f"failed to get {self.module_source} because of {e}")
                 return ModuleContent(dir=None, failed_url=self.module_source)
-            else:
-                print('hi')
         return_dir = self.dest_dir
         if self.inner_module:
             return_dir = os.path.join(self.dest_dir, self.inner_module)
