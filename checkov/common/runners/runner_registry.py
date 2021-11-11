@@ -190,7 +190,7 @@ class RunnerRegistry:
             return
         if self.runner_filter.framework == "all":
             return
-        self.runners = [runner for runner in self.runners if runner.check_type == self.runner_filter.framework]
+        self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
 
     def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:
