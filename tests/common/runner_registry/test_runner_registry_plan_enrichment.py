@@ -124,22 +124,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
             [(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks]
         )
         expected_enriched_data = {
-            (
-                f".external_modules/github.com/terraform-aws-modules/terraform-aws-cloudwatch/v2.1.0/modules/log-group/main.tf",
-                (1, 10),
-                (
-                    (1, 'resource "aws_cloudwatch_log_group" "this" {\n'),
-                    (2, '  count = var.create ? 1 : 0\n'),
-                    (3, '\n'),
-                    (4, '  name              = var.name\n'),
-                    (5, '  name_prefix       = var.name_prefix\n'),
-                    (6, '  retention_in_days = var.retention_in_days\n'),
-                    (7, '  kms_key_id        = var.kms_key_id\n'),
-                    (8, '\n'),
-                    (9, '  tags = var.tags\n'),
-                    (10, '}\n')
-                ),
-            ),
+            (f"/{Path.relative_to(valid_plan_path, Path.cwd())}", (16, 16), (),),
             (
                 "log_group/main.tf",
                 (1, 2),
