@@ -69,7 +69,6 @@ def should_download(path: str) -> bool:
 
 
 def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download):
-    module_loader_registry.download_external_modules = True
     module_loader_registry.root_dir = path
     modules_to_load = find_modules(path)
 
