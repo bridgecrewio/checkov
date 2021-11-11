@@ -15,7 +15,7 @@ class ApiServerRequestTimeout(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kube-apiserver" in conf["command"]:
                 for cmd in conf["command"]:
                     if cmd == "--request-timeout":

@@ -16,7 +16,7 @@ class KubletRotateCertificates(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kubelet" in conf["command"]:
                 if "--rotate-certificates=false" in conf["command"]:
                     return CheckResult.FAILED

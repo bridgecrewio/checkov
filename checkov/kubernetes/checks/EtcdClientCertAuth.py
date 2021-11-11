@@ -14,7 +14,9 @@ class EtcdClientCertAuth(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "etcd" in conf.get("command", []) and "--client-cert-auth=true" not in conf.get("command", []):
+        if conf.get("command") is not None and (
+            "etcd" in conf["command"] and "--client-cert-auth=true" not in conf["command"]
+        ):
             return CheckResult.FAILED
            
         return CheckResult.PASSED

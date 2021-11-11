@@ -27,6 +27,7 @@ class Report:
         self.passed_checks: List[Record] = []
         self.failed_checks: List[Record] = []
         self.skipped_checks: List[Record] = []
+        self.unknown_checks: List[Record] = []
         self.parsing_errors: List[str] = []
         self.resources: Set[str] = set()
 
@@ -48,12 +49,15 @@ class Report:
             self.failed_checks.append(record)
         if record.check_result["result"] == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
+        if record.check_result["result"] == CheckResult.UNKNOWN:
+            self.unknown_checks.append(record)
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
             "skipped": len(self.skipped_checks),
+            "unknown": len(self.skipped_checks),
             "parsing_errors": len(self.parsing_errors),
             "resource_count": len(self.resources),
             "checkov_version": version,
@@ -199,10 +203,11 @@ class Report:
         summary = self.get_summary()
         print(colored(f"{self.check_type} scan results:", "blue"))
         if self.parsing_errors:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Checks with Unknown result: {}, Parsing errors: {}\n".format(
                 summary["passed"],
                 summary["failed"],
                 summary["skipped"],
+                summary["unknown"],
                 summary["parsing_errors"],
             )
         else:

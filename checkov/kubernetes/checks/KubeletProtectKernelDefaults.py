@@ -16,7 +16,7 @@ class KubeletProtectKernelDefaults(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kubelet" in conf["command"]:            
                 if "--protect-kernel-defaults=true" not in conf["command"]:
                     return CheckResult.FAILED

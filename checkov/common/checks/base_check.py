@@ -68,7 +68,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                         self.name, str(entity_configuration), scanned_file
                     )
                 )
-                raise e
+                check_result["result"] = CheckResult.UNKNOWN
+                check_result["evaluated_keys"] = []
         return check_result
 
     @multi_signature()

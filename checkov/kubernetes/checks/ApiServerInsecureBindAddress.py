@@ -13,7 +13,7 @@ class ApiServerInsecureBindAddress(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "command" in conf:
+        if conf.get("command") is not None:
             if "kube-apiserver" in conf["command"]:
                 strippedArgs = [arg.split("=")[0] for arg in conf["command"]]
                 if "--insecure-bind-address" in strippedArgs:
