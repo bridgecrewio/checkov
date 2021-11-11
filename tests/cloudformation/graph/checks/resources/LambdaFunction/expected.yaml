@@ -3,4 +3,5 @@ pass:
 fail:
   - "AWS::Lambda::Function.WrongTracingConfigValueLambdaFunction"
   - "AWS::Lambda::Function.WithoutTracingConfigLambdaFunction"
-
+evaluated_keys:
+  - "Tracing_config/Mode"

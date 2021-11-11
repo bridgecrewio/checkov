@@ -7,22 +7,20 @@ from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-import platform
-import multiprocessing
-from multiprocessing import Pipe
 
 from cyclonedx.output import get_instance as get_cyclonedx_outputter
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
-from checkov.common.output.report import Report, report_to_cyclonedx
+from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
-
+from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.banner import tool as tool_name
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -41,6 +39,7 @@ class RunnerRegistry:
         self.banner = banner
         self.scan_reports = []
         self.filter_runner_framework()
+        self.tool = tool_name
 
     @abstractmethod
     def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
@@ -55,28 +54,13 @@ class RunnerRegistry:
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
-        if platform.system() == 'Windows':
-            integration_feature_registry.run_pre_runner()
-            for runner in self.runners:
-                report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                    runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)
-                self._handle_report(report, guidelines, repo_root_for_plan_enrichment)
-            return self.scan_reports
-
-        # use multiprocessing for unix os
-        logging.info("Running the runners using multiprocessing")
-        processes = []
         integration_feature_registry.run_pre_runner()
-        for runner in self.runners:
-            parent_conn, child_conn = Pipe(duplex=False)
-            process = multiprocessing.get_context("fork").Process(target=RunnerRegistry._run_runner,
-                                                                  args=(runner, root_folder, external_checks_dir, files,
-                                                                  self.runner_filter, collect_skip_comments, child_conn))
-            processes.append((process, parent_conn))
-            process.start()
+        reports = parallel_runner.run_function(
+            lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                      runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments),
+            self.runners, 1)
 
-        for process, parent_conn in processes:
-            scan_report = parent_conn.recv()
+        for scan_report in reports:
             self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
         return self.scan_reports
 
@@ -89,14 +73,6 @@ class RunnerRegistry:
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
-
-    @staticmethod
-    def _run_runner(runner, root_folder, external_checks_dir, files, runner_filter, collect_skip_comments,
-                    child_conn):
-        report = runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                            runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        child_conn.send(report)
-        child_conn.close()
 
     def print_reports(
         self,
@@ -144,10 +120,21 @@ class RunnerRegistry:
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "sarif" in config.output:
-            master_report = Report(None)
+            master_report = Report("merged")
+            print(self.banner)
             for report in sarif_reports:
+                report.print_console(
+                        is_quiet=config.quiet,
+                        is_compact=config.compact,
+                        created_baseline_path=created_baseline_path,
+                        baseline=baseline,
+                        use_bc_ids=config.output_bc_ids,
+                )
                 master_report.failed_checks += report.failed_checks
-            master_report.print_sarif_report()
+                master_report.skipped_checks += report.skipped_checks
+            if url:
+                print("More details: {}".format(url))
+            master_report.write_sarif_output(self.tool)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -203,7 +190,7 @@ class RunnerRegistry:
             return
         if self.runner_filter.framework == "all":
             return
-        self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
+        self.runners = [runner for runner in self.runners if runner.check_type == self.runner_filter.framework]
 
     def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:

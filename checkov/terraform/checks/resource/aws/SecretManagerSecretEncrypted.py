@@ -15,11 +15,12 @@ class SecretManagerSecretEncrypted(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        aws_kms_alias = 'aws/'
         kms_key_id = force_list(conf.get('kms_key_id', []))
         if not kms_key_id:
             return CheckResult.FAILED
         else:
-            return CheckResult.FAILED if 'alias/aws/' in kms_key_id[0] else CheckResult.PASSED
+            return CheckResult.FAILED if aws_kms_alias in kms_key_id[0] else CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
         return ['kms_key_id']

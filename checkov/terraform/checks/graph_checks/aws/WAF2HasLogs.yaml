@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_AWS_31"
+  name: "Ensure WAF2 has a Logging Configuration"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - aws_wafv2_web_acl
+      operator: within
+      attribute: resource_type
+    - or: 
+      - cond_type: connection
+        operator: exists
+        resource_types:
+        - aws_wafv2_web_acl
+        connected_resource_types:
+        - aws_wafv2_web_acl_logging_configuration

@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  MyCMK:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Name: test
+      KmsKeyId: test-key
