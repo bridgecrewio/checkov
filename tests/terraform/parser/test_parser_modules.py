@@ -39,7 +39,6 @@ class TestParserInternals(unittest.TestCase):
                                out_evaluations_context={},
                                download_external_modules=True,
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
-
         self.assertEqual(11, len(list(out_definitions.keys())))
         expected_remote_module_path = f'{DEFAULT_EXTERNAL_MODULES_DIR}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
         expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
