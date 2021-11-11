@@ -109,9 +109,9 @@ class ContextParser(object):
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
-            for j in node.values():
-                for x in ContextParser.find_lines(j, kv):
-                    yield x
+            # for j in node.values():
+            #     for x in ContextParser.find_lines(j, kv):
+            #         yield x
 
     @staticmethod
     def collect_skip_comments(entity_code_lines: List[Tuple[int, str]]) -> List[_SkippedCheck]:
