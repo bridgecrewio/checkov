@@ -58,7 +58,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                             if match:
                                 curr_md.version = match.group('VERSION')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
-                    logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {str(e)}")
+                    logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
                     continue
 
     return modules_found
@@ -81,7 +81,7 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                 if content is None or not content.loaded():
                     logging.warning(f'Failed to download module {m.address}')
             except Exception as e:
-                logging.warning("Unable to load module (%s): %s", m.address, e)
+                logging.warning(f"Unable to load module ({m.address}): {e}")
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = {m.address: m for m in modules_to_load}.values()
