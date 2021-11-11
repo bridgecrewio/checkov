@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
@@ -7,11 +7,15 @@ class GoogleCloudSqlBackupConfiguration(BaseResourceValueCheck):
         name = "Ensure all Cloud SQL database instance have backup configuration enabled"
         id = "CKV_GCP_14"
         supported_resources = ['google_sql_database_instance']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
-        return 'settings/[0]/backup_configuration/[0]/enabled'
+    def scan_resource_conf(self, conf):
+        if 'master_instance_name' in conf:
+            return CheckResult.UNKNOWN
+        return super().scan_resource_conf(conf)
 
+    def get_inspected_key(self):
+        return "settings/[0]/backup_configuration/[0]/enabled"
 
 check = GoogleCloudSqlBackupConfiguration()
