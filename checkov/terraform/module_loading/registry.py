@@ -65,6 +65,7 @@ information, see `loader.ModuleLoader.load`.
                         inner_module=inner_module,
                     )
                 except Exception as e:
+                    logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
                     last_exception = e
                     continue
                 if content.next_url:
