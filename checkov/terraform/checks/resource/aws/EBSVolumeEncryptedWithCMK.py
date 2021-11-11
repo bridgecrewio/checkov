@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 class EBSVolumeEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure EBS Volume is encrypted by KMS using a customer managed Key (CMK)"
-        id = "CKV_AWS_175"
+        id = "CKV_AWS_189"
         supported_resources = ['aws_ebs_volume']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

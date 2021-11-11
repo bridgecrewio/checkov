@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 class LustreFSEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure lustre file systems is encrypted by KMS using a customer managed Key (CMK)"
-        id = "CKV_AWS_175"
+        id = "CKV_AWS_190"
         supported_resources = ['aws_fsx_lustre_file_system']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
