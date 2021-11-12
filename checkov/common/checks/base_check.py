@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import List, Dict, Any, Callable, Optional
 
+
 from checkov.common.typing import _SkippedCheck
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -28,6 +29,9 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
         self.guideline = guideline
+        if self.guideline:
+            logging.error(f'Found custom guideline for check {self.id}')
+
 
     def run(
         self,
