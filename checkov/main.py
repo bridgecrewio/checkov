@@ -15,7 +15,7 @@ signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
-from checkov.common.bridgecrew.image_scanning.image_scanner import image_scanner
+from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
