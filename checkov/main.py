@@ -66,6 +66,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     if config.output == None:
         config.output = ['cli']
 
+    logger.debug(f'Checkov version: {version}')
+    logger.debug(f'Python executable: {sys.executable}')
+    logger.debug(f'Python version: {sys.version}')
+    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
+
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
