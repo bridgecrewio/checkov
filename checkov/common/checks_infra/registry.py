@@ -34,7 +34,7 @@ class Registry(BaseRegistry):
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
-                    with open(f"{root}/{file}", "r") as f:
+                    with open(os.path.join(root, file), "r") as f:
                         if dir != self.checks_dir:
                             self.logger.info(f"loading {file}")
                         check_yaml = yaml.safe_load(f)
