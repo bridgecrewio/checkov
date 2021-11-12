@@ -93,6 +93,9 @@ class BcPlatformIntegration(object):
         # This is a Prisma Cloud token
         if not self.prisma_url:
             raise ValueError("Got a prisma token, but the env variable PRISMA_API_URL is not set")
+        elif '::' not in self.bc_api_key:
+            raise ValueError("PRISMA_API_URL was set, but the API key does not appear to be a valid Prisma API key "
+                             "(must be in format key::secret)")
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_url}/login",
                                     body=json.dumps({"username": username, "password": password}),

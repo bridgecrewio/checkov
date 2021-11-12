@@ -1,9 +1,57 @@
+from io import StringIO
+
 import configargparse
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 
 
 class ExtArgumentParser(configargparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields_to_sanitize = set()
+
+    def add(self, *args, **kwargs):
+        if kwargs.pop('sanitize', False):
+            self.fields_to_sanitize.add(args[0])
+        super().add(*args, **kwargs)
+
+    def format_values(self, sanitize=False):
+        if not sanitize:
+            return super().format_values()
+
+        source_key_to_display_value_map = {
+            configargparse._COMMAND_LINE_SOURCE_KEY: "Command Line Args: ",
+            configargparse._ENV_VAR_SOURCE_KEY: "Environment Variables:\n",
+            configargparse._CONFIG_FILE_SOURCE_KEY: "Config File (%s):\n",
+            configargparse._DEFAULTS_SOURCE_KEY: "Defaults:\n"
+        }
+
+        r = StringIO()
+        for source, settings in self._source_to_settings.items():
+            source = source.split("|")
+            source = source_key_to_display_value_map[source[0]] % tuple(source[1:])
+            r.write(source)
+            for key, (action, value) in settings.items():
+                if key:
+                    if key in self.fields_to_sanitize or action.option_strings[0] in self.fields_to_sanitize:
+                        value = '****'
+                    r.write("  {:<19}{}\n".format(key+":", value))
+                else:
+                    if isinstance(value, str):
+                        r.write("  %s\n" % value)
+                    elif isinstance(value, list):
+                        value = list(value)  # copy
+                        if source == 'Command Line Args: ':
+                            index = 0
+                            while index < len(value):
+                                if value[index] in self.fields_to_sanitize:
+                                    index += 1
+                                    value[index] = '****'
+                                index += 1
+                        r.write("  %s\n" % ' '.join(value))
+
+        return r.getvalue()
 
     def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False):
         """
