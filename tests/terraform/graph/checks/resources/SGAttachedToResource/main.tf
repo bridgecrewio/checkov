@@ -286,6 +286,43 @@ resource "aws_elasticache_cluster" "pass_elasticache" {
   security_group_ids = [aws_security_group.pass_elasticache.id]
 }
 
+resource "aws_security_group" "pass_elasticache_replication_group" {
+  description = "elasticache redis security group"
+  name        = "test_elasticache_replication_group"
+  vpc_id      = var.vpc_id
+
+}
+
+resource "aws_security_group_rule" "elasticache_ingress" {
+  description              = "elasticache ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_security_group_rule" "elasticache_egress" {
+  description       = "elasticache egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_elasticache_replication_group" "pass_elasticache_replication_group" {
+  replication_group_id          = "repl"
+  replication_group_description = "Replication group for Elasticache"
+  node_type                     = "cache.m3.large"
+  number_cache_clusters         = 5
+  engine                        = "redis"
+  port                          = 1234
+  subnet_group_name             = "subnet_group_name"
+  security_group_ids            = [aws_security_group.pass_elasticache_replication_group.id]
+}
+
 # ELB
 
 resource "aws_security_group" "pass_alb" {
@@ -725,3 +762,41 @@ resource "aws_mq_broker" "broker" {
   subnet_ids = var.subnet_ids
   tags       = var.common_tags
 }
+
+# DAX
+
+resource "aws_dax_cluster" "pass_aws_dax_cluster" {
+  cluster_name       = "dax_cluster"
+  node_type          = "dax.r4.large"
+  subnet_group_name  = var.subnet_group
+  security_group_ids = [aws_security_group.pass_dax_cluster.id]
+  replication_factor = 5
+  iam_role_arn       = "12345"
+}
+
+resource "aws_security_group" "pass_dax_cluster" {
+  description = "Test Dax cluster"
+  name        = "test_dax_cluster"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_security_group_rule" "dax_cluster_ingress" {
+  description              = "dax ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_dax_cluster.id
+}
+
+resource "aws_security_group_rule" "dax_cluster_egress" {
+  description       = "dax egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_dax_cluster.id
+}
+
+

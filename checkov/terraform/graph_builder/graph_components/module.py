@@ -137,6 +137,8 @@ class Module:
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
                     attributes = self.clean_bad_characters(resource_conf)
+                    if not isinstance(attributes, dict):
+                        continue
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)

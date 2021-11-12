@@ -4,6 +4,7 @@ import unittest
 from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.http_utils import normalize_prisma_url
 
 
 class TestUtils(unittest.TestCase):
@@ -52,6 +53,13 @@ class TestUtils(unittest.TestCase):
 
         if orig_value:
             os.environ[SCAN_HCL_FLAG] = orig_value
+
+
+    def test_normalize_prisma_url(self):
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io/'))
+        self.assertIsNone(normalize_prisma_url(''))
+        self.assertIsNone(normalize_prisma_url(None))
 
 
 if __name__ == '__main__':

@@ -31,6 +31,156 @@ First, make sure you installed and configured Checkov correctly. If you are unsu
 
 Preferably by now you have either scanned a folder containing Terraform state-files or went ahead and integrated Checkov as part of your CI/CD pipeline.
 
+### Add A Check via CLI Prompt
+Let's assume we're trying to create a new AWS resource Check to ensure all of our `aws_iam_policy`'s have a tag that says `{ "Checkov" = "IsAwesome" }`
+
+1. Run `checkov --add-check`
+2. Answer the prompts
+      ```
+      $ checkov --add-check
+             _               _
+         ___| |__   ___  ___| | _______   __
+        / __| '_ \ / _ \/ __| |/ / _ \ \ / /
+       | (__| | | |  __/ (__|   < (_) \ V /
+        \___|_| |_|\___|\___|_|\_\___/ \_/
+
+      By bridgecrew.io | version: ...
+
+      What action would you like to take? (add) [add]: add
+
+      Enter the title of your new check (without a .py) [MyNewTest]: CheckovIsAwesomeTag
+
+      Select a category for this check (application_security, backup_and_recoveryconvention, encryption, general_security, iam, kubernetes, logging, networking, secrets) [iam]: general_security
+
+      Describe what this check does [Ensure that X does Y...]: Makes sure that aws_iam_policy resources have a tag that says {'Checkov' = IsAwesome'}
+
+      What kind of check would you like to add? (terraform) [terraform]: terraform
+
+      Select the cloud provider this will run on (azure, aws, gcp) [aws]: aws
+
+      Select a terraform object for this check (data, provider, resource) [resource]: resource
+
+      Enter the terraform object type [aws_iam_policy]: aws_iam_policy
+
+      Please ensure you are at the root of the Checkov repository before completing this prompt
+      Creating Check CheckovIsAwesomeTag.py in /path/to/checkov/checkov/terraform/checks/resource/aws
+          Successfully created /path/to/checkov/checkov/terraform/checks/resource/aws/CheckovIsAwesomeTag.py
+      Creating Unit Test Stubs for CheckovIsAwesomeTag in /path/to/checkov/tests/terraform/checks/resource/aws
+          Successfully created /path/to/checkov/tests/terraform/checks/resource/aws/example_CheckovIsAwesomeTag/CheckovIsAwesomeTag.tf
+          Successfully created /path/to/checkov/tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py
+
+      Next steps:
+          1) Edit your new check located in the checks/ directory listed above
+          2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures
+      ```
+3. Go to your new Check at `/path/to/checkov/checkov/terraform/checks/resource/aws/CheckovIsAwesomeTag.py`
+4. Edit the `scan_resource_conf()` function to look like the following:
+    ```
+    def scan_resource_conf(self, conf):
+        if 'tags' in conf.keys():
+            tags = conf['tags'][0]
+            if "Checkov" in tags:
+                if tags["Checkov"] == "IsAwesome":
+                    return CheckResult.PASSED
+
+        return CheckResult.FAILED
+    ```
+ 
+5. Go to your new Unit Test Terraform at `/path/to/checkov/tests/terraform/checks/resource/aws/example_CheckovIsAwesomeTag/CheckovIsAwesomeTag.tf`
+6. Edit the terraform resources to contain the following:
+    ```
+    ## SHOULD PASS: Contains {Checkov: IsAwesome} key/value
+    resource "aws_iam_policy" "ckv_unittest_pass" {
+      tags = {
+        "Checkov" = "IsAwesome"
+      }
+    }
+
+    ## SHOULD FAIL: Value does not equal "IsAwesome"
+    resource "aws_iam_policy" "ckv_unittest_fail" {
+      tags = {
+        "Checkov" = "IsLame"
+      }
+    }
+
+    ```
+7. Run your tests `pytest -k test_CheckovIsAwesomeTag`
+    ```
+    $ pytest -k test_CheckovIsAwesome
+    ================================================================================ test session starts ================================================================================
+    platform darwin -- Python 3.7.11, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+    rootdir: /path/to/checkov
+    plugins: xdist-2.4.0, forked-1.3.0, cov-3.0.0
+    collected 1952 items / 1951 deselected / 1 selected
+
+    tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py .                                                                                                             [100%]
+
+    ======================================================================== 1 passed, 1951 deselected in 7.16s =========================================================================
+    ```
+9. Let's add another unit test for a missing tag:
+    ```
+    ## SHOULD PASS: Contains {Checkov: IsAwesome} key/value
+    resource "aws_iam_policy" "ckv_unittest_pass" {
+      tags = {
+        "Checkov" = "IsAwesome"
+      }
+    }
+
+    ## SHOULD FAIL: Value does not equal "IsAwesome"
+    resource "aws_iam_policy" "ckv_unittest_fail" {
+      tags = {
+        "Checkov" = "IsLame"
+      }
+    }
+
+    ## SHOULD FAIL: Missing "Checkov" tag
+    resource "aws_iam_policy" "ckv_unittest_fail_1" {
+      tags = {
+        "SomethingElse" = "IsAwesome"
+      }
+    }
+    ```
+10. Run your tests again `pytest -k test_CheckovIsAwesomeTag`
+    ```
+            ...
+            self.assertEqual(summary['passed'], len(passing_resources))
+    >       self.assertEqual(summary['failed'], len(failing_resources))
+    E       AssertionError: 2 != 1
+
+    tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py:33: AssertionError
+    ============================================================================== short test summary info ==============================================================================
+    FAILED tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py::TestCheckovIsAwesomeTag::test - AssertionError: 2 != 1
+    ======================================================================== 1 failed, 1951 deselected in 7.40s =========================================================================
+    ```
+11. We failed! Let's fix it. Go to our new Unit Test file `/path/to/checkov/tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py`
+12. Notice lines 23-25. Right now, we are configured to only have one failing resource `'aws_iam_policy.ckv_unittest_fail'`
+13. Edit `failing_resources` to include our newly added Terraform resource:
+    ```
+    ...
+    passing_resources = {
+        'aws_iam_policy.ckv_unittest_pass'
+    }
+    failing_resources = {
+        'aws_iam_policy.ckv_unittest_fail',
+        'aws_iam_policy.ckv_unittest_fail_1' # <-- Add this line!
+    }
+    ...
+    ```
+14. Run your tests again `pytest -k test_CheckovIsAwesomeTag`
+    ```
+    $ pytest -k test_CheckovIsAwesome
+    ================================================================================ test session starts ================================================================================
+    platform darwin -- Python 3.7.11, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+    rootdir: /Users/joseph.meredith/dev/jmeredith18/checkov
+    plugins: xdist-2.4.0, forked-1.3.0, cov-3.0.0
+    collected 1952 items / 1951 deselected / 1 selected
+
+    tests/terraform/checks/resource/aws/test_CheckovIsAwesomeTag.py .                                                                                                             [100%]
+
+    ======================================================================== 1 passed, 1951 deselected in 6.90s =========================================================================
+    ```
+15. Go make your own Checks, test them, and contribute! 
+   
 ### Custom Policy Structure
 
 Each check consists of the following mandatory properties:
