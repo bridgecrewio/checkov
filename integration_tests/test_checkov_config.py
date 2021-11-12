@@ -21,8 +21,8 @@ class TestCheckovConfig(unittest.TestCase):
                                f"expecting more than 1 failed checks, got: {data['summary']['failed']}")
             self.assertEqual(data['check_type'], 'terraform',
                              f"expecting 'terraform' but got: {data['check_type']}")
-            self.assertNotIn('guideline', data['results']['failed_checks'][0].keys(),
-                             "expecting no guideline for checks.")
+            self.assertIsNone(data['results']['failed_checks'][0]['guideline'],
+                              "expecting no guideline for checks.")
 
 
 if __name__ == '__main__':
