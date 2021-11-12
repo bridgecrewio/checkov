@@ -57,7 +57,7 @@ class Report:
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
             "skipped": len(self.skipped_checks),
-            "unknown": len(self.skipped_checks),
+            "unknown": len(self.unknown_checks),
             "parsing_errors": len(self.parsing_errors),
             "resource_count": len(self.resources),
             "checkov_version": version,
