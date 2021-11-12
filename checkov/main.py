@@ -10,6 +10,8 @@ from pathlib import Path
 
 import configargparse
 
+from checkov.common.util.ext_argument_parser import ExtArgumentParser
+
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -73,6 +75,12 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     if config.output == None:
         config.output = ['cli']
 
+    logger.debug(f'Checkov version: {version}')
+    logger.debug(f'Python executable: {sys.executable}')
+    logger.debug(f'Python version: {sys.version}')
+    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
+    logger.debug(parser.format_values(sanitize=True))
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
@@ -124,7 +132,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)
         if source == SourceTypes[BCSourceType.DISABLED]:
-            logger.warning(f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
+            logger.warning(
+                f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
         logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
 
@@ -139,7 +148,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         skip_fixes=config.skip_fixes,
                                                         skip_suppressions=config.skip_suppressions,
                                                         skip_policy_download=config.skip_policy_download,
-                                                        source=source, source_version=source_version, repo_branch=config.branch)
+                                                        source=source, source_version=source_version,
+                                                        repo_branch=config.branch)
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except Exception as e:
@@ -211,7 +221,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                 with open(created_baseline_path, 'w') as f:
                     json.dump(overall_baseline.to_dict(), f, indent=4)
-            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline))
+            exit_codes.append(runner_registry.print_reports(scan_reports, config, url=url,
+                                                            created_baseline_path=created_baseline_path,
+                                                            baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
     elif config.file:
@@ -224,7 +236,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             overall_baseline = Baseline()
             for report in scan_reports:
                 overall_baseline.add_findings_from_report(report)
-            created_baseline_path = os.path.join(os.path.abspath(os.path.commonprefix(config.file)), '.checkov.baseline')
+            created_baseline_path = os.path.join(os.path.abspath(os.path.commonprefix(config.file)),
+                                                 '.checkov.baseline')
             with open(created_baseline_path, 'w') as f:
                 json.dump(overall_baseline.to_dict(), f, indent=4)
 
@@ -305,7 +318,7 @@ def add_parser_args(parser):
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
                     'in the --check list. This allows you to always ensure that new checks present in the external '
                     'source are used. If an external check is included in --skip-check, it will still be skipped.')
-    parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY')
+    parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY', sanitize=True)
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
     parser.add('--repo-id',
@@ -353,8 +366,9 @@ def add_parser_args(parser):
     parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
                action='store_true', default=False)
-    parser.add('--baseline', help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
-                                  'with respect to the provided baseline', default=None)
+    parser.add('--baseline',
+               help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
+                    'with respect to the provided baseline', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
