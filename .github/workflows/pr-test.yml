@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.7"]
     env:
       working-directory: ./performance_tests
     runs-on: ubuntu-latest
@@ -102,9 +102,6 @@ jobs:
       - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
       - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
