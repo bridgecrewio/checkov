@@ -236,6 +236,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
+                continue  # duplicate of CKV_AZURE_53
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
                 continue  # this rule has been refactored into a v2 graph implementation
 
