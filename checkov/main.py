@@ -43,6 +43,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.github.runner import Runner as github_configuration_runner
+from checkov.kustomize.runner import Runner as kustomize_runner
 
 from checkov.version import version
 
@@ -51,11 +52,11 @@ outer_registry = None
 logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile', 'secrets', 'json', 'github_configuration']
+                   'dockerfile', 'secrets', 'json', 'github_configuration', 'kustomize']
 
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
-                   dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner())
+                   dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner(), kustomize_runner())
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
