@@ -19,6 +19,11 @@ def tmp_path(request, tmp_path: Path):
 class TestParserInternals(unittest.TestCase):
 
     def setUp(self) -> None:
+        from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
+
+        # needs to be reset, because the cache belongs to the class not instance
+        ModuleLoaderRegistry.module_content_cache = {}
+
         self.resources_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                            "./resources"))
         self.external_module_path = ''
