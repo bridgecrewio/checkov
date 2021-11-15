@@ -1,5 +1,5 @@
 from cyclonedx.output.xml import XmlV1Dot3
-from xml.etree import ElementTree
+from xml.etree import ElementTree #nosec
 
 
 class ExtXml(XmlV1Dot3):
