@@ -1,8 +1,6 @@
-import os
 import unittest
-from unittest import mock
 
-from checkov.kubernetes.base_registry import Registry
+from checkov.kubernetes.checks.resource.base_registry import Registry
 from checkov.runner_filter import RunnerFilter
 
 

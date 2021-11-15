@@ -8,7 +8,7 @@ from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 from checkov.dockerfile.registry import registry as dockerfile_registry
-from checkov.kubernetes.registry import registry as k8_registry
+from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
 from checkov.serverless.registry import sls_registry
 from checkov.terraform.checks.data.registry import data_registry

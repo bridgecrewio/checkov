@@ -163,3 +163,6 @@ fabric.properties
 
 # Checkov baseline file
 .checkov.baseline
+
+# pytest-benchmarks output directory
+.benchmarks/
