@@ -15,13 +15,10 @@ class GKEEnsureIntegrityMonitoring(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'node_config' in conf.keys():
             node = conf["node_config"][0]
-            self.evaluated_keys = ['node_config']
             if isinstance(node, dict) and 'shielded_instance_config' in node.keys():
                 monitor = node["shielded_instance_config"][0]
                 if monitor.get("enable_integrity_monitoring") == [True]:
-                    self.evaluated_keys = ['node_config/[0]/shielded_instance_config/[0]/enable_integrity_monitoring']
                     return CheckResult.PASSED
-                self.evaluated_keys = ['node_config/[0]/shielded_instance_config']
                 return CheckResult.FAILED
             # as default is true this is a pass
             return CheckResult.PASSED

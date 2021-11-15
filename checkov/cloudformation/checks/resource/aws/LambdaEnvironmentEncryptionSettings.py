@@ -22,7 +22,7 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ['Properties/Environment/Variables']
+        return ['Properties/Environment/Variables', 'Properties/KmsKeyArn']
 
 
 check = LambdaEnvironmentEncryptionSettings()
