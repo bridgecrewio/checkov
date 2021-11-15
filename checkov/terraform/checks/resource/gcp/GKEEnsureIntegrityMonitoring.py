@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -25,6 +27,9 @@ class GKEEnsureIntegrityMonitoring(BaseResourceCheck):
             return CheckResult.PASSED
         # no config is valid it could be in the the node_pool
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["node_config/[0]/shielded_instance_config/[0]/enable_integrity_monitoring"]
 
 
 check = GKEEnsureIntegrityMonitoring()

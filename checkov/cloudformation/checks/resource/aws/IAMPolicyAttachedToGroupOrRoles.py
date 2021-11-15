@@ -1,8 +1,12 @@
+from typing import List, Any
+
+from checkov.cloudformation.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
+class IAMPolicyAttachedToGroupOrRoles(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure IAM policies are attached only to groups or roles (Reducing access management complexity may " \
                "in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges.)"
@@ -24,6 +28,12 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceCheck):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_inspected_key(self) -> str:
+        return "Properties/Users"
+
+    def get_forbidden_values(self) -> List[Any]:
+        return ANY_VALUE
 
 
 check = IAMPolicyAttachedToGroupOrRoles()

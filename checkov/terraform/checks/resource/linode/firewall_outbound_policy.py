@@ -1,10 +1,10 @@
-from typing import Dict, List, Any
+from typing import Any
 
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class FirewallOutboundPolicy(BaseResourceCheck):
+class FirewallOutboundPolicy(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure Outbound Firewall Policy is not set to ACCEPT"
         id = "CKV_LIN_6"
@@ -12,10 +12,11 @@ class FirewallOutboundPolicy(BaseResourceCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        if conf.get("outbound_policy") == ["DROP"]:
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self) -> str:
+        return "outbound_policy"
+
+    def get_expected_value(self) -> Any:
+        return "DROP"
 
 
 check = FirewallOutboundPolicy()

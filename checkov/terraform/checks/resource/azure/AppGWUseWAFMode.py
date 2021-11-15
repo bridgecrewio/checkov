@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -18,6 +20,9 @@ class AppGWUseWAFMode(BaseResourceCheck):
                 self.evaluated_keys = ['policy_settings/[0]/enable']
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["policy_settings/[0]/enable"]
 
 
 check = AppGWUseWAFMode()

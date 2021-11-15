@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from checkov.common.parsers.node import StrNode
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -32,6 +33,9 @@ class ECRPolicy(BaseResourceCheck):
                                 if principal == "*":
                                     return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties/RepositoryPolicyText/Statement"]
 
 
 check = ECRPolicy()

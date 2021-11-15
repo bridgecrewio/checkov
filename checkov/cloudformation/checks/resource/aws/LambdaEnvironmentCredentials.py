@@ -1,6 +1,9 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.secrets import string_has_secrets, AWS, GENERAL
+
 
 class LambdaEnvironmentCredentials(BaseResourceCheck):
     def __init__(self):
@@ -22,6 +25,9 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                             return CheckResult.FAILED
 
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['Properties/Environment/Variables']
 
 
 check = LambdaEnvironmentCredentials()

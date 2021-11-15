@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
@@ -23,5 +25,7 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ["extended_auditing_policy/[0]/retention_in_days"]
 
 check = SQLServerAuditingRetention90Days()

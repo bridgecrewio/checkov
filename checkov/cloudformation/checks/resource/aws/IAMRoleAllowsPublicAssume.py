@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -37,6 +38,9 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
                                                 if principal == "*":
                                                     return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties/AssumeRolePolicyDocument/Statement"]
 
 
 check = IAMRoleAllowsPublicAssume()
