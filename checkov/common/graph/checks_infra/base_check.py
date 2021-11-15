@@ -1,3 +1,4 @@
+import itertools
 from typing import Optional, Tuple, List, Dict, Any
 
 from networkx import DiGraph
@@ -29,3 +30,8 @@ class BaseGraphCheck:
 
     def get_output_id(self, use_bc_ids: bool) -> str:
         return self.bc_id if self.bc_id and use_bc_ids else self.id
+
+    def get_evaluated_keys(self) -> List[str]:
+        if self.sub_checks:
+            return list(set(itertools.chain.from_iterable(check.get_evaluated_keys() for check in self.sub_checks)))
+        return ["/".join(self.attribute.split('.'))] if self.attribute else []

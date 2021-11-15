@@ -1,3 +1,5 @@
+import logging
+import os
 import re
 from collections.abc import Hashable
 from copy import deepcopy
@@ -8,6 +10,7 @@ from lark.tree import Tree
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import (
@@ -30,6 +33,7 @@ VAR_TYPE_DEFAULT_VALUES = {
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
+CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
 class TerraformVariableRenderer(VariableRenderer):
@@ -279,6 +283,12 @@ class TerraformVariableRenderer(VariableRenderer):
             self.local_graph.update_vertex_config(vertex, changed_attributes)
 
     def evaluate_value(self, val: Any) -> Any:
+        val_length: int = len(str(val))
+        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < val_length:
+            logging.info(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
+                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                         f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
+            return val
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val
         elif isinstance(val, str):

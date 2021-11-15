@@ -58,6 +58,30 @@ resource "aws_codebuild_project" "pass_codebuild" {
   }
 }
 
+# Codestar
+
+resource "aws_security_group" "pass_codestar" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_codestarconnections_host" "pass_codestar" {
+  name              = "star"
+  provider_endpoint = "https://github.com/bridgecrewio/checkov"
+  provider_type     = "GitHubEnterpriseServer"
+  vpc_configuration {
+    vpc_id             = "aws_vpc.vpc.id"
+    security_group_ids = [aws_security_group.pass_codestar.id]
+    subnet_ids         = ["aws_subnet.public_a.id"]
+  }
+  provider = aws.primary
+}
+
 # DMS
 
 resource "aws_security_group" "pass_dms" {
@@ -260,6 +284,43 @@ resource "aws_security_group" "pass_elasticache" {
 resource "aws_elasticache_cluster" "pass_elasticache" {
   cluster_id         = "cache"
   security_group_ids = [aws_security_group.pass_elasticache.id]
+}
+
+resource "aws_security_group" "pass_elasticache_replication_group" {
+  description = "elasticache redis security group"
+  name        = "test_elasticache_replication_group"
+  vpc_id      = var.vpc_id
+
+}
+
+resource "aws_security_group_rule" "elasticache_ingress" {
+  description              = "elasticache ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_security_group_rule" "elasticache_egress" {
+  description       = "elasticache egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_elasticache_replication_group" "pass_elasticache_replication_group" {
+  replication_group_id          = "repl"
+  replication_group_description = "Replication group for Elasticache"
+  node_type                     = "cache.m3.large"
+  number_cache_clusters         = 5
+  engine                        = "redis"
+  port                          = 1234
+  subnet_group_name             = "subnet_group_name"
+  security_group_ids            = [aws_security_group.pass_elasticache_replication_group.id]
 }
 
 # ELB
@@ -701,3 +762,41 @@ resource "aws_mq_broker" "broker" {
   subnet_ids = var.subnet_ids
   tags       = var.common_tags
 }
+
+# DAX
+
+resource "aws_dax_cluster" "pass_aws_dax_cluster" {
+  cluster_name       = "dax_cluster"
+  node_type          = "dax.r4.large"
+  subnet_group_name  = var.subnet_group
+  security_group_ids = [aws_security_group.pass_dax_cluster.id]
+  replication_factor = 5
+  iam_role_arn       = "12345"
+}
+
+resource "aws_security_group" "pass_dax_cluster" {
+  description = "Test Dax cluster"
+  name        = "test_dax_cluster"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_security_group_rule" "dax_cluster_ingress" {
+  description              = "dax ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_dax_cluster.id
+}
+
+resource "aws_security_group_rule" "dax_cluster_egress" {
+  description       = "dax egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_dax_cluster.id
+}
+
+

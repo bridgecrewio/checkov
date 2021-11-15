@@ -147,12 +147,11 @@ class Runner(BaseRunner):
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path)
                     )
-                    record.set_guideline(check.guideline)
                     if self.breadcrumbs:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
-
+                    record.set_guideline(check.guideline)
                     report.add_record(record=record)
         return report
 
@@ -288,10 +287,10 @@ class Runner(BaseRunner):
                                 entity_tags=tags,
                                 caller_file_path=caller_file_path,
                                 caller_file_line_range=caller_file_line_range)
-                record.set_guideline(check.guideline)
                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
                 if breadcrumb:
                     record = GraphRecord(record, breadcrumb)
+                record.set_guideline(check.guideline)
                 report.add_record(record=record)
 
     def _parse_files(self, files, scan_hcl, parsing_errors):

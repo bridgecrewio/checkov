@@ -26,14 +26,14 @@ class TestModuleLoaderRegistry(unittest.TestCase):
         registry = ModuleLoaderRegistry(True, DEFAULT_EXTERNAL_MODULES_DIR)
         registry.root_dir = self.current_dir
         source = "terraform-aws-modules/security-group/aws"
-        with registry.load(current_dir=self.current_dir, source=source, source_version="~> 3.0") as content:
-            assert content.loaded()
-            expected_content_path = os.path.join(
-                self.current_dir,
-                DEFAULT_EXTERNAL_MODULES_DIR,
-                "github.com/terraform-aws-modules/terraform-aws-security-group",
-            )
-            self.assertRegex(content.path(), f"^{expected_content_path}/v3.*")
+        content = registry.load(current_dir=self.current_dir, source=source, source_version="~> 3.0")
+        assert content.loaded()
+        expected_content_path = os.path.join(
+            self.current_dir,
+            DEFAULT_EXTERNAL_MODULES_DIR,
+            "github.com/terraform-aws-modules/terraform-aws-security-group",
+        )
+        self.assertRegex(content.path(), f"^{expected_content_path}/v3.*")
 
     def test_load_terraform_registry_check_cache(self):
         registry = ModuleLoaderRegistry(download_external_modules=True)

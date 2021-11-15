@@ -11,7 +11,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.parser.parser import parse
-from checkov.kubernetes.registry import registry
+from checkov.kubernetes.checks.resource.registry import registry
 from checkov.runner_filter import RunnerFilter
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
@@ -239,7 +239,7 @@ def _parse_files(files, definitions, definitions_raw, filepath_fn=None):
         try:
             return filename, parse(filename)
         except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {file} as it is not a valid Kubernetes template\n{e}")
+            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
 
     results = parallel_runner.run_function(_parse_file, files)
     for result in results:

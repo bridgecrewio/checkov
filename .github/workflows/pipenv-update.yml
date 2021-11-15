@@ -21,6 +21,9 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
+        with:
+          # version 2021.11.5, 2021.11.5.post0 do not work
+          version: 2021.5.29
       - run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

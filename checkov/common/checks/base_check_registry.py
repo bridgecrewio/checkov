@@ -148,7 +148,7 @@ class BaseCheckRegistry(object):
         __init__.py is needed to ensure the directory is a Python module, thus
         can be imported.
         """
-        return os.path.exists(f"{directory}/__init__.py")
+        return os.path.exists(os.path.join(directory, "__init__.py"))
 
     @staticmethod
     def _file_can_be_imported(entry: os.DirEntry) -> bool:
@@ -167,7 +167,7 @@ class BaseCheckRegistry(object):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
                 if not self._directory_has_init_py(root):
-                    self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
+                    self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(root))
                 else:
                     for entry in directory_content:
                         if self._file_can_be_imported(entry):

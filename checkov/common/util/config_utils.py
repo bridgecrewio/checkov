@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 
 
-
-
 def config_file_paths(dir_path):
     return [os.path.join(dir_path, '.checkov.yaml'), os.path.join(dir_path, '.checkov.yml')]
 

@@ -170,8 +170,15 @@ class Runner(BaseRunner):
     @staticmethod
     def _scan_files(files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
+        def _safe_scan(f):
+            try:
+                return list(scan.scan_file(os.path.join(secrets.root, f)))
+            except Exception as err:
+                logging.warning(f"Secret scanning:could not process file {f}, {err}")
+                return list()
+
         results = parallel_runner.run_function(
-            lambda f: list(scan.scan_file(os.path.join(secrets.root, f))), files_to_scan)
+            lambda f: list(_safe_scan(f)), files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)

@@ -250,13 +250,17 @@ class Report:
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_sarif_json(self) -> Dict[str, Any]:
+    def get_sarif_json(self, tool) -> Dict[str, Any]:
         runs = []
         rules = []
         results = []
         ruleset = set()
         idx = 0
-        for record in self.failed_checks:
+        level = "warning"
+        tool = tool if tool else "Bridgecrew"
+        information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
+
+        for record in self.failed_checks + self.skipped_checks:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -280,10 +284,16 @@ class Report:
                 record.file_line_range[0] = 1
             if record.file_line_range[1] == 0:
                 record.file_line_range[1] = 1
+
+            if record.check_result.get("result", None) == CheckResult.FAILED:
+                level = "error"
+            elif record.check_result.get("result", None) == CheckResult.SKIPPED:
+                level = "warning"
+
             result = {
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
-                "level": "error",
+                "level": level,
                 "message": {"text": record.check_name},
                 "locations": [
                     {
@@ -302,9 +312,9 @@ class Report:
         runs.append({
             "tool": {
                 "driver": {
-                    "name": "checkov",
+                    "name": tool,
                     "version": version,
-                    "informationUri": "https://github.com/bridgecrewio/checkov/",
+                    "informationUri": information_uri,
                     "rules": rules,
                     "organization": "bridgecrew",
                 }
@@ -318,8 +328,14 @@ class Report:
         }
         return sarif_template_report
 
-    def print_sarif_report(self) -> None:
-        print(json.dumps(self.get_sarif_json()))
+    def write_sarif_output(self, tool) -> None:
+        try:
+            with open("results.sarif", "w") as f:
+                f.write(json.dumps(self.get_sarif_json(tool)))
+                print("\nWrote output in SARIF format to the file 'results.sarif'")
+        except EnvironmentError as e:
+            print("\nAn error occurred while writing SARIF results to file: results.sarif")
+            print(f"More details: \n {e}")
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:

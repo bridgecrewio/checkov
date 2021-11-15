@@ -127,10 +127,11 @@ class Runner(BaseRunner):
                                     file_abs_path=file_abs_path,
                                     entity_tags=tags
                                 )
-                                record.set_guideline(check.guideline)
+
                                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                                 if breadcrumb:
                                     record = GraphRecord(record, breadcrumb)
+                                record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
@@ -160,11 +161,10 @@ class Runner(BaseRunner):
                     file_abs_path=entity_file_abs_path,
                     entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags"))
                 )
-                record.set_guideline(check.guideline)
                 if self.breadcrumbs:
                     breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                     if breadcrumb:
                         record = GraphRecord(record, breadcrumb)
-
+                record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report

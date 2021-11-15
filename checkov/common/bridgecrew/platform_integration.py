@@ -27,6 +27,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
     enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.http_utils import normalize_prisma_url
 from checkov.version import version as checkov_version
 
 EMAIL_PATTERN = r"[^@]+@[^@]+\.[^@]+"
@@ -62,7 +63,7 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
-        self.prisma_url = os.getenv("PRISMA_API_URL")
+        self.prisma_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         if self.prisma_url:
             self.api_url = f"{self.prisma_url}/bridgecrew"
         self.bc_source = None
@@ -93,10 +94,15 @@ class BcPlatformIntegration(object):
         # This is a Prisma Cloud token
         if not self.prisma_url:
             raise ValueError("Got a prisma token, but the env variable PRISMA_API_URL is not set")
+        elif '::' not in self.bc_api_key:
+            raise ValueError("PRISMA_API_URL was set, but the API key does not appear to be a valid Prisma API key "
+                             "(must be in format key::secret)")
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
                                     headers={"Content-Type": "application/json"})
+        if request.status == 401:
+            raise BridgecrewAuthError()
         token = json.loads(request.data.decode("utf8"))['token']
         return token
 
@@ -135,6 +141,9 @@ class BcPlatformIntegration(object):
         self.bc_source = source
         self.bc_source_version = source_version
 
+        if self.prisma_url:
+            logging.info(f'Using Prisma API URL: {self.prisma_url}')
+
         if self.bc_source.upload_results:
             try:
                 self.skip_fixes = True  # no need to run fixes on CI integration
@@ -160,6 +169,9 @@ class BcPlatformIntegration(object):
             except JSONDecodeError as e:
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
                 raise e
+            except BridgecrewAuthError as e:
+                logging.error("Received an error response during authentication")
+                raise e
 
         self.get_id_mapping()
 
@@ -169,6 +181,8 @@ class BcPlatformIntegration(object):
         token = self.get_auth_token()
         request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                     headers={"Authorization": token, "Content-Type": "application/json"})
+        if request.status == 403:
+            raise BridgecrewAuthError()
         response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:

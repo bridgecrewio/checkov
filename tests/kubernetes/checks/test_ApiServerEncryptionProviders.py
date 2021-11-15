@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from checkov.kubernetes.checks.ApiServerEncryptionProviders import check
+from checkov.kubernetes.checks.resource.k8s.ApiServerEncryptionProviders import check
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

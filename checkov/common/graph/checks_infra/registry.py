@@ -26,13 +26,14 @@ class BaseRegistry:
                 continue
             logging.debug(f'Running graph check: {check.id}')
             passed, failed = check.run(graph_connector)
-            check_result = self._process_check_result(passed, [], CheckResult.PASSED)
-            check_result = self._process_check_result(failed, check_result, CheckResult.FAILED)
+            evaluated_keys = check.get_evaluated_keys()
+            check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
+            check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
             check_results[check] = check_result
         return check_results
 
     @staticmethod
-    def _process_check_result(results, processed_results, result):
+    def _process_check_result(results, processed_results, result, evaluated_keys) -> List[Dict[str, Any]]:
         for vertex in results:
-            processed_results.append({"result": result, "entity": vertex})
+            processed_results.append({"result": result, "entity": vertex, "evaluated_keys": evaluated_keys})
         return processed_results

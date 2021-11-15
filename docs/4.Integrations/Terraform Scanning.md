@@ -20,8 +20,28 @@ terraform show -json tfplan.binary > tfplan.json
 checkov -f tfplan.json
 ```
 
+Note: The Terraform show output file `tf.json` will be a single line. For that reason Checkov will report all findings as line number 0.
+If you have installed jq, you can convert a JSON file into multiple lines making it easier to read the scan result.
+
+```json
+terraform show -json tfplan.binary | jq '.' > tfplan.json
+
+checkov -f tfplan.json
+```
+
 The output would look like:
-![](terraform-plan-output)
+```
+checkov -f tf.json
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.customer
+	File: /tf/tf1.json:224-268
+	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+
+		225 |               "values": {
+		226 |                 "acceleration_status": "",
+		227 |                 "acl": "private",
+		228 |                 "arn": "arn:aws:s3:::mybucket",
+```
 
 ## Scanning Third-Party Terraform Modules
 Third-party Terraform modules often reduce complexity for deploying services made up of many objects.

@@ -1,9 +1,7 @@
-import os
 import unittest
 from pathlib import Path
 
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.kubernetes.checks.Seccomp import check
+from checkov.kubernetes.checks.resource.k8s.Seccomp import check
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

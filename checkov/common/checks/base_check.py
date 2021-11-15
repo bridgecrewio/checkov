@@ -28,6 +28,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
         self.guideline = guideline
+        if self.guideline:
+            logging.debug(f'Found custom guideline for check {id}')
 
     def run(
         self,
