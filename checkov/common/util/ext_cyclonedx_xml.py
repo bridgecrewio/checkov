@@ -1,8 +1,8 @@
-from cyclonedx.output.xml import Xml
+from cyclonedx.output.xml import XmlV1Dot3
 from xml.etree import ElementTree
 
 
-class ExtXml(Xml):
+class ExtXml(XmlV1Dot3):
 
     def output_as_string(self) -> str:
         bom = self._get_bom_root_element()
@@ -11,7 +11,7 @@ class ExtXml(Xml):
             bom = self._add_metadata(bom=bom)
 
         if self.get_bom().has_vulnerabilities():
-            ElementTree.register_namespace('v', Xml.get_vulnerabilities_namespace())
+            ElementTree.register_namespace('v', XmlV1Dot3.get_vulnerabilities_namespace())
 
         components = ElementTree.SubElement(bom, 'components')
 
@@ -26,4 +26,4 @@ class ExtXml(Xml):
                                                                                           vulnerability.get_id(),
                                                                                   vulnerability=vulnerability))
 
-        return Xml.XML_VERSION_DECLARATION + ElementTree.tostring(bom, 'unicode')
+        return XmlV1Dot3.XML_VERSION_DECLARATION + ElementTree.tostring(bom, 'unicode')
