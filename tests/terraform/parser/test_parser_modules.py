@@ -1,11 +1,21 @@
 import os
 import shutil
 import unittest
+from pathlib import Path
+
+import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.parser import Parser
 
 
+@pytest.fixture
+def tmp_path(request, tmp_path: Path):
+    # https://pytest.org/en/latest/how-to/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
+    request.cls.tmp_path = tmp_path
+
+
+@pytest.mark.usefixtures("tmp_path")
 class TestParserInternals(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -33,14 +43,14 @@ class TestParserInternals(unittest.TestCase):
     def test_load_inner_registry_module(self):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
-        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = {}
         parser.parse_directory(directory=directory, out_definitions=out_definitions,
                                out_evaluations_context={},
                                download_external_modules=True,
-                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+                               external_modules_download_path=self.external_module_path)
         self.assertEqual(11, len(list(out_definitions.keys())))
-        expected_remote_module_path = f'{DEFAULT_EXTERNAL_MODULES_DIR}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
+        expected_remote_module_path = f'{self.external_module_path}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
         expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
         expected_main_file = os.path.join(directory, 'main.tf')
         expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
