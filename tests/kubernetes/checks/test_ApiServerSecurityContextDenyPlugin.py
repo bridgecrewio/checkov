@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.kubernetes.checks.ApiServerSecurityContextDenyPlugin import check
+from checkov.kubernetes.checks.resource.k8s.ApiServerSecurityContextDenyPlugin import check
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
