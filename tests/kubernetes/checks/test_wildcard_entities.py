@@ -2,8 +2,8 @@ import os
 import unittest
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.base_spec_check import BaseK8Check
-from checkov.kubernetes.registry import registry
+from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 

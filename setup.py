@@ -58,7 +58,10 @@ setup(
         "typing-extensions",
         "cachetools",
         "cyclonedx-python-lib==0.6.2",
-        "click>=8.0.0"
+        "click>=8.0.0",
+        "aiohttp",
+        "aiodns",
+        "aiomultiprocess",
     ],
     license="Apache License 2.0",
     name="checkov",
