@@ -14,20 +14,19 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['Properties/Environment/Variables']
         if 'Properties' in conf.keys():
             properties = conf['Properties']
             if 'Environment' in properties.keys():
                 environment = properties['Environment']
                 if 'Variables' in environment.keys():
                     variables = environment['Variables']
-                    for value in variables.values():
+                    for var_name, value in variables.items():
                         if string_has_secrets(str(value),AWS,GENERAL):
+                            self.evaluated_keys = [f'Properties/Environment/Variables/{var_name}']
                             return CheckResult.FAILED
 
         return CheckResult.PASSED
-
-    def get_evaluated_keys(self) -> List[str]:
-        return ['Properties/Environment/Variables']
 
 
 check = LambdaEnvironmentCredentials()

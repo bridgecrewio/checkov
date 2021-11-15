@@ -26,7 +26,7 @@ class EKSSecretsEncryption(BaseResourceCheck):
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ["Properties/EncryptionConfig"]
+        return ["Properties/EncryptionConfig/Resources"]
 
 
 check = EKSSecretsEncryption()
