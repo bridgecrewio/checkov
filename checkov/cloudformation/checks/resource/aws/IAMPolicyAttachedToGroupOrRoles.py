@@ -15,20 +15,10 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceNegativeValueCheck):
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        """
-        Looks for users attached to an IAM policy
-        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html
-        :param conf: aws_iam_policy
-        :return: <CheckResult>
-        """
-        if 'Properties' in conf.keys():
-            props_conf = conf['Properties']
-            if 'Users' in props_conf.keys():
-                return CheckResult.FAILED
-            return CheckResult.PASSED
-        return CheckResult.FAILED
-
+    """
+    Looks for users attached to an IAM policy
+    https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html
+    """
     def get_inspected_key(self) -> str:
         return "Properties/Users"
 
