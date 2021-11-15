@@ -23,7 +23,7 @@ class IAMPolicyAttachedToGroupOrRoles(BaseResourceNegativeValueCheck):
         return "Properties/Users"
 
     def get_forbidden_values(self) -> List[Any]:
-        return ANY_VALUE
+        return [ANY_VALUE]
 
 
 check = IAMPolicyAttachedToGroupOrRoles()
