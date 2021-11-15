@@ -50,7 +50,7 @@ class RegistryLoader(ModuleLoader):
 
     def _load_module(self) -> ModuleContent:
         if os.path.exists(self.dest_dir):
-            return ModuleContent(dir=None)
+            return ModuleContent(dir=self.dest_dir)
 
         best_version = self._find_best_version()
 
