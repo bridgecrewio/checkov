@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.kubernetes.registry import registry
+from checkov.kubernetes.checks.resource.registry import registry
 
 
 class TestScannerRegistry(unittest.TestCase):
