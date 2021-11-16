@@ -84,6 +84,6 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                 logging.warning(f"Unable to load module ({m.address}): {e}")
 
     # To avoid duplicate work, we need to get the distinct module sources
-    distinct_modules = {m.address: m for m in modules_to_load}.values()
+    distinct_modules = list({m.address: m for m in modules_to_load}.values())
 
     parallel_runner.run_function(_download_module, distinct_modules)
