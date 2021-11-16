@@ -68,7 +68,7 @@ def should_download(path: str) -> bool:
     return not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
 
 
-def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download):
+def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download, run_parallel=True):
     module_loader_registry.root_dir = path
     modules_to_load = find_modules(path)
 
@@ -86,4 +86,8 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
 
-    parallel_runner.run_function(_download_module, distinct_modules)
+    if run_parallel:
+        parallel_runner.run_function(_download_module, distinct_modules)
+    else:
+        for m in distinct_modules:
+            _download_module(m)
