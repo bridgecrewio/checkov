@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -18,6 +20,9 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
                 if env.get('Variables') and not properties.get('KmsKeyArn'):
                     return CheckResult.FAILED
         return CheckResult.PASSED
-		
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['Properties/Environment/Variables', 'Properties/KmsKeyArn']
+
 
 check = LambdaEnvironmentEncryptionSettings()

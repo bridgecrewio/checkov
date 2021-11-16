@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -20,6 +22,9 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
                 if sse_enabled and sse_key is not None:
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties/SSESpecification/SSEEnabled", "Properties/SSESpecification/KMSMasterKeyId"]
 
 
 check = DynamoDBTablesEncrypted()
