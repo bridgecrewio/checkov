@@ -4,6 +4,7 @@ import unittest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.module_finder import find_modules, should_download, load_tf_modules
+from checkov.terraform.module_loading.registry import module_loader_registry
 
 
 class TestModuleFinder(unittest.TestCase):
@@ -27,9 +28,10 @@ class TestModuleFinder(unittest.TestCase):
         modules = find_modules(self.get_src_dir())
 
         remote_modules = [m for m in modules if should_download(m.module_link)]
-        load_tf_modules(os.path.join(self.get_src_dir()))
+        module_loader_registry.download_external_modules = True
+        load_tf_modules(os.path.join(self.get_src_dir()), run_parallel=False)
         downloaded_modules = os.listdir(os.path.join(self.get_src_dir(), DEFAULT_EXTERNAL_MODULES_DIR))
         distinct_roots = {md.module_link.split('/')[0] for md in remote_modules}
         shutil.rmtree(os.path.join(self.get_src_dir(), DEFAULT_EXTERNAL_MODULES_DIR))
         self.assertEqual(len(downloaded_modules), 1)
-        self.assertEqual(len(distinct_roots), 2)
+        self.assertEqual(len(distinct_roots), 1)
