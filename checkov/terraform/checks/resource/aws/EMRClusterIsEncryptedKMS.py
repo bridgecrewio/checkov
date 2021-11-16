@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -13,12 +15,13 @@ class EMRClusterIsEncryptedKMS(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'configuration' not in conf:
             return CheckResult.SKIPPED
-        self.evaluated_keys = ['configuration']
         configuration = conf['configuration'][0]
         if "SSE-KMS" in configuration:
-            self.evaluated_keys = ['configuration/[0]/SSE-KMS']
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["configuration/[0]/SSE-KMS"]
 
 
 check = EMRClusterIsEncryptedKMS()

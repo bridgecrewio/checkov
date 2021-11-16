@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.parsers.node import DictNode
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -20,5 +22,7 @@ class NeptuneClusterLogging(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties/EnableCloudwatchLogsExports"]
 
 check = NeptuneClusterLogging()
