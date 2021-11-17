@@ -1,3 +1,4 @@
+import json
 import re
 
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -20,8 +21,11 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
         if 'access_policy' not in conf:
             return CheckResult.PASSED
         policy_obj = conf['access_policy'][0]
-        if isinstance(policy_obj, str) and re.match(DATA_TO_JSON_PATTERN, policy_obj):
-            return CheckResult.UNKNOWN
+        if isinstance(policy_obj, str):
+            if re.match(DATA_TO_JSON_PATTERN, policy_obj):
+                return CheckResult.UNKNOWN
+            else:
+                policy_obj = json.loads(policy_obj)
         policy = Policy(policy_obj)
         if policy.is_internet_accessible():
             return CheckResult.FAILED
