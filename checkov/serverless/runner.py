@@ -24,7 +24,8 @@ from checkov.serverless.parsers.parser import parse
 from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
 
-SLS_FILE_MASK = ["serverless.yml", "serverless.yaml"]
+SLS_FILE_MASK = os.getenv(
+    "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
 
 MULTI_ITEM_SECTIONS = [
     ("functions", function_registry),
