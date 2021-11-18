@@ -63,7 +63,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            if ANY_VALUE in expected_values and value is not None:
+            if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or len(value) > 0):
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
             if self._is_variable_dependant(value):

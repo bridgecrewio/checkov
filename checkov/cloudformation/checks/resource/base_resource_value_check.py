@@ -66,10 +66,10 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
                 if match[:-1] == path_elements:
                     # Inspected key exists
-                    if ANY_VALUE in expected_values:
+                    value = match[-1]
+                    if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or len(value) > 0):
                         # Key is found on the configuration - if it accepts any value, the check is PASSED
                         return CheckResult.PASSED
-                    value = match[-1]
                     if isinstance(value, list) and len(value) == 1:
                         value = value[0]
                     if self._is_variable_dependant(value):
