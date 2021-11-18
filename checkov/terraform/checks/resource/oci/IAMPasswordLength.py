@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class IAMPasswordLength(BaseResourceCheck):
     def __init__(self):
-        name = "OCI IAM password policy for local (non-federated) users has a minimum 14 characters"
+        name = "OCI IAM password policy for local (non-federated) users has a minimum length of 14 characters"
         id = "CKV_OCI_18"
         supported_resources = ['oci_identity_authentication_policy']
         categories = [CheckCategories.IAM]
