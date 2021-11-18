@@ -21,7 +21,7 @@ class SecurityListIngressStateless(BaseResourceCheck):
                         return CheckResult.FAILED
             return CheckResult.PASSED
 
-        return CheckResult.UNKNOWN
+        return CheckResult.SKIPPED
 
 
 check = SecurityListIngressStateless()

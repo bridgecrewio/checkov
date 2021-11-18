@@ -26,3 +26,9 @@ resource "oci_core_security_list" "fail" {
         stateless = false
     }
 }
+
+
+resource "oci_core_security_list" "skipped" {
+    compartment_id = oci_identity_compartment.tf-compartment.id
+    vcn_id = oci_core_vcn.test_vcn.id
+}
