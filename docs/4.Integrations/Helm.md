@@ -61,5 +61,5 @@ checkov -f k8s-template.yaml --framework kubernetes --skip-check CKV_K8S_21
 ```
 
 Note we skip check `CKV_K8S_21` for this process, which alerts on default namespace usage within Kubernetes manifests. 
-Since HELM manages our namespaces, we always skip this internally when using the HELM framework, so we want to replicate the same behaviour here.
+Since helm manages our namespaces, we always skip this internally when using the helm framework, so we want to replicate the same behaviour here.
 
