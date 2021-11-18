@@ -177,7 +177,7 @@ def handle_dynamic_values(conf: Dict[str, List[Any]]) -> None:
             handle_dynamic_values(conf[block_name])
 
         # if the configuration is a block element, search down again.
-        if isinstance(conf[block_name], list) and len(conf[block_name]) > 0 and isinstance(conf[block_name][0], dict):
+        if isinstance(conf[block_name], list) and conf[block_name] and isinstance(conf[block_name][0], dict):
             handle_dynamic_values(conf[block_name][0])
 
     process_dynamic_values(conf)

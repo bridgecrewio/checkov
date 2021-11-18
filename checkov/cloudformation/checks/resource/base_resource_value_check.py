@@ -67,7 +67,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 if match[:-1] == path_elements:
                     # Inspected key exists
                     value = match[-1]
-                    if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or len(value) > 0):
+                    if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or value):
                         # Key is found on the configuration - if it accepts any value, the check is PASSED
                         return CheckResult.PASSED
                     if isinstance(value, list) and len(value) == 1:
