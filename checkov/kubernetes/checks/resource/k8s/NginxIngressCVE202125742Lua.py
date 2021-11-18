@@ -26,7 +26,7 @@ class NginxIngressCVE202125742Lua(BaseK8Check):
             if conf["metadata"].get('annotations'):
                 for annotation in force_list(conf["metadata"]["annotations"]):
                     for key, value in annotation.items():
-                        if "snippet" in key and  re.match(badInjectionPatterns, value):
+                        if "snippet" in key and  re.search(badInjectionPatterns, value):
                             return CheckResult.FAILED
         return CheckResult.PASSED
 

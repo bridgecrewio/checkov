@@ -192,3 +192,11 @@ class TestGraphBuilder(TestCase):
                     self.assertFalse(conf['versioning'][0]['enabled'][0])
                     found_results += 1
         self.assertEqual(found_results, 3)
+
+    def test_build_graph_with_dynamic_blocks(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/dynamic_lambda_function'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+        lambda_attributes = local_graph.vertices[0].attributes
+        self.assertTrue("dead_letter_config" in lambda_attributes.keys())

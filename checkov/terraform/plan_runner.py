@@ -70,11 +70,12 @@ class Runner(TerraformRunner):
 
         report.add_parsing_errors(list(parsing_errors.keys()))
 
-        graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
-        self.graph_manager.save_graph(graph)
+        if self.tf_definitions:
+            graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
+            self.graph_manager.save_graph(graph)
 
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-        merge_reports(report, graph_report)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            merge_reports(report, graph_report)
 
         return report
 
@@ -115,7 +116,12 @@ class Runner(TerraformRunner):
 
     def get_entity_context(self, definition_path, full_file_path):
         entity_context = {}
-        for resource in self.tf_definitions[full_file_path]['resource']:
+
+        if full_file_path not in self.tf_definitions:
+            logging.debug(f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
+            return entity_context
+
+        for resource in self.tf_definitions.get(full_file_path, {}).get('resource', []):
             resource_type = definition_path[0]
             if resource_type in resource.keys():
                 resource_name = definition_path[1]

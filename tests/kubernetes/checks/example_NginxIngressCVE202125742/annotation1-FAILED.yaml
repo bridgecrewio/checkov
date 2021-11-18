@@ -4,7 +4,12 @@ metadata:
   name: app-ingress
   annotations:  
     nginx.ingress.kubernetes.io/server-snippet: |    
-      lua_package_path  "/etc/nginx/lua/?.lua;;";
+      location ^~ "/test" {
+        default_type 'text/plain';
+        content_by_lua_block {
+          ngx.say("hello");
+        }
+      }    
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:

@@ -7,6 +7,7 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.common.graph.graph_builder.graph_components.blocks import get_inner_attributes
+from checkov.terraform.parser_functions import handle_dynamic_values
 
 
 class Module:
@@ -139,6 +140,7 @@ class Module:
                     attributes = self.clean_bad_characters(resource_conf)
                     if not isinstance(attributes, dict):
                         continue
+                    handle_dynamic_values(attributes)
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
