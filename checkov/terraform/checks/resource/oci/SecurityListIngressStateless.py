@@ -7,7 +7,7 @@ class SecurityListIngressStateless(BaseResourceCheck):
         name = "Ensure VCN inbound security lists are stateless"
         id = "CKV_OCI_17"
         supported_resources = ['oci_core_security_list']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
