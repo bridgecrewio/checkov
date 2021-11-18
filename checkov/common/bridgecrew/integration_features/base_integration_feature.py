@@ -8,7 +8,6 @@ from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 class BaseIntegrationFeature(ABC):
     def __init__(self, bc_integration: BcPlatformIntegration, order):
         self.bc_integration = bc_integration
-        bc_integration.setup_http_manager()
         self.order = order
         integration_feature_registry.register(self)
         self.integration_feature_failures = False
