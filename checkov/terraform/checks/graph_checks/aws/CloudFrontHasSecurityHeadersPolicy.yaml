@@ -1,0 +1,114 @@
+# ref: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/creating-response-headers-policies.html
+metadata:
+  id: "CKV2_AWS_32"
+  name: "Ensure CloudFront distribution has a strict security headers policy attached"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - aws_cloudfront_distribution
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      operator: exists
+      resource_types:
+      - aws_cloudfront_distribution
+      connected_resource_types:
+      - aws_cloudfront_response_headers_policy
+
+      # Content-Security-Policy
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.content_security_policy.override
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.content_security_policy.content_security_policy
+      operator: contains
+      value: "default-src 'none';"
+
+      # X-Content-Type-Options
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.content_type_options.override
+      operator: equals
+      value: true
+
+      # X-Frame-Options
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.frame_options.override
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.frame_options.frame_option
+      operator: equals
+      value: "DENY"
+
+      # Referrer-Policy
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.referrer_policy.override
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.referrer_policy.referrer_policy
+      operator: equals
+      value: "same-origin"
+
+      # Strict-Transport-Security
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.strict_transport_security.override
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.strict_transport_security.access_control_max_age_sec
+      operator: greater_than_or_equal
+      value: 31536000
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.strict_transport_security.include_subdomains
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.strict_transport_security.preload
+      operator: equals
+      value: true
+
+      # X-XSS-Protection
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.xss_protection.override
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.xss_protection.mode_block
+      operator: equals
+      value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_response_headers_policy
+      attribute: security_headers_config.xss_protection.protection
+      operator: equals
+      value: true
