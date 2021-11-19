@@ -12,10 +12,12 @@ class IAMPasswordLength(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'password_policy' in conf.keys():
+            self.evaluated_keys = ["password_policy"]
             rules = conf.get("password_policy")[0]
             if 'minimum_password_length' in rules:
-                passwordlength=rules.get("minimum_password_length")
+                passwordlength = rules.get("minimum_password_length")
                 if passwordlength[0] < 14:
+                    self.evaluated_keys = ["password_policy/minimum_password_length"]
                     return CheckResult.FAILED
                 return CheckResult.PASSED
             return CheckResult.FAILED
