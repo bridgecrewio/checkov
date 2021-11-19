@@ -12,12 +12,12 @@ class SecurityListIngressStateless(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'ingress_security_rules' in conf.keys():
+            self.evaluated_keys=['ingress_security_rules']
             rules = conf.get("ingress_security_rules")
-            for rule in rules:
+            for idx, rule in enumerate(rules):
                 if 'stateless' in rule.keys():
-                    if rule.get("stateless") == [True]:
-                        return CheckResult.PASSED
-                    else:
+                    if rule.get("stateless") != [True]:
+                        self.evaluated_keys = [f'ingress_security_rules/[{idx}]/stateless']
                         return CheckResult.FAILED
             return CheckResult.PASSED
 
