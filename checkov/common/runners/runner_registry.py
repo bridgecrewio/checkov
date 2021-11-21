@@ -1,6 +1,8 @@
 import argparse
 import itertools
-import json
+from json import dumps, JSONEncoder
+from lark import Tree
+import datetime
 import logging
 import os
 from abc import abstractmethod
@@ -25,6 +27,15 @@ CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
+class OutputEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, Tree):
+            return str(obj)
+        elif isinstance(obj, datetime.date):
+            return str(obj)
+        return super().default(obj)
 
 class RunnerRegistry:
     runners: List[BaseRunner] = []
@@ -143,11 +154,11 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
-                print(json.dumps(Report(None).get_summary(), indent=4))
+                print(dumps(Report(None).get_summary(), indent=4))
             elif len(report_jsons) == 1:
-                print(json.dumps(report_jsons[0], indent=4))
+                print(dumps(report_jsons[0], indent=4, cls=OutputEncoder))
             else:
-                print(json.dumps(report_jsons, indent=4))
+                print(dumps(report_jsons, indent=4, cls=OutputEncoder))
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
