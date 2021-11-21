@@ -4,49 +4,55 @@ import os
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.parser.parser import parse
+from checkov.common.runners.base_runner import BaseRunner
+from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
+from checkov.kubernetes.graph_manager import KubernetesGraphManager
+from checkov.kubernetes.kebernetes_utils import get_files_definitions, get_folder_definitions
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
-
 
 class Runner(BaseRunner):
-    check_type = "kubernetes"
+    def __init__(
+        self,
+        db_connector=NetworkxConnector(),
+        source="Kubernetes",
+        graph_class=KubernetesLocalGraph,
+        graph_manager=None,
+    ):
+        self.check_type = "kubernetes"
+        self.graph_class = graph_class
+        self.graph_manager = \
+            graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
+
+        self.graph_registry = get_graph_checks_registry(self.check_type)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
         if files:
-            _parse_files(files, definitions, definitions_raw)
+            definitions, definitions_raw = get_files_definitions(files)
+        elif root_folder:
+            definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+        else:
+            return report
 
-        if root_folder:
-            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-
-                for file in f_names:
-                    file_ending = os.path.splitext(file)[1]
-                    if file_ending in K8_POSSIBLE_ENDINGS:
-                        full_path = os.path.join(root, file)
-                        if "/." not in full_path and file not in ['package.json','package-lock.json']:
-                            # skip temp directories
-                            files_list.append(full_path)
-
-            _parse_files(files_list, definitions, definitions_raw, filepath_fn)
+        logging.info("creating kubernetes graph")
+        local_graph = self.graph_manager.build_graph_from_definitions(definitions)
+        for vertex in local_graph.vertices:
+            report.add_resource(f'{vertex.path}:{vertex.id}')
+        self.graph_manager.save_graph(local_graph)
 
         for k8_file in definitions.keys():
 
@@ -191,6 +197,41 @@ class Runner(BaseRunner):
 
         return report
 
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+        report = Report(self.check_type)
+        checks_results = self.run_graph_checks_results(runner_filter)
+
+        for check, check_results in checks_results.items():
+            for check_result in check_results:
+                entity = check_result["entity"]
+                entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
+                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[2]
+                entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
+                    entity_name
+                ]
+
+                record = Record(
+                    check_id=check.id,
+                    check_name=check.name,
+                    check_result=check_result,
+                    code_block=entity_context.get("code_lines"),
+                    file_path=entity_file_path,
+                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    resource=entity.get(CustomAttributes.ID),
+                    evaluations={},
+                    check_class=check.__class__.__module__,
+                    file_abs_path=entity_file_abs_path,
+                    entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags"))
+                )
+                if self.breadcrumbs:
+                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                    if breadcrumb:
+                        record = GraphRecord(record, breadcrumb)
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
+        return report
+
 
 def get_skipped_checks(entity_conf):
     skipped = []
@@ -232,22 +273,6 @@ def get_skipped_checks(entity_conf):
                         logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
                         continue
     return skipped
-
-
-def _parse_files(files, definitions, definitions_raw, filepath_fn=None):
-    def _parse_file(filename):
-        try:
-            return filename, parse(filename)
-        except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
-
-    results = parallel_runner.run_function(_parse_file, files)
-    for result in results:
-        if result:
-            (file, parse_result) = result
-            if parse_result:
-                path = filepath_fn(file) if filepath_fn else file
-                (definitions[path], definitions_raw[path]) = parse_result
 
 
 def _get_from_dict(data_dict, map_list):
