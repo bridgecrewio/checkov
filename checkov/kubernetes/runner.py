@@ -30,9 +30,10 @@ class Runner(BaseRunner):
         self.check_type = "kubernetes"
         self.graph_class = graph_class
         self.graph_manager = \
-            graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
+            graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector, parser=None)
 
         self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.definitions_raw = {}
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
         report = Report(self.check_type)
@@ -42,9 +43,9 @@ class Runner(BaseRunner):
                 self.graph_registry.load_external_checks(directory)
 
         if files:
-            definitions, definitions_raw = get_files_definitions(files)
+            definitions, self.definitions_raw = get_files_definitions(files)
         elif root_folder:
-            definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+            definitions, self.definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
         else:
             return report
 
@@ -175,10 +176,10 @@ class Runner(BaseRunner):
 
                     if start_line == end_line:
                         entity_lines_range = [start_line, end_line]
-                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line]
+                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line]
                     else:
                         entity_lines_range = [start_line, end_line - 1]
-                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line - 1]
 
                     # TODO? - Variable Eval Message!
                     variable_evaluations = {}
@@ -206,28 +207,29 @@ class Runner(BaseRunner):
                 entity = check_result["entity"]
                 entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
-                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[2]
-                entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
-                    entity_name
-                ]
+                start_line = entity.get('__startline__')
+                end_line = entity.get('__endline__')
+                # entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[2]
+
+                if start_line == end_line:
+                    entity_lines_range = [start_line, end_line]
+                    entity_code_lines = self.definitions_raw[entity_file_path][start_line - 1: end_line]
+                else:
+                    entity_lines_range = [start_line, end_line - 1]
+                    entity_code_lines = self.definitions_raw[entity_file_path][start_line - 1: end_line - 1]
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=entity_code_lines,
                     file_path=entity_file_path,
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    file_line_range=entity_lines_range,
                     resource=entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
-                    file_abs_path=entity_file_abs_path,
-                    entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags"))
+                    file_abs_path=entity_file_abs_path
                 )
-                if self.breadcrumbs:
-                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
-                    if breadcrumb:
-                        record = GraphRecord(record, breadcrumb)
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report

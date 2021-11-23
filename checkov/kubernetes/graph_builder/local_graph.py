@@ -41,8 +41,6 @@ class KubernetesLocalGraph(LocalGraph):
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
                 attributes["__endline__"] = resource["__endline__"]
-                attributes.start_mark = resource.start_mark
-                attributes.end_mark = attributes.end_mark
 
                 self.vertices.append(KubernetesBlock(
                     name=name,
