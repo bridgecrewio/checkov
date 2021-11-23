@@ -2,7 +2,10 @@ FROM python:3.9-alpine
 
 RUN apk add --no-cache git util-linux bash openssl
 
-RUN pip install --no-cache-dir -U checkov
+RUN apk add --no-cache --virtual .build_deps build-base libffi-dev \
+ && pip install --no-cache-dir -U checkov \
+ && apk del .build_deps
+
 RUN wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; chmod 700 get_helm.sh; VERIFY_CHECKSUM=true ./get_helm.sh; rm ./get_helm.sh
 
 COPY ./github_action_resources/entrypoint.sh /entrypoint.sh

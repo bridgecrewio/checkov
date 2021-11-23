@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.consts import ANY_VALUE
 
 
-class CloudtrailEncryption(BaseResourceValueCheck):
+class CloudtrailEncryptionWithCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure CloudTrail logs are encrypted at rest using KMS CMKs"
         id = "CKV_AWS_35"
@@ -23,4 +23,5 @@ class CloudtrailEncryption(BaseResourceValueCheck):
     def get_expected_value(self):
         return ANY_VALUE
 
-check = CloudtrailEncryption()
+
+check = CloudtrailEncryptionWithCMK()

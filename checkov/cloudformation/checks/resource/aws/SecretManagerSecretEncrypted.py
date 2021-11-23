@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.parsers.node import DictNode
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -19,6 +21,9 @@ class SecretManagerSecretEncrypted(BaseResourceCheck):
             if kms_key_id and aws_kms_alias not in kms_key_id:
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['Properties/KmsKeyId']
 
 
 check = SecretManagerSecretEncrypted()

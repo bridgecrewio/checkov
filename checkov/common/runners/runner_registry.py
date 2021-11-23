@@ -1,14 +1,14 @@
 import argparse
 import itertools
-import json
+from json import dumps, JSONEncoder
+from lark import Tree
+import datetime
 import logging
 import os
 from abc import abstractmethod
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
-
-from cyclonedx.output import get_instance as get_cyclonedx_outputter
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.output.baseline import Baseline
@@ -20,12 +20,22 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.ext_cyclonedx_xml import ExtXml
 from checkov.common.util.banner import tool as tool_name
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
+class OutputEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, Tree):
+            return str(obj)
+        elif isinstance(obj, datetime.date):
+            return str(obj)
+        return super().default(obj)
 
 class RunnerRegistry:
     runners: List[BaseRunner] = []
@@ -144,11 +154,11 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
-                print(json.dumps(Report(None).get_summary(), indent=4))
+                print(dumps(Report(None).get_summary(), indent=4))
             elif len(report_jsons) == 1:
-                print(json.dumps(report_jsons[0], indent=4))
+                print(dumps(report_jsons[0], indent=4, cls=OutputEncoder))
             else:
-                print(json.dumps(report_jsons, indent=4))
+                print(dumps(report_jsons, indent=4, cls=OutputEncoder))
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -176,9 +186,7 @@ class RunnerRegistry:
                     report.failed_checks += r.failed_checks
             else:
                 report = cyclonedx_reports[0]
-            cyclonedx_output = get_cyclonedx_outputter(
-                bom=report.get_cyclonedx_bom()
-            )
+            cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
             print(cyclonedx_output.output_as_string())
             output_formats.remove("cyclonedx")
             if output_formats:
