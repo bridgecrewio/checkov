@@ -6,6 +6,12 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions
 
 REMOVE_INTERPOLATION_PATTERN = "[${}]"
 FIND_INTERPOLATION_PATTERN = r"\${([a-zA-Z0-9.]*?)}"
+GLOBALS_RESOURCE_TYPE_MAP = {
+    "Function": "AWS::Serverless::Function",
+    "Api": "AWS::Serverless::Api",
+    "HttpApi": "AWS::Serverless::HttpApi",
+    "SimpleTable": "AWS::Serverless::SimpleTable",
+}
 
 
 def get_vertices_references(str_value: str, vertices_block_name_map: Dict[str, Dict[str, List[int]]]) -> List[CloudformationVertexReference]:

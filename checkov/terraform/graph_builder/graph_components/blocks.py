@@ -98,3 +98,17 @@ class TerraformBlock(Block):
                 nested_attributes[curr_key] = value_to_update
             elif curr_key in nested_attributes.keys():
                 self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+
+    @classmethod
+    def get_inner_attributes(
+        cls,
+        attribute_key: str,
+        attribute_value: Union[str, List[str], Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        if isinstance(attribute_value, list) and len(attribute_value) == 1:
+            attribute_value = attribute_value[0]
+
+        return super().get_inner_attributes(
+            attribute_key=attribute_key,
+            attribute_value=attribute_value,
+        )
