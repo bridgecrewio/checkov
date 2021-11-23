@@ -83,8 +83,8 @@ class TestCloudformationGraphManager(TestCase):
         local_graph = graph_manager.build_graph_from_definitions(definitions)
         self.assertEqual(1, len(local_graph.vertices))
         resource_vertex = local_graph.vertices[0]
-        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.name)
-        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
+        self.assertEqual("AWS::ApiGateway::Stage.Enabled", resource_vertex.name)
+        self.assertEqual("AWS::ApiGateway::Stage.Enabled", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
-        self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"], resource_vertex.attributes)
+        self.assertDictEqual(definitions[relative_file_path]["Resources"]["Enabled"]["Properties"], resource_vertex.attributes)
