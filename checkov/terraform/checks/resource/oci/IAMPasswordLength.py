@@ -16,7 +16,7 @@ class IAMPasswordLength(BaseResourceCheck):
             rules = conf.get("password_policy")[0]
             if 'minimum_password_length' in rules:
                 passwordlength = rules.get("minimum_password_length")
-                if passwordlength[0] < 14:
+                if isinstance(passwordlength[0], int) and passwordlength[0] < 14:
                     self.evaluated_keys = ["password_policy/minimum_password_length"]
                     return CheckResult.FAILED
                 return CheckResult.PASSED
