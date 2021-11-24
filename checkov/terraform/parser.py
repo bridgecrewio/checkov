@@ -21,6 +21,7 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
+from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
@@ -99,13 +100,15 @@ class Parser:
                         download_external_modules: bool = False,
                         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
                         excluded_paths: Optional[List[str]] = None,
-                        vars_files: Optional[List[str]] = None):
+                        vars_files: Optional[List[str]] = None,
+                        external_modules_content_cache: Optional[Dict[str, ModuleContent]] = None):
         self._init(directory, out_definitions, out_evaluations_context, out_parsing_errors, env_vars,
                    download_external_modules, external_modules_download_path, excluded_paths)
         self._parsed_directories.clear()
         default_ml_registry.root_dir = directory
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
+        default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
@@ -500,14 +503,15 @@ class Parser:
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         parsing_errors: Optional[Dict[str, Exception]] = None,
         excluded_paths: Optional[List[str]] = None,
-        vars_files: Optional[List[str]] = None
+        vars_files: Optional[List[str]] = None,
+        external_modules_content_cache: Optional[Dict[str, ModuleContent]] = None
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
         tf_definitions: Dict[str, Dict[str, Any]] = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
                              external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths,
-                             vars_files=vars_files)
+                             vars_files=vars_files, external_modules_content_cache=external_modules_content_cache)
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
 
