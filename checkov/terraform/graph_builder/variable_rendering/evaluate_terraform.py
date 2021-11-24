@@ -69,11 +69,11 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
     if str_to_replace not in original_str:
         return original_str if keep_origin else str_to_replace
 
-    string_without_interpolation = remove_interpolation(original_str, str_to_replace)
+    string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
     return string_without_interpolation.replace(str_to_replace, str(replaced_value)).replace(" ", "")
 
 
-def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None) -> str:
+def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:
     # get all variable references in string
     # remove from the string all ${} or '${}' occurrences
     var_blocks = find_var_blocks(original_str)
@@ -94,7 +94,9 @@ def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None) 
                 and "." in block.full_str
             ):
                 # checking if ${} is wrapped with '' like : '${}'
-                original_str = original_str[: full_str_start - 1] + block.full_str + original_str[full_str_end + 1 :]
+                original_str = original_str[:full_str_start - 1] + block.full_str + original_str[full_str_end + 1:]
+                if escape_unrendered:
+                    block.var_only = f"'{block.var_only}'"
             original_str = original_str.replace(block.full_str, block.var_only)
     return original_str
 
