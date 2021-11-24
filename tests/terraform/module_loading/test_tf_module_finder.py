@@ -29,7 +29,7 @@ class TestModuleFinder(unittest.TestCase):
 
         remote_modules = [m for m in modules if should_download(m.module_link)]
         module_loader_registry.download_external_modules = True
-        load_tf_modules(os.path.join(self.get_src_dir()), run_parallel=False)
+        load_tf_modules(os.path.join(self.get_src_dir()), run_parallel=True)
         downloaded_modules = os.listdir(os.path.join(self.get_src_dir(), DEFAULT_EXTERNAL_MODULES_DIR))
         distinct_roots = {md.module_link.split('/')[0] for md in remote_modules}
         shutil.rmtree(os.path.join(self.get_src_dir(), DEFAULT_EXTERNAL_MODULES_DIR))
