@@ -5,9 +5,6 @@ locals {
     c        = var.c
     d        = local.d
   }
-#  default_tags2 = {
-#    role2        = var.role2
-#  }
 }
 
 resource "aws_ecs_cluster" "cluster" {
