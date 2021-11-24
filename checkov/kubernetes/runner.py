@@ -49,11 +49,12 @@ class Runner(BaseRunner):
         else:
             return report
 
-        logging.info("creating kubernetes graph")
-        local_graph = self.graph_manager.build_graph_from_definitions(definitions)
-        for vertex in local_graph.vertices:
-            report.add_resource(f'{vertex.path}:{vertex.id}')
-        self.graph_manager.save_graph(local_graph)
+        # TODO: uncomment it in order to build the graph
+        # logging.info("creating kubernetes graph")
+        # local_graph = self.graph_manager.build_graph_from_definitions(definitions)
+        # for vertex in local_graph.vertices:
+        #     report.add_resource(f'{vertex.path}:{vertex.id}')
+        # self.graph_manager.save_graph(local_graph)
 
         for k8_file in definitions.keys():
 
@@ -117,7 +118,6 @@ class Runner(BaseRunner):
                         containers = containers.pop()
                         #containers.insert(0,entity_conf['kind'])
                         containerDef = {}
-                        namespace = ""
                         if "namespace" in entity_conf["metadata"]:
                             namespace = entity_conf["metadata"]["namespace"]
                         else:
