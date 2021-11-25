@@ -12,7 +12,7 @@ class ParallelRunner:
 
     def run_function(self, func: Callable[[Any], Any], items: List[Any], group_size: Optional[int]=None) -> Iterator:
         if self.os == 'Windows':
-            return self._run_function_multithreaded(func, items)
+            return self.run_function_multithreaded(func, items)
         else:
             return self._run_function_multiprocess(func, items, group_size)
 
@@ -43,7 +43,7 @@ class ParallelRunner:
                 except EOFError:
                     pass
 
-    def _run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
+    def run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             return executor.map(func, items)
 

@@ -87,7 +87,7 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
 
     if run_parallel:
-        list(parallel_runner.run_function(_download_module, distinct_modules))
+        list(parallel_runner.run_function_multithreaded(_download_module, distinct_modules))
     else:
         for m in distinct_modules:
             _download_module(m)
