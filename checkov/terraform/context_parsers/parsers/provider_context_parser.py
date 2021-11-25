@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Any, List
 
 import hcl2
@@ -30,7 +31,8 @@ class ProviderContextParser(BaseContextParser):
                     map(lambda obj: obj[1], self.file_lines[line_num - 1 : end_line if end_line > line_num else line_num])
                 )
             )["provider"][0]
-        except Exception:
+        except Exception as e:
+            logging.info(f'got exception while loading file {self.tf_file}\n {e}')
             return False
         alias = provider_obj[provider_type].get("alias", ["default"])
         return super()._is_block_signature(line_num, line_tokens + alias, entity_context_path)
