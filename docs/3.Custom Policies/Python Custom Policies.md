@@ -64,11 +64,84 @@ def scan_resource_conf(self, conf):
     return CheckResult.FAILED
 ```
 
-5. Conclude the policy name and operationalize it with the statement:
+5. Implement `get_evaluated_keys` to allow the check results report show the specified key.
+
+```python
+def get_evaluated_keys(self) -> List[str]:
+    return ['storage_encrypted/[0]']
+```
+
+If the evaluated keys are determined dynamically, you can set the evaluated key when scanning the resource configuration:
+```python
+def scan_resource_conf(self, conf):
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            # The following line sets the evaluated keys
+            self.evaluated_keys = ['storage_encrypted/[0]']
+            return CheckResult.PASSED
+    return CheckResult.FAILED
+```
+
+6. Conclude the policy name and operationalize it with the statement:
 
 ```python
 check = RDSEncryption()
 ```
+
+#### Selecting the best base check class to extend
+Terraform and CloudFormation have two base classes extending `BaseResourceCheck`:
+
+1. **BaseResourceValueCheck**: This check will pass only if the `inspected_key` is within the `expected_values`. If `get_expected_value` is not implemented, the default value is `[True]`. 
+
+```python
+class RDSPubliclyAccessible(BaseResourceValueCheck):
+
+    def __init__(self):
+        name = "Ensure all data stored in RDS is not publicly accessible"
+        id = "CKV_AWS_17"
+        supported_resources = ['AWS::RDS::DBInstance']
+        categories = [CheckCategories.NETWORKING]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_block_result=CheckResult.PASSED)
+    
+    def get_inspected_key(self):
+        return 'Properties/PubliclyAccessible'    
+        
+    def get_expected_values(self):
+        return [False]
+```
+
+Another option is to use `ANY_VALUE`:
+```python
+def get_expected_values(self):
+    return [ANY_VALUE]
+```
+
+2. **BaseResourceNegativeValueCheck**: This check will pass only if the `inspected_key` is NOT within the `forbidden_values`. 
+
+```python
+class NeptuneClusterInstancePublic(BaseResourceNegativeValueCheck):
+    def __init__(self):
+        name = "Ensure Neptune Cluster instance is not publicly available"
+        id = "CKV_AWS_102"
+        supported_resources = ['aws_neptune_cluster_instance']
+        categories = [CheckCategories.GENERAL_SECURITY]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def get_inspected_key(self) -> str:
+        return 'publicly_accessible/[0]'
+
+    def get_forbidden_values(self) -> List[Any]:
+        return [True]
+```
+
 
 ### Run a new scan
 
