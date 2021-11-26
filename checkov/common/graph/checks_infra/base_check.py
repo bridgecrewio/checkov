@@ -12,6 +12,7 @@ class BaseGraphCheck:
         self.id = ""
         self.bc_id = None
         self.name = ""
+        self.category = ""
         self.resource_types: List[str] = []
         self.connected_resources_types: List[str] = []
         self.operator = ""

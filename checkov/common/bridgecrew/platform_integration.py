@@ -354,6 +354,8 @@ class BcPlatformIntegration(object):
             if (self.bc_api_key is not None):
                 guidelines_url = self.customer_all_guidelines_api_url
                 headers = {"Authorization": self.get_auth_token(), "Content-Type": "application/json"}
+            if not self.http:
+                self.setup_http_manager()
             request = self.http.request("GET", guidelines_url, headers=headers)
             response = json.loads(request.data.decode("utf8"))
             self.guidelines = response["guidelines"]

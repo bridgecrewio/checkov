@@ -24,7 +24,7 @@ class HostPort(BaseK8Check):
         return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
 
     def scan_spec_conf(self, conf):
-        if "ports" in conf:
+        if conf.get('ports'):
             for port in conf["ports"]:
                 if "hostPort" in port:
                     return CheckResult.FAILED

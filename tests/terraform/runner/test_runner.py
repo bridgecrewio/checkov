@@ -1011,6 +1011,17 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['dir1']))
         self.assertEqual(1, len(report.resources))
 
+    def test_runner_merge_operator(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/merge_operator"
+        extra_checks_dir_path = [current_dir + "/resources/merge_operator/query"]
+
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=["CKV2_AWS_200"]))
+
+        self.assertEqual(1, len(report.passed_checks))
+
 
     def tearDown(self):
         parser_registry.context = {}
