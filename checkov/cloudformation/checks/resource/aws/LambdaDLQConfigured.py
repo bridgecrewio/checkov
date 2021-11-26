@@ -1,9 +1,9 @@
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 
-class LambdaDLQConfigured(BaseResourceCheck):
+class LambdaDLQConfigured(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
         id = "CKV_AWS_116"
@@ -11,20 +11,16 @@ class LambdaDLQConfigured(BaseResourceCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        properties = conf.get("Properties")
-        if properties:
-            self.evaluated_keys = ["Properties/DeadLetterConfig/TargetArn"]
-            dlc = properties.get("DeadLetterConfig")
-            if dlc and dlc.get("TargetArn"):
-                return CheckResult.PASSED
+    def get_inspected_key(self) -> str:
+        if self.entity_type == "AWS::Lambda::Function":
+            return "Properties/DeadLetterConfig/TargetArn"
+        elif self.entity_type == "AWS::Serverless::Function":
+            return "Properties/DeadLetterQueue/TargetArn"
 
-            self.evaluated_keys.append("Properties/DeadLetterQueue/TargetArn")
-            dlq = properties.get("DeadLetterQueue")
-            if dlq and dlq.get("TargetArn"):
-                return CheckResult.PASSED
+        return ""
 
-        return CheckResult.FAILED
+    def get_expected_value(self) -> str:
+        return ANY_VALUE
 
 
 check = LambdaDLQConfigured()

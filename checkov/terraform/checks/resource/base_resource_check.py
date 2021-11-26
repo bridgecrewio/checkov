@@ -19,6 +19,8 @@ class BaseResourceCheck(BaseCheck):
         resource_registry.register(self)
 
     def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
+        self.entity_type = entity_type
+
         if conf.get("count") == [0]:
             return CheckResult.UNKNOWN
 
