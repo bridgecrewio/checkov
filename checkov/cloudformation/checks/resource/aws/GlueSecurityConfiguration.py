@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.util.type_forcers import force_list
 
 
 class GlueSecurityConfiguration(BaseResourceCheck):
@@ -28,11 +29,12 @@ class GlueSecurityConfiguration(BaseResourceCheck):
                         if enc_conf['JobBookmarksEncryption']['JobBookmarksEncryptionMode'] != 'DISABLED':
                             book_enc = True
 
-
                 if 'S3Encryptions' in enc_conf.keys():
-                    if 'S3EncryptionMode' in enc_conf['S3Encryptions'].keys():
-                        if enc_conf['S3Encryptions']['S3EncryptionMode'] != 'DISABLED':
-                            s3_enc = True
+                    for s3_encryption in force_list(enc_conf['S3Encryptions']):
+                        if 'S3EncryptionMode' in s3_encryption.keys():
+                            if s3_encryption['S3EncryptionMode'] != 'DISABLED':
+                                s3_enc = True
+                                break
 
 
         if s3_enc and cw_enc and book_enc:

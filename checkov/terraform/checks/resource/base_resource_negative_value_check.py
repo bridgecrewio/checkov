@@ -8,6 +8,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
+from checkov.terraform.parser_functions import handle_dynamic_values
 
 
 class BaseResourceNegativeValueCheck(BaseResourceCheck):
@@ -23,7 +24,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         self.missing_attribute_result = missing_attribute_result
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        self.handle_dynamic_values(conf)
+        handle_dynamic_values(conf)
 
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:

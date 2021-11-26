@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.plan_runner import Runner
@@ -314,6 +315,27 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)
+
+    def test_runner_skip_graph_when_no_plan_exists(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resource/example/example.tf"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework="terraform_plan"),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(report.get_summary()["failed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["skipped"], 0)
+        self.assertEqual(report.get_summary()["parsing_errors"], 0)
+        self.assertEqual(report.get_summary()["resource_count"], 0)
 
 
 if __name__ == "__main__":
