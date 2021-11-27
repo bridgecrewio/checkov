@@ -325,7 +325,7 @@ checkov --config-file path/to/config.yaml
 ```
 Users can also create a config file using the `--create-config` command, which takes the current command line args and writes them out to a given path. For example:
 ```sh
-checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --no-guide --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-fixes --skip-framework dockerfile --skip-suppressions --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
+checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --no-guide --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-fixes --skip-framework dockerfile secrets --skip-suppressions --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
 ```
 Will create a `config.yaml` file which looks like this:
 ```yaml
@@ -342,7 +342,8 @@ evaluate-variables: true
 external-checks-dir: 
   - sample-dir 
 external-modules-download-path: .external_modules 
-framework: all 
+framework:
+  - all 
 no-guide: true 
 output: cli 
 quiet: true 
@@ -351,7 +352,9 @@ skip-check:
   - CKV_DOCKER_3 
   - CKV_DOCKER_2 
 skip-fixes: true 
-skip-framework: dockerfile 
+skip-framework:
+  - dockerfile
+  - secrets
 skip-suppressions: true 
 soft-fail: true
 ```
@@ -371,7 +374,7 @@ Config File (/Users/sample/.checkov.yml):
   skip-check:        ['CKV_DOCKER_3', 'CKV_DOCKER_2']
 Defaults:
   --output:          cli
-  --framework:       all
+  --framework:       ['all']
   --download-external-modules:False
   --external-modules-download-path:.external_modules
   --evaluate-variables:True
