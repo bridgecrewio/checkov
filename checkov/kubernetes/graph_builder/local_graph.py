@@ -50,3 +50,7 @@ class KubernetesLocalGraph(LocalGraph):
                     path=file_path,
                     attributes=attributes
                 ))
+
+        for i, vertex in enumerate(self.vertices):
+            self.vertices_by_block_type[vertex.block_type].append(i)
+            self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)

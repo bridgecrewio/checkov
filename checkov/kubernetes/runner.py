@@ -22,15 +22,16 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     def __init__(
         self,
+        graph_class=KubernetesLocalGraph,
         db_connector=NetworkxConnector(),
         source="Kubernetes",
-        graph_class=KubernetesLocalGraph,
         graph_manager=None,
     ):
         self.check_type = "kubernetes"
         self.graph_class = graph_class
-        self.graph_manager = \
-            graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector, parser=None)
+        # TODO: uncomment it in order to create the graph
+        # self.graph_manager = \
+        #     graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
 
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
