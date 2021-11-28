@@ -210,7 +210,6 @@ class Runner(BaseRunner):
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
                 start_line = entity.get('__startline__')
                 end_line = entity.get('__endline__')
-                # entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[2]
 
                 if start_line == end_line:
                     entity_lines_range = [start_line, end_line]

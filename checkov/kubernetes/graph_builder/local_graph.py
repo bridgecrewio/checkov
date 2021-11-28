@@ -14,18 +14,6 @@ class KubernetesLocalGraph(LocalGraph):
     def build_graph(self, render_variables: bool):
         self._create_vertices()
 
-    # not relevant because there isn't edges
-    @staticmethod
-    def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
-        pass
-
-    # not relevant because there isn't edges
-    def update_vertices_configs(self) -> None:
-        pass
-
-    def get_resources_types_in_graph(self) -> List[str]:
-        pass
-
     def _create_vertices(self):
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
