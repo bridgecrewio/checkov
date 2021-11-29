@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
@@ -31,12 +32,17 @@ class GlueDataCatalogEncryption(BaseResourceCheck):
         if 'connection_password_encryption' in data_conf:
             con_res = data_conf['connection_password_encryption'][0]
             if 'return_connection_password_encrypted' in con_res and 'aws_kms_key_id' in con_res \
-                    and con_res['return_connection_password_encrypted'][0] == True:
+                    and convert_str_to_bool(con_res['return_connection_password_encrypted'][0]) == True:
                 connection_encrypted = True
                 self.evaluated_keys.append('data_catalog_encryption_settings/[0]/connection_password_encryption/[0]/'
                                            'return_connection_password_encrypted')
                 self.evaluated_keys.append('data_catalog_encryption_settings/[0]/connection_password_encryption/[0]/'
                                            'aws_kms_key_id')
+            elif 'return_connection_password_encrypted' in con_res and 'aws_kms_key_id' in con_res \
+                    and convert_str_to_bool(con_res['return_connection_password_encrypted'][0]) == False:
+                # handle the case when the attribute is explicitly set to false
+                self.evaluated_keys.append('data_catalog_encryption_settings/[0]/connection_password_encryption/[0]/'
+                                           'return_connection_password_encrypted')
             else:
                 self.evaluated_keys.append('data_catalog_encryption_settings/[0]/connection_password_encryption')
 
