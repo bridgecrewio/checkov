@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest import TestCase
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
@@ -8,7 +9,7 @@ class TestGraph(TestCase):
     def assert_vertex(self, resource_vertex, resource):
         resource_name = f'{resource["kind"]}.{resource["metadata"].get("namespace", "default")}.{resource["metadata"]["name"]}'
         config = resource["spec"]
-        attributes = config.deepcopy()
+        attributes = deepcopy(config)
         enrich_attributes(attributes, resource)
 
         self.assertEqual(resource_name, resource_vertex.name)

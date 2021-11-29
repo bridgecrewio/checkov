@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from typing import List, Union, Dict, Any
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -28,7 +29,7 @@ class KubernetesLocalGraph(LocalGraph):
                     continue
                 # TODO: add support for generateName
                 namespace = metadata.get('namespace', 'default')
-                attributes = config.deepcopy()
+                attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
                 attributes["__endline__"] = resource["__endline__"]
