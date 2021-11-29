@@ -8,7 +8,7 @@ class TestGraph(TestCase):
     def assert_vertex(self, resource_vertex, resource):
         resource_name = f'{resource["kind"]}.{resource["metadata"].get("namespace", "default")}.{resource["metadata"]["name"]}'
         config = resource["spec"]
-        attributes = config.copy()
+        attributes = config.deepcopy()
         enrich_attributes(attributes, resource)
 
         self.assertEqual(resource_name, resource_vertex.name)

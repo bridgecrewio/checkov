@@ -1,3 +1,4 @@
+import logging
 from typing import List, Union, Dict, Any
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -18,14 +19,16 @@ class KubernetesLocalGraph(LocalGraph):
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
                 resource_type = resource.get('kind')
-                name = resource.get('metadata', {}).get('name')
-                if not resource_type or not name:
+                metadata = resource.get('metadata', {})
+
+                name = metadata.get('name')
+                config = resource.get('spec')
+                if not resource_type or not name or not config:
+                    logging.info(f"failed to create a vertex in file {file_path}")
                     continue
-
-                namespace = resource.get('metadata', {}).get('namespace', 'default')
-                config = resource.get('spec', {})
-
-                attributes = config.copy()
+                # TODO: add support for generateName
+                namespace = metadata.get('namespace', 'default')
+                attributes = config.deepcopy()
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
                 attributes["__endline__"] = resource["__endline__"]
