@@ -103,12 +103,7 @@ def get_folder_definitions(
             if file_ending in CF_POSSIBLE_ENDINGS:
                 files_list.append(os.path.join(root, file))
 
-    definitions, definitions_raw = get_files_definitions(
-        files_list, out_parsing_errors, lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}')
-
-    definitions = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions.items()}
-    definitions_raw = {create_file_abs_path(root_folder, file_path): v for (file_path, v) in definitions_raw.items()}
-
+    definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors)
     return definitions, definitions_raw
 
 
@@ -162,19 +157,6 @@ def build_definitions_context(
                                 skipped_checks,
                             )
     return definitions_context
-
-
-def create_file_abs_path(root_folder: str, cf_file: str) -> str:
-    # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
-    # or there will be no leading slash; root_folder will always be none.
-    # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-    # The goal here is simply to get a valid path to the file (which cf_file does not always give).
-    if cf_file.startswith("/"):
-        path_to_convert = (root_folder + cf_file) if root_folder else cf_file
-    else:
-        path_to_convert = (os.path.join(root_folder, cf_file)) if root_folder else cf_file
-
-    return os.path.abspath(path_to_convert)
 
 
 def create_definitions(
