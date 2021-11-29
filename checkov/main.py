@@ -300,14 +300,18 @@ def add_parser_args(parser):
     parser.add('--compact', action='store_true',
                default=False,
                help='in case of CLI output, do not display code blocks')
-    parser.add('--framework', help='filter scan to run only on a specific infrastructure code frameworks',
+    parser.add('--framework',
+               help='filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
-               default='all')
-    parser.add('--skip-framework', help='filter scan to skip specific infrastructure code frameworks. \n'
-                                        'will be included automatically for some frameworks if system dependencies '
-                                        'are missing.',
+               default=['all'],
+               nargs="+")
+    parser.add('--skip-framework',
+               help='filter scan to skip specific infrastructure code frameworks. \n'
+                    'will be included automatically for some frameworks if system dependencies '
+                    'are missing.',
                choices=checkov_runners,
-               default=None)
+               default=None,
+               nargs="+")
     parser.add('-c', '--check',
                help='filter scan to run only on a specific check identifier(allowlist), You can '
                     'specify multiple checks separated by comma delimiter', action='append', default=None)
