@@ -14,7 +14,7 @@ from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
-from checkov.kubernetes.kebernetes_utils import get_files_definitions, get_folder_definitions
+from checkov.kubernetes.kubernetes_utils import get_files_definitions, get_folder_definitions
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.runner_filter import RunnerFilter
 

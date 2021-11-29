@@ -3,7 +3,7 @@ from typing import List
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-from checkov.kubernetes.kebernetes_utils import get_folder_definitions
+from checkov.kubernetes.kubernetes_utils import get_folder_definitions
 
 
 class KubernetesGraphManager(GraphManager):
