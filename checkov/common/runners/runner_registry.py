@@ -101,6 +101,7 @@ class RunnerRegistry:
         if "cli" in config.output and not config.quiet:
             print(f"{self.banner}\n")
         exit_codes = []
+        cli_reports = []
         report_jsons = []
         sarif_reports = []
         junit_reports = []
@@ -117,22 +118,25 @@ class RunnerRegistry:
                 if "sarif" in config.output:
                     sarif_reports.append(report)
                 if "cli" in config.output:
-                    report.print_console(
-                        is_quiet=config.quiet,
-                        is_compact=config.compact,
-                        created_baseline_path=created_baseline_path,
-                        baseline=baseline,
-                        use_bc_ids=config.output_bc_ids,
-                    )
-                    if url:
-                        print("More details: {}".format(url))
-                    output_formats.discard("cli")
-                    if output_formats:
-                        print(OUTPUT_DELIMITER)
+                    cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
+        if "cli" in config.output:
+            for report in cli_reports:
+                report.print_console(
+                    is_quiet=config.quiet,
+                    is_compact=config.compact,
+                    created_baseline_path=created_baseline_path,
+                    baseline=baseline,
+                    use_bc_ids=config.output_bc_ids,
+                )
+            if url:
+                print("More details: {}".format(url))
+            output_formats.remove("cli")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
         if "sarif" in config.output:
             master_report = Report("merged")
             print(self.banner)
