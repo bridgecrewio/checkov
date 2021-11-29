@@ -8,7 +8,10 @@ from checkov.common.graph.graph_builder.graph_components.blocks import get_inner
 class TestGraph(TestCase):
     def assert_vertex(self, resource_vertex, resource):
         resource_name = f'{resource["kind"]}.{resource["metadata"].get("namespace", "default")}.{resource["metadata"]["name"]}'
-        config = resource["spec"]
+        config = deepcopy(resource)
+        config.pop('apiVersion')
+        config.pop('kind')
+        config.pop('metadata')
         attributes = deepcopy(config)
         enrich_attributes(attributes, resource)
 

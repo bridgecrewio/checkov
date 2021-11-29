@@ -21,14 +21,17 @@ class KubernetesLocalGraph(LocalGraph):
             for resource in file_conf:
                 resource_type = resource.get('kind')
                 metadata = resource.get('metadata', {})
-
+                # TODO: add support for generateName
                 name = metadata.get('name')
-                config = resource.get('spec')
-                if not resource_type or not name or not config:
+                if not resource_type or not name:
                     logging.info(f"failed to create a vertex in file {file_path}")
                     continue
-                # TODO: add support for generateName
+
                 namespace = metadata.get('namespace', 'default')
+                config = deepcopy(resource)
+                config.pop('apiVersion')
+                config.pop('kind')
+                config.pop('metadata')
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
