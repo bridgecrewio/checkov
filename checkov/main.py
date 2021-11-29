@@ -189,7 +189,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 check.bc_id = ckv_to_bc_mapping.get(check.id)
 
     if config.list:
-        print_checks(framework=config.framework, use_bc_ids=config.output_bc_ids)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
         return
 
     baseline = None
