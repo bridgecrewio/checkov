@@ -6,7 +6,6 @@ from typing import List, Dict, Any, Set, Callable, Tuple
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.common.graph.graph_builder.graph_components.blocks import get_inner_attributes
 from checkov.terraform.parser_functions import handle_dynamic_values
 
 
@@ -207,10 +206,10 @@ class Module:
     def _handle_provisioner(provisioner: List[Dict[str, Any]], attributes: Dict[str, Any]) -> None:
         for pro in provisioner:
             if pro.get("local-exec"):
-                inner_attributes = get_inner_attributes("provisioner/local-exec", pro["local-exec"])
+                inner_attributes = TerraformBlock.get_inner_attributes("provisioner/local-exec", pro["local-exec"])
                 attributes.update(inner_attributes)
             elif pro.get("remote-exec"):
-                inner_attributes = get_inner_attributes("provisioner/remote-exec", pro["remote-exec"])
+                inner_attributes = TerraformBlock.get_inner_attributes("provisioner/remote-exec", pro["remote-exec"])
                 attributes.update(inner_attributes)
         del attributes["provisioner"]
 

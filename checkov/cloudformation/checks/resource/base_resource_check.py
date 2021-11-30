@@ -18,6 +18,8 @@ class BaseResourceCheck(BaseCheck):
         cfn_registry.register(self)
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+        self.entity_type = entity_type
+
         return self.scan_resource_conf(conf, entity_type)
 
     @multi_signature()

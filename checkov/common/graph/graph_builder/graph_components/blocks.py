@@ -44,7 +44,10 @@ class Block:
             if isinstance(attribute_value, dict) or (
                     isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0],
                                                                                                   dict)):
-                inner_attributes = get_inner_attributes(attribute_key, attribute_value)
+                inner_attributes = self.get_inner_attributes(
+                    attribute_key=attribute_key,
+                    attribute_value=attribute_value,
+                )
                 attributes_to_add.update(inner_attributes)
         return attributes_to_add
 
@@ -83,7 +86,7 @@ class Block:
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
                 attribute_value = attribute_value[0]
             if isinstance(attribute_value, (list, dict)):
-                inner_attributes = get_inner_attributes(attribute_key, attribute_value)
+                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value)
                 base_attributes.update(inner_attributes)
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
@@ -101,6 +104,11 @@ class Block:
     ) -> None:
         if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
+
+        # update the numbered attributes, if the new value is a list
+        if isinstance(attribute_value, list):
+            for idx, value in enumerate(attribute_value):
+                self.attributes[f"{attribute_key}.{idx}"] = value
 
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) == 1:
@@ -139,24 +147,29 @@ class Block:
             CustomAttributes.SOURCE: self.source,
         }
 
+    @classmethod
+    def get_inner_attributes(
+        cls,
+        attribute_key: str,
+        attribute_value: Union[str, List[str], Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        inner_attributes: Dict[str, Any] = {}
 
-def get_inner_attributes(attribute_key: str, attribute_value: Union[str, List[str], Dict[str, Any]]) -> Dict[str, Any]:
-    inner_attributes: Dict[str, Any] = {}
-    if isinstance(attribute_value, list) and len(attribute_value) == 1:
-        attribute_value = attribute_value[0]
-
-    if isinstance(attribute_value, (dict, list)):
-        inner_attributes[attribute_key] = [None] * len(attribute_value) if isinstance(attribute_value, list) else {}
-        iterator: Union[range, List[str]] = range(len(attribute_value)) if isinstance(attribute_value, list) else list(
-            attribute_value.keys())
-        for key in iterator:
-            if key != "":
-                inner_key = f"{attribute_key}.{key}"
-                inner_value = attribute_value[key]
-                inner_attributes.update(get_inner_attributes(inner_key, inner_value))
-                inner_attributes[attribute_key][key] = inner_attributes[inner_key]
-            else:
-                del attribute_value[key]
-    else:
-        inner_attributes[attribute_key] = attribute_value
-    return inner_attributes
+        if isinstance(attribute_value, (dict, list)):
+            inner_attributes[attribute_key] = [None] * len(attribute_value) if isinstance(attribute_value, list) else {}
+            iterator: Union[range, List[str]] = range(len(attribute_value)) if isinstance(
+                attribute_value, list
+            ) else list(
+                attribute_value.keys()
+            )
+            for key in iterator:
+                if key != "":
+                    inner_key = f"{attribute_key}.{key}"
+                    inner_value = attribute_value[key]
+                    inner_attributes.update(cls.get_inner_attributes(inner_key, inner_value))
+                    inner_attributes[attribute_key][key] = inner_attributes[inner_key]
+                else:
+                    del attribute_value[key]
+        else:
+            inner_attributes[attribute_key] = attribute_value
+        return inner_attributes

@@ -100,7 +100,24 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, web_vpc_default_sg_expected_attributes, BlockType.OUTPUTS, 'WebVPCDefaultSg')
 
         web_vpc_expected_breadcrumbs = {}
-        my_sg_expected_breadcrumbs = {'SecurityGroupIngress.CidrIp': [{'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+        my_sg_expected_breadcrumbs = {
+            "SecurityGroupIngress.0.CidrIp": [
+                {
+                    "type": BlockType.RESOURCE,
+                    "name": "AWS::EC2::VPC.WebVPC",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "CidrBlock",
+                },
+            ],
+            "SecurityGroupIngress.0": [
+                {
+                    "type": BlockType.RESOURCE,
+                    "name": "AWS::EC2::VPC.WebVPC",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "CidrBlock",
+                },
+            ],
+        }
         web_vpc_default_sg_expected_breadcrumbs = {}
 
         self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
@@ -184,7 +201,36 @@ class TestRenderer(TestCase):
 
         cidr_block_expected_breadcrumbs = {}
         web_vpc_expected_breadcrumbs = {'CidrBlock': [{'type': BlockType.PARAMETERS, 'name': 'CidrBlock', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}, {'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
-        my_sg_expected_breadcrumbs = {'SecurityGroupIngress.CidrIp': [{'type': BlockType.PARAMETERS, 'name': 'CidrBlock', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'Default'}, {'type': BlockType.RESOURCE, 'name': 'AWS::EC2::VPC.WebVPC', 'path': os.path.join(test_dir, f'test.{file_ext}'), 'attribute_key': 'CidrBlock'}]}
+        my_sg_expected_breadcrumbs = {
+            "SecurityGroupIngress.0.CidrIp": [
+                {
+                    "type": BlockType.PARAMETERS,
+                    "name": "CidrBlock",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "Default",
+                },
+                {
+                    "type": BlockType.RESOURCE,
+                    "name": "AWS::EC2::VPC.WebVPC",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "CidrBlock",
+                },
+            ],
+            "SecurityGroupIngress.0": [
+                {
+                    "type": BlockType.PARAMETERS,
+                    "name": "CidrBlock",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "Default",
+                }, 
+                {
+                    "type": BlockType.RESOURCE,
+                    "name": "AWS::EC2::VPC.WebVPC",
+                    "path": os.path.join(test_dir, f"test.{file_ext}"),
+                    "attribute_key": "CidrBlock",
+                },
+            ],
+        }
 
         self.compare_vertex_breadcrumbs(local_graph, cidr_block_expected_breadcrumbs, BlockType.PARAMETERS, 'CidrBlock')
         self.compare_vertex_breadcrumbs(local_graph, web_vpc_expected_breadcrumbs, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
