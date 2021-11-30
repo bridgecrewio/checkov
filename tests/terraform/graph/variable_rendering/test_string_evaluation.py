@@ -213,6 +213,12 @@ class TestTerraformEvaluation(TestCase):
         expected = {'Tag1': 'one', 'Tag2': 'multiline_tag2', 'Tag4': 'four'}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_merge_interpolation(self):
+        input_str = '${merge({\'environment\':\'${var.environment}\',\'name\':\'${local.cluster_name}\',\'role\':\'${var.role}\',\'team\':\'${var.team}\'})}'
+        expected = {'environment': 'var.environment', 'name': 'local.cluster_name', 'role': 'var.role', 'team': 'var.team'}
+        actual = evaluate_terraform(input_str, keep_interpolations=False)
+        self.assertEqual(expected, actual)
+
 
     def test_reverse(self):
         input_str = 'reverse([1, 2, 3])'

@@ -15,6 +15,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
+from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
@@ -27,15 +28,6 @@ CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
-class OutputEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        elif isinstance(obj, Tree):
-            return str(obj)
-        elif isinstance(obj, datetime.date):
-            return str(obj)
-        return super().default(obj)
 
 class RunnerRegistry:
     runners: List[BaseRunner] = []
@@ -101,6 +93,7 @@ class RunnerRegistry:
         if "cli" in config.output and not config.quiet:
             print(f"{self.banner}\n")
         exit_codes = []
+        cli_reports = []
         report_jsons = []
         sarif_reports = []
         junit_reports = []
@@ -117,22 +110,25 @@ class RunnerRegistry:
                 if "sarif" in config.output:
                     sarif_reports.append(report)
                 if "cli" in config.output:
-                    report.print_console(
-                        is_quiet=config.quiet,
-                        is_compact=config.compact,
-                        created_baseline_path=created_baseline_path,
-                        baseline=baseline,
-                        use_bc_ids=config.output_bc_ids,
-                    )
-                    if url:
-                        print("More details: {}".format(url))
-                    output_formats.discard("cli")
-                    if output_formats:
-                        print(OUTPUT_DELIMITER)
+                    cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
+        if "cli" in config.output:
+            for report in cli_reports:
+                report.print_console(
+                    is_quiet=config.quiet,
+                    is_compact=config.compact,
+                    created_baseline_path=created_baseline_path,
+                    baseline=baseline,
+                    use_bc_ids=config.output_bc_ids,
+                )
+            if url:
+                print("More details: {}".format(url))
+            output_formats.remove("cli")
+            if output_formats:
+                print(OUTPUT_DELIMITER)
         if "sarif" in config.output:
             master_report = Report("merged")
             print(self.banner)
@@ -156,9 +152,9 @@ class RunnerRegistry:
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4))
             elif len(report_jsons) == 1:
-                print(dumps(report_jsons[0], indent=4, cls=OutputEncoder))
+                print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
             else:
-                print(dumps(report_jsons, indent=4, cls=OutputEncoder))
+                print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -198,11 +194,11 @@ class RunnerRegistry:
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
             return
-        if self.runner_filter.framework is None:
+        if not self.runner_filter.framework:
             return
-        if self.runner_filter.framework == "all":
+        if "all" in self.runner_filter.framework:
             return
-        self.runners = [runner for runner in self.runners if runner.check_type == self.runner_filter.framework]
+        self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
 
     def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:

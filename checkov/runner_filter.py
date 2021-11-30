@@ -1,5 +1,6 @@
 import logging
 import fnmatch
+from collections.abc import Iterable
 from typing import Set, Optional, Union, List
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -14,14 +15,14 @@ class RunnerFilter(object):
 
     def __init__(
         self,
-        framework: str = "all",
+        framework: Optional[List[str]] = None,
         checks: Union[str, List[str], None] = None,
         skip_checks: Union[str, List[str], None] = None,
         download_external_modules: bool = False,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         evaluate_variables: bool = True,
         runners: Optional[List[str]] = None,
-        skip_framework: Optional[str] = None,
+        skip_framework: Optional[List[str]] = None,
         excluded_paths: Optional[List[str]] = None,
         all_external: bool = False,
         var_files: Optional[List[str]] = None
@@ -30,20 +31,16 @@ class RunnerFilter(object):
         self.checks = convert_csv_string_arg_to_list(checks)
         self.skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
-        if skip_framework is None:
-            self.framework = framework
-        else:
-            if isinstance(skip_framework, str):
-                if framework == "all":
-                    if runners is None:
-                        runners = []
+        self.framework: "Iterable[str]" = framework if framework else ["all"]
+        if skip_framework:
+            if "all" in self.framework:
+                if runners is None:
+                    runners = []
 
-                    selected_frameworks = list(set(runners) - set(skip_framework.split(",")))
-                    self.framework = ",".join(selected_frameworks)
-                else:
-                    selected_frameworks = list(set(framework.split(",")) - set(skip_framework.split(",")))
-                    self.framework = ",".join(selected_frameworks)
-        logging.info(f"Resultant set of frameworks (removing skipped frameworks): {self.framework}")
+                self.framework = set(runners) - set(skip_framework)
+            else:
+                self.framework = set(self.framework) - set(skip_framework)
+        logging.info(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
 
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path

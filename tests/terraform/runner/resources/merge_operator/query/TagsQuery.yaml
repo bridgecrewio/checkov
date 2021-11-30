@@ -1,0 +1,21 @@
+metadata:
+  id: "CKV2_AWS_200"
+  name: ""
+  category: ""
+definition:
+  and:
+    - cond_type: attribute
+      operator: exists
+      attribute: tags.a
+      resource_types:
+         - aws_ecs_cluster
+    - cond_type: attribute
+      operator: exists
+      attribute: tags.b
+      resource_types:
+        - aws_ecs_cluster
+    - cond_type: attribute
+      operator: exists
+      attribute: tags.c
+      resource_types:
+        - aws_ecs_cluster

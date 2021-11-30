@@ -12,7 +12,7 @@ class S3PublicACLRead(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_forbidden_values(self):
-        return  ['PublicReadWrite', 'PublicRead']
+        return ['PublicReadWrite', 'PublicRead']
 
     def get_inspected_key(self):
         return 'Properties/AccessControl'
