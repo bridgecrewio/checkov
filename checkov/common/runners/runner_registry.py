@@ -15,6 +15,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
+from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
@@ -27,15 +28,6 @@ CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
-class OutputEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        elif isinstance(obj, Tree):
-            return str(obj)
-        elif isinstance(obj, datetime.date):
-            return str(obj)
-        return super().default(obj)
 
 class RunnerRegistry:
     runners: List[BaseRunner] = []
@@ -160,9 +152,9 @@ class RunnerRegistry:
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4))
             elif len(report_jsons) == 1:
-                print(dumps(report_jsons[0], indent=4, cls=OutputEncoder))
+                print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
             else:
-                print(dumps(report_jsons, indent=4, cls=OutputEncoder))
+                print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
