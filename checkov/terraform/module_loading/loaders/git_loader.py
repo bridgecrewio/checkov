@@ -64,14 +64,19 @@ class GenericGitLoader(ModuleLoader):
         else:
             version = "HEAD"
 
-        if len(module_source_components) == 2:
+        if len(module_source_components) < 3:
+            root_module = module_source_components[-1]
             inner_module = ""
         elif len(module_source_components) == 3:
+            root_module = module_source_components[1]
             inner_module = module_source_components[2]
         else:
             raise Exception("invalid git url")
 
-        root_module = module_source_components[1]
+        username = re.match(r"^(.*?@).*", root_module)
+        if username:
+            root_module = root_module.replace(username[1], "")
+
         if root_module.endswith(".git"):
             root_module = root_module[:-4]
 
@@ -98,10 +103,6 @@ class GenericGitLoader(ModuleLoader):
                     self.external_modules_folder_name, module_source.root_module, module_source.version
                 )
             )
-
-        username = re.match(r"^git::ssh://(.*?@).*", self.module_source)
-        if username:
-            self.dest_dir = self.dest_dir.replace(username[1], "")
 
 
 loader = GenericGitLoader()

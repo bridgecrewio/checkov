@@ -104,73 +104,6 @@ def test_load_terraform_registry(
     "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
     [
         (
-            "git::https://example.com/network.git",
-            "example.com/network/HEAD",
-            "https://example.com/network.git",
-            "example.com/network/HEAD",
-            "git::https://example.com/network.git",
-            "",
-        ),
-        (
-            "git::https://example.com/network.git?ref=v1.2.0",
-            "example.com/network/v1.2.0",
-            "https://example.com/network.git?ref=v1.2.0",
-            "example.com/network/v1.2.0",
-            "git::https://example.com/network.git?ref=v1.2.0",
-            "",
-        ),
-        (
-            "git::https://example.com/network.git//modules/vpc",
-            "example.com/network/HEAD/modules/vpc",
-            "https://example.com/network",
-            "example.com/network/HEAD",
-            "git::https://example.com/network",
-            "modules/vpc",
-        ),
-        (
-            "git::https://example.com/network.git//modules/vpc?ref=v1.2.0",
-            "example.com/network/v1.2.0/modules/vpc",
-            "https://example.com/network?ref=v1.2.0",
-            "example.com/network/v1.2.0",
-            "git::https://example.com/network?ref=v1.2.0",
-            "modules/vpc",
-        ),
-    ],
-    ids=["module", "module_with_version", "inner_module", "inner_module_with_version"],
-)
-@mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
-def test_load_generic_git(
-    git_getter,
-    source,
-    expected_content_path,
-    expected_git_url,
-    expected_dest_dir,
-    expected_module_source,
-    expected_inner_module,
-):
-    # given
-    current_dir = Path(__file__).parent / "tmp"
-    registry = ModuleLoaderRegistry(download_external_modules=True)
-
-    # when
-    content = registry.load(current_dir=str(current_dir), source=source, source_version="latest")
-
-    # then
-    assert content.loaded()
-    assert content.path() == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_content_path)
-
-    git_getter.assert_called_once_with(expected_git_url, mock.ANY)
-
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GenericGitLoader))
-    assert git_loader.dest_dir == str(current_dir / DEFAULT_EXTERNAL_MODULES_DIR / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
-
-
-@pytest.mark.parametrize(
-    "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
-    [
-        (
             "github.com/terraform-aws-modules/terraform-aws-security-group",
             "github.com/terraform-aws-modules/terraform-aws-security-group/HEAD",
             "https://github.com/terraform-aws-modules/terraform-aws-security-group",
@@ -417,8 +350,44 @@ def test_load_terraform_registry(
             "git::https://example.com/network?ref=v1.2.0",
             "modules/vpc",
         ),
+        (
+            "git::ssh://username@example.com/network.git",
+            "example.com/network/HEAD",
+            "ssh://username@example.com/network.git",
+            "example.com/network/HEAD",
+            "git::ssh://username@example.com/network.git",
+            "",
+        ),
+        (
+            "git::ssh://username@example.com/network.git?ref=v1.2.0",
+            "example.com/network/v1.2.0",
+            "ssh://username@example.com/network.git?ref=v1.2.0",
+            "example.com/network/v1.2.0",
+            "git::ssh://username@example.com/network.git?ref=v1.2.0",
+            "",
+        ),
+        (
+            "git::username@example.com/network.git",
+            "example.com/network/HEAD",
+            "username@example.com/network.git",
+            "example.com/network/HEAD",
+            "git::username@example.com/network.git",
+            "",
+        ),
+        (
+            "git::username@example.com/network.git?ref=v1.2.0",
+            "example.com/network/v1.2.0",
+            "username@example.com/network.git?ref=v1.2.0",
+            "example.com/network/v1.2.0",
+            "git::username@example.com/network.git?ref=v1.2.0",
+            "",
+        ),
     ],
-    ids=["module", "module_with_version", "inner_module", "inner_module_with_version"],
+    ids=["module", "module_with_version",
+         "inner_module", "inner_module_with_version",
+         "module_over_ssh", "module_over_ssh_with_version",
+         "module_over_ssh_without_protocol", "module_over_ssh_without_protocol_with_version",
+     ],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_generic_git(
