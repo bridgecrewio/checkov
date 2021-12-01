@@ -1,0 +1,165 @@
+{
+  "format_version": "0.2",
+  "terraform_version": "1.0.11",
+  "planned_values": {
+    "root_module": {
+      "child_modules": [
+        {
+          "resources": [
+            {
+              "address": "module.mymodule_1[\"bar\"].null_resource.dummy",
+              "mode": "managed",
+              "type": "null_resource",
+              "name": "dummy",
+              "provider_name": "registry.terraform.io/hashicorp/null",
+              "schema_version": 0,
+              "values": {
+                "triggers": null
+              },
+              "sensitive_values": {}
+            }
+          ],
+          "address": "module.mymodule_1[\"bar\"]"
+        },
+        {
+          "resources": [
+            {
+              "address": "module.mymodule_1[\"foo\"].null_resource.dummy",
+              "mode": "managed",
+              "type": "null_resource",
+              "name": "dummy",
+              "provider_name": "registry.terraform.io/hashicorp/null",
+              "schema_version": 0,
+              "values": {
+                "triggers": null
+              },
+              "sensitive_values": {}
+            }
+          ],
+          "address": "module.mymodule_1[\"foo\"]"
+        },
+        {
+          "resources": [
+            {
+              "address": "module.mymodule_2.null_resource.dummy",
+              "mode": "managed",
+              "type": "null_resource",
+              "name": "dummy",
+              "provider_name": "registry.terraform.io/hashicorp/null",
+              "schema_version": 0,
+              "values": {
+                "triggers": null
+              },
+              "sensitive_values": {}
+            }
+          ],
+          "address": "module.mymodule_2"
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "module.mymodule_1[\"bar\"].null_resource.dummy",
+      "module_address": "module.mymodule_1[\"bar\"]",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "dummy",
+      "provider_name": "registry.terraform.io/hashicorp/null",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "triggers": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.mymodule_1[\"foo\"].null_resource.dummy",
+      "module_address": "module.mymodule_1[\"foo\"]",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "dummy",
+      "provider_name": "registry.terraform.io/hashicorp/null",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "triggers": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.mymodule_2.null_resource.dummy",
+      "module_address": "module.mymodule_2",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "dummy",
+      "provider_name": "registry.terraform.io/hashicorp/null",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "triggers": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "module_calls": {
+        "mymodule_1": {
+          "source": "./mymodule",
+          "module": {
+            "resources": [
+              {
+                "address": "null_resource.dummy",
+                "mode": "managed",
+                "type": "null_resource",
+                "name": "dummy",
+                "provider_config_key": "mymodule_1:null",
+                "schema_version": 0
+              }
+            ]
+          }
+        },
+        "mymodule_2": {
+          "source": "./mymodule",
+          "module": {
+            "resources": [
+              {
+                "address": "null_resource.dummy",
+                "mode": "managed",
+                "type": "null_resource",
+                "name": "dummy",
+                "provider_config_key": "mymodule_2:null",
+                "schema_version": 0
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

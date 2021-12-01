@@ -24,6 +24,16 @@ class TestPlanFileParser(unittest.TestCase):
         # TODO: this should also verify the flattening but at least shows it parses now.
         assert True
 
+    def test_module_resources_have_unique_names(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_modules/tfplan.json"
+        tf_definitions, _ = parse_tf_plan(valid_plan_path)
+        resources = next(iter(tf_definitions.values()))['resource']
+        unique_resource_names = set([resource_name for resource in resources
+                          if 'null_resource' in resource.keys()
+                          for resource_name in resource['null_resource'].keys()])
+        assert len(unique_resource_names) == 3
+
 
 if __name__ == '__main__':
     unittest.main()

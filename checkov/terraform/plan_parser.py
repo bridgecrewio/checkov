@@ -93,7 +93,7 @@ def _prepare_resource_block(resource: DictNode, conf: Optional[DictNode]) -> Tup
     # and where *_module resources don't have values field
     if mode == "managed" and "values" in resource:
         expressions = conf.get("expressions") if conf else None
-        resource_block[resource["type"]][resource.get("name", "default")] = _hclify(resource["values"], expressions)
+        resource_block[resource["type"]][resource.get("address", "default")] = _hclify(resource["values"], expressions)
         prepared = True
     return resource_block, prepared
 
@@ -134,7 +134,7 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
             (
                 x
                 for x in template.get("configuration", {}).get("root_module", {}).get("resources", [])
-                if x["type"] == resource["type"] and x["name"] == resource["name"]
+                if x["type"] == resource["type"] and x["address"] == resource["address"]
             ),
             None,
         )

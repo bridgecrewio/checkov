@@ -99,7 +99,7 @@ class Runner(TerraformRunner):
             for entity in entities:
                 context_parser = parser_registry.context_parsers[block_type]
                 definition_path = context_parser.get_entity_context_path(entity)
-                entity_id = ".".join(definition_path)
+                entity_id = definition_path[1]
                 # Entity can exist only once per dir, for file as well
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
