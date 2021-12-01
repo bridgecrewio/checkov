@@ -1,15 +1,13 @@
 import logging
 from copy import deepcopy
-from typing import List, Union, Dict, Any
+from typing import List, Dict
 
-from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.parsers.node import DictNode
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 
 
 class KubernetesLocalGraph(LocalGraph):
-    def __init__(self, definitions: Dict[str, DictNode]):
+    def __init__(self, definitions: Dict[str, List]):
         self.definitions = definitions
         super().__init__()
 
@@ -19,12 +17,19 @@ class KubernetesLocalGraph(LocalGraph):
     def _create_vertices(self):
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
+                if resource.get('kind') == "List":
+                    for item in resource.get("items", []):
+                        file_conf.append(item)
+
+            for resource in file_conf:
                 resource_type = resource.get('kind')
                 metadata = resource.get('metadata', {})
                 # TODO: add support for generateName
                 name = metadata.get('name')
-                if not resource_type or not name:
+                if not resource_type or not name or 'apiVersion' not in resource:
                     logging.info(f"failed to create a vertex in file {file_path}")
+                    continue
+                if resource_type == "List":
                     continue
 
                 namespace = metadata.get('namespace', 'default')
