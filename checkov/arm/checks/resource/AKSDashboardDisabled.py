@@ -20,7 +20,7 @@ class AKSDashboardDisabled(BaseResourceCheck):
         if conf.get("properties") is not None:
             if isinstance(conf["properties"].get("addonProfiles"), DictNode):
                 if isinstance(conf["properties"]["addonProfiles"].get("kubeDashboard"), DictNode):
-                    if conf["properties"]["addonProfiles"]["kubeDashboard"].get("enabled"):
+                    if conf["properties"]["addonProfiles"]["kubeDashboard"].get("enabled") is not None:
                         if str(conf["properties"]["addonProfiles"]["kubeDashboard"]["enabled"]).lower() == "false":
                             return CheckResult.PASSED
 
