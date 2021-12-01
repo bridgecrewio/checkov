@@ -123,9 +123,9 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary
     """
-    tf_defintions: Dict[str, Dict[str, Any]] = {}
-    tf_defintions[tf_plan_file] = {}
-    tf_defintions[tf_plan_file]["resource"] = []
+    tf_definitions: Dict[str, Dict[str, Any]] = {}
+    tf_definitions[tf_plan_file] = {}
+    tf_definitions[tf_plan_file]["resource"] = []
     template, template_lines = parse(tf_plan_file)
     if not template:
         return None, None
@@ -140,11 +140,11 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
         )
         resource_block, prepared = _prepare_resource_block(resource, conf)
         if prepared is True:
-            tf_defintions[tf_plan_file]["resource"].append(resource_block)
+            tf_definitions[tf_plan_file]["resource"].append(resource_block)
     child_modules = template.get("planned_values", {}).get("root_module", {}).get("child_modules", [])
     # Terraform supports modules within modules so we need to search
     # in nested modules to find all resource blocks
     resource_blocks = _find_child_modules(child_modules)
     for resource in resource_blocks:
-        tf_defintions[tf_plan_file]["resource"].append(resource)
-    return tf_defintions, template_lines
+        tf_definitions[tf_plan_file]["resource"].append(resource)
+    return tf_definitions, template_lines

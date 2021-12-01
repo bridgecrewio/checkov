@@ -126,9 +126,9 @@ class Runner(TerraformRunner):
             if resource_type in resource.keys():
                 resource_name = definition_path[1]
                 if resource_name in resource[resource_type].keys():
-                    resource_defintion = resource[resource_type][resource_name]
-                    entity_context['start_line'] = resource_defintion['start_line'][0]
-                    entity_context['end_line'] = resource_defintion['end_line'][0]
+                    resource_definition = resource[resource_type][resource_name]
+                    entity_context['start_line'] = resource_definition['start_line'][0]
+                    entity_context['end_line'] = resource_definition['end_line'][0]
                     entity_context['code_lines'] = self.template_lines[
                                                    entity_context['start_line']:entity_context['end_line']]
                     return entity_context
