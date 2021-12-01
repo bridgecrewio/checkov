@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.parsers.node import DictNode
 
 class AKSDashboardDisabled(BaseResourceCheck):
     def __init__(self):
@@ -17,9 +18,9 @@ class AKSDashboardDisabled(BaseResourceCheck):
                 return CheckResult.FAILED
 
         if conf.get("properties") is not None:
-            if conf["properties"].get("addonProfiles") is not None:
-                if conf["properties"]["addonProfiles"].get("kubeDashboard") is not None:
-                    if conf["properties"]["addonProfiles"]["kubeDashboard"].get("enabled") is not None:
+            if isinstance(conf["properties"].get("addonProfiles"), DictNode):
+                if isinstance(conf["properties"]["addonProfiles"].get("kubeDashboard"), DictNode):
+                    if conf["properties"]["addonProfiles"]["kubeDashboard"].get("enabled"):
                         if str(conf["properties"]["addonProfiles"]["kubeDashboard"]["enabled"]).lower() == "false":
                             return CheckResult.PASSED
 
