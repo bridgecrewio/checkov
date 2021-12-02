@@ -59,6 +59,7 @@ click = ">=8.0.0"
 aiohttp = "*"
 aiodns = "*"
 aiomultiprocess = "*"
+pipfile = "*"
 
 [requires]
 python_version = "3.7"
