@@ -27,7 +27,10 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
+        self.entity_type = ""
         self.guideline = guideline
+        if self.guideline:
+            logging.debug(f'Found custom guideline for check {id}')
 
     def run(
         self,

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  namespace: developer
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ^~ "/test" {
+        default_type 'text/plain';
+        alias /var/run;
+      }
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /test
+          pathType: Prefix
+          backend:
+            service:
+              name: web
+              port:
+                number: 8080

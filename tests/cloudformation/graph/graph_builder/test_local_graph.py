@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest import TestCase
 
 from checkov.cloudformation.cfn_utils import create_definitions
@@ -22,11 +23,11 @@ class TestLocalGraph(TestCase):
         self.assertEqual(1, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
         resource_vertex = local_graph.vertices[0]
-        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.name)
-        self.assertEqual("AWS::ApiGateway::Stage.MyStage", resource_vertex.id)
+        self.assertEqual("AWS::ApiGateway::Stage.Enabled", resource_vertex.name)
+        self.assertEqual("AWS::ApiGateway::Stage.Enabled", resource_vertex.id)
         self.assertEqual(BlockType.RESOURCE, resource_vertex.block_type)
         self.assertEqual("CloudFormation", resource_vertex.source)
-        self.assertDictEqual(definitions[relative_file_path]["Resources"]["MyStage"]["Properties"],
+        self.assertDictEqual(definitions[relative_file_path]["Resources"]["Enabled"]["Properties"],
                              resource_vertex.attributes)
 
     def test_build_graph_with_params_outputs(self):
@@ -155,4 +156,65 @@ class TestLocalGraph(TestCase):
         # and the overall amount of edges_yaml
         self.assertEqual(out_edges_overall_count, in_edges_overall_count)
         self.assertEqual(out_edges_overall_count, len(local_graph.edges))
+
+    def test_build_graph_with_sam_resource(self):
+        sam_file_path = Path(TEST_DIRNAME) / "resources/sam/template.yaml"
+
+        definitions, _ = create_definitions(root_folder="", files=[str(sam_file_path)], runner_filter=RunnerFilter())
+        local_graph = CloudformationLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False)
+
+        self.assertEqual(len(local_graph.vertices), 5)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.GLOBALS]), 1)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 3)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUTS]), 1)
+
+        function_1_index = local_graph.vertices_block_name_map["resource"]["AWS::Serverless::Function.Function1"][0]
+        function_2_index = local_graph.vertices_block_name_map["resource"]["AWS::Serverless::Function.Function2"][0]
+        function_1_vertex = local_graph.vertices[function_1_index]
+        function_2_vertex = local_graph.vertices[function_2_index]
+
+        expected_function_1_changed_attributes = [
+            "CodeUri",
+            "Timeout",
+            "Tracing",
+            "Environment.Variables",
+            "Environment.Variables.STAGE",
+            "VpcConfig.SecurityGroupIds",
+            "VpcConfig.SubnetIds",
+        ]
+        self.assertCountEqual(expected_function_1_changed_attributes, function_1_vertex.changed_attributes.keys())
+        expected_function_2_changed_attributes = [
+            "CodeUri",
+            "Runtime",
+            "Timeout",
+            "Tracing",
+            "Environment",
+            "Environment.Variables",
+            "Environment.Variables.STAGE",
+            "Environment.Variables.TABLE_NAME",
+            "VpcConfig",
+            "VpcConfig.SecurityGroupIds",
+            "VpcConfig.SubnetIds",
+        ]
+        self.assertCountEqual(expected_function_2_changed_attributes, function_2_vertex.changed_attributes.keys())
+
+        self.assertEqual("src/", function_1_vertex.attributes["CodeUri"])
+        self.assertEqual("python3.9", function_1_vertex.attributes["Runtime"])
+        self.assertEqual(5, function_1_vertex.attributes["Timeout"])
+        self.assertEqual("Active", function_1_vertex.attributes["Tracing"])
+        self.assertEqual("hello", function_1_vertex.attributes["Environment"]["Variables"]["NEW_VAR"])
+        self.assertEqual("Production", function_1_vertex.attributes["Environment"]["Variables"]["STAGE"])
+        self.assertEqual("resource-table", function_1_vertex.attributes["Environment"]["Variables"]["TABLE_NAME"])
+        self.assertEqual(['sg-first', 'sg-123', 'sg-456'], function_1_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
+        self.assertEqual(['subnet-123', 'subnet-456'], function_1_vertex.attributes["VpcConfig"]["SubnetIds"])
+
+        self.assertEqual("src/", function_2_vertex.attributes["CodeUri"])
+        self.assertEqual("python3.8", function_2_vertex.attributes["Runtime"])
+        self.assertEqual(5, function_2_vertex.attributes["Timeout"])
+        self.assertEqual("Active", function_2_vertex.attributes["Tracing"])
+        self.assertEqual("Production", function_2_vertex.attributes["Environment"]["Variables"]["STAGE"])
+        self.assertEqual("global-table", function_2_vertex.attributes["Environment"]["Variables"]["TABLE_NAME"])
+        self.assertEqual(['sg-123', 'sg-456'], function_2_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
+        self.assertEqual(['subnet-123', 'subnet-456'], function_2_vertex.attributes["VpcConfig"]["SubnetIds"])
 

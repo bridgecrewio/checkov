@@ -70,11 +70,12 @@ class Runner(TerraformRunner):
 
         report.add_parsing_errors(list(parsing_errors.keys()))
 
-        graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
-        self.graph_manager.save_graph(graph)
+        if self.tf_definitions:
+            graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
+            self.graph_manager.save_graph(graph)
 
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-        merge_reports(report, graph_report)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            merge_reports(report, graph_report)
 
         return report
 
@@ -103,19 +104,26 @@ class Runner(TerraformRunner):
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
+                entity_address = entity_context.get('address')
+
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
-                                    resource=entity_id, evaluations=None,
+                                    resource=entity_id, resource_address=entity_address, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
     def get_entity_context(self, definition_path, full_file_path):
         entity_context = {}
-        for resource in self.tf_definitions[full_file_path]['resource']:
+
+        if full_file_path not in self.tf_definitions:
+            logging.debug(f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
+            return entity_context
+
+        for resource in self.tf_definitions.get(full_file_path, {}).get('resource', []):
             resource_type = definition_path[0]
             if resource_type in resource.keys():
                 resource_name = definition_path[1]
@@ -125,5 +133,6 @@ class Runner(TerraformRunner):
                     entity_context['end_line'] = resource_defintion['end_line'][0]
                     entity_context['code_lines'] = self.template_lines[
                                                    entity_context['start_line']:entity_context['end_line']]
+                    entity_context['address'] = resource_defintion['__address__']
                     return entity_context
         return entity_context

@@ -1,7 +1,10 @@
 import itertools
 import os
 import unittest
+from pathlib import Path
+
 from checkov.cloudformation.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestRunningGraphChecks(unittest.TestCase):
@@ -16,6 +19,29 @@ class TestRunningGraphChecks(unittest.TestCase):
         assert any(
             check.check_id == "CKV2_AWS_26" for check in itertools.chain(report.failed_checks, report.passed_checks))
 
+    def test_runner_sam(self):
+        # given
+        test_dir_path = Path(__file__).parent.parent / "graph_builder/resources/sam"
+
+        # when
+        report = Runner().run(root_folder=str(test_dir_path), runner_filter=RunnerFilter(checks=["CKV2_AWS_26"]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "AWS::Serverless::Function.Function1",
+            "AWS::Serverless::Function.Function2",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
 
 if __name__ == '__main__':
     unittest.main()

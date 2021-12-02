@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.secrets import string_has_secrets
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
@@ -14,16 +16,17 @@ class VMCredsInCustomData(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         os_profile = conf.get('os_profile')
         if os_profile:
-            self.evaluated_keys = ['os_profile']
             os_profile = os_profile[0]
             custom_data = os_profile.get('custom_data')
             if custom_data:
                 custom_data = custom_data[0]
-                self.evaluated_keys = ['os_profile/[0]/custom_data']
                 if isinstance(custom_data, str):
                     if string_has_secrets(custom_data):
                         return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["os_profile/[0]/custom_data"]
 
 
 check = VMCredsInCustomData()

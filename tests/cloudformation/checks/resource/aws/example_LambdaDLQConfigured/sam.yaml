@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Enabled:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+      DeadLetterQueue:
+        TargetArn: arn:aws:sqs:eu-central-1:123456789012:dlq
+        Type: SQS
+
+  Default:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8

@@ -30,14 +30,15 @@ class GenericGitLoader(ModuleLoader):
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = self.dest_dir
             git_getter.do_get()
-
-            return_dir = self.dest_dir
-            if self.inner_module:
-                return_dir = os.path.join(self.dest_dir, self.inner_module)
-            return ModuleContent(dir=return_dir)
         except Exception as e:
-            self.logger.error(f"failed to get {self.module_source} because of {e}")
-            return ModuleContent(dir=None, failed_url=self.module_source)
+            str_e = str(e)
+            if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
+                self.logger.error(f"failed to get {self.module_source} because of {e}")
+                return ModuleContent(dir=None, failed_url=self.module_source)
+        return_dir = self.dest_dir
+        if self.inner_module:
+            return_dir = os.path.join(self.dest_dir, self.inner_module)
+        return ModuleContent(dir=return_dir)
 
     def _find_module_path(self) -> str:
         module_source = self._parse_module_source()
@@ -63,14 +64,19 @@ class GenericGitLoader(ModuleLoader):
         else:
             version = "HEAD"
 
-        if len(module_source_components) == 2:
+        if len(module_source_components) < 3:
+            root_module = module_source_components[-1]
             inner_module = ""
         elif len(module_source_components) == 3:
+            root_module = module_source_components[1]
             inner_module = module_source_components[2]
         else:
             raise Exception("invalid git url")
 
-        root_module = module_source_components[1]
+        username = re.match(r"^(.*?@).*", root_module)
+        if username:
+            root_module = root_module.replace(username[1], "")
+
         if root_module.endswith(".git"):
             root_module = root_module[:-4]
 
@@ -97,10 +103,6 @@ class GenericGitLoader(ModuleLoader):
                     self.external_modules_folder_name, module_source.root_module, module_source.version
                 )
             )
-
-        username = re.match(r"^git::ssh://(.*?@).*", self.module_source)
-        if username:
-            self.dest_dir = self.dest_dir.replace(username[1], "")
 
 
 loader = GenericGitLoader()

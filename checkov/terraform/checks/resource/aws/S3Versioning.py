@@ -11,7 +11,8 @@ class S3Versioning(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
+        self.evaluated_keys=["versioning/[0]/enabled"]
         return "versioning/[0]/enabled"
 
 
-scanner = S3Versioning()
+check = S3Versioning()

@@ -61,6 +61,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
+        check.category = raw_check.get("metadata", {}).get("category", "")
         if bc_integration.ckv_to_bc_id_mapping:
             check.bc_id = bc_integration.ckv_to_bc_id_mapping.get(check.id)
         solver = self.get_check_solver(check)

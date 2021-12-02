@@ -14,11 +14,8 @@ class SQSQueueEncryption(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'kms_master_key_id'
 
-    def get_expected_values(self):
-        return [ANY_VALUE]
-
     def get_expected_value(self):
-        return 'alias/aws/sqs'
+        return ANY_VALUE
 
 
 check = SQSQueueEncryption()

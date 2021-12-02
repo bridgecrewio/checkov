@@ -1,5 +1,7 @@
 import os
 import re
+from pathlib import Path
+from typing import Union
 
 from colorama import init, Fore, Style
 from termcolor import colored
@@ -27,7 +29,7 @@ class Record:
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class, file_abs_path, entity_tags=None,
-                 caller_file_path=None, caller_file_line_range=None, bc_check_id=None):
+                 caller_file_path=None, caller_file_line_range=None, bc_check_id=None, resource_address=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -41,7 +43,7 @@ class Record:
         self.code_block = code_block
         self.file_path = file_path
         self.file_abs_path = file_abs_path
-        self.repo_file_path = convert_to_unix_path(f'/{os.path.relpath(file_abs_path)}')  # matches file paths given in the BC platform and should always be a unix path
+        self.repo_file_path = self._determine_repo_file_path(file_abs_path)
         self.file_line_range = file_line_range
         self.resource = resource
         self.evaluations = evaluations
@@ -50,6 +52,16 @@ class Record:
         self.entity_tags = entity_tags
         self.caller_file_path = caller_file_path
         self.caller_file_line_range = caller_file_line_range
+        self.resource_address = resource_address
+
+    @staticmethod
+    def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
+        # matches file paths given in the BC platform and should always be a unix path
+        repo_file_path = Path(file_path)
+        if Path.cwd().drive == repo_file_path.drive:
+            return convert_to_unix_path(f"/{os.path.relpath(repo_file_path)}").replace("/..", "")
+
+        return f"/{'/'.join(repo_file_path.parts[1:])}"
 
     def set_guideline(self, guideline):
         self.guideline = guideline

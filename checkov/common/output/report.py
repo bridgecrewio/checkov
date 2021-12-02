@@ -101,7 +101,7 @@ class Report:
                 Vulnerability(
                     id=failed_check.check_id, source_name='checkov',
                     description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
-                    recommendations=[failed_check.guideline]
+                    advisories=[failed_check.guideline]
                 )
             )
             bom.add_component(component=component)
@@ -433,6 +433,16 @@ class Report:
                     record.check_result["suppress_comment"] = skip["suppress_comment"]
                     report.add_record(record)
 
+            if record.resource_address and record.resource_address.startswith("module."):
+                module_path = record.resource_address[0:record.resource_address.index('.', len("module.") + 1)]
+                module_enrichments = enriched_resources.get(module_path, {})
+                for module_skip in module_enrichments.get("skipped_checks", []):
+                    if record.check_id in module_skip["id"]:
+                        skip_records.append(record)
+                        record.check_result["result"] = CheckResult.SKIPPED
+                        record.check_result["suppress_comment"] = module_skip["suppress_comment"]
+                        report.add_record(record)
+
         for record in skip_records:
             if record in report.failed_checks:
                 report.failed_checks.remove(record)
@@ -475,7 +485,7 @@ def report_to_cyclonedx(report: Report) -> Bom:
             Vulnerability(
                 id=failed_check.check_id, source_name='checkov',
                 description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
-                recommendations=[failed_check.guideline]
+                advisories=[failed_check.guideline]
             )
         )
         bom.add_component(component=component)

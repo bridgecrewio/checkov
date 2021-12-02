@@ -66,12 +66,12 @@ nav_order: 1
 |  55 | CKV_K8S_21  | resource | ReplicationController  | The default namespace should not be used                                                               | Kubernetes |
 |  56 | CKV_K8S_21  | resource | Job                    | The default namespace should not be used                                                               | Kubernetes |
 |  57 | CKV_K8S_21  | resource | CronJob                | The default namespace should not be used                                                               | Kubernetes |
-|  58 | CKV_K8S_21  | resource | Service                | The default namespace should not be used                                                               | Kubernetes |
-|  59 | CKV_K8S_21  | resource | Secret                 | The default namespace should not be used                                                               | Kubernetes |
-|  60 | CKV_K8S_21  | resource | Role                   | The default namespace should not be used                                                               | Kubernetes |
-|  61 | CKV_K8S_21  | resource | RoleBinding            | The default namespace should not be used                                                               | Kubernetes |
-|  62 | CKV_K8S_21  | resource | ConfigMap              | The default namespace should not be used                                                               | Kubernetes |
-|  63 | CKV_K8S_21  | resource | Ingress                | The default namespace should not be used                                                               | Kubernetes |
+|  58 | CKV_K8S_21  | resource | Ingress                | The default namespace should not be used                                                               | Kubernetes |
+|  59 | CKV_K8S_21  | resource | Service                | The default namespace should not be used                                                               | Kubernetes |
+|  60 | CKV_K8S_21  | resource | Secret                 | The default namespace should not be used                                                               | Kubernetes |
+|  61 | CKV_K8S_21  | resource | Role                   | The default namespace should not be used                                                               | Kubernetes |
+|  62 | CKV_K8S_21  | resource | RoleBinding            | The default namespace should not be used                                                               | Kubernetes |
+|  63 | CKV_K8S_21  | resource | ConfigMap              | The default namespace should not be used                                                               | Kubernetes |
 |  64 | CKV_K8S_22  | resource | containers             | Use read-only filesystem for containers where possible                                                 | Kubernetes |
 |  65 | CKV_K8S_22  | resource | initContainers         | Use read-only filesystem for containers where possible                                                 | Kubernetes |
 |  66 | CKV_K8S_23  | resource | Pod                    | Minimize the admission of root containers                                                              | Kubernetes |
@@ -213,6 +213,9 @@ nav_order: 1
 | 202 | CKV_K8S_149 | resource | containers             | Ensure that the --rotate-certificates argument is not set to false                                     | Kubernetes |
 | 203 | CKV_K8S_150 | resource | containers             | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
 | 204 | CKV_K8S_151 | resource | containers             | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 205 | CKV_K8S_152 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain LUA code execution. See CVE-2021-25742         | Kubernetes |
+| 206 | CKV_K8S_153 | resource | Ingress                | Prevent All NGINX Ingress annotation snippets. See CVE-2021-25742                                      | Kubernetes |
+| 207 | CKV_K8S_154 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain alias statements See CVE-2021-25742            | Kubernetes |
 
 
 ---

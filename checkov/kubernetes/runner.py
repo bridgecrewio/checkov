@@ -4,49 +4,58 @@ import os
 from functools import reduce
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.parser.parser import parse
-from checkov.kubernetes.registry import registry
+from checkov.common.runners.base_runner import BaseRunner
+from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
+from checkov.kubernetes.graph_manager import KubernetesGraphManager
+from checkov.kubernetes.kubernetes_utils import get_files_definitions, get_folder_definitions
+from checkov.kubernetes.checks.resource.registry import registry
 from checkov.runner_filter import RunnerFilter
-
-K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 class Runner(BaseRunner):
-    check_type = "kubernetes"
+    def __init__(
+        self,
+        graph_class=KubernetesLocalGraph,
+        db_connector=NetworkxConnector(),
+        source="Kubernetes",
+        graph_manager=None,
+    ):
+        self.check_type = "kubernetes"
+        self.graph_class = graph_class
+        # TODO: uncomment it in order to create the graph
+        # self.graph_manager = \
+        #     graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
+
+        self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.definitions_raw = {}
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
         report = Report(self.check_type)
-        definitions = {}
-        definitions_raw = {}
-        files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
+                self.graph_registry.load_external_checks(directory)
 
         if files:
-            _parse_files(files, definitions, definitions_raw)
+            definitions, self.definitions_raw = get_files_definitions(files)
+        elif root_folder:
+            definitions, self.definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+        else:
+            return report
 
-        if root_folder:
-            filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-
-                for file in f_names:
-                    file_ending = os.path.splitext(file)[1]
-                    if file_ending in K8_POSSIBLE_ENDINGS:
-                        full_path = os.path.join(root, file)
-                        if "/." not in full_path and file not in ['package.json','package-lock.json']:
-                            # skip temp directories
-                            files_list.append(full_path)
-
-            _parse_files(files_list, definitions, definitions_raw, filepath_fn)
+        # TODO: uncomment it in order to build the graph
+        # logging.info("creating kubernetes graph")
+        # local_graph = self.graph_manager.build_graph_from_definitions(definitions)
+        # for vertex in local_graph.vertices:
+        #     report.add_resource(f'{vertex.path}:{vertex.id}')
+        # self.graph_manager.save_graph(local_graph)
 
         for k8_file in definitions.keys():
 
@@ -110,7 +119,6 @@ class Runner(BaseRunner):
                         containers = containers.pop()
                         #containers.insert(0,entity_conf['kind'])
                         containerDef = {}
-                        namespace = ""
                         if "namespace" in entity_conf["metadata"]:
                             namespace = entity_conf["metadata"]["namespace"]
                         else:
@@ -169,10 +177,10 @@ class Runner(BaseRunner):
 
                     if start_line == end_line:
                         entity_lines_range = [start_line, end_line]
-                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line]
+                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line]
                     else:
                         entity_lines_range = [start_line, end_line - 1]
-                        entity_code_lines = definitions_raw[k8_file][start_line - 1: end_line - 1]
+                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line - 1]
 
                     # TODO? - Variable Eval Message!
                     variable_evaluations = {}
@@ -189,6 +197,41 @@ class Runner(BaseRunner):
                         record.set_guideline(check.guideline)
                         report.add_record(record=record)
 
+        return report
+
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+        report = Report(self.check_type)
+        checks_results = self.run_graph_checks_results(runner_filter)
+
+        for check, check_results in checks_results.items():
+            for check_result in check_results:
+                entity = check_result["entity"]
+                entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
+                start_line = entity['__startline__']
+                end_line = entity['__endline__']
+
+                if start_line == end_line:
+                    entity_lines_range = [start_line, end_line]
+                    entity_code_lines = self.definitions_raw[entity_file_path][start_line - 1: end_line]
+                else:
+                    entity_lines_range = [start_line, end_line - 1]
+                    entity_code_lines = self.definitions_raw[entity_file_path][start_line - 1: end_line - 1]
+
+                record = Record(
+                    check_id=check.id,
+                    check_name=check.name,
+                    check_result=check_result,
+                    code_block=entity_code_lines,
+                    file_path=entity_file_path,
+                    file_line_range=entity_lines_range,
+                    resource=entity.get(CustomAttributes.ID),
+                    evaluations={},
+                    check_class=check.__class__.__module__,
+                    file_abs_path=entity_file_abs_path
+                )
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
         return report
 
 
@@ -232,22 +275,6 @@ def get_skipped_checks(entity_conf):
                         logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
                         continue
     return skipped
-
-
-def _parse_files(files, definitions, definitions_raw, filepath_fn=None):
-    def _parse_file(filename):
-        try:
-            return filename, parse(filename)
-        except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
-
-    results = parallel_runner.run_function(_parse_file, files)
-    for result in results:
-        if result:
-            (file, parse_result) = result
-            if parse_result:
-                path = filepath_fn(file) if filepath_fn else file
-                (definitions[path], definitions_raw[path]) = parse_result
 
 
 def _get_from_dict(data_dict, map_list):

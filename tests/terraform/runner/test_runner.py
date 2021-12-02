@@ -236,6 +236,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
+                continue  # duplicate of CKV_AZURE_53
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
                 continue  # this rule has been refactored into a v2 graph implementation
 
@@ -1008,6 +1010,17 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['dir1']))
         self.assertEqual(1, len(report.resources))
+
+    def test_runner_merge_operator(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/merge_operator"
+        extra_checks_dir_path = [current_dir + "/resources/merge_operator/query"]
+
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=["CKV2_AWS_200"]))
+
+        self.assertEqual(1, len(report.passed_checks))
 
 
     def tearDown(self):
