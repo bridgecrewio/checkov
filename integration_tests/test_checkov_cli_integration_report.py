@@ -14,7 +14,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         with open(report_path, 'r') as fp:
             report = json.load(fp)
         failed_checks = report['results']['failed_checks']
-        self.assertGreater(len(failed_checks), 100, 'Expected at least one failed check for the custom policy')
+        self.assertGreater(len(failed_checks), 0, 'Expected at least one failed check for the custom policy')
         self.assertIsNotNone(failed_checks[0]['guideline'], 'Expected the custom policy guideline field to have a value')
         self.assertGreater(len(failed_checks[0]['guideline']), 0, 'Expected the custom policy guideline field to have a value')
 
