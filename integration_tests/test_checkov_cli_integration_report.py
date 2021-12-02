@@ -1,3 +1,4 @@
+import json
 import os
 import platform
 import sys
@@ -7,6 +8,15 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestCheckovJsonReport(unittest.TestCase):
+
+    def test_guideline_in_custom_policy(self):
+        report_path = os.path.join(current_dir, '..', 'checkov_report_custom_policy.json')
+        with open(report_path, 'r') as fp:
+            report = json.load(fp)
+        failed_checks = report['results']['failed_checks']
+        self.assertGreater(len(failed_checks), 0, 'Expected at least one failed check for the custom policy')
+        self.assertIsNotNone(failed_checks[0]['guideline'], 'Expected the custom policy guideline field to have a value')
+        self.assertGreater(len(failed_checks[0]['guideline']), 0, 'Expected the custom policy guideline field to have a value')
 
     def test_terragoat_report_dir_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_azuredir_api_key_terragoat.txt')
