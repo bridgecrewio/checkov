@@ -1,6 +1,8 @@
 import itertools
 import logging
 import re
+import signal
+import threading
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
@@ -183,11 +185,25 @@ SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_f
 SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 
 
+def eval_with_timeout(input_str: str, timeout: int = 5) -> str:
+    def signal_handler(signum, frame):
+        raise TimeoutError()
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(timeout)
+    try:
+        return eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    except TimeoutError:
+        return input_str
+
+
 def evaluate(input_str: str) -> Any:
     if "__" in input_str:
         logging.warning(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
-    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+
+    evaluated = eval_with_timeout(input_str)
+
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 
