@@ -55,8 +55,6 @@ data "aws_iam_policy_document" "pass" {
   }
 }
 
-# fail
-
 data "aws_iam_policy_document" "fail" {
   version = "2012-10-17"
 

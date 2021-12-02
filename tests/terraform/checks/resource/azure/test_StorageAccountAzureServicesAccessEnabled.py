@@ -13,7 +13,7 @@ class TestStorageAccountAzureServicesAccessEnabled(unittest.TestCase):
             resource "azurerm_storage_account_network_rules" "test" {
               resource_group_name  = azurerm_resource_group.test.name
               storage_account_name = azurerm_storage_account.test.name
-            
+
               default_action             = "Deny"
               ip_rules                   = ["127.0.0.1"]
               virtual_network_subnet_ids = [azurerm_subnet.test.id]
@@ -21,6 +21,28 @@ class TestStorageAccountAzureServicesAccessEnabled(unittest.TestCase):
             }
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_storage_account_network_rules']['test']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_failure_storage(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_storage_account" "example" {
+            name                      = "stor"
+            resource_group_name       = azurerm_resource_group.example.name
+            location                  = azurerm_resource_group.example.location
+            account_tier              = "Standard"
+            account_replication_type  = "GRS"
+            enable_https_traffic_only = false
+            allow_blob_public_access  = true
+
+            //to fail CKV_AZURE_35 && CKV_AZURE_36
+            network_rules {
+            default_action = "Deny"
+            bypass         = ["Metrics"]
+            }
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
