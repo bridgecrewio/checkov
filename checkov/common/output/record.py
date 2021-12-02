@@ -29,7 +29,7 @@ class Record:
 
     def __init__(self, check_id, check_name, check_result, code_block, file_path, file_line_range, resource,
                  evaluations, check_class, file_abs_path, entity_tags=None,
-                 caller_file_path=None, caller_file_line_range=None, bc_check_id=None):
+                 caller_file_path=None, caller_file_line_range=None, bc_check_id=None, resource_address=None):
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
                              - 'var_file'
@@ -52,6 +52,7 @@ class Record:
         self.entity_tags = entity_tags
         self.caller_file_path = caller_file_path
         self.caller_file_line_range = caller_file_line_range
+        self.resource_address = resource_address
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:

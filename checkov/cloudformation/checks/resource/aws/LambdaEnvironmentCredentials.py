@@ -9,7 +9,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no hard-coded secrets exist in lambda environment"
         id = "CKV_AWS_45"
-        supported_resources = ['AWS::Lambda::Function']
+        supported_resources = ["AWS::Lambda::Function", "AWS::Serverless::Function"]
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

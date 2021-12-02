@@ -2,7 +2,7 @@ from copy import deepcopy
 from unittest import TestCase
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.graph.graph_builder.graph_components.blocks import get_inner_attributes
+from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 
 
 class TestGraph(TestCase):
@@ -30,7 +30,7 @@ def extract_inner_attributes(attributes):
         if isinstance(attribute_value, dict) or (
                 isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0],
                                                                                               dict)):
-            inner_attributes = get_inner_attributes(attribute_key, attribute_value)
+            inner_attributes = KubernetesBlock.get_inner_attributes(attribute_key, attribute_value)
             attributes_to_add.update(inner_attributes)
     return attributes_to_add
 

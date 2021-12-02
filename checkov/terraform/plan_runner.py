@@ -104,12 +104,14 @@ class Runner(TerraformRunner):
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
+                entity_address = entity_context.get('address')
+
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
-                                    resource=entity_id, evaluations=None,
+                                    resource=entity_id, resource_address=entity_address, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
@@ -131,5 +133,6 @@ class Runner(TerraformRunner):
                     entity_context['end_line'] = resource_defintion['end_line'][0]
                     entity_context['code_lines'] = self.template_lines[
                                                    entity_context['start_line']:entity_context['end_line']]
+                    entity_context['address'] = resource_defintion['__address__']
                     return entity_context
         return entity_context
