@@ -25,6 +25,7 @@ fi
 
 if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
 then
+  export LOG_LEVEL=DEBUG
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
 fi
