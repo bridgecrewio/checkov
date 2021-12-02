@@ -185,7 +185,7 @@ SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_f
 SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 
 
-def eval_with_timeout(input_str: str, timeout: int = 5) -> str:
+def eval_with_timeout(input_str: str, timeout: int = 2) -> str:
     def signal_handler(signum, frame):
         raise TimeoutError()
 
