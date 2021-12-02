@@ -12,9 +12,6 @@ class ApiServerkubeletCertificateAuthority(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories,
                          supported_entities=supported_entities)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
     def scan_spec_conf(self, conf):
         keys, values = extract_commands(conf)
 

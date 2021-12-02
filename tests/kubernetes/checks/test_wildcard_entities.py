@@ -20,9 +20,6 @@ class KubernetesCheck(BaseK8Check):
     def scan_spec_conf(self, conf):
         return CheckResult.PASSED
 
-    def get_resource_id(self, conf):
-        return f'{conf["kind"]}'
-
 
 class TestWildcardEntities(unittest.TestCase):
 

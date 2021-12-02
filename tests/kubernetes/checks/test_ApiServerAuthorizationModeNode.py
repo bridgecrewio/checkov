@@ -22,9 +22,9 @@ class TestApiServerAuthorizationModeNode(unittest.TestCase):
         self.assertEqual(summary['parsing_errors'], 0)
 
         for failed in report.failed_checks:
-            self.assertIn("should-fail", failed.resource)
+            self.assertIn("(container 0)", failed.resource)
         for passed in report.passed_checks:
-            self.assertIn("should-pass", passed.resource)
+            self.assertIn("(container 0)", passed.resource)
 
 
 if __name__ == '__main__':

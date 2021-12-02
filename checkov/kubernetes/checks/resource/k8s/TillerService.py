@@ -12,12 +12,6 @@ class TillerService(BaseK8Check):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self, conf):
-        if "namespace" in conf["metadata"]:
-            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
-        else:
-            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
-
     def scan_spec_conf(self, conf):
 
         metadata = conf.get('metadata')

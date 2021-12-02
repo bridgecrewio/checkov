@@ -10,12 +10,6 @@ class WildcardRoles(BaseK8Check):
         supported_kind = ['Role', 'ClusterRole']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self, conf):
-        if "namespace" in conf["metadata"]:
-            return "{}.{}.{}".format(conf["kind"], conf["metadata"]["name"], conf["metadata"]["namespace"])
-        else:
-            return "{}.{}.default".format(conf["kind"], conf["metadata"]["name"])
-
     def scan_spec_conf(self, conf):
         if isinstance(conf.get("rules"), list) and len(conf.get("rules")) > 0:
             if "apiGroups" in conf["rules"][0]:

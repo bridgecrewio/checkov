@@ -1,5 +1,6 @@
 import logging
 import os
+from copy import deepcopy
 from typing import Tuple, Dict, Optional, List, Any
 
 import dpath
@@ -98,18 +99,25 @@ def get_skipped_checks(entity_conf):
 def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
         Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
+    definitions = deepcopy(definitions)
     # iterate on the files
     for file_path, resources in definitions.items():
+
+        for resource in resources:
+            if resource.get("kind") == "List":
+                resources.extend(resource.get("items", []))
+                resources.remove(resource)
+        # Append containers and initContainers to definitions list
+        for resource in resources:
+            definitions[file_path].extend(get_containers_definitions(resource))
+
         # iterate on the resources
         for resource in resources:
-            if not isinstance(resource, Dict):
+            if is_invalid_k8_definition(resource):
                 continue
-            metadata = resource.get("metadata", {})
-            resource_type = resource.get("kind")
-            resource_name = metadata.get("name")
-            if not resource_type or not resource_name:
+            resource_id = get_resource_id(resource)
+            if not resource_id:
                 continue
-            resource_id = f'{resource_type}.{metadata.get("namespace", "default")}.{resource_name}'
             start_line = resource["__startline__"]
             end_line = min(resource["__endline__"], len(definitions_raw[file_path]))
             first_line_index = 0
@@ -147,3 +155,84 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
                 skipped_checks,
                 )
     return definitions_context
+
+
+def get_containers_definitions(entity_conf):
+    results = []
+    if is_invalid_k8_definition(entity_conf):
+        return results
+    metadata = entity_conf.get("metadata", {})
+    # Skip entity without metadata["name"]
+    # Skip entity with parent (metadata["ownerReferences"]) in runtime
+    # We will alert in runtime only
+    if not metadata or isinstance(metadata, int) or "name" not in metadata or \
+            metadata.get("ownerReferences"):
+        return results
+    for type in ["containers", "initContainers"]:
+        if entity_conf["kind"] == "CustomResourceDefinition":
+            continue
+        containers = search_deep_keys(type, entity_conf, [])
+        if not containers:
+            continue
+        containers = containers.pop()
+        namespace = metadata.get("namespace", "default")
+        container_def = containers.pop()
+        if not container_def:
+            continue
+
+        container_def = force_list(container_def)
+        for i, cd in enumerate(container_def):
+            cd["apiVersion"] = entity_conf["apiVersion"]
+            cd["kind"] = type
+            cd["parent"] = f'{entity_conf["kind"]}.{namespace}.{metadata.get("name")} (container {i})'
+            cd["parent_metadata"] = entity_conf["metadata"]
+            results.append(cd)
+    return results
+
+
+def search_deep_keys(searchText, obj, path):
+    """Search deep for keys and get their values"""
+    keys = []
+    if isinstance(obj, dict):
+        for key in obj:
+            pathprop = path[:]
+            pathprop.append(key)
+            if key == searchText:
+                pathprop.append(obj[key])
+                keys.append(pathprop)
+                # pop the last element off for nesting of found elements for
+                # dict and list checks
+                pathprop = pathprop[:-1]
+            if isinstance(obj[key], dict):
+                if key != 'parent_metadata':
+                    # Don't go back to the parent metadata, it is scanned for the parent
+                    keys.extend(search_deep_keys(searchText, obj[key], pathprop))
+            elif isinstance(obj[key], list):
+                for index, item in enumerate(obj[key]):
+                    pathproparr = pathprop[:]
+                    pathproparr.append(index)
+                    keys.extend(search_deep_keys(searchText, item, pathproparr))
+    elif isinstance(obj, list):
+        for index, item in enumerate(obj):
+            pathprop = path[:]
+            pathprop.append(index)
+            keys.extend(search_deep_keys(searchText, item, pathprop))
+
+    return keys
+
+
+def is_invalid_k8_definition(definition: dict) -> bool:
+    return not isinstance(definition, dict) or 'apiVersion' not in definition.keys() or 'kind' not in \
+           definition.keys() or isinstance(definition.get("kind"), int)
+
+
+def get_resource_id(resource):
+    resource_type = resource["kind"]
+    if resource_type in ["containers", "initContainers"]:
+        return resource.get("parent")
+    metadata = resource.get("metadata", {})
+    namespace = metadata.get("namespace", "default")
+    name = metadata.get("name")
+    if not name:
+        return None
+    return f'{resource_type}.{namespace}.{name}'

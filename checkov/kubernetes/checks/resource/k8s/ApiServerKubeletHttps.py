@@ -9,9 +9,6 @@ class ApiServerKubeletHttps(BaseK8Check):
         supported_kind = ['containers']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
     def scan_spec_conf(self, conf):
         if conf.get("command") is not None:
             if "kube-apiserver" in conf["command"]:

@@ -6,15 +6,13 @@ from functools import reduce
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.util.data_structures_utils import search_deep_keys
-from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import get_files_definitions, get_folder_definitions, \
-    build_definitions_context, get_skipped_checks
+    build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.runner_filter import RunnerFilter
 
@@ -76,97 +74,32 @@ class Runner(BaseRunner):
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if self.definitions[k8_file]:
-                for entity_conf in self.definitions[k8_file]:
-                    if _is_invalid_k8_definition(entity_conf):
-                        continue
-                    logging.debug("Template Dump for {}: {}".format(k8_file, entity_conf, indent=2))
+            # Run for each definition
+            for entity_conf in self.definitions[k8_file]:
+                entity_type = entity_conf.get("kind")
 
-                    if not isinstance(entity_conf, dict) or entity_conf.get("kind") == "List":
-                        continue
+                # Skip List and Kustomization Templates (for now)
+                if entity_type == "Kustomization":
+                    continue
 
-                    metadata = entity_conf.get("metadata", {})
+                skipped_checks = get_skipped_checks(entity_conf)
+                results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
 
-                    # Skip entity without metadata["name"]
-                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
-                    # We will alert in runtime only
-                    if not metadata or isinstance(metadata, int) or "name" not in metadata or \
-                            metadata.get("ownerReferences"):
-                        continue
+                # TODO? - Variable Eval Message!
+                variable_evaluations = {}
 
-                    # Append containers and initContainers to definitions list
-                    for type in ["containers", "initContainers"]:
-                        if entity_conf["kind"] == "CustomResourceDefinition":
-                            continue
-                        containers = search_deep_keys(type, entity_conf, [])
-                        if not containers:
-                            continue
-                        containers = containers.pop()
-                        namespace = metadata.get("namespace", "default")
-                        container_def = containers.pop()
-                        if not container_def:
-                            continue
+                for check, check_result in results.items():
+                    resource_id = get_resource_id(entity_conf)
+                    entity_context = self.context[k8_file][resource_id]
 
-                        container_def = force_list(container_def)
-                        for i, cd in enumerate(container_def):
-                            cd["apiVersion"] = entity_conf["apiVersion"]
-                            cd["kind"] = type
-                            cd["parent"] = "{}.{}.{} (container {})".format(
-                                entity_conf["kind"], entity_conf["metadata"]["name"], namespace, str(i))
-                            cd["parent_metadata"] = entity_conf["metadata"]
-                        self.definitions[k8_file].extend(container_def)
-
-                # Run for each definition included added container definitions
-                for i, entity_conf in enumerate(self.definitions[k8_file]):
-                    if _is_invalid_k8_definition(entity_conf):
-                        continue
-                    logging.debug("Template Dump for {}: {}".format(k8_file, entity_conf, indent=2))
-
-                    if not entity_conf or not isinstance(entity_conf, dict):
-                        continue
-                    entity_type = entity_conf.get("kind")
-                    # Skip List and Kustomization Templates (for now)
-                    if not entity_type or isinstance(entity_type, int) or entity_type in ["List", "Kustomization"]:
-                        continue
-
-                    metadata = entity_conf.get("metadata")
-                    # Skip entity without metadata["name"] or parent_metadata["name"]
-                    if entity_type not in ["containers", "initContainers"]:
-                        if not metadata or isinstance(metadata, int) or "name" not in metadata:
-                            continue
-
-                    # Skip entity with parent (metadata["ownerReferences"]) in runtime
-                    # We will alert in runtime only
-                    if metadata and metadata.get("ownerReferences"):
-                        continue
-
-                    skipped_checks = get_skipped_checks(entity_conf)
-                    results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
-
-                    start_line = entity_conf["__startline__"]
-                    end_line = entity_conf["__endline__"]
-
-                    if start_line == end_line:
-                        entity_lines_range = [start_line, end_line]
-                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line]
-                    else:
-                        entity_lines_range = [start_line, end_line - 1]
-                        entity_code_lines = self.definitions_raw[k8_file][start_line - 1: end_line - 1]
-
-                    # TODO? - Variable Eval Message!
-                    variable_evaluations = {}
-
-                    for check, check_result in results.items():
-                        resource_id = check.get_resource_id(entity_conf)
-                        report.add_resource(f'{k8_file}:{resource_id}')
-                        record = Record(check_id=check.id, bc_check_id=check.bc_id,
-                                        check_name=check.name, check_result=check_result,
-                                        code_block=entity_code_lines, file_path=k8_file,
-                                        file_line_range=entity_lines_range,
-                                        resource=resource_id, evaluations=variable_evaluations,
-                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path)
-                        record.set_guideline(check.guideline)
-                        report.add_record(record=record)
+                    record = Record(
+                        check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file,
+                        file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                        resource=resource_id, evaluations=variable_evaluations,
+                        check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+                    record.set_guideline(check.guideline)
+                    report.add_record(record=record)
 
         return report
 
@@ -220,8 +153,3 @@ def find_lines(node, kv):
         for j in node.values():
             for x in find_lines(j, kv):
                 yield x
-
-
-def _is_invalid_k8_definition(definition: dict) -> bool:
-    return isinstance(definition, dict) and 'apiVersion' not in definition.keys() and 'kind' not in \
-           definition.keys()

@@ -4,6 +4,7 @@ from typing import List, Dict
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
+from checkov.kubernetes.kubernetes_utils import is_invalid_k8_definition, get_containers_definitions, get_resource_id
 
 
 class KubernetesLocalGraph(LocalGraph):
@@ -18,33 +19,36 @@ class KubernetesLocalGraph(LocalGraph):
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
                 if resource.get('kind') == "List":
-                    for item in resource.get("items", []):
-                        file_conf.append(item)
+                    file_conf.extend(resource.get("items", []))
+                    file_conf.remove(resource)
+
+            # Append containers and initContainers to definitions list
+            for resource in file_conf:
+                self.definitions[file_path].extend(get_containers_definitions(resource))
 
             for resource in file_conf:
                 resource_type = resource.get('kind')
                 metadata = resource.get('metadata', {})
                 # TODO: add support for generateName
                 name = metadata.get('name')
-                if not resource_type or not name or 'apiVersion' not in resource:
+                if is_invalid_k8_definition(resource) or metadata.get("ownerReferences") or \
+                        (resource_type not in ["containers", "initContainers"] and not name):
                     logging.info(f"failed to create a vertex in file {file_path}")
-                    continue
-                if resource_type == "List":
+                    file_conf.remove(resource)
                     continue
 
-                namespace = metadata.get('namespace', 'default')
                 config = deepcopy(resource)
                 config.pop('apiVersion')
                 config.pop('kind')
-                config.pop('metadata')
+                config.pop('metadata', None)
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
                 attributes["__endline__"] = resource["__endline__"]
+                block_id = get_resource_id(resource)
 
                 self.vertices.append(KubernetesBlock(
-                    name=name,
-                    namespace=namespace,
+                    block_name=block_id,
                     resource_type=resource_type,
                     config=config,
                     path=file_path,

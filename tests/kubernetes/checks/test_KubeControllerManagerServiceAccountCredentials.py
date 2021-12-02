@@ -22,9 +22,9 @@ class TestKubeControllerManagerServiceAccountCredentials(unittest.TestCase):
         self.assertEqual(0, summary['parsing_errors'])
 
         for failed in report.failed_checks:
-            self.assertIn("should-fail", failed.resource)
+            self.assertIn("(container 0)", failed.resource)
         for passed in report.passed_checks:
-            self.assertIn("should-pass", passed.resource)
+            self.assertIn("(container 0)", passed.resource)
 
 
 if __name__ == '__main__':
