@@ -94,6 +94,7 @@ def _prepare_resource_block(resource: DictNode, conf: Optional[DictNode]) -> Tup
     if mode == "managed" and "values" in resource:
         expressions = conf.get("expressions") if conf else None
         resource_block[resource["type"]][resource.get("name", "default")] = _hclify(resource["values"], expressions)
+        resource_block[resource["type"]][resource.get("name", "default")]["__address__"] = resource.get("address")
         prepared = True
     return resource_block, prepared
 
