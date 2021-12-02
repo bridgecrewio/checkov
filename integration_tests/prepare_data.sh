@@ -23,9 +23,9 @@ else
   pipenv run checkov -s -d terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml -o json > checkov_config_report_terragoat.json
 fi
 
-#if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
-#then
+if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
+then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY -o json -c acme_AWS_1614172162021 > checkov_report_custom_policy.json
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
-#fi
+fi
