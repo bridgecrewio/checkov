@@ -9,6 +9,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
@@ -188,37 +189,6 @@ def get_containers_definitions(entity_conf):
             cd["parent_metadata"] = entity_conf["metadata"]
             results.append(cd)
     return results
-
-
-def search_deep_keys(searchText, obj, path):
-    """Search deep for keys and get their values"""
-    keys = []
-    if isinstance(obj, dict):
-        for key in obj:
-            pathprop = path[:]
-            pathprop.append(key)
-            if key == searchText:
-                pathprop.append(obj[key])
-                keys.append(pathprop)
-                # pop the last element off for nesting of found elements for
-                # dict and list checks
-                pathprop = pathprop[:-1]
-            if isinstance(obj[key], dict):
-                if key != 'parent_metadata':
-                    # Don't go back to the parent metadata, it is scanned for the parent
-                    keys.extend(search_deep_keys(searchText, obj[key], pathprop))
-            elif isinstance(obj[key], list):
-                for index, item in enumerate(obj[key]):
-                    pathproparr = pathprop[:]
-                    pathproparr.append(index)
-                    keys.extend(search_deep_keys(searchText, item, pathproparr))
-    elif isinstance(obj, list):
-        for index, item in enumerate(obj):
-            pathprop = path[:]
-            pathprop.append(index)
-            keys.extend(search_deep_keys(searchText, item, pathprop))
-
-    return keys
 
 
 def is_invalid_k8_definition(definition: dict) -> bool:
