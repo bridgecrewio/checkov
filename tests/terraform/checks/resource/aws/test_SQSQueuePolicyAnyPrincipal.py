@@ -18,19 +18,25 @@ class TestBackupVaultEncrypted(unittest.TestCase):
         passing_resources = {
             "aws_sqs_queue_policy.q1",
             "aws_sqs_queue_policy.q6",
+            "aws_sqs_queue.aq1",
+            "aws_sqs_queue.aq6"
         }
         failing_resources = {
             "aws_sqs_queue_policy.q2",
             "aws_sqs_queue_policy.q3",
             "aws_sqs_queue_policy.q4",
             "aws_sqs_queue_policy.q5",
+            "aws_sqs_queue.aq2",
+            "aws_sqs_queue.aq3",
+            "aws_sqs_queue.aq4",
+            "aws_sqs_queue.aq5",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["failed"], 8)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
