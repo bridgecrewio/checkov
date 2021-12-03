@@ -22,7 +22,11 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         if isinstance(conf['policy'][0], str):
             policy_block = json.loads(conf['policy'][0])
         else:
-            policy_block = conf['policy'][0]
+            if isinstance(conf['policy'][0], dict):
+                policy_block = conf['policy'][0]
+            else:
+                # have no idea what this is
+                return CheckResult.SKIPPED
 
         if 'Statement' in policy_block.keys():
             for statement in force_list(policy_block['Statement']):
