@@ -1,26 +1,34 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
 
-strongCiphers = ["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305","TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384","TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305","TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384","TLS_RSA_WITH_AES_256_GCM_SHA384","TLS_RSA_WITH_AES_128_GCM_SHA256"]
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
-class KubeletCryptographicCiphers(BaseK8Check):
-    def __init__(self):
+strongCiphers = (
+    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+    "TLS_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_RSA_WITH_AES_128_GCM_SHA256",
+)
+
+
+class KubeletCryptographicCiphers(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         # CIS-1.6 4.2.13
         id = "CKV_K8S_151"
         name = "Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "command" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "kubelet" in conf["command"]:
                 for command in conf["command"]:
                     if command.startswith("--tls-cipher-suites"):
-                        value = command.split("=")[1]    
+                        value = command.split("=")[1]
                         ciphers = value.split(",")
                         for cipher in ciphers:
                             if cipher not in strongCiphers:
@@ -29,4 +37,4 @@ class KubeletCryptographicCiphers(BaseK8Check):
         return CheckResult.PASSED
 
 
-check =  KubeletCryptographicCiphers()
+check = KubeletCryptographicCiphers()

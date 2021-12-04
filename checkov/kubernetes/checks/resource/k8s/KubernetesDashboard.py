@@ -1,26 +1,23 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class KubernetesDashboard(BaseK8Check):
-
-    def __init__(self):
+class KubernetesDashboard(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Ensure the Kubernetes dashboard is not deployed"
         id = "CKV_K8S_33"
         # Location: container .image
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "image" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["image"]
+        if conf.get("image"):
             conf_image = conf["image"]
             if not isinstance(conf_image, str):
                 return CheckResult.FAILED
-            if ("kubernetes-dashboard" in conf_image or "kubernetesui" in conf_image):
+            if "kubernetes-dashboard" in conf_image or "kubernetesui" in conf_image:
                 return CheckResult.FAILED
         else:
             return CheckResult.FAILED

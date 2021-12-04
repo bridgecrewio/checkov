@@ -1,20 +1,19 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
 
-class EtcdCertAndKey(BaseK8Check):
-    def __init__(self):
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
+
+
+class EtcdCertAndKey(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         # CIS-1.6 2.1
         id = "CKV_K8S_116"
         name = "Ensure that the --cert-file and --key-file arguments are set as appropriate"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if conf.get("command") is not None:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "etcd" in conf["command"]:
                 hasCertCommand = False
                 hasKeyCommand = False
@@ -26,7 +25,8 @@ class EtcdCertAndKey(BaseK8Check):
                     if hasCertCommand and hasKeyCommand:
                         return CheckResult.PASSED
                 return CheckResult.FAILED
-           
+
         return CheckResult.PASSED
+
 
 check = EtcdCertAndKey()

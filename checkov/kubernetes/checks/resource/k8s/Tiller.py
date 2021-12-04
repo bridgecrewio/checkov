@@ -1,39 +1,35 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class Tiller(BaseK8Check):
-
-    def __init__(self):
+class Tiller(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Ensure that Tiller (Helm v2) is not deployed"
         id = "CKV_K8S_34"
         # Location: container .image
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        return CheckResult.FAILED if self.is_tiller(conf) else CheckResult.PASSED
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["image"]
+        return CheckResult.FAILED if Tiller.is_tiller(metadata, conf) else CheckResult.PASSED
 
     @staticmethod
-    def is_tiller(conf):
-        if "image" in conf:
-            conf_image = conf["image"]
-            if isinstance(conf_image,str) and  "tiller" in conf_image:
+    def is_tiller(metadata: Dict[str, Any], conf: Dict[str, Any]) -> bool:
+        image = conf.get("image")
+        if image and isinstance(image, str) and "tiller" in image:
+            return True
+
+        if metadata:
+            labels = metadata.get("labels")
+            if labels:
+                if labels.get("app") == "helm":
+                    return True
+                elif labels.get("name") == "tiller":
                     return True
 
-        if conf["parent_metadata"]:
-            if conf["parent_metadata"].get("labels"):
-                if conf["parent_metadata"]["labels"].get("app"):
-                    if conf["parent_metadata"]["labels"]["app"] == "helm":
-                        return True
-                elif conf["parent_metadata"]["labels"].get("name"):
-                    if conf["parent_metadata"]["labels"]["name"] == "tiller":
-                        return True
-
         return False
+
 
 check = Tiller()

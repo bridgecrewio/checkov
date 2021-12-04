@@ -1,5 +1,6 @@
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Dict, Any, Callable, Optional
 
 from checkov.common.typing import _SkippedCheck
@@ -12,10 +13,10 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     id = ""
     name = ""
     categories: List[CheckCategories] = []
-    supported_entities: List[str] = []
+    supported_entities: "Iterable[str]" = ()
 
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str],
+        self, name: str, id: str, categories: List[CheckCategories], supported_entities: "Iterable[str]",
             block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None
     ) -> None:
         self.name = name

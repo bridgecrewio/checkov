@@ -5,7 +5,7 @@ metadata:
   labels:
     component: kube-controller-manager
     tier: control-plane
-  name: kube-controller-manager
+  name: kube-controller-manager-no-pem
   namespace: kube-system
 spec:
   containers:

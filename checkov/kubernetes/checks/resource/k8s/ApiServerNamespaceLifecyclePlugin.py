@@ -1,28 +1,28 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
 
-class ApiServerNamespaceLifecyclePlugin(BaseK8Check):
-    def __init__(self):
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
+
+
+class ApiServerNamespaceLifecyclePlugin(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         id = "CKV_K8S_83"
         name = "Ensure that the admission control plugin NamespaceLifecycle is set"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "command" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "kube-apiserver" in conf["command"]:
                 for cmd in conf["command"]:
                     if cmd == "--enable-admission-plugins":
-                        return CheckResult.FAILED  
+                        return CheckResult.FAILED
                     if "=" in cmd:
-                        [field,value,*_] = cmd.split("=")
+                        [field, value, *_] = cmd.split("=")
                         if field == "--enable-admission-plugins":
                             if "NamespaceLifecycle" not in value:
-                                return CheckResult.FAILED                            
+                                return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = ApiServerNamespaceLifecyclePlugin()

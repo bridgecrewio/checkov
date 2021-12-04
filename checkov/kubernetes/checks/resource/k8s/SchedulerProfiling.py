@@ -1,21 +1,18 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class SchedulerProfiling(BaseK8Check):
-    def __init__(self):
+class SchedulerProfiling(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         id = "CKV_K8S_114"
         name = "Ensure that the --profiling argument is set to false"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories,
-                         supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "command" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "kube-scheduler" in conf["command"]:
                 if "--profiling=false" not in conf["command"]:
                     return CheckResult.FAILED
