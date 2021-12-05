@@ -24,7 +24,9 @@ class Runner(BaseRunner):
         db_connector=NetworkxConnector(),
         source="Kubernetes",
         graph_manager=None,
+        external_registries=None
     ):
+        self.external_registries = [] if external_registries is None else external_registries
         self.check_type = "kubernetes"
         self.graph_class = graph_class
         self.graph_manager = \
