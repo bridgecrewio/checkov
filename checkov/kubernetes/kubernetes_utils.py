@@ -73,7 +73,7 @@ def get_skipped_checks(entity_conf):
             for key in annotation:
                 skipped_item = {}
                 if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                    if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key]:
+                    if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key] or "CKV2_K8S" in annotation[key]:
                         if "=" in annotation[key]:
                             (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
                         else:

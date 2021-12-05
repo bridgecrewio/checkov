@@ -35,7 +35,7 @@ class KubernetesLocalGraph(LocalGraph):
                 config = deepcopy(resource)
                 config.pop('apiVersion')
                 config.pop('kind')
-                config.pop('metadata', None)
+                config.pop('metadata')
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
