@@ -17,10 +17,5 @@ class ShareHostIPCPSP(BaseSpecOmittedOrValueCheck):
     def get_inspected_key(self):
         return "spec/hostIPC"
 
-    def get_resource_id(self, conf):
-        if "metadata" in conf:
-            if "name" in conf["metadata"]:
-                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
-        return 'PodSecurityPolicy.spec.hostIPC'
 
 check = ShareHostIPCPSP()

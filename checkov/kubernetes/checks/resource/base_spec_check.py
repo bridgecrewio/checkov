@@ -28,10 +28,6 @@ class BaseK8Check(BaseCheck):
         self.supported_specs = supported_entities
         registry.register(self)
 
-    @abstractmethod
-    def get_resource_id(self, conf: Dict[str, Any]) -> str:
-        pass
-
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         self.entity_type = entity_type
         return self.scan_spec_conf(conf, entity_type)

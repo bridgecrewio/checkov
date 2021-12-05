@@ -17,13 +17,13 @@ class TestWildcardRoles(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'Role.test-should-pass-3.test',
-            'Role.test-should-pass-2.test'
+            'Role.test.test-should-pass-3',
+            'Role.test.test-should-pass-2'
         }
         failing_resources = {
-            'Role.test-should-fail-1.test',
-            'Role.test-should-fail-2.test',
-            'ClusterRole.test-should-fail-3.test'
+            'Role.test.test-should-fail-1',
+            'Role.test.test-should-fail-2',
+            'ClusterRole.test.test-should-fail-3'
         }
 
         self.assertEqual(summary['passed'], 2)

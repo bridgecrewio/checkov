@@ -15,12 +15,6 @@ class AllowedCapabilities(BaseK8Check):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self, conf):
-        if "metadata" in conf:
-            if "name" in conf["metadata"]:
-                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
-        return 'PodSecurityPolicy.spec.allowedCapabilities'
-
     def scan_spec_conf(self, conf):
         if "spec" in conf:
             if "allowedCapabilities" in conf["spec"]:
