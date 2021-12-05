@@ -25,7 +25,7 @@ class EC2Credentials(BaseResourceCheck):
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ["Properties/'UserData'"]
+        return ["Properties/UserData"]
 
 
 check = EC2Credentials()

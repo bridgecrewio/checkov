@@ -1,4 +1,4 @@
-from typing import Generator, Any, Union
+from typing import Generator, Any, Union, Dict
 
 
 def get_inner_dict(source_dict, path_as_list):
@@ -8,7 +8,7 @@ def get_inner_dict(source_dict, path_as_list):
     return result
 
 
-def merge_dicts(*dicts):
+def merge_dicts(*dicts: Dict[Any, Any]) -> Dict[Any, Any]:
     """
     Merges two or more dicts. If there are duplicate keys, later dict arguments take precedence.
 
@@ -16,9 +16,9 @@ def merge_dicts(*dicts):
     :param dicts:
     :return:
     """
-    res = {}
+    res: Dict[Any, Any] = {}
     for d in dicts:
-        if not d or type(d) != dict:
+        if not d or not isinstance(d, dict):
             continue
         res = {**res, **d}
     return res

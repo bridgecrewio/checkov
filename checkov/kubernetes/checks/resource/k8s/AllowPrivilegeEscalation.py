@@ -1,33 +1,29 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
 
-class AllowPrivilegeEscalation(BaseK8Check):
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
-    def __init__(self):
+
+class AllowPrivilegeEscalation(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         # CIS-1.3 1.7.5
         # CIS-1.5 5.2.5
         # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-        #https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+        # https://kubernetes.io/docs/concepts/policy/pod-security-policy/
         # Default is allow / true
         # AllowPrivilegeEscalation is true always when the container is: 1) run as Privileged OR 2) has CAP_SYS_ADMIN.
         # This could be enforced via PodSecurityPolicy
         name = "Containers should not run with allowPrivilegeEscalation"
         id = "CKV_K8S_20"
         # Location: container .securityContext.allowPrivilegeEscalation
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def scan_spec_conf(self, conf):
-        if "securityContext" in conf:
-            if "allowPrivilegeEscalation" in conf["securityContext"]:
-                if conf["securityContext"]["allowPrivilegeEscalation"]:
-                    return CheckResult.FAILED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["securityContext/allowPrivilegeEscalation"]
+        if conf.get("securityContext"):
+            if conf["securityContext"].get("allowPrivilegeEscalation") == False:
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = AllowPrivilegeEscalation()

@@ -61,3 +61,22 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+
+# SAM
+  ServerlessFunctionEnabled:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.6
+      InlineCode: |
+        def handler(event, context):
+            print("Hello, world!")
+      Tracing: Active
+  ServerlessFunctionDefault:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.6
+      InlineCode: |
+        def handler(event, context):
+            print("Hello, world!")

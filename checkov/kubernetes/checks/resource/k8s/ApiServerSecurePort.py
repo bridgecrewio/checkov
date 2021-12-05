@@ -1,20 +1,23 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
 
-class ApiServerSecurePort(BaseK8Check):
-    def __init__(self):
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
+
+
+class ApiServerSecurePort(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         id = "CKV_K8S_89"
         name = "Ensure that the --secure-port argument is not set to 0"
-        categories = [CheckCategories.KUBERNETES]
-        supported_kind = ['containers']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def scan_spec_conf(self, conf):
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
         if "command" in conf:
             if "kube-apiserver" in conf["command"]:
                 if "--secure-port=0" in conf["command"]:
                     return CheckResult.FAILED
 
         return CheckResult.PASSED
+
 
 check = ApiServerSecurePort()

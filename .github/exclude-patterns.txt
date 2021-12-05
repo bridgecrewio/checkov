@@ -4,7 +4,7 @@ tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provide
 tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-func_level/serverless.yml
 tests/serverless/checks/aws/example_AWSCredentials/AWSCredentials-FAILED-provider_level/serverless.yml
 tests/cloudformation/checks/resource/aws/example_EC2Credentials/EC2Credentials-FAILED.yaml
-tests/terraform/checks/resource/aws/test_LambdaEnvironmentCredentials.py
+tests/terraform/checks/resource/aws/example_LambdaEnvironmentCredentials/main.tf
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/LambdaEnvironmentCredentials.yaml
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
@@ -16,3 +16,4 @@ tests/terraform/parser/resources/plan_tags/tfplan.json
 .*Scans.md
 docs/5.Contribution/New-Provider.md
 tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-FAILED.yaml
+tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml

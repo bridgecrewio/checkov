@@ -12,3 +12,4 @@ class BlockType(CommonBlockType):
     CONDITIONS = "conditions"
     TRANSFORM = "transform"
     OUTPUTS = "outputs"
+    GLOBALS = "globals"

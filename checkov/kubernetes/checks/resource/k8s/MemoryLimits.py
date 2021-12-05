@@ -1,27 +1,24 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class MemoryLimits(BaseK8Check):
-
-    def __init__(self):
+class MemoryLimits(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Memory limits should be set"
         id = "CKV_K8S_13"
         # Location: container .resources.limits.memory
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def scan_spec_conf(self, conf):
-        if conf.get("resources"):
-            if "limits" in conf["resources"]:
-                if not conf["resources"].get("limits") or "memory" not in conf["resources"]["limits"]:
-                    return CheckResult.FAILED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["resources/limits/memory"]
+        res = conf.get("resources")
+        if res:
+            limits = res.get("limits")
+            if limits and limits.get("memory"):
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = MemoryLimits()

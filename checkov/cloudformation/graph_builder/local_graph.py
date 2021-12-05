@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional, List
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
+from checkov.cloudformation.graph_builder.utils import GLOBALS_RESOURCE_TYPE_MAP
 from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
@@ -37,6 +38,7 @@ class CloudformationLocalGraph(LocalGraph):
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         logging.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
+        self._add_sam_globals()
         self._create_edges()
         logging.info(f"[CloudformationLocalGraph] created {len(self.edges)} edges")
         if render_variables:
@@ -66,6 +68,8 @@ class CloudformationLocalGraph(LocalGraph):
                                           BlockType.CONDITIONS)
             self._create_section_vertices(file_path, file_conf, TemplateSections.PARAMETERS,
                                           BlockType.PARAMETERS)
+            self._create_section_vertices(file_path, file_conf, TemplateSections.GLOBALS,
+                                          BlockType.GLOBALS)
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -92,6 +96,41 @@ class CloudformationLocalGraph(LocalGraph):
             if not self._vertices_indexes.get(file_path):
                 self._vertices_indexes[file_path] = {}
             self._vertices_indexes[file_path][name] = len(self.vertices) - 1
+
+    def _add_sam_globals(self):
+        # behaviour regarding overrides
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html#sam-specification-template-anatomy-globals-overrideable
+        for index in self.vertices_by_block_type.get(BlockType.GLOBALS, []):
+            globals_vertex = self.vertices[index]
+            related_vertices = [
+                vertex
+                for vertex in self.vertices
+                if vertex.block_type == BlockType.RESOURCE
+                and vertex.path == globals_vertex.path
+                and vertex.attributes.get("resource_type") == GLOBALS_RESOURCE_TYPE_MAP[globals_vertex.name]
+            ]
+
+            for property, value in globals_vertex.attributes.items():
+                if property.endswith(("__startline__", "__endline__")):
+                    continue
+
+                for vertex in related_vertices:
+                    if property not in vertex.attributes:
+                        self.update_vertex_attribute(
+                            vertex_index=self.vertices.index(vertex),
+                            attribute_key=property,
+                            attribute_value=value,
+                            change_origin_id=index,
+                            attribute_at_dest=property,
+                        )
+                    elif isinstance(value, list):
+                        self.update_vertex_attribute(
+                            vertex_index=self.vertices.index(vertex),
+                            attribute_key=property,
+                            attribute_value=[*vertex.attributes[property], *value],
+                            change_origin_id=index,
+                            attribute_at_dest=property,
+                        )
 
     def update_vertices_breadcrumbs(self) -> None:
         """

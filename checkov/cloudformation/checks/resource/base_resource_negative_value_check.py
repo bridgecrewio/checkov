@@ -70,3 +70,6 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         :return: True if the value should exclude the check from failing if the inspected key has a bad value
         """
         return False
+
+    def get_evaluated_keys(self) -> List[str]:
+        return [self.get_inspected_key()]

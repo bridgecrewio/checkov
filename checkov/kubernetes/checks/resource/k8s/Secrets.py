@@ -1,30 +1,31 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class Secrets(BaseK8Check):
-
-    def __init__(self):
+class Secrets(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         # CIS-1.5 5.4.1
         name = "Prefer using secrets as files over secrets as environment variables"
         id = "CKV_K8S_35"
         # Location: container .env
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def scan_spec_conf(self, conf):
-        if "env" in conf:
-            if conf["env"]:
-                for e in conf["env"]:
-                    if "valueFrom" in e:
-                        if "secretKeyRef" in e["valueFrom"]:
-                            return CheckResult.FAILED
-        if "envFrom" in conf:
-            if conf["envFrom"]:
-                for ef in conf["envFrom"]:
-                    if "secretRef" in ef:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["env", "envFrom"]
+        if conf.get("env"):
+            for idx, e in enumerate(conf["env"]):
+                if "valueFrom" in e:
+                    if "secretKeyRef" in e["valueFrom"]:
+                        self.evaluated_container_keys = [f"env/[{idx}]/valueFrom/secretKeyRef"]
                         return CheckResult.FAILED
+        if conf.get("envFrom"):
+            for idx, ef in enumerate(conf["envFrom"]):
+                if "secretRef" in ef:
+                    self.evaluated_container_keys = [f"envFrom/[{idx}]/secretRef"]
+                    return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = Secrets()
