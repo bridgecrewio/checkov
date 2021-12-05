@@ -21,14 +21,13 @@ class KubernetesDashboard(BaseK8sContainerCheck):
                 return CheckResult.FAILED
         else:
             return CheckResult.FAILED
-        if "parent_metadata" in conf:
-            if conf["parent_metadata"].get("labels"):
-                if "app" in conf["parent_metadata"]["labels"]:
-                    if conf["parent_metadata"]["labels"]["app"] == "kubernetes-dashboard":
-                        return CheckResult.FAILED
-                elif "k8s-app" in conf["parent_metadata"]["labels"]:
-                    if conf["parent_metadata"]["labels"]["k8s-app"] == "kubernetes-dashboard":
-                        return CheckResult.FAILED
+        if metadata and metadata.get("labels"):
+            if "app" in metadata["labels"]:
+                if metadata["labels"]["app"] == "kubernetes-dashboard":
+                    return CheckResult.FAILED
+            elif "k8s-app" in metadata["labels"]:
+                if metadata["labels"]["k8s-app"] == "kubernetes-dashboard":
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 
