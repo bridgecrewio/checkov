@@ -4,10 +4,12 @@ from copy import deepcopy
 from typing import Tuple, Dict, Optional, List, Any
 
 import dpath
+from checkov.runner_filter import RunnerFilter
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
@@ -91,6 +93,22 @@ def get_skipped_checks(entity_conf):
                         logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
                         continue
     return skipped
+
+
+def create_definitions(
+    root_folder: str,
+    files: Optional[List[str]] = None,
+    runner_filter: RunnerFilter = RunnerFilter(),
+) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+    definitions = {}
+    definitions_raw = {}
+    if files:
+        definitions, definitions_raw = get_files_definitions(files)
+
+    if root_folder:
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+
+    return definitions, definitions_raw
 
 
 def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \

@@ -9,11 +9,10 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
-from checkov.kubernetes.kubernetes_utils import get_files_definitions, get_folder_definitions, \
-    build_definitions_context, get_skipped_checks, get_resource_id
-from checkov.kubernetes.checks.resource.registry import registry
+from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
 
 
@@ -38,10 +37,8 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
         report = Report(self.check_type)
         if self.context is None or self.definitions is None:
-            if files:
-                self.definitions, self.definitions_raw = get_files_definitions(files)
-            elif root_folder:
-                self.definitions, self.definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+            if files or root_folder:
+                self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
             else:
                 return report
             if external_checks_dir:
