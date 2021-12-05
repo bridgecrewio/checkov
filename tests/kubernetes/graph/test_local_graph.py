@@ -17,7 +17,7 @@ class TestKubernetesLocalGraph(TestGraph):
 
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
-        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)
 
     def test_build_graph_with_multi_resources(self):

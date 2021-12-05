@@ -4,7 +4,7 @@ from typing import List, Dict
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
-from checkov.kubernetes.kubernetes_utils import is_invalid_k8_definition, get_containers_definitions, get_resource_id
+from checkov.kubernetes.kubernetes_utils import is_invalid_k8_definition, get_resource_id
 
 
 class KubernetesLocalGraph(LocalGraph):
@@ -22,17 +22,12 @@ class KubernetesLocalGraph(LocalGraph):
                     file_conf.extend(resource.get("items", []))
                     file_conf.remove(resource)
 
-            # Append containers and initContainers to definitions list
-            for resource in file_conf:
-                self.definitions[file_path].extend(get_containers_definitions(resource))
-
             for resource in file_conf:
                 resource_type = resource.get('kind')
                 metadata = resource.get('metadata', {})
                 # TODO: add support for generateName
                 name = metadata.get('name')
-                if is_invalid_k8_definition(resource) or metadata.get("ownerReferences") or \
-                        (resource_type not in ["containers", "initContainers"] and not name):
+                if is_invalid_k8_definition(resource) or metadata.get("ownerReferences") or not name:
                     logging.info(f"failed to create a vertex in file {file_path}")
                     file_conf.remove(resource)
                     continue

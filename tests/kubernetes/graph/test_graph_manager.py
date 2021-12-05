@@ -38,5 +38,5 @@ class TestKubernetesGraphManager(TestGraph):
 
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
         local_graph = graph_manager.build_graph_from_definitions(definitions)
-        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)

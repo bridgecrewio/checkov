@@ -9,7 +9,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
@@ -62,11 +61,8 @@ def get_skipped_checks(entity_conf):
     ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
     if not isinstance(entity_conf, dict):
         return skipped
-    if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
-        metadata = entity_conf["parent_metadata"]
-    else:
-        if "metadata" in entity_conf.keys():
-            metadata = entity_conf["metadata"]
+    if "metadata" in entity_conf.keys():
+        metadata = entity_conf["metadata"]
     if "annotations" in metadata.keys() and metadata["annotations"] is not None:
         if isinstance(metadata["annotations"], dict):
             metadata["annotations"] = force_list(metadata["annotations"])
@@ -108,9 +104,6 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
             if resource.get("kind") == "List":
                 resources.extend(resource.get("items", []))
                 resources.remove(resource)
-        # Append containers and initContainers to definitions list
-        for resource in resources:
-            definitions[file_path].extend(get_containers_definitions(resource))
 
         # iterate on the resources
         for resource in resources:
@@ -158,39 +151,6 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
     return definitions_context
 
 
-def get_containers_definitions(entity_conf):
-    results = []
-    if is_invalid_k8_definition(entity_conf):
-        return results
-    metadata = entity_conf.get("metadata", {})
-    # Skip entity without metadata["name"]
-    # Skip entity with parent (metadata["ownerReferences"]) in runtime
-    # We will alert in runtime only
-    if not metadata or isinstance(metadata, int) or "name" not in metadata or \
-            metadata.get("ownerReferences"):
-        return results
-    for type in ["containers", "initContainers"]:
-        if entity_conf["kind"] == "CustomResourceDefinition":
-            continue
-        containers = search_deep_keys(type, entity_conf, [])
-        if not containers:
-            continue
-        containers = containers.pop()
-        namespace = metadata.get("namespace", "default")
-        container_def = containers.pop()
-        if not container_def:
-            continue
-
-        container_def = force_list(container_def)
-        for i, cd in enumerate(container_def):
-            cd["apiVersion"] = entity_conf["apiVersion"]
-            cd["kind"] = type
-            cd["parent"] = f'{entity_conf["kind"]}.{namespace}.{metadata.get("name")} (container {i})'
-            cd["parent_metadata"] = entity_conf["metadata"]
-            results.append(cd)
-    return results
-
-
 def is_invalid_k8_definition(definition: dict) -> bool:
     return not isinstance(definition, dict) or 'apiVersion' not in definition.keys() or 'kind' not in \
            definition.keys() or isinstance(definition.get("kind"), int)
@@ -198,8 +158,6 @@ def is_invalid_k8_definition(definition: dict) -> bool:
 
 def get_resource_id(resource):
     resource_type = resource["kind"]
-    if resource_type in ["containers", "initContainers"]:
-        return resource.get("parent")
     metadata = resource.get("metadata", {})
     namespace = metadata.get("namespace", "default")
     name = metadata.get("name")
