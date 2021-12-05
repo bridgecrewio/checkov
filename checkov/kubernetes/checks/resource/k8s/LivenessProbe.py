@@ -1,29 +1,29 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class LivenessProbe(BaseK8Check):
-
-    def __init__(self):
+class LivenessProbe(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Liveness Probe Should be Configured"
         id = "CKV_K8S_8"
-        # initContainers do not need Liveness Probes...
         # Location: container .livenessProbe
-        supported_kind = ['containers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
-
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
         # Don't check Job/CronJob
-        if "parent" in conf:
-            if "Job" in conf["parent"]:
-                return CheckResult.PASSED
-        if "livenessProbe" not in conf:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+        supported_entities = [
+            entity for entity in BaseK8sContainerCheck.SUPPORTED_ENTITIES if entity not in ("CronJob", "Job")
+        ]
+        # initContainers do not need Liveness Probes...
+        supported_container_types = ["containers"]
+        super().__init__(
+            name=name, id=id, supported_entities=supported_entities, supported_container_types=supported_container_types
+        )
+
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["livenessProbe"]
+        if conf.get("livenessProbe"):
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = LivenessProbe()

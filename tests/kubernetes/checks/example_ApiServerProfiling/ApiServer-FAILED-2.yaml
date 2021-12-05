@@ -3,15 +3,15 @@ kind: Pod
 metadata:
   creationTimestamp: null
   labels:
-    component: kube-controller-manager
+    component: kube-apiserver
     tier: control-plane
-  name: kube-controller-manager
+  name: kube-apiserver-default
   namespace: kube-system
 spec:
   containers:
   - command:
-    - kube-controller-manager
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.6.0
+    - kube-apiserver
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
     livenessProbe:
       failureThreshold: 8
       httpGet:
@@ -21,7 +21,7 @@ spec:
         scheme: HTTPS
       initialDelaySeconds: 15
       timeoutSeconds: 15
-    name: kube-controller-manager-should-unknwown
+    name: kube-apiserver-should-fail
     resources:
       requests:
         cpu: 250m

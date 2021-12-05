@@ -1,34 +1,29 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class ReadinessProbe(BaseK8Check):
-
-    def __init__(self):
+class ReadinessProbe(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Readiness Probe Should be Configured"
         id = "CKV_K8S_9"
-        # initContainers do not need Readiness Probes...
         # Location: container .readinessProbe
-        supported_kind = ['containers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        # Don't check Job/CronJob
+        supported_entities = [
+            entity for entity in BaseK8sContainerCheck.SUPPORTED_ENTITIES if entity not in ("CronJob", "Job")
+        ]
+        # initContainers do not need Readiness Probes...
+        supported_container_types = ["containers"]
+        super().__init__(
+            name=name, id=id, supported_entities=supported_entities, supported_container_types=supported_container_types
+        )
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        # Don't check Job/CronJob (or Pods in runtime derived from Job/CronJob)
-        if "parent" in conf:
-            if "Job" in conf["parent"]:
-                return CheckResult.PASSED
-            if "parent_metadata" in conf:
-                if "ownerReferences" in conf["parent_metadata"]:
-                    for ref in conf["parent_metadata"]["ownerReferences"]:
-                        if ref["kind"] == "Job":
-                            return CheckResult.PASSED
-        if "readinessProbe" not in conf:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["readinessProbe"]
+        if conf.get("readinessProbe"):
+            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = ReadinessProbe()

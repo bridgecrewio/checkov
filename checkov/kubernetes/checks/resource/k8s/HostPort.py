@@ -1,10 +1,11 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class HostPort(BaseK8Check):
-
-    def __init__(self):
+class HostPort(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         """
         https://kubernetes.io/docs/concepts/configuration/overview/
 
@@ -16,17 +17,13 @@ class HostPort(BaseK8Check):
         name = "Do not specify hostPort unless absolutely necessary"
         id = "CKV_K8S_26"
         # Location: container .ports[].hostPort
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if conf.get('ports'):
-            for port in conf["ports"]:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        if conf.get("ports"):
+            for idx, port in enumerate(conf["ports"]):
                 if "hostPort" in port:
+                    self.evaluated_container_keys = [f"ports/[{idx}]/hostPort"]
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

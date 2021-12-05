@@ -1,21 +1,18 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class SchedulerBindAddress(BaseK8Check):
-    def __init__(self):
+class SchedulerBindAddress(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         id = "CKV_K8S_115"
         name = "Ensure that the --bind-address argument is set to 127.0.0.1"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories,
-                         supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "command" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "kube-scheduler" in conf["command"]:
                 for cmd in conf["command"]:
                     if "=" in cmd:
@@ -23,7 +20,7 @@ class SchedulerBindAddress(BaseK8Check):
                         if key == "--bind-address" and value == "127.0.0.1":
                             return CheckResult.PASSED
                 return CheckResult.FAILED
-            
+
         return CheckResult.PASSED
 
 

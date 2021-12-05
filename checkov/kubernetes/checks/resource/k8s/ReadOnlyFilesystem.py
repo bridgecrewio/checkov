@@ -1,25 +1,21 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Dict, Any
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class ReadOnlyFilesystem(BaseK8Check):
-
-    def __init__(self):
+class ReadOnlyFilesystem(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         name = "Use read-only filesystem for containers where possible"
         id = "CKV_K8S_22"
         # Location: container .securityContext.readOnlyRootFilesystem
-        supported_kind = ['containers', 'initContainers']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "securityContext" in conf:
-            if "readOnlyRootFilesystem" in conf["securityContext"]:
-                if conf["securityContext"]["readOnlyRootFilesystem"]:
-                    return CheckResult.PASSED
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["securityContext/readOnlyRootFilesystem"]
+        if conf.get("securityContext"):
+            if conf["securityContext"].get("readOnlyRootFilesystem"):
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
