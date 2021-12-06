@@ -83,45 +83,29 @@ jobs:
   bump-version:
     needs: [integration-tests, prisma-tests]
     runs-on: [self-hosted, public, linux, x64]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
-        with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python }}
       - uses: dschep/install-pipenv-action@v1
         with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
           version: 2021.5.29
       - name: Install dependencies
         run: |
-          pipenv --python 3.7
+          pipenv --python ${{ matrix.python }}
           pipenv install --dev
-          pipenv run pip install pytest
-      - name: Test with pytest
+      - name: Unit tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run pytest --cov-report term --cov=checkov tests
-          pipenv run python -m coverage_badge -o coverage.svg -f
+          pipenv run python -m pytest tests
       - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          git config --global user.name 'schosterbarak'
-          git config --global user.email 'schosterbarak@users.noreply.github.com'
-
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-
-          echo "new tag: $new_tag"
-
           ## update docs
           export PYTHONPATH='.'
           git pull
@@ -138,21 +122,28 @@ jobs:
             echo "# $i resource scans (auto generated)" >> "$scansdoc"
             echo "" >> "$scansdoc"
             pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
-            git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
-
           done
 
           #add cloudformation scans to serverless
           export scansdoc="docs/5.Policy Index/serverless.md"
           pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
-          git commit --reuse-message=HEAD@{1} "$scansdoc" || echo "No changes to commit"
+          git add "docs/5.Policy Index/*"
+          git commit -m "Update docs" || echo "No changes to commit"
+          
+          git config --global user.name 'schosterbarak'
+          git config --global user.email 'schosterbarak@users.noreply.github.com'
 
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+
+          echo "new tag: $new_tag"          
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          # git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt coverage.svg || echo "No changes to commit"
+          git commit -m "Bump checkov dependency version" checkov/version.py kubernetes/requirements.txt || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push --tags
