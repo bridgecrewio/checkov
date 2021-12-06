@@ -28,7 +28,7 @@ def get_compare_key(c):
         numeric_value = int(number) if number else 0
         # count number of leading zeros
         same_number_ordering = len(number) - len(number.lstrip('0'))
-        res.append((framework, ckv, numeric_value, same_number_ordering))
+        res.append((framework, ckv, numeric_value, same_number_ordering, c[2]))
     return res
 
 
