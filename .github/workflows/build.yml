@@ -114,6 +114,17 @@ jobs:
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+        with:
+          version: 2021.5.29
+      - name: Install dependencies
+        run: |
+          pipenv --python 3.7
+          pipenv install
       - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
