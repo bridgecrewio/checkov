@@ -9,6 +9,7 @@ on:
       - 'docs/**'
       - 'INTHEWILD.md'
       - 'README.md'
+      - '.github/**'
 
 jobs:
   integration-tests:

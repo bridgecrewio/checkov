@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  bump-version:
-    needs: [ integration-tests, prisma-tests ]
+  update-coverage:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@v2
