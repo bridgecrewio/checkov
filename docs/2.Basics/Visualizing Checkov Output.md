@@ -64,6 +64,7 @@ To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend th
 | BC_SOURCE | Name of CI system being integrated | githubActions |
 | BC_API_URL | URL of BC app for platform integration | https://www.bridgecrew.cloud |
 | PRISMA_API_URL | URL of Prisma app for platform integration | https://app3.prismacloud.io |
+| SLS_FILE_MASK | File names mask for all serverless files | serverless.yaml,serverless.yml |
 
 ## Bridgecrew platform view
 
