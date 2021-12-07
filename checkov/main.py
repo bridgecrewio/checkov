@@ -349,7 +349,8 @@ def add_parser_args(parser):
     parser.add('--var-file', action='append',
                help='Variable files to load in addition to the default files (see '
                     'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
-                    'Currently only supported for source Terraform (.tf file) scans. Requires using --directory, not --file.')
+                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.' 
+                    'Requires using --directory, not --file.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
