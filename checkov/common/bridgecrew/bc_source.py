@@ -39,4 +39,4 @@ def get_source_type(source: str):
     if source in SourceTypes:
         return SourceTypes[source]
     else:
-        return SourceTypes[BCSourceType.DISABLED]
+        return SourceTypes[BCSourceType.CLI]
