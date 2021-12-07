@@ -130,9 +130,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             if len(repo_id_sections) != 2 or not repo_id_sections[0] or not repo_id_sections[1]:
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
-        elif config.repo_id and len(config.repo_id.split('/')) != 2:
-            parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
-                         "bridgecrewio/checkov")
 
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)
