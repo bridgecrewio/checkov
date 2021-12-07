@@ -15,7 +15,7 @@ class TestCfnUtils(unittest.TestCase):
         self.test_root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, RELATIVE_PATH))
 
         definitions, definitions_raw = get_folder_definitions(self.test_root_dir, None)
-        self.definitions_context = build_definitions_context(definitions, definitions_raw, self.test_root_dir)
+        self.definitions_context = build_definitions_context(definitions, definitions_raw)
 
     def validate_definition_lines(self, definition: DictNode, start_line, end_line, code_lines):
         self.assertEqual(definition['start_line'], start_line)

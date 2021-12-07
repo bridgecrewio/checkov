@@ -108,7 +108,7 @@ def get_folder_definitions(
 
 
 def build_definitions_context(
-    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]], root_folder: str
+    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     # iterate on the files
