@@ -1,7 +1,10 @@
+import logging
+import os
 import re
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
 
 # condition ? true_val : false_val -> (condition, true_val, false_val)
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.parser_utils import find_var_blocks
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
@@ -23,9 +26,15 @@ KEY_VALUE_REGEX = r"([\S]+)\s*\=\s*([\S]+)"
 DIRECTIVE_EXPR = r"\%\{([^\}]*)\}"
 
 COMPARE_REGEX = re.compile(r"^(?P<a>.+)(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)+(?P<b>.+)$")
+CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
 def evaluate_terraform(input_str: str, keep_interpolations: bool = True) -> Any:
+    if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
+        logging.info(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
+                     f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                     f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
+        return input_str
     evaluated_value = _try_evaluate(input_str)
     if type(evaluated_value) is not str:
         return input_str if callable(evaluated_value) else evaluated_value
