@@ -27,8 +27,8 @@ SourceTypes = {
     BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
     BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
-    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True)
-    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True)
+    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
+    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
     BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True)
 }
 
