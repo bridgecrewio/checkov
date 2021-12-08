@@ -15,6 +15,8 @@ class BCSourceType:
     KUBERNETES_WORKLOADS = 'kubernetesWorkloads'
     GITHUB_ACTIONS = 'githubActions'
     CODEBUILD = 'codebuild'
+    JENKINS = 'jenkins'
+    CIRCLECI = 'circleci'
     DISABLED = 'disabled'  # use this as a placeholder for generic no-upload logic
 
 
@@ -25,7 +27,9 @@ SourceTypes = {
     BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
     BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
-    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True)
+    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
+    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
+    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True)
 }
 
 
@@ -35,4 +39,4 @@ def get_source_type(source: str):
     if source in SourceTypes:
         return SourceTypes[source]
     else:
-        return SourceTypes[BCSourceType.DISABLED]
+        return SourceTypes[BCSourceType.CLI]
