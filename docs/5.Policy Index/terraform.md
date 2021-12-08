@@ -594,6 +594,7 @@ nav_order: 1
 | 583 | CKV_OPENSTACK_2 | resource | openstack_networking_secgroup_rule_v2           | Ensure no security groups allow ingress from 0.0.0.0:0 to port 22 (tcp / udp)                                                                                                                            | Terraform |
 | 584 | CKV_OPENSTACK_3 | resource | openstack_compute_secgroup_v2                   | Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)                                                                                                                          | Terraform |
 | 585 | CKV_OPENSTACK_3 | resource | openstack_networking_secgroup_rule_v2           | Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)                                                                                                                          | Terraform |
+| 586 | CKV_OPENSTACK_4 | resource | openstack_compute_instance_v2                   | Ensure that instance does not use basic credentials                                                                                                                                                      | Terraform |
 
 
 ---
