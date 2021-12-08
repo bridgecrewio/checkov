@@ -29,8 +29,8 @@ COMPARE_REGEX = re.compile(r"^(?P<a>.+)(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)+(?P
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
-def evaluate_terraform(input_str: str, keep_interpolations: bool = True) -> Any:
-    if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
+def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
+    if isinstance(input_str, str) and CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
         logging.info(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
                      f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
                      f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
