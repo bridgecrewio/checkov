@@ -30,6 +30,8 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.http_utils import normalize_prisma_url
 from checkov.version import version as checkov_version
 
+SLEEP_SECONDS = 1
+
 EMAIL_PATTERN = r"[^@]+@[^@]+\.[^@]+"
 UUID_V4_PATTERN = r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$"
 
@@ -38,7 +40,7 @@ ACCOUNT_CREATION_TIME = 180  # in seconds
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 
 DEFAULT_REGION = "us-west-2"
-MAX_RETRIES = 10
+MAX_RETRIES = 40
 ONBOARDING_SOURCE = "checkov"
 
 SIGNUP_HEADER = {
@@ -157,7 +159,6 @@ class BcPlatformIntegration(object):
                                               aws_session_token=self.credentials["SessionToken"],
                                               region_name=DEFAULT_REGION
                                               )
-                sleep(10)  # Wait for the policy to update
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
             except HTTPError as e:
@@ -299,15 +300,15 @@ class BcPlatformIntegration(object):
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
                 elif try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
                                                         response.get('message', '')):
-                    logging.info(f"Failed to persist for repo {self.repo_id}, sleeping for 2 seconds before retrying")
+                    logging.info(f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1
-                    sleep(3)
+                    sleep(SLEEP_SECONDS)
                 else:
                     raise Exception(
                         f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
     def _persist_file(self, full_file_path, relative_file_path):
-        tries = 4
+        tries = MAX_RETRIES
         curr_try = 0
         file_object_key = os.path.join(self.repo_path, relative_file_path).replace("\\", "/")
         while curr_try < tries:
@@ -316,7 +317,7 @@ class BcPlatformIntegration(object):
                 return
             except ClientError as e:
                 if e.response.get('Error', {}).get('Code') == 'AccessDenied':
-                    sleep(5)
+                    sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
                     logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
@@ -558,7 +559,7 @@ class BcPlatformIntegration(object):
             for _ in t:
                 t.set_description(msg)
                 t.set_postfix(refresh=False)
-                sleep(1)
+                sleep(SLEEP_SECONDS)
 
     def get_excluded_paths(self):
         repo_settings_api_url = f'{self.api_url}/api/v1/vcs/settings/scheme'
