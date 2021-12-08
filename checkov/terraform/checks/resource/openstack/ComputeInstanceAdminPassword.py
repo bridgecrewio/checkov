@@ -8,7 +8,7 @@ class ComputeInstanceAdminPassword(BaseResourceNegativeValueCheck):
         name = "Ensure that instance does not use basic credentials"
         id = "CKV_OPENSTACK_4"
         supported_resources = ['openstack_compute_instance_v2']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_attribute_result=CheckResult.PASSED)
 
