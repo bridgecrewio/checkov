@@ -32,7 +32,7 @@ class KubernetesLocalGraph(LocalGraph):
                     file_conf.remove(resource)
                     continue
 
-                git  = deepcopy(resource)
+                config = deepcopy(resource)
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["__startline__"] = resource["__startline__"]
