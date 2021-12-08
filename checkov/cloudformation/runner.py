@@ -60,7 +60,7 @@ class Runner(BaseRunner):
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
                     self.graph_registry.load_external_checks(directory)
-            self.context = build_definitions_context(self.definitions, self.definitions_raw, root_folder)
+            self.context = build_definitions_context(self.definitions, self.definitions_raw)
 
             logging.info("creating cloudformation graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)

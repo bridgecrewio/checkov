@@ -125,9 +125,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
             # so the repo is not required
             parser.error("--repo-id argument is required when using --bc-api-key")
-        elif config.repo_id and len(config.repo_id.split('/')) != 2:
-            parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
-                         "bridgecrewio/checkov")
+        elif config.repo_id:
+            repo_id_sections = config.repo_id.split('/')
+            if len(repo_id_sections) != 2 or not repo_id_sections[0] or not repo_id_sections[1]:
+                parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
+                             "bridgecrewio/checkov")
 
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)
