@@ -24,7 +24,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
             try:
                 policy_block = json.loads(conf['policy'][0])
             except: # nosec
-                return CheckResult.UNKNOWN
+                return CheckResult.PASSED
         else:
             if isinstance(conf['policy'][0], dict):
                 policy_block = conf['policy'][0]
