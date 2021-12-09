@@ -24,7 +24,7 @@ class KubernetesLocalGraph(LocalGraph):
 
             for resource in file_conf:
                 resource_type = resource.get('kind')
-                metadata = resource.get('metadata', {})
+                metadata = resource.get('metadata') or {}
                 # TODO: add support for generateName
                 name = metadata.get('name')
                 if is_invalid_k8_definition(resource) or metadata.get("ownerReferences") or not name:
