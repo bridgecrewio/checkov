@@ -5,6 +5,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.S3AllowsAnyPrincipal import check
 from checkov.terraform.runner import Runner
 
+
 class TestS3AllowsAnyPrincipal(unittest.TestCase):
     def test(self):
         runner = Runner()
@@ -42,10 +43,3 @@ class TestS3AllowsAnyPrincipal(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
-
-
-

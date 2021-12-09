@@ -15,7 +15,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        //policy_block=json.loads({})
+
         # there's no policy attribute
         if 'policy' not in conf.keys():
             return CheckResult.PASSED
