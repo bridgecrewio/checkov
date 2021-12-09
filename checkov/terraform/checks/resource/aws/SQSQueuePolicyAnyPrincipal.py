@@ -10,7 +10,7 @@ class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
     def __init__(self):
         name = "Ensure SQS queue policy is not public by only allowing specific services or principals to access it"
         id = "CKV_AWS_168"
-        supported_resources = ['aws_sqs_queue_policy']
+        supported_resources = ['aws_sqs_queue_policy', 'aws_sqs_queue']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

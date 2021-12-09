@@ -1,20 +1,18 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from typing import Any, Dict
+
+from checkov.common.models.enums import CheckResult
+from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class ControllerManagerBindAddress(BaseK8Check):
-    def __init__(self):
+class ControllerManagerBindAddress(BaseK8sContainerCheck):
+    def __init__(self) -> None:
         id = "CKV_K8S_113"
         name = "Ensure that the --bind-address argument is set to 127.0.0.1"
-        categories = [CheckCategories.KUBERNETES]
-        supported_entities = ['containers']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
+        super().__init__(name=name, id=id)
 
-    def get_resource_id(self, conf):
-        return f'{conf["parent"]} - {conf["name"]}' if conf.get('name') else conf["parent"]
-
-    def scan_spec_conf(self, conf):
-        if "command" in conf:
+    def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
+        self.evaluated_container_keys = ["command"]
+        if conf.get("command"):
             if "kube-controller-manager" in conf["command"]:
                 for cmd in conf["command"]:
                     if "=" in cmd:

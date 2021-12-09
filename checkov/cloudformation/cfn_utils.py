@@ -108,7 +108,7 @@ def get_folder_definitions(
 
 
 def build_definitions_context(
-    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]], root_folder: str
+    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     # iterate on the files
@@ -134,10 +134,13 @@ def build_definitions_context(
                             start_line += 1
                             end_line += 1
                         else:
+                            # add resource comments to definition lines
                             current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
                             while not current_line or current_line[0] == YAML_COMMENT_MARK:
                                 start_line -= 1
                                 current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
+
+                            # remove next resource comments from definition lines
                             current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
                             while not current_line or current_line[0] == YAML_COMMENT_MARK:
                                 end_line -= 1

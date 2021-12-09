@@ -14,11 +14,6 @@ class DefaultServiceAccount(BaseK8Check):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def get_resource_id(self, conf):
-        if "namespace" in conf["metadata"]:
-            return "ServiceAccount.{}.{}".format(conf["metadata"]["name"], conf["metadata"]["namespace"])
-        else:
-            return "ServiceAccount.{}.default".format(conf["metadata"]["name"])
     def scan_spec_conf(self, conf):
         if "metadata" in conf:
             if "name" in conf["metadata"]:

@@ -1,0 +1,35 @@
+name: Coverage
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update-coverage:
+    runs-on: [ self-hosted, public, linux, x64 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+        with:
+          version: 2021.5.29
+      - name: Install dependencies
+        run: |
+          pipenv --python 3.7
+          pipenv install --dev
+          pipenv run pip install pytest
+      - name: Test with pytest
+        run: |
+          pipenv run pytest --cov-report term --cov=checkov tests
+          pipenv run python -m coverage_badge -o coverage.svg -f
+          git commit -m "Update coverage" coverage.svg || echo "No changes to commit"

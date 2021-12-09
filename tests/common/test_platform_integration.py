@@ -40,8 +40,8 @@ class TestBCApiUrl(unittest.TestCase):
     def test_should_upload(self):
         self.assertFalse(get_source_type('vscode').upload_results)
         self.assertTrue(get_source_type('cli').upload_results)
-        self.assertFalse(get_source_type('xyz').upload_results)
-        self.assertFalse(get_source_type(None).upload_results)
+        self.assertTrue(get_source_type('xyz').upload_results)
+        self.assertTrue(get_source_type(None).upload_results)
 
 
 if __name__ == '__main__':

@@ -17,10 +17,5 @@ class SharedHostNetworkNamespacePSP(BaseSpecOmittedOrValueCheck):
     def get_inspected_key(self):
         return "spec/hostNetwork"
 
-    def get_resource_id(self, conf):
-        if "metadata" in conf:
-            if "name" in conf["metadata"]:
-                return 'PodSecurityPolicy.{}'.format(conf["metadata"]["name"])
-        return 'PodSecurityPolicy.spec.hostNetwork'
 
 check = SharedHostNetworkNamespacePSP()
