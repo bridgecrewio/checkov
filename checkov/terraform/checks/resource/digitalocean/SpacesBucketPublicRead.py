@@ -8,7 +8,7 @@ class SpaceBucketPublicRead(BaseResourceNegativeValueCheck):
         name = "Ensure the Spaces bucket is private"
         id = "CKV_DIO_3"
         supported_resources = ['digitalocean_spaces_bucket']
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
+        categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories,
                          supported_resources=supported_resources,
                          missing_attribute_result=CheckResult.PASSED)
