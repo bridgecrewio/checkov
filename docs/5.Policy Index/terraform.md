@@ -595,6 +595,7 @@ nav_order: 1
 | 584 | CKV_OPENSTACK_3 | resource | openstack_compute_secgroup_v2                   | Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)                                                                                                                          | Terraform |
 | 585 | CKV_OPENSTACK_3 | resource | openstack_networking_secgroup_rule_v2           | Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)                                                                                                                          | Terraform |
 | 586 | CKV_OPENSTACK_4 | resource | openstack_compute_instance_v2                   | Ensure that instance does not use basic credentials                                                                                                                                                      | Terraform |
+| 587 | CKV_OPENSTACK_5 | resource | openstack_fw_rule_v1                            | Ensure firewall rule set a destination IP                                                                                                                                                                | Terraform |
 
 
 ---
