@@ -14,7 +14,6 @@ class DropletSSHKeys(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        self.evaluated_keys = ["ssh_keys"]
         return "ssh_keys"
 
     def get_expected_value(self) -> Any:
