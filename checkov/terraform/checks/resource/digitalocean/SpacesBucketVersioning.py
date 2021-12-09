@@ -7,7 +7,7 @@ class SpaceBucketVersioning(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure the Spaces bucket has versioning enabled"
         id = "CKV_DIO_1"
-        supported_resources = ['digitalocean_spaces_bucket', 'digitalocean_spaces_bucket_object']
+        supported_resources = ['digitalocean_spaces_bucket']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
