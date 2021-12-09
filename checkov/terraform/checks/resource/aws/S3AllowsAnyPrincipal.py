@@ -15,12 +15,16 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        //policy_block=json.loads({})
         # there's no policy attribute
         if 'policy' not in conf.keys():
             return CheckResult.PASSED
 
         if isinstance(conf['policy'][0], str):
-            policy_block = json.loads(conf['policy'][0])
+            try:
+                policy_block = json.loads(conf['policy'][0])
+            except: # nosec
+                return CheckResult.SKIPPED
         else:
             if isinstance(conf['policy'][0], dict):
                 policy_block = conf['policy'][0]
