@@ -176,7 +176,7 @@ def is_invalid_k8_definition(definition: dict) -> bool:
 
 def get_resource_id(resource):
     resource_type = resource["kind"]
-    metadata = resource.get("metadata", {})
+    metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")
     name = metadata.get("name")
     if not name:
