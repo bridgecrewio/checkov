@@ -1,13 +1,16 @@
+import logging
 import os
 import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable
 
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
 MODULE_DEPENDENCY_PATTERN_IN_PATH = r"\[.+\#.+\]"
+CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
 def is_local_path(root_dir: str, source: str) -> bool:
@@ -175,10 +178,15 @@ def get_referenced_vertices_in_value(
             )
 
     if isinstance(value, str):
-        if cleanup_functions:
-            for func in cleanup_functions:
-                value = func(value)
-        references_vertices = get_vertices_references(value, aliases, resources_types)
+        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(value):
+            logging.info(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
+                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                         f'to {str(len(value) + 1)} or to 0 to allow rendering of any length')
+        else:
+            if cleanup_functions:
+                for func in cleanup_functions:
+                    value = func(value)
+            references_vertices = get_vertices_references(value, aliases, resources_types)
 
     return references_vertices
 
