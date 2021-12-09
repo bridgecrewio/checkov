@@ -16,6 +16,6 @@ class FirewallRuleSetDestinationIP(BaseResourceNegativeValueCheck):
         return 'destination_ip_address'
 
     def get_forbidden_values(self) -> str:
-        return ["0.0.0.0/0", "0.0.0.0"]
+        return ["0.0.0.0/0", "0.0.0.0"] # nosec
 
 check = FirewallRuleSetDestinationIP()
