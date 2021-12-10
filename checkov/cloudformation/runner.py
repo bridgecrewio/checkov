@@ -56,6 +56,9 @@ class Runner(BaseRunner):
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            if self.definitions == {} and self.definitions_raw == {}:
+                logging.debug("Stopping CF Runner. Not 1 CF Template found.")
+                exit()
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
