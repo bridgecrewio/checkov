@@ -9,8 +9,24 @@ import os
 import yaml
 import importlib
 
-CHECKOV_ROOT_DIRECTORY = os.path.join(".", "checkov")
-TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
+
+if not os.environ.get('CKV_PKG_DIRECTORY'):
+# CKV_PKG_DIRECTORY is used to determine where the generated files are stored
+    CKV_PKG_DIRECTORY = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "checkov")
+else:
+    CKV_PKG_DIRECTORY = os.environ['CKV_PKG_DIRECTORY']
+
+# The root of the tests folder, if it is not in the root of the project
+if not os.environ.get('CKV_TEST_DIRECTORY'):
+    CKV_TEST_DIRECTORY = os.path.join(CKV_PKG_DIRECTORY, os.path.pardir, "tests")
+else:
+    CKV_TEST_DIRECTORY = os.environ['CKV_TEST_DIRECTORY']
+
+# TEMPLATE_DIRECTORY - where the Jinja2 templates for rule files and test files are stored
+if not os.environ.get('CKV_TEMPLATE_DIRECTORY'):
+    CKV_TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
+else:
+    CKV_TEMPLATE_DIRECTORY = os.environ['CKV_TEMPLATE_DIRECTORY']
 
 
 class Prompt():
@@ -163,7 +179,7 @@ class Prompt():
                         self.prompt(sub_prompt, prompt_if=p)
 
     def template_env(self):
-        template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIRECTORY)
+        template_loader = jinja2.FileSystemLoader(searchpath=CKV_TEMPLATE_DIRECTORY)
         return jinja2.Environment(loader=template_loader, autoescape=True)
 
 
@@ -229,7 +245,7 @@ class Check(Prompt):
 
     def create_check(self):
         # Create check in the checks directory
-        ck_loc = os.path.abspath(os.path.join(CHECKOV_ROOT_DIRECTORY,
+        ck_loc = os.path.abspath(os.path.join(CKV_PKG_DIRECTORY,
                                               self.check_class, "checks", self.context, self.provider.lower()))
         print(f"Creating Check {self.title}.py in {ck_loc}")
 
@@ -244,8 +260,8 @@ class Check(Prompt):
         print(f"\tSuccessfully created {full_path}")
 
     def create_unit_test_stubs(self):
-        base = os.path.abspath(os.path.join(CHECKOV_ROOT_DIRECTORY, os.path.pardir,
-                                            "tests", self.check_class, "checks", self.context, self.provider.lower()))
+        base = os.path.abspath(os.path.join(CKV_TEST_DIRECTORY, self.check_class, "checks", self.context,
+                                            self.provider.lower()))
         print(f"Creating Unit Test Stubs for {self.title} in {base}")
 
         # Create Terraform stub from Template

@@ -1,17 +1,13 @@
-from pathlib import Path
-from unittest import mock
+import os
 from unittest.mock import MagicMock
-
 import click
-import pytest
 from _pytest.capture import CaptureFixture
 from checkov.common.util import prompt
 
 
-@pytest.fixture(autouse=True)
-def checkov_root_mock(tmp_path: Path):
-    with mock.patch("checkov.common.util.prompt.CHECKOV_ROOT_DIRECTORY", str(tmp_path / "checkov")):
-        yield
+repo_root = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)
+resource_tests_directory = os.path.join(repo_root, "tests", "terraform", "checks", "resource")
+resource_check_directory = os.path.join(repo_root, "checkov", "terraform", "checks", "resource")
 
 
 def test_prompt_terraform_aws_resource(capsys: CaptureFixture[str]):
@@ -46,6 +42,13 @@ def test_prompt_terraform_aws_resource(capsys: CaptureFixture[str]):
     for exp in expected:
         assert exp in captured.out
 
+    # Remove unit test files
+    os.remove(os.path.join(resource_tests_directory, "aws", f"test_{test_name}.py"))
+    os.remove(os.path.join(resource_tests_directory, "aws", f"example_{test_name}/{test_name}.tf"))
+    os.removedirs(os.path.join(resource_tests_directory, "aws", f"example_{test_name}"))
+    # Remove check files
+    os.remove(os.path.join(resource_check_directory, "aws", f"{test_name}.py"))
+
 
 def test_prompt_terraform_azure_resource(capsys: CaptureFixture[str]):
     test_name = "AzureTestPromptUnitTest"
@@ -78,6 +81,12 @@ def test_prompt_terraform_azure_resource(capsys: CaptureFixture[str]):
 
     for exp in expected:
         assert exp in captured.out
+    # Remove unit test files
+    os.remove(os.path.join(resource_tests_directory, "azure", f"test_{test_name}.py"))
+    os.remove(os.path.join(resource_tests_directory, "azure", f"example_{test_name}/{test_name}.tf"))
+    os.removedirs(os.path.join(resource_tests_directory, "azure", f"example_{test_name}"))
+    # Remove check files
+    os.remove(os.path.join(resource_check_directory, "azure", f"{test_name}.py"))
 
 
 def test_prompt_terraform_gcp_resource(capsys: CaptureFixture[str]):
@@ -111,3 +120,9 @@ def test_prompt_terraform_gcp_resource(capsys: CaptureFixture[str]):
 
     for exp in expected:
         assert exp in captured.out
+    # Remove unit test files
+    os.remove(os.path.join(resource_tests_directory, "gcp", f"test_{test_name}.py"))
+    os.remove(os.path.join(resource_tests_directory, "gcp", f"example_{test_name}/{test_name}.tf"))
+    os.removedirs(os.path.join(resource_tests_directory, "gcp", f"example_{test_name}"))
+    # Remove check files
+    os.remove(os.path.join(resource_check_directory, "gcp", f"{test_name}.py"))
