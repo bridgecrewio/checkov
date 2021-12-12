@@ -38,11 +38,11 @@ class WAFACLCVE202144228(BaseResourceCheck):
                                 ]
                                 return CheckResult.FAILED
 
-                        # check for group override
                         self.evaluated_keys.append(
                             f"rule/[{idx_rule}]/override_action/[0]/none"
                         )
                         override_action = rule.get("override_action")
+                        # check for group override
                         if override_action and next(iter(override_action[0].keys())) != "none":
                             return CheckResult.FAILED
 

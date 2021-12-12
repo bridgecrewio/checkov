@@ -80,7 +80,7 @@ resource "aws_wafv2_web_acl" "wrong_rule" {
     priority = 1
 
     override_action {
-      count {}
+      none {}
     }
 
     statement {
@@ -118,7 +118,7 @@ resource "aws_wafv2_web_acl" "rule_count" {
     priority = 1
 
     override_action {
-      count {}
+      none {}
     }
 
     statement {
