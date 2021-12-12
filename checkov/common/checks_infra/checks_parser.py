@@ -1,17 +1,39 @@
 from typing import Dict, Any, List, Optional
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_attribute_solver import GreaterThanAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_or_equal_attribute_solver import \
-    GreaterThanOrEqualAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.less_than_attribute_solver import LessThanAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.less_than_or_equal_attribute_solver import \
-    LessThanOrEqualAttributeSolver
+from checkov.common.checks_infra.solvers import (
+    EqualsAttributeSolver,
+    NotEqualsAttributeSolver,
+    RegexMatchAttributeSolver,
+    NotRegexMatchAttributeSolver,
+    ExistsAttributeSolver,
+    AnyResourceSolver,
+    ContainsAttributeSolver,
+    NotExistsAttributeSolver,
+    WithinAttributeSolver,
+    NotContainsAttributeSolver,
+    StartingWithAttributeSolver,
+    NotStartingWithAttributeSolver,
+    EndingWithAttributeSolver,
+    NotEndingWithAttributeSolver,
+    AndSolver,
+    OrSolver,
+    ConnectionExistsSolver,
+    ConnectionNotExistsSolver,
+    AndConnectionSolver,
+    OrConnectionSolver,
+    WithinFilterSolver,
+    GreaterThanAttributeSolver,
+    GreaterThanOrEqualAttributeSolver,
+    LessThanAttributeSolver,
+    LessThanOrEqualAttributeSolver,
+)
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.checks_infra.solvers import *
+
+# from checkov.common.checks_infra.solvers import *
 
 operators_to_attributes_solver_classes = {
     "equals": EqualsAttributeSolver,
@@ -28,10 +50,10 @@ operators_to_attributes_solver_classes = {
     "not_starting_with": NotStartingWithAttributeSolver,
     "ending_with": EndingWithAttributeSolver,
     "not_ending_with": NotEndingWithAttributeSolver,
-    'greater_than': GreaterThanAttributeSolver,
-    'greater_than_or_equal': GreaterThanOrEqualAttributeSolver,
-    'less_than': LessThanAttributeSolver,
-    'less_than_or_equal': LessThanOrEqualAttributeSolver
+    "greater_than": GreaterThanAttributeSolver,
+    "greater_than_or_equal": GreaterThanOrEqualAttributeSolver,
+    "less_than": LessThanAttributeSolver,
+    "less_than_or_equal": LessThanOrEqualAttributeSolver,
 }
 
 operators_to_complex_solver_classes = {

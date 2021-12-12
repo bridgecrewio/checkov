@@ -1,5 +1,3 @@
-from typing import Dict, List, Any
-
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 

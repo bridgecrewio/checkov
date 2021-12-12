@@ -14,7 +14,7 @@ class SecurityCenterContactPhone(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if "properties" in conf:
             if "phone" in conf["properties"]:
-                if conf["properties"]["phone"] != "" or conf["properties"]["phone"] != None:
+                if conf["properties"]["phone"]:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 

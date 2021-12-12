@@ -27,7 +27,7 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
                         aws = statement['Principal']['AWS']
                         if (type(aws) == str and aws == '*') or (type(aws) == list and '*' in aws):
                             return CheckResult.FAILED
-        except:  # nosec
+        except Exception:  # nosec
             pass
         return CheckResult.PASSED
 

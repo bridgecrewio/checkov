@@ -107,7 +107,7 @@ class TestRunnerValid(unittest.TestCase):
         try:
             runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                                 runner_filter=RunnerFilter(framework='kubernetes'))
-        except:
+        except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def test_wrong_check_imports(self):
@@ -137,7 +137,7 @@ class TestRunnerValid(unittest.TestCase):
                        runner_filter=RunnerFilter(framework='kubernetes'))
             # just check that something was parsed and scanned
             self.assertGreater(len(report.failed_checks) + len(report.passed_checks), 0)
-        except:
+        except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def tearDown(self):

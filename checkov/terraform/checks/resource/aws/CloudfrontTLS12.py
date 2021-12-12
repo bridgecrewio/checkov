@@ -16,7 +16,7 @@ class CloudFrontTLS12(BaseResourceValueCheck):
             viewer_certificate = conf["viewer_certificate"][0]
             if 'cloudfront_default_certificate' in viewer_certificate:
                 #is not using the default certificate
-                if viewer_certificate["cloudfront_default_certificate"] != True:
+                if viewer_certificate["cloudfront_default_certificate"] is not True:
                     #these protocol versions
                     if "minimum_protocol_version" in viewer_certificate:
                        protocol=viewer_certificate["minimum_protocol_version"][0]

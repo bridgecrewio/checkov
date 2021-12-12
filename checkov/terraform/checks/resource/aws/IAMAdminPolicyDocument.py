@@ -31,7 +31,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                         resource = force_list(statement.get('Resource', ['']))
                         if effect == 'Allow' and '*' in action and '*' in resource:
                             return CheckResult.FAILED
-        except:  # nosec
+        except Exception:  # nosec
             pass
         return CheckResult.PASSED
 

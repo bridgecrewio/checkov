@@ -6,5 +6,5 @@ def check_for_update(package, version):
         checker = UpdateChecker()
         result = checker.check(package, version)
         return result.available_version
-    except:  # nosec
+    except Exception:  # nosec
         return None

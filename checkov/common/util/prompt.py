@@ -192,12 +192,12 @@ class Check(Prompt):
 
     def populate_templates(self):
         # Fetch the tf template for unit tests
-        tf_unit_test_template = self.template_env().get_template(f"unittest-terraform.jinja2")
+        tf_unit_test_template = self.template_env().get_template("unittest-terraform.jinja2")
         self.tf_unit_test_template = tf_unit_test_template.render(
             supported_resource=self.supported_resource, context=self.context)
 
         # Fetch the python template for unit tests
-        python_unit_test_template = self.template_env().get_template(f"unittest-python.jinja2")
+        python_unit_test_template = self.template_env().get_template("unittest-python.jinja2")
         self.python_unit_test_template = python_unit_test_template.render(
             provider=self.provider, title=self.title, supported_resource=self.supported_resource, check_class=self.check_class, context=self.context)
 
@@ -221,7 +221,7 @@ class Check(Prompt):
                     curr_id_num = int(ck.id.split("_")[2])
                     if curr_id_num > max_id:
                         max_id = curr_id_num
-        except:
+        except Exception:
             print("Unable to automatically find latest Check ID, please set manually")
             max_id = 999999
 
@@ -252,13 +252,13 @@ class Check(Prompt):
         new_dir = os.path.join(base, f"example_{self.title}")
         os.makedirs(new_dir, exist_ok=True)
 
-        tf_loc = os.path.join(new_dir,  f"{self.title}.tf")
+        tf_loc = os.path.join(new_dir, f"{self.title}.tf")
         with open(tf_loc, "w") as f:
             f.write(self.tf_unit_test_template)
 
         print(f"\tSuccessfully created {tf_loc}")
 
-        py_loc = os.path.join(base,  f"test_{self.title}.py")
+        py_loc = os.path.join(base, f"test_{self.title}.py")
 
         with open(py_loc, "w") as f:
             f.write(self.python_unit_test_template)
@@ -266,6 +266,6 @@ class Check(Prompt):
         print(f"\tSuccessfully created {py_loc}")
 
     def print_instructions(self):
-        print(f"\nNext steps:")
-        print(f"\t1) Edit your new check located in the checks/ directory listed above")
-        print(f"\t2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures")
+        print("\nNext steps:")
+        print("\t1) Edit your new check located in the checks/ directory listed above")
+        print("\t2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures")

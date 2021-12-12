@@ -22,7 +22,7 @@ class DefaultNamespace(BaseK8Check):
                     if conf["kind"] == "ServiceAccount" and conf["metadata"]["name"] == "default":
                         return CheckResult.PASSED
                     if conf["kind"] == "Service" and conf["metadata"]["name"] == "kubernetes":
-                       return CheckResult.PASSED
+                        return CheckResult.PASSED
             # If namespace not defined it is default -> Ignore default Service account and kubernetes service
             if conf["kind"] == "ServiceAccount" and conf["metadata"]["name"] == "default":
                 return CheckResult.PASSED

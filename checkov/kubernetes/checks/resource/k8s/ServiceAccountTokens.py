@@ -37,7 +37,7 @@ class ServiceAccountTokens(BaseK8Check):
         # Collect results
         if spec:
             if "automountServiceAccountToken" in spec:
-                if spec["automountServiceAccountToken"] == False:
+                if spec["automountServiceAccountToken"] is False:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 

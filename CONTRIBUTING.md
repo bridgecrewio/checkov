@@ -92,6 +92,18 @@ checkov --version
 ```
 Then, optionally, you can run on a terraform file/directory with your success and failure test scenarios.
 
+### Setting up the pre-commit hooks
+
+After setting up your Python environment simply run 
+```shell
+pre-commit install
+```
+
+To check the code base against the pre-commit hooks just run
+```shell
+pre-commit run -a
+```
+
 ### Documentation is awesome
 
 Contributing to the documentation is not mandatory but it will ensure people are aware of your important contribution. 

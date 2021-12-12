@@ -55,7 +55,7 @@ class Runner(BaseRunner):
             lines = output.split('\n')
             for line in lines:
                 if line != "":
-                    if not "NAME" in line:
+                    if "NAME" not in line:
                         chart_name, chart_version, chart_repo, chart_status = line.split("\t")
                         chart_dependencies.update({chart_name.rstrip(): {'chart_name': chart_name.rstrip(),
                                                                          'chart_version': chart_version.rstrip(),
@@ -226,9 +226,7 @@ def get_skipped_checks(entity_conf):
                         skipped_item["suppress_comment"] = "No comment provided"
                     skipped.append(skipped_item)
                 else:
-                    logging.info(
-                        "Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf,
-                                                                       indent=2))
+                    logging.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                     continue
     return skipped
 

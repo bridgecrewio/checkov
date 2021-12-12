@@ -24,6 +24,8 @@ atomicwrites = "*"
 responses = "*"
 aioresponses = "*"
 types-requests = "*"
+pre-commit = "*"
+flake8 = "*"
 
 [packages]
 #

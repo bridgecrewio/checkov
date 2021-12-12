@@ -18,7 +18,7 @@ class TestDAXEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf =  {
+        resource_conf = {
               "cluster_name": "${var.cluster_name}",
               "iam_role_arn": "${var.iam_role_arn}",
               "parameter_group_name": "${aws_dax_parameter_group.example.name}",

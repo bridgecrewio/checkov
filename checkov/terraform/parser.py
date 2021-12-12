@@ -798,7 +798,7 @@ def is_acceptable_module_param(value: Any) -> bool:
                 return False
         return True
 
-    if not value_type is str:
+    if value_type is not str:
         return True
 
     for vbm in find_var_blocks(value):

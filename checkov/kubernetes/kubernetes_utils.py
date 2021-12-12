@@ -90,7 +90,7 @@ def get_skipped_checks(entity_conf):
                             skipped_item["bc_id"] = ckv_to_bc_id_mapping.get(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
-                        logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                        logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                         continue
     return skipped
 

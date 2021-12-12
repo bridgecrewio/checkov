@@ -174,6 +174,3 @@ class TestBaseRunner(unittest.TestCase):
 
         # we expect .terraform and dir11/dir2 and dir33/dir2 to get filtered out
         self.assertEqual(set(remaining_dirs), expected)
-
-
-

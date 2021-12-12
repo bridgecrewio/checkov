@@ -89,7 +89,7 @@ class Record:
 
     def to_string(self, compact=False, use_bc_ids=False):
         status = ''
-        evaluation_message = f''
+        evaluation_message = ''
         status_color = "white"
         if self.check_result['result'] == CheckResult.PASSED:
             status = CheckResult.PASSED.name

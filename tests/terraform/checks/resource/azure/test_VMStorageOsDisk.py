@@ -37,7 +37,7 @@ class TestVMStorageOsDisk(unittest.TestCase):
                               tags = {
                                 environment = "staging"
                               }
-                            }    
+                            }
             """)
         resource_conf = hcl_res['resource'][0]['azurerm_windows_virtual_machine']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -66,7 +66,7 @@ class TestVMStorageOsDisk(unittest.TestCase):
                               tags = {
                                 environment = "staging"
                               }
-                            }    
+                            }
             """)
         resource_conf = hcl_res['resource'][0]['azurerm_linux_virtual_machine']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -102,7 +102,7 @@ class TestVMStorageOsDisk(unittest.TestCase):
                               tags = {
                                 environment = "staging"
                               }
-                            }    
+                            }
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_linux_virtual_machine']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -138,7 +138,7 @@ class TestVMStorageOsDisk(unittest.TestCase):
                               tags = {
                                 environment = "staging"
                               }
-                            }    
+                            }
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_windows_virtual_machine']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)

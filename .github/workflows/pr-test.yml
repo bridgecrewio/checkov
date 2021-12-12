@@ -3,6 +3,16 @@ name: PR Test
 on: pull_request
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: pre-commit
+        uses: pre-commit/action@v2.0.3
+
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:

@@ -36,7 +36,7 @@ class KMSKeyWildcardPrincipal(BaseResourceCheck):
                             idx_evaluated_key = f'[{idx}]/' if isinstance(policy_block['Statement'], list) else ''
                             self.evaluated_keys = [f'policy/[0]/Statement/{idx_evaluated_key}Principal']
                             return CheckResult.FAILED
-        except:  # nosec
+        except Exception:  # nosec
             pass
         return CheckResult.PASSED
 
