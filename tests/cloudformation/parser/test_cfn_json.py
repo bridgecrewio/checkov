@@ -1,6 +1,7 @@
 import os
 import unittest
 from json import JSONDecodeError
+from pathlib import Path
 
 from checkov.common.parsers.json import load
 from checkov.cloudformation.runner import Runner
@@ -22,6 +23,16 @@ class TestCfnJson(unittest.TestCase):
 
         test_files = current_dir + "/fail.json"
         self.assertRaises(JSONDecodeError, load, test_files)
+
+    def test_skip_tf_plan_file(self):
+        # given
+        test_file = Path(__file__).parent / "tfplan.json"
+
+        # when
+        report = Runner().run(None, files=[str(test_file)], runner_filter=RunnerFilter())
+
+        # then
+        self.assertEqual(0, len(report.parsing_errors))
 
 
 if __name__ == '__main__':
