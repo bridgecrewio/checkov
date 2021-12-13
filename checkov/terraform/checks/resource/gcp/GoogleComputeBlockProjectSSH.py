@@ -6,7 +6,7 @@ class GoogleComputeBlockProjectSSH(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure 'Block Project-wide SSH keys' is enabled for VM instances"
         id = "CKV_GCP_32"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

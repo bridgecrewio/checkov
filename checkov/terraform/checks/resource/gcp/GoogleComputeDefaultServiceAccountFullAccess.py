@@ -11,7 +11,8 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         name = "Ensure that instances are not configured to use the default service account with full access" \
                " to all Cloud APIs"
         id = "CKV_GCP_31"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_from_template',
+                               'google_compute_instance_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

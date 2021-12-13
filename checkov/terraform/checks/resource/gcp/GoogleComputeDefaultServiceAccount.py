@@ -9,7 +9,8 @@ class GoogleComputeDefaultServiceAccount(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that instances are not configured to use the default service account"
         id = "CKV_GCP_30"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_from_template',
+                               'google_compute_instance_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

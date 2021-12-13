@@ -6,7 +6,8 @@ class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that IP forwarding is not enabled on Instances"
         id = "CKV_GCP_36"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_template',
+                               'google_compute_instance_from_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

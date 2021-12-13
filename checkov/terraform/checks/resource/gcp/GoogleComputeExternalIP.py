@@ -7,7 +7,8 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure that Compute instances do not have public IP addresses"
         id = "CKV_GCP_40"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_template',
+                               'google_compute_instance_from_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

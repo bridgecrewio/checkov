@@ -6,7 +6,7 @@ class GoogleComputeShieldedVM(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Compute instances are launched with Shielded VM enabled"
         id = "CKV_GCP_39"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_template']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
