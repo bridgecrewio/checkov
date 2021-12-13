@@ -19,7 +19,7 @@ class DefaultServiceAccount(BaseK8Check):
             if "name" in conf["metadata"]:
                 if conf["metadata"]["name"] == "default":
                     if "automountServiceAccountToken" in conf:
-                        if conf["automountServiceAccountToken"] == False:
+                        if conf["automountServiceAccountToken"] is False:
                             return CheckResult.PASSED
                     return CheckResult.FAILED
                 else:

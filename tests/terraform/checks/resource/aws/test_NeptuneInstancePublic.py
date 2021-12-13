@@ -33,7 +33,7 @@ resource "aws_neptune_cluster_instance" "example" {
         """)
         resource_conf = hcl_res['resource'][0]['aws_neptune_cluster_instance']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)        
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
@@ -48,7 +48,7 @@ resource "aws_neptune_cluster_instance" "example" {
         """)
         resource_conf = hcl_res['resource'][0]['aws_neptune_cluster_instance']['example']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)       
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':

@@ -15,13 +15,13 @@ from checkov.common.parsers.node import DictNode, StrNode
 
 logger = logging.getLogger(__name__)
 
-IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements' #nosec
-CFN_RESOURCES_TOKEN = 'resources' #nosec
-PROVIDER_TOKEN = 'provider' #nosec
-FUNCTIONS_TOKEN = 'functions' #nosec
-ENVIRONMENT_TOKEN = 'environment' #nosec
-STACK_TAGS_TOKEN = 'stackTags' #nosec
-TAGS_TOKEN = 'tags' #nosec
+IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec
+CFN_RESOURCES_TOKEN = 'resources'  # nosec
+PROVIDER_TOKEN = 'provider'  # nosec
+FUNCTIONS_TOKEN = 'functions'  # nosec
+ENVIRONMENT_TOKEN = 'environment'  # nosec
+STACK_TAGS_TOKEN = 'stackTags'  # nosec
+TAGS_TOKEN = 'tags'  # nosec
 SUPPORTED_PROVIDERS = ['aws']
 
 DEFAULT_VAR_PATTERN = r"\${([^{}]+?)}"
@@ -255,7 +255,7 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
                     data = json.load(f)
                 elif file_location.endswith(".yml") or file_location.endswith(".yaml"):
                     data = yaml.safe_load(f)
-        except:
+        except Exception:
             data = {}
         file_data_cache[file_location] = data
     return data

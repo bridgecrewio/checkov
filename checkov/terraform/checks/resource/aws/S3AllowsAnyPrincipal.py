@@ -32,7 +32,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                         aws = statement['Principal']['AWS']
                         if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
                             return CheckResult.FAILED
-        except: # nosec
+        except Exception: # nosec
             pass
         return CheckResult.PASSED
 

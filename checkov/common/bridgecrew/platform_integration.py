@@ -20,7 +20,19 @@ from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError
 
-from checkov.common.bridgecrew.ci_variables import *
+from checkov.common.bridgecrew.ci_variables import (
+    BC_TO_BRANCH,
+    BC_PR_ID,
+    BC_PR_URL,
+    BC_COMMIT_HASH,
+    BC_COMMIT_URL,
+    BC_AUTHOR_NAME,
+    BC_AUTHOR_URL,
+    BC_RUN_ID,
+    BC_RUN_URL,
+    BC_REPOSITORY_URL,
+    BC_FROM_BRANCH,
+)
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
@@ -346,7 +358,7 @@ class BcPlatformIntegration(object):
 
     def get_checkov_mapping_metadata(self) -> Optional[dict]:
         if self.bc_skip_mapping is True:
-            logging.debug(f"Skipped mapping API call")
+            logging.debug("Skipped mapping API call")
             self.ckv_to_bc_id_mapping = {}
             return
         guidelines_url = self.guidelines_api_url
@@ -362,7 +374,7 @@ class BcPlatformIntegration(object):
             self.guidelines = response["guidelines"]
             self.bc_id_mapping = response.get("idMapping")
             self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
-            logging.debug(f"Got checkov mappings from Bridgecrew BE")
+            logging.debug("Got checkov mappings from Bridgecrew BE")
         except Exception as e:
             logging.debug(f"Failed to get the guidelines from {guidelines_url}, error:\n{e}")
             self.ckv_to_bc_id_mapping = {}
@@ -371,7 +383,7 @@ class BcPlatformIntegration(object):
     def onboarding(self):
         if not self.bc_api_key:
             print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
-                                         attrs=['bold'])  + colored(
+                                         attrs=['bold']) + colored(
                 u"\u2022 " + "Command line docker Image scanning\n"
                 u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
                 u"\u2022 " + "Auto-fix remediation suggestions\n"

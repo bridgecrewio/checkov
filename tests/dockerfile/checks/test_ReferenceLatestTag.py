@@ -16,7 +16,7 @@ class TestReferenceLatestTag(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "/success/Dockerfile.", 
+            "/success/Dockerfile.",
             "/success_multi_stage/Dockerfile.",
             "/success_multi_stage_capital/Dockerfile."
         }

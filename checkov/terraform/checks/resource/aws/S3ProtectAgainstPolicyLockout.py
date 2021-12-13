@@ -43,7 +43,7 @@ class S3ProtectAgainstPolicyLockout(BaseResourceCheck):
                         s3 = statement['Action']['s3']
                         if (type(s3) == str and s3 == '*') or (type(s3) == list and '*' in s3):
                             return CheckResult.FAILED
-        except: # nosec
+        except Exception: # nosec
             pass
         return CheckResult.PASSED
 

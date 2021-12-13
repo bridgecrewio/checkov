@@ -79,7 +79,7 @@ class VariableRenderer(ABC):
 
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
-                logging.warning(f"Reached 50 graph edge iterations, breaking.")
+                logging.warning("Reached 50 graph edge iterations, breaking.")
                 break
 
         self.local_graph.update_vertices_configs()

@@ -97,7 +97,7 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
-            logging.info(f"Scanning root folder using existing tf_definitions")
+            logging.info("Scanning root folder using existing tf_definitions")
 
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
@@ -247,7 +247,7 @@ class Runner(BaseRunner):
                     if caller_context:
                         caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                 else:
-                    logging.debug(f"Unable to find referrer ID for full path: %s", full_file_path)
+                    logging.debug(f"Unable to find referrer ID for full path: {full_file_path}")
 
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path

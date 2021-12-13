@@ -10,8 +10,6 @@ from pathlib import Path
 
 import configargparse
 
-from checkov.common.util.ext_argument_parser import ExtArgumentParser
-
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -72,7 +70,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
-    if config.output == None:
+    if config.output is None:
         config.output = ['cli']
 
     logger.debug(f'Checkov version: {version}')

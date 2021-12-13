@@ -20,11 +20,9 @@ class AzureInstancePassword(BaseResourceCheck):
                             return CheckResult.PASSED
 
             if "osProfile" in conf["properties"]:
-                if "linuxConfiguration" in conf["properties"]["osProfile"]:
-                    if conf["properties"]["osProfile"]["linuxConfiguration"] != None and \
-                            "disablePasswordAuthentication" in conf["properties"]["osProfile"]["linuxConfiguration"]:
-                        if str(conf["properties"]["osProfile"]["linuxConfiguration"]["disablePasswordAuthentication"]).lower() == "true":
-                            return CheckResult.PASSED
+                linux_conf = conf["properties"]["osProfile"].get("linuxConfiguration")
+                if linux_conf and linux_conf.get("disablePasswordAuthentication") is True:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = AzureInstancePassword()

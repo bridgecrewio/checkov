@@ -1,5 +1,4 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):

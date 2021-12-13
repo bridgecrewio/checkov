@@ -1,8 +1,6 @@
 import argparse
 import itertools
-from json import dumps, JSONEncoder
-from lark import Tree
-import datetime
+from json import dumps
 import logging
 import os
 from abc import abstractmethod
@@ -221,7 +219,7 @@ class RunnerRegistry:
                 out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
             )
-            repo_definitions[repo_root] = { 'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors }
+            repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 
         enriched_resources = {}
         for repo_root, parse_results in repo_definitions.items():

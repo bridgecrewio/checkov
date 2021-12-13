@@ -29,7 +29,7 @@ class TestAppServiceHttpLoggingEnabled(unittest.TestCase):
                    retention_in_days = 4
                 }
             }
-          }              
+          }
 
               app_settings = {
                 "SOME_KEY" = "some-value"

@@ -1,7 +1,6 @@
-import os
 import unittest
 
-from checkov.common.util.secrets import *
+from checkov.common.util.secrets import string_has_secrets, ALL, AWS, GENERAL
 
 
 class TestSecrets(unittest.TestCase):

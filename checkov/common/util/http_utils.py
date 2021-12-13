@@ -22,7 +22,7 @@ def extract_error_message(response: requests.Response):
             content = json.loads(response.content)
             if 'message' in content:
                 return content['message']
-        except:
+        except Exception:
             logging.debug(f'Failed to parse the response content: {response.content}')
 
     return response.reason

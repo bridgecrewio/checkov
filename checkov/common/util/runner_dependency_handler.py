@@ -30,7 +30,7 @@ class RunnerDependencyHandler():
         for runner in self.runner_registry.runners:
             try:
                 runner.system_deps
-            except:
+            except Exception:
                 logging.debug(f"{runner.check_type}_runner declares no system dependency checks required.")
                 continue
 

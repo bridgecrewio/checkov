@@ -76,7 +76,7 @@ class Registry(BaseCheckRegistry):
             else:
                 if "default" in check_id_denylist:
                     namespace_skip = True
-            if check_id not in check_id_denylist and namespace_skip == False:
+            if check_id not in check_id_denylist and namespace_skip is False:
                 return True
         else:
             return True

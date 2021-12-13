@@ -2,15 +2,15 @@ import logging
 import re
 import shutil
 
+from checkov.common.goget.base_getter import BaseGetter
+
+
 TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 try:
     from git import Repo
     git_import_error = None
 except ImportError as e:
     git_import_error = e
-
-
-from checkov.common.goget.base_getter import BaseGetter
 
 
 class GitGetter(BaseGetter):
@@ -22,8 +22,8 @@ class GitGetter(BaseGetter):
         search_tag = re.search(TAG_PATTERN, url)
         if search_tag:
             self.tag = search_tag.groupdict().get('tag')
-            #remove tag/ or tags/ from ref= to get actual branch name
-            self.tag = re.sub('tag.*/','', self.tag)   
+            # remove tag/ or tags/ from ref= to get actual branch name
+            self.tag = re.sub('tag.*/','', self.tag)
         url = re.sub(TAG_PATTERN, '', url)
 
         super().__init__(url)
@@ -59,11 +59,11 @@ class GitGetter(BaseGetter):
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
     def _source_subdir(self):
         stop = len(self.url)
-        
+
         query_index = self.url.find("?")
         if query_index > -1:
             stop = query_index
-        
+
         start = 0
         scheme_index = self.url.find("://", start, stop)
         if scheme_index > -1:
@@ -73,7 +73,7 @@ class GitGetter(BaseGetter):
         if subdir_index == -1:
             return (self.url, "")
 
-        internal_dir = self.url[subdir_index + 1:stop] # Note: Internal dir is expected to start with /
+        internal_dir = self.url[subdir_index + 1:stop]  # Note: Internal dir is expected to start with /
         git_url = self.url[:subdir_index] + self.url[stop:]
 
         return (git_url, internal_dir)
