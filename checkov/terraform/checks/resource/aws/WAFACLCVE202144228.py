@@ -24,14 +24,14 @@ class WAFACLCVE202144228(BaseResourceCheck):
                 managed_group = statement[0].get("managed_rule_group_statement")
                 if managed_group:
                     self.evaluated_keys = [f"rule/[{idx_rule}]/statement/[0]/managed_rule_group_statement/[0]/name"]
-                    if managed_group[0].get("name") == ["AWSManagedRulesKnownBadInputsRuleSet"]:
+                    if managed_group[0] and managed_group[0].get("name") == ["AWSManagedRulesKnownBadInputsRuleSet"]:
                         self.evaluated_keys.append(
                             f"rule/[{idx_rule}]/statement/[0]/managed_rule_group_statement/[0]/excluded_rule"
                         )
                         excluded_rules = managed_group[0].get("excluded_rule") or []
                         # rule 'Log4JRCE' should not be set to count
                         for idx_excluded_rule, excluded_rule in enumerate(force_list(excluded_rules)):
-                            if excluded_rule.get("name") == ["Log4JRCE"]:
+                            if excluded_rule and excluded_rule.get("name") == ["Log4JRCE"]:
                                 self.evaluated_keys = [
                                     f"rule/[{idx_rule}]/statement/[0]/managed_rule_group_statement/[0]/name",
                                     f"rule/[{idx_rule}]/statement/[0]/managed_rule_group_statement/[0]/excluded_rule/[{idx_excluded_rule}]/name",
@@ -43,7 +43,9 @@ class WAFACLCVE202144228(BaseResourceCheck):
                         )
                         override_action = rule.get("override_action")
                         # check for group override
-                        if override_action and next(iter(override_action[0].keys())) != "none":
+                        override_action_none = override_action[0].get("none")
+                        # Terraform plan includes both keys, but one is a dict and the not chosen one a list
+                        if not override_action_none or not isinstance(override_action_none[0], dict):
                             return CheckResult.FAILED
 
                         return CheckResult.PASSED
