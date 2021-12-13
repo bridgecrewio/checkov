@@ -113,7 +113,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _get_suppressions_from_platform(self):
         headers = merge_dicts(get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-                              get_auth_header(self.bc_integration.bc_api_key))
+                              get_auth_header(self.bc_integration.get_auth_token()))
         response = requests.request('GET', self.suppressions_url, headers=headers)
 
         if response.status_code != 200:
