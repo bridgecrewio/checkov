@@ -20,10 +20,7 @@ else:
     CKV_TEST_DIRECTORY = os.environ['CKV_TEST_DIRECTORY']
 
 # TEMPLATE_DIRECTORY - where the Jinja2 templates for rule files and test files are stored
-if not os.environ.get('CKV_TEMPLATE_DIRECTORY'):
-    CKV_TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
-else:
-    CKV_TEMPLATE_DIRECTORY = os.environ['CKV_TEMPLATE_DIRECTORY']
+CKV_TEMPLATE_DIRECTORY = os.getenv('CKV_TEMPLATE_DIRECTORY') or os.path.join(os.path.dirname(__file__), "templates")
 
 
 class Prompt():
