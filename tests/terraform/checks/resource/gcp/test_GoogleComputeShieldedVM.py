@@ -37,6 +37,22 @@ class TestGoogleComputeShieldedVM (unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_3(self):
+        hcl_res = hcl2.loads("""
+            resource "google_compute_instance_template" "default" {
+              name         = "test"
+              machine_type = "n1-standard-1"
+              zone         = "us-central1-a"
+              boot_disk {}
+                shielded_instance_config {
+                    enable_integrity_monitoring = false
+                    }
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['google_compute_instance_template']['default']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         hcl_res = hcl2.loads("""
             resource "google_compute_instance" "default" {
@@ -50,6 +66,25 @@ class TestGoogleComputeShieldedVM (unittest.TestCase):
         resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_1(self):
+        hcl_res = hcl2.loads("""
+            resource "google_compute_instance_template" "default" {
+              name         = "test"
+              machine_type = "n1-standard-1"
+              zone         = "us-central1-a"
+              boot_disk {}
+              shielded_instance_config {}
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['google_compute_instance_template']['default']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_no_from_template_support(self):
+        if 'google_compute_instance_from_template' in check.supported_resources:
+            self.fail("This policy should not support 'google_compute_instance_from_template' resources since it isn't "
+                      "possible to scan values inherited from the 'source_instance_template'.")
 
 
 if __name__ == '__main__':
