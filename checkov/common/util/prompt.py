@@ -14,10 +14,7 @@ import importlib
 CKV_PKG_DIRECTORY = os.getenv('CKV_PKG_DIRECTORY') or os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "checkov")
 
 # The root of the tests folder, if it is not in the root of the project
-if not os.environ.get('CKV_TEST_DIRECTORY'):
-    CKV_TEST_DIRECTORY = os.path.join(CKV_PKG_DIRECTORY, os.path.pardir, "tests")
-else:
-    CKV_TEST_DIRECTORY = os.environ['CKV_TEST_DIRECTORY']
+CKV_TEST_DIRECTORY = os.getenv('CKV_TEST_DIRECTORY') or os.path.join(CKV_PKG_DIRECTORY, os.path.pardir, "tests")
 
 # TEMPLATE_DIRECTORY - where the Jinja2 templates for rule files and test files are stored
 CKV_TEMPLATE_DIRECTORY = os.getenv('CKV_TEMPLATE_DIRECTORY') or os.path.join(os.path.dirname(__file__), "templates")
