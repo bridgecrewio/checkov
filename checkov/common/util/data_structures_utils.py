@@ -1,3 +1,4 @@
+import logging
 from typing import Generator, Any, Union, Dict
 
 
@@ -61,11 +62,27 @@ def search_deep_keys(searchText, obj, path):
     return keys
 
 
-def find_in_dict(obj: dict, key_path: str) -> Any:
-    val = obj
+def find_in_dict(input_dict: Dict[str, Any], key_path: str) -> Any:
+    """Tries to retrieve the value under the given 'key_path', otherwise returns None."""
+
+    value = input_dict
     key_list = key_path.split("/")
-    for key in key_list:
-        val = val.get(key)
-        if val is None:
-            return None
-    return val
+
+    try:
+        for key in key_list:
+            if key.startswith("[") and key.endswith("]"):
+                if isinstance(value, list):
+                    idx = int(key[1:-1])
+                    value = value[idx]
+                    continue
+                else:
+                    return None
+
+            value = value.get(key)
+            if value is None:
+                return None
+    except (AttributeError, IndexError, KeyError, TypeError, ValueError):
+        logging.debug(f"Could not find {key_path} in dict")
+        return None
+
+    return value
