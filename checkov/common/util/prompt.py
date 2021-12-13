@@ -10,11 +10,8 @@ import yaml
 import importlib
 
 
-if not os.environ.get('CKV_PKG_DIRECTORY'):
 # CKV_PKG_DIRECTORY is used to determine where the generated files are stored
-    CKV_PKG_DIRECTORY = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "checkov")
-else:
-    CKV_PKG_DIRECTORY = os.environ['CKV_PKG_DIRECTORY']
+CKV_PKG_DIRECTORY = os.getenv('CKV_PKG_DIRECTORY') or os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "checkov")
 
 # The root of the tests folder, if it is not in the root of the project
 if not os.environ.get('CKV_TEST_DIRECTORY'):
