@@ -8,6 +8,14 @@ resource "azurerm_storage_account" "pass" {
   account_replication_type = "GRS"
 }
 
+resource "azurerm_storage_account" "pass_number" {
+  name                     = 1234567890
+  resource_group_name      = "azurerm_resource_group.example.name"
+  location                 = "azurerm_resource_group.example.location"
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+}
+
 # fail
 
 resource "azurerm_storage_account" "camel_case" {
