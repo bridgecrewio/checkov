@@ -325,17 +325,17 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[str(tf_file_path)],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="terraform_plan"),
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
         )
 
         # then
         summary = report.get_summary()
 
-        self.assertEqual(report.get_summary()["failed"], 0)
-        self.assertEqual(report.get_summary()["passed"], 0)
-        self.assertEqual(report.get_summary()["skipped"], 0)
-        self.assertEqual(report.get_summary()["parsing_errors"], 0)
-        self.assertEqual(report.get_summary()["resource_count"], 0)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 0)
 
 
 if __name__ == "__main__":

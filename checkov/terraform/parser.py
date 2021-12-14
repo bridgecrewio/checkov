@@ -292,7 +292,7 @@ class Parser:
         #                      because it break encapsulations and I don't want to cause confusion about what data
         #                      set it being processed. To avoid this, here's a Callable that will get the data
         #                      map for a particular module reference. (Might be OCD, but...)
-        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)
+        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)  # noqa
 
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not

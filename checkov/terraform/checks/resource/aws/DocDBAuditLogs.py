@@ -13,7 +13,6 @@ class DocDBAuditLogs(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         self.evaluated_keys = ['parameter']
         if 'parameter' in conf:
-            elements = conf["parameter"]
             for idx, elem in enumerate(conf["parameter"]):
                 if isinstance(elem, dict) and elem["name"][0] == "audit_logs" and elem["value"][0] == "enabled":
                     self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']

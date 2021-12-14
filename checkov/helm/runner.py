@@ -94,10 +94,6 @@ class Runner(BaseRunner):
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
 
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = {}
-        files_list = []
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)

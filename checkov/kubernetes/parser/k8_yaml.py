@@ -1,3 +1,5 @@
+from typing import Tuple, List, Dict, Any
+
 import yaml
 from yaml.loader import SafeLoader
 
@@ -17,18 +19,13 @@ def loads(filename):
     return template
 
 
-def load(filename):
+def load(filename: str) -> Tuple[List[Dict[str, Any]], Tuple[int, str]]:
     """
     Load the given YAML file
     """
 
-    content = ''
-
     with open(filename) as fp:
-        content = fp.read()
-        fp.seek(0)
-        file_lines = [(ind + 1, line) for (ind, line) in
-                      list(enumerate(fp.readlines()))]
+        file_lines = [(ind + 1, line) for ind, line in enumerate(fp.readlines())]
 
     template = loads(filename)
 

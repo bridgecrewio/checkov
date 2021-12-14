@@ -26,7 +26,6 @@ def load(filename):
     """
     Load the given JSON file
     """
-    content = ''
 
     with open(filename) as fp:
         file_lines = [(ind + 1, line) for (ind, line) in enumerate(fp.readlines())]
