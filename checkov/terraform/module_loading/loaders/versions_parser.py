@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from packaging import version
-VERSION_REGEX = re.compile(r'^(?P<operator>=|!=|>=|>|<=|<|~>)*(?P<version>.+)$')
+VERSION_REGEX = re.compile(r'^(?P<operator>=|!=|>=|>|<=|<|~>)?(?P<version>.+)$')
 
 
 class VersionConstraint:
