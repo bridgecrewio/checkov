@@ -20,7 +20,7 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         if "default_cache_behavior" in conf.keys():
             self.evaluated_keys = ['default_cache_behavior/[0]/viewer_protocol_policy']
             if isinstance(conf["default_cache_behavior"][0], dict):
-                default_viewer_policy = conf["default_cache_behavior"][0]["viewer_protocol_policy"]
+                default_viewer_policy = conf["default_cache_behavior"][0].get("viewer_protocol_policy")
                 if default_viewer_policy and default_viewer_policy[0] == "allow-all":
                     return CheckResult.FAILED
         if "ordered_cache_behavior" in conf.keys():
