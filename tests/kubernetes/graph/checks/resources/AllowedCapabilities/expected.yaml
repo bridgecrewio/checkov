@@ -1,0 +1,4 @@
+pass:
+  - 'Deployment.default.my-nginx'
+fail:
+  - 'StatefulSet.default.cassandra'
