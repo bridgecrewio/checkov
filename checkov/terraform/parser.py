@@ -42,6 +42,7 @@ class Parser:
         self._parsed_directories = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
+        self.loaded_files_map = {}
 
         # This ensures that we don't try to double-load modules
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
@@ -332,11 +333,21 @@ class Parser:
 
             return (file.path, result), parsing_errors
 
-        results = parallel_runner.run_function(_load_file, files)
         files_to_data = []
+        files_to_parse = []
+        for file in files:
+            data = self.loaded_files_map.get(file.path)
+            if data:
+                files_to_data.append((file.path, data))
+            else:
+                files_to_parse.append(file)
+
+        results = parallel_runner.run_function(_load_file, files_to_parse)
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
+            if result[0] not in self.loaded_files_map:
+                self.loaded_files_map[result[0]] = result[1]
         return files_to_data
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
