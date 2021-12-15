@@ -26,6 +26,12 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         if 'name' in conf and conf['name'][0].startswith('gke-'):
             self.evaluated_keys = ['name']
             return CheckResult.PASSED
+
+        if 'source_instance_template' in conf.keys() and 'service_account' not in conf.keys():
+            # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
+            # and service_account is not present, then this check cannot PASS, since we don't know what the
+            # underlying source template looks like.
+            return CheckResult.UNKNOWN
         if 'service_account' in conf.keys():
             service_account_conf = conf['service_account'][0]
             self.evaluated_keys = ['service_account']
