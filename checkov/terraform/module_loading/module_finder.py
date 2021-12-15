@@ -79,7 +79,10 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                 content = module_loader_registry.load(m.source_dir, m.module_link,
                                                       "latest" if not m.version else m.version)
                 if content is None or not content.loaded():
-                    logging.warning(f'Failed to download module {m.address}')
+                    log_message = f'Failed to download module {m.address}'
+                    if not module_loader_registry.download_external_modules:
+                        log_message += ' (for external modules, the --download-external-modules flag is required)'
+                    logging.warning(log_message)
             except Exception as e:
                 logging.warning(f"Unable to load module ({m.address}): {e}")
 
