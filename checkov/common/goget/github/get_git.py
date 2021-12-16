@@ -51,9 +51,9 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url, clone_dir):
         self.logger.debug("cloning {} to {}".format(self.url, clone_dir))
         if self.tag:
-            Repo.clone_from(git_url, clone_dir, b=self.tag)
+            Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
         else:
-            Repo.clone_from(git_url, clone_dir)
+            Repo.clone_from(git_url, clone_dir, depth=1)
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
