@@ -14,12 +14,10 @@ class AppServiceMinTLSVersion(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         properties = conf.get("properties")
-        if properties:
+        if isinstance(properties, dict):
             site_config = properties.get("siteConfig")
-            if site_config:
-                min_tls_version = site_config.get("minTlsVersion")
-                if min_tls_version == '1.2':
-                    return CheckResult.PASSED
+            if isinstance(site_config, dict) and site_config.get("minTlsVersion") == "1.2":
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
