@@ -31,7 +31,7 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(self.dest_dir):
             return True
 
-        self.module_version_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, "versions")
+        self.module_version_url = self.REGISTRY_URL_PREFIX + "/" + self.module_source + "/versions"
         if not self.module_version_url.startswith(self.REGISTRY_URL_PREFIX):
             # Local paths don't get the prefix appended
             return False
@@ -54,7 +54,7 @@ class RegistryLoader(ModuleLoader):
 
         best_version = self._find_best_version()
 
-        request_download_url = os.path.join(self.REGISTRY_URL_PREFIX, self.module_source, best_version, "download")
+        request_download_url = self.REGISTRY_URL_PREFIX + "/" + self.module_source + "/" + best_version + "/download"
         response = requests.get(url=request_download_url)
         if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
             return ModuleContent(dir=None)
