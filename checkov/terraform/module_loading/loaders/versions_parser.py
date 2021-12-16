@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from packaging import version
-VERSION_REGEX = re.compile(r'^(?P<operator>=|!=|>=|>|<=|<|~>)*(?P<version>.+)$')
+VERSION_REGEX = re.compile(r"^(?P<operator>=|!=|>=|>|<=|<|~>)?\s*(?P<version>[\d.]+-?\w*)$")
 
 
 class VersionConstraint:
@@ -34,6 +34,9 @@ class VersionConstraint:
         }[self.operator](other_version)
         return res
 
+    def __str__(self):
+        return f"{self.operator}{self.version}"
+
 
 def get_version_constraints(raw_version: str) -> List[VersionConstraint]:
     """
@@ -44,8 +47,10 @@ def get_version_constraints(raw_version: str) -> List[VersionConstraint]:
     raw_version_constraints = raw_version.split(',')
     version_constraints = []
     for constraint in raw_version_constraints:
-        constraint_parts = re.search(VERSION_REGEX, constraint).groupdict()
-        version_constraints.append(VersionConstraint(constraint_parts))
+        match = re.search(VERSION_REGEX, constraint)
+        if match:
+            constraint_parts = match.groupdict()
+            version_constraints.append(VersionConstraint(constraint_parts))
     return version_constraints
 
 
