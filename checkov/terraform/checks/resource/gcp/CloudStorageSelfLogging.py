@@ -11,7 +11,7 @@ class CloudStorageSelfLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        bucket_name = conf['name']
+        bucket_name = conf.get('name')
         #check for logging
         if 'logging' in conf:
             self.evaluated_keys = ['logging']
