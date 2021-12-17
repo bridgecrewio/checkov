@@ -1,5 +1,5 @@
-import os
 import unittest
+from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.digitalocean.FirewallIngressOpen import check
@@ -8,24 +8,27 @@ from checkov.terraform.runner import Runner
 
 class TestFirewallIngressOpen(unittest.TestCase):
     def test(self):
-        runner = Runner()
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        # given
+        test_files_dir = Path(__file__).parent / "example_FirewallIngressOpen"
 
-        test_files_dir = current_dir + "/example_FirewallIngressOpen"
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
         summary = report.get_summary()
 
         passing_resources = {
             "digitalocean_firewall.pass",
+            "digitalocean_firewall.droplet",
         }
         failing_resources = {
             "digitalocean_firewall.fail",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
