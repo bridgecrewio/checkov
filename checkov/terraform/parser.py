@@ -288,13 +288,6 @@ class Parser:
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
 
-        # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
-        #                      may be a little overboard, but I don't want to just pass the entire data map down
-        #                      because it break encapsulations and I don't want to cause confusion about what data
-        #                      set it being processed. To avoid this, here's a Callable that will get the data
-        #                      map for a particular module reference. (Might be OCD, but...)
-        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)  # noqa
-
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
         #          be loadable until other modules are loaded. This happens when parameters to one module
