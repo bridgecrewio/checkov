@@ -205,7 +205,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2019-03-01",
-      "name": "[parameters('vmName')]",
+      "name": "default",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"

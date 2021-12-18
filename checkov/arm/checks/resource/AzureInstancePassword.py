@@ -1,16 +1,18 @@
+from typing import Any, Dict
+
+from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.arm.base_resource_check import BaseResourceCheck
 
 
-class AzureInstancePassword(BaseResourceCheck):
-    def __init__(self):
+class AzureInstancePassword(BaseResourceValueCheck):
+    def __init__(self) -> None:
         name = "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)"
         id = "CKV_AZURE_1"
-        supported_resources = ['Microsoft.Compute/virtualMachines']
+        supported_resources = ("Microsoft.Compute/virtualMachines",)
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
         if isinstance(properties, dict):
             storage_profile = properties.get("storageProfile")
@@ -20,13 +22,15 @@ class AzureInstancePassword(BaseResourceCheck):
                     publisher = image_reference.get("publisher")
                     if publisher and "windows" in publisher.lower():
                         # This check is not relevant to Windows systems
-                        return CheckResult.PASSED
+                        return CheckResult.UNKNOWN
 
-            os_profile = properties.get("osProfile")
-            if isinstance(os_profile, dict):
-                linux_conf = os_profile.get("linuxConfiguration")
-                if isinstance(linux_conf, dict) and linux_conf.get("disablePasswordAuthentication"):
-                    return CheckResult.PASSED
-        return CheckResult.FAILED
+        return super().scan_resource_conf(conf)
+
+    def get_inspected_key(self) -> str:
+        return "properties/osProfile/linuxConfiguration/disablePasswordAuthentication"
+
+    def get_expected_value(self) -> Any:
+        return True
+
 
 check = AzureInstancePassword()
