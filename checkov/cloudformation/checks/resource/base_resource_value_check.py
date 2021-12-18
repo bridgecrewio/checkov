@@ -89,7 +89,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         raise NotImplementedError()
 
-    def get_expected_values(self) -> List[str]:
+    def get_expected_values(self) -> List[Any]:
         """
         Override the method with the list of acceptable values if the check has more than one possible expected value, given
         the inspected key

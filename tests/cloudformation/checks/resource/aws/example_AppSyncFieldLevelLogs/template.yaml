@@ -2,7 +2,15 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   # pass
 
-  Enabled:
+  All:
+    Type: "AWS::AppSync::GraphQLApi"
+    Properties:
+      Name: "example"
+      AuthenticationType: "API_KEY"
+      LogConfig:
+        CloudWatchLogsRoleArn: "iam_role_arn"
+        FieldLogLevel: "ERROR"
+  Error:
     Type: "AWS::AppSync::GraphQLApi"
     Properties:
       Name: "example"
@@ -13,8 +21,11 @@ Resources:
 
   # fail
 
-  Default:
+  None:
     Type: "AWS::AppSync::GraphQLApi"
     Properties:
       Name: "example"
       AuthenticationType: "API_KEY"
+      LogConfig:
+        CloudWatchLogsRoleArn: "iam_role_arn"
+        FieldLogLevel: "NONE"
