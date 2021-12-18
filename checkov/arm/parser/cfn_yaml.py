@@ -3,6 +3,9 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
+from pathlib import Path
+from typing import Tuple, List
+
 from yaml import MappingNode
 from yaml import ScalarNode
 from yaml import SequenceNode
@@ -207,17 +210,17 @@ def loads(yaml_string, fname=None):
     return template
 
 
-def load(filename):
+def load(filename: Path) -> Tuple[DictNode, List[Tuple[int, str]]]:
     """
     Load the given YAML file
     """
 
-    content = ''
+    file_path = filename if isinstance(filename, Path) else Path(filename)
+    content = file_path.read_text()
 
-    with open(filename) as fp:
-        content = fp.read()
-        fp.seek(0)
-        file_lines = [(ind + 1, line) for (ind, line) in
-                      list(enumerate(fp.readlines()))]
+    if not all(key in content for key in ("$schema", "contentVersion")):
+        return {}, []
+
+    file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     return (loads(content, filename), file_lines)

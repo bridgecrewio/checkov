@@ -1,17 +1,19 @@
+from pathlib import Path
+from typing import Tuple, Dict, Any, List
+
 import yaml
 from yaml.loader import SafeLoader
 
-def loads(filename):
+def loads(content):
     """
     Load the given YAML string
     """
-    with open(filename, 'r') as fp:
-        content = fp.read()
-        content = "[" + content + "]"
-        content = content.replace('}{', '},{')
-        content = content.replace('}\n{', '},\n{')
 
-        template_temp = list(yaml.load_all(content, Loader=SafeLineLoader))
+    content = "[" + content + "]"
+    content = content.replace('}{', '},{')
+    content = content.replace('}\n{', '},\n{')
+
+    template_temp = list(yaml.load_all(content, Loader=SafeLineLoader))
 
     # Convert an empty file to an empty dict
     if template_temp is None:
@@ -22,15 +24,20 @@ def loads(filename):
     return template
 
 
-def load(filename):
+def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     """
     Load the given JSON file
     """
 
-    with open(filename) as fp:
-        file_lines = [(ind + 1, line) for (ind, line) in enumerate(fp.readlines())]
+    file_path = filename if isinstance(filename, Path) else Path(filename)
+    content = file_path.read_text()
 
-    template = loads(filename)
+    if not all(key in content for key in ("apiVersion", "kind")):
+        return [{}], []
+
+    file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
+
+    template = loads(content)
 
     return (template, file_lines)
 

@@ -14,12 +14,10 @@ class AppServiceHttps20Enabled(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         properties = conf.get("properties")
-        if properties:
+        if isinstance(properties, dict):
             site_config = properties.get("siteConfig")
-            if site_config:
-                http_20_enabled = site_config.get("http20Enabled")
-                if http_20_enabled:
-                    return CheckResult.PASSED
+            if isinstance(site_config, dict) and site_config.get("http20Enabled"):
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
