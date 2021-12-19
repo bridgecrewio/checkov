@@ -22,8 +22,8 @@ class FirewallIngressOpen(BaseResourceCheck):
                     if rule['source_addresses']:
                         sources = rule["source_addresses"][0]
                         if any(item in ["0.0.0.0/0", "::/0"] for item in sources):
-                           self.evaluated_keys=["inbound_rule/[0]/source_addresses"]
-                           return CheckResult.FAILED
+                            self.evaluated_keys=["inbound_rule/[0]/source_addresses"]
+                            return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.PASSED
 

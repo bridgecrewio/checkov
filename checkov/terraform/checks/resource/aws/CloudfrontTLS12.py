@@ -19,9 +19,9 @@ class CloudFrontTLS12(BaseResourceValueCheck):
                 if viewer_certificate["cloudfront_default_certificate"] is not True:
                     #these protocol versions
                     if "minimum_protocol_version" in viewer_certificate:
-                       protocol=viewer_certificate["minimum_protocol_version"][0]
-                       if protocol in ['TLSv1.2_2018', 'TLSv1.2_2019', 'TLSv1.2_2021']:
-                          return CheckResult.PASSED
+                        protocol=viewer_certificate["minimum_protocol_version"][0]
+                        if protocol in ['TLSv1.2_2018', 'TLSv1.2_2019', 'TLSv1.2_2021']:
+                            return CheckResult.PASSED
 
         #No cert specified so using default which can be less that tls 1.2
         return CheckResult.FAILED
