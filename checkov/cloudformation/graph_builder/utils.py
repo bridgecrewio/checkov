@@ -4,8 +4,8 @@ from typing import Union, List, Dict
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import CloudformationVertexReference
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions
 
-REMOVE_INTERPOLATION_PATTERN = "[${}]"
-FIND_INTERPOLATION_PATTERN = r"\${([a-zA-Z0-9.]*?)}"
+REMOVE_INTERPOLATION_PATTERN = re.compile("[${}]")
+FIND_INTERPOLATION_PATTERN = re.compile(r"\${([a-zA-Z0-9.]*?)}")
 GLOBALS_RESOURCE_TYPE_MAP = {
     "Function": "AWS::Serverless::Function",
     "Api": "AWS::Serverless::Api",

@@ -22,7 +22,7 @@ class ApiServerServiceAccountKeyFile(BaseK8sContainerCheck):
                         [field, value, *_] = cmd.split("=")
                         if field == "--service-account-key-file":
                             # should be a valid path and to end with .pem
-                            regex = r"^((?:[^\/]*\/)*)(.*)\.pem$"
+                            regex = re.compile(r"^(.*)\.pem$")
                             matches = re.match(regex, value)
                             if not matches:
                                 return CheckResult.FAILED

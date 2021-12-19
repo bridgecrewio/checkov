@@ -174,12 +174,13 @@ And also `checkov/terraform/checks/provider/linode/__init__.py`
 Update the security constants `checkov/common/models/consts.py` with the new pattern.
 
 ```python
+import re
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
 ANY_VALUE = "CKV_ANY"
-DOCKER_IMAGE_REGEX = r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)'
-access_key_pattern = "(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])" # nosec
-secret_key_pattern = "(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])" # nosec
-linode_token_pattern ="(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])" # nosec
+DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)')
+access_key_pattern = re.compile(r"(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])") # nosec
+secret_key_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])") # nosec
+linode_token_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])") # nosec
 ```
 
 ```python

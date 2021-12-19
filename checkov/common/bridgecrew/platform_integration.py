@@ -44,8 +44,8 @@ from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
 
-EMAIL_PATTERN = r"[^@]+@[^@]+\.[^@]+"
-UUID_V4_PATTERN = r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$"
+EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
+UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
 

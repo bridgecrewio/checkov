@@ -23,7 +23,7 @@ class LocalPathLoader(ModuleLoader):
 
         if platform.system() == 'Windows':
             logging.debug("Platform: Windows")
-            if re.match("[a-zA-Z]:\\\\", self.module_source):
+            if re.match(re.compile("[a-zA-Z]:\\\\"), self.module_source):
                 return True
 
         return False

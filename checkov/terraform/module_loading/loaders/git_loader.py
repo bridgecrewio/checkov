@@ -73,7 +73,7 @@ class GenericGitLoader(ModuleLoader):
         else:
             raise Exception("invalid git url")
 
-        username = re.match(r"^(.*?@).*", root_module)
+        username = re.match(re.compile(r"^(.*?@).*"), root_module)
         if username:
             root_module = root_module.replace(username[1], "")
 

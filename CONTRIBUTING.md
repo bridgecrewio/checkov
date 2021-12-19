@@ -104,6 +104,10 @@ To check the code base against the pre-commit hooks just run
 pre-commit run -a
 ```
 
+### Using regex
+
+Use re.compile for all regex in order to scan them in flake8.
+
 ### Documentation is awesome
 
 Contributing to the documentation is not mandatory but it will ensure people are aware of your important contribution. 
