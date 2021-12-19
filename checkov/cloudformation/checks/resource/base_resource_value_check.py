@@ -10,7 +10,7 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 
-VARIABLE_DEPENDANT_REGEX = r"(?:Ref)\.[^\s]+"
+VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -32,7 +32,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
+        return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+\]?$", x))]
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:

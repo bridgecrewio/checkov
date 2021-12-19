@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from policyuniverse.policy import Policy
 from typing import List
 
-DATA_TO_JSON_PATTERN = r"\$?\{?(.+?)(?=.json).json\}?"
+DATA_TO_JSON_PATTERN = re.compile(r"\$?\{?(.+?)(?=.json).json\}?")
 
 
 class GlacierVaultAnyPrincipal(BaseResourceCheck):

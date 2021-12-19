@@ -9,7 +9,7 @@ from checkov.terraform.graph_builder.graph_components.attribute_names import Cus
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
-MODULE_DEPENDENCY_PATTERN_IN_PATH = r"\[.+\#.+\]"
+MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\[.+\#.+\]")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -47,11 +47,11 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     return module_dependency[1:-1].split("#")
 
 BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
-FUNC_CALL_PREFIX_PATTERN = r"([.a-zA-Z]+)\("
-INTERPOLATION_PATTERN = "[${}]"
-INTERPOLATION_EXPR = r"\$\{([^\}]*)\}"
-INDEX_PATTERN = r"\[([0-9]+)\]"
-MAP_ATTRIBUTE_PATTERN = r"\[\"([^\d\W]\w*)\"\]"
+FUNC_CALL_PREFIX_PATTERN = re.compile(r"([.a-zA-Z]+)\(")
+INTERPOLATION_PATTERN = re.compile(r"[${}]")
+INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
+INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
+MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 
 def get_vertices_references(
     str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]

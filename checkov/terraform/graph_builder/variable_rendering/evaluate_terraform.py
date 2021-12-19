@@ -10,17 +10,10 @@ from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions impo
 
 T = TypeVar("T", str, int, bool)
 
-CONDITIONAL_EXPR = r"([^\?]+)\?([^:]+)\:([^:]+)"
-
-# {key1 = value1, key2 = value2, ...}
-MAP_REGEX = r"\{(?:\s*[\S]+\s*\=\s*[\S]+\s*\,)*(?:\s*[\S]+\s*\=\s*[\S]+\s*)\}"
-
-LIST_PATTERN = r"(?P<d>\[([^\[\]]+?)+(\,[^\[\]]+?)*\])"
-
-KEY_VALUE_REGEX = r"([\S]+)\s*\=\s*([\S]+)"
+CONDITIONAL_EXPR = re.compile(r"([^\?]+)\?([^:]+)\:([^:]+)")
 
 # %{ some_text }
-DIRECTIVE_EXPR = r"\%\{([^\}]*)\}"
+DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 
 COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>.+)$")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
@@ -114,7 +107,7 @@ def strip_double_quotes(input_str: str) -> str:
 
 
 def evaluate_conditional_expression(input_str: str) -> str:
-    variable_ref = re.match(r"^\${(.*)}$", input_str)
+    variable_ref = re.match(re.compile(r"^\${(.*)}$"), input_str)
     if variable_ref:
         input_str = variable_ref.groups()[0]
 

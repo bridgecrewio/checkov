@@ -8,7 +8,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.data_structures_utils import find_in_dict
 
-VARIABLE_DEPENDANT_REGEX = r"(?:local|var|module)\.[^\s]+"
+VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:local|var|module)\.[^\s]+")
 
 
 class BaseResourceValueCheck(BaseResourceCheck):

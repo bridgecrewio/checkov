@@ -12,7 +12,7 @@ from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-DOCKER_FILE_MASK = r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$"
+DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
 
 
 class Runner(BaseRunner):

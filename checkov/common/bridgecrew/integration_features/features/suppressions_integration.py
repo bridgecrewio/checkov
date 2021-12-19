@@ -151,7 +151,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _repo_matches(self, repo_name):
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
-        return re.match(f'^(\\w+_)?{self.bc_integration.repo_id}$', repo_name) is not None
+        return re.match(re.compile(f'^(\\w+_)?{self.bc_integration.repo_id}$'), repo_name) is not None
 
 
 integration = SuppressionsIntegration(bc_integration)
