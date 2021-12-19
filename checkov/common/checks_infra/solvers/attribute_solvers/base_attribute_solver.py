@@ -38,7 +38,7 @@ class BaseAttributeSolver(BaseSolver):
             attribute_matches = [
                 attr
                 for attr in vertex
-                if any(re.match(attribute_pattern, attr) for attribute_pattern in attribute_patterns)
+                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns)
             ]
             if attribute_matches:
                 return self.resource_type_pred(vertex, self.resource_types) and any(

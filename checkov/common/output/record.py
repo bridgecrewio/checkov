@@ -68,7 +68,7 @@ class Record:
 
     @staticmethod
     def _trim_special_chars(expression):
-        return "".join(re.findall(r'[^ ${\}]+', expression))
+        return "".join(re.findall(re.compile(r'[^ ${\}]+'), expression))
 
     def _is_expression_in_code_lines(self, expression):
         stripped_expression = self._trim_special_chars(expression)

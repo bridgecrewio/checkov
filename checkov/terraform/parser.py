@@ -769,7 +769,7 @@ def _remove_module_dependency_in_path(path):
     :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
     :return: only the outer path: dir/main.tf
     """
-    resolved_module_pattern = r'\[.+\#.+\]'
+    resolved_module_pattern = re.compile(r'\[.+\#.+\]')
     if re.findall(resolved_module_pattern, path):
         path = re.sub(resolved_module_pattern, '', path)
     return path

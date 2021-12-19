@@ -49,12 +49,12 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 curr_md = None
                                 continue
 
-                            match = re.match('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"', line)
+                            match = re.match(re.compile('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"'), line)
                             if match:
                                 curr_md.module_link = match.group('LINK')
                                 continue
 
-                            match = re.match('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"', line)
+                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"'), line)
                             if match:
                                 curr_md.version = match.group('VERSION')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
