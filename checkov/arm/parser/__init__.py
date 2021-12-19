@@ -28,9 +28,9 @@ def parse(filename):
         elif e.errno == 13:
             LOGGER.error('Permission denied when accessing template file: %s',
                          filename)
-    except UnicodeDecodeError as err:
+    except UnicodeDecodeError:
         LOGGER.error('Cannot read file contents: %s', filename)
-    except cfn_yaml.CfnParseError as err:
+    except cfn_yaml.CfnParseError:
         pass
     except ScannerError as err:
         if err.problem in [
@@ -43,7 +43,7 @@ def parse(filename):
                     'Template %s is malformed: %s', filename, err.problem)
                 LOGGER.error('Tried to parse %s as JSON but got error: %s',
                              filename, str(json_err))
-    except YAMLError as err:
+    except YAMLError:
         pass
 
     if template is not None and isinstance(template, DictNode) and '$schema' in template and 'resources' in template:

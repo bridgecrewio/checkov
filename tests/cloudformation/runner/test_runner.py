@@ -212,9 +212,14 @@ class TestRunnerValid(unittest.TestCase):
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
-        runner = Runner()
-        report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False))
+        report = Runner().run(
+            root_folder=dir_abs_path,
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["cloudformation"], download_external_modules=False)
+        )
+
+        self.assertGreater(len(report.failed_checks), 0)
+        self.assertGreater(len(report.passed_checks), 0)
 
     def test_external_data(self):
         dir_abs_path = os.path.dirname(os.path.realpath(__file__))
