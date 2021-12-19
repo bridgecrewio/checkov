@@ -37,14 +37,18 @@ def remove_module_dependency_in_path(path: str) -> Tuple[str, str, str]:
 
 def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     """
-    :param module_dependency: a list looking like ['[path_to_module.tf#0]']
+    :param: module_dependency: a list looking like ['[path_to_module.tf#0]']
     :return: the path without enclosing array and index: 'path_to_module.tf'
     """
     if not module_dependency:
         return ["", ""]
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
-    return module_dependency[1:-1].split("#")
+    return [
+        module_dependency[1:module_dependency.index('.tf#')+len('.tf')],
+        module_dependency[module_dependency.index('.tf#')+len('.tf#'):-1]
+    ]
+
 
 BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
 FUNC_CALL_PREFIX_PATTERN = re.compile(r"([.a-zA-Z]+)\(")

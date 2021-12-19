@@ -61,8 +61,9 @@ nav_order: 1
 | 50 | CKV_AZURE_41  | resource  | Microsoft.KeyVault/vaults/secrets                                            | Ensure that the expiration date is set on all secrets                                         | arm   |
 | 51 | CKV_AZURE_42  | resource  | Microsoft.KeyVault/vaults                                                    | Ensure the key vault is recoverable                                                           | arm   |
 | 52 | CKV_AZURE_47  | resource  | Microsoft.DBforMariaDB/servers                                               | Ensure 'Enforce SSL connection' is set to 'ENABLED' for MariaDB servers                       | arm   |
-| 53 | CKV_AZURE_131 | parameter | secureString                                                                 | SecureString parameter should not have hardcoded default values                               | arm   |
-| 54 | CKV_AZURE_132 | resource  | Microsoft.DocumentDB/databaseAccounts                                        | Ensure cosmosdb does not allow privileged escalation by restricting management plane changes  | arm   |
+| 53 | CKV_AZURE_49  | resource  | Microsoft.Compute/virtualMachineScaleSets                                    | Ensure Azure linux scale set does not use basic authentication(Use SSH Key Instead)           | arm   |
+| 54 | CKV_AZURE_131 | parameter | secureString                                                                 | SecureString parameter should not have hardcoded default values                               | arm   |
+| 55 | CKV_AZURE_132 | resource  | Microsoft.DocumentDB/databaseAccounts                                        | Ensure cosmosdb does not allow privileged escalation by restricting management plane changes  | arm   |
 
 
 ---
