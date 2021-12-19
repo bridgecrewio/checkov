@@ -40,5 +40,7 @@ def parse(filename, allow_nulls=True):
         # not even begin parsing with our custom logic that throws the exception above,
         # and will fail with this exception instead.
         pass
+    except UnicodeDecodeError:
+        pass
 
     return (template, template_lines)

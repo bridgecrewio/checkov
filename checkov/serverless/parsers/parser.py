@@ -33,7 +33,7 @@ def parse(filename):
     template = None
     template_lines = None
     try:
-        (template, template_lines) = cfn_yaml.load(filename)
+        (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.SLS)
         if not template or not is_checked_sls_template(template):
             return
     except IOError as e:

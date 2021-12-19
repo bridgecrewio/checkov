@@ -25,7 +25,7 @@ def parse(
         out_parsing_errors = {}
 
     try:
-        (template, template_lines) = cfn_yaml.load(filename)
+        (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.CFN)
     except IOError as err:
         if err.errno == 2:
             error = f"Template file not found: {filename} - {err}"
