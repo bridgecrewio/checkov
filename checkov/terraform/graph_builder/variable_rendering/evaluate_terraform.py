@@ -15,9 +15,6 @@ CONDITIONAL_EXPR = r"([^\?]+)\?([^:]+)\:([^:]+)"
 # {key1 = value1, key2 = value2, ...}
 MAP_REGEX = r"\{(?:\s*[\S]+\s*\=\s*[\S]+\s*\,)*(?:\s*[\S]+\s*\=\s*[\S]+\s*)\}"
 
-# {key:val}[key]
-MAP_WITH_ACCESS = re.compile(r"(?P<d>{(?:.*?:.*?)+(,?:.*?:.*?)*})\s*(?P<access>\[[^\]]+\])")
-
 LIST_PATTERN = r"(?P<d>\[([^\[\]]+?)+(\,[^\[\]]+?)*\])"
 
 KEY_VALUE_REGEX = r"([\S]+)\s*\=\s*([\S]+)"
@@ -25,7 +22,7 @@ KEY_VALUE_REGEX = r"([\S]+)\s*\=\s*([\S]+)"
 # %{ some_text }
 DIRECTIVE_EXPR = r"\%\{([^\}]*)\}"
 
-COMPARE_REGEX = re.compile(r"^(?P<a>.+)(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)+(?P<b>.+)$")
+COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>.+)$")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
