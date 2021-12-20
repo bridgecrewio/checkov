@@ -17,7 +17,9 @@ class FirewallIngressOpen(BaseResourceCheck):
         self.evaluated_keys = ["inbound_rule"]
         inbound_rules = conf.get("inbound_rule")
         if inbound_rules:
-            for rule in force_list(inbound_rules):
+            for rule in force_list(inbound_rules[0]):
+                if not rule:
+                    continue
                 sources = rule.get("source_addresses")
                 if sources:
                     for idx, source in enumerate(sources[0]):
