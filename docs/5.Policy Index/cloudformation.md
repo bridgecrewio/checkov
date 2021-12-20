@@ -153,6 +153,8 @@ nav_order: 1
 | 142 | CKV_AWS_173 | resource | AWS::Serverless::Function                 | Check encryption settings for Lambda environmental variable                                                                                                                                              | Cloudformation |
 | 143 | CKV_AWS_174 | resource | AWS::CloudFront::Distribution             | Verify CloudFront Distribution Viewer Certificate is using TLS v1.2                                                                                                                                      | Cloudformation |
 | 144 | CKV_AWS_192 | resource | AWS::WAFv2::WebACL                        | Ensure WAF prevents message lookup in Log4j2. See CVE-2021-44228 aka log4jshell                                                                                                                          | Cloudformation |
+| 145 | CKV_AWS_193 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync has Logging enabled                                                                                                                                                                       | Cloudformation |
+| 146 | CKV_AWS_194 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync has Field-Level logs enabled                                                                                                                                                              | Cloudformation |
 
 
 ---
