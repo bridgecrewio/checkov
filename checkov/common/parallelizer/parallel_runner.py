@@ -43,7 +43,7 @@ class ParallelRunner:
                 except EOFError:
                     pass
 
-    def _run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
+    def run_function_multithreaded(self, func: Callable[[Any], Any], items: List[Any]) -> Iterator:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             return executor.map(func, items)
 
