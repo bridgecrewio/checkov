@@ -174,14 +174,12 @@ def get_referenced_vertices_in_value(
             references_vertices += get_referenced_vertices_in_value(
                 sub_value, aliases, resources_types, cleanup_functions
             )
-
-    if isinstance(value, dict):
+    elif isinstance(value, dict):
         for sub_value in value.values():
             references_vertices += get_referenced_vertices_in_value(
                 sub_value, aliases, resources_types, cleanup_functions
             )
-
-    if isinstance(value, str):
+    elif isinstance(value, str):
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(value):
             logging.info(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '

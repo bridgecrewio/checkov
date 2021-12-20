@@ -38,6 +38,7 @@ def _filter_ignored_paths(root, paths, excluded_paths):
 
 class Parser:
     def __init__(self, module_class: Type[Module] = Module):
+        self._module_definitions_cache: dict = {}
         self.module_class = module_class
         self._parsed_directories = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
@@ -68,6 +69,7 @@ class Parser:
         self.module_address_map = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
+        self._module_definitions_cache = {}
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -425,18 +427,21 @@ class Parser:
                             logging.info(f'Got no content for {source}:{version}')
                             continue
 
-                        self._internal_dir_load(directory=content.path(),
-                                                module_loader_registry=module_loader_registry,
-                                                dir_filter=dir_filter, specified_vars=specified_vars,
-                                                module_load_context=module_load_context,
-                                                keys_referenced_as_modules=keys_referenced_as_modules)
+                        if not self._module_definitions_cache.get(content.path()):
+                            self._internal_dir_load(directory=content.path(),
+                                                    module_loader_registry=module_loader_registry,
+                                                    dir_filter=dir_filter, specified_vars=specified_vars,
+                                                    module_load_context=module_load_context,
+                                                    keys_referenced_as_modules=keys_referenced_as_modules)
 
-                        module_definitions = {path: self.out_definitions[path] for path in
-                                              list(self.out_definitions.keys()) if
-                                              os.path.dirname(path) == content.path()}
+                            curr_module_definitions = {path: self.out_definitions[path] for path in
+                                                  list(self.out_definitions.keys()) if
+                                                  os.path.dirname(path) == content.path()}
 
-                        if not module_definitions:
-                            continue
+                            if not curr_module_definitions:
+                                continue
+                            self._module_definitions_cache[content.path()] = curr_module_definitions
+                        module_definitions = deepcopy(self._module_definitions_cache[content.path()])
 
                         # NOTE: Modules are put into the main TF definitions structure "as normal" with the
                         #       notable exception of the file name. For loaded modules referrer information is
