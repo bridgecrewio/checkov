@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AWS_33"
+  name: "Ensure AppSync is protected by WAF"
+  category: "APPLICATION_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - aws_appsync_graphql_api
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      operator: exists
+      resource_types:
+      - aws_appsync_graphql_api
+      connected_resource_types:
+      - aws_wafv2_web_acl_association

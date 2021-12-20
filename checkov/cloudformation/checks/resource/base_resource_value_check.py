@@ -1,5 +1,6 @@
 import re
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Any, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -18,8 +19,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -89,7 +90,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         raise NotImplementedError()
 
-    def get_expected_values(self) -> List[str]:
+    def get_expected_values(self) -> List[Any]:
         """
         Override the method with the list of acceptable values if the check has more than one possible expected value, given
         the inspected key
