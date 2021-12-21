@@ -109,10 +109,15 @@ class Runner(BaseRunner):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
-                entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
+                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
+                if entity_file_path[0] == '/':
+                    path_to_convert = (root_folder + entity_file_path) if root_folder else entity_file_path
+                else:
+                    path_to_convert = (os.path.join(root_folder, entity_file_path)) if root_folder else entity_file_path
+
+                entity_file_abs_path = os.path.abspath(path_to_convert)
                 entity_id = entity.get(CustomAttributes.ID)
-                entity_context = self.context[entity_file_abs_path][entity_id]
+                entity_context = self.context[entity_file_path][entity_id]
 
                 record = Record(
                     check_id=check.id,
