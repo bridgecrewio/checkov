@@ -17,6 +17,7 @@ class AndSolver(BaseComplexSolver):
         return reduce(and_, args)
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
-        if any(not solver.get_operation(vertex) for solver in self.solvers):
-            return False
+        for solver in self.solvers:
+            if not solver.get_operation(vertex):
+                return False
         return True
