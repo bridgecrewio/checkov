@@ -15,8 +15,9 @@ class AndConnectionSolver(ComplexConnectionSolver):
         super().__init__(solvers, operator)
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        subgraph = graph_connector.subgraph([v for v in self.vertices_under_connected_resources_types +
-                                             self.vertices_under_resource_types])
+        if not self.vertices_under_resource_types + self.vertices_under_resource_types:
+            return [], []
+        subgraph = graph_connector.subgraph(graph_connector)
         passed, failed = self.run_attribute_solvers(subgraph)
         failed_ids = [f[CustomAttributes.ID] for f in failed]
         passed = [p for p in passed if p[CustomAttributes.ID] not in failed_ids]
