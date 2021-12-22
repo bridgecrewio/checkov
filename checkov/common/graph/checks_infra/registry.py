@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 from typing import List, Dict, Any
 
@@ -21,16 +22,21 @@ class BaseRegistry:
         self, graph_connector: DiGraph, runner_filter: RunnerFilter
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         check_results = {}
-        for check in self.checks:
-            if not runner_filter.should_run_check(check.id, check.bc_id):
-                continue
-            logging.debug(f'Running graph check: {check.id}')
-            passed, failed = check.run(graph_connector)
-            evaluated_keys = check.get_evaluated_keys()
-            check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
-            check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
-            check_results[check] = check_result
+        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c.id, c.bc_id)]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            concurrent.futures.wait(
+                [executor.submit(self.run_check_parallel, check, check_results, graph_connector)
+                 for check in checks_to_run]
+            )
         return check_results
+
+    def run_check_parallel(self, check, check_results, graph_connector):
+        logging.debug(f'Running graph check: {check.id}')
+        passed, failed = check.run(graph_connector)
+        evaluated_keys = check.get_evaluated_keys()
+        check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
+        check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
+        check_results[check] = check_result
 
     @staticmethod
     def _process_check_result(results, processed_results, result, evaluated_keys) -> List[Dict[str, Any]]:
