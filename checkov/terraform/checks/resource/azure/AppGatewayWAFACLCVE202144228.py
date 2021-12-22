@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AppGatewayWAFACLCVE202144228(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure Application Gateway WAF prevents message lookup in Log4j2. See CVE-2021-44228 aka log4jshell"
-        id = "CKV_AZURE_134"
+        id = "CKV_AZURE_135"
         supported_resources = ("azurerm_web_application_firewall_policy",)
         categories = (CheckCategories.APPLICATION_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
