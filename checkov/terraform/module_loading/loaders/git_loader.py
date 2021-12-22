@@ -75,7 +75,7 @@ class GenericGitLoader(ModuleLoader):
 
         username = re.match(re.compile(r"^(.*?@).*"), root_module)
         if username:
-            root_module = root_module.replace(username[1], "")
+            root_module = root_module.replace(username[1], "") if username[1] != "git@" else root_module
 
         if root_module.endswith(".git"):
             root_module = root_module[:-4]
