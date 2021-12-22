@@ -19,7 +19,7 @@ class SecretManagerSecretEncrypted(BaseResourceCheck):
         if properties:
             kms_key_id = properties.get("KmsKeyId")
             if kms_key_id and aws_kms_alias not in kms_key_id:
-                    return CheckResult.PASSED
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:

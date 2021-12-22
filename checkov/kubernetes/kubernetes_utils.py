@@ -165,7 +165,7 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
                 definitions_context,
                 [file_path, resource_id, "skipped_checks"],
                 skipped_checks,
-                )
+            )
     return definitions_context
 
 
