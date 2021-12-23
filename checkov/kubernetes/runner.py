@@ -50,7 +50,8 @@ class Runner(BaseRunner):
             logging.info("creating kubernetes graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             for vertex in local_graph.vertices:
-                report.add_resource(f'{vertex.path}:{vertex.id}')
+                file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
+                report.add_resource(f'{file_abs_path}:{vertex.id}')
             self.graph_manager.save_graph(local_graph)
             self.definitions = local_graph.definitions
 
@@ -66,13 +67,7 @@ class Runner(BaseRunner):
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
             # The goal here is simply to get a valid path to the file (which sls_file does not always give).
-            if k8_file[0] == '/':
-                path_to_convert = (root_folder + k8_file) if root_folder else k8_file
-            else:
-                path_to_convert = (os.path.join(root_folder, k8_file)) if root_folder else k8_file
-
-            file_abs_path = os.path.abspath(path_to_convert)
-
+            file_abs_path = _get_entity_abs_path(root_folder, k8_file)
             # Run for each definition
             for entity_conf in self.definitions[k8_file]:
                 entity_type = entity_conf.get("kind")
@@ -110,12 +105,7 @@ class Runner(BaseRunner):
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_file_path = entity.get(CustomAttributes.FILE_PATH)
-                if entity_file_path[0] == '/':
-                    path_to_convert = (root_folder + entity_file_path) if root_folder else entity_file_path
-                else:
-                    path_to_convert = (os.path.join(root_folder, entity_file_path)) if root_folder else entity_file_path
-
-                entity_file_abs_path = os.path.abspath(path_to_convert)
+                entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id = entity.get(CustomAttributes.ID)
                 entity_context = self.context[entity_file_path][entity_id]
 
@@ -134,6 +124,14 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+
+def _get_entity_abs_path(root_folder, entity_file_path):
+    if entity_file_path[0] == '/':
+        path_to_convert = (root_folder + entity_file_path) if root_folder else entity_file_path
+    else:
+        path_to_convert = (os.path.join(root_folder, entity_file_path)) if root_folder else entity_file_path
+    return os.path.abspath(path_to_convert)
 
 
 def _get_from_dict(data_dict, map_list):
