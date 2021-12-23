@@ -1,10 +1,9 @@
-import datetime
 import json
 import logging
 import os
 import re
 from copy import deepcopy
-from json import dumps, loads, JSONEncoder
+from json import dumps, loads
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
 
@@ -12,7 +11,6 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -165,7 +163,6 @@ class Parser:
                            dir_filter: Callable[[str], bool],
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
-                           module_load_context: Optional[str] = None,
                            vars_files: Optional[List[str]] = None,
                            root_dir: Optional[str] = None,
                            excluded_paths: Optional[List[str]] = None):
@@ -302,10 +299,8 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
-            has_more_modules = self._load_modules(directory, module_loader_registry,
-                                                  dir_filter, module_load_context,
-                                                  keys_referenced_as_modules,
-                                                  force_final_module_load)
+            has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
+                                                  keys_referenced_as_modules, force_final_module_load)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -335,7 +330,7 @@ class Parser:
             else:
                 files_to_parse.append(file)
 
-        results = parallel_runner.run_function(_load_file, files_to_parse)
+        results = [_load_file(f) for f in files_to_parse]
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
@@ -344,7 +339,7 @@ class Parser:
         return files_to_data
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
-                      dir_filter: Callable[[str], bool], module_load_context: Optional[str],
+                      dir_filter: Callable[[str], bool],
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
@@ -428,7 +423,6 @@ class Parser:
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                module_load_context=module_load_context,
                                                 keys_referenced_as_modules=keys_referenced_as_modules)
 
                         module_definitions = {path: self.out_definitions[path] for path in
