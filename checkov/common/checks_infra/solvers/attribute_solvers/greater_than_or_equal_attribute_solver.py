@@ -9,15 +9,17 @@ class GreaterThanOrEqualAttributeSolver(BaseAttributeSolver):
     operator = Operators.GREATER_THAN_OR_EQUAL
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
-        super().__init__(resource_types=resource_types,
-                         attribute=attribute, value=value)
+        super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
 
-        attr_float = force_float(vertex.get(attribute))
+        vertex_attr = vertex.get(attribute)
+        attr_float = force_float(vertex_attr)
         value_float = force_float(self.value)
 
-        if attr_float and value_float:
+        if vertex_attr is None:
+            return False
+        elif attr_float and value_float:
             return attr_float >= value_float
         else:
-            return str(vertex.get(attribute)) >= str(self.value)
+            return str(vertex_attr) >= str(self.value)

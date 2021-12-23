@@ -200,12 +200,29 @@ class TestRunnerValid(unittest.TestCase):
     def test_no_missing_ids(self):
         runner = Runner()
         unique_checks = set()
+        graph_checks = []
+
+        # python checks
         for registry in list(runner.block_type_registries.values()):
             checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
             for check in checks:
                 unique_checks.add(check.id)
-        aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(aws_checks) + 4):
+
+        # graph checks
+        graph_registry = get_graph_checks_registry("terraform")
+        graph_registry.load_checks()
+        for check in graph_registry.checks:
+            if check.id.startswith("CKV_"):
+                unique_checks.add(check.id)
+            else:
+                graph_checks.append(check)
+
+        aws_checks = sorted(
+            list(filter(lambda check_id: check_id.startswith("CKV_AWS_"), unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(aws_checks) + 7):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -220,33 +237,33 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
-        gcp_checks = sorted(list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(gcp_checks) + 1):
+        gcp_checks = sorted(
+            list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(gcp_checks) + 2):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
                 continue
 
             self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
 
-        azure_checks = sorted(list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(azure_checks) + 1):
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_23':
-                continue  # this rule has been refactored into a v2 graph implementation
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
-                continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
+        azure_checks = sorted(
+            list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(azure_checks) + 4):
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_46':
+                continue  # this rule has been merged into a v2 graph implementation -> CKV_AZURE_24
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
-                continue  # this rule has been refactored into a v2 graph implementation
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
-
-        graph_registry = get_graph_checks_registry("terraform")
-        graph_registry.load_checks()
-        graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
 
         # add cloudformation checks to graph checks
         graph_registry = get_graph_checks_registry("cloudformation")
