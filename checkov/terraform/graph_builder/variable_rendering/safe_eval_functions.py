@@ -9,7 +9,7 @@ from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create
 
 """
 This file contains a custom implementation of the builtin `eval` function.
-`eval` is not a safe function, because it can execute *every* command, 
+`eval` is not a safe function, because it can execute *every* command,
 so this file overrides `eval` and allows only the functions in SAFE_EVAL_DICT.
 
 The functions are an implementation of Terraform's built-in functions

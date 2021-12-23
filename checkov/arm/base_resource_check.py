@@ -13,7 +13,7 @@ class BaseResourceCheck(BaseCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
+        categories: "Iterable[CheckCategories]",
         supported_resources: "Iterable[str]",
         guideline: Optional[str] = None,
     ) -> None:
