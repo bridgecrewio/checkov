@@ -95,38 +95,37 @@ class Runner(BaseRunner):
 
             if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
                 cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
-                if not cf_sub_template.get('Resources'):
-                    continue
-                cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
-                logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
-                cf_context_parser.evaluate_default_refs()
-                for resource_name, resource in cf_sub_template['Resources'].items():
-                    if not isinstance(resource, DictNode):
-                        continue
-                    cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
-                    if not cf_resource_id:
-                        # Not Type attribute for resource
-                        continue
-                    report.add_resource(f'{file_abs_path}:{cf_resource_id}')
-                    entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
-                        resource)
-                    if entity_lines_range and entity_code_lines:
-                        skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                        # TODO - Variable Eval Message!
-                        variable_evaluations = {}
+                if cf_sub_template.get("Resources"):
+                    cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
+                    logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
+                    cf_context_parser.evaluate_default_refs()
+                    for resource_name, resource in cf_sub_template['Resources'].items():
+                        if not isinstance(resource, DictNode):
+                            continue
+                        cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
+                        if not cf_resource_id:
+                            # Not Type attribute for resource
+                            continue
+                        report.add_resource(f'{file_abs_path}:{cf_resource_id}')
+                        entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
+                            resource)
+                        if entity_lines_range and entity_code_lines:
+                            skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
+                            # TODO - Variable Eval Message!
+                            variable_evaluations = {}
 
-                        entity = {resource_name: resource}
-                        results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                        tags = cfn_utils.get_resource_tags(entity, cfn_registry)
-                        for check, check_result in results.items():
-                            record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=sls_file,
-                                            file_line_range=entity_lines_range,
-                                            resource=cf_resource_id, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags)
-                            record.set_guideline(check.guideline)
-                            report.add_record(record=record)
+                            entity = {resource_name: resource}
+                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                            tags = cfn_utils.get_resource_tags(entity, cfn_registry)
+                            for check, check_result in results.items():
+                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                                                code_block=entity_code_lines, file_path=sls_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=cf_resource_id, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                                entity_tags=tags)
+                                record.set_guideline(check.guideline)
+                                report.add_record(record=record)
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
 
