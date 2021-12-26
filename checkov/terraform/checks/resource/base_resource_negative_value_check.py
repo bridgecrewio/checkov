@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Dict, Any, Optional
 
 import dpath
@@ -16,8 +17,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_attribute_result: CheckResult = CheckResult.PASSED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -44,6 +45,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
                 # we don't provide resources_types as we want to stay provider agnostic
                 return CheckResult.UNKNOWN
+            if value is None:
+                return self.missing_attribute_result
             if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED
             else:
