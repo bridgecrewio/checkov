@@ -17,9 +17,9 @@ class TestKubernetesGraphManager(TestGraph):
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
-            os.path.join("/example.yaml"): [
+            os.path.join(root_dir, "example.yaml"): [
                 "Service.default.kafka-hs"],
-            os.path.join("/example_multiple.yaml"): [
+            os.path.join(root_dir, "example_multiple.yaml"): [
                 "PodDisruptionBudget.a.a",
                 "Service.default.a"]
         }
