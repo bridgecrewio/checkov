@@ -1,12 +1,12 @@
 import unittest
 import os
 
-from checkov.terraform.checks.resource.gcp.GKEMetadataServerisEnabled import check
+from checkov.terraform.checks.resource.gcp.GKEMetadataServerIsEnabled import check
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 
 
-class TestGKEMetadataServerisEnabled(unittest.TestCase):
+class TestGKEMetadataServerIsEnabled(unittest.TestCase):
 
     def test(self):
         runner = Runner()
@@ -24,14 +24,15 @@ class TestGKEMetadataServerisEnabled(unittest.TestCase):
         }
         failing_resources = {
             'google_container_cluster.fail',
-            'google_container_node_pool.fail'
+            'google_container_node_pool.fail',
+            'google_container_cluster.empty_mode'
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], 4)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
