@@ -14,9 +14,14 @@ class CloudFrontTLS12(BaseResourceValueCheck):
         if "viewer_certificate" in conf.keys():
             # check if cloudfront_default_certificate is true then this could use less than tls 1.2
             viewer_certificate = conf["viewer_certificate"][0]
+            if 'cloudfront_default_certificate' not in viewer_certificate:
+                if "minimum_protocol_version" in viewer_certificate:
+                    protocol = viewer_certificate["minimum_protocol_version"][0]
+                    if protocol in ['TLSv1.2_2018', 'TLSv1.2_2019', 'TLSv1.2_2021']:
+                        return CheckResult.PASSED
             if 'cloudfront_default_certificate' in viewer_certificate:
                 #is not using the default certificate
-                if viewer_certificate["cloudfront_default_certificate"] is not True:
+                if viewer_certificate["cloudfront_default_certificate"][0] is not True:
                     #these protocol versions
                     if "minimum_protocol_version" in viewer_certificate:
                         protocol=viewer_certificate["minimum_protocol_version"][0]
