@@ -9,6 +9,7 @@ import signal
 from pathlib import Path
 
 import configargparse
+import argcomplete
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -61,6 +62,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                config_file_parser_class=configargparse.YAMLConfigFileParser,
                                add_env_var_help=True)
     add_parser_args(parser)
+    argcomplete.autocomplete(parser)
     config = parser.parse_args(argv)
 
     if config.add_check:

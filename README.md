@@ -103,6 +103,10 @@ or
 brew upgrade checkov
 ```
 
+### Enabling bash autocomplete
+```sh
+source <(register-python-argcomplete checkov)
+```
 ### Upgrade
 
 if you installed checkov with pip3

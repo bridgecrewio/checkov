@@ -53,6 +53,7 @@ setup(
         "dockerfile-parse",
         "docker",
         "configargparse",
+        "argcomplete",
         "detect-secrets",
         "policyuniverse",
         "typing-extensions",
