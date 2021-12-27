@@ -104,9 +104,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_RDSClusterHasBackupPlan(self):
         self.go("RDSClusterHasBackupPlan")
 
-    def test_RedshiftClusterHasBackupPlan(self):
-        self.go("RedshiftClusterHasBackupPlan")
-
     def test_EBSAddedBackup(self):
         self.go("EBSAddedBackup")
 
