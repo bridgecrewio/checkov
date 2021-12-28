@@ -65,6 +65,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
+            if value is None:
+                return self.missing_block_result
             if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or value):
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
