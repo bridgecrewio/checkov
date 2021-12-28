@@ -169,7 +169,7 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
 
 def is_invalid_k8_definition(definition: dict) -> bool:
     return not isinstance(definition, dict) or 'apiVersion' not in definition.keys() or 'kind' not in \
-           definition.keys() or isinstance(definition.get("kind"), int)
+           definition.keys() or isinstance(definition.get("kind"), int) or not isinstance(definition.get('metadata'), dict)
 
 
 def get_resource_id(resource):
