@@ -176,12 +176,17 @@ def test_load_terraform_registry(
             "modules/s3-encrypted",
         ),
     ],
-    ids=["module", "module_with_version",
-         "inner_module", "inner_module_with_version",
-         "module_over_ssh", "module_over_ssh_with_version",
-         "module_over_ssh_without_protocol", "module_over_ssh_without_protocol_with_version",
-         "git_username"
-        ],
+    ids=[
+        "module",
+        "module_with_version",
+        "inner_module",
+        "inner_module_with_version",
+        "module_over_ssh",
+        "module_over_ssh_with_version",
+        "module_over_ssh_without_protocol",
+        "module_over_ssh_without_protocol_with_version",
+        "git_username",
+    ],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_generic_git(

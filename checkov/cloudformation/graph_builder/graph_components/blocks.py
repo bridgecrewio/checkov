@@ -61,8 +61,11 @@ class CloudformationBlock(Block):
     def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
                                          previous_breadcrumbs: List[BreadcrumbMetadata],
                                          attribute_at_dest: Optional[str]):
-        return change_origin_id is not None and attribute_at_dest is not None and \
-               (not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id)
+        return (
+            change_origin_id is not None
+            and attribute_at_dest is not None
+            and (not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id)
+        )
 
     @staticmethod
     def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]):
