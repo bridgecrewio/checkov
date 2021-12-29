@@ -136,7 +136,7 @@ class Runner(BaseRunner):
                         helmBinaryTemplateOutput = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir] + var_files_helm_formatted, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                         o, e = helmBinaryTemplateOutput.communicate()
                         logging.debug(
-                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
                     except Exception as e:
                         logging.info(
@@ -148,7 +148,7 @@ class Runner(BaseRunner):
                         proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                         o, e = proc.communicate()
                         logging.debug(
-                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
                 
                     except Exception as e:
                         logging.info(
