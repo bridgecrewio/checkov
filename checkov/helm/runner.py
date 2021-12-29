@@ -114,8 +114,8 @@ class Runner(BaseRunner):
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             with tempfile.TemporaryDirectory() as target_dir:
                 # dependency list is nicer to parse than dependency update.
-                proc1 = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc1.communicate()
+                helmBinaryListChartDeps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                o, e = helmBinaryListChartDeps.communicate()
                 if e:
                     if "Warning: Dependencies" in str(e, 'utf-8'):
                         logging.info(
@@ -126,19 +126,19 @@ class Runner(BaseRunner):
 
                 self.parse_helm_dependency_output(o)
 
-                if runner_filter.var_files != None:
+                if runner_filter.var_files:
                     var_files_helm_formatted = []
                     for var in runner_filter.var_files:
                         var_files_helm_formatted.append("--values")
                         var_files_helm_formatted.append(var)
                     try:
                         # --dependency-update needed to pull in deps before templating.
-                        proc2 = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir] + var_files_helm_formatted, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                        o, e = proc2.communicate()
+                        helmBinaryTemplateOutput = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir] + var_files_helm_formatted, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                        o, e = helmBinaryTemplateOutput.communicate()
                         logging.debug(
                             f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
-                    except Exception:
+                    except Exception as e:
                         logging.info(
                         f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
@@ -150,7 +150,7 @@ class Runner(BaseRunner):
                         logging.debug(
                             f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
                 
-                    except Exception:
+                    except Exception as e:
                         logging.info(
                         f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
               
