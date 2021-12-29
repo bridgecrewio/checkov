@@ -136,11 +136,11 @@ class Runner(BaseRunner):
                         helmBinaryTemplateOutput = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir] + var_files_helm_formatted, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                         o, e = helmBinaryTemplateOutput.communicate()
                         logging.debug(
-                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
                     except Exception as e:
                         logging.info(
-                        f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
                 else:
                     try:
@@ -148,11 +148,11 @@ class Runner(BaseRunner):
                         proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                         o, e = proc.communicate()
                         logging.debug(
-                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
                 
                     except Exception as e:
                         logging.info(
-                        f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
               
 
                 output = str(o, 'utf-8')
