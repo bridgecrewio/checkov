@@ -41,6 +41,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+    - name: Setup directories
+      run: export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
