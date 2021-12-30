@@ -110,8 +110,8 @@ class Runner(BaseRunner):
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             with tempfile.TemporaryDirectory() as target_dir:
                 # dependency list is nicer to parse than dependency update.
-                proc = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
+                helmBinaryListChartDeps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                o, e = helmBinaryListChartDeps.communicate()
                 if e:
                     if "Warning: Dependencies" in str(e, 'utf-8'):
                         logging.info(
@@ -122,16 +122,34 @@ class Runner(BaseRunner):
 
                 self.parse_helm_dependency_output(o)
 
-                try:
-                    # --dependency-update needed to pull in deps before templating.
-                    proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                    o, e = proc.communicate()
-                    logging.debug(
-                        f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                if runner_filter.var_files:
+                    var_files_helm_formatted = []
+                    for var in runner_filter.var_files:
+                        var_files_helm_formatted.append("--values")
+                        var_files_helm_formatted.append(var)
+                    try:
+                        # --dependency-update needed to pull in deps before templating.
+                        helmBinaryTemplateOutput = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir] + var_files_helm_formatted, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                        o, e = helmBinaryTemplateOutput.communicate()
+                        logging.debug(
+                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
-                except Exception:
-                    logging.info(
-                        f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    except Exception as e:
+                        logging.info(
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+
+                else:
+                    try:
+                        # --dependency-update needed to pull in deps before templating.
+                        proc = subprocess.Popen([self.helm_command, 'template', '--dependency-update', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                        o, e = proc.communicate()
+                        logging.debug(
+                            f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                
+                    except Exception as e:
+                        logging.info(
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+              
 
                 output = str(o, 'utf-8')
                 reader = io.StringIO(output)
