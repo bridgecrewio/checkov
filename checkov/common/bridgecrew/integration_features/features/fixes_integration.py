@@ -19,9 +19,12 @@ class FixesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=10)
         self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
-    def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes \
-               and not self.integration_feature_failures
+    def is_valid(self) -> bool:
+        return (
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_fixes
+            and not self.integration_feature_failures
+        )
 
     def post_runner(self, scan_report):
         try:

@@ -71,7 +71,14 @@ class Runner(BaseRunner):
         'module': module_registry,
     }
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True
+    ) -> Report:
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
@@ -119,7 +126,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def load_external_checks(self, external_checks_dir: List[str]):
+    def load_external_checks(self, external_checks_dir: List[str]) -> None:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)

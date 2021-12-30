@@ -68,7 +68,7 @@ def get_skipped_checks(entity_conf):
             metadata["annotations"] = force_list(metadata["annotations"])
         for annotation in metadata["annotations"]:
             if not isinstance(annotation, dict):
-                logging.debug( f"Parse of Annotation Failed for {annotation}: {entity_conf}")
+                logging.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                 continue
             for key in annotation:
                 skipped_item = {}
