@@ -7,7 +7,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional
+from typing import Optional, Dict
 
 import boto3
 import dpath.util
@@ -346,17 +346,17 @@ class BcPlatformIntegration(object):
             self.get_checkov_mapping_metadata()
         return self.guidelines
 
-    def get_id_mapping(self) -> dict:
+    def get_id_mapping(self) -> Dict[str, str]:
         if not self.bc_id_mapping:
             self.get_checkov_mapping_metadata()
         return self.bc_id_mapping
 
-    def get_ckv_to_bc_id_mapping(self) -> dict:
+    def get_ckv_to_bc_id_mapping(self) -> Dict[str, str]:
         if not self.ckv_to_bc_id_mapping:
             self.get_checkov_mapping_metadata()
         return self.ckv_to_bc_id_mapping
 
-    def get_checkov_mapping_metadata(self) -> Optional[dict]:
+    def get_checkov_mapping_metadata(self) -> None:
         if self.bc_skip_mapping is True:
             logging.debug("Skipped mapping API call")
             self.ckv_to_bc_id_mapping = {}
