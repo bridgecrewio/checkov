@@ -163,7 +163,7 @@ class TestRunnerValid(unittest.TestCase):
         root_dir = current_dir + "/resources"
         runner = Runner()
         report = runner.run(
-            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=RunnerFilter(framework="all")
+            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=RunnerFilter(framework=["all"])
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
@@ -172,8 +172,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertGreaterEqual(report.get_summary()["failed"], 82)
-        self.assertGreaterEqual(report.get_summary()["passed"], 76)
+        self.assertGreaterEqual(report.get_summary()["failed"], 92)
+        self.assertGreaterEqual(report.get_summary()["passed"], 72)
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(len(files_scanned), 6)
