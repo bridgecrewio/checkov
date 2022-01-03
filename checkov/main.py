@@ -316,10 +316,12 @@ def add_parser_args(parser):
                nargs="+")
     parser.add('-c', '--check',
                help='filter scan to run only on a specific check identifier(allowlist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
+                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               env_var='CKV_CHECK')
     parser.add('--skip-check',
                help='filter scan to run on all check but a specific check identifier(denylist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
+                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               env_var='CKV_SKIP_CHECK')
     parser.add('--run-all-external-checks', action='store_true',
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
                     'in the --check list. This allows you to always ensure that new checks present in the external '
