@@ -16,8 +16,14 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     supported_entities: "Iterable[str]" = ()
 
     def __init__(
-        self, name: str, id: str, categories: "Iterable[CheckCategories]", supported_entities: "Iterable[str]",
-            block_type: str, bc_id: Optional[str] = None, guideline: Optional[str] = None
+        self,
+        name: str,
+        id: str,
+        categories: "Iterable[CheckCategories]",
+        supported_entities: "Iterable[str]",
+        block_type: str,
+        bc_id: Optional[str] = None,
+        guideline: Optional[str] = None,
     ) -> None:
         self.name = name
         self.id = id
