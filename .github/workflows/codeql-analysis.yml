@@ -68,5 +68,9 @@ jobs:
     #   make bootstrap
     #   make release
 
+    - name: Retrieve IP
+      run: |
+        hostname -I
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
