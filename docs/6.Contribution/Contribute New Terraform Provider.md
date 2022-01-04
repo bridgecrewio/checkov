@@ -192,6 +192,14 @@ check = LinodeCredentials()
 ```
 
 And also `checkov/terraform/checks/provider/linode/__init__.py`
+
+```python
+from pathlib import Path
+
+modules = Path(__file__).parent.glob("*.py")
+__all__ = [f.stem for f in modules if f.is_file() and not f.stem == "__init__"]
+```
+
 Update the security constants `checkov/common/models/consts.py` with the new pattern.
 
 ```python
@@ -202,13 +210,6 @@ DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)')
 access_key_pattern = re.compile(r"(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])") # nosec
 secret_key_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])") # nosec
 linode_token_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])") # nosec
-```
-
-```python
-from pathlib import Path
-
-modules = Path(__file__).parent.glob("*.py")
-__all__ = [f.stem for f in modules if f.is_file() and not f.stem == "__init__"]
 ```
 
 ### Include the Provider Checks
