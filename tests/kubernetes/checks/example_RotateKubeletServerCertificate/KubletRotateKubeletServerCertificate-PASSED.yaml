@@ -5,7 +5,7 @@ metadata:
   labels:
     component: kubelet
     tier: control-plane
-  name: kubelet
+  name: kubelet-enabled
   namespace: kube-system
 spec:
   containers:
