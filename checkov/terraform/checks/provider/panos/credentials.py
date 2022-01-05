@@ -3,12 +3,12 @@ from typing import Dict, List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
-from checkov.common.models.consts import panos_api_key_pattern
+from checkov.common.models.consts import panos_api_key_pattern, panos_password_pattern
 
 
 class PanosCredentials(BaseProviderCheck):
     def __init__(self) -> None:
-        name = "Ensure no hard coded PAN-OS API keys exist in provider"
+        name = "Ensure no hard coded PAN-OS credentials exist in provider"
         id = "CKV_PAN_1"
         supported_provider = ["panos"]
         categories = [CheckCategories.SECRETS]
@@ -16,6 +16,8 @@ class PanosCredentials(BaseProviderCheck):
 
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if self.secret_found(conf, "api_key", panos_api_key_pattern):
+            return CheckResult.FAILED
+        if self.secret_found(conf, "password", panos_password_pattern):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
