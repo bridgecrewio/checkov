@@ -17,7 +17,7 @@ class TestCredentials(unittest.TestCase):
         scan_result = check.scan_provider_conf(conf=provider_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_failure(self):
+    def test_failure_api(self):
         hcl_res = hcl2.loads(
             """
             provider "panos" {
@@ -29,6 +29,17 @@ class TestCredentials(unittest.TestCase):
         scan_result = check.scan_provider_conf(conf=provider_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_password(self):
+        hcl_res = hcl2.loads(
+            """
+            provider "panos" {
+                password = "changeme123!"
+            }
+            """
+        )
+        provider_conf = hcl_res["provider"][0]["panos"]
+        scan_result = check.scan_provider_conf(conf=provider_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
