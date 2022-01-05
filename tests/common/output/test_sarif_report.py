@@ -41,7 +41,7 @@ class TestSarifReport(unittest.TestCase):
         r = Report("terraform")
         r.add_record(record=record1)
         r.add_record(record=record2)
-        ts = r.get_test_suites()
+        r.get_test_suites()
         json_structure = r.get_sarif_json("")
         print(json.dumps(json_structure))
         self.assertEqual(

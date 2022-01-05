@@ -2,12 +2,15 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple, List, Type
 
 import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
@@ -41,8 +44,15 @@ CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 class Runner(BaseRunner):
     check_type = "terraform"
 
-    def __init__(self, parser=Parser(), db_connector=NetworkxConnector(), external_registries=None,
-                 source="Terraform", graph_class=TerraformLocalGraph, graph_manager=None):
+    def __init__(
+        self,
+        parser: Parser = Parser(),
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        external_registries: Optional[List[BaseRegistry]] = None,
+        source: str = "Terraform",
+        graph_class: Type[LocalGraph] = TerraformLocalGraph,
+        graph_manager: Optional[GraphManager] = None
+    ) -> None:
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser
@@ -61,7 +71,14 @@ class Runner(BaseRunner):
         'module': module_registry,
     }
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True
+    ) -> Report:
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
@@ -97,7 +114,7 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
-            logging.info(f"Scanning root folder using existing tf_definitions")
+            logging.info("Scanning root folder using existing tf_definitions")
 
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
@@ -109,7 +126,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def load_external_checks(self, external_checks_dir: List[str]):
+    def load_external_checks(self, external_checks_dir: List[str]) -> None:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
@@ -247,7 +264,7 @@ class Runner(BaseRunner):
                     if caller_context:
                         caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                 else:
-                    logging.debug(f"Unable to find referrer ID for full path: %s", full_file_path)
+                    logging.debug(f"Unable to find referrer ID for full path: {full_file_path}")
 
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path

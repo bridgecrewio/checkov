@@ -1,0 +1,44 @@
+import unittest
+from pathlib import Path
+
+from checkov.cloudformation.checks.resource.aws.WAFACLCVE202144228 import check
+from checkov.cloudformation.runner import Runner
+from checkov.runner_filter import RunnerFilter
+
+
+class TestWAFACLCVE202144228(unittest.TestCase):
+    def test_summary(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_WAFACLCVE202144228"
+
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "AWS::WAFv2::WebACL.Pass",
+        }
+
+        failing_resources = {
+            "AWS::WAFv2::WebACL.NoRule",
+            "AWS::WAFv2::WebACL.WrongRule",
+            "AWS::WAFv2::WebACL.RuleCount",
+            "AWS::WAFv2::WebACL.RuleGroupCount",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
+    unittest.main()

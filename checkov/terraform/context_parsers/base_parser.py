@@ -22,6 +22,7 @@ class BaseContextParser(ABC):
     tf_file_path: Optional[Path] = None
     file_lines: List[Tuple[int, str]] = []
     filtered_lines: List[Tuple[int, str]] = []
+    filtered_line_numbers: List[int] = []
     context: Dict[str, Any] = {}
 
     def __init__(self, definition_type: str) -> None:
@@ -60,18 +61,19 @@ class BaseContextParser(ABC):
     def _filter_file_lines(self) -> List[Tuple[int, str]]:
         parsed_file_lines = [(ind, self._trim_whitespaces_linebreaks(line)) for (ind, line) in self.file_lines]
         self.filtered_lines = [(ind, line) for (ind, line) in parsed_file_lines if line]
+        self.filtered_line_numbers = [ind for ind, _ in self.filtered_lines]
         return self.filtered_lines
 
     def _read_file_lines(self) -> List[Tuple[int, str]]:
-        with (open(self.tf_file, "r")) as file:
+        with open(self.tf_file, "r") as file:
             file.seek(0)
-            file_lines = [(ind + 1, line) for (ind, line) in list(enumerate(file.readlines()))]
+            file_lines = [(ind + 1, line) for ind, line in enumerate(file.readlines())]
             return file_lines
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
-        line_without_whitespace = "".join(line.split())
-        return 'checkov:skip=' in line_without_whitespace or 'bridgecrew:skip=' in line_without_whitespace
+        line_without_whitespace = line.replace(" ", "")
+        return "checkov:skip=" in line_without_whitespace or "bridgecrew:skip=" in line_without_whitespace
 
     def _collect_skip_comments(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -82,10 +84,6 @@ class BaseContextParser(ABC):
         bc_id_mapping = bc_integration.get_id_mapping()
         ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
         parsed_file_lines = self.filtered_lines
-        optional_comment_lines = [
-            line for line in parsed_file_lines
-            if self.is_optional_comment_line(line[1])
-        ]
         comments = [
             (
                 line_num,
@@ -94,7 +92,8 @@ class BaseContextParser(ABC):
                     "suppress_comment": match.group(3)[1:] if match.group(3) else "No comment provided",
                 },
             )
-            for (line_num, x) in optional_comment_lines
+            for (line_num, x) in parsed_file_lines
+            if self.is_optional_comment_line(x)
             for match in [re.search(COMMENT_REGEX, x)]
             if match
         ]
@@ -125,26 +124,26 @@ class BaseContextParser(ABC):
         return self.context
 
     def _compute_definition_end_line(self, start_line_num: int) -> int:
-        """ Given the code block's start line, compute the block's end line
+        """Given the code block's start line, compute the block's end line
         :param start_line_num: code block's first line number (the signature line)
         :return: the code block's last line number
         """
         parsed_file_lines = self.filtered_lines
-        start_line_idx = [line_num for (line_num, _) in parsed_file_lines].index(start_line_num)
+        start_line_idx = self.filtered_line_numbers.index(start_line_num)
         i = 0
         end_line_num = 0
         for (line_num, line) in islice(parsed_file_lines, start_line_idx, None):
             if OPEN_CURLY in line:
-                i = i + 1
+                i += line.count(OPEN_CURLY)
             if CLOSE_CURLY in line:
-                i = i - 1
+                i -= line.count(CLOSE_CURLY)
                 if i == 0:
                     end_line_num = line_num
                     break
         return end_line_num
 
     def run(
-            self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
+        self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
@@ -165,10 +164,10 @@ class BaseContextParser(ABC):
         return self.definition_type
 
     @staticmethod
-    def _clean_line(line: str):
-        res = line.replace('"', ' ')
+    def _clean_line(line: str) -> str:
+        res = line.replace('"', " ")
         if '"{' in res:
-            res = res.split('{')[0]
+            res = res.split("{")[0]
         return res
 
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -193,7 +192,7 @@ class BaseContextParser(ABC):
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
                     dpath.new(self.context, entity_context_path + ["end_line"], end_line)
                     dpath.new(
-                        self.context, entity_context_path + ["code_lines"], self.file_lines[start_line - 1: end_line]
+                        self.context, entity_context_path + ["code_lines"], self.file_lines[start_line - 1 : end_line]
                     )
                     potential_block_start_lines.remove((line_num, line))
                     break

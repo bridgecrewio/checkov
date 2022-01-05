@@ -1,6 +1,4 @@
-import os
 import unittest
-from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
 
@@ -113,11 +111,11 @@ class TestRunnerFilter(unittest.TestCase):
     
     def test_should_run_omitted_wildcard3(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE*"])
-        self.assertTrue(instance.should_run_check("EXT_CHECK_909")) 
+        self.assertTrue(instance.should_run_check("EXT_CHECK_909"))
 
     def test_should_run_omitted_wildcard4(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE_01"])
-        self.assertFalse(instance.should_run_check("CHECK_AZURE_01"))        
+        self.assertFalse(instance.should_run_check("CHECK_AZURE_01"))
 
 
 if __name__ == '__main__':

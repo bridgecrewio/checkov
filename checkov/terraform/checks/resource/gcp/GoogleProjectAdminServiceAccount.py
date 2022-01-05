@@ -3,8 +3,8 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 import re
 from typing import List
 
-USER_MANAGED_SERVICE_ACCOUNT = re.compile (r'.*@.*\.iam\.gserviceaccount\.com$')
-ADMIN_ROLE = re.compile ('.*(.*Admin|.*admin|editor|owner)')
+USER_MANAGED_SERVICE_ACCOUNT = re.compile(r'.*@.*\.iam\.gserviceaccount\.com$')
+ADMIN_ROLE = re.compile('.*(.*Admin|.*admin|editor|owner)')
 
 
 class GoogleProjectAdminServiceAccount(BaseResourceCheck):

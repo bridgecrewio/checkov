@@ -12,18 +12,20 @@
 name: "CodeQL"
 
 on:
-#   push:
-#     branches: [ master ]
-#   pull_request:
-#     # The branches below must be a subset of the branches above
-#     branches: [ master ]
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
   schedule:
     - cron: '17 4 * * 2'
+  workflow_dispatch:
+
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     permissions:
       actions: read
       contents: read
@@ -65,6 +67,10 @@ jobs:
     #- run: |
     #   make bootstrap
     #   make release
+
+    - name: Retrieve IP
+      run: |
+        hostname -I
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1

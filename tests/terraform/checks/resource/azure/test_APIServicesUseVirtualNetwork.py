@@ -47,7 +47,7 @@ class TestAPIServicesUseVirtualNetwork(unittest.TestCase):
                 
                   sku_name = "Developer_1"
                   virtual_network_configuration {
-                    subnet_id = azure_subnet.subnet_not_public_ip.id 
+                    subnet_id = azure_subnet.subnet_not_public_ip.id
                   }
                   policy {
                     xml_content = <<XML

@@ -14,16 +14,16 @@ class LocalPathLoader(ModuleLoader):
 
     def _is_matching_loader(self) -> bool:
         if (
-                self.module_source.startswith("./") or
-                self.module_source.startswith("../") or
-                self.module_source.startswith(self.current_dir) or
-                self.module_source.startswith("/")
-            ):
+            self.module_source.startswith("./")
+            or self.module_source.startswith("../")
+            or self.module_source.startswith(self.current_dir)
+            or self.module_source.startswith("/")
+        ):
             return True
 
-        if platform.system() == 'Windows':
+        if platform.system() == "Windows":
             logging.debug("Platform: Windows")
-            if re.match("[a-zA-Z]:\\\\", self.module_source):
+            if re.match(re.compile("[a-zA-Z]:\\\\"), self.module_source):
                 return True
 
         return False

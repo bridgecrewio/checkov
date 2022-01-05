@@ -6,8 +6,8 @@ from typing import Tuple, Dict, Any, List
 
 import dpath.util
 
-TF_DEFINITIONS_STRIP_WORDS = r"\b(?!\d)([^\/]+)"
-NON_PATH_WORDS_REGEX = r"\b(?!output)[^ .]+"
+TF_DEFINITIONS_STRIP_WORDS = re.compile(r"\b(?!\d)([^\/]+)")
+NON_PATH_WORDS_REGEX = re.compile(r"\b(?!output)[^ .]+")
 DEFINITION_TYPES_REGEX_MAPPING = {"variable": "var", "locals": "local"}
 
 
@@ -32,18 +32,8 @@ class BaseVariableEvaluation(ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def _generate_evaluation_regex(definition_type: str, var_name: str) -> str:
-        return (
-            r"((?:\$\{)?"
-            + re.escape(DEFINITION_TYPES_REGEX_MAPPING[definition_type])
-            + r"[.]"
-            + re.escape(var_name)
-            + r"(?:\})?)"
-        )
-
-    @staticmethod
     def _is_variable_only_expression(assignment_regex: str, entry_expression: str) -> bool:
-        exact_assignment_regex = r"^" + assignment_regex + r"$"
+        exact_assignment_regex = re.compile(r"^" + assignment_regex + r"$")
         return len(re.findall(exact_assignment_regex, entry_expression)) > 0
 
     @staticmethod

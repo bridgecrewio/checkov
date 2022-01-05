@@ -9,8 +9,7 @@ import signal
 from pathlib import Path
 
 import configargparse
-
-from checkov.common.util.ext_argument_parser import ExtArgumentParser
+import argcomplete
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -63,6 +62,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                config_file_parser_class=configargparse.YAMLConfigFileParser,
                                add_env_var_help=True)
     add_parser_args(parser)
+    argcomplete.autocomplete(parser)
     config = parser.parse_args(argv)
 
     if config.add_check:
@@ -72,7 +72,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
-    if config.output == None:
+    if config.output is None:
         config.output = ['cli']
 
     logger.debug(f'Checkov version: {version}')
@@ -127,7 +127,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             parser.error("--repo-id argument is required when using --bc-api-key")
         elif config.repo_id:
             repo_id_sections = config.repo_id.split('/')
-            if len(repo_id_sections) != 2 or not repo_id_sections[0] or not repo_id_sections[1]:
+            if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
 
@@ -154,7 +154,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         repo_branch=config.branch)
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
-        except Exception as e:
+        except Exception:
             if bc_integration.prisma_url:
                 message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
                           'token and PRISMA_API_URL environment variable and try again. The PRISMA_API_URL value ' \
@@ -316,10 +316,12 @@ def add_parser_args(parser):
                nargs="+")
     parser.add('-c', '--check',
                help='filter scan to run only on a specific check identifier(allowlist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
+                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               env_var='CKV_CHECK')
     parser.add('--skip-check',
                help='filter scan to run on all check but a specific check identifier(denylist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None)
+                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               env_var='CKV_SKIP_CHECK')
     parser.add('--run-all-external-checks', action='store_true',
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
                     'in the --check list. This allows you to always ensure that new checks present in the external '
@@ -351,7 +353,8 @@ def add_parser_args(parser):
     parser.add('--var-file', action='append',
                help='Variable files to load in addition to the default files (see '
                     'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
-                    'Currently only supported for source Terraform (.tf file) scans. Requires using --directory, not --file.')
+                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.' 
+                    'Requires using --directory, not --file.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')

@@ -12,7 +12,7 @@ from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-DOCKER_FILE_MASK = r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$"
+DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
 
 
 class Runner(BaseRunner):
@@ -81,9 +81,7 @@ class Runner(BaseRunner):
                                 file_path=docker_file_path,
                                 file_line_range=[startline + 1,
                                                  endline + 1],
-                                resource="{}.{}".format(docker_file_path,
-                                                        result_instruction,
-                                                        startline),
+                                resource=f"{docker_file_path}.{result_instruction}",
                                 evaluations=None, check_class=check.__class__.__module__,
                                 file_abs_path=file_abs_path, entity_tags=None)
                 record.set_guideline(check.guideline)

@@ -40,7 +40,52 @@ The following frameworks will automatically be disabled due to missing system de
 
 This auto-detection behaviour is to protect existing CI pipelines which pull the latest version of Checkov, which may not have the helm binary available.
 
-# Scan Helm values.yaml files with Checkov
+If you have custom value files, and scanning a Chart (a directory containing a `Chart.yaml` file), you can tell checkov to use your values while creating the kubernetes manifests from the chart, to do this, use the following (for example, scanning a gocd chart directory):
+
+```
+checkov -d ./testdir/gocd --framework helm --var-file ./testdir/gocd.yaml
+```
+
+in the example below, we can see the difference between the default `gocd` version `1.39.4` Helm chart scan, compared to a scan using the following `gocd.yaml` variables file:
+
+
+```
+checkov -d ./testdir/gocd --framework helm --no-guide --quiet --compact -c CKV_K8S_15
+
+helm scan results:
+
+Passed checks: 0, Failed checks: 3, Skipped checks: 0
+
+Check: CKV_K8S_15: "Image Pull Policy should be Always"
+        FAILED for resource: Deployment.default.RELEASE-NAME-gocd-agent
+        File: /gocd/templates/gocd-agent-deployment.yaml:3-46
+
+Check: CKV_K8S_15: "Image Pull Policy should be Always"
+        FAILED for resource: Deployment.default.RELEASE-NAME-gocd-server
+        File: /gocd/templates/gocd-server-deployment.yaml:3-90
+
+Check: CKV_K8S_15: "Image Pull Policy should be Always"
+        FAILED for resource: Pod.default.RELEASE-NAME-gocd-test-ku4xn
+        File: /gocd/templates/tests/gocd-test.yaml:3-44
+```
+
+
+```
+checkov -d ./testdir/gocd --framework helm --no-guide --quiet --compact --var-file ./testdir/gocd.yaml -c CKV_K8S_15
+
+helm scan results:
+
+Passed checks: 2, Failed checks: 1, Skipped checks: 0
+
+Check: CKV_K8S_15: "Image Pull Policy should be Always"
+        FAILED for resource: Pod.default.RELEASE-NAME-gocd-test-o6jdi
+        File: /gocd/templates/tests/gocd-test.yaml:3-44
+
+```
+
+
+# Third party Helm charts
+## Scan Helm values.yaml files without a locally developed chart with Checkov
 
 If you are consuming third party charts, it is unlikley you will have a `Chart.yaml` file for Checkov to auto-detect.
 

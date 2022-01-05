@@ -30,7 +30,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}/{record.file_path}')
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -107,7 +107,7 @@ class TestRunnerValid(unittest.TestCase):
         try:
             runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                                 runner_filter=RunnerFilter(framework='kubernetes'))
-        except:
+        except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def test_wrong_check_imports(self):
@@ -137,7 +137,7 @@ class TestRunnerValid(unittest.TestCase):
                        runner_filter=RunnerFilter(framework='kubernetes'))
             # just check that something was parsed and scanned
             self.assertGreater(len(report.failed_checks) + len(report.passed_checks), 0)
-        except:
+        except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def tearDown(self):

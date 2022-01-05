@@ -1,0 +1,4 @@
+pass:
+  - 'DaemonSet.example-ns.nginx-ingress-controller-2'
+fail:
+  - 'DaemonSet.example-ns.nginx-ingress-controller'

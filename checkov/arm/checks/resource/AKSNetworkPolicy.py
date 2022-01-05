@@ -20,8 +20,7 @@ class AKSNetworkPolicy(BaseResourceCheck):
         if "properties" in conf:
             if "networkProfile" in conf["properties"]:
                 if "networkPolicy" in conf["properties"]["networkProfile"]:
-                    if conf["properties"]["networkProfile"]["networkPolicy"] != "" and \
-                            conf["properties"]["networkProfile"]["networkPolicy"] != None:
+                    if conf["properties"]["networkProfile"]["networkPolicy"]:
                         return CheckResult.PASSED
         return CheckResult.FAILED
 

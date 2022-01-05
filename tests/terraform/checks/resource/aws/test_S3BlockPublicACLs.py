@@ -7,8 +7,8 @@ from checkov.common.models.enums import CheckResult
 class TestS3BlockPublicACLs(unittest.TestCase):
 
     def test_failure(self):
-        resource_conf = {'bucket':['foo'], 
-                        'block_public_acls': [False], 
+        resource_conf = {'bucket':['foo'],
+                        'block_public_acls': [False],
                         'block_public_policy': [True],
                         'ignore_public_acls': [True],
                         'restrict_public_buckets': [True]}
@@ -16,8 +16,8 @@ class TestS3BlockPublicACLs(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success(self):
-        resource_conf = {'bucket':['foo'], 
-                        'block_public_acls': [True], 
+        resource_conf = {'bucket':['foo'],
+                        'block_public_acls': [True],
                         'block_public_policy': [True],
                         'ignore_public_acls': [True],
                         'restrict_public_buckets': [True]}

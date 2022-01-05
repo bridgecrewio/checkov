@@ -2,10 +2,14 @@ import logging
 import operator
 import os
 from functools import reduce
+from typing import Type, Optional, List
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.runners.base_runner import BaseRunner
@@ -19,12 +23,12 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     def __init__(
         self,
-        graph_class=KubernetesLocalGraph,
-        db_connector=NetworkxConnector(),
-        source="Kubernetes",
-        graph_manager=None,
-        external_registries=None
-    ):
+        graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        source: str = "Kubernetes",
+        graph_manager: Optional[GraphManager] = None,
+        external_registries: Optional[List[BaseRegistry]] = None
+    ) -> None:
         self.external_registries = [] if external_registries is None else external_registries
         self.check_type = "kubernetes"
         self.graph_class = graph_class
@@ -50,7 +54,8 @@ class Runner(BaseRunner):
             logging.info("creating kubernetes graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             for vertex in local_graph.vertices:
-                report.add_resource(f'{vertex.path}:{vertex.id}')
+                file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
+                report.add_resource(f'{file_abs_path}:{vertex.id}')
             self.graph_manager.save_graph(local_graph)
             self.definitions = local_graph.definitions
 
@@ -66,13 +71,7 @@ class Runner(BaseRunner):
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
             # The goal here is simply to get a valid path to the file (which sls_file does not always give).
-            if k8_file[0] == '/':
-                path_to_convert = (root_folder + k8_file) if root_folder else k8_file
-            else:
-                path_to_convert = (os.path.join(root_folder, k8_file)) if root_folder else k8_file
-
-            file_abs_path = os.path.abspath(path_to_convert)
-
+            file_abs_path = _get_entity_abs_path(root_folder, k8_file)
             # Run for each definition
             for entity_conf in self.definitions[k8_file]:
                 entity_type = entity_conf.get("kind")
@@ -109,10 +108,10 @@ class Runner(BaseRunner):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
-                entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
+                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id = entity.get(CustomAttributes.ID)
-                entity_context = self.context[entity_file_abs_path][entity_id]
+                entity_context = self.context[entity_file_path][entity_id]
 
                 record = Record(
                     check_id=check.id,
@@ -129,6 +128,14 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+
+def _get_entity_abs_path(root_folder, entity_file_path):
+    if entity_file_path[0] == '/':
+        path_to_convert = (root_folder + entity_file_path) if root_folder else entity_file_path
+    else:
+        path_to_convert = (os.path.join(root_folder, entity_file_path)) if root_folder else entity_file_path
+    return os.path.abspath(path_to_convert)
 
 
 def _get_from_dict(data_dict, map_list):

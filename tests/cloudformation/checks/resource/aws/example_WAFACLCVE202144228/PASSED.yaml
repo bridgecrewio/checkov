@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  Pass:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+      Rules:
+        - Name: rule-1
+          Priority: 1
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+              ExcludedRules:
+                - Name: Host_localhost_HEADER
+                - Name: PROPFIND_METHOD
+                - Name: ExploitablePaths_URIPATH
+          OverrideAction:
+            None: { }
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: false
+            MetricName: AWSManagedRulesKnownBadInputsRuleSet
+            SampledRequestsEnabled: false

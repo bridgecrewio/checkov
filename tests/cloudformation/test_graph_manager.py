@@ -20,10 +20,12 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::S3::Bucket.DataBucket",
                 "AWS::S3::Bucket.NoTags",
                 "AWS::EKS::Nodegroup.EKSClusterNodegroup",
-                "AWS::AutoScaling::AutoScalingGroup.TerraformServerAutoScalingGroup"],
+                "AWS::AutoScaling::AutoScalingGroup.TerraformServerAutoScalingGroup",
+            ],
             os.path.join(root_dir, "cfn_newline_at_end.yaml"): [
                 "AWS::RDS::DBInstance.MyDB",
-                "AWS::S3::Bucket.MyBucket"],
+                "AWS::S3::Bucket.MyBucket",
+            ],
             os.path.join(root_dir, "success.json"): [
                 "AWS::S3::Bucket.acmeCWSBucket",
                 "AWS::S3::Bucket.acmeCWSBucket2",
@@ -39,9 +41,9 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::IAM::Role.acmeCWSSACrossAccountAccessRole",
                 "AWS::EKS::Cluster.eksCluster",
                 "Custom::acmeSnsCustomResource.acmeSnsCustomResource",
-                ],
+            ],
             os.path.join(root_dir, "fail.yaml"): [
-                "AWS::SQS::Queue.UnencryptedQueue"
+                "AWS::SQS::Queue.UnencryptedQueue",
             ]
         }
         self.assertEqual(41, len(local_graph.vertices))

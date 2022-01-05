@@ -6,7 +6,8 @@ class GoogleComputeShieldedVM(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Compute instances are launched with Shielded VM enabled"
         id = "CKV_GCP_39"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_template',
+                               'google_compute_instance_from_template']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -17,7 +18,11 @@ class GoogleComputeShieldedVM(BaseResourceCheck):
         :param conf:
         :return: <checkResult>
         """
-
+        if 'source_instance_template' in conf.keys() and 'shielded_instance_config' not in conf.keys():
+            # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
+            # and shielded_instance_config is not present, then this check cannot FAIL, since we don't know what the
+            # underlying source template looks like.
+            return CheckResult.UNKNOWN
         if 'shielded_instance_config' in conf.keys():
             self.evaluated_keys = ['shielded_instance_config', 'shielded_instance_config/[0]/enable_vtpm',
                                    'shielded_instance_config/[0]/enable_integrity_monitoring']

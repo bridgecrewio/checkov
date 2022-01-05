@@ -19,9 +19,12 @@ class FixesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=10)
         self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
-    def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_fixes \
-               and not self.integration_feature_failures
+    def is_valid(self) -> bool:
+        return (
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_fixes
+            and not self.integration_feature_failures
+        )
 
     def post_runner(self, scan_report):
         try:
@@ -38,14 +41,12 @@ class FixesIntegration(BaseIntegrationFeature):
         # with repo size issues. Because the primary use case for this at the moment is VSCode integration, which
         # runs one file at a time, this can wait.
 
-        sorted_by_file = sorted(scan_report.failed_checks, key=lambda c: c.repo_file_path)
-        for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.repo_file_path):
+        sorted_by_file = sorted(scan_report.failed_checks, key=lambda c: c.file_abs_path)
+        for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.file_abs_path):
             failed_checks = [fc for fc in failed_checks if fc.check_id in self.bc_integration.ckv_to_bc_id_mapping]
             if not failed_checks:
                 continue
-            # file path always starts with /
-            file_abs_path = os.path.abspath(os.path.join(os.getcwd(), file[1:]))
-            with open(file_abs_path, 'r') as reader:
+            with open(file, 'r') as reader:
                 file_contents = reader.read()
 
             fixes = self._get_fixes_for_file(scan_report.check_type, file, file_contents, failed_checks)

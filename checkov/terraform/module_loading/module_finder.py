@@ -49,12 +49,12 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 curr_md = None
                                 continue
 
-                            match = re.match('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"', line)
+                            match = re.match(re.compile('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"'), line)
                             if match:
                                 curr_md.module_link = match.group('LINK')
                                 continue
 
-                            match = re.match('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"', line)
+                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"'), line)
                             if match:
                                 curr_md.version = match.group('VERSION')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
@@ -79,7 +79,10 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                 content = module_loader_registry.load(m.source_dir, m.module_link,
                                                       "latest" if not m.version else m.version)
                 if content is None or not content.loaded():
-                    logging.warning(f'Failed to download module {m.address}')
+                    log_message = f'Failed to download module {m.address}'
+                    if not module_loader_registry.download_external_modules:
+                        log_message += ' (for external modules, the --download-external-modules flag is required)'
+                    logging.warning(log_message)
             except Exception as e:
                 logging.warning(f"Unable to load module ({m.address}): {e}")
 

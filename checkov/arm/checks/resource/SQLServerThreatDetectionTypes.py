@@ -25,7 +25,7 @@ class SQLServerThreatDetectionTypes(BaseResourceCheck):
                                         resource["properties"]["state"].lower() == "enabled":
                                     if "disabledAlerts" in resource["properties"]:
                                         if resource["properties"]["disabledAlerts"] == "" or \
-                                                resource["properties"]["disabledAlerts"] == None:
+                                                resource["properties"]["disabledAlerts"] is None:
                                             return CheckResult.PASSED
                                     else:
                                         return CheckResult.PASSED

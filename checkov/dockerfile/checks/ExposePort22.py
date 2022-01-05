@@ -11,11 +11,11 @@ class ExposePort22(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        i=0
+        i = 0
         for expose_term in conf:
             if "22" in expose_term['value'].split(' '):
                 return CheckResult.FAILED, conf[i]
-            i=i+1
+            i += 1
         return CheckResult.PASSED , None
 
 

@@ -1,10 +1,9 @@
-import datetime
 import json
 import logging
 import os
 import re
 from copy import deepcopy
-from json import dumps, loads, JSONEncoder
+from json import dumps, loads
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
 
@@ -12,7 +11,6 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -42,6 +40,7 @@ class Parser:
         self._parsed_directories = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
+        self.loaded_files_map = {}
 
         # This ensures that we don't try to double-load modules
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
@@ -164,7 +163,6 @@ class Parser:
                            dir_filter: Callable[[str], bool],
                            keys_referenced_as_modules: Set[str],
                            specified_vars: Optional[Mapping[str, str]] = None,
-                           module_load_context: Optional[str] = None,
                            vars_files: Optional[List[str]] = None,
                            root_dir: Optional[str] = None,
                            excluded_paths: Optional[List[str]] = None):
@@ -287,13 +285,6 @@ class Parser:
             var_value_and_file_map.update({k: (v, "manual specification") for k, v in specified_vars.items()})
             self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
 
-        # IMPLEMENTATION NOTE: When resolving `module.` references, access to the entire data map is needed. It
-        #                      may be a little overboard, but I don't want to just pass the entire data map down
-        #                      because it break encapsulations and I don't want to cause confusion about what data
-        #                      set it being processed. To avoid this, here's a Callable that will get the data
-        #                      map for a particular module reference. (Might be OCD, but...)
-        module_data_retrieval = lambda module_ref: self.out_definitions.get(module_ref)
-
         # Stage 4: Load modules
         #          This stage needs to be done in a loop (again... alas, no DAG) because modules might not
         #          be loadable until other modules are loaded. This happens when parameters to one module
@@ -308,10 +299,8 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
-            has_more_modules = self._load_modules(directory, module_loader_registry,
-                                                  dir_filter, module_load_context,
-                                                  keys_referenced_as_modules,
-                                                  force_final_module_load)
+            has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
+                                                  keys_referenced_as_modules, force_final_module_load)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -332,15 +321,25 @@ class Parser:
 
             return (file.path, result), parsing_errors
 
-        results = parallel_runner.run_function(_load_file, files)
         files_to_data = []
+        files_to_parse = []
+        for file in files:
+            data = self.loaded_files_map.get(file.path)
+            if data:
+                files_to_data.append((file.path, data))
+            else:
+                files_to_parse.append(file)
+
+        results = [_load_file(f) for f in files_to_parse]
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
+            if result[0] not in self.loaded_files_map:
+                self.loaded_files_map[result[0]] = result[1]
         return files_to_data
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
-                      dir_filter: Callable[[str], bool], module_load_context: Optional[str],
+                      dir_filter: Callable[[str], bool],
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
@@ -424,7 +423,6 @@ class Parser:
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                module_load_context=module_load_context,
                                                 keys_referenced_as_modules=keys_referenced_as_modules)
 
                         module_definitions = {path: self.out_definitions[path] for path in
@@ -765,7 +763,7 @@ def _remove_module_dependency_in_path(path):
     :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
     :return: only the outer path: dir/main.tf
     """
-    resolved_module_pattern = r'\[.+\#.+\]'
+    resolved_module_pattern = re.compile(r'\[.+\#.+\]')
     if re.findall(resolved_module_pattern, path):
         path = re.sub(resolved_module_pattern, '', path)
     return path
@@ -798,7 +796,7 @@ def is_acceptable_module_param(value: Any) -> bool:
                 return False
         return True
 
-    if not value_type is str:
+    if value_type is not str:
         return True
 
     for vbm in find_var_blocks(value):

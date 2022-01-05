@@ -200,12 +200,29 @@ class TestRunnerValid(unittest.TestCase):
     def test_no_missing_ids(self):
         runner = Runner()
         unique_checks = set()
+        graph_checks = []
+
+        # python checks
         for registry in list(runner.block_type_registries.values()):
             checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
             for check in checks:
                 unique_checks.add(check.id)
-        aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(aws_checks) + 4):
+
+        # graph checks
+        graph_registry = get_graph_checks_registry("terraform")
+        graph_registry.load_checks()
+        for check in graph_registry.checks:
+            if check.id.startswith("CKV_"):
+                unique_checks.add(check.id)
+            else:
+                graph_checks.append(check)
+
+        aws_checks = sorted(
+            list(filter(lambda check_id: check_id.startswith("CKV_AWS_"), unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(aws_checks) + 7):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -220,33 +237,33 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
-        gcp_checks = sorted(list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(gcp_checks) + 1):
+        gcp_checks = sorted(
+            list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(gcp_checks) + 2):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
                 continue
 
             self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
 
-        azure_checks = sorted(list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(azure_checks) + 1):
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_23':
-                continue  # this rule has been refactored into a v2 graph implementation
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
-                continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
+        azure_checks = sorted(
+            list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(azure_checks) + 4):
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_46':
+                continue  # this rule has been merged into a v2 graph implementation -> CKV_AZURE_24
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_119':
-                continue  # this rule has been refactored into a v2 graph implementation
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
-
-        graph_registry = get_graph_checks_registry("terraform")
-        graph_registry.load_checks()
-        graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
 
         # add cloudformation checks to graph checks
         graph_registry = get_graph_checks_registry("cloudformation")
@@ -268,6 +285,9 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(aws_checks) + 1):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_13':
+                # CKV2_AWS_13 is not supported by AWS
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
@@ -476,81 +496,299 @@ class TestRunnerValid(unittest.TestCase):
 
         tf_dir_path = current_dir + "/resources/valid_tf_only_passed_checks"
         external_definitions_context = {
-            f'{current_dir}/resources/valid_tf_only_passed_checks/example.tf': {
-                'resource': {'aws_s3_bucket': {'foo-bucket': {'start_line': 1, 'end_line': 34, 'code_lines': [
-                    (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'), (2, '  region        = var.region\n'),
-                    (3, '  bucket        = local.bucket_name\n'), (4, '  force_destroy = true\n'), (5, '  tags = {\n'),
-                    (6, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'), (7, '  }\n'),
-                    (8, '  versioning {\n'), (9, '    enabled = true\n'), (10, '    mfa_delete = true\n'),
-                    (11, '  }\n'), (12, '  logging {\n'),
-                    (13, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
-                    (14, '    target_prefix = "log/"\n'), (15, '  }\n'),
-                    (16, '  server_side_encryption_configuration {\n'), (17, '    rule {\n'),
-                    (18, '      apply_server_side_encryption_by_default {\n'),
-                    (19, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
-                    (20, '        sse_algorithm     = "aws:kms"\n'), (21, '      }\n'), (22, '    }\n'), (23, '  }\n'),
-                    (24, '  acl           = "private"\n'), (25, '  tags = "${merge\n'), (26, '    (\n'),
-                    (27, '      var.common_tags,\n'), (28, '      map(\n'),
-                    (29, '        "name", "VM Virtual Machine",\n'), (30, '        "group", "foo"\n'),
-                    (31, '      )\n'), (32, '    )\n'), (33, '  }"\n'), (34, '}\n')], 'skipped_checks': []}},
-                             'null_resource': {'example': {'start_line': 36, 'end_line': 46, 'code_lines': [
-                                 (36, 'resource "null_resource" "example" {\n'), (37, '  tags = "${merge\n'),
-                                 (38, '(\n'), (39, 'var.common_tags,\n'), (40, 'map(\n'),
-                                 (41, '"name", "VM Base Post Provisioning Library",\n'), (42, '"group", "aut",\n'),
-                                 (43, '"dependency", "${var.input_dependency_value}")\n'), (44, ')\n'), (45, '}"\n'),
-                                 (46, '}\n')], 'skipped_checks': []}}}, 'data': {'aws_caller_identity': {
-                    'current': {'start_line': 47, 'end_line': 0, 'code_lines': [], 'skipped_checks': []}}},
-                'provider': {'kubernetes': {'default': {'start_line': 49, 'end_line': 55,
-                                                        'code_lines': [(49, 'provider "kubernetes" {\n'),
-                                                                       (50, '  version                = "1.10.0"\n'), (
-                                                                           51,
-                                                                           '  host                   = module.aks_cluster.kube_config.0.host\n'),
-                                                                       (52,
-                                                                        '  client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n'),
-                                                                       (53,
-                                                                        'client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n'),
-                                                                       (54,
-                                                                        'cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n'),
-                                                                       (55, '}\n')], 'skipped_checks': []}}},
-                'module': {'module': {'new_relic': {'start_line': 57, 'end_line': 67,
-                                                    'code_lines': [(57, 'module "new_relic" {\n'), (58,
-                                                                                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n'),
-                                                                   (59,
-                                                                    'kubernetes_host                   = module.aks_cluster.kube_config.0.host\n'),
-                                                                   (60,
-                                                                    'kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n'),
-                                                                   (61,
-                                                                    'kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n'),
-                                                                   (62,
-                                                                    'kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n'),
-                                                                   (63,
-                                                                    'cluster_name                      = module.naming_conventions.aks_name\n'),
-                                                                   (64,
-                                                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n'),
-                                                                   (65,
-                                                                    'cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n'),
-                                                                   (66,
-                                                                    'module_depends_on                 = [null_resource.delay_aks_deployments]\n'),
-                                                                   (67, '}')], 'skipped_checks': []}}}},
-            f'{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf': {
-                'resource': {'aws_s3_bucket': {'foo-bucket': {'start_line': 1, 'end_line': 26, 'code_lines': [
-                    (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'), (2, '  region        = var.region\n'),
-                    (3, '  bucket        = local.bucket_name\n'), (4, '  force_destroy = true\n'),
-                    (5, '  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n'),
-                    (6, '  #bridgecrew:skip=CKV_AWS_52: foo\n'), (7, '  tags = {\n'),
-                    (8, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'), (9, '  }\n'),
-                    (10, '  versioning {\n'), (11, '    enabled = true\n'), (12, '  }\n'), (13, '  logging {\n'),
-                    (14, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
-                    (15, '    target_prefix = "log/"\n'), (16, '  }\n'),
-                    (17, '  server_side_encryption_configuration {\n'), (18, '    rule {\n'),
-                    (19, '      apply_server_side_encryption_by_default {\n'),
-                    (20, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
-                    (21, '        sse_algorithm     = "aws:kms"\n'), (22, '      }\n'), (23, '    }\n'), (24, '  }\n'),
-                    (25, '  acl           = "public-read"\n'), (26, '}\n')], 'skipped_checks': [
-                    {'id': 'CKV_AWS_20', 'suppress_comment': 'The bucket is a public static content host'},
-                    {'id': 'CKV_AWS_52', 'suppress_comment': ' foo'}]}}}, 'data': {'aws_caller_identity': {
-                    'current': {'start_line': 27, 'end_line': 0, 'code_lines': [], 'skipped_checks': []}}}}}
-        tf_definitions = {'/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf': {'resource': [{'aws_s3_bucket': {'foo-bucket': {'region': ['${var.region}'], 'bucket': ['${local.bucket_name}'], 'force_destroy': [True], 'versioning': [{'enabled': [True], 'mfa_delete': [True]}], 'logging': [{'target_bucket': ['${aws_s3_bucket.log_bucket.id}'], 'target_prefix': ['log/']}], 'server_side_encryption_configuration': [{'rule': [{'apply_server_side_encryption_by_default': [{'kms_master_key_id': ['${aws_kms_key.mykey.arn}'], 'sse_algorithm': ['aws:kms']}]}]}], 'acl': ['private'], 'tags': ['${merge\n    (\n      var.common_tags,\n      map(\n        "name", "VM Virtual Machine",\n        "group", "foo"\n      )\n    )\n  }']}}}], 'data': [{'aws_caller_identity': {'current': {}}}], 'provider': [{'kubernetes': {'version': ['1.10.0'], 'host': ['${module.aks_cluster.kube_config[0].host}'], 'client_certificate': ['${base64decode(module.aks_cluster.kube_config[0].client_certificate)}'], 'client_key': ['${base64decode(module.aks_cluster.kube_config[0].client_key)}'], 'cluster_ca_certificate': ['${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}']}}], 'module': [{'new_relic': {'source': ['s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip'], 'kubernetes_host': ['${module.aks_cluster.kube_config[0].host}'], 'kubernetes_client_certificate': ['${base64decode(module.aks_cluster.kube_config[0].client_certificate)}'], 'kubernetes_client_key': ['${base64decode(module.aks_cluster.kube_config[0].client_key)}'], 'kubernetes_cluster_ca_certificate': ['${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}'], 'cluster_name': ['${module.naming_conventions.aks_name}'], 'new_relic_license': ['${data.vault_generic_secret.new_relic_license.data["license"]}'], 'cluster_ca_bundle_b64': ['${module.aks_cluster.kube_config[0].cluster_ca_certificate}'], 'module_depends_on': [['${null_resource.delay_aks_deployments}']]}}]}, '/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf': {'resource': [{'aws_s3_bucket': {'foo-bucket': {'region': ['${var.region}'], 'bucket': ['${local.bucket_name}'], 'force_destroy': [True], 'tags': [{'Name': 'foo-${data.aws_caller_identity.current.account_id}'}], 'versioning': [{'enabled': [True]}], 'logging': [{'target_bucket': ['${aws_s3_bucket.log_bucket.id}'], 'target_prefix': ['log/']}], 'server_side_encryption_configuration': [{'rule': [{'apply_server_side_encryption_by_default': [{'kms_master_key_id': ['${aws_kms_key.mykey.arn}'], 'sse_algorithm': ['aws:kms']}]}]}], 'acl': ['public-read']}}}], 'data': [{'aws_caller_identity': {'current': {}}}]}}
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example.tf": {
+                "resource": {
+                    "aws_s3_bucket": {
+                        "foo-bucket": {
+                            "start_line": 1,
+                            "end_line": 34,
+                            "code_lines": [
+                                (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'),
+                                (2, "  region        = var.region\n"),
+                                (3, "  bucket        = local.bucket_name\n"),
+                                (4, "  force_destroy = true\n"),
+                                (5, "  tags = {\n"),
+                                (6, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'),
+                                (7, "  }\n"),
+                                (8, "  versioning {\n"),
+                                (9, "    enabled = true\n"),
+                                (10, "    mfa_delete = true\n"),
+                                (11, "  }\n"),
+                                (12, "  logging {\n"),
+                                (13, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
+                                (14, '    target_prefix = "log/"\n'),
+                                (15, "  }\n"),
+                                (16, "  server_side_encryption_configuration {\n"),
+                                (17, "    rule {\n"),
+                                (18, "      apply_server_side_encryption_by_default {\n"),
+                                (19, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
+                                (20, '        sse_algorithm     = "aws:kms"\n'),
+                                (21, "      }\n"),
+                                (22, "    }\n"),
+                                (23, "  }\n"),
+                                (24, '  acl           = "private"\n'),
+                                (25, '  tags = "${merge\n'),
+                                (26, "    (\n"),
+                                (27, "      var.common_tags,\n"),
+                                (28, "      map(\n"),
+                                (29, '        "name", "VM Virtual Machine",\n'),
+                                (30, '        "group", "foo"\n'),
+                                (31, "      )\n"),
+                                (32, "    )\n"),
+                                (33, '  }"\n'),
+                                (34, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    },
+                    "null_resource": {
+                        "example": {
+                            "start_line": 36,
+                            "end_line": 46,
+                            "code_lines": [
+                                (36, 'resource "null_resource" "example" {\n'),
+                                (37, '  tags = "${merge\n'),
+                                (38, "(\n"),
+                                (39, "var.common_tags,\n"),
+                                (40, "map(\n"),
+                                (41, '"name", "VM Base Post Provisioning Library",\n'),
+                                (42, '"group", "aut",\n'),
+                                (43, '"dependency", "${var.input_dependency_value}")\n'),
+                                (44, ")\n"),
+                                (45, '}"\n'),
+                                (46, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    },
+                },
+                "data": {
+                    "aws_caller_identity": {
+                        "current": {"start_line": 47, "end_line": 0, "code_lines": [], "skipped_checks": []}
+                    }
+                },
+                "provider": {
+                    "kubernetes": {
+                        "default": {
+                            "start_line": 49,
+                            "end_line": 55,
+                            "code_lines": [
+                                (49, 'provider "kubernetes" {\n'),
+                                (50, '  version                = "1.10.0"\n'),
+                                (51, "  host                   = module.aks_cluster.kube_config.0.host\n"),
+                                (
+                                    52,
+                                    "  client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                                ),
+                                (
+                                    53,
+                                    "client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                                ),
+                                (
+                                    54,
+                                    "cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                                ),
+                                (55, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    }
+                },
+                "module": {
+                    "module": {
+                        "new_relic": {
+                            "start_line": 57,
+                            "end_line": 67,
+                            "code_lines": [
+                                (57, 'module "new_relic" {\n'),
+                                (
+                                    58,
+                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
+                                ),
+                                (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
+                                (
+                                    60,
+                                    "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                                ),
+                                (
+                                    61,
+                                    "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                                ),
+                                (
+                                    62,
+                                    "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                                ),
+                                (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
+                                (
+                                    64,
+                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
+                                ),
+                                (
+                                    65,
+                                    "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
+                                ),
+                                (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
+                                (67, "}"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    }
+                },
+            },
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+                "resource": {
+                    "aws_s3_bucket": {
+                        "foo-bucket": {
+                            "start_line": 1,
+                            "end_line": 26,
+                            "code_lines": [
+                                (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'),
+                                (2, "  region        = var.region\n"),
+                                (3, "  bucket        = local.bucket_name\n"),
+                                (4, "  force_destroy = true\n"),
+                                (5, "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"),
+                                (6, "  #bridgecrew:skip=CKV_AWS_52: foo\n"),
+                                (7, "  tags = {\n"),
+                                (8, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'),
+                                (9, "  }\n"),
+                                (10, "  versioning {\n"),
+                                (11, "    enabled = true\n"),
+                                (12, "  }\n"),
+                                (13, "  logging {\n"),
+                                (14, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
+                                (15, '    target_prefix = "log/"\n'),
+                                (16, "  }\n"),
+                                (17, "  server_side_encryption_configuration {\n"),
+                                (18, "    rule {\n"),
+                                (19, "      apply_server_side_encryption_by_default {\n"),
+                                (20, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
+                                (21, '        sse_algorithm     = "aws:kms"\n'),
+                                (22, "      }\n"),
+                                (23, "    }\n"),
+                                (24, "  }\n"),
+                                (25, '  acl           = "public-read"\n'),
+                                (26, "}\n"),
+                            ],
+                            "skipped_checks": [
+                                {"id": "CKV_AWS_20", "suppress_comment": "The bucket is a public static content host"},
+                                {"id": "CKV_AWS_52", "suppress_comment": " foo"},
+                            ],
+                        }
+                    }
+                },
+                "data": {
+                    "aws_caller_identity": {
+                        "current": {"start_line": 27, "end_line": 0, "code_lines": [], "skipped_checks": []}
+                    }
+                },
+            },
+        }
+        tf_definitions = {
+            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf": {
+                "resource": [
+                    {
+                        "aws_s3_bucket": {
+                            "foo-bucket": {
+                                "region": ["${var.region}"],
+                                "bucket": ["${local.bucket_name}"],
+                                "force_destroy": [True],
+                                "versioning": [{"enabled": [True], "mfa_delete": [True]}],
+                                "logging": [
+                                    {"target_bucket": ["${aws_s3_bucket.log_bucket.id}"], "target_prefix": ["log/"]}
+                                ],
+                                "server_side_encryption_configuration": [
+                                    {
+                                        "rule": [
+                                            {
+                                                "apply_server_side_encryption_by_default": [
+                                                    {
+                                                        "kms_master_key_id": ["${aws_kms_key.mykey.arn}"],
+                                                        "sse_algorithm": ["aws:kms"],
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "acl": ["private"],
+                                "tags": [
+                                    '${merge\n    (\n      var.common_tags,\n      map(\n        "name", "VM Virtual Machine",\n        "group", "foo"\n      )\n    )\n  }'
+                                ],
+                            }
+                        }
+                    }
+                ],
+                "data": [{"aws_caller_identity": {"current": {}}}],
+                "provider": [
+                    {
+                        "kubernetes": {
+                            "version": ["1.10.0"],
+                            "host": ["${module.aks_cluster.kube_config[0].host}"],
+                            "client_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].client_certificate)}"
+                            ],
+                            "client_key": ["${base64decode(module.aks_cluster.kube_config[0].client_key)}"],
+                            "cluster_ca_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}"
+                            ],
+                        }
+                    }
+                ],
+                "module": [
+                    {
+                        "new_relic": {
+                            "source": ["s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"],
+                            "kubernetes_host": ["${module.aks_cluster.kube_config[0].host}"],
+                            "kubernetes_client_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].client_certificate)}"
+                            ],
+                            "kubernetes_client_key": ["${base64decode(module.aks_cluster.kube_config[0].client_key)}"],
+                            "kubernetes_cluster_ca_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}"
+                            ],
+                            "cluster_name": ["${module.naming_conventions.aks_name}"],
+                            "new_relic_license": ['${data.vault_generic_secret.new_relic_license.data["license"]}'],
+                            "cluster_ca_bundle_b64": ["${module.aks_cluster.kube_config[0].cluster_ca_certificate}"],
+                            "module_depends_on": [["${null_resource.delay_aks_deployments}"]],
+                        }
+                    }
+                ],
+            },
+            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+                "resource": [
+                    {
+                        "aws_s3_bucket": {
+                            "foo-bucket": {
+                                "region": ["${var.region}"],
+                                "bucket": ["${local.bucket_name}"],
+                                "force_destroy": [True],
+                                "tags": [{"Name": "foo-${data.aws_caller_identity.current.account_id}"}],
+                                "versioning": [{"enabled": [True]}],
+                                "logging": [
+                                    {"target_bucket": ["${aws_s3_bucket.log_bucket.id}"], "target_prefix": ["log/"]}
+                                ],
+                                "server_side_encryption_configuration": [
+                                    {
+                                        "rule": [
+                                            {
+                                                "apply_server_side_encryption_by_default": [
+                                                    {
+                                                        "kms_master_key_id": ["${aws_kms_key.mykey.arn}"],
+                                                        "sse_algorithm": ["aws:kms"],
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "acl": ["public-read"],
+                            }
+                        }
+                    }
+                ],
+                "data": [{"aws_caller_identity": {"current": {}}}],
+            },
+        }
         runner = Runner()
         parser = Parser()
         runner.definitions = tf_definitions
@@ -864,13 +1102,13 @@ class TestRunnerValid(unittest.TestCase):
         entity_context, entity_evaluations = runner.get_entity_context_and_evaluations(entity_with_non_found_path)
 
         assert entity_context is not None
-        assert entity_context['start_line'] == 1 and entity_context['end_line']==7
+        assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
         entity_with_found_path = {'block_name_': 'aws_vpc.main', 'block_type_': 'resource', 'file_path_': '/mock/os/terraform-aws-vpc/aws_vpc.main.tf[/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf#0]', 'config_': {'aws_vpc': {'main': {'cidr_block': ['10.0.0.0/21'], 'enable_dns_hostnames': [True], 'enable_dns_support': [True], 'tags': ["merge([],tomap({'Name':'upper(test)'}))"]}}}, 'label_': 'BlockType.RESOURCE: aws_vpc.main', 'id_': 'aws_vpc.main', 'source_': 'Terraform', 'cidr_block': '10.0.0.0/21', 'enable_dns_hostnames': True, 'enable_dns_support': True, 'tags': "merge([],tomap({'Name':'upper(test)'}))", 'resource_type': 'aws_vpc', 'rendering_breadcrumbs_': {'cidr_block': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf', 'module_connection': False}, {'type': 'variable', 'name': 'cidr', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'public_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'public_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'output', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/outputs.tf', 'module_connection': False}], 'source_module_': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf'}], 'tags': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf', 'module_connection': False}, {'type': 'variable', 'name': 'account_name', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'tags', 'path': '/mock/os/terraform-aws-vpc/aws_vpc.main.tf', 'module_connection': False}]}, 'hash': 'bac3bb7d21610be9ad786c1e9b5a2b3f6f13e60699fa935b32bb1f9f10a792e4'}
         entity_context, entity_evaluations = runner.get_entity_context_and_evaluations(entity_with_found_path)
 
         assert entity_context is not None
-        assert entity_context['start_line'] == 1 and entity_context['end_line']==7
+        assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(

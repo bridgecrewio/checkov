@@ -21,7 +21,7 @@ class AllowPrivilegeEscalation(BaseK8sContainerCheck):
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["securityContext/allowPrivilegeEscalation"]
         if conf.get("securityContext"):
-            if conf["securityContext"].get("allowPrivilegeEscalation") == False:
+            if conf["securityContext"].get("allowPrivilegeEscalation") is False:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

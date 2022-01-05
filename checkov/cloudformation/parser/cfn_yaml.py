@@ -3,6 +3,10 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
+from enum import Enum
+from pathlib import Path
+from typing import List, Tuple
+
 from yaml import MappingNode
 from yaml import ScalarNode
 from yaml import SequenceNode
@@ -28,6 +32,10 @@ UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
 FN_PREFIX = 'Fn::'
 
 LOGGER = logging.getLogger(__name__)
+
+class ContentType(str, Enum):
+    CFN = "CFN"
+    SLS = "SLS"
 
 
 class CfnParseError(ConstructorError):
@@ -199,17 +207,19 @@ def loads(yaml_string, fname=None):
     return template
 
 
-def load(filename):
+def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tuple[int, str]]]:
     """
     Load the given YAML file
     """
 
-    content = ''
+    file_path = filename if isinstance(filename, Path) else Path(filename)
+    content = file_path.read_text()
 
-    with open(filename) as fp:
-        content = fp.read()
-        fp.seek(0)
-        file_lines = [(ind + 1, line) for (ind, line) in
-                      list(enumerate(fp.readlines()))]
+    if content_type == ContentType.CFN and "Resources" not in content:
+        return {}, []
+    elif content_type == ContentType.SLS and "provider" not in content:
+        return {}, []
+
+    file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     return (loads(content, filename), file_lines)

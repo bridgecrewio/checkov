@@ -52,10 +52,10 @@ class RootContainers(BaseK8Check):
 
             # Evaluate pass / fail
             # Container values override Pod values
-                # Pod runAsNonRoot == True, plus no override at container spec   (PASSED)
-                # Pod runAsNonRoot == True, but container runAsNonRoot == False
-                #                     If runAsUser failed or absent (FAILED)
-                #                     if runAsUser passed, the check will pass (but don't want to pass one container if another fails)
+            # Pod runAsNonRoot == True, plus no override at container spec   (PASSED)
+            # Pod runAsNonRoot == True, but container runAsNonRoot == False
+            #                     If runAsUser failed or absent (FAILED)
+            #                     if runAsUser passed, the check will pass (but don't want to pass one container if another fails)
             if results["pod"]["runAsNonRoot"] == "PASSED":
                 for cr in results["container"]:
                     if cr["runAsNonRoot"] == "FAILED":
@@ -64,16 +64,16 @@ class RootContainers(BaseK8Check):
                 return CheckResult.PASSED
             elif results["pod"]["runAsUser"] == "PASSED":
                 # Pod runAsNonRoot == False (or absent) ; Pod runAsUser > 0 (PASSED)
-                    # If container runAsUser FAILED, then overall fail as it overrides pod (FAILED)
+                # If container runAsUser FAILED, then overall fail as it overrides pod (FAILED)
                 for cr in results["container"]:
                     if cr["runAsUser"] == "FAILED":
                         return CheckResult.FAILED
                 return CheckResult.PASSED
             else:
                 # Pod runAsNonRoot and runAsUser failed or absent
-                    #   If container runAsNonRoot true (PASSED)
-                    #   If container runAsNonRoot failed or absent, but runAsUser passed (PASSED)
-                    #   If container runAsNonRoot failed or absent, but runAsUser failed/absent (FAILED)
+                #   If container runAsNonRoot true (PASSED)
+                #   If container runAsNonRoot failed or absent, but runAsUser passed (PASSED)
+                #   If container runAsNonRoot failed or absent, but runAsUser failed/absent (FAILED)
                 for cr in results["container"]:
 
                     if cr["runAsNonRoot"] == "PASSED":

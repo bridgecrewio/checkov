@@ -13,7 +13,7 @@ class BaseK8Check(BaseCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
+        categories: "Iterable[CheckCategories]",
         supported_entities: "Iterable[str]",
         guideline: Optional[str] = None,
     ) -> None:

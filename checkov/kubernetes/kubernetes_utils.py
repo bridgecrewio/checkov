@@ -21,7 +21,6 @@ def get_folder_definitions(
         root_folder: str, excluded_paths: Optional[List[str]]
 ) -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
-    filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
         filter_ignored_paths(root, f_names, excluded_paths)
@@ -33,10 +32,10 @@ def get_folder_definitions(
                 if "/." not in full_path and file not in ['package.json', 'package-lock.json']:
                     # skip temp directories
                     files_list.append(full_path)
-    return get_files_definitions(files_list, filepath_fn)
+    return get_files_definitions(files_list)
 
 
-def get_files_definitions(files: List[str], filepath_fn=None) \
+def get_files_definitions(files: List[str]) \
         -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
     def _parse_file(filename):
         try:
@@ -49,9 +48,8 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
     results = parallel_runner.run_function(_parse_file, files)
     for result in results:
         if result:
-            (file, parse_result) = result
+            (path, parse_result) = result
             if parse_result:
-                path = filepath_fn(file) if filepath_fn else file
                 (definitions[path], definitions_raw[path]) = parse_result
     return definitions, definitions_raw
 
@@ -70,7 +68,7 @@ def get_skipped_checks(entity_conf):
             metadata["annotations"] = force_list(metadata["annotations"])
         for annotation in metadata["annotations"]:
             if not isinstance(annotation, dict):
-                logging.debug( f"Parse of Annotation Failed for {annotation}: {entity_conf}")
+                logging.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                 continue
             for key in annotation:
                 skipped_item = {}
@@ -90,7 +88,7 @@ def get_skipped_checks(entity_conf):
                             skipped_item["bc_id"] = ckv_to_bc_id_mapping.get(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
-                        logging.debug("Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf, indent=2))
+                        logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                         continue
     return skipped
 
@@ -165,18 +163,18 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
                 definitions_context,
                 [file_path, resource_id, "skipped_checks"],
                 skipped_checks,
-                )
+            )
     return definitions_context
 
 
 def is_invalid_k8_definition(definition: dict) -> bool:
     return not isinstance(definition, dict) or 'apiVersion' not in definition.keys() or 'kind' not in \
-           definition.keys() or isinstance(definition.get("kind"), int)
+           definition.keys() or isinstance(definition.get("kind"), int) or not isinstance(definition.get('metadata'), dict)
 
 
 def get_resource_id(resource):
     resource_type = resource["kind"]
-    metadata = resource.get("metadata", {})
+    metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")
     name = metadata.get("name")
     if not name:

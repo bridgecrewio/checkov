@@ -19,7 +19,7 @@ class GlueDataCatalogEncryption(BaseResourceCheck):
                 if 'ConnectionPasswordEncryption' in dc_enc_settings.keys():
                     con_pass_enc = dc_enc_settings['ConnectionPasswordEncryption']
                     if 'ReturnConnectionPasswordEncrypted' in con_pass_enc.keys():
-                        if con_pass_enc['ReturnConnectionPasswordEncrypted'] == True:
+                        if con_pass_enc['ReturnConnectionPasswordEncrypted'] is True:
                             connection_encrypted = True
 
                 if 'EncryptionAtRest' in dc_enc_settings.keys():
@@ -30,7 +30,7 @@ class GlueDataCatalogEncryption(BaseResourceCheck):
 
         if connection_encrypted and encrypted_at_rest:
             return CheckResult.PASSED
-        
+
         return CheckResult.FAILED
 
 

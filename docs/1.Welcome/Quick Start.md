@@ -167,7 +167,7 @@ You can integrate Checkov with:
 * [Jenkins](https://www.checkov.io/4.Integrations/Jenkins.html)
 * [Bitbucket Cloud Pipelines](https://www.checkov.io/4.Integrations/Bitbucket%20Cloud%20Pipelines.html)
 * [GitHub Actions](https://www.checkov.io/4.Integrations/GitHub%20Actions.html)
-* [GitLab CLI](https://www.checkov.io/4.Integrations/GitLab%20CLI.html)
+* [GitLab CI](https://www.checkov.io/4.Integrations/GitLab%20CI.html)
 * [Kubernetes](https://www.checkov.io/4.Integrations/Kubernetes.html)
 * [Pre-Commit](https://www.checkov.io/4.Integrations/pre-commit.html)
 * [Docker](https://www.checkov.io/4.Integrations/Docker.html)

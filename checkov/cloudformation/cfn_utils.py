@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Union
@@ -35,7 +34,7 @@ def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_
             tags = properties.get("Tags")
             if tags:
                 return parse_entity_tags(tags)
-    except:
+    except Exception:
         logging.warning(f"Failed to parse tags for entity {entity}")
 
     return None

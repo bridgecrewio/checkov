@@ -42,7 +42,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             if violations:
                                 logging.debug("detailed cloudsplaining finding: {}",json.dumps(violations))
                                 return CheckResult.FAILED
-                    except Exception as e:
+                    except Exception:
                         # this might occur with templated iam policies where ARN is not in place or similar
                         logging.debug("could not run cloudsplaining analysis on policy {}", conf)
                         return CheckResult.UNKNOWN

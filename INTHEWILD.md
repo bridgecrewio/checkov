@@ -17,4 +17,3 @@ Please send a PR with your company name and @githubhandle.
 1. [Madhu Akula](https://madhuakula.com/) [[@madhuakula](https://github.com/madhuakula)]
 1. [Royal Vopak N.V.](https://vopak.com/) [[@xmariopereira](https://github.com/xmariopereira)]
 1. [Punk Security (UK)](https://punksecurity.co.uk/) [[@punksecurity](https://github.com/punk-security)]
-

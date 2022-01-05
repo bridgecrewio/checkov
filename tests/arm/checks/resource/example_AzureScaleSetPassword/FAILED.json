@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "default",
+      "location": "East US 2",
+      "apiVersion": "2021-07-01",
+      "zones": [
+        "1"
+      ],
+      "sku": {
+        "name": "Standard_A1",
+        "capacity": "2"
+      },
+      "properties": {
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "UbuntuServer",
+              "sku": "16.04-LTS",
+              "version": "latest"
+            }
+          },
+          "osProfile": {
+            "linuxConfiguration": {
+              "computerNamePrefix": "myvmss",
+              "adminUsername": "azureuser",
+              "adminPassword": "P@ssw0rd!"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

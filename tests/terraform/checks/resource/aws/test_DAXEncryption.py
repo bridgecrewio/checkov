@@ -1,39 +1,42 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.DAXEncryption import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestDAXEncryption(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_DAXEncryption"
 
-    def test_failure(self):
-        resource_conf =  {
-		      "cluster_name": "${var.cluster_name}",
-              "iam_role_arn": "${var.iam_role_arn}",
-              "parameter_group_name": "${aws_dax_parameter_group.example.name}",
-              "subnet_group_name": "${aws_dax_subnet_group.example.name}",
-              "tags": "${var.common_tags}"
-            }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        resource_conf =  {
-              "cluster_name": "${var.cluster_name}",
-              "iam_role_arn": "${var.iam_role_arn}",
-              "parameter_group_name": "${aws_dax_parameter_group.example.name}",
-              "server_side_encryption": [
-                {
-                  "enabled": [True]
-                }
-              ],
-              "subnet_group_name": "${aws_dax_subnet_group.example.name}",
-              "tags": "${var.common_tags}"
-            }
+        # then
+        summary = report.get_summary()
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "aws_dax_cluster.enabled",
+        }
+
+        failing_resources = {
+            "aws_dax_cluster.default",
+            "aws_dax_cluster.disabled",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

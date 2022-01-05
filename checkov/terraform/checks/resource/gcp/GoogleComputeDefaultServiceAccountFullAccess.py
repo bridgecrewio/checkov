@@ -11,7 +11,8 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         name = "Ensure that instances are not configured to use the default service account with full access" \
                " to all Cloud APIs"
         id = "CKV_GCP_31"
-        supported_resources = ['google_compute_instance']
+        supported_resources = ['google_compute_instance', 'google_compute_instance_from_template',
+                               'google_compute_instance_template']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -25,6 +26,12 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         if 'name' in conf and conf['name'][0].startswith('gke-'):
             self.evaluated_keys = ['name']
             return CheckResult.PASSED
+
+        if 'source_instance_template' in conf.keys() and 'service_account' not in conf.keys():
+            # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
+            # and service_account is not present, then this check cannot PASS, since we don't know what the
+            # underlying source template looks like.
+            return CheckResult.UNKNOWN
         if 'service_account' in conf.keys():
             service_account_conf = conf['service_account'][0]
             self.evaluated_keys = ['service_account']

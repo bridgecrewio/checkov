@@ -104,9 +104,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_RDSClusterHasBackupPlan(self):
         self.go("RDSClusterHasBackupPlan")
 
-    def test_RedshiftClusterHasBackupPlan(self):
-        self.go("RedshiftClusterHasBackupPlan")
-
     def test_EBSAddedBackup(self):
         self.go("EBSAddedBackup")
 
@@ -196,6 +193,12 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_WAF2HasLogs(self):
         self.go("WAF2HasLogs")
+
+    def test_AppSyncProtectedByWAF(self):
+        self.go("AppSyncProtectedByWAF")
+
+    def test_SQLServerAuditingRetention90Days(self):
+        self.go("SQLServerAuditingRetention90Days")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(

@@ -25,7 +25,7 @@ class TestGKEEnsureIntegrityMonitoring(unittest.TestCase):
         }
         failing_resources = {
             'google_container_cluster.fail',
-            'google_container_node_pool.fail' 
+            'google_container_node_pool.fail'
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

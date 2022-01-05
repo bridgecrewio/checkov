@@ -29,8 +29,8 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
                         if type(val) == list:  # handle possible parsing discrepancies
                             val = val[0]
                         if val.endswith('/0'):
-                            self.evaluated_keys = [f'settings/[0]/ip_configuration/authorized_networks/[0]/value',
-                                                   f'settings/[0]/ip_configuration/authorized_networks/[0]/'
+                            self.evaluated_keys = ['settings/[0]/ip_configuration/authorized_networks/[0]/value',
+                                                   'settings/[0]/ip_configuration/authorized_networks/[0]/'
                                                    f'[{auth_networks.index(network)}]/value']
                             return CheckResult.FAILED
             if 'dynamic' in ip_config:
@@ -39,9 +39,9 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
                     if 'authorized_networks' in dynamic_block and 'content' in dynamic_block['authorized_networks']:
                         content = dynamic_block['authorized_networks']['content'][0]
                         if 'value' in content and content['value'][0].endswith('/0'):
-                            self.evaluated_keys = [f'settings/[0]/ip_configuration/dynamic/'
+                            self.evaluated_keys = ['settings/[0]/ip_configuration/dynamic/'
                                                    f'[{dynamic.index(dynamic_block)}]/'
-                                                   f'authorized_networks/content/[0]/value']
+                                                   'authorized_networks/content/[0]/value']
                             return CheckResult.FAILED
 
         return CheckResult.PASSED

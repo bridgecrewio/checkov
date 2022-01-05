@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, List, Union, Dict
+from typing import Tuple, List, Union, Dict, Optional
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.common.parsers.json import parse as json_parse
@@ -11,15 +11,21 @@ from yaml import YAMLError
 LOGGER = logging.getLogger(__name__)
 
 
-def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple[DictNode, List[Tuple[int, str]]], Tuple[None, None]]:
+def parse(
+    filename: str, out_parsing_errors: Optional[Dict[str, str]] = None
+) -> Union[Tuple[DictNode, List[Tuple[int, str]]], Tuple[None, None]]:
     """
-        Decode filename into an object
+    Decode filename into an object
     """
     template = None
     template_lines = None
     error = None
+
+    if out_parsing_errors is None:
+        out_parsing_errors = {}
+
     try:
-        (template, template_lines) = cfn_yaml.load(filename)
+        (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.CFN)
     except IOError as err:
         if err.errno == 2:
             error = f"Template file not found: {filename} - {err}"
@@ -34,6 +40,10 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
         error = f"Cannot read file contents: {filename} - {err}"
         LOGGER.error(error)
     except cfn_yaml.CfnParseError as err:
+        if "Null value at" in err.message:
+            LOGGER.info(f"Null values do not exist in CFN templates: {filename} - {err}")
+            return None, None
+
         error = f"Parsing error in file: {filename} - {err}"
         LOGGER.info(error)
     except ValueError as err:
@@ -56,8 +66,8 @@ def parse(filename: str, out_parsing_errors: Dict[str, str] = {}) -> Union[Tuple
     if isinstance(template, dict):
         resources = template.get(TemplateSections.RESOURCES.value, None)
         if resources:
-            if '__startline__' in resources:
-                del resources['__startline__']
-            if '__endline__' in resources:
-                del resources['__endline__']
+            if "__startline__" in resources:
+                del resources["__startline__"]
+            if "__endline__" in resources:
+                del resources["__endline__"]
     return template, template_lines

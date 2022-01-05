@@ -1,4 +1,3 @@
-from typing import Any, Dict, Tuple
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
 from checkov.json_doc.enums import BlockType

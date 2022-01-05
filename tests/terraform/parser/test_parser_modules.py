@@ -101,3 +101,18 @@ class TestParserInternals(unittest.TestCase):
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
         file_path, entity_definitions = next(iter(out_definitions.items()))
         self.assertEqual(2, len(list(out_definitions[file_path]['output'])))
+
+    def test_load_local_module(self):
+        # given
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "local_module")
+        out_definitions = {}
+
+        # when
+        parser.parse_directory(
+            directory=directory, out_definitions=out_definitions, out_evaluations_context={}
+        )
+
+        # then
+        self.assertEqual(len(out_definitions), 3)  # root file + 2x module file
+        self.assertEqual(len(parser.loaded_files_map), 2)  # root file + 1x module file

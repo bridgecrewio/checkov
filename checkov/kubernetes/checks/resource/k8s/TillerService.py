@@ -19,7 +19,7 @@ class TillerService(BaseK8Check):
             if 'name' in metadata and 'tiller' in str(metadata['name']).lower():
                 return CheckResult.FAILED
             labels = metadata.get('labels')
-            if labels:
+            if labels and isinstance(labels, dict):
                 for v in labels.values():
                     if 'tiller' in str(v).lower():
                         return CheckResult.FAILED
@@ -27,7 +27,7 @@ class TillerService(BaseK8Check):
         spec = conf.get('spec')
         if spec:
             selector = spec.get('selector')
-            if selector:
+            if selector and isinstance(selector, dict):
                 for v in selector.values():
                     if 'tiller' in str(v).lower():
                         return CheckResult.FAILED

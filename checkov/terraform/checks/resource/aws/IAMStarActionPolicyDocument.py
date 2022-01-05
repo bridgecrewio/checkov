@@ -26,7 +26,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                             statement.get('Effect', ['Allow']) == 'Allow' and \
                             '*' in force_list(statement['Action']):
                         return CheckResult.FAILED
-        except:  # nosec
+        except Exception:  # nosec
             pass
         return CheckResult.PASSED
 

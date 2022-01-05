@@ -88,6 +88,9 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertTrue(cls([], None, '1')._get_operation({'a': ['xyz']}, 'a'))
         self.assertFalse(cls([], None, ['xyz'])._get_operation({'a': '1'}, 'a'))
 
+        # attr not exists
+        self.assertFalse(cls([], None, 2)._get_operation({'a': 1}, 'b'))
+
     def test_gte_combinations(self):
         cls = GreaterThanOrEqualAttributeSolver
 
@@ -120,6 +123,9 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertTrue(cls([], None, '1')._get_operation({'a': ['xyz']}, 'a'))
         self.assertFalse(cls([], None, ['xyz'])._get_operation({'a': '1'}, 'a'))
 
+        # attr not exists
+        self.assertFalse(cls([], None, 2)._get_operation({'a': 1}, 'b'))
+
     def test_lt_combinations(self):
         cls = LessThanAttributeSolver
 
@@ -151,6 +157,9 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertFalse(cls([], None, '1')._get_operation({'a': ['xyz']}, 'a'))
         self.assertTrue(cls([], None, ['xyz'])._get_operation({'a': '1'}, 'a'))
 
+        # attr not exists
+        self.assertFalse(cls([], None, 2)._get_operation({'a': 1}, 'b'))
+
     def test_lte_combinations(self):
         cls = LessThanOrEqualAttributeSolver
 
@@ -180,3 +189,6 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertTrue(cls([], None, {'a': {'abc': 'xyz'}})._get_operation({'a': '1'}, 'a'))
         self.assertFalse(cls([], None, '1')._get_operation({'a': ['xyz']}, 'a'))
         self.assertTrue(cls([], None, ['xyz'])._get_operation({'a': '1'}, 'a'))
+
+        # attr not exists
+        self.assertFalse(cls([], None, 2)._get_operation({'a': 1}, 'b'))

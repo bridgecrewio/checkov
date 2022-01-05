@@ -1,51 +1,42 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleStorageBucketUniformAccess import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestGoogleStorageBucketUniformAccess(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_GoogleStorageBucketUniformAccess"
 
-    def test_failure_default(self):
-        hcl_res = hcl2.loads("""
-                resource "google_storage_bucket" "static-site" {
-                  name          = "image-store.com"
-                  location      = "EU"
-                  force_destroy = true
-                }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_storage_bucket']['static-site']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_explicit(self):
-         hcl_res = hcl2.loads("""
-                         resource "google_storage_bucket" "static-site" {
-                           name          = "image-store.com"
-                           location      = "EU"
-                           force_destroy = true
-                           uniform_bucket_level_access = false
-                         }
-                         """)
-         resource_conf = hcl_res['resource'][0]['google_storage_bucket']['static-site']
-         scan_result = check.scan_resource_conf(conf=resource_conf)
-         self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_bucket_uniform(self):
-         hcl_res = hcl2.loads("""
-                         resource "google_storage_bucket" "static-site" {
-                           name          = "image-store.com"
-                           location      = "EU"
-                           force_destroy = true
-                           uniform_bucket_level_access = true
-                         }
-                         """)
-         resource_conf = hcl_res['resource'][0]['google_storage_bucket']['static-site']
-         scan_result = check.scan_resource_conf(conf=resource_conf)
-         self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "google_storage_bucket.enabled",
+        }
+
+        failing_resources = {
+            "google_storage_bucket.default",
+            "google_storage_bucket.disabled",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,7 @@ from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create
 
 """
 This file contains a custom implementation of the builtin `eval` function.
-`eval` is not a safe function, because it can execute *every* command, 
+`eval` is not a safe function, because it can execute *every* command,
 so this file overrides `eval` and allows only the functions in SAFE_EVAL_DICT.
 
 The functions are an implementation of Terraform's built-in functions
@@ -185,7 +185,7 @@ SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 
 def evaluate(input_str: str) -> Any:
     if "__" in input_str:
-        logging.warning(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
+        logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
     evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)

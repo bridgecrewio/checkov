@@ -1,6 +1,5 @@
 import unittest
 
-from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.terraform.checks.resource.registry import resource_registry

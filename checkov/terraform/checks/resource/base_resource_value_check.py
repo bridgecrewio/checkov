@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Dict, Any
 
 import dpath.util
@@ -18,8 +19,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -32,7 +33,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r"^\[?\d+]?$", x)]
+        return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+]?$"), x)]
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
@@ -64,6 +65,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
+            if value is None or (isinstance(value, list) and not value):
+                return self.missing_block_result
             if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or value):
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED

@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class UsernameExists(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure email is set"
+        name = "Ensure username is set"
         id = "CKV_LIN_4"
         supported_resources = ["linode_user"]
         categories = [CheckCategories.GENERAL_SECURITY]

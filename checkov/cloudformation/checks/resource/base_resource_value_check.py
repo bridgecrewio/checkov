@@ -1,5 +1,6 @@
 import re
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Any, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -10,7 +11,7 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 
-VARIABLE_DEPENDANT_REGEX = r"(?:Ref)\.[^\s]+"
+VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -18,8 +19,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -32,7 +33,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r"^\[?\d+\]?$", x)]
+        regex = re.compile(r"^\[?\d+\]?$")
+        return [x for x in path.split("/") if not re.search(regex, x)]
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
@@ -88,7 +90,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         raise NotImplementedError()
 
-    def get_expected_values(self) -> List[str]:
+    def get_expected_values(self) -> List[Any]:
         """
         Override the method with the list of acceptable values if the check has more than one possible expected value, given
         the inspected key

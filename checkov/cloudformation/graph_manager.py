@@ -24,7 +24,7 @@ class CloudformationGraphManager(GraphManager):
         download_external_modules: bool = False,
         excluded_paths: Optional[List[str]] = None,
     ) -> Tuple[CloudformationLocalGraph, Dict[str, DictNode]]:
-        logging.info("[CloudformationGraphManager] Parsing files in source dir {source_dir}")
+        logging.info(f"[CloudformationGraphManager] Parsing files in source dir {source_dir}")
         parsing_errors = {}
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths, parsing_errors)
         local_graph = self.build_graph_from_definitions(definitions, render_variables)

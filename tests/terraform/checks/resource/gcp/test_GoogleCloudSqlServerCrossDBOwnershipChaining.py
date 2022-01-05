@@ -9,7 +9,7 @@ from checkov.common.models.enums import CheckResult
 class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
 
     def test_failure(self):
-        hcl_res = hcl2.loads("""    
+        hcl_res = hcl2.loads("""
             resource "google_sql_database_instance" "tfer--general-002D-sqlserver12" {
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
@@ -135,7 +135,7 @@ class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"           
+            region           = "us-central1"
             settings {
                 activation_policy = "ALWAYS"
                 availability_type = "ZONAL"
@@ -188,7 +188,7 @@ class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
             database_version = "SQLSERVER_2017_STANDARD"
             name             = "general-sqlserver12"
             project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"           
+            region           = "us-central1"
             }
                         """)
         resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-sqlserver12']

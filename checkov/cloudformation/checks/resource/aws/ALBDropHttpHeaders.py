@@ -17,7 +17,7 @@ class ALBDropHttpHeaders(BaseResourceCheck):
         
         properties = conf.get("Properties")
         lb_type = properties.get("Type")
-        if lb_type != None and lb_type != 'application':
+        if lb_type and lb_type != 'application':
             alb = False
 
         # If lb is alb then drop headers must be present and true 

@@ -9,7 +9,7 @@ from checkov.terraform.graph_builder.graph_components.attribute_names import Cus
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
-MODULE_DEPENDENCY_PATTERN_IN_PATH = r"\[.+\#.+\]"
+MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\[.+\#.+\]")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -37,21 +37,25 @@ def remove_module_dependency_in_path(path: str) -> Tuple[str, str, str]:
 
 def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     """
-    :param module_dependency: a list looking like ['[path_to_module.tf#0]']
+    :param: module_dependency: a list looking like ['[path_to_module.tf#0]']
     :return: the path without enclosing array and index: 'path_to_module.tf'
     """
     if not module_dependency:
         return ["", ""]
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
-    return module_dependency[1:-1].split("#")
+    return [
+        module_dependency[1:module_dependency.index('.tf#')+len('.tf')],
+        module_dependency[module_dependency.index('.tf#')+len('.tf#'):-1]
+    ]
+
 
 BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
-FUNC_CALL_PREFIX_PATTERN = r"([.a-zA-Z]+)\("
-INTERPOLATION_PATTERN = "[${}]"
-INTERPOLATION_EXPR = r"\$\{([^\}]*)\}"
-INDEX_PATTERN = r"\[([0-9]+)\]"
-MAP_ATTRIBUTE_PATTERN = r"\[\"([^\d\W]\w*)\"\]"
+FUNC_CALL_PREFIX_PATTERN = re.compile(r"([.a-zA-Z]+)\(")
+INTERPOLATION_PATTERN = re.compile(r"[${}]")
+INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
+INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
+MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 
 def get_vertices_references(
     str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
@@ -120,7 +124,7 @@ def remove_function_calls_from_str(str_value: str) -> str:
     # remove start of function calls:: 'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}' --> 'aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}'
     str_value = re.sub(FUNC_CALL_PREFIX_PATTERN, "", str_value)
     # remove ')'
-    return re.sub(r"[)]+", "", str_value)
+    return re.sub(re.compile(r"[)]+"), "", str_value)
 
 
 def remove_index_pattern_from_str(str_value: str) -> str:
@@ -236,7 +240,7 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
     """
     prefixes_with_attribute_key = [a for a in attributes.keys() if a.startswith(attribute_key) and a != attribute_key]
-    if not any(re.findall(r"\.\d+", a) for a in prefixes_with_attribute_key):
+    if not any(re.findall(re.compile(r"\.\d+"), a) for a in prefixes_with_attribute_key):
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
     return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
