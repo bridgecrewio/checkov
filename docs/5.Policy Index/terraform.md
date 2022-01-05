@@ -625,7 +625,7 @@ nav_order: 1
 | 614 | CKV_OPENSTACK_3 | resource | openstack_networking_secgroup_rule_v2          | Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)                                                                                                                          | Terraform |
 | 615 | CKV_OPENSTACK_4 | resource | openstack_compute_instance_v2                  | Ensure that instance does not use basic credentials                                                                                                                                                      | Terraform |
 | 616 | CKV_OPENSTACK_5 | resource | openstack_fw_rule_v1                           | Ensure firewall rule set a destination IP                                                                                                                                                                | Terraform |
-| 617 | CKV_PAN_1       | provider | panos                                          | Ensure no hard coded PAN-OS API keys exist in provider                                                                                                                                                   | Terraform |
+| 617 | CKV_PAN_1       | provider | panos                                          | Ensure no hard coded PAN-OS credentials exist in provider                                                                                                                                                | Terraform |
 
 
 ---
