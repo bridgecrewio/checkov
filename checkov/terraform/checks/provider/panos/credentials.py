@@ -3,7 +3,7 @@ from typing import Dict, List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
-from checkov.common.models.consts import panos_api_key_pattern, panos_password_pattern
+from checkov.common.models.consts import panos_api_key_pattern
 
 
 class PanosCredentials(BaseProviderCheck):
