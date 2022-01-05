@@ -5,13 +5,13 @@ metadata:
   labels:
     component: kubelet
     tier: control-plane
-  name: kubelet
+  name: kube-controller-manager-enabled
   namespace: kube-system
 spec:
   containers:
   - command:
-    - kubelet
-    - --feature-gates=RotateKubeletServerCertificate=false
+    - kube-controller-manager
+    - --feature-gates=RotateKubeletServerCertificate=true
     image: gcr.io/google_containers/kubelet-amd64:v1.6.0
     livenessProbe:
       failureThreshold: 8

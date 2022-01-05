@@ -811,27 +811,18 @@ nav_order: 1
 | 800 | CKV_K8S_149 | resource | ReplicaSet             | Ensure that the --rotate-certificates argument is not set to false                                     | Kubernetes |
 | 801 | CKV_K8S_149 | resource | ReplicationController  | Ensure that the --rotate-certificates argument is not set to false                                     | Kubernetes |
 | 802 | CKV_K8S_149 | resource | StatefulSet            | Ensure that the --rotate-certificates argument is not set to false                                     | Kubernetes |
-| 803 | CKV_K8S_150 | resource | CronJob                | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 804 | CKV_K8S_150 | resource | DaemonSet              | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 805 | CKV_K8S_150 | resource | Deployment             | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 806 | CKV_K8S_150 | resource | Job                    | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 807 | CKV_K8S_150 | resource | Pod                    | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 808 | CKV_K8S_150 | resource | PodTemplate            | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 809 | CKV_K8S_150 | resource | ReplicaSet             | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 810 | CKV_K8S_150 | resource | ReplicationController  | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 811 | CKV_K8S_150 | resource | StatefulSet            | Ensure that the RotateKubeletServerCertificate argument is set to true                                 | Kubernetes |
-| 812 | CKV_K8S_151 | resource | CronJob                | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 813 | CKV_K8S_151 | resource | DaemonSet              | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 814 | CKV_K8S_151 | resource | Deployment             | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 815 | CKV_K8S_151 | resource | Job                    | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 816 | CKV_K8S_151 | resource | Pod                    | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 817 | CKV_K8S_151 | resource | PodTemplate            | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 818 | CKV_K8S_151 | resource | ReplicaSet             | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 819 | CKV_K8S_151 | resource | ReplicationController  | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 820 | CKV_K8S_151 | resource | StatefulSet            | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
-| 821 | CKV_K8S_152 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain LUA code execution. See CVE-2021-25742         | Kubernetes |
-| 822 | CKV_K8S_153 | resource | Ingress                | Prevent All NGINX Ingress annotation snippets. See CVE-2021-25742                                      | Kubernetes |
-| 823 | CKV_K8S_154 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain alias statements See CVE-2021-25742            | Kubernetes |
+| 803 | CKV_K8S_151 | resource | CronJob                | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 804 | CKV_K8S_151 | resource | DaemonSet              | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 805 | CKV_K8S_151 | resource | Deployment             | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 806 | CKV_K8S_151 | resource | Job                    | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 807 | CKV_K8S_151 | resource | Pod                    | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 808 | CKV_K8S_151 | resource | PodTemplate            | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 809 | CKV_K8S_151 | resource | ReplicaSet             | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 810 | CKV_K8S_151 | resource | ReplicationController  | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 811 | CKV_K8S_151 | resource | StatefulSet            | Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers                                 | Kubernetes |
+| 812 | CKV_K8S_152 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain LUA code execution. See CVE-2021-25742         | Kubernetes |
+| 813 | CKV_K8S_153 | resource | Ingress                | Prevent All NGINX Ingress annotation snippets. See CVE-2021-25742                                      | Kubernetes |
+| 814 | CKV_K8S_154 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain alias statements See CVE-2021-25742            | Kubernetes |
 
 
 ---
