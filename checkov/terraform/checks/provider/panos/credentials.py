@@ -17,7 +17,7 @@ class PanosCredentials(BaseProviderCheck):
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if self.secret_found(conf, "api_key", panos_api_key_pattern):
             return CheckResult.FAILED
-        if self.secret_found(conf, "password", panos_password_pattern):
+        if conf.get("password"):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
