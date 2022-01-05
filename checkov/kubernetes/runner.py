@@ -2,10 +2,14 @@ import logging
 import operator
 import os
 from functools import reduce
+from typing import Type, Optional, List
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.runners.base_runner import BaseRunner
@@ -19,12 +23,12 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     def __init__(
         self,
-        graph_class=KubernetesLocalGraph,
-        db_connector=NetworkxConnector(),
-        source="Kubernetes",
-        graph_manager=None,
-        external_registries=None
-    ):
+        graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        source: str = "Kubernetes",
+        graph_manager: Optional[GraphManager] = None,
+        external_registries: Optional[List[BaseRegistry]] = None
+    ) -> None:
         self.external_registries = [] if external_registries is None else external_registries
         self.check_type = "kubernetes"
         self.graph_class = graph_class

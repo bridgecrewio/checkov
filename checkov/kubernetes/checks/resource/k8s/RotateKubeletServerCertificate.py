@@ -4,7 +4,10 @@ from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
 
-class KubeControllerManagerRotateKubeletServerCertificate(BaseK8sContainerCheck):
+COMPONENT_TYPES = ("kube-controller-manager", "kubelet")
+
+
+class RotateKubeletServerCertificate(BaseK8sContainerCheck):
     def __init__(self) -> None:
         # CIS-1.6 4.2.12
         id = "CKV_K8S_112"
@@ -13,15 +16,14 @@ class KubeControllerManagerRotateKubeletServerCertificate(BaseK8sContainerCheck)
 
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["command"]
-        if conf.get("command"):
-            if "kube-controller-manager" in conf["command"]:
-                for cmd in conf["command"]:
-                    if cmd.startswith("--feature-gates"):
-                        value = cmd[cmd.index("=") + 1 :]
-                        if "RotateKubeletServerCertificate=false" in value:
-                            return CheckResult.FAILED
+        command = conf.get("command")
+        if isinstance(command, list) and any(item in command for item in COMPONENT_TYPES):
+            for idx, cmd in enumerate(command):
+                self.evaluated_container_keys = [f"command/[{idx}]"]
+                if cmd.startswith("--feature-gates") and "RotateKubeletServerCertificate=false" in cmd:
+                    return CheckResult.FAILED
 
         return CheckResult.PASSED
 
 
-check = KubeControllerManagerRotateKubeletServerCertificate()
+check = RotateKubeletServerCertificate()
