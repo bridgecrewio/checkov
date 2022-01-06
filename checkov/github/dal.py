@@ -12,7 +12,7 @@ class Github:
     def __init__(self):
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.http = None
-
+        self._organization_security = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
         self.configure_github_conf_dir()
@@ -36,8 +36,6 @@ class Github:
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
 
         self.default_branch_cache = {}
-
-        self._organization_security = None
 
     def setup_http_manager(self, ca_certificate=None):
         """
@@ -63,15 +61,16 @@ class Github:
         pass
 
     def _request(self, endpoint):
+        url_endpoint = "{}{}".format(self.api_url, endpoint)
         try:
-            return self.http.request("GET", "{}".format(self.api_url, endpoint),
+            return self.http.request("GET", url_endpoint,
                                      headers=self._headers())
         except:
-            pass
+            logging.debug("Query failed to run by returning code of {}.".format(url_endpoint))
 
     def _headers(self):
         return {"Accept": "application/vnd.github.v3+json",
-                "Authorization": "token {}}".format(self.token)}
+                "Authorization": "token {}".format(self.token)}
 
     def _graphql_headers(self):
         return {
