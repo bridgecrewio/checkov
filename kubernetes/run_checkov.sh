@@ -30,7 +30,7 @@ statefulsets"
 
 for resource in $RESOURCES;
 do
-  kubectl get $resource --all-namespaces -oyaml > /data/runtime.${resource}.yaml
+  kubectl get $resource --all-namespaces -oyaml | yq eval 'del(.items[] | select(.metadata.ownerReferences)) ' -  > /data/runtime.${resource}.yaml
 done
 
 if [ -f /etc/checkov/apikey ]; then
