@@ -65,7 +65,7 @@ class Github:
         try:
             return self.http.request("GET", url_endpoint,
                                      headers=self._headers())
-        except:
+        except Exception:
             logging.debug("Query failed to run by returning code of {}.".format(url_endpoint))
 
     def _headers(self):
