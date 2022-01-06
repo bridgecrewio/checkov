@@ -91,7 +91,7 @@ class Github:
             else:
                 logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception as e:
-            logging.debug("Quer y failed {} exception e.".format(query, e))
+            logging.debug("Quer y failed {} exception {}.".format(query, e))
 
 
     def get_branch_protection_rules(self):
