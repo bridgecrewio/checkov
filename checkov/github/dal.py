@@ -80,15 +80,19 @@ class Github:
         headers = self._graphql_headers()
 
         body = json.dumps({'query': query, 'variables': variables})
-        request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)
-        if request.status == 200:
-            data = json.loads(request.data.decode("utf8"))
-            if isinstance(data, dict) and 'errors' in data.keys():
-                return None
-            return data
+        try:
+            request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)
+            if request.status == 200:
+                data = json.loads(request.data.decode("utf8"))
+                if isinstance(data, dict) and 'errors' in data.keys():
+                    return None
+                return data
 
-        else:
-            logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
+            else:
+                logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
+        except Exception as e:
+            logging.debug("Quer y failed {} exception e.".format(query, e))
+
 
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
