@@ -10,6 +10,7 @@ from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 from checkov.dockerfile.registry import registry as dockerfile_registry
+from checkov.github.registry import registry as github_configuration_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
 from checkov.serverless.registry import sls_registry
@@ -72,6 +73,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(sls_registry, "resource", "serverless")
     if any(x in framework_list for x in ("all", "dockerfile")):
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
+    if any(x in framework_list for x in ("all", "github_configuration")):
+        add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")

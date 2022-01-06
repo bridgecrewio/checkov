@@ -63,6 +63,7 @@ click = ">=8.0.0"
 aiohttp = "*"
 aiodns = "*"
 aiomultiprocess = "*"
+jsonpath_ng = "*"
 
 [requires]
 python_version = "3.7"

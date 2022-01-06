@@ -4,9 +4,8 @@ import os
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.parsers.json import parse
-from checkov.json_doc.registry import registry
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 
 
@@ -22,6 +21,7 @@ class Runner(BaseRunner):
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):
+        registry = self.import_registry()
 
         definitions = {}
         definitions_raw = {}
@@ -32,12 +32,12 @@ class Runner(BaseRunner):
             logging.debug("No resources to scan.")
             return report
 
-        if not external_checks_dir:
+        if not external_checks_dir and self.require_external_checks():
             logging.debug("The json runner requires that external checks are defined.")
             return report
-
-        for directory in external_checks_dir:
-            registry.load_external_checks(directory)
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                registry.load_external_checks(directory)
 
         if files:
             self._load_files(files, definitions, definitions_raw)
@@ -78,3 +78,10 @@ class Runner(BaseRunner):
                 report.add_record(record)
 
         return report
+
+    def import_registry(self):
+        from checkov.json_doc.registry import registry
+        return registry
+
+    def require_external_checks(self):
+        return True

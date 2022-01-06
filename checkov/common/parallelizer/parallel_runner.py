@@ -10,8 +10,10 @@ class ParallelRunner:
         self.workers_number = workers_number if workers_number else os.cpu_count()
         self.os = platform.system()
 
-    def run_function(self, func: Callable[[Any], Any], items: List[Any], group_size: Optional[int]=None) -> Iterator:
-        if self.os == 'Windows':
+    def run_function(self, func: Callable[[Any], Any], items: List[Any], group_size: Optional[int] = None) -> Iterator:
+        if self.os == 'Windows' or os.getenv("PYCHARM_HOSTED") == "1":
+            # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
+            # To prevent jetbrains IDE from crushing on debug use multi threading
             return self._run_function_multithreaded(func, items)
         else:
             return self._run_function_multiprocess(func, items, group_size)

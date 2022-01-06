@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Terraform Scanning
+title: Terraform Plan Scanning
 nav_order: 8
 ---
 
