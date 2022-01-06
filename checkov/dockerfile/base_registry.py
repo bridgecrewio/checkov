@@ -24,6 +24,7 @@ class Registry(BaseCheckRegistry):
                                            skip_info)
 
         for check in self.wildcard_checks["*"]:
+            skip_info = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
