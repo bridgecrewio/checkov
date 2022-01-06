@@ -21,7 +21,8 @@ def test_get_checks_returned_check_number():
     [
         (["all"], {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
                    "github_configuration"}),
-        (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform"}),
+        (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
+                "github_configuration"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],
