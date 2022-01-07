@@ -198,7 +198,6 @@ class BcPlatformIntegration(object):
         if request.status == 403:
             raise BridgecrewAuthError()
         response = json.loads(request.data.decode("utf8"))
-        logging.debug(response)
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
