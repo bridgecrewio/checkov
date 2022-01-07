@@ -50,6 +50,7 @@ UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4
 ACCOUNT_CREATION_TIME = 180  # in seconds
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
+ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole'
 
 DEFAULT_REGION = "us-west-2"
 MAX_RETRIES = 40
@@ -197,9 +198,12 @@ class BcPlatformIntegration(object):
         if request.status == 403:
             raise BridgecrewAuthError()
         response = json.loads(request.data.decode("utf8"))
+        logging.debug(response)
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
+            if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+                raise BridgecrewAuthError("Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
                 request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
