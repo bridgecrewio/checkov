@@ -18,7 +18,7 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
-from urllib3.exceptions import HTTPError
+from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.ci_variables import (
     BC_TO_BRANCH,
@@ -174,6 +174,10 @@ class BcPlatformIntegration(object):
                                               )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
+            except MaxRetryError as e:
+                logging.error(f"An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              f"disabling it and re-running the command.\n{e}")
+                raise e
             except HTTPError as e:
                 logging.error(f"Failed to get customer assumed role\n{e}")
                 raise e
