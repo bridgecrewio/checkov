@@ -200,6 +200,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SQLServerAuditingRetention90Days(self):
         self.go("SQLServerAuditingRetention90Days")
 
+    def test_AWSRDSBackupRetentionPeriodGreaterThanorEqualto7Days(self):
+        self.go("AWSRDSBackupRetentionPeriodGreaterThanorEqualto7Days")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

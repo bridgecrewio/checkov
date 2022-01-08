@@ -1,0 +1,20 @@
+metadata:
+  name: "AWS RDS retention policy should be greater than or equal to 7 days"
+  guidelines: "RDS Retention Policies for Backups are an important part of your DR/BCP strategy. Recovering data from catastrophic failures, malicious attacks, or corruption often requires a several day window of potentially good backup material to leverage. As such, the best practice is to ensure your RDS clusters are retaining at least 7 days of backups, if not more (up to a maximum of 35)."
+  category: "storage"
+  severity: "medium"
+scope:
+  provider: "aws"
+definition:
+    or:
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_db_instance"
+        attribute: "backup_retention_period"
+        operator: "not_exists"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_db_instance"
+        attribute: "backup_retention_period"
+        operator: "greater_than_or_equal"
+        value: "7"

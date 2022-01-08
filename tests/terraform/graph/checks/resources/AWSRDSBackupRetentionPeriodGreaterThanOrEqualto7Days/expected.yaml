@@ -1,0 +1,5 @@
+pass:
+  - "aws_db_instance.aws_db_instance_ok"
+  - "aws_db_instance.aws_db_instance_default_ok"
+fail:
+  - "aws_db_instance.aws_db_instance_not_ok"
