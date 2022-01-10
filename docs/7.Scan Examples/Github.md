@@ -88,7 +88,7 @@ github_configuration scan results:
 
 Passed checks: 2, Failed checks: 1, Skipped checks: 0
 
-Check: CKV_GITHUB_3: "Ensure github organization security settings has IP allow list enabled"
+Check: CKV_GITHUB_3: "Ensure GitHub organization security settings has IP allow list enabled"
 	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
 	File: /Users/barak/github_conf/org_security.json:2-15
 
