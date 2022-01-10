@@ -4,12 +4,14 @@ import json
 import logging
 import os
 import shutil
+import sys
 import signal
 import sys
 from pathlib import Path
 
-import argcomplete
 import configargparse
+import argcomplete
+from urllib3.exceptions import MaxRetryError
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -156,6 +158,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         repo_branch=config.branch)
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
+        except MaxRetryError:
+            return
         except Exception:
             if bc_integration.prisma_url:
                 message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
@@ -168,6 +172,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 logger.debug(message, exc_info=True)
             else:
                 logger.error(message)
+                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
             return
     else:
         logger.debug('No API key found. Scanning locally only.')

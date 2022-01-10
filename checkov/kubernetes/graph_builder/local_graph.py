@@ -26,7 +26,7 @@ class KubernetesLocalGraph(LocalGraph):
                 resource_type = resource.get('kind')
                 metadata = resource.get('metadata') or {}
                 # TODO: add support for generateName
-                if is_invalid_k8_definition(resource) or metadata.get("ownerReferences") or not metadata.get('name'):
+                if is_invalid_k8_definition(resource) or not metadata.get('name'):
                     logging.info(f"failed to create a vertex in file {file_path}")
                     file_conf.remove(resource)
                     continue

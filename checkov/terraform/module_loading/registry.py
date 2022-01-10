@@ -30,7 +30,7 @@ information, see `loader.ModuleLoader.load`.
         """
         module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
-            logging.info(f'Used the cache for module {module_address}')
+            logging.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
         else:
             logging.debug(f'Cache miss for {module_address}')
