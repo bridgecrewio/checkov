@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: Github configuration scanning
+title: GitHub configuration scanning
 nav_order: 20
 ---
 
