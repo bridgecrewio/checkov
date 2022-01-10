@@ -8,7 +8,7 @@ class Runner(JsonRunner):
 
     def __init__(self):
         self.github = Github()
-        super()
+        super().__init__()
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):
