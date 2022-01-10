@@ -25,6 +25,7 @@ from checkov.runner_filter import RunnerFilter
                 "kubernetes",
                 "serverless",
                 "terraform_plan",
+                "github_configuration"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

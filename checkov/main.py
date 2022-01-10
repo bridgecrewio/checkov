@@ -4,12 +4,12 @@ import json
 import logging
 import os
 import shutil
-import sys
 import signal
+import sys
 from pathlib import Path
 
-import configargparse
 import argcomplete
+import configargparse
 from urllib3.exceptions import MaxRetryError
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
@@ -42,6 +42,8 @@ from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.json_doc.runner import Runner as json_runner
+from checkov.github.runner import Runner as github_configuration_runner
+
 from checkov.version import version
 
 outer_registry = None
@@ -49,11 +51,11 @@ outer_registry = None
 logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile', 'secrets', 'json']
+                   'dockerfile', 'secrets', 'json', 'github_configuration']
 
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
-                   dockerfile_runner(), secrets_runner(), json_runner())
+                   dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner())
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):
