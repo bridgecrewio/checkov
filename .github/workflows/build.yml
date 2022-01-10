@@ -104,7 +104,7 @@ jobs:
         run: |
           pipenv run python -m pytest tests
   bump-version:
-    needs: [integration-tests, prisma-tests, unit-tests]
+    needs: [integration-tests, unit-tests] # add back prisma-tests when prisma-tests is re-enabled
     runs-on: [self-hosted, public, linux, x64]
     timeout-minutes: 30
     steps:
