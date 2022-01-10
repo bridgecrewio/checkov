@@ -8,7 +8,7 @@ from checkov.json_doc.enums import BlockType
 
 class GithubSSO(BaseGithubCheck):
     def __init__(self):
-        name = "Ensure github organization security settings require SSO"
+        name = "Ensure GitHub organization security settings require SSO"
         id = "CKV_GITHUB_2"
         categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(
