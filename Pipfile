@@ -64,6 +64,7 @@ aiohttp = "*"
 aiodns = "*"
 aiomultiprocess = "*"
 jsonpath_ng = "*"
+jsonschema = "*"
 
 [requires]
 python_version = "3.7"
