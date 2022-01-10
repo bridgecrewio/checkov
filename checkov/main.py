@@ -4,13 +4,12 @@ import json
 import logging
 import os
 import shutil
-import sys
 import signal
 import sys
 from pathlib import Path
 
-import configargparse
 import argcomplete
+import configargparse
 from urllib3.exceptions import MaxRetryError
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
