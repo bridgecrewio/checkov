@@ -96,7 +96,7 @@ Check: CKV_GITHUB_2: "Ensure GitHub organization security settings require SSO"
 	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
 	File: /Users/barak/github_conf/org_security.json:2-15
 
-Check: CKV_GITHUB_1: "Ensure github organization security settings require 2FA"
+Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
 	FAILED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
 	File: /Users/barak/github_conf/org_security.json:2-15
 
