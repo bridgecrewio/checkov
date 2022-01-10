@@ -16,7 +16,7 @@ When using checkov with github token it can collect your current org settings an
 | CKV_GITHUB_CONFIG_FETCH_DATA| "True" | checkov will try to fetch github configuration from api by default(unless no access token provided)  |
 | CKV_GITHUB_CONF_DIR_NAME   | "github_conf" | checkov will create a new directory named "github_conf" under current working directory                          |
 | GITHUB_API_URL   | "https://api.github.com/" |  |
-| GITHUB_TOKEN   |  | Github personal access token to be used to fetch github configuration |
+| GITHUB_TOKEN   |  | GitHub personal access token to be used to fetch GitHub configuration |
 
 ### Example organization security configuration
 
