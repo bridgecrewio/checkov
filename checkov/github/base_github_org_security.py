@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -24,7 +26,10 @@ class OrgSecurity(BaseGithubCheck):
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
-                
 
     def get_expected_value(self):
         return True
+
+    @abstractmethod
+    def get_evaluated_keys(self):
+        pass
