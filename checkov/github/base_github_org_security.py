@@ -20,11 +20,11 @@ class OrgSecurity(BaseGithubCheck):
     def scan_entity_conf(self, conf):
         if org_security_schema.validate(conf):
             jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
-            for match in jsonpath_expression.find(conf):
-                if match.value == self.get_expected_value():
-                    return CheckResult.PASSED
-                else:
-                    return CheckResult.FAILED
+            if all(match.value == self.get_expected_value() for match in jsonpath_expression.find(conf)):
+                return CheckResult.PASSED
+            else:
+                return CheckResult.FAILED
+                
 
     def get_expected_value(self):
         return True
