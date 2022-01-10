@@ -7,7 +7,7 @@ nav_order: 20
 
 # GitHub configuration scanning
 Checkov supports the evaluation of policies on your GitHub organization and repositories settings.
-When using checkov with github token it can collect your current org settings and validate it complies with Github security best practices such as having 2FA defined, Having SSO and more.
+When using checkov with GitHub token it can collect your current org settings and validate it complies with GitHub security best practices such as having 2FA defined, having SSO and more.
 
 ## Github scanning configuration
 
