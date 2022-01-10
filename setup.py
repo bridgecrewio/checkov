@@ -64,7 +64,7 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath_ng",
-        "jsonschema"
+        "jsonschema==3.0.2"
     ],
     license="Apache License 2.0",
     name="checkov",
