@@ -10,7 +10,6 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 
 class Github:
     def __init__(self):
-        self.logger = logging.getLogger("{}".format(self.__module__))
         self.http = None
         self._organization_security = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
