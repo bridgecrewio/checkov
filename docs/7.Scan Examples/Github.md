@@ -92,7 +92,7 @@ Check: CKV_GITHUB_3: "Ensure GitHub organization security settings has IP allow 
 	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
 	File: /Users/barak/github_conf/org_security.json:2-15
 
-Check: CKV_GITHUB_2: "Ensure github organization security settings require SSO"
+Check: CKV_GITHUB_2: "Ensure GitHub organization security settings require SSO"
 	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
 	File: /Users/barak/github_conf/org_security.json:2-15
 
