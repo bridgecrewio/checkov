@@ -22,7 +22,7 @@ class SecurityListIngressStateless(BaseResourceCheck):
             for idx, rule in enumerate(rules):
                 if 'stateless' in rule.keys():
                     stateless = rule.get("stateless")
-                    if not stateless and stateless != [True]:
+                    if stateless != [True] and not stateless:
                         self.evaluated_keys = [f'ingress_security_rules/[{idx}]/stateless'] if is_list_syntax \
                             else [f'ingress_security_rules/[0]/[{idx}]/stateless']
                         return CheckResult.FAILED
