@@ -19,6 +19,7 @@ class TestSecurityListIngressStateless(unittest.TestCase):
             "oci_core_security_list.pass",
             "oci_core_security_list.pass2",
             "oci_core_security_list.pass3",
+            "oci_core_security_list.pass4",
         }
 
         failing_resources = {
@@ -34,7 +35,7 @@ class TestSecurityListIngressStateless(unittest.TestCase):
         failed_check_resources = set([c.resource for c in report.failed_checks])
         skipped_check_resources = set([c.resource for c in report.skipped_checks])
 
-        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["passed"], 4)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 1)
         self.assertEqual(summary["parsing_errors"], 0)

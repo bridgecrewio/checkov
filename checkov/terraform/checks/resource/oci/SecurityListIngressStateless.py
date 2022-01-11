@@ -12,7 +12,7 @@ class SecurityListIngressStateless(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'ingress_security_rules' in conf.keys():
-            self.evaluated_keys=['ingress_security_rules']
+            self.evaluated_keys = ['ingress_security_rules']
             rules = conf.get("ingress_security_rules")
             is_list_syntax = False
             if isinstance(rules[0], list):
@@ -22,7 +22,7 @@ class SecurityListIngressStateless(BaseResourceCheck):
             for idx, rule in enumerate(rules):
                 if 'stateless' in rule.keys():
                     stateless = rule.get("stateless")
-                    if stateless is not True and stateless != [True]:
+                    if not stateless and stateless != [True]:
                         self.evaluated_keys = [f'ingress_security_rules/[{idx}]/stateless'] if is_list_syntax \
                             else [f'ingress_security_rules/[0]/[{idx}]/stateless']
                         return CheckResult.FAILED
