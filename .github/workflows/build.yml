@@ -133,7 +133,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
