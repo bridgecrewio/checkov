@@ -413,6 +413,25 @@ resource "aws_elasticsearch_domain" "pass_es" {
   }
 }
 
+# Glue
+
+resource "aws_security_group" "pass_glue" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_glue_dev_endpoint" "pass_glue" {
+  name     = "example"
+  role_arn = "aws_iam_role.example.arn"
+
+  security_group_ids = [aws_security_group.pass_glue.id]
+}
+
 # Lambda
 
 resource "aws_security_group" "pass_lambda" {
