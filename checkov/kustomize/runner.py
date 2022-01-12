@@ -15,7 +15,7 @@ from checkov.common.output.report import Report, report_to_cyclonedx
 #from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.registry import registry
-from checkov.kubernetes.runner import _parse_files, K8_POSSIBLE_ENDINGS, _is_invalid_k8_definition 
+#from checkov.kubernetes.runner import _parse_files, K8_POSSIBLE_ENDINGS, _is_invalid_k8_definition 
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.util.data_structures_utils import search_deep_keys
