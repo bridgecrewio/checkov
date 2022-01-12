@@ -59,13 +59,13 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions = local_graph.definitions
 
-        report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments, helmChart=helmChart, reportMutatorData=reportMutatorData)
+        report = self.check_definitions(root_folder, runner_filter, report, reportMutatorData=reportMutatorData, collect_skip_comments=collect_skip_comments, helmChart=helmChart)
         graph_report = self.get_graph_checks_report(root_folder, runner_filter, helmChart=helmChart, reportMutatorData=reportMutatorData)
         merge_reports(report, graph_report)
 
         return report
 
-    def check_definitions(self, root_folder, runner_filter, report, collect_skip_comments=True, helmChart=None, reportMutatorData=None):
+    def check_definitions(self, root_folder, runner_filter, report, reportMutatorData, collect_skip_comments=True, helmChart=None,):
         for k8_file in self.definitions.keys():
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
@@ -117,7 +117,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, reportMutatorData=reportMutatorData) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, helmChart, reportMutatorData) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
 
