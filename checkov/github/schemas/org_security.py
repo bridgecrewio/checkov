@@ -37,13 +37,25 @@ class OrgSecuritySchema(GithubConfSchema):
                                             "type": "string"
                                         }
                                     }
-
                                 }
-                            }
+                            },
+                            "required": [
+                                "name",
+                                "login",
+                                "description",
+                                "ipAllowListEnabledSetting",
+                                "ipAllowListForInstalledAppsEnabledSetting",
+                                "requiresTwoFactorAuthentication"]
                         }
-                    }
+                    },
+                    "required": [
+                        "organization"
+                    ]
                 }
-            }
+            },
+            "required": [
+                "data"
+            ]
         }
         super().__init__(schema=schema)
 
