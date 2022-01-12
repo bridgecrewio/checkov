@@ -60,10 +60,17 @@ class Github:
         pass
 
     def _request(self, endpoint):
+        if not self.token:
+            return
         url_endpoint = "{}{}".format(self.api_url, endpoint)
         try:
-            return self.http.request("GET", url_endpoint,
-                                     headers=self._headers())
+            request = self.http.request("GET", url_endpoint,
+                                        headers=self._headers())
+            if request.status == 200:
+                data = json.loads(request.data.decode("utf8"))
+                if isinstance(data, dict) and 'errors' in data.keys():
+                    return None
+                return data
         except Exception:
             logging.debug("Query failed to run by returning code of {}.".format(url_endpoint))
 
@@ -76,6 +83,8 @@ class Github:
             "Authorization": "bearer {}".format(self.token)}
 
     def _request_graphql(self, query, variables):
+        if not self.token:
+            return
         headers = self._graphql_headers()
 
         body = json.dumps({'query': query, 'variables': variables})
@@ -163,4 +172,5 @@ class Github:
     def ensure_dir(file_path):
         if not os.path.exists(file_path):
             directory_path = os.path.dirname(file_path)
-            os.makedirs(directory_path)
+            if not os.path.exists(directory_path):
+                os.makedirs(directory_path)
