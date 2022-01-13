@@ -132,7 +132,7 @@ class Runner(BaseRunner):
 
 
 def _get_entity_abs_path(root_folder, entity_file_path):
-    if entity_file_path[0] == '/' and not entity_file_path.startswith(root_folder):
+    if entity_file_path[0] == '/' and (root_folder and not entity_file_path.startswith(root_folder)):
         path_to_convert = (root_folder + entity_file_path) if root_folder else entity_file_path
     else:
         path_to_convert = (os.path.join(root_folder, entity_file_path)) if root_folder else entity_file_path

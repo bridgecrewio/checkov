@@ -109,7 +109,7 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
+def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
         Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     definitions = deepcopy(definitions)
