@@ -114,22 +114,6 @@ class Github:
         if data:
             Github.persist(path=self.github_branch_protection_rules_file_path, conf=data)
 
-    def get_admin_protection(self):
-        # todo
-        pass
-
-    def get_pull_request_review_protection(self):
-        # todo
-        pass
-
-    def get_commit_signature_protection(self):
-        # todo
-        pass
-
-    def get_status_checks_protection(self):
-        # todo
-        pass
-
     def persist_organization_security(self):
         organization_security = self.get_organization_security()
         if organization_security:
