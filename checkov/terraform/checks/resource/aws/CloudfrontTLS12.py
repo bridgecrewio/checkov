@@ -18,5 +18,8 @@ class CloudFrontTLS12(BaseResourceValueCheck):
     def get_expected_values(self) -> List[Any]:
         return ["TLSv1.2_2018", "TLSv1.2_2019", "TLSv1.2_2021"]
 
+    def get_expected_value(self) -> Any:
+        return "TLSv1.2_2021"
+
 
 check = CloudFrontTLS12()
