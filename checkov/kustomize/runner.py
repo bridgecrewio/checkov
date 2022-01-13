@@ -14,7 +14,6 @@ import glob
 from checkov.common.output.report import Report, report_to_cyclonedx
 #from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.registry import registry
 #from checkov.kubernetes.runner import _parse_files, K8_POSSIBLE_ENDINGS, _is_invalid_k8_definition 
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.runner_filter import RunnerFilter
@@ -23,14 +22,17 @@ from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
 
 class K8sKustomizeRunner(K8sRunner):
+
     def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, entity_lines_range=None, entity_code_lines=None, variable_evaluations=None, reportMutatorData=None):
+    # Moves report generation logic out of checkov.kubernetes.runner.run() def.
+    # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
+    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
         kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
-        
         for check, check_result in results.items():
-            resource_id = check.get_resource_id(entity_conf)
+            resource_id = self.get_resource_id(entity_conf)
+            entity_context = self.context[k8_file][resource_id]
             
-            ## Needs re-factor, calculate our Kustomize metadata and original file/overlay details.                   
             if file_abs_path in kustomizeFileMappings:
                 realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[file_abs_path]]
                 if 'overlay' in realKustomizeEnvMetadata["type"]:
@@ -39,16 +41,44 @@ class K8sKustomizeRunner(K8sRunner):
                     kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
             else: 
                 kustomizeResourceID = "Unknown error. This is a bug."
-                    
-            report.add_resource(kustomizeResourceID)
-            record = Record(check_id=check.id, bc_check_id=check.bc_id,
-                            check_name=check.name, check_result=check_result,
-                            code_block=entity_code_lines, file_path=realKustomizeEnvMetadata['filePath'],
-                            file_line_range=[], #Line numbers would come from the temporary templated k8s manifest, not the users inputs (incorrect) so hide them for now.
-                            resource=kustomizeResourceID, evaluations=variable_evaluations,
-                            check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'])
+
+            record = Record(
+                check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=realKustomizeEnvMetadata['filePath'],
+                file_line_range=[],
+                resource=kustomizeResourceID, evaluations=variable_evaluations,
+                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'])
             record.set_guideline(check.guideline)
             report.add_record(record=record)
+        
+        return report
+
+    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
+    # Moves report generation logic out of run() method in Runner class.
+    # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        for check, check_results in checks_results.items():
+            for check_result in check_results:
+                entity = check_result["entity"]
+                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
+                entity_id = entity.get(CustomAttributes.ID)
+                entity_context = self.context[entity_file_path][entity_id]
+
+                record = Record(
+                    check_id=check.id,
+                    check_name=check.name,
+                    check_result=check_result,
+                    code_block=entity_context.get("code_lines"),
+                    file_path=entity_file_path,
+                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    resource=entity.get(CustomAttributes.ID),
+                    evaluations={},
+                    check_class=check.__class__.__module__,
+                    file_abs_path=entity_file_abs_path
+                )
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
         return report
 
 class Runner(BaseRunner):
@@ -140,16 +170,12 @@ class Runner(BaseRunner):
             logging.info(f"Error running necessary tools to process {self.check_type} checks.")
             return self.check_type
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, ):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
 
         definitions = {}
         definitions_raw = {}
         parsing_errors = {}
         files_list = []
-        #TODO, check if kubernetes external checks are correctly loaded when triggered from kustomize (and helm) frameworks, if not we need to load the k8s custom checks here calling the k8s registry class.
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                registry.load_external_checks(directory)
 
         kustomizeDirectories = self.findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
 
@@ -233,7 +259,7 @@ class Runner(BaseRunner):
                 line_num = 1
                 file_num = 0
 
-                #HACK Helm/k8s page-to-file parser works well, but we expect the file to start with ---.
+                #page-to-file parser from helm framework works well, but we expect the file to start with --- in this case from Kustomize.
                 output = "---\n" + output
                 reader = io.StringIO(output)
                 
@@ -281,17 +307,11 @@ class Runner(BaseRunner):
                 if cur_writer:
                     self._curWriterRenameAndClose(cur_writer, filePath)
 
-
-            #This doesnt work as we're passing the whole bunch of found files to the K8s scanner at once, old logic to remove
-            #try:
-            #    if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
-            #        identityToK8sScanner = str(self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'])
-            #   if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'base':
-            #        identityToK8sScanner = "base"
             try:
                 k8s_runner = K8sKustomizeRunner()
                 reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings }
-                chart_results = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir,
+                #k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
+                chart_results = k8s_runner.run(target_dir, external_checks_dir=None,
                                                 runner_filter=runner_filter, reportMutatorData=reportMutatorData)
                 logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
                 report.failed_checks += chart_results.failed_checks
