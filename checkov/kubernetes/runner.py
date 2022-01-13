@@ -72,6 +72,7 @@ class Runner(BaseRunner):
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
             # The goal here is simply to get a valid path to the file (which sls_file does not always give).
             file_abs_path = _get_entity_abs_path(root_folder, k8_file)
+            k8_file_path = f"/{os.path.relpath(file_abs_path, root_folder)}"
             # Run for each definition
             for entity_conf in self.definitions[k8_file]:
                 entity_type = entity_conf.get("kind")
@@ -92,7 +93,7 @@ class Runner(BaseRunner):
 
                     record = Record(
                         check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file,
+                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
                         file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
                         resource=resource_id, evaluations=variable_evaluations,
                         check_class=check.__class__.__module__, file_abs_path=file_abs_path)
