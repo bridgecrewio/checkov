@@ -135,7 +135,7 @@ class TestNSGRuleUDPAccessRestricted(unittest.TestCase):
                 protocol                   = "Udp"
                 source_port_range          = "*"
                 destination_port_range     = "*"
-                source_address_prefix      = "internet"
+                source_address_prefix      = "Internet"
                 destination_address_prefix = "*"
               }
 
@@ -314,7 +314,7 @@ class TestNSGRuleUDPAccessRestricted(unittest.TestCase):
                 protocol                   = "Udp"
                 source_port_range          = "*"
                 destination_port_range     = "*"
-                source_address_prefix      = "internet"
+                source_address_prefix      = "Internet"
                 destination_address_prefix = "*"
             }
                 """)
