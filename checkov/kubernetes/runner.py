@@ -91,16 +91,6 @@ class Runner(BaseRunner):
 
                 report = self.mutateKubernetesResults(results, report, k8_file, file_abs_path, entity_conf, variable_evaluations, reportMutatorData)
 
-<<<<<<< HEAD
-                    record = Record(
-                        check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
-                        file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                        resource=resource_id, evaluations=variable_evaluations,
-                        check_class=check.__class__.__module__, file_abs_path=file_abs_path)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
-=======
                 # for check, check_result in results.items():
                 #     resource_id = get_resource_id(entity_conf)
                 #     entity_context = self.context[k8_file][resource_id]
@@ -113,7 +103,6 @@ class Runner(BaseRunner):
                 #         check_class=check.__class__.__module__, file_abs_path=file_abs_path)
                 #     record.set_guideline(check.guideline)
                 #     report.add_record(record=record)
->>>>>>> fb7c3cdb (Moved k8s report generation logic (for python and graph policies) into own class defs() so that inheritance can be used to override for custom uses of the k8s runner (helm, Kustomize frameworks).)
 
         return report
 
@@ -146,7 +135,7 @@ class Runner(BaseRunner):
         #         report.add_record(record=record)
         return report
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, entity_lines_range=None, entity_code_lines=None, variable_evaluations=None, reportMutatorData=None):
+    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
     # Moves report generation logic out of run() method in Runner class.
     # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
     # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
