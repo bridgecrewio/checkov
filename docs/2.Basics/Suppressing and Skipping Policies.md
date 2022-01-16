@@ -96,7 +96,7 @@ Resources:
 ```
 
 ## CloudFormation Metadata
-Additionally it is possible to suppress CloudFormation checks via the `Metadata` section inside a resource.
+Additionally, it is possible to suppress CloudFormation checks via the `Metadata` section inside a resource.
 ```yaml
 Resources:
   MyDB:
@@ -112,4 +112,41 @@ Resources:
       Engine: "mysql"
       MasterUsername: "master"
       MasterUserPassword: "password"
+```
+
+### CDK Example
+The `Metadata` section of a CDK construct can only be adjusted via the L1 resource.
+```typescript
+const bucket = new aws_s3.Bucket(this, 'MyBucket', {
+  versioned: true
+});
+const cfnBucket = bucket.node.defaultChild as aws_s3.CfnBucket;
+
+cfnBucket.cfnOptions.metadata = {
+  'checkov': {
+    'skip': [
+      {
+        'id': 'CKV_AWS_18',
+        'comment': 'Ensure the S3 bucket has access logging enabled'
+      }
+    ]
+  }
+}
+```
+Using `cdk synth` this results in a following CloudFormation template
+```yaml
+Resources:
+  MyBucketF68F3FF0:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: Ensure the S3 bucket has access logging enabled
+
 ```
