@@ -12,9 +12,7 @@ import pathlib
 import glob
 
 from checkov.common.output.report import Report, report_to_cyclonedx
-#from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-#from checkov.kubernetes.runner import _parse_files, K8_POSSIBLE_ENDINGS, _is_invalid_k8_definition 
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.util.data_structures_utils import search_deep_keys
@@ -185,9 +183,6 @@ class Runner(BaseRunner):
         kustomizeDirectories = self.findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
 
         report = Report(self.check_type)
-        #self.kustomizeProcessedFolderAndMeta = {}
-        #self.kustomizeProcessedFolderAndMeta = parallel_runner.run_function(
-        #    lambda parseKustomizationData: (parseKustomizationData, self.parseKustomization(parseKustomizationData)), kustomizeDirectories)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self.parseKustomization(kustomizedir)
         
@@ -337,7 +332,6 @@ class Runner(BaseRunner):
     def _curWriterRenameAndClose(self, cur_writer, FilePath):
         currentFileName = cur_writer.name
         cur_writer.close()
-
         # Now we have a complete k8s manifest as we closed the writer, and it's temporary file name (currentFileName) plus the original file templated out (FilePath)
         # Rename them to useful information from the K8S metadata before conting.
         # Then keep a mapping of temp files to original repo locations for use with Checkov output later.
