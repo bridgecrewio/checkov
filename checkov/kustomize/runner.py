@@ -60,6 +60,9 @@ class K8sKustomizeRunner(K8sRunner):
     # Moves report generation logic out of run() method in Runner class.
     # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
     # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
+        kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
+
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
@@ -68,20 +71,30 @@ class K8sKustomizeRunner(K8sRunner):
                 entity_id = entity.get(CustomAttributes.ID)
                 entity_context = self.context[entity_file_path][entity_id]
 
+                if entity_file_abs_path in kustomizeFileMappings:
+                    realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[entity_file_abs_path]]
+                    if 'overlay' in realKustomizeEnvMetadata["type"]:
+                        kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
+                    else:
+                        kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
+                else: 
+                    kustomizeResourceID = "Unknown error. This is a bug."
+
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
-                    file_path=entity_file_path,
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                    resource=entity.get(CustomAttributes.ID),
+                    file_path=realKustomizeEnvMetadata['filePath'],
+                    file_line_range=[],
+                    resource=kustomizeResourceID, #entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
+
         return report
 
 class Runner(BaseRunner):
