@@ -27,9 +27,9 @@ from checkov.kubernetes.runner import _get_entity_abs_path
 class K8sKustomizeRunner(K8sRunner):
 
     def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
-    # Moves report generation logic out of checkov.kubernetes.runner.run() def.
-    # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
-    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        # Moves report generation logic out of checkov.kubernetes.runner.run() def.
+        # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
         kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
         for check, check_result in results.items():
@@ -57,9 +57,9 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
     def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
-    # Moves report generation logic out of run() method in Runner class.
-    # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
-    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        # Moves report generation logic out of run() method in Runner class.
+        # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
         kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
 
@@ -150,7 +150,7 @@ class Runner(BaseRunner):
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
                 metadata['type'] =  "overlay"
                 if 'bases' in fileContent:
-                 metadata['referenced_bases'] = fileContent['bases']
+                    metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent.get:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
@@ -187,11 +187,6 @@ class Runner(BaseRunner):
             return self.check_type
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
-
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = {}
-        files_list = []
 
         kustomizeDirectories = self.findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
 
@@ -322,7 +317,7 @@ class Runner(BaseRunner):
 
             try:
                 k8s_runner = K8sKustomizeRunner()
-                reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings }
+                reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings}
                 #k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
                 chart_results = k8s_runner.run(target_dir, external_checks_dir=None,
                                                 runner_filter=runner_filter, reportMutatorData=reportMutatorData)
@@ -397,7 +392,7 @@ def get_skipped_checks(entity_conf):
                                                                        indent=2))
                     continue
     return skipped
-
+    
 
 def _get_from_dict(data_dict, map_list):
     return reduce(operator.getitem, map_list, data_dict)

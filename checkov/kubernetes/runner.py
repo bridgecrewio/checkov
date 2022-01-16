@@ -99,9 +99,9 @@ class Runner(BaseRunner):
         return report
 
     def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
-    # Moves report generation logic out of run() method in Runner class.
-    # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
-    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        # Moves report generation logic out of run() method in Runner class.
+        # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
             entity_context = self.context[k8_file][resource_id]
@@ -118,9 +118,9 @@ class Runner(BaseRunner):
         return report
 
     def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
-    # Moves report generation logic out of run() method in Runner class.
-    # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
-    # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        # Moves report generation logic out of run() method in Runner class.
+        # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
