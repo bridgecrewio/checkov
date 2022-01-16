@@ -25,7 +25,7 @@ class PanosCredentials(BaseProviderCheck):
     def secret_found(conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
             value = conf[field][0]
-            if re.match(pattern, value) is not None:
+            if not isinstance(value, str) or re.match(pattern, value) is not None:
                 return True
         return False
 
