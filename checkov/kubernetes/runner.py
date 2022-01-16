@@ -19,7 +19,6 @@ from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
 
-
 class Runner(BaseRunner):
     def __init__(
         self,
@@ -91,48 +90,12 @@ class Runner(BaseRunner):
 
                 report = self.mutateKubernetesResults(results, report, k8_file, file_abs_path, entity_conf, variable_evaluations, reportMutatorData)
 
-                # for check, check_result in results.items():
-                #     resource_id = get_resource_id(entity_conf)
-                #     entity_context = self.context[k8_file][resource_id]
-
-                #     record = Record(
-                #         check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                #         check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file,
-                #         file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                #         resource=resource_id, evaluations=variable_evaluations,
-                #         check_class=check.__class__.__module__, file_abs_path=file_abs_path)
-                #     record.set_guideline(check.guideline)
-                #     report.add_record(record=record)
-
         return report
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, helmChart, reportMutatorData) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
-
         report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results, reportMutatorData=reportMutatorData)
-        # for check, check_results in checks_results.items():
-        #     for check_result in check_results:
-        #         entity = check_result["entity"]
-        #         entity_file_path = entity.get(CustomAttributes.FILE_PATH)
-        #         entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
-        #         entity_id = entity.get(CustomAttributes.ID)
-        #         entity_context = self.context[entity_file_path][entity_id]
-
-        #         record = Record(
-        #             check_id=check.id,
-        #             check_name=check.name,
-        #             check_result=check_result,
-        #             code_block=entity_context.get("code_lines"),
-        #             file_path=entity_file_path,
-        #             file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-        #             resource=entity.get(CustomAttributes.ID),
-        #             evaluations={},
-        #             check_class=check.__class__.__module__,
-        #             file_abs_path=entity_file_abs_path
-        #         )
-        #         record.set_guideline(check.guideline)
-        #         report.add_record(record=record)
         return report
 
     def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
