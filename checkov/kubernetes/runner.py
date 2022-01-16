@@ -88,7 +88,7 @@ class Runner(BaseRunner):
                 # TODO? - Variable Eval Message!
                 variable_evaluations = {}
 
-                report = self.mutateKubernetesResults(results, report, k8_file, file_abs_path, entity_conf, variable_evaluations, reportMutatorData)
+                report = self.mutateKubernetesResults(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations, reportMutatorData)
 
         return report
 
@@ -98,7 +98,7 @@ class Runner(BaseRunner):
         report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results, reportMutatorData=reportMutatorData)
         return report
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
+    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
@@ -108,7 +108,7 @@ class Runner(BaseRunner):
 
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file,
+                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
                 file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
                 resource=resource_id, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=file_abs_path)
