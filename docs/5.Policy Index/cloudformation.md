@@ -155,6 +155,9 @@ nav_order: 1
 | 144 | CKV_AWS_192 | resource | AWS::WAFv2::WebACL                        | Ensure WAF prevents message lookup in Log4j2. See CVE-2021-44228 aka log4jshell                                                                                                                          | Cloudformation |
 | 145 | CKV_AWS_193 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync has Logging enabled                                                                                                                                                                       | Cloudformation |
 | 146 | CKV_AWS_194 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync has Field-Level logs enabled                                                                                                                                                              | Cloudformation |
+| 147 | CKV_AWS_195 | resource | AWS::Glue::Crawler                        | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
+| 148 | CKV_AWS_195 | resource | AWS::Glue::DevEndpoint                    | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
+| 149 | CKV_AWS_195 | resource | AWS::Glue::Job                            | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 
 
 ---
