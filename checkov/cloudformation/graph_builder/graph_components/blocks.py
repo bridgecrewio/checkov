@@ -7,15 +7,16 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 class CloudformationBlock(Block):
     def __init__(
-            self,
-            name: str,
-            config: Dict[str, Any],
-            path: str,
-            block_type: str,
-            attributes: Dict[str, Any],
-            id: str = "",
-            source: str = "",
-            condition: bool = True,
+        self,
+        name: str,
+        config: Dict[str, Any],
+        path: str,
+        block_type: str,
+        attributes: Dict[str, Any],
+        id: str = "",
+        source: str = "",
+        condition: bool = True,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
@@ -26,6 +27,7 @@ class CloudformationBlock(Block):
         """
         super().__init__(name, config, path, block_type, attributes, id, source)
         self.condition = condition
+        self.metadata = metadata
 
     def update_attribute(
             self, attribute_key: str, attribute_value: Any, change_origin_id: int,

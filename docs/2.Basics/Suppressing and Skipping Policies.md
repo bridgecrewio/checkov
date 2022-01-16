@@ -94,3 +94,22 @@ Resources:
       MasterUserPassword: 'password' # checkov:skip=CKV_SECRET_6 or next to it
       # checkov:skip=CKV_SECRET_6 or after it
 ```
+
+## CloudFormation Metadata
+Additionally it is possible to suppress CloudFormation checks via the `Metadata` section inside a resource.
+```yaml
+Resources:
+  MyDB:
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_157"
+            comment: "Ensure that RDS instances have Multi-AZ enabled"
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBName: "mydb"
+      DBInstanceClass: "db.t3.micro"
+      Engine: "mysql"
+      MasterUsername: "master"
+      MasterUserPassword: "password"
+```
