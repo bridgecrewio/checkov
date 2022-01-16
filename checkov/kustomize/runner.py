@@ -365,43 +365,6 @@ class Runner(BaseRunner):
         except IsADirectoryError:
             pass
 
-def get_skipped_checks(entity_conf):
-    skipped = []
-    metadata = {}
-    if not isinstance(entity_conf, dict):
-        return skipped
-    if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
-        metadata = entity_conf["parent_metadata"]
-    else:
-        if "metadata" in entity_conf.keys():
-            metadata = entity_conf["metadata"]
-    if "annotations" in metadata.keys() and metadata["annotations"] is not None:
-        for key in metadata["annotations"].keys():
-            skipped_item = {}
-            if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                if "CKV_K8S" in metadata["annotations"][key]:
-                    if "=" in metadata["annotations"][key]:
-                        (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")
-                    else:
-                        skipped_item["id"] = metadata["annotations"][key]
-                        skipped_item["suppress_comment"] = "No comment provided"
-                    skipped.append(skipped_item)
-                else:
-                    logging.info(
-                        "Parse of Annotation Failed for {}: {}".format(metadata["annotations"][key], entity_conf,
-                                                                       indent=2))
-                    continue
-    return skipped
-    
-
-def _get_from_dict(data_dict, map_list):
-    return reduce(operator.getitem, map_list, data_dict)
-
-
-def _set_in_dict(data_dict, map_list, value):
-    _get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
 def find_lines(node, kv):
     if isinstance(node, str):
         return node
