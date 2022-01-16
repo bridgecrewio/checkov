@@ -20,17 +20,22 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.common.util.type_forcers import force_list
 from checkov.common.output.record import Record
+from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
+from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
+from checkov.kubernetes.runner import _get_entity_abs_path
 
 class K8sKustomizeRunner(K8sRunner):
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, entity_lines_range=None, entity_code_lines=None, variable_evaluations=None, reportMutatorData=None):
+    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
     # Moves report generation logic out of checkov.kubernetes.runner.run() def.
     # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
     # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
         kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
         for check, check_result in results.items():
-            resource_id = self.get_resource_id(entity_conf)
+            resource_id = get_resource_id(entity_conf)
             entity_context = self.context[k8_file][resource_id]
             
             if file_abs_path in kustomizeFileMappings:
