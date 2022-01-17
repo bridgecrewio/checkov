@@ -46,6 +46,7 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
                 ret_dict[key] = value
             else:
                 ret_dict[key] = [value]
+                ret_dict[key] = _clean_simple_type_list(ret_dict[key])
 
         if _is_list_of_dicts(value):
             child_list = []
@@ -149,3 +150,19 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
     for resource in resource_blocks:
         tf_defintions[tf_plan_file]["resource"].append(resource)
     return tf_defintions, template_lines
+
+
+def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
+    """
+    Given a list of simple types return a cleaned list of simple types.
+    Converts booleans that are input as strings back to booleans to maintain consistent expectations for later evaluation.
+    Sometimes Terraform Plan will output Map values as strings regardless of boolean input.
+    """
+    for i in range(len(value_list)):
+        if isinstance(value_list[i], str):
+            lower_case_value = value_list[i].lower()
+            if lower_case_value == "true":
+                value_list[i] = True
+            if lower_case_value == "false":
+                value_list[i] = False         
+    return value_list
