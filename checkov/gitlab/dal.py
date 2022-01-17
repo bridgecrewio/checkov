@@ -40,9 +40,9 @@ class Gitlab(BaseVCSDAL):
 
     def get_project_approvals(self):
         if self.project_id:
-            branch_protection_rules = self._request(
-                endpoint="application/settings")
-            return branch_protection_rules
+            project_approvals = self._request(
+                endpoint=f"projects/{self.project_id}/approvals")
+            return project_approvals
         return None
 
     def persist_project_approvals(self):
