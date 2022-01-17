@@ -111,14 +111,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-
                             skipped_checks =  resource_context.get("skipped_checks")
-                            if not skipped_checks:
-                                skipped_checks = ContextParser.collect_skip_comments(
-                                    entity_code_lines=entity_code_lines,
-                                    resource_config=resource,
-                                )
-
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)

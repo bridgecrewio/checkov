@@ -115,7 +115,7 @@ Resources:
 ```
 
 ### CDK Example
-The `Metadata` section of a CDK construct can only be adjusted via the L1 resource.
+The `Metadata` section of a CDK construct can only be adjusted via the L1 (layer 1) construct, also known as CloudFormation resource.
 ```typescript
 const bucket = new aws_s3.Bucket(this, 'MyBucket', {
   versioned: true
@@ -133,8 +133,9 @@ cfnBucket.cfnOptions.metadata = {
   }
 }
 ```
-Using `cdk synth` this results in a following CloudFormation template
-```yaml
+Run the `synth` command to generate a CloudFormation template and scan it
+```shell
+$ cdk synth
 Resources:
   MyBucketF68F3FF0:
     Type: AWS::S3::Bucket
@@ -148,5 +149,29 @@ Resources:
         skip:
           - id: CKV_AWS_18
             comment: Ensure the S3 bucket has access logging enabled
+  CDKMetadata:
+    ...
+
+$ checkov -f cdk.out/AppStack.template.json
+       _               _              
+   ___| |__   ___  ___| | _______   __
+  / __| '_ \ / _ \/ __| |/ / _ \ \ / /
+ | (__| | | |  __/ (__|   < (_) \ V / 
+  \___|_| |_|\___|\___|_|\_\___/ \_/  
+                                      
+By bridgecrew.io | version: 2.0.727
+
+cloudformation scan results:
+
+Passed checks: 3, Failed checks: 5, Skipped checks: 1
+
+...
+
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+        SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
+        Suppress comment: Ensure the S3 bucket has access logging enabled
+        File: /../anton/cfn.json:3-22
+        Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
+
 
 ```

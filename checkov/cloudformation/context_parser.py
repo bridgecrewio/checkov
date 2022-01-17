@@ -141,7 +141,7 @@ class ContextParser(object):
                         skip_id = skip.get("id")
                         skip_comment = skip.get("comment", "No comment provided")
                         if skip_id is None:
-                            logging.debug("Check suppression is missing key 'id'")
+                            logging.warning("Check suppression is missing key 'id'")
                             continue
 
                         skipped_check = {"id": skip_id, "suppress_comment": skip_comment}
