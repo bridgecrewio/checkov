@@ -12,7 +12,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.package_scanner import TWI
 
 
 class Scanner:
-    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]") -> Sequence[Dict[str, Any]]:
+    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]") -> "Sequence[Dict[str, Any]]":
         package_scanner = PackageScanner()
 
         package_scanner.setup_scan()
@@ -32,7 +32,7 @@ class Scanner:
         address: str,
         bc_api_key: str,
         input_output_paths: "Iterable[Tuple[Path, Path]]",
-    ) -> Sequence[Dict[str, Any]]:
+    ) -> "Sequence[Dict[str, Any]]":
         args = [
             (
                 f"./{TWISTCLI_FILE_NAME} coderepo scan --address {address} --token {bc_api_key} --output-file {output_path.absolute()} {input_path.absolute()}",
