@@ -1,7 +1,7 @@
-from checkov.github.schemas.base_schema import GithubConfSchema
+from checkov.common.vcs.vcs_schema import VCSSchema
 
 
-class OrgSecuritySchema(GithubConfSchema):
+class OrgSecuritySchema(VCSSchema):
     def __init__(self):
         schema = {
             "type": "object",
