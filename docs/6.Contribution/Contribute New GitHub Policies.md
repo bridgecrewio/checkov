@@ -20,7 +20,7 @@ If not it can be added to that file like the following example:
 
 ```python
 
-class GitHub:
+class GitHub(BaseVCSDAL)
     ...
     ...
     def get_branch_protection_rules(self):
@@ -33,7 +33,7 @@ class GitHub:
     def persist_branch_protection_rules(self):
         data = self.get_branch_protection_rules()
         if data:
-            Github.persist(path=self.github_branch_protection_rules_file_path, conf=data)        
+            BaseVCSDAL.persist(path=self.github_branch_protection_rules_file_path, conf=data)        
     
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
