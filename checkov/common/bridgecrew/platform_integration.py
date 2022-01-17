@@ -18,7 +18,7 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
-from urllib3.exceptions import HTTPError
+from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.ci_variables import (
     BC_TO_BRANCH,
@@ -50,6 +50,7 @@ UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4
 ACCOUNT_CREATION_TIME = 180  # in seconds
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
+ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole'
 
 DEFAULT_REGION = "us-west-2"
 MAX_RETRIES = 40
@@ -173,6 +174,10 @@ class BcPlatformIntegration(object):
                                               )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
+            except MaxRetryError as e:
+                logging.error(f"An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              f"disabling it and re-running the command.\n{e}")
+                raise e
             except HTTPError as e:
                 logging.error(f"Failed to get customer assumed role\n{e}")
                 raise e
@@ -200,6 +205,8 @@ class BcPlatformIntegration(object):
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
+            if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+                raise BridgecrewAuthError("Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
                 request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),

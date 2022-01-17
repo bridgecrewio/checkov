@@ -17,7 +17,7 @@ class TestAppServiceDotnetFrameworkVersion(unittest.TestCase):
               app_service_plan_id = azurerm_app_service_plan.example.id
               https_only          = true
               site_config {
-                dotnet_framework_version = "v4.0"
+                dotnet_framework_version = "v5.0"
                 scm_type                 = "someValue"
                 }
               }
@@ -52,7 +52,7 @@ class TestAppServiceDotnetFrameworkVersion(unittest.TestCase):
               app_service_plan_id = azurerm_app_service_plan.example.id
               https_only          = true
               site_config {
-                dotnet_framework_version = "v5.0"
+                dotnet_framework_version = "v6.0"
                 scm_type                 = "someValue"
                 }
               }

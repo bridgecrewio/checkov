@@ -109,7 +109,7 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
+def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
         Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     definitions = deepcopy(definitions)
@@ -167,12 +167,17 @@ def build_definitions_context(definitions: Dict[str, List], definitions_raw: Dic
     return definitions_context
 
 
-def is_invalid_k8_definition(definition: dict) -> bool:
-    return not isinstance(definition, dict) or 'apiVersion' not in definition.keys() or 'kind' not in \
-           definition.keys() or isinstance(definition.get("kind"), int) or not isinstance(definition.get('metadata'), dict)
+def is_invalid_k8_definition(definition: Dict[str, Any]) -> bool:
+    return (
+        not isinstance(definition, dict)
+        or 'apiVersion' not in definition.keys()
+        or 'kind' not in definition.keys()
+        or isinstance(definition.get("kind"), int)
+        or not isinstance(definition.get('metadata'), dict)
+    )
 
 
-def get_resource_id(resource):
+def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
     resource_type = resource["kind"]
     metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")

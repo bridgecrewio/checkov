@@ -21,6 +21,7 @@ pass:
   - "aws_security_group.pass_emr"
   - "aws_security_group.pass_eni"
   - "aws_security_group.pass_es"
+  - "aws_security_group.pass_glue"
   - "aws_security_group.pass_lambda"
   - "aws_security_group.pass_lb"
   - "aws_security_group.pass_mq_broker"
