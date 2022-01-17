@@ -1,7 +1,5 @@
-import json
 
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import is_json
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from typing import List
 
