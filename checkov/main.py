@@ -44,7 +44,7 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
-
+from checkov.sca_package.runner import Runner as sca_package_runner
 
 from checkov.version import version
 
@@ -53,12 +53,12 @@ outer_registry = None
 logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile', 'secrets', 'json', 'github_configuration', 'gitlab_configuration']
+                   'dockerfile', 'secrets', 'json', 'github_configuration', 'gitlab_configuration', 'sca_package']
 
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner())
+                   gitlab_configuration_runner(), sca_package_runner())
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):

@@ -8,7 +8,6 @@ from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
-from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
@@ -19,6 +18,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
+from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 
@@ -47,11 +47,6 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
-
-
-class _CheckResult(TypedDict, total=False):
-    result: CheckResult
-    suppress_comment: str
 
 
 class Runner(BaseRunner):
