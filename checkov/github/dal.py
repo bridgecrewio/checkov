@@ -26,6 +26,12 @@ class Github(BaseVCSDAL):
 
         self.current_repository = os.getenv('GITHUB_REPOSITORY', '')
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
+        if not self.current_branch:
+            self.current_branch = os.getenv('GITHUB_REF', '')
+            if self.current_branch:
+                extracted_branch_array = self.current_branch.split("/")
+                if len(extracted_branch_array) == 3:
+                    self.current_branch = extracted_branch_array[2]
 
         self.default_branch_cache = {}
 
