@@ -4,6 +4,7 @@ from pathlib import Path
 from mock.mock import MagicMock
 from pytest_mock import MockerFixture
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.sca_package.runner import Runner
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
@@ -11,6 +12,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 def test_run(mocker: MockerFixture, scan_result):
     # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     # scanner_mock.return_value.__name__ = "Scanner"
     scanner_mock.return_value.scan.return_value = scan_result
@@ -95,6 +97,7 @@ def test_run(mocker: MockerFixture, scan_result):
 
 def test_run_empty_scan_result(mocker: MockerFixture):
     # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = []
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
