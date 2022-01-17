@@ -61,8 +61,11 @@ class Runner(BaseRunner):
 
         for result in scan_results:
             package_file_path = Path(result["repository"])
-            if package_file_path.is_relative_to(code_repo_path):
+            try:
                 package_file_path = package_file_path.relative_to(code_repo_path)
+            except ValueError:
+                # Path.is_relative_to() was implemented in Python 3.9
+                pass
 
             vulnerabilities = result.get("vulnerabilities") or []
             vulnerability_dist = result["vulnerabilityDistribution"]
