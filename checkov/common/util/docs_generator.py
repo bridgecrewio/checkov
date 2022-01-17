@@ -43,8 +43,8 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
     print("\n\n---\n\n")
 
 
-def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> List[
-    Tuple[str, str, str, str, str]]:
+def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> \
+        List[Tuple[str, str, str, str, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = []
 
