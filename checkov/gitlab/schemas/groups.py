@@ -13,6 +13,9 @@ class GroupsSchema(VCSSchema):
                         "id": {
                             "type": "integer"
                         },
+                        "web_url": {
+                            "type": "string"
+                        },
                         "name": {
                             "type": "string"
                         },
@@ -56,10 +59,7 @@ class GroupsSchema(VCSSchema):
                             "type": "integer"
                         },
                         "avatar_url": {
-                            "type": "string"
-                        },
-                        "web_url": {
-                            "type": "string"
+                            "type": "null"
                         },
                         "request_access_enabled": {
                             "type": "boolean"
@@ -70,18 +70,22 @@ class GroupsSchema(VCSSchema):
                         "full_path": {
                             "type": "string"
                         },
-                        "file_template_project_id": {
-                            "type": "integer"
+                        "created_at": {
+                            "type": "string"
                         },
                         "parent_id": {
                             "type": "null"
                         },
-                        "created_at": {
-                            "type": "string"
+                        "ldap_cn": {
+                            "type": "null"
+                        },
+                        "ldap_access": {
+                            "type": "null"
                         }
                     },
                     "required": [
                         "id",
+                        "web_url",
                         "name",
                         "path",
                         "description",
@@ -97,13 +101,13 @@ class GroupsSchema(VCSSchema):
                         "lfs_enabled",
                         "default_branch_protection",
                         "avatar_url",
-                        "web_url",
                         "request_access_enabled",
                         "full_name",
                         "full_path",
-                        "file_template_project_id",
+                        "created_at",
                         "parent_id",
-                        "created_at"
+                        "ldap_cn",
+                        "ldap_access"
                     ]
                 }
             ]
