@@ -7,9 +7,8 @@ from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 class Gitlab(BaseVCSDAL):
     def __init__(self):
         super().__init__()
-        self.configure_gitlab_conf_dir()
 
-    def configure_gitlab_conf_dir(self):
+    def setup_conf_dir(self):
         """
             discover parameters from execution context of checkov and determine the directory to save temporal files of vcs configuration
         """

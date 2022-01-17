@@ -4,7 +4,7 @@ from checkov.gitlab.schemas.groups import schema
 from checkov.json_doc.enums import BlockType
 
 
-class MergeRequestRequiresApproval(BaseGitlabCheck):
+class GroupsTwoFactorAuthentication(BaseGitlabCheck):
     def __init__(self):
         name = "Ensure all Gitlab groups require two factor authentication"
         id = "CKV_GITLAB_2"
@@ -25,4 +25,4 @@ class MergeRequestRequiresApproval(BaseGitlabCheck):
             return CheckResult.FAILED, conf
 
 
-check = MergeRequestRequiresApproval()
+check = GroupsTwoFactorAuthentication()

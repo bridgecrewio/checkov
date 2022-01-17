@@ -8,9 +8,8 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 class Github(BaseVCSDAL):
     def __init__(self):
         super().__init__()
-        self.configure_github_conf_dir()
 
-    def configure_github_conf_dir(self):
+    def setup_conf_dir(self):
         # files downloaded from github will be persistent in this directory
         github_conf_dir_name = os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
         self.github_conf_dir_path = os.path.join(os.getcwd(), github_conf_dir_name)

@@ -12,6 +12,7 @@ class BaseVCSDAL:
         self._organization_security = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
+        self.setup_conf_dir()
 
     @abstractmethod
     def discover(self):
@@ -101,3 +102,7 @@ class BaseVCSDAL:
             directory_path = os.path.dirname(file_path)
             if not os.path.exists(directory_path):
                 os.makedirs(directory_path)
+
+    @abstractmethod
+    def setup_conf_dir(self):
+        pass
