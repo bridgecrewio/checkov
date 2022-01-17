@@ -19,7 +19,7 @@ class MergeRequestRequiresApproval(BaseGitlabCheck):
 
     def scan_entity_conf(self, conf):
         if schema.validate(conf):
-            if conf.get("require_two_factor_authentication", False) == True:
+            if conf.get("require_two_factor_authentication", False) is True:
                 return CheckResult.PASSED, conf
             return CheckResult.FAILED, conf
 
