@@ -3,7 +3,7 @@ import json
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import is_json
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from typing import List, Any
+from typing import List
 
 
 class ECRPolicy(BaseResourceCheck):
@@ -21,9 +21,16 @@ class ECRPolicy(BaseResourceCheck):
         :param conf: aws_ecr_repository configuration
         :return: <CheckResult>
         """
-        if "policy" in conf.keys() and is_json(conf["policy"][0]) \
-                and json.loads(conf["policy"][0])['Statement'][0]['Principal'] == '*':
-            return CheckResult.FAILED
+        if "policy" in conf.keys():
+            policy = conf["policy"][0]
+            if policy == '':
+                return CheckResult.PASSED
+            if policy['Statement'][0]:
+                statement = policy['Statement'][0]
+                if statement['Principal']:
+                    principal = statement['Principal']
+                    if principal == "*":
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
