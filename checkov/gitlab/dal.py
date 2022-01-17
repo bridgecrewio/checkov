@@ -17,6 +17,8 @@ class Gitlab(BaseVCSDAL):
         self.gitlab_conf_dir_path = os.path.join(os.getcwd(), gitlab_conf_dir_name)
         self.gitlab_project_approvals_file_path = os.path.join(self.gitlab_conf_dir_path,
                                                                "project_approvals.json")
+        self.gitlab_groups_file_path = os.path.join(self.gitlab_conf_dir_path,
+                                                    "groups.json")
 
     def discover(self):
         """
@@ -50,6 +52,18 @@ class Gitlab(BaseVCSDAL):
         if project_approvals:
             BaseVCSDAL.persist(path=self.gitlab_project_approvals_file_path, conf=project_approvals)
 
+    def get_groups(self):
+        groups = self._request(
+            endpoint="groups")
+        return groups
+
+    def persist_groups(self):
+        groups = self.get_groups()
+        if groups:
+            BaseVCSDAL.persist(path=self.gitlab_groups_file_path, conf=groups)
+
+
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", "True")):
             self.persist_project_approvals()
+            self.persist_groups()
