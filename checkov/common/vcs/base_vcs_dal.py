@@ -49,7 +49,7 @@ class BaseVCSDAL:
     def _request(self, endpoint):
         if not self.token:
             return
-        url_endpoint = "{}{}".format(self.api_url, endpoint)
+        url_endpoint = "{}/{}".format(self.api_url, endpoint)
         try:
             request = self.http.request("GET", url_endpoint,
                                         headers=self._headers())

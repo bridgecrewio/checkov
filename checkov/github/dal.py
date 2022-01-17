@@ -19,8 +19,8 @@ class Github(BaseVCSDAL):
 
     def discover(self):
 
-        self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com/")
-        self.graphql_api_url = f"{self.api_url}graphql"
+        self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com")
+        self.graphql_api_url = f"{self.api_url}/graphql"
 
         self.token = os.getenv('GITHUB_TOKEN', '')
 
@@ -36,7 +36,7 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch))
+                endpoint="/repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch))
             return branch_protection_rules
         return None
 
