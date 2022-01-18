@@ -19,6 +19,17 @@ def validating_webhook():
     request_info = request.get_json()
     uid = request_info["request"].get("uid")
 
+    # Check/Sanitise UID to make sure it's a k8s request and only a k8s request as it is used for filenaming
+    # UUID pattern match regex
+    pattern = r'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b'
+    if re.match(pattern, uid):
+        print("Valid UID Found, continuing")
+    else:
+        print("Invalid UID. Aborting validation")
+        webhook.logger.error(f'K8s UID failed security checks. Request rejected!')
+        return admission_response(False, uid, response)
+
+
     jsonfile = "tmp/" + uid + "-req.json"
     yamlfile = "tmp/" + uid + "-req.yaml"
     configfile = "config/.checkov.yaml"
