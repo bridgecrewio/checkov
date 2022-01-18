@@ -28,11 +28,21 @@ class CloudformationBlock(Block):
         self.condition = condition
 
     def update_attribute(
-            self, attribute_key: str, attribute_value: Any, change_origin_id: int,
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: str
+        self, attribute_key: str,
+        attribute_value: Any,
+        change_origin_id: int,
+        previous_breadcrumbs: List[BreadcrumbMetadata],
+        attribute_at_dest: str,
+        transform_step: bool = False,
     ) -> None:
-        super().update_attribute(attribute_key, attribute_value, change_origin_id, previous_breadcrumbs,
-                                 attribute_at_dest)
+        super().update_attribute(
+            attribute_key=attribute_key,
+            attribute_value=attribute_value,
+            change_origin_id=change_origin_id,
+            previous_breadcrumbs=previous_breadcrumbs,
+            attribute_at_dest=attribute_at_dest,
+            transform_step=transform_step,
+        )
 
         attribute_key_parts = attribute_key.split(".")
         if attribute_key_parts:
