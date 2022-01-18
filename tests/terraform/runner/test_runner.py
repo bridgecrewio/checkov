@@ -230,7 +230,7 @@ class TestRunnerValid(unittest.TestCase):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
-                # CKV_AWS_95 is currently implemented just on cfn
+                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76 
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
