@@ -45,8 +45,7 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             if parent_key == "tags":
                 ret_dict[key] = value
             else:
-                ret_dict[key] = [value]
-                ret_dict[key] = _clean_simple_type_list(ret_dict[key])
+                ret_dict[key] = _clean_simple_type_list([value])
 
         if _is_list_of_dicts(value):
             child_list = []
