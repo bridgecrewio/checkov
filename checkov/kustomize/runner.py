@@ -26,7 +26,7 @@ from checkov.kubernetes.runner import _get_entity_abs_path
 
 class K8sKustomizeRunner(K8sRunner):
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
+    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
@@ -122,7 +122,7 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, d_names, excluded_paths)
                 filter_ignored_paths(root, f_names, excluded_paths)
                 if 'kustomization.yaml' in f_names:
-                    kustomizeDirectories.append(root)
+                    kustomizeDirectories.append(os.path.abspath(root))
 
         return kustomizeDirectories
 
