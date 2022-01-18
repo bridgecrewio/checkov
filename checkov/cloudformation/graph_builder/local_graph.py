@@ -82,6 +82,7 @@ class CloudformationLocalGraph(LocalGraph):
             attributes = attributes_operator(obj)
             block_name = name if not is_resources_section else f"{obj.get('Type', 'UnTyped')}.{name}"
             config = obj if not is_resources_section else obj.get("Properties")
+            metadata = obj.get("Metadata")
             id = f"{block_type}.{block_name}" if not is_resources_section else block_name
             self.vertices.append(CloudformationBlock(
                 name=block_name,
@@ -90,7 +91,8 @@ class CloudformationLocalGraph(LocalGraph):
                 block_type=block_type,
                 attributes=attributes,
                 id=id,
-                source=self.source
+                source=self.source,
+                metadata=metadata
             ))
 
             if not self._vertices_indexes.get(file_path):
