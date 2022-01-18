@@ -7,7 +7,7 @@ class ElasticacheHasSecurityGroup(BaseResourceCheck):
         name = "Ensure no aws_elasticache_security_group resources exist"
         id = "CKV_AWS_196"
         supported_resources = ['aws_elasticache_security_group']
-        categories = [CheckCategories.APPLICATION_SECURITY]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
