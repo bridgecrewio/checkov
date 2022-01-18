@@ -24,6 +24,20 @@ class TestPlanFileParser(unittest.TestCase):
         # TODO: this should also verify the flattening but at least shows it parses now.
         assert True
 
+    # Check Plan Booleans are treated similar to normal Terraform Parser
+    # https://github.com/bridgecrewio/checkov/issues/1764
+    def test_simple_type_booleans_clean(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_booleans/tfplan.json"
+        tf_definitions, _ = parse_tf_plan(valid_plan_path)
+        file_resource_definition = next(iter(tf_definitions.values()))['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertTrue(resource_attributes['metadata'][0]['a'][0])
+        self.assertTrue(resource_attributes['metadata'][0]['b'][0])
+        self.assertFalse(resource_attributes['metadata'][0]['c'][0])
+        self.assertFalse(resource_attributes['metadata'][0]['d'][0])
+
 
 if __name__ == '__main__':
     unittest.main()
