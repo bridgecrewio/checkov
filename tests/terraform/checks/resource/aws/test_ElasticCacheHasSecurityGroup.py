@@ -19,7 +19,7 @@ class TestElasticacheHasSecurityGroup(unittest.TestCase):
             "aws_elasticache_security_group.exists",
         }
 
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
