@@ -164,7 +164,7 @@ class TestLocalGraph(TestCase):
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
 
-        self.assertEqual(len(local_graph.vertices), 5)
+        self.assertEqual(len(local_graph.vertices), 7)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.GLOBALS]), 1)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 3)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUTS]), 1)
@@ -180,6 +180,9 @@ class TestLocalGraph(TestCase):
             "Tracing",
             "Environment.Variables",
             "Environment.Variables.STAGE",
+            "Environment.Variables.QUEUE_URL",
+            "Environment.Variables.QUEUE_URL.Fn::If",
+            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
             "VpcConfig.SecurityGroupIds",
             "VpcConfig.SubnetIds",
         ]
@@ -193,6 +196,9 @@ class TestLocalGraph(TestCase):
             "Environment.Variables",
             "Environment.Variables.STAGE",
             "Environment.Variables.TABLE_NAME",
+            "Environment.Variables.QUEUE_URL",
+            "Environment.Variables.QUEUE_URL.Fn::If",
+            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
             "VpcConfig",
             "VpcConfig.SecurityGroupIds",
             "VpcConfig.SubnetIds",
