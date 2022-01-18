@@ -99,8 +99,13 @@ class Block:
         return attributes_dict.get(CustomAttributes.HASH, "")
 
     def update_attribute(
-            self, attribute_key: str, attribute_value: Any, change_origin_id: Optional[int],
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]
+        self,
+        attribute_key: str,
+        attribute_value: Any,
+        change_origin_id: Optional[int],
+        previous_breadcrumbs: List[BreadcrumbMetadata],
+        attribute_at_dest: Optional[str],
+        transform_step: bool = False,
     ) -> None:
         if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
@@ -120,6 +125,10 @@ class Block:
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 self.attributes[key] = attribute_value
+                end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
+                if transform_step and end_key_part in ("1", "2"):
+                    # if condition logic during the transform step breaks the values
+                    return
                 attribute_value = {attribute_key_parts[len(attribute_key_parts) - 1 - i]: attribute_value}
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs

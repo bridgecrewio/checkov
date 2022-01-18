@@ -122,6 +122,7 @@ class CloudformationLocalGraph(LocalGraph):
                             attribute_value=value,
                             change_origin_id=index,
                             attribute_at_dest=property,
+                            transform_step=True,
                         )
                     elif isinstance(value, list):
                         self.update_vertex_attribute(
@@ -130,6 +131,7 @@ class CloudformationLocalGraph(LocalGraph):
                             attribute_value=[*vertex.attributes[property], *value],
                             change_origin_id=index,
                             attribute_at_dest=property,
+                            transform_step=True,
                         )
 
     def update_vertices_breadcrumbs(self) -> None:
