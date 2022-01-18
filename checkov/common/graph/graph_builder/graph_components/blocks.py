@@ -129,7 +129,7 @@ class Block:
                 if transform_step and end_key_part in ("1", "2"):
                     # if condition logic during the transform step breaks the values
                     return
-                attribute_value = {attribute_key_parts[len(attribute_key_parts) - 1 - i]: attribute_value}
+                attribute_value = {end_key_part: attribute_value}
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
 
