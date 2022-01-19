@@ -28,7 +28,7 @@ class PasswordPolicyLength(BaseResourceValueCheck):
         key = 'minimum_password_length'
         if key in conf.keys():
             length = conf[key][0]
-            if BaseResourceCheck.contains_unrendered_value(length):
+            if self._is_variable_dependant(length):
                 return CheckResult.UNKNOWN
             length = force_int(length)
             if not (length and length < 14):

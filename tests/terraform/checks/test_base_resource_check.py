@@ -11,15 +11,15 @@ from checkov.runner_filter import RunnerFilter
 class TestWildcardEntities(unittest.TestCase):
 
     def test_contains_unrendered_variable(self):
-        self.assertTrue(BaseResourceCheck.contains_unrendered_value('var.xyz'))
-        self.assertTrue(BaseResourceCheck.contains_unrendered_value('local.xyz'))
-        self.assertTrue(BaseResourceCheck.contains_unrendered_value('${var.xyz}'))
-        self.assertTrue(BaseResourceCheck.contains_unrendered_value('${local.xyz}'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('var.xyz'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('local.xyz'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('${var.xyz}'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('${local.xyz}'))
 
-        self.assertFalse(BaseResourceCheck.contains_unrendered_value('xyz'))
-        self.assertFalse(BaseResourceCheck.contains_unrendered_value('123'))
-        self.assertFalse(BaseResourceCheck.contains_unrendered_value(123))
-        self.assertFalse(BaseResourceCheck.contains_unrendered_value(True))
+        self.assertFalse(BaseResourceCheck._is_variable_dependant('xyz'))
+        self.assertFalse(BaseResourceCheck._is_variable_dependant('123'))
+        self.assertFalse(BaseResourceCheck._is_variable_dependant(123))
+        self.assertFalse(BaseResourceCheck._is_variable_dependant(True))
 
 
 if __name__ == '__main__':

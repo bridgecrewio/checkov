@@ -6,6 +6,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.parser_functions import handle_dynamic_values
+from checkov.terraform.parser_utils import find_var_blocks
 
 
 class BaseResourceCheck(BaseCheck):
@@ -29,15 +30,18 @@ class BaseResourceCheck(BaseCheck):
         resource_registry.register(self)
 
     @staticmethod
-    def contains_unrendered_value(value):
-        if type(value) != str:
+    def _is_variable_dependant(value: Any) -> bool:
+        if not isinstance(value, str):
             return False
 
-        if value.startswith('var.') or value.startswith('local.'):
-            return True
-        elif '${var.' in value or '${local.' in value:
+        if value.startswith('var.') or value.startswith('local.') or value.startswith('module.'):
             return True
 
+        if "${" not in value:
+            return False
+
+        if find_var_blocks(value):
+            return True
         return False
 
     def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:

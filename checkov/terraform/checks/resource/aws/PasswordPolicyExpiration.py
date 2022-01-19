@@ -28,7 +28,7 @@ class PasswordPolicyExpiration(BaseResourceValueCheck):
         key = 'max_password_age'
         if key in conf.keys():
             max_age = conf[key][0]
-            if BaseResourceCheck.contains_unrendered_value(max_age):
+            if self._is_variable_dependant(max_age):
                 return CheckResult.UNKNOWN
             max_age = force_int(max_age)
             if max_age and 0 < max_age <= 90:

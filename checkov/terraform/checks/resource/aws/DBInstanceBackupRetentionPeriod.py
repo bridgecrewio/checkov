@@ -16,7 +16,7 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
         key = "backup_retention_period"
         if key in conf.keys():
             period = conf[key][0]
-            if BaseResourceCheck.contains_unrendered_value(period):
+            if self._is_variable_dependant(period):
                 return CheckResult.UNKNOWN
             period = force_int(period)
             if period and 0 < period <= 35:

@@ -28,7 +28,7 @@ class PasswordPolicyReuse(BaseResourceValueCheck):
         key = 'password_reuse_prevention'
         if key in conf.keys():
             reuse = conf[key][0]
-            if BaseResourceCheck.contains_unrendered_value(reuse):
+            if self._is_variable_dependant(reuse):
                 return CheckResult.UNKNOWN
             reuse = force_int(reuse)
             if not (reuse and reuse < 24):
