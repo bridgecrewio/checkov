@@ -47,3 +47,15 @@ resource "aws_mq_broker" "disabled" {
     audit = false
   }
 }
+
+
+resource "aws_mq_broker" "unknown" {
+  broker_name        = "example"
+  engine_type        = "RabbitMQ"
+
+  host_instance_type = "mq.t3.micro"
+
+  logs {
+    general = false
+  }
+}
