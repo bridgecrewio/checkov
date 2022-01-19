@@ -18,12 +18,25 @@ For example, The following directory structure will generate 3 sets of checkov v
 
 ![./kustomize-envs.png](./kustomize-envs.png)
 
+## Dependencies
+
+You will need a working version of the standalone "kustomize" binary in your environment. If not available, Checkov will silently skip the Kustomize framework so as to not break existing CI pipelines which may be pulling Checkov latest with each run.
+
+This is the same behaviour as Helm, and any other frameworks that depend on external dependencies.
+
+```
+➜  ~ kustomize version
+{Version:kustomize/v4.4.1 GitCommit:b2d65ddc98e09187a8e38adc27c30bab078c1dbf BuildDate:2021-11-11T23:27:14Z GoOs:darwin GoArch:amd64}
+```
+
+Installation options for Kustomize can be found here: [https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/](https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/)
+
 ## Results
 
 Here we ask for `--compact` output and only a single Kubernetes check `CKV_K8S_43` to make the output easier to read, you can see each Kustomization environment has been templated and scanned with the overlay name appended to the resource.
 
 ```
-$ checkov -d ./testdir --framework kustomize --check CKV_K8S_43 --no-guide --quiet --compact
+➜  ~ checkov -d ./testdir --framework kustomize --check CKV_K8S_43 --no-guide --quiet --compact
 
 kustomize scan results:
 
