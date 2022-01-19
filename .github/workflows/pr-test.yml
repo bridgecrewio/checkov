@@ -69,7 +69,12 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
-      - uses: imranismail/setup-kustomize@v1
+      - name: Install correct multi-arch Kustomize binary
+        run: |
+           wget -q -O get_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh
+           chmod 700 get_kustomize.sh
+           ./get_kustomize.sh 
+           rm ./get_kustomize.sh
       - uses: dschep/install-pipenv-action@v1
         with:
           # version 2021.11.5, 2021.11.5.post0 do not work
