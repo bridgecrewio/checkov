@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.util.type_forcers import force_int
 
@@ -26,7 +27,11 @@ class PasswordPolicyReuse(BaseResourceValueCheck):
         """
         key = 'password_reuse_prevention'
         if key in conf.keys():
-            if not (force_int(conf[key][0]) and force_int(conf[key][0]) < 24):
+            reuse = conf[key][0]
+            if BaseResourceCheck.contains_unrendered_value(reuse):
+                return CheckResult.UNKNOWN
+            reuse = force_int(reuse)
+            if not (reuse and reuse < 24):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

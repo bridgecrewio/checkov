@@ -28,6 +28,18 @@ class BaseResourceCheck(BaseCheck):
         self.supported_resources = supported_resources
         resource_registry.register(self)
 
+    @staticmethod
+    def contains_unrendered_value(value):
+        if type(value) != str:
+            return False
+
+        if value.startswith('var.') or value.startswith('local.'):
+            return True
+        elif '${var.' in value or '${local.' in value:
+            return True
+
+        return False
+
     def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
         self.entity_type = entity_type
 

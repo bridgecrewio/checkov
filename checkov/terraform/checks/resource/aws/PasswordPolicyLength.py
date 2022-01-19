@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.util.type_forcers import force_int
 
@@ -26,7 +27,11 @@ class PasswordPolicyLength(BaseResourceValueCheck):
         """
         key = 'minimum_password_length'
         if key in conf.keys():
-            if not (force_int(conf[key][0]) and force_int(conf[key][0]) < 14):
+            length = conf[key][0]
+            if BaseResourceCheck.contains_unrendered_value(length):
+                return CheckResult.UNKNOWN
+            length = force_int(length)
+            if not (length and length < 14):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
