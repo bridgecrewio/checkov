@@ -34,7 +34,7 @@ class BaseResourceCheck(BaseCheck):
         if not isinstance(value, str):
             return False
 
-        if value.startswith('var.') or value.startswith('local.') or value.startswith('module.'):
+        if value.startswith(('var.', 'local.', 'module.')):
             return True
 
         if "${" not in value:
