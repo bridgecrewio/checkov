@@ -48,6 +48,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
+      - uses: imranismail/setup-kustomize@v1
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
