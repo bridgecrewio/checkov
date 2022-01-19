@@ -13,8 +13,10 @@ class TestWildcardEntities(unittest.TestCase):
     def test_contains_unrendered_variable(self):
         self.assertTrue(BaseResourceCheck._is_variable_dependant('var.xyz'))
         self.assertTrue(BaseResourceCheck._is_variable_dependant('local.xyz'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('module.xyz'))
         self.assertTrue(BaseResourceCheck._is_variable_dependant('${var.xyz}'))
         self.assertTrue(BaseResourceCheck._is_variable_dependant('${local.xyz}'))
+        self.assertTrue(BaseResourceCheck._is_variable_dependant('${module.xyz}'))
 
         self.assertFalse(BaseResourceCheck._is_variable_dependant('xyz'))
         self.assertFalse(BaseResourceCheck._is_variable_dependant('123'))
