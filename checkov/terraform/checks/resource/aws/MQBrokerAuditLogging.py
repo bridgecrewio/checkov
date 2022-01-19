@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 class MQBrokerAuditLogging(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure MQ Broker Audit logging is enabled"
-        id = "CKV_AWS_198"
+        id = "CKV_AWS_197"
         supported_resources = ['aws_mq_broker']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
