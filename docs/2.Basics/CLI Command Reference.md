@@ -46,7 +46,7 @@ nav_order: 2
 | `--create-config CREATE_CONFIG` | takes the current command line args and writes them out to a config file at the given path
 | `--show-config` | prints all args and config settings and where they came from (eg. commandline, config file, environment variable or default)
 | `--create-baseline` | Alongside outputting the findings, save all results to .checkov.baseline file so future runs will not re-flag the same noise. Works only with `--directory` flag | 
-| `--baseline BASELINE` | Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are newwith respect to the provided baseline | 
+| `--baseline BASELINE` | Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new with respect to the provided baseline | 
 | `-s`, `--soft-fail` | Runs checks but suppresses error code | 
 | `--soft-fail-on SOFT_FAIL_ON` | Exits with a 0 exit code for specified checks. You can specify multiple checks separated by comma delimiter | 
 | `--hard-fail-on HARD_FAIL_ON` | Exits with a non-zero exit code for specified checks. You can specify multiple checks separated by comma delimiter | 
