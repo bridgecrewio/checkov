@@ -20,7 +20,7 @@ class SQSPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         if "policy" in conf.keys():
-            policy=conf["policy"][0]
+            policy = conf["policy"][0]
             if type(policy) is dict:
                 statement = policy['Statement'][0]
                 if type(statement) is dict:
