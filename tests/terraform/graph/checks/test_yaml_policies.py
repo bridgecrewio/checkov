@@ -200,8 +200,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SQLServerAuditingRetention90Days(self):
         self.go("SQLServerAuditingRetention90Days")
 
-    def test_AWSSSMParametershouldbeEncrypted(self):
-        self.go("AWSSSMParametershouldbeEncrypted")
+    def test_AWSSSMParameterShouldBeEncrypted(self):
+        self.go("AWSSSMParameterShouldBeEncrypted")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
