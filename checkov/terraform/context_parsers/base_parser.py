@@ -112,7 +112,8 @@ class BaseContextParser(ABC):
             if not found:
                 continue
             for (skip_check_line_num, skip_check) in comments:
-                if entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
+                if "start_line" in entity_context and "end_line" in entity_context \
+                        and entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
                     # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                     if bc_id_mapping and skip_check["id"] in bc_id_mapping:
                         skip_check["bc_id"] = skip_check["id"]
@@ -143,7 +144,7 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(
-        self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
+            self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
@@ -192,7 +193,7 @@ class BaseContextParser(ABC):
                     dpath.new(self.context, entity_context_path + ["start_line"], start_line)
                     dpath.new(self.context, entity_context_path + ["end_line"], end_line)
                     dpath.new(
-                        self.context, entity_context_path + ["code_lines"], self.file_lines[start_line - 1 : end_line]
+                        self.context, entity_context_path + ["code_lines"], self.file_lines[start_line - 1: end_line]
                     )
                     potential_block_start_lines.remove((line_num, line))
                     break
