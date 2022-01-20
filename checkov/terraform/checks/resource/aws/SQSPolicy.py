@@ -19,9 +19,13 @@ class SQSPolicy(BaseResourceCheck):
         :param conf: aws_sqs_queue_policy configuration
         :return: <CheckResult>
         """
-        if "policy" in conf.keys() and type(conf["policy"][0]) is dict:
-            if (conf["policy"][0])['Statement'][0]['Action'] == '*':
-                return CheckResult.FAILED
+        if "policy" in conf.keys():
+            policy=conf["policy"][0]
+            if type(policy) is dict:
+                statement = policy['Statement'][0]
+                if type(statement) is dict:
+                    if statement['Action'] == '*':
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
