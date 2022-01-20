@@ -17,7 +17,7 @@ class SecretManagerSecretEncrypted(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         aws_kms_alias = 'aws/'
         kms_key_id = force_list(conf.get('kms_key_id', []))
-        if not kms_key_id:
+        if not kms_key_id or not kms_key_id[0]:
             return CheckResult.FAILED
         else:
             return CheckResult.FAILED if aws_kms_alias in kms_key_id[0] else CheckResult.PASSED
