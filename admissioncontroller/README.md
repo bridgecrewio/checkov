@@ -1,4 +1,4 @@
-# whorf
+# Whorf - Checkov implementation of a Kubernetes admission controller
 A K8s admission controller for security and operational best practices (Based on [Checkov](https://checkov.io))
 
 Whorf is your last line of defence against deploying vulnerable or misconfigured kubernetes objects.  
