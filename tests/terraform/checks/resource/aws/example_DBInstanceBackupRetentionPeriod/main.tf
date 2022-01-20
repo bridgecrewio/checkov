@@ -29,3 +29,7 @@ resource "aws_db_instance" "fail2" {
 resource "aws_db_instance" "fail" {
   backup_retention_period = 36
 }
+
+resource "aws_db_instance" "unknown" {
+  backup_retention_period = var.backup_retention_period
+}
