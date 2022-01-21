@@ -13,7 +13,7 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        if 'source_instance_template' in conf.keys() and 'network_config' not in conf.keys():
+        if 'source_instance_template' in conf.keys() and 'network_interface' not in conf.keys():
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
             # and the access_config block is not present, then this check cannot PASS, since we don't know what the
             # underlying source template looks like.
