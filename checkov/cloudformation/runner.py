@@ -20,13 +20,13 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(BaseRunner):
-    check_type = "cloudformation"
+    check_type = CheckType.CLOUDFORMATION
 
     def __init__(
         self,

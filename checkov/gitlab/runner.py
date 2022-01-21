@@ -1,10 +1,11 @@
+from checkov.common.output.report import CheckType
 from checkov.gitlab.dal import Gitlab
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(JsonRunner):
-    check_type = "gitlab_configuration"
+    check_type = CheckType.GITLAB_CONFIGURATION
 
     def __init__(self):
         self.gitlab = Gitlab()

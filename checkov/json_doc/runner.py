@@ -2,7 +2,7 @@ import logging
 import os
 
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.json import parse
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -10,7 +10,7 @@ from checkov.runner_filter import RunnerFilter
 
 
 class Runner(BaseRunner):
-    check_type = "json"
+    check_type = CheckType.JSON
 
     @staticmethod
     def _load_files(files_to_load, definitions, definitions_raw, filename_fn=None):

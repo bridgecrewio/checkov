@@ -1,70 +1,84 @@
+import itertools
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Tuple
 
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
+from checkov.common.models.enums import CheckResult
+from checkov.common.output.record import Record, DEFAULT_SEVERITY
+from checkov.common.typing import _CheckResult
 
-def create_vulnerabilities_record(
-    vulnerabilities: List[Dict[str, Any]], vulnerability_dist: Dict[str, int]
-) -> Dict[str, Any]:
-    result = {
-        "count": {
-            "total": vulnerability_dist["total"],
-            "critical": vulnerability_dist["critical"],
-            "high": vulnerability_dist["high"],
-            "medium": vulnerability_dist["medium"],
-            "low": vulnerability_dist["low"],
-            "skipped": 0,  # ToDo: needs to be adjusted, when skipping is supported
-        }
+
+SEVERITY_RANKING = {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "none": 4,
+}
+
+
+def create_report_record(
+    rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any]
+) -> Record:
+    package_name = vulnerability_details["packageName"]
+    package_version = vulnerability_details["packageVersion"]
+    cve_id = vulnerability_details["id"].upper()
+    severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
+    description = vulnerability_details.get("description")
+    resource = f"{rootless_file_path}.{package_name}"
+
+    check_result: _CheckResult = {
+        "result": CheckResult.FAILED,
+    }
+    code_block = [(0, f"{package_name}: {package_version}")]
+
+    lowest_fixed_version = "N/A"
+    fixed_versions: List[Union[packaging_version.Version, packaging_version.LegacyVersion]] = []
+    status = vulnerability_details.get("status") or "open"
+    if status != "open":
+        fixed_versions = [
+            packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
+        ]
+        lowest_fixed_version = str(min(fixed_versions))
+
+    details = {
+        "id": cve_id,
+        "status": status,
+        "severity": severity,
+        "package_name": package_name,
+        "package_version": package_version,
+        "link": vulnerability_details.get("link"),
+        "cvss": vulnerability_details.get("cvss"),
+        "vector": vulnerability_details.get("vector"),
+        "description": description,
+        "risk_factors": vulnerability_details.get("riskFactors"),
+        "published_date": vulnerability_details.get("publishedDate")
+        or (datetime.now() - timedelta(days=vulnerability_details.get("publishedDays", 0))).isoformat(),
+        "lowest_fixed_version": lowest_fixed_version,
+        "fixed_versions": fixed_versions,
     }
 
-    fixable_cves = 0
-    package_vulnerabilities = defaultdict(dict)
-    package_fixed_version_map: Dict[
-        str, List[List[Union[packaging_version.Version, packaging_version.LegacyVersion]]]
-    ] = {}
-    for idx, vul in enumerate(vulnerabilities):
-        fixed_version = "N/A"
-        package_name = vul["packageName"]
-        status = vul.get("status") or "open"
-        if status != "open":
-            fixed_versions = [
-                packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
-            ]
-            fixed_version = str(min(fixed_versions))
-            package_fixed_version_map.setdefault(package_name, []).append(fixed_versions)
-            fixable_cves += 1
-
-        vulnerability = {
-            "id": vul.get("id"),
-            "status": status,
-            "severity": vul.get("severity"),
-            "link": vul.get("link"),
-            "cvss": vul.get("cvss"),
-            "vector": vul.get("vector"),
-            "description": vul.get("description"),
-            "risk_factors": vul.get("riskFactors"),
-            "published_date": vul.get("publishedDate")
-            or (datetime.now() - timedelta(days=vul.get("publishedDays", 0))).isoformat(),
-            "fixed_version": fixed_version,
-        }
-        package_vulnerabilities[package_name].setdefault("cves", []).append(vulnerability)
-        package_vulnerabilities[package_name]["complaint_version"] = "N/A"
-        if not package_vulnerabilities[package_name].get("current_version"):
-            package_vulnerabilities[package_name]["current_version"] = vul.get("packageVersion")
-
-    if package_fixed_version_map:
-        for package_name, fix_versions_lists in package_fixed_version_map.items():
-            package_vulnerabilities[package_name]["complaint_version"] = calculate_lowest_complaint_version(
-                fix_versions_lists
-            )
-
-    result["count"]["fixable"] = fixable_cves
-    result["packages"] = package_vulnerabilities
-
-    return result
+    record = Record(
+        check_id=f"CKV_{cve_id.replace('-', '_')}",
+        bc_check_id=f"BC_{cve_id.replace('-', '_')}",
+        check_name="SCA package scan",
+        check_result=check_result,
+        code_block=code_block,
+        file_path=f"/{rootless_file_path}",
+        file_line_range=[0, 0],
+        resource=resource,
+        check_class=check_class,
+        evaluations=None,
+        file_abs_path=file_abs_path,
+        severity=severity,
+        description=description,
+        short_description=f"{cve_id} - {package_name}: {package_version}",
+        vulnerability_details=details,
+    )
+    return record
 
 
 def calculate_lowest_complaint_version(
@@ -96,7 +110,80 @@ def calculate_lowest_complaint_version(
         return str(lowest_version)
 
 
-def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
+def compare_cve_severity(cve: Dict[str, str]) -> int:
+    return SEVERITY_RANKING[cve.get("severity") or DEFAULT_SEVERITY]
+
+
+def create_cli_output(*cve_records: List[Record]) -> str:
+    cli_outputs = []
+    group_by_file_path_package_map = defaultdict(dict)
+
+    for record in itertools.chain(*cve_records):
+        group_by_file_path_package_map[record.file_path].setdefault(
+            record.vulnerability_details["package_name"], []
+        ).append(record)
+
+    for file_path, packages in group_by_file_path_package_map.items():
+        cve_count = {
+            "total": 0,
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "skipped": 0,
+            "fixable": 0,
+            "to_fix": 0,
+        }
+        package_details_map = defaultdict(dict)
+
+        for package_name, records in packages.items():
+            package_version = None
+            fix_versions_lists = []
+
+            for record in records:
+                cve_count["total"] += 1
+
+                if record.check_result["result"] == CheckResult.SKIPPED:
+                    cve_count["skipped"] += 1
+                    continue
+                else:
+                    cve_count["to_fix"] += 1
+
+                cve_count[record.severity] += 1
+                if record.vulnerability_details["lowest_fixed_version"] != "N/A":
+                    cve_count["fixable"] += 1
+
+                fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
+                if package_version is None:
+                    package_version = record.vulnerability_details["package_version"]
+
+                package_details_map[package_name].setdefault("cves", []).append(
+                    {
+                        "id": record.vulnerability_details["id"],
+                        "severity": record.severity,
+                        "fixed_version": record.vulnerability_details["lowest_fixed_version"],
+                    }
+                )
+
+            if package_name in package_details_map.keys():
+                package_details_map[package_name]["cves"].sort(key=compare_cve_severity)
+                package_details_map[package_name]["current_version"] = package_version
+                package_details_map[package_name]["complaint_version"] = calculate_lowest_complaint_version(
+                    fix_versions_lists
+                )
+
+        cli_outputs.append(
+            create_cli_table(
+                file_path=file_path,
+                cve_count=cve_count,
+                package_details_map=package_details_map,
+            )
+        )
+
+    return "".join(cli_outputs)
+
+
+def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
     column_width = 120 / columns
@@ -109,12 +196,12 @@ def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
     cve_table.set_style(SINGLE_BORDER)
     cve_table.add_row(
         [
-            f"Total CVE: {vulnerabilities['count']['total']}",
-            f"critical: {vulnerabilities['count']['critical']}",
-            f"high: {vulnerabilities['count']['high']}",
-            f"medium: {vulnerabilities['count']['medium']}",
-            f"low: {vulnerabilities['count']['low']}",
-            f"skipped: {vulnerabilities['count']['skipped']}",
+            f"Total CVEs: {cve_count['total']}",
+            f"critical: {cve_count['critical']}",
+            f"high: {cve_count['high']}",
+            f"medium: {cve_count['medium']}",
+            f"low: {cve_count['low']}",
+            f"skipped: {cve_count['skipped']}",
         ]
     )
     cve_table.align = "l"
@@ -135,9 +222,7 @@ def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
     )
     fixable_table.set_style(SINGLE_BORDER)
     fixable_table.add_row(
-        [
-            f"To fix {vulnerabilities['count']['fixable']}/{vulnerabilities['count']['total']} CVEs, go to https://www.bridgecrew.cloud/"
-        ]
+        [f"To fix {cve_count['fixable']}/{cve_count['to_fix']} CVEs, go to https://www.bridgecrew.cloud/"]
     )
     fixable_table.align = "l"
 
@@ -145,7 +230,7 @@ def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]
     del fixable_table_lines[0]
     # only remove the last line, if there are vulnerable packages
-    if vulnerabilities["packages"]:
+    if package_details_map:
         del fixable_table_lines[-1]
 
     package_table_lines: List[str] = []
@@ -159,7 +244,7 @@ def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
         "Fixed version",
         "Complaint version",
     ]
-    for package_idx, (package_name, details) in enumerate(vulnerabilities["packages"].items()):
+    for package_idx, (package_name, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
             package_table.header = False
@@ -201,45 +286,9 @@ def create_cli_table(file_path: str, vulnerabilities: Dict[str, Any]) -> str:
 
             package_table_lines.append(f"\t{line}")
 
-    package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
-    package_table.set_style(SINGLE_BORDER)
-    package_table.field_names = [
-        "Package",
-        "CVE ID",
-        "Severity",
-        "Current version",
-        "Fixed version",
-        "Complaint version",
-    ]
-    package_table.header = False
-    package_table.clear_rows()
-    for package_name, details in vulnerabilities["packages"].items():
-        for idx, cve in enumerate(details["cves"]):
-            col_package = ""
-            col_current_version = ""
-            col_complaint_version = ""
-            if idx == 0:
-                col_package = package_name
-                col_current_version = details["current_version"]
-                col_complaint_version = details["complaint_version"]
-
-            package_table.add_row(
-                [
-                    col_package,
-                    cve["id"],
-                    cve["severity"],
-                    col_current_version,
-                    cve["fixed_version"],
-                    col_complaint_version,
-                ]
-            )
-    package_table.align = "l"
-    package_table.min_width = column_width
-    package_table.max_width = column_width
-
     return (
         f"\t{file_path}\n"
         f"{''.join(cve_table_lines)}\n"
         f"{''.join(fixable_table_lines)}"
-        f"{''.join(package_table_lines)}"
+        f"{''.join(package_table_lines)}\n"
     )

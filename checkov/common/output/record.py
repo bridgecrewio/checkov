@@ -9,9 +9,10 @@ from termcolor import colored
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _CheckResult
 from checkov.common.util.file_utils import convert_to_unix_path
-from checkov.sca_package.output import create_cli_table
 
 init(autoreset=True)
+
+DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratings
 
 
 class Record:
@@ -21,14 +22,17 @@ class Record:
     check_class = ""
     code_block: List[Tuple[int, str]] = []
     file_path = ""
-    file_line_range: Tuple[int, int] = ()
+    file_line_range: List[int] = []
     caller_file_path = None  # When created from a module
     caller_file_line_range = None  # When created from a module
     resource = ""
     guideline = None
     fixed_definition = None
     entity_tags = None
-    vulnerabilities = None  # Stores package vulnerabilities
+    severity = None
+    description = None  # used by SARIF output
+    short_description = None  # used by SARIF output
+    vulnerability_details = None  # Stores package vulnerability details
 
     def __init__(
         self,
@@ -37,7 +41,7 @@ class Record:
         check_result: _CheckResult,
         code_block: List[Tuple[int, str]],
         file_path: str,
-        file_line_range: Tuple[int, int],
+        file_line_range: List[int],
         resource: str,
         evaluations: Optional[Dict[str, Any]],
         check_class: str,
@@ -47,7 +51,10 @@ class Record:
         caller_file_line_range: Optional[Tuple[int, int]] = None,
         bc_check_id: Optional[str] = None,
         resource_address: Optional[str] = None,
-        vulnerabilities: Optional[Dict[str, Any]] = None,
+        severity: Optional[str] = None,
+        description: Optional[str] = None,
+        short_description: Optional[str] = None,
+        vulnerability_details: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -72,7 +79,10 @@ class Record:
         self.caller_file_path = caller_file_path
         self.caller_file_line_range = caller_file_line_range
         self.resource_address = resource_address
-        self.vulnerabilities = vulnerabilities
+        self.severity = severity
+        self.description = description
+        self.short_description = short_description
+        self.vulnerability_details = vulnerability_details
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -122,10 +132,6 @@ class Record:
             status = CheckResult.SKIPPED.name
             status_color = "blue"
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
-
-        # output for vulnerabilities is different
-        if self.check_id == "CKV_VUL_2" and self.vulnerabilities:
-            return create_cli_table(self.file_path, self.vulnerabilities)
 
         check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ""

@@ -384,9 +384,14 @@ def add_parser_args(parser):
     parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
                action='store_true', default=False)
-    parser.add('--baseline',
-               help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
-                    'with respect to the provided baseline', default=None)
+    parser.add(
+        '--baseline',
+        help=(
+            "Use a .checkov.baseline file to compare current results with a known baseline. "
+            "Report will include only failed checks that are new with respect to the provided baseline"
+        ),
+        default=None,
+    )
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
