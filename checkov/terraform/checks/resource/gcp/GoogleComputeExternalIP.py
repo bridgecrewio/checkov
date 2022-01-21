@@ -15,8 +15,8 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         if 'source_instance_template' in conf.keys() and 'network_interface' not in conf.keys():
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
-            # and the access_config block is not present, then this check cannot PASS, since we don't know what the
-            # underlying source template looks like.
+            # and the networks _interface block is not present, then this check cannot PASS,
+            # since we don't know what the underlying source template looks like.
             return CheckResult.UNKNOWN
         else:
             # in all other cases, pass/fail the check if block-project-ssh-keys is true/false or not present.
