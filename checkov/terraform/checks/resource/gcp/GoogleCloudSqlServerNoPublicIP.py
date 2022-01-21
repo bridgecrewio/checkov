@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class GoogleCloudSqlServerNoPublicIP(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure SQL database do not have public IP"
+        name = "Ensure SQL database does not have public IP"
         check_id = "CKV_GCP_60"
         supported_resources = ['google_sql_database_instance']
         categories = [CheckCategories.NETWORKING]
