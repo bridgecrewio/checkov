@@ -76,7 +76,7 @@ jobs:
            ./get_kustomize.sh 
            rm ./get_kustomize.sh
         env:
-           GITHUB_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+           GITHUB_TOKEN: ${{ secrets.KUSTOMIZE_GET_GH_PAT }}
       - uses: dschep/install-pipenv-action@v1
         with:
           # version 2021.11.5, 2021.11.5.post0 do not work
