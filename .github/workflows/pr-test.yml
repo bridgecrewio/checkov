@@ -71,7 +71,7 @@ jobs:
       - uses: azure/setup-helm@v1
       - name: Install correct multi-arch Kustomize binary
         run: |
-           wget -q -O get_kustomize.sh https://gist.githubusercontent.com/metahertz/a70f1a0fe236151c2b345f61f94f73da/raw/f193ef96929c37da42784336fd4a2edb62408c9a/install_kustomize.sh
+           wget -q -O get_kustomize.sh https://gist.githubusercontent.com/metahertz/a70f1a0fe236151c2b345f61f94f73da/raw/97709cd450ee238002190876d1b76a687598b713/install_kustomize.sh
            chmod 700 get_kustomize.sh
            ./get_kustomize.sh 
            rm ./get_kustomize.sh
