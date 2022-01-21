@@ -36,17 +36,6 @@ class BaseResourceValueCheck(BaseResourceCheck):
         return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+]?$"), x)]
 
     @staticmethod
-    def _is_variable_dependant(value: Any) -> bool:
-        if not isinstance(value, str):
-            return False
-        if "${" not in value:
-            return False
-
-        if find_var_blocks(value):
-            return True
-        return False
-
-    @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: List[str]) -> bool:
         """
         Resolves whether a key is a subset of the inspected nesting attributes

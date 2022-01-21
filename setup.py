@@ -64,7 +64,7 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath_ng",
-        "jsonschema==3.0.2",
+        "jsonschema~=3.0",
         "prettytable"
     ],
     license="Apache License 2.0",

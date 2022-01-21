@@ -20,9 +20,13 @@ def convert_graph_vertices_to_definitions(
         block_name = vertex.name.split('.')[-1]  # vertex.name is "type.name" so type.name -> [type, name]
 
         definition = {
-            'Type': vertex.attributes['resource_type'] if vertex.block_type == BlockType.RESOURCE else vertex.block_type,
-            'Properties': vertex.config
+            "Type": vertex.attributes["resource_type"] if vertex.block_type == BlockType.RESOURCE else vertex.block_type,
+            "Properties": vertex.config,
         }
+
+        if vertex.metadata:
+            definition["Metadata"] = vertex.metadata
+
         definitions.setdefault(block_path, {}).setdefault(block_type, {}).setdefault(block_name, definition)
 
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"

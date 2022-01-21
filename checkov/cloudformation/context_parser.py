@@ -1,3 +1,4 @@
+import itertools
 import logging
 import operator
 import re
@@ -111,7 +112,7 @@ class ContextParser(object):
                 yield node[kv]
 
     @staticmethod
-    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]]) -> List[_SkippedCheck]:
+    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
         skipped_checks = []
         bc_id_mapping = bc_integration.get_id_mapping()
         ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
@@ -130,6 +131,28 @@ class ContextParser(object):
                     skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
 
                 skipped_checks.append(skipped_check)
+        if resource_config:
+            metadata = resource_config.get("Metadata")
+            if metadata:
+                ckv_skip = metadata.get("checkov", {}).get("skip", [])
+                bc_skip = metadata.get("bridgecrew", {}).get("skip", [])
+                if ckv_skip or bc_skip:
+                    for skip in itertools.chain(ckv_skip, bc_skip):
+                        skip_id = skip.get("id")
+                        skip_comment = skip.get("comment", "No comment provided")
+                        if skip_id is None:
+                            logging.warning("Check suppression is missing key 'id'")
+                            continue
+
+                        skipped_check = {"id": skip_id, "suppress_comment": skip_comment}
+                        if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                            skipped_check["bc_id"] = skipped_check["id"]
+                            skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
+                        elif ckv_to_bc_id_mapping:
+                            skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+
+                        skipped_checks.append(skipped_check)
+
         return skipped_checks
 
     @staticmethod
