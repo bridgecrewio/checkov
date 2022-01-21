@@ -29,6 +29,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     sarif_output = report.get_sarif_json("Checkov")
 
     # then
+    sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
     assert sarif_output == {
         "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
         "version": "2.1.0",
@@ -37,7 +38,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                 "tool": {
                     "driver": {
                         "name": "Checkov",
-                        "version": "2.0.727",
+                        "version": "2.0.x",
                         "informationUri": "https://checkov.io",
                         "rules": [
                             {
