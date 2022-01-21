@@ -1,4 +1,5 @@
 import os
+import xml
 from pathlib import Path
 
 from mock.mock import MagicMock
@@ -302,7 +303,7 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
     junit_xml_output = report.get_junit_xml_string(test_suites)
 
     # then
-    assert junit_xml_output == "".join(
+    assert xml.dom.minidom.parseString(junit_xml_output).toprettyxml() == xml.dom.minidom.parseString("".join(
         [
             '<?xml version="1.0" ?>\n',
             '<testsuites disabled="0" errors="0" failures="7" tests="8" time="0.0">\n',
@@ -349,4 +350,4 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
             "\t</testsuite>\n",
             "</testsuites>\n",
         ]
-    )
+    )).toprettyxml()
