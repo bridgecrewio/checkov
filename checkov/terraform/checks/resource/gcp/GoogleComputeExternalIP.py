@@ -13,17 +13,17 @@ class GoogleComputeExternalIP(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        if 'source_instance_template' in conf.keys() and 'access_config' not in conf.keys():
+        if 'source_instance_template' in conf.keys() and 'network_interface' not in conf.keys():
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
-            # and the access_config block is not present, then this check cannot PASS, since we don't know what the
-            # underlying source template looks like.
+            # and the networks _interface block is not present, then this check cannot PASS,
+            # since we don't know what the underlying source template looks like.
             return CheckResult.UNKNOWN
         else:
             # in all other cases, pass/fail the check if block-project-ssh-keys is true/false or not present.
             return super().scan_resource_conf(conf)
 
     def get_inspected_key(self):
-        return 'access_config'
+        return 'network_interface/[0]/access_config'
 
     def get_forbidden_values(self):
         return [ANY_VALUE]
