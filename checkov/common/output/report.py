@@ -389,9 +389,10 @@ class Report:
                 )
 
             test_cases[check_name].append(test_case)
-        test_suites = [TestSuite(name=key, 
-                                 test_cases=test_cases[key], 
-                                 package=test_cases[key][0].classname) for key in test_cases.keys()]
+        test_suites = [
+            TestSuite(name=key, test_cases=value, package=value[0].classname)
+            for key, value in test_cases.items()
+        ]
         
         return test_suites
 
