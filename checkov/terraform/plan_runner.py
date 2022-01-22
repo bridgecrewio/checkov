@@ -37,6 +37,7 @@ class Runner(TerraformRunner):
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
+        logging.debug('THIS BE THE MESSSAGE BRAAAHHH')
         if root_folder:
             files = [] if not files else files
             for root, d_names, f_names in os.walk(root_folder):
