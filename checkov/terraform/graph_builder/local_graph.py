@@ -125,7 +125,7 @@ class TerraformLocalGraph(LocalGraph):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
-        block_dirs_to_modules: Dict[Tuple[str, str], Set[int]] = {}
+        block_dirs_to_modules: Dict[Tuple[str, str], Dict[str, Set[int]]] = defaultdict(dict)
         for dir_name, paths_to_modules in self.module.module_dependency_map.items():
             # for each directory, find the module vertex that imported it
             for path_to_module in paths_to_modules:
@@ -137,22 +137,26 @@ class TerraformLocalGraph(LocalGraph):
                 module_list = self.map_path_to_module.get(path_to_module[-1], [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
-                    module_vertex_dir = self.get_dirname(module_vertex.path)
-                    module_source = module_vertex.attributes.get("source", [""])[0]
-                    module_version = module_vertex.attributes.get("version", ["latest"])[0]
-                    dest_module_path = self._get_dest_module_path(
-                        curr_module_dir=module_vertex_dir,
-                        dest_module_source=module_source,
-                        dest_module_version=module_version
-                    )
-                    if dest_module_path == dir_name:
-                        block_dirs_to_modules.setdefault((dir_name, path_to_module_str), set()).add(module_index)
+                    if module_vertex.module_dependency == unify_dependency_path(path_to_module[:-1]):
+                        module_vertex_dir = self.get_dirname(module_vertex.path)
+                        module_source = module_vertex.attributes.get("source", [""])[0]
+                        module_version = module_vertex.attributes.get("version", ["latest"])[0]
+                        dest_module_path = self._get_dest_module_path(
+                            curr_module_dir=module_vertex_dir,
+                            dest_module_source=module_source,
+                            dest_module_version=module_version
+                        )
+                        if dest_module_path == dir_name:
+                            module_dependency_num = self.module.module_address_map[(module_vertex.path, module_vertex.name)]
+                            block_dirs_to_modules[(dir_name, path_to_module_str)].setdefault(module_dependency_num, set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_indices = block_dirs_to_modules.get((self.get_dirname(vertex.path), vertex.module_dependency), set())
-            if module_indices:
-                vertex.source_module = module_indices
+            module_dependency_nums = block_dirs_to_modules.get((self.get_dirname(vertex.path), vertex.module_dependency))
+            if module_dependency_nums:
+                module_indices = module_dependency_nums.get(vertex.module_dependency_num)
+                if module_indices:
+                    vertex.source_module = module_indices
 
     def _build_edges(self) -> None:
         logging.info("Creating edges")
