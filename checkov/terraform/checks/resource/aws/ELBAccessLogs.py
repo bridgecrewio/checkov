@@ -16,7 +16,7 @@ class ELBAccessLogs(BaseResourceCheck):
         if 'access_logs' not in conf:
             return CheckResult.FAILED
         if 'enabled' not in conf['access_logs'][0]:
-            return CheckResult.PASSED
+            return CheckResult.FAILED
         if conf['access_logs'][0]['enabled'] == [True]:
             return CheckResult.PASSED
         return CheckResult.FAILED
