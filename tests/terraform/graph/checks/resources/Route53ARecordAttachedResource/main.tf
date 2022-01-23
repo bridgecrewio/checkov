@@ -197,3 +197,22 @@ resource "aws_route53_record" "legacy-tf" {
 }
 
 resource "aws_instance" "brochureworker" {}
+
+# ElasticBeanstalk
+
+resource "aws_route53_record" "pass_eb" {
+  zone_id = data.aws_route53_zone.dns_zone.zone_id
+  name    = var.sub_domain
+  type    = "A"
+
+  alias {
+    name                   =  aws_elastic_beanstalk_environment.pass_eb.cname
+    zone_id                =  data.aws_elastic_beanstalk_hosted_zone.current.id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_elastic_beanstalk_environment" "pass_eb" {
+  application = aws_elastic_beanstalk_application.example.name
+  name        = "example"
+}

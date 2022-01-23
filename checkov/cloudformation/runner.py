@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Optional, List
+from typing import Optional, List, Type
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
@@ -13,8 +13,11 @@ from checkov.cloudformation.graph_builder.graph_to_definitions import convert_gr
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
@@ -27,12 +30,12 @@ class Runner(BaseRunner):
 
     def __init__(
         self,
-        db_connector=NetworkxConnector(),
-        source="CloudFormation",
-        graph_class=CloudformationLocalGraph,
-        graph_manager=None,
-        external_registries=None,
-    ):
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        source: str = "CloudFormation",
+        graph_class: Type[LocalGraph] = CloudformationLocalGraph,
+        graph_manager: Optional[GraphManager] = None,
+        external_registries: Optional[List[BaseRegistry]] = None,
+    ) -> None:
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = (
@@ -108,7 +111,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-                            skipped_checks = ContextParser.collect_skip_comments(entity_code_lines)
+                            skipped_checks =  resource_context.get("skipped_checks")
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)

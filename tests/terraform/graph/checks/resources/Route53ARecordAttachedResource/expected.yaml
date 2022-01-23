@@ -5,7 +5,7 @@ pass:
   - "aws_route53_record.pass4"
   - "aws_route53_record.pass5"
   - "aws_route53_record.legacy-tf"
-  
+  - "aws_route53_record.pass_eb"
 fail:
   - "aws_route53_record.fail"
 ignore:

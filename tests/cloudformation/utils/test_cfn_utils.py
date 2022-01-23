@@ -56,7 +56,7 @@ class TestCfnUtils(unittest.TestCase):
         self.assertIsNotNone(yaml_resources)
         self.assertEqual(len(yaml_resources), 2)
         self.validate_definition_lines(yaml_resources["MySourceQueue"], 13, 16, 4)
-        self.validate_definition_lines(yaml_resources["MyDB"], 17, 26, 10)
+        self.validate_definition_lines(yaml_resources["MyDB"], 17, 37, 21)
         # Asserting test2.yaml file
         yaml2_resources = self.definitions_context[str(self.test_root_dir / "test2.yaml")][
             TemplateSections.RESOURCES.value
@@ -81,7 +81,7 @@ class TestCfnUtils(unittest.TestCase):
         yaml_outputs = self.definitions_context[str(self.test_root_dir / "test.yaml")][TemplateSections.OUTPUTS.value]
         self.assertIsNotNone(yaml_outputs)
         self.assertEqual(len(yaml_outputs), 1)
-        self.validate_definition_lines(yaml_outputs["DBAppPublicDNS"], 28, 30, 3)
+        self.validate_definition_lines(yaml_outputs["DBAppPublicDNS"], 40, 42, 3)
         # Asserting test2.yaml file
         yaml2_outputs = self.definitions_context[str(self.test_root_dir / "test2.yaml")][TemplateSections.OUTPUTS.value]
         self.assertIsNotNone(yaml2_outputs)
@@ -101,11 +101,26 @@ class TestCfnUtils(unittest.TestCase):
         skipped_checks = self.definitions_context[str(self.test_root_dir / "test.yaml")][
             TemplateSections.RESOURCES.value
         ]["MyDB"]["skipped_checks"]
-        self.assertEqual(len(skipped_checks), 1)
-        self.assertEqual(skipped_checks[0]["id"], "CKV_AWS_16")
-        self.assertEqual(
-            skipped_checks[0]["suppress_comment"],
-            "Ensure all data stored in the RDS is securely encrypted at rest\\n')",
+        self.assertEqual(len(skipped_checks), 3)
+        self.assertCountEqual(
+            skipped_checks,
+            [
+                {
+                    "id": "CKV_AWS_16",
+                    "suppress_comment": "Ensure all data stored in the RDS is securely encrypted at rest\\n')",
+                    "bc_id": "BC_AWS_GENERAL_4",
+                },
+                {
+                    "id": "CKV_AWS_17",
+                    "suppress_comment": "Ensure all data stored in RDS is not publicly accessible",
+                    "bc_id": "BC_AWS_PUBLIC_2",
+                },
+                {
+                    "id": "CKV_AWS_157",
+                    "suppress_comment": "Ensure that RDS instances have Multi-AZ enabled",
+                    "bc_id": "BC_AWS_GENERAL_73",
+                },
+            ],
         )
 
 

@@ -1,0 +1,12 @@
+{
+  "data": {
+    "organization": {
+      "name": "Bridgecrew",
+      "login": "bridgecrewio",
+      "description": "Secure public cloud infrastructure",
+      "ipAllowListEnabledSetting": "DISABLED",
+      "ipAllowListForInstalledAppsEnabledSetting": "DISABLED",
+      "requiresTwoFactorAuthentication": false
+    }
+  }
+}

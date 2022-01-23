@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Tuple, Optional, List
 
 import jmespath
 import logging
@@ -261,20 +262,19 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
     return data
 
 
-def _token_to_type_and_loc(token):
+def _token_to_type_and_loc(token: str) -> Tuple[Optional[str], Optional[str]]:
     file_match = FILE_LOCATION_PATTERN.match(token)
     if file_match is not None:
         if ":" not in token:
             return file_match[0], None
 
-        return file_match[0].strip(), \
-               token[len(file_match[0])+1:].strip()       # +1 for colon
+        return file_match[0].strip(), token[len(file_match[0]) + 1 :].strip()  # +1 for colon
 
     if ":" not in token:
         return None, token
 
     index = token.index(":")
-    return token[:index].strip(), token[index+1:].strip()
+    return token[:index].strip(), token[index + 1 :].strip()
 
 
 def _parse_var(var_str):
@@ -297,20 +297,20 @@ param_lookup_function parameter of process_variables_loop for more info.
     return var_type, var_loc, fallback_type, fallback_loc
 
 
-def _tokenize_by_commas(string: str):
+def _tokenize_by_commas(string: str) -> Optional[List[str]]:
     """
-Tokenize the given value by commas, respecting quoted blocks.
+    Tokenize the given value by commas, respecting quoted blocks.
     """
     if not string:
         return None
 
     quoted_comma_ranges = [range(m.start(0), m.end(0)) for m in QUOTED_WORD_SYNTAX.finditer(string)]
 
-    def clean(s):
-        s = s.strip()                               # whitespace
-        if len(s) > 0 and s[0] == '"' and s[len(s)-1] == '"':      # surrounding quotes
+    def clean(s: str) -> str:
+        s = s.strip()  # whitespace
+        if len(s) > 0 and s[0] == '"' and s[len(s) - 1] == '"':  # surrounding quotes
             s = s[1:-1]
-        if len(s) > 0 and s[0] == "'" and s[len(s)-1] == "'":
+        if len(s) > 0 and s[0] == "'" and s[len(s) - 1] == "'":
             s = s[1:-1]
         return s
 
@@ -327,7 +327,7 @@ Tokenize the given value by commas, respecting quoted blocks.
         if is_quoted:
             search_start_index = index + 1
         else:
-            tokens.append(clean(string[block_start_index: index]))
+            tokens.append(clean(string[block_start_index:index]))
             block_start_index = index + 1
             search_start_index = block_start_index
         index = string.find(",", search_start_index)

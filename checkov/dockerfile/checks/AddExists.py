@@ -11,10 +11,9 @@ class AddExists(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        i=0
         for instruction in conf:
             if instruction['instruction'] == "ADD":
-                return CheckResult.FAILED, conf[i]
+                return CheckResult.FAILED, conf[0]
         return CheckResult.PASSED,None
 
 

@@ -365,7 +365,7 @@ class Report:
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)
-        test_suites = []
+        
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
@@ -389,14 +389,11 @@ class Report:
                 )
 
             test_cases[check_name].append(test_case)
-        for key in test_cases.keys():
-            test_suites.append(
-                TestSuite(
-                    name=key,
-                    test_cases=test_cases[key],
-                    package=test_cases[key][0].classname,
-                )
-            )
+        test_suites = [
+            TestSuite(name=key, test_cases=value, package=value[0].classname)
+            for key, value in test_cases.items()
+        ]
+        
         return test_suites
 
     def print_json(self) -> None:
