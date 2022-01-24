@@ -8,7 +8,7 @@ nav_order: 20
 # Gitlab configuration scanning
 Checkov supports the evaluation of policies on your Gitlab organization and repositories settings.
 When using checkov with Gitlab token it can collect your current org settings and validate it complies with Gitlab security best practices such as having 2FA defined, having SSO and more.
-Full list of gitlab organization and repository settings related checks can [here](https://www.checkov.io/5.Policy%20Index/gitlab_configuration.html).
+Full list of gitlab organization and repository settings related checks can be found  [here](https://www.checkov.io/5.Policy%20Index/gitlab_configuration.html).
 
 ## Gitlab scanning configuration
 

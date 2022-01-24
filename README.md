@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), Terraform plan, [Cloudformation](https://aws.amazon.com/cloudformation/), [AWS SAM](https://aws.amazon.com/serverless/sam/), [Kubernetes](https://kubernetes.io/), [Dockerfile](https://www.docker.com/),  [Serverless](https://www.serverless.com/) or [ARM Templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan Examples/Terraform Plan Scanning.md), [Cloudformation](docs/7.Scan Examples/Cloudformation.md), [AWS SAM](docs/7.Scan Examples/AWS SAM.md), [Kubernetes](docs/7.Scan Examples/Kubernetes.md), [Helm charts](docs/7.Scan Examples/Helm.md), [Dockerfile](docs/7.Scan Examples/Dockerfile.md),  [Serverless](docs/7.Scan Examples/Serverless Framework.md) or [ARM Templates](docs/7.Scan Examples/Azure ARM templates.md) and detects security and compliance misconfigurations using graph-based scanning.
  
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
