@@ -1,7 +1,8 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
-class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
+
+class GoogleCloudSqlDatabasePubliclyAccessible(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Cloud SQL database Instances are not open to the world"
         id = "CKV_GCP_11"
@@ -20,7 +21,7 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
             ip_config = conf['settings'][0]['ip_configuration'][0]
             self.evaluated_keys = ['settings/[0]/ip_configuration']
             if 'authorized_networks' in ip_config:
-                auth_networks = ip_config['authorized_networks'][0]
+                auth_networks = ip_config['authorized_networks']
                 if type(auth_networks) != list:  # handle possible legacy case
                     auth_networks = [auth_networks]
                 for network in auth_networks:
@@ -47,4 +48,4 @@ class GoogleCloudSqlDatabasePublicallyAccessible(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = GoogleCloudSqlDatabasePublicallyAccessible()
+check = GoogleCloudSqlDatabasePubliclyAccessible()
