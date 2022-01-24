@@ -92,16 +92,16 @@ github_configuration scan results:
 Passed checks: 2, Failed checks: 1, Skipped checks: 0
 
 Check: CKV_GITHUB_3: "Ensure GitHub organization security settings has IP allow list enabled"
-	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
-	File: /Users/barak/github_conf/org_security.json:2-15
+	PASSED for resource: _conf/org_security.json
+	File: /github_conf/org_security.json:2-15
 
 Check: CKV_GITHUB_2: "Ensure GitHub organization security settings require SSO"
-	PASSED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
-	File: /Users/barak/github_conf/org_security.json:2-15
+	PASSED for resource: _conf/org_security.json
+	File: /github_conf/org_security.json:2-15
 
 Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
-	FAILED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf/org_security.json
-	File: /Users/barak/github_conf/org_security.json:2-15
+	FAILED for resource: _conf/org_security.json
+	File: /github_conf/org_security.json:2-15
 
 		2  |     "data": {
 		3  |         "organization": {

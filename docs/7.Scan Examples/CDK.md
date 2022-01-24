@@ -317,7 +317,7 @@ Passed checks: 3, Failed checks: 5, Skipped checks: 1
 Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
         Suppress comment: Ensure the S3 bucket has access logging enabled
-        File: /../anton/cfn.json:3-22
+        File: /cfn.json:3-22
         Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
 
 ```

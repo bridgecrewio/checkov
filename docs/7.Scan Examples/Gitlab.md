@@ -116,8 +116,8 @@ gitlab_configuration scan results:
 Passed checks: 0, Failed checks: 1, Skipped checks: 0
 
 Check: CKV_GITLAB_2: "Ensure all Gitlab groups require two factor authentication"
-	FAILED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github/gitlab_conf/groups.json
-	File: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github/gitlab_conf/groups.json:2-27
+	FAILED for resource: /gitlab_conf/groups.json
+	File: /gitlab_conf/groups.json:2-27
 
 		2  |     {
 		3  |         "id": 15483421,
