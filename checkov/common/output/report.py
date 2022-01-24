@@ -32,6 +32,7 @@ class CheckType:
     HELM = "helm"
     JSON = "json"
     KUBERNETES = "kubernetes"
+    KUSTOMIZE = "kustomize"
     SCA_PACKAGE = "sca_package"
     SECRETS = "secrets"
     SERVERLESS = "serverless"

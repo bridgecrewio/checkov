@@ -11,7 +11,7 @@ import yaml
 import pathlib
 import glob
 
-from checkov.common.output.report import Report, report_to_cyclonedx
+from checkov.common.output.report import Report, report_to_cyclonedx, CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.runner_filter import RunnerFilter
@@ -98,7 +98,7 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
 class Runner(BaseRunner):
-    check_type = "kustomize"
+    check_type = CheckType.KUSTOMIZE
     kustomize_command = 'kustomize'
     system_deps = True
     potentialBases = []
