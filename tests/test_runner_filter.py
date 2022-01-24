@@ -27,8 +27,8 @@ from checkov.runner_filter import RunnerFilter
                 "terraform_plan",
                 "github_configuration",
                 "gitlab_configuration",
+                "kustomize",
                 "sca_package"
-
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

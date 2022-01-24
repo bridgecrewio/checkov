@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sl-demo-app
+spec:
+  selector:
+    matchLabels:
+      app: sl-demo-app
+  template:
+    metadata:
+      labels:
+        app: sl-demo-app
+    spec:
+      containers:
+      - name: app
+        image: foo/bar:latest
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP

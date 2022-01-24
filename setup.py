@@ -85,6 +85,9 @@ setup(
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
+        ],
+        "checkov.common.util.templates": [
+            "*.jinja2"
         ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],

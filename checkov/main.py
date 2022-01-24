@@ -12,8 +12,6 @@ import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
-from checkov.common.output.report import CheckType
-
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -24,6 +22,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
+from checkov.common.output.report import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
@@ -45,6 +44,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.github.runner import Runner as github_configuration_runner
+from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 
@@ -59,7 +59,7 @@ checkov_runners = [value for attr, value in CheckType.__dict__.items() if not at
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner(), sca_package_runner())
+                   gitlab_configuration_runner(), kustomize_runner(), sca_package_runner())
 
 
 def run(banner=checkov_banner, argv=sys.argv[1:]):

@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 from typing import Dict, Any, List
 
+import pytest
+
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.parser import parse
@@ -205,6 +207,7 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    @pytest.mark.skip("No graph checks implemented yet for cloudformation")
     def test_run_graph_checks(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "../graph/checks/resources/MSKClusterLogging")

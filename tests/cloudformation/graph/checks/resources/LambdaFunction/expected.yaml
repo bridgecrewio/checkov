@@ -1,8 +1,10 @@
 pass:
   - "AWS::Lambda::Function.GoodLambdaFunction"
   - "AWS::Serverless::Function.ServerlessFunctionEnabled"
+  - "AWS::Lambda::Function.GoodLambdaFunctionWithRef"
 fail:
   - "AWS::Lambda::Function.WrongTracingConfigValueLambdaFunction"
+  - "AWS::Lambda::Function.WrongTracingConfigValueLambdaFunctionWithRef"
   - "AWS::Lambda::Function.WithoutTracingConfigLambdaFunction"
   - "AWS::Serverless::Function.ServerlessFunctionDefault"
 evaluated_keys:

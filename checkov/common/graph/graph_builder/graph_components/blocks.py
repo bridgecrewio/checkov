@@ -63,6 +63,10 @@ class Block:
         base_attributes = self.get_base_attributes()
         self.get_origin_attributes(base_attributes)
 
+        if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
+
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
             base_attributes["changed_attributes"] = sorted(self.changed_attributes.keys())

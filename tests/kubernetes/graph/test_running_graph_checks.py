@@ -2,12 +2,15 @@ import itertools
 import os
 import unittest
 
+import pytest
+
 from checkov.kubernetes.runner import Runner
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestRunningGraphChecks(unittest.TestCase):
+    @pytest.mark.skip("Graph checks not written yet for K8s")
     def test_runner(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "../runner/resources"))
         report = Runner().run(root_dir)

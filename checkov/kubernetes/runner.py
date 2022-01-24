@@ -19,7 +19,6 @@ from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
 
-
 class Runner(BaseRunner):
     def __init__(
         self,
@@ -38,7 +37,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None, reportMutatorData=None):
         report = Report(self.check_type)
         if self.context is None or self.definitions is None:
             if files or root_folder:
@@ -59,13 +58,13 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions = local_graph.definitions
 
-        report = self.check_definitions(root_folder, runner_filter, report)
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        report = self.check_definitions(root_folder, runner_filter, report, reportMutatorData=reportMutatorData, collect_skip_comments=collect_skip_comments, helmChart=helmChart)
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter, helmChart=helmChart, reportMutatorData=reportMutatorData)
         merge_reports(report, graph_report)
 
         return report
 
-    def check_definitions(self, root_folder, runner_filter, report):
+    def check_definitions(self, root_folder, runner_filter, report, reportMutatorData, collect_skip_comments=True, helmChart=None,):
         for k8_file in self.definitions.keys():
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
@@ -77,7 +76,9 @@ class Runner(BaseRunner):
             for entity_conf in self.definitions[k8_file]:
                 entity_type = entity_conf.get("kind")
 
-                # Skip List and Kustomization Templates (for now)
+                # Skip Kustomization Templates. 
+                # Should be handled by Kusomize framework handler when it finds kustomization.yaml files.
+                # TODO: FUTURE: Potentially call the framework if we find items here that aren't in a file called kustomization.yaml - validate this edge case.
                 if entity_type == "Kustomization":
                     continue
 
@@ -87,25 +88,39 @@ class Runner(BaseRunner):
                 # TODO? - Variable Eval Message!
                 variable_evaluations = {}
 
-                for check, check_result in results.items():
-                    resource_id = get_resource_id(entity_conf)
-                    entity_context = self.context[k8_file][resource_id]
-
-                    record = Record(
-                        check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
-                        file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                        resource=resource_id, evaluations=variable_evaluations,
-                        check_class=check.__class__.__module__, file_abs_path=file_abs_path)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
+                report = self.mutateKubernetesResults(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations, reportMutatorData)
 
         return report
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, helmChart, reportMutatorData) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
+        report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results, reportMutatorData=reportMutatorData)
+        return report
 
+    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
+        # Moves report generation logic out of run() method in Runner class.
+        # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
+        for check, check_result in results.items():
+            resource_id = get_resource_id(entity_conf)
+            entity_context = self.context[k8_file][resource_id]
+
+            record = Record(
+                check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
+                file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                resource=resource_id, evaluations=variable_evaluations,
+                check_class=check.__class__.__module__, file_abs_path=file_abs_path)
+            record.set_guideline(check.guideline)
+            report.add_record(record=record)
+        
+        return report
+
+    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
+        # Moves report generation logic out of run() method in Runner class.
+        # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
+        # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
@@ -129,7 +144,6 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
-
 
 def _get_entity_abs_path(root_folder, entity_file_path):
     if entity_file_path[0] == '/' and (root_folder and not entity_file_path.startswith(root_folder)):
