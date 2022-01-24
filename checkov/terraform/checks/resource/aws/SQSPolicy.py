@@ -1,7 +1,5 @@
-import json
 
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import is_json
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from typing import List
 
@@ -21,9 +19,13 @@ class SQSPolicy(BaseResourceCheck):
         :param conf: aws_sqs_queue_policy configuration
         :return: <CheckResult>
         """
-        if "policy" in conf.keys() and is_json(conf["policy"][0]) \
-                and json.loads(conf["policy"][0])['Statement'][0]['Action'] == '*':
-            return CheckResult.FAILED
+        if "policy" in conf.keys():
+            policy = conf["policy"][0]
+            if type(policy) is dict:
+                statement = policy['Statement'][0]
+                if type(statement) is dict:
+                    if statement['Action'] == '*':
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
