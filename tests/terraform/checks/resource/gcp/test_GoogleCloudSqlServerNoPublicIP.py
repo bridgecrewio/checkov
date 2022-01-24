@@ -6,10 +6,10 @@ from checkov.terraform.checks.resource.gcp.GoogleCloudSqlServerNoPublicIP import
 from checkov.terraform.runner import Runner
 
 
-class TestGGoogleCloudSqlServerNoPublicIP(unittest.TestCase):
+class TestGoogleCloudSqlServerNoPublicIP(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_CloudSqlServerNoPublicIP"
+        test_files_dir = Path(__file__).parent / "example_CloudSQLServerNoPublicIP"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
