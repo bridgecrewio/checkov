@@ -240,7 +240,7 @@ class Runner(BaseRunner):
                     logging.info(
                         f"Ran {self.kustomize_command} command to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
 
-                except Exception:
+                except Exception as e:
                     logging.warning(
                         f"Error build Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
                     continue
