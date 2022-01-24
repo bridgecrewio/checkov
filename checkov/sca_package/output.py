@@ -206,7 +206,30 @@ def create_cli_output(*cve_records: List[Record]) -> str:
 def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
-    column_width = 120 / columns
+    column_width = int(120 / columns)
+
+    cve_table_lines = create_cve_summary_table_part(
+        table_width=table_width, column_width=column_width, cve_count=cve_count
+    )
+
+    vulnerable_packages = True if package_details_map else False
+    fixable_table_lines = create_fixable_cve_summary_table_part(
+        table_width=table_width, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
+    )
+
+    package_table_lines = create_package_overview_table_part(
+        table_width=table_width, column_width=column_width, package_details_map=package_details_map
+    )
+
+    return (
+        f"\t{file_path}\n"
+        f"{''.join(cve_table_lines)}\n"
+        f"{''.join(fixable_table_lines)}"
+        f"{''.join(package_table_lines)}\n"
+    )
+
+
+def create_cve_summary_table_part(table_width: int, column_width: int, cve_count: CveCount) -> List[str]:
     cve_table = PrettyTable(
         header=False,
         padding_width=1,
@@ -228,8 +251,14 @@ def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: D
     )
     cve_table_lines[-1] = cve_table_bottom_line
 
+    return cve_table_lines
+
+
+def create_fixable_cve_summary_table_part(
+    table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
+) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + columns * 2, max_table_width=table_width + columns * 2
+        header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     fixable_table.add_row([f"To fix {cve_count.fixable}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
@@ -239,9 +268,15 @@ def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: D
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]
     del fixable_table_lines[0]
     # only remove the last line, if there are vulnerable packages
-    if package_details_map:
+    if vulnerable_packages:
         del fixable_table_lines[-1]
 
+    return fixable_table_lines
+
+
+def create_package_overview_table_part(
+    table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
+) -> List[str]:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
@@ -295,9 +330,4 @@ def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: D
 
             package_table_lines.append(f"\t{line}")
 
-    return (
-        f"\t{file_path}\n"
-        f"{''.join(cve_table_lines)}\n"
-        f"{''.join(fixable_table_lines)}"
-        f"{''.join(package_table_lines)}\n"
-    )
+    return package_table_lines
