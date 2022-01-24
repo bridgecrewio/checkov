@@ -8,7 +8,7 @@ nav_order: 20
 # AWS CDK configuration scanning
 Checkov supports the evaluation of policies on your CDK files by synthesizing a Cloudformation template out of the CDK code.
 
-Full list of Cloudformation policies checks can be found [here](https://www.checkov.io/5.Policy%20Index/cloudformation.html).
+Full list of Cloudformation policies the checks can be found [here](https://www.checkov.io/5.Policy%20Index/cloudformation.html).
 
 
 ### Example misconfigured AWS CDK code 
@@ -31,8 +31,7 @@ cfnBucket.cfnOptions.metadata = {
 ```
 The metadata secution contain 1 skip for CKV_AWS_18
 Run the `cdk synth` command to generate a CloudFormation template and scan it
-```shell
-$ cdk synth
+```json
 {
   "Resources": {
     "MyBucketF68F3FF0": {
@@ -298,6 +297,7 @@ $ cdk synth
     ...
 ```
 ### Example output
+
 ```bash
 $ checkov -f cdk.out/AppStack.template.json
        _               _              
@@ -319,6 +319,5 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         Suppress comment: Ensure the S3 bucket has access logging enabled
         File: /../anton/cfn.json:3-22
         Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
-
 
 ```
