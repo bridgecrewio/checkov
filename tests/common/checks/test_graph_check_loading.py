@@ -43,8 +43,7 @@ class TestGraphChecks(unittest.TestCase):
         external_graph_checks = 0
         for check in runner.graph_registry.checks:
             if runner_filter.is_external_check(check.id):
-                external_graph_checks += 1
-        self.assertEqual(external_graph_checks, 0)
+                self.fail(f'Expected no external checks, got {check.id}')
 
         # with external yaml checks external graph registry checks count should be equal to the external graph checks
         extra_checks_dir_path = [current_dir + "/extra_checks", current_dir + "/extra_yaml_checks"]
