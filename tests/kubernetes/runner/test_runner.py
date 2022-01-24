@@ -110,7 +110,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def test_wrong_check_imports(self):
-        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "serverless", "terraform"]
+        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "serverless", "terraform", "kustomize"]
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")

@@ -7,6 +7,7 @@ RUN apk add --no-cache --virtual .build_deps build-base libffi-dev \
  && apk del .build_deps
 
 RUN wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; chmod 700 get_helm.sh; VERIFY_CHECKSUM=true ./get_helm.sh; rm ./get_helm.sh
+RUN wget -q -O get_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh; chmod 700 get_kustomize.sh; ./get_kustomize.sh; rm ./get_kustomize.sh
 
 COPY ./github_action_resources/entrypoint.sh /entrypoint.sh
 COPY ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json
