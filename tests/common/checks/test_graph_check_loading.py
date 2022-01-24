@@ -37,7 +37,7 @@ class TestGraphChecks(unittest.TestCase):
 
         # without external yaml checks the external graph registry checks should be 0
         extra_checks_dir_path = [current_dir + "/extra_checks"]
-        runner_filter = RunnerFilter(framework='terraform')
+        runner_filter = RunnerFilter(framework=['terraform'])
         runner.run(root_folder=current_dir, external_checks_dir=extra_checks_dir_path,
                    runner_filter=runner_filter)
         external_graph_checks = 0
