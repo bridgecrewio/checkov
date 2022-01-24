@@ -11,9 +11,8 @@ from checkov.kustomize.runner import Runner
 from checkov.common.output.report import Report
 
 class TestRunnerValid(unittest.TestCase):
-
+    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
     def test_record_relative_path_with_relative_dir(self):
-        @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
