@@ -44,8 +44,8 @@ class TestGraphChecks(unittest.TestCase):
         for check in runner.graph_registry.checks:
             if runner_filter.is_external_check(check.id):
                 external_graph_checks += 1
-        self.assertTrue(len(runner.graph_registry.checks) > 1)
-        self.assertEqual(external_graph_checks, 1)
+        self.assertGreater(len(runner.graph_registry.checks), 1)
+        self.assertGreaterEqual(external_graph_checks, 1)
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
                                            "CUSTOM_GRAPH_AWS_1" not in check.id]
 
