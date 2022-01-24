@@ -14,14 +14,13 @@ from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
+from checkov import sca_package
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.version import version
 
 init(autoreset=True)
-
-CHECK_TYPE_SCA_PACKAGE = "sca_package"
 
 @dataclass
 class CheckType:
@@ -242,8 +241,7 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type == CheckType.SCA_PACKAGE:
             if self.failed_checks or self.skipped_checks:
-                from checkov.sca_package.output import create_cli_output  # circular dependency
-                print(create_cli_output(self.failed_checks, self.skipped_checks))
+                print(sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks))
         else:
             if not is_quiet:
                 for record in self.passed_checks:

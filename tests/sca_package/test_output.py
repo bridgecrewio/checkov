@@ -2,11 +2,12 @@ from packaging import version as packaging_version
 
 from checkov.common.models.enums import CheckResult
 from checkov.sca_package.output import (
-    calculate_lowest_complaint_version,
+    calculate_lowest_compliant_version,
     create_cli_table,
     create_report_record,
     create_cli_output,
     compare_cve_severity,
+    CveCount,
 )
 
 
@@ -66,7 +67,7 @@ def test_create_report_record():
     ]
 
 
-def test_calculate_lowest_complaint_version():
+def test_calculate_lowest_compliant_version():
     # given
     package_versions_list = [
         ["3.0.1", "2.2.9", "1.11.27", "1.9.8"],
@@ -80,16 +81,16 @@ def test_calculate_lowest_complaint_version():
     ]
 
     # when
-    complaint_version = calculate_lowest_complaint_version(fix_versions_lists)
+    compliant_version = calculate_lowest_compliant_version(fix_versions_lists)
 
     # then
-    assert complaint_version == "2.2.24"
+    assert compliant_version == "2.2.24"
 
 
 def test_create_cli_table():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = {"total": 6, "critical": 0, "high": 3, "medium": 2, "low": 0, "skipped": 1, "fixable": 5, "to_fix": 5}
+    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, fixable=5, to_fix=5)
     package_details_map = {
         "django": {
             "cves": [
@@ -98,7 +99,7 @@ def test_create_cli_table():
                 {"id": "CVE-2021-33203", "severity": "medium", "fixed_version": "2.2.24"},
             ],
             "current_version": "1.2",
-            "complaint_version": "2.2.24",
+            "compliant_version": "2.2.24",
         },
         "flask": {
             "cves": [
@@ -106,7 +107,7 @@ def test_create_cli_table():
                 {"id": "CVE-2018-1000656", "severity": "high", "fixed_version": "0.12.3"},
             ],
             "current_version": "0.6",
-            "complaint_version": "1.0",
+            "compliant_version": "1.0",
         },
     }
 
@@ -126,7 +127,7 @@ def test_create_cli_table():
             "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
             "\t│ To fix 5/5 CVEs, go to https://www.bridgecrew.cloud/                                                                        │\n",
             "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤\n",
-            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Complaint version  │\n",
+            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │\n",
             "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤\n",
             "\t│ django             │ CVE-2016-7401      │ high               │ 1.2                │ 1.8.15             │ 2.2.24             │\n",
             "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │\n",
@@ -142,7 +143,7 @@ def test_create_cli_table():
 def test_create_cli_table_with_no_found_vulnerabilities():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "skipped": 2, "fixable": 0, "to_fix": 0}
+    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, fixable=0, to_fix=0)
     package_details_map = {}
 
     # when
@@ -239,7 +240,7 @@ def test_create_cli_output():
             "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
             "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                        │\n",
             "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤\n",
-            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Complaint version  │\n",
+            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │\n",
             "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤\n",
             "\t│ django             │ CVE-2019-19844     │ critical           │ 1.2                │ 1.11.27            │ 1.11.27            │\n",
             "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │\n",

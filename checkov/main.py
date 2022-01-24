@@ -12,6 +12,8 @@ import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
+from checkov.common.output.report import CheckType
+
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -52,8 +54,7 @@ outer_registry = None
 
 logging_init()
 logger = logging.getLogger(__name__)
-checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile', 'secrets', 'json', 'github_configuration', 'gitlab_configuration', 'sca_package']
+checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),

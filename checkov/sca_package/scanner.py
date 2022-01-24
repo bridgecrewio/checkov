@@ -35,7 +35,7 @@ class Scanner:
     ) -> "Sequence[Dict[str, Any]]":
         args = [
             (
-                f"./{TWISTCLI_FILE_NAME} coderepo scan --address {address} --token {bc_api_key} --output-file {output_path.absolute()} {input_path.absolute()}",
+                f"./{TWISTCLI_FILE_NAME} coderepo scan --address {address} --token {bc_api_key} --output-file '{output_path.absolute()}' '{input_path.absolute()}'",
                 input_path,
                 output_path,
             )

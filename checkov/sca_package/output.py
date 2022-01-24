@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List, Union, Dict, Any, Tuple
 
@@ -10,7 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
 
-
+UNFIXABLE_VERSION = "N/A"
 SEVERITY_RANKING = {
     "critical": 0,
     "high": 1,
@@ -18,6 +19,28 @@ SEVERITY_RANKING = {
     "low": 3,
     "none": 4,
 }
+
+
+@dataclass
+class CveCount:
+    total: int = 0
+    critical: int = 0
+    high: int = 0
+    medium: int = 0
+    low: int = 0
+    skipped: int = 0
+    fixable: int = 0
+    to_fix: int = 0
+
+    def output_row(self) -> List[str]:
+        return [
+            f"Total CVEs: {self.total}",
+            f"critical: {self.critical}",
+            f"high: {self.high}",
+            f"medium: {self.medium}",
+            f"low: {self.low}",
+            f"skipped: {self.skipped}",
+        ]
 
 
 def create_report_record(
@@ -35,7 +58,7 @@ def create_report_record(
     }
     code_block = [(0, f"{package_name}: {package_version}")]
 
-    lowest_fixed_version = "N/A"
+    lowest_fixed_version = UNFIXABLE_VERSION
     fixed_versions: List[Union[packaging_version.Version, packaging_version.LegacyVersion]] = []
     status = vulnerability_details.get("status") or "open"
     if status != "open":
@@ -43,6 +66,10 @@ def create_report_record(
             packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
         ]
         lowest_fixed_version = str(min(fixed_versions))
+
+    # sanitize severity names
+    if severity == "moderate":
+        severity = "medium"
 
     details = {
         "id": cve_id,
@@ -81,10 +108,10 @@ def create_report_record(
     return record
 
 
-def calculate_lowest_complaint_version(
+def calculate_lowest_compliant_version(
     fix_versions_lists: List[List[Union[packaging_version.Version, packaging_version.LegacyVersion]]]
 ) -> str:
-    """A best effort approach to find the lowest complaint version"""
+    """A best effort approach to find the lowest compliant version"""
 
     package_min_versions = set()
     package_versions = set()
@@ -124,16 +151,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
         ).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
-        cve_count = {
-            "total": 0,
-            "critical": 0,
-            "high": 0,
-            "medium": 0,
-            "low": 0,
-            "skipped": 0,
-            "fixable": 0,
-            "to_fix": 0,
-        }
+        cve_count = CveCount()
         package_details_map = defaultdict(dict)
 
         for package_name, records in packages.items():
@@ -141,17 +159,19 @@ def create_cli_output(*cve_records: List[Record]) -> str:
             fix_versions_lists = []
 
             for record in records:
-                cve_count["total"] += 1
+                cve_count.total += 1
 
                 if record.check_result["result"] == CheckResult.SKIPPED:
-                    cve_count["skipped"] += 1
+                    cve_count.skipped += 1
                     continue
                 else:
-                    cve_count["to_fix"] += 1
+                    cve_count.to_fix += 1
 
-                cve_count[record.severity] += 1
-                if record.vulnerability_details["lowest_fixed_version"] != "N/A":
-                    cve_count["fixable"] += 1
+                # best way to dynamically access an class instance attribute
+                setattr(cve_count, record.severity, getattr(cve_count, record.severity) + 1)
+
+                if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
+                    cve_count.fixable += 1
 
                 fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
                 if package_version is None:
@@ -168,7 +188,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
             if package_name in package_details_map.keys():
                 package_details_map[package_name]["cves"].sort(key=compare_cve_severity)
                 package_details_map[package_name]["current_version"] = package_version
-                package_details_map[package_name]["complaint_version"] = calculate_lowest_complaint_version(
+                package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
                 )
 
@@ -183,7 +203,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
     return "".join(cli_outputs)
 
 
-def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_map: Dict[str, Dict[str, Any]]) -> str:
+def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
     column_width = 120 / columns
@@ -194,16 +214,7 @@ def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_
         max_table_width=table_width,
     )
     cve_table.set_style(SINGLE_BORDER)
-    cve_table.add_row(
-        [
-            f"Total CVEs: {cve_count['total']}",
-            f"critical: {cve_count['critical']}",
-            f"high: {cve_count['high']}",
-            f"medium: {cve_count['medium']}",
-            f"low: {cve_count['low']}",
-            f"skipped: {cve_count['skipped']}",
-        ]
-    )
+    cve_table.add_row(cve_count.output_row())
     cve_table.align = "l"
     cve_table.min_width = column_width
     cve_table.max_width = column_width
@@ -221,9 +232,7 @@ def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_
         header=False, min_table_width=table_width + columns * 2, max_table_width=table_width + columns * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
-    fixable_table.add_row(
-        [f"To fix {cve_count['fixable']}/{cve_count['to_fix']} CVEs, go to https://www.bridgecrew.cloud/"]
-    )
+    fixable_table.add_row([f"To fix {cve_count.fixable}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
     fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -242,7 +251,7 @@ def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_
         "Severity",
         "Current version",
         "Fixed version",
-        "Complaint version",
+        "Compliant version",
     ]
     for package_idx, (package_name, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
@@ -253,11 +262,11 @@ def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_
         for cve_idx, cve in enumerate(details["cves"]):
             col_package = ""
             col_current_version = ""
-            col_complaint_version = ""
+            col_compliant_version = ""
             if cve_idx == 0:
                 col_package = package_name
                 col_current_version = details["current_version"]
-                col_complaint_version = details["complaint_version"]
+                col_compliant_version = details["compliant_version"]
 
             package_table.add_row(
                 [
@@ -266,7 +275,7 @@ def create_cli_table(file_path: str, cve_count: Dict[str, int], package_details_
                     cve["severity"],
                     col_current_version,
                     cve["fixed_version"],
-                    col_complaint_version,
+                    col_compliant_version,
                 ]
             )
 
