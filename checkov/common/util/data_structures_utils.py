@@ -31,14 +31,15 @@ def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
     except StopIteration:
         return
 
-def search_deep_keys(searchText, obj, path):
+
+def search_deep_keys(search_text, obj, path):
     """Search deep for keys and get their values"""
     keys = []
     if isinstance(obj, dict):
         for key in obj:
             pathprop = path[:]
             pathprop.append(key)
-            if key == searchText:
+            if key == search_text:
                 pathprop.append(obj[key])
                 keys.append(pathprop)
                 # pop the last element off for nesting of found elements for
@@ -47,17 +48,17 @@ def search_deep_keys(searchText, obj, path):
             if isinstance(obj[key], dict):
                 if key != 'parent_metadata':
                     # Don't go back to the parent metadata, it is scanned for the parent
-                    keys.extend(search_deep_keys(searchText, obj[key], pathprop))
+                    keys.extend(search_deep_keys(search_text, obj[key], pathprop))
             elif isinstance(obj[key], list):
                 for index, item in enumerate(obj[key]):
                     pathproparr = pathprop[:]
                     pathproparr.append(index)
-                    keys.extend(search_deep_keys(searchText, item, pathproparr))
+                    keys.extend(search_deep_keys(search_text, item, pathproparr))
     elif isinstance(obj, list):
         for index, item in enumerate(obj):
             pathprop = path[:]
             pathprop.append(index)
-            keys.extend(search_deep_keys(searchText, item, pathprop))
+            keys.extend(search_deep_keys(search_text, item, pathprop))
 
     return keys
 
