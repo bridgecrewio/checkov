@@ -33,11 +33,13 @@ class TestGraphChecks(unittest.TestCase):
 
     def test_external_checks_and_graph_checks_load(self):
         runner = Runner()
-        runner.graph_registry.checks = []
         current_dir = os.path.dirname(os.path.realpath(__file__))
         # without external yaml checks the external graph registry checks should be 0
         extra_checks_dir_path = [current_dir + "/extra_checks"]
         runner_filter = RunnerFilter(framework=['terraform'])
+        for check in runner.graph_registry.checks:
+            if runner_filter.is_external_check(check.id):
+                runner.graph_registry.checks = []
         runner.run(root_folder=current_dir, external_checks_dir=extra_checks_dir_path,
                    runner_filter=runner_filter)
         external_graph_checks = 0
