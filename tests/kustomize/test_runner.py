@@ -13,7 +13,7 @@ from checkov.common.output.report import Report
 class TestRunnerValid(unittest.TestCase):
 
     def test_record_relative_path_with_relative_dir(self):
-
+        @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
@@ -34,6 +34,6 @@ class TestRunnerValid(unittest.TestCase):
             # Kustomize deals with absolute paths
             #self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
-            
+
 if __name__ == '__main__':
     unittest.main()
