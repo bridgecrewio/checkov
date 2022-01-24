@@ -6,10 +6,10 @@ from checkov.terraform.checks.resource.gcp.GoogleCloudSqlServerCrossDBOwnershipC
 from checkov.terraform.runner import Runner
 
 
-class TestGoogleCloudPostgreSqlLogCheckpoints(unittest.TestCase):
+class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_GoogleCloudSqlServerCrossDBOwnershipChaining"
+        test_files_dir = Path(__file__).parent / "example_CloudSQLServerCrossDBOwnershipChaining"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
