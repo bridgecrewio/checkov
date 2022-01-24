@@ -7,7 +7,7 @@ Parameters:
   WrongValueTracingConfig:
     Description: Active tracing config
     Type: String
-    Default: "PassThrough"
+    Default: "Wrong Value"
 Resources:
   GoodLambdaFunction:
     Type: "AWS::Lambda::Function"
