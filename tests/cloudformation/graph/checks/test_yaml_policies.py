@@ -3,7 +3,6 @@ import os
 import warnings
 from typing import List
 
-from checkov.cloudformation import checks
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -16,7 +15,7 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, checks, "cloudformation", __file__, args)
+        super().__init__(graph_manager, os.path.dirname(__file__) + "/test_checks", "cloudformation", __file__, args)
 
     def setUp(self) -> None:
         os.environ['UNIQUE_TAG'] = ''

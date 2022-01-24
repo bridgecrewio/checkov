@@ -1,4 +1,6 @@
 import copy
+import os.path
+
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -12,7 +14,7 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, checks, 'kubernetes', __file__, args)
+        super().__init__(graph_manager, "checkov/kubernetes/checks/graph_checks", os.path.dirname(__file__) + "/test_checks", 'kubernetes', __file__, args)
 
     def test_AllowedCapabilities(self):
         self.go('AllowedCapabilities')
