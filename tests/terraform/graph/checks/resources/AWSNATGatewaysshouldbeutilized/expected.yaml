@@ -5,4 +5,6 @@ pass:
   - "aws_route_ok_2"
 fail:
   - "aws_route_table_not_ok"
+  - "aws_route_table_not_ok"
+  - "aws_route_not_ok"
   - "aws_route_not_ok"
