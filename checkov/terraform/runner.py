@@ -15,7 +15,7 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
+from checkov.common.output.report import Report, merge_reports, remove_duplicate_results, CheckType
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
@@ -42,7 +42,7 @@ CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
 class Runner(BaseRunner):
-    check_type = "terraform"
+    check_type = CheckType.TERRAFORM
 
     def __init__(
         self,

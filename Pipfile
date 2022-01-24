@@ -65,6 +65,7 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonpath_ng = "*"
 jsonschema = "~=3.0"
+prettytable = "*"
 
 [requires]
 python_version = "3.7"

@@ -64,7 +64,8 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath_ng",
-        "jsonschema~=3.0"
+        "jsonschema~=3.0",
+        "prettytable"
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -84,6 +85,9 @@ setup(
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
+        ],
+        "checkov.common.util.templates": [
+            "*.jinja2"
         ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
