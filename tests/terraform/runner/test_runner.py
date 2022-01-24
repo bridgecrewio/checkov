@@ -289,6 +289,15 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_13':
                 # CKV2_AWS_13 is not supported by AWS
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_24':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_25':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
+                # Was a test policy
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
