@@ -27,7 +27,8 @@ def validating_webhook():
         print("Valid UID Found, continuing")
     else:
         print("Invalid UID. Aborting validation")
-        webhook.logger.error(f'K8s UID failed security checks. Request rejected!')
+        response = 'Invalid UID. Aborting validation'
+        webhook.logger.error('K8s UID failed security checks. Request rejected!')
         return admission_response(False, uid, response)
 
 
@@ -41,7 +42,7 @@ def validating_webhook():
     json.dump(request_info, ff)
     yaml.dump(todict(request_info["request"]["object"]),yf)
 
-    print ("Running checkov") 
+    print("Running checkov") 
     cp = subprocess.run(["checkov","--config-file",configfile,"-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     checkovresults = json.loads(cp.stdout)
@@ -49,10 +50,10 @@ def validating_webhook():
     # check the debug env.  If 'yes' we don't delete the evidence of the scan.  Just in case it's misbehaving.
     # to active add an env DEBUG:yes to the deployment manifest
     if (getenv("DEBUG")) is not None:
-      debug = getenv("DEBUG")
-      if (debug.lower() != "yes"):
-          remove(jsonfile)
-          remove(yamlfile)
+        debug = getenv("DEBUG")
+        if (debug.lower() != "yes"):
+            remove(jsonfile)
+            remove(yamlfile)
 
     if cp.returncode != 0:
 
@@ -72,8 +73,8 @@ def validating_webhook():
                             if fail['guideline'] != "":
                                 hard_fails[ckv] =  hard_fails[ckv] + f"\n  Guidance: {fail['guideline']}"
     
-            except:
-                print ("hard fail error")
+            finally:
+                print("hard fail error")
         
             if (len(hard_fails) > 0):
                 response = f"\nCheckov found {len(hard_fails)} issues in violation of admission policy.\n"
@@ -113,13 +114,13 @@ def admission_response(allowed, uid, message):
     return jsonify({"apiVersion": "admission.k8s.io/v1",
                     "kind": "AdmissionReview",
                     "response": {
-                         "allowed": allowed,
-                         "uid": uid,
-                         "status": {
-                           "code": 403,
-                           "message": message
-                         }
-                       }
+                        "allowed": allowed,
+                        "uid": uid,
+                        "status": {
+                            "code": 403,
+                            "message": message
+                        }
+                    }
                     })
 
 
