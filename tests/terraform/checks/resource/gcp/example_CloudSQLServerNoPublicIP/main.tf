@@ -151,7 +151,7 @@ resource "google_sql_database_instance" "pass3" {
   }
 }
 
-resource "google_sql_database_instance" "unknown" {
+resource "google_sql_database_instance" "pass4" {
   database_version = "MYSQL_8_0"
   name             = "mysql81"
   project          = "gcp-bridgecrew-deployment"

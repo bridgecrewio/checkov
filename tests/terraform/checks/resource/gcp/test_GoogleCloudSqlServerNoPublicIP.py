@@ -21,6 +21,7 @@ class TestGGoogleCloudSqlServerNoPublicIP(unittest.TestCase):
             "google_sql_database_instance.pass",
             "google_sql_database_instance.pass2",
             "google_sql_database_instance.pass3",
+            "google_sql_database_instance.pass4",
         }
 
         failing_resources = {
@@ -30,7 +31,7 @@ class TestGGoogleCloudSqlServerNoPublicIP(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["passed"], 4)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
