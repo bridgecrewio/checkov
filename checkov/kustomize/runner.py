@@ -328,7 +328,7 @@ class Runner(BaseRunner):
                 report.skipped_checks += chart_results.skipped_checks
                 report.resources.update(chart_results.resources)
 
-            except Exception as e:
+            except Exception as e:  # noqa # some weird issue with flake8
                 logging.warning(e, stack_info=True)
                 with tempfile.TemporaryDirectory() as save_error_dir:
                     logging.debug(
