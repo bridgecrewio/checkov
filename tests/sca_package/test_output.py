@@ -1,6 +1,7 @@
 from packaging import version as packaging_version
 
 from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_table,
@@ -47,6 +48,120 @@ def test_create_report_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
+    assert record.code_block == [(0, "django: 1.2")]
+    assert (
+        record.description
+        == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
+    )
+    assert record.file_abs_path == file_abs_path
+    assert record.file_line_range == [0, 0]
+    assert record.file_path == f"/{rootless_file_path}"
+    assert record.repo_file_path == file_abs_path
+    assert record.resource == "requirements.txt.django"
+    assert record.severity == "critical"
+    assert record.short_description == "CVE-2019-19844 - django: 1.2"
+    assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
+    assert record.vulnerability_details["fixed_versions"] == [
+        packaging_version.parse("3.0.1"),
+        packaging_version.parse("2.2.9"),
+        packaging_version.parse("1.11.27"),
+    ]
+
+
+def test_create_report_record_severity_filter():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    vulnerability_details = {
+        "id": "CVE-2019-19844",
+        "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+        "cvss": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+        "severity": "moderate",
+        "packageName": "django",
+        "packageVersion": "1.2",
+        "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+        "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
+        "impactedVersions": ["<1.11.27"],
+        "publishedDate": "2019-12-18T20:15:00+01:00",
+        "discoveredDate": "2019-12-18T19:15:00Z",
+        "fixDate": "2019-12-18T20:15:00+01:00",
+    }
+
+    # when
+    record = create_report_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+        runner_filter=RunnerFilter(min_cve_severity='high')
+    )
+
+    # then
+    assert record.bc_check_id == "BC_CVE_2019_19844"
+    assert record.check_id == "CKV_CVE_2019_19844"
+    assert record.check_class == check_class
+    assert record.check_name == "SCA package scan"
+    assert record.check_result == {"result": CheckResult.SKIPPED, 'suppress_comment': 'Filtered by severity'}
+    assert record.code_block == [(0, "django: 1.2")]
+    assert (
+        record.description
+        == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
+    )
+    assert record.file_abs_path == file_abs_path
+    assert record.file_line_range == [0, 0]
+    assert record.file_path == f"/{rootless_file_path}"
+    assert record.repo_file_path == file_abs_path
+    assert record.resource == "requirements.txt.django"
+    assert record.severity == "medium"
+    assert record.short_description == "CVE-2019-19844 - django: 1.2"
+    assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
+    assert record.vulnerability_details["fixed_versions"] == [
+        packaging_version.parse("3.0.1"),
+        packaging_version.parse("2.2.9"),
+        packaging_version.parse("1.11.27"),
+    ]
+
+
+def test_create_report_record_package_filter():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    vulnerability_details = {
+        "id": "CVE-2019-19844",
+        "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+        "cvss": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+        "severity": "critical",
+        "packageName": "django",
+        "packageVersion": "1.2",
+        "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+        "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
+        "impactedVersions": ["<1.11.27"],
+        "publishedDate": "2019-12-18T20:15:00+01:00",
+        "discoveredDate": "2019-12-18T19:15:00Z",
+        "fixDate": "2019-12-18T20:15:00+01:00",
+    }
+
+    # when
+    record = create_report_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+        runner_filter=RunnerFilter(skip_cve_package=['django', 'requests'])
+    )
+
+    # then
+    assert record.bc_check_id == "BC_CVE_2019_19844"
+    assert record.check_id == "CKV_CVE_2019_19844"
+    assert record.check_class == check_class
+    assert record.check_name == "SCA package scan"
+    assert record.check_result == {"result": CheckResult.SKIPPED, "suppress_comment": "Filtered by package 'django'"}
     assert record.code_block == [(0, "django: 1.2")]
     assert (
         record.description
