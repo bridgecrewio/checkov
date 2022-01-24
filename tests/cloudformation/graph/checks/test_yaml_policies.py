@@ -15,7 +15,8 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, os.path.dirname(__file__) + "/test_checks", "cloudformation", __file__, args)
+        super().__init__(graph_manager, "checkov/cloudformation/checks/graph_checks",
+                         os.path.dirname(__file__) + "/test_checks", "cloudformation", __file__, args)
 
     def setUp(self) -> None:
         os.environ['UNIQUE_TAG'] = ''
