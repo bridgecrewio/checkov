@@ -65,7 +65,7 @@ setup(
         "aiomultiprocess",
         "jsonpath_ng",
         "jsonschema~=3.0",
-        "prettytable"
+        "prettytable>=3.0.0"
     ],
     license="Apache License 2.0",
     name="checkov",
