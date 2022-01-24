@@ -2,7 +2,7 @@ import json
 import os
 import yaml
 from abc import abstractmethod
-from typing import List
+from typing import List, Optional
 from unittest import TestCase
 
 from checkov.cloudformation.runner import Runner

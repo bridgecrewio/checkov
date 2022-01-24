@@ -7,14 +7,14 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
-from checkov.kubernetes import checks
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, "checkov/kubernetes/checks/graph_checks", os.path.dirname(__file__) + "/test_checks", 'kubernetes', __file__, args)
+        super().__init__(graph_manager, "checkov/kubernetes/checks/graph_checks",
+                         os.path.dirname(__file__) + "/test_checks", 'kubernetes', __file__, args)
 
     def test_AllowedCapabilities(self):
         self.go('AllowedCapabilities')
