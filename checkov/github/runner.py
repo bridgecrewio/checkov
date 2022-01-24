@@ -1,10 +1,11 @@
+from checkov.common.output.report import CheckType
 from checkov.github.dal import Github
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(JsonRunner):
-    check_type = "github_configuration"
+    check_type = CheckType.GITHUB_CONFIGURATION
 
     def __init__(self):
         self.github = Github()

@@ -11,7 +11,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -29,7 +29,7 @@ class Runner(BaseRunner):
         external_registries: Optional[List[BaseRegistry]] = None
     ) -> None:
         self.external_registries = [] if external_registries is None else external_registries
-        self.check_type = "kubernetes"
+        self.check_type = CheckType.KUBERNETES
         self.graph_class = graph_class
         self.graph_manager = \
             graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)

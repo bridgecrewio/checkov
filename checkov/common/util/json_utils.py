@@ -3,6 +3,7 @@ import json
 from typing import Any
 
 from lark import Tree
+from packaging.version import LegacyVersion, Version
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -12,6 +13,8 @@ class CustomJSONEncoder(json.JSONEncoder):
         elif isinstance(o, Tree):
             return str(o)
         elif isinstance(o, datetime.date):
+            return str(o)
+        elif isinstance(o, (Version, LegacyVersion)):
             return str(o)
         else:
             return json.JSONEncoder.default(self, o)

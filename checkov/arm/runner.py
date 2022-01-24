@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Tuple
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -16,7 +16,7 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 
 
 class Runner(BaseRunner):
-    check_type = "arm"
+    check_type = CheckType.ARM
 
     def run(
         self,

@@ -64,7 +64,8 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath_ng",
-        "jsonschema~=3.0"
+        "jsonschema~=3.0",
+        "prettytable"
     ],
     license="Apache License 2.0",
     name="checkov",

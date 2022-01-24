@@ -19,7 +19,7 @@ from checkov.serverless.checks.service.registry import service_registry
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.serverless.parsers.parser import parse
 from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
@@ -41,7 +41,7 @@ SINGLE_ITEM_SECTIONS = [
 
 
 class Runner(BaseRunner):
-    check_type = "serverless"
+    check_type = CheckType.SERVERLESS
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
