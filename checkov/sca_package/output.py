@@ -2,7 +2,7 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List, Union, Dict, Any, Tuple
+from typing import List, Union, Dict, Any
 
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
@@ -10,15 +10,10 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
+from checkov.common.util.data_structures_utils import SEVERITY_RANKING
+from checkov.runner_filter import RunnerFilter
 
 UNFIXABLE_VERSION = "N/A"
-SEVERITY_RANKING = {
-    "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 3,
-    "none": 4,
-}
 
 
 @dataclass
@@ -44,18 +39,34 @@ class CveCount:
 
 
 def create_report_record(
-    rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any]
+    rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any],
+    runner_filter: RunnerFilter = RunnerFilter()
 ) -> Record:
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
+    # sanitize severity names
+    if severity == "moderate":
+        severity = "medium"
     description = vulnerability_details.get("description")
     resource = f"{rootless_file_path}.{package_name}"
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
     }
+
+    if runner_filter.skip_cve_package and package_name in runner_filter.skip_cve_package:
+        check_result = {
+            "result": CheckResult.SKIPPED,
+            "suppress_comment": f"Filtered by package '{package_name}'"
+        }
+    elif SEVERITY_RANKING[severity] > SEVERITY_RANKING[runner_filter.min_cve_severity]:
+        check_result = {
+            "result": CheckResult.SKIPPED,
+            "suppress_comment": "Filtered by severity"
+        }
+
     code_block = [(0, f"{package_name}: {package_version}")]
 
     lowest_fixed_version = UNFIXABLE_VERSION
@@ -67,9 +78,6 @@ def create_report_record(
         ]
         lowest_fixed_version = str(min(fixed_versions))
 
-    # sanitize severity names
-    if severity == "moderate":
-        severity = "medium"
 
     details = {
         "id": cve_id,
