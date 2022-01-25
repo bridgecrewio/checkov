@@ -152,7 +152,7 @@ class Runner(BaseRunner):
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
-            elif 'bases' in fileContent.get:
+            elif 'bases' in fileContent:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
                 metadata['type'] =  "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
