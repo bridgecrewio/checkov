@@ -278,27 +278,6 @@ jobs:
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
-#  publish-to-brew:
-#    runs-on: macos-latest
-#    needs: publish-package
-#    steps:
-#      - name: Get release version
-#        id: get_version
-#        run: |
-#          checkov_version=${{ needs.publish-package.outputs.version }}
-#          micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
-#          echo $micro_version
-#          ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
-#          echo $ZERO_IF_SHOULD_RELEASE
-#          echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
-#        env:
-#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-#      - name: release homebrew
-#        uses: dawidd6/action-homebrew-bump-formula@v3.8.0
-#        if: env.ZERO_IF_SHOULD_RELEASE == 0
-#        with:
-#          formula: checkov
-#          token: ${{ secrets.PAT_TOKEN }}
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
