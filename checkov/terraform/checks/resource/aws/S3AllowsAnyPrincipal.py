@@ -23,7 +23,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         if isinstance(conf['policy'][0], str):
             try:
                 policy_block = json.loads(conf['policy'][0])
-            except:  # nosec
+            except:  # nosec # noqa:E722
                 return CheckResult.PASSED
         else:
             if isinstance(conf['policy'][0], dict):
