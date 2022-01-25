@@ -400,7 +400,7 @@ def add_parser_args(parser):
                choices=SEVERITY_RANKING.keys(), default='none')
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
-                    'specify multiple packages separated by comma delimiter', action='append', default=None)
+                    'specify this argument multiple times to skip multiple packages', action='append', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
