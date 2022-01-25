@@ -12,9 +12,10 @@ class ApiServerBasicAuthFile(BaseK8sContainerCheck):
 
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["command"]
-        if "command" in conf:
-            if "kube-apiserver" in conf["command"]:
-                if any(x.startswith("--basic-auth-file") for x in conf["command"]):
+        command = conf.get("command")
+        if isinstance(command, list):
+            if "kube-apiserver" in command:
+                if any(x.startswith("--basic-auth-file") for x in command):
                     return CheckResult.FAILED
 
         return CheckResult.PASSED

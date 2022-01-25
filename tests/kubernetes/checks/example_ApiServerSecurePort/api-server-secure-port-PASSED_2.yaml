@@ -5,13 +5,11 @@ metadata:
   labels:
     component: kube-apiserver
     tier: control-plane
-  name: kube-apiserver-secure
+  name: kube-apiserver-cmd-empty
   namespace: kube-system
 spec:
   containers:
   - command:
-    - kube-apiserver
-    - --secure-port=80
     image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
     livenessProbe:
       failureThreshold: 8
