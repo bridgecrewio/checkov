@@ -9,12 +9,13 @@
 [![Python Version](https://img.shields.io/github/pipenv/locked/python-version/bridgecrewio/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
+[![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
 [![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://slack.bridgecrew.io/)
  
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), Terraform plan, [Cloudformation](https://aws.amazon.com/cloudformation/), [AWS SAM](https://aws.amazon.com/serverless/sam/), [Kubernetes](https://kubernetes.io/), [Dockerfile](https://www.docker.com/),  [Serverless](https://www.serverless.com/) or [ARM Templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
  
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 

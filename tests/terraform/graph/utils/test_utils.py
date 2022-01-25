@@ -28,7 +28,7 @@ class TestUtils(TestCase):
             'aws iam delete-role --role-name ${local.role_name} --profile ${var.profile} --region ${var.region}',
             'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}',
         ]
-        expected =   [
+        expected = [
             [TerraformVertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
             [TerraformVertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
             [],

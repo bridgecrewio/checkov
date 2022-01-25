@@ -85,6 +85,16 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.passed_checks, [])
         report.print_console()
 
+    def test_skip_wildcard_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/wildcard_skip"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['dockerfile']))
+        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertGreaterEqual(len(report.passed_checks), 1)
+        self.assertGreaterEqual(len(report.failed_checks), 2)
+
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "helm", "kubernetes", "serverless", "terraform"]
         check_imports = []

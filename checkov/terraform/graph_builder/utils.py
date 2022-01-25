@@ -45,8 +45,8 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
     return [
-        module_dependency[1:module_dependency.index('.tf#')+len('.tf')],
-        module_dependency[module_dependency.index('.tf#')+len('.tf#'):-1]
+        module_dependency[1:module_dependency.index('.tf#') + len('.tf')],
+        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-1]
     ]
 
 

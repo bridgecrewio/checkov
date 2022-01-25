@@ -71,16 +71,17 @@ class LocalGraph:
         return self.vertices[index].get_attribute_dict(add_hash)
 
     def update_vertex_attribute(
-            self,
-            vertex_index: int,
-            attribute_key: str,
-            attribute_value: Any,
-            change_origin_id: int,
-            attribute_at_dest: Optional[Union[str, List[str]]],
+        self,
+        vertex_index: int,
+        attribute_key: str,
+        attribute_value: Any,
+        change_origin_id: int,
+        attribute_at_dest: Optional[Union[str, List[str]]],
+        transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
         if attribute_at_dest:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
         self.vertices[vertex_index].update_attribute(
-            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest
+            attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest, transform_step
         )

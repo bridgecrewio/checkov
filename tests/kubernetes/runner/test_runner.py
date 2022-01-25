@@ -24,13 +24,12 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=['kubernetes'], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
-            # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}/{record.file_path}')
+            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -47,7 +46,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=['kubernetes'], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
@@ -111,7 +110,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
     def test_wrong_check_imports(self):
-        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "serverless", "terraform"]
+        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "serverless", "terraform", "kustomize"]
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")

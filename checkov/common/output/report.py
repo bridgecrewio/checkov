@@ -3,6 +3,7 @@ import itertools
 import json
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set
 
 from colorama import init
@@ -13,12 +14,38 @@ from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
+from checkov import sca_package
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.version import version
 
 init(autoreset=True)
+
+@dataclass
+class CheckType:
+    ARM = "arm"
+    CLOUDFORMATION = "cloudformation"
+    DOCKERFILE = "dockerfile"
+    GITHUB_CONFIGURATION = "github_configuration"
+    GITLAB_CONFIGURATION = "gitlab_configuration"
+    HELM = "helm"
+    JSON = "json"
+    KUBERNETES = "kubernetes"
+    KUSTOMIZE = "kustomize"
+    SCA_PACKAGE = "sca_package"
+    SECRETS = "secrets"
+    SERVERLESS = "serverless"
+    TERRAFORM = "terraform"
+    TERRAFORM_PLAN = "terraform_plan"
+
+SEVERITY_TO_SARIF_LEVEL = {
+    "critical": "error",
+    "high": "error",
+    "medium": "warning",
+    "low": "note",
+    "none": "none",
+}
 
 
 class Report:
@@ -206,20 +233,25 @@ class Report:
                 summary["parsing_errors"],
             )
         else:
-            message = (
-                "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}\n".format(
-                    summary["passed"], summary["failed"], summary["skipped"]
-                )
-            )
+            if self.check_type == CheckType.SCA_PACKAGE:
+                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n"
+            else:
+                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n"
         print(colored(message, "cyan"))
-        if not is_quiet:
-            for record in self.passed_checks:
+
+        # output for vulnerabilities is different
+        if self.check_type == CheckType.SCA_PACKAGE:
+            if self.failed_checks or self.skipped_checks:
+                print(sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks))
+        else:
+            if not is_quiet:
+                for record in self.passed_checks:
+                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+            for record in self.failed_checks:
                 print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
-        for record in self.failed_checks:
-            print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
-        if not is_quiet:
-            for record in self.skipped_checks:
-                print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+            if not is_quiet:
+                for record in self.skipped_checks:
+                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
 
         if not is_quiet:
             for file in self.parsing_errors:
@@ -264,8 +296,12 @@ class Report:
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
-                "shortDescription": {"text": record.check_name},
-                "fullDescription": {"text": record.check_name},
+                "shortDescription": {
+                    "text": record.short_description if record.short_description else record.check_name,
+                },
+                "fullDescription": {
+                    "text": record.description if record.description else record.check_name,
+                },
                 "help": {
                     "text": f'"{record.check_name}\nResource: {record.resource}\nGuideline: {record.guideline}"',
                 },
@@ -285,16 +321,18 @@ class Report:
             if record.file_line_range[1] == 0:
                 record.file_line_range[1] = 1
 
-            if record.check_result.get("result", None) == CheckResult.FAILED:
+            if record.severity:
+                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity, "none")
+            elif record.check_result.get("result") == CheckResult.FAILED:
                 level = "error"
-            elif record.check_result.get("result", None) == CheckResult.SKIPPED:
-                level = "warning"
 
             result = {
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
                 "level": level,
-                "message": {"text": record.check_name},
+                "message": {
+                    "text": record.description if record.description else record.check_name,
+                },
                 "locations": [
                     {
                         "physicalLocation": {
@@ -307,6 +345,22 @@ class Report:
                     }
                 ],
             }
+
+            if record.check_result.get("result") == CheckResult.SKIPPED:
+                # sca_package suppressions can only be enabled via flag
+                # other runners only report in source suppressions
+                kind = "external" if record.vulnerability_details else "inSource"
+                justification = record.check_result.get("suppress_comment")
+                if justification is None:
+                    justification = "No comment provided"
+
+                result["suppressions"] = [
+                    {
+                        "kind": kind,
+                        "justification": justification,
+                    }
+                ]
+
             results.append(result)
 
         runs.append({
@@ -365,7 +419,7 @@ class Report:
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)
-        test_suites = []
+        
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
@@ -389,14 +443,11 @@ class Report:
                 )
 
             test_cases[check_name].append(test_case)
-        for key in test_cases.keys():
-            test_suites.append(
-                TestSuite(
-                    name=key,
-                    test_cases=test_cases[key],
-                    package=test_cases[key][0].classname,
-                )
-            )
+        test_suites = [
+            TestSuite(name=key, test_cases=value, package=value[0].classname)
+            for key, value in test_cases.items()
+        ]
+        
         return test_suites
 
     def print_json(self) -> None:

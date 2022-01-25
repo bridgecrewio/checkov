@@ -1,4 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.util.type_forcers import force_int
 
@@ -26,7 +27,10 @@ class PasswordPolicyExpiration(BaseResourceValueCheck):
         """
         key = 'max_password_age'
         if key in conf.keys():
-            max_age = force_int(conf[key][0])
+            max_age = conf[key][0]
+            if self._is_variable_dependant(max_age):
+                return CheckResult.UNKNOWN
+            max_age = force_int(max_age)
             if max_age and 0 < max_age <= 90:
                 return CheckResult.PASSED
         return CheckResult.FAILED

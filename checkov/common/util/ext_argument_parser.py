@@ -16,7 +16,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             self.fields_to_sanitize.add(args[0])
         super().add(*args, **kwargs)
 
-    def format_values(self, sanitize=False):
+    def format_values(self, sanitize: bool = False) -> str:
         if not sanitize:
             return super().format_values()
 
@@ -36,7 +36,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                 if key:
                     if key in self.fields_to_sanitize or action.option_strings[0] in self.fields_to_sanitize:
                         value = '****'
-                    r.write("  {:<19}{}\n".format(key+":", value))
+                    r.write("  {:<19}{}\n".format(key + ":", value))
                 else:
                     if isinstance(value, str):
                         r.write("  %s\n" % value)

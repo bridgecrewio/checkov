@@ -48,6 +48,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
+      - uses: imranismail/setup-kustomize@v1
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,6 +69,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
+      - uses: imranismail/setup-kustomize@v1
+        if: ${{ runner.os != 'windows' }}
       - uses: dschep/install-pipenv-action@v1
         with:
           # version 2021.11.5, 2021.11.5.post0 do not work
@@ -108,6 +111,7 @@ jobs:
           python-version: ${{ env.python-version }}
       - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
+      - uses: imranismail/setup-kustomize@v1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
         run: |

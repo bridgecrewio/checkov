@@ -1,5 +1,7 @@
 from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
+from typing import List
+
 from json.scanner import NUMBER_RE
 
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
@@ -180,9 +182,9 @@ def count_occurrences(arr, key):
     return count
 
 
-def largest_less_than(indexes, line_num, pos):
+def largest_less_than(indexes: List[int], line_num: int, pos: int) -> int:
     """Replacement func for python str.rfind using indexes """
-    return indexes[line_num-1] if indexes and count_occurrences(indexes, pos) else -1
+    return indexes[line_num - 1] if indexes and count_occurrences(indexes, pos) else -1
 
 
 def get_beg_end_mark(s, start, end, indexes):

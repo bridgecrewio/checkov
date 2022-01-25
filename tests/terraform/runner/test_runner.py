@@ -230,7 +230,7 @@ class TestRunnerValid(unittest.TestCase):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
-                # CKV_AWS_95 is currently implemented just on cfn
+                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76 
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
@@ -288,6 +288,15 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_13':
                 # CKV2_AWS_13 is not supported by AWS
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_24':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_25':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
+                # Was a test policy
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
@@ -1123,7 +1132,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_do_exist(self):
@@ -1139,7 +1148,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_resource_negative_values_dont_exist(self):

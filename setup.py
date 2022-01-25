@@ -58,11 +58,14 @@ setup(
         "policyuniverse",
         "typing-extensions",
         "cachetools",
-        "cyclonedx-python-lib>=0.11.0",
+        "cyclonedx-python-lib>=0.11.0,<1.0.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
         "aiomultiprocess",
+        "jsonpath_ng",
+        "jsonschema~=3.0",
+        "prettytable>=3.0.0"
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -82,6 +85,9 @@ setup(
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
+        ],
+        "checkov.common.util.templates": [
+            "*.jinja2"
         ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],

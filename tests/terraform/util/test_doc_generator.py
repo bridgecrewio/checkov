@@ -1,4 +1,3 @@
-import unittest
 from typing import List, Set, Optional
 
 import pytest
@@ -20,8 +19,10 @@ def test_get_checks_returned_check_number():
 @pytest.mark.parametrize(
     "input_frameworks,expected_frameworks",
     [
-        (["all"], {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform"}),
-        (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform"}),
+        (["all"], {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
+                   "github_configuration", "gitlab_configuration"}),
+        (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
+                "github_configuration", "gitlab_configuration"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],

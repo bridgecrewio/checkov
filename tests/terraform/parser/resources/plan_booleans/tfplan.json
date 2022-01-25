@@ -1,0 +1,480 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.3",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.default",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "default",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 6,
+          "values": {
+            "advanced_machine_features": [],
+            "allow_stopping_for_update": null,
+            "attached_disk": [],
+            "boot_disk": [
+              {
+                "auto_delete": true,
+                "disk_encryption_key_raw": null,
+                "initialize_params": [
+                  {
+                    "image": "debian-cloud/debian-9"
+                  }
+                ],
+                "mode": "READ_WRITE"
+              }
+            ],
+            "can_ip_forward": false,
+            "deletion_protection": false,
+            "description": null,
+            "desired_status": null,
+            "enable_display": null,
+            "hostname": null,
+            "labels": null,
+            "machine_type": "e2-medium",
+            "metadata": {
+              "a": "true",
+              "b": "True",
+              "c": "false",
+              "d": "False"
+            },
+            "metadata_startup_script": "echo hi > /test.txt",
+            "name": "test",
+            "network_interface": [
+              {
+                "access_config": [
+                  {
+                    "public_ptr_domain_name": null
+                  }
+                ],
+                "alias_ip_range": [],
+                "ipv6_access_config": [],
+                "network": "default",
+                "nic_type": null,
+                "queue_count": null
+              }
+            ],
+            "resource_policies": null,
+            "scratch_disk": [
+              {
+                "interface": "SCSI"
+              }
+            ],
+            "service_account": [
+              {
+                "scopes": [
+                  "https://www.googleapis.com/auth/cloud-platform"
+                ]
+              }
+            ],
+            "shielded_instance_config": [],
+            "tags": [
+              "bar",
+              "foo"
+            ],
+            "timeouts": null,
+            "zone": "us-central1-c"
+          },
+          "sensitive_values": {
+            "advanced_machine_features": [],
+            "attached_disk": [],
+            "boot_disk": [
+              {
+                "initialize_params": [
+                  {
+                    "labels": {}
+                  }
+                ]
+              }
+            ],
+            "confidential_instance_config": [],
+            "guest_accelerator": [],
+            "metadata": {},
+            "network_interface": [
+              {
+                "access_config": [
+                  {}
+                ],
+                "alias_ip_range": [],
+                "ipv6_access_config": []
+              }
+            ],
+            "reservation_affinity": [],
+            "scheduling": [],
+            "scratch_disk": [
+              {}
+            ],
+            "service_account": [
+              {
+                "scopes": [
+                  false
+                ]
+              }
+            ],
+            "shielded_instance_config": [],
+            "tags": [
+              false,
+              false
+            ]
+          }
+        },
+        {
+          "address": "google_service_account.default",
+          "mode": "managed",
+          "type": "google_service_account",
+          "name": "default",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 0,
+          "values": {
+            "account_id": "abc123",
+            "description": null,
+            "disabled": false,
+            "display_name": "Service Account",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "google_compute_instance.default",
+      "mode": "managed",
+      "type": "google_compute_instance",
+      "name": "default",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "advanced_machine_features": [],
+          "allow_stopping_for_update": null,
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "auto_delete": true,
+              "disk_encryption_key_raw": null,
+              "initialize_params": [
+                {
+                  "image": "debian-cloud/debian-9"
+                }
+              ],
+              "mode": "READ_WRITE"
+            }
+          ],
+          "can_ip_forward": false,
+          "deletion_protection": false,
+          "description": null,
+          "desired_status": null,
+          "enable_display": null,
+          "hostname": null,
+          "labels": null,
+          "machine_type": "e2-medium",
+          "metadata": {
+            "a": "true",
+            "b": "True",
+            "c": "false",
+            "d": "False"
+          },
+          "metadata_startup_script": "echo hi > /test.txt",
+          "name": "test",
+          "network_interface": [
+            {
+              "access_config": [
+                {
+                  "public_ptr_domain_name": null
+                }
+              ],
+              "alias_ip_range": [],
+              "ipv6_access_config": [],
+              "network": "default",
+              "nic_type": null,
+              "queue_count": null
+            }
+          ],
+          "resource_policies": null,
+          "scratch_disk": [
+            {
+              "interface": "SCSI"
+            }
+          ],
+          "service_account": [
+            {
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          ],
+          "shielded_instance_config": [],
+          "tags": [
+            "bar",
+            "foo"
+          ],
+          "timeouts": null,
+          "zone": "us-central1-c"
+        },
+        "after_unknown": {
+          "advanced_machine_features": [],
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "device_name": true,
+              "disk_encryption_key_sha256": true,
+              "initialize_params": [
+                {
+                  "labels": true,
+                  "size": true,
+                  "type": true
+                }
+              ],
+              "kms_key_self_link": true,
+              "source": true
+            }
+          ],
+          "confidential_instance_config": true,
+          "cpu_platform": true,
+          "current_status": true,
+          "guest_accelerator": true,
+          "id": true,
+          "instance_id": true,
+          "label_fingerprint": true,
+          "metadata": {},
+          "metadata_fingerprint": true,
+          "min_cpu_platform": true,
+          "network_interface": [
+            {
+              "access_config": [
+                {
+                  "nat_ip": true,
+                  "network_tier": true
+                }
+              ],
+              "alias_ip_range": [],
+              "ipv6_access_config": [],
+              "ipv6_access_type": true,
+              "name": true,
+              "network_ip": true,
+              "stack_type": true,
+              "subnetwork": true,
+              "subnetwork_project": true
+            }
+          ],
+          "project": true,
+          "reservation_affinity": true,
+          "scheduling": true,
+          "scratch_disk": [
+            {}
+          ],
+          "self_link": true,
+          "service_account": [
+            {
+              "email": true,
+              "scopes": [
+                false
+              ]
+            }
+          ],
+          "shielded_instance_config": [],
+          "tags": [
+            false,
+            false
+          ],
+          "tags_fingerprint": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "advanced_machine_features": [],
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "disk_encryption_key_raw": true,
+              "initialize_params": [
+                {
+                  "labels": {}
+                }
+              ]
+            }
+          ],
+          "confidential_instance_config": [],
+          "guest_accelerator": [],
+          "metadata": {},
+          "network_interface": [
+            {
+              "access_config": [
+                {}
+              ],
+              "alias_ip_range": [],
+              "ipv6_access_config": []
+            }
+          ],
+          "reservation_affinity": [],
+          "scheduling": [],
+          "scratch_disk": [
+            {}
+          ],
+          "service_account": [
+            {
+              "scopes": [
+                false
+              ]
+            }
+          ],
+          "shielded_instance_config": [],
+          "tags": [
+            false,
+            false
+          ]
+        }
+      }
+    },
+    {
+      "address": "google_service_account.default",
+      "mode": "managed",
+      "type": "google_service_account",
+      "name": "default",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "account_id": "abc123",
+          "description": null,
+          "disabled": false,
+          "display_name": "Service Account",
+          "timeouts": null
+        },
+        "after_unknown": {
+          "email": true,
+          "id": true,
+          "name": true,
+          "project": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "expressions": {
+          "project": {
+            "constant_value": "test"
+          },
+          "region": {
+            "constant_value": "europe-west2"
+          },
+          "zone": {
+            "constant_value": "europe-west2-c"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.default",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "default",
+          "provider_config_key": "google",
+          "expressions": {
+            "boot_disk": [
+              {
+                "initialize_params": [
+                  {
+                    "image": {
+                      "constant_value": "debian-cloud/debian-9"
+                    }
+                  }
+                ]
+              }
+            ],
+            "machine_type": {
+              "constant_value": "e2-medium"
+            },
+            "metadata": {
+              "constant_value": {
+                "block-project-ssh-keys": true
+              }
+            },
+            "metadata_startup_script": {
+              "constant_value": "echo hi > /test.txt"
+            },
+            "name": {
+              "constant_value": "test"
+            },
+            "network_interface": [
+              {
+                "access_config": [
+                  {}
+                ],
+                "network": {
+                  "constant_value": "default"
+                }
+              }
+            ],
+            "scratch_disk": [
+              {
+                "interface": {
+                  "constant_value": "SCSI"
+                }
+              }
+            ],
+            "service_account": [
+              {
+                "email": {
+                  "references": [
+                    "google_service_account.default.email",
+                    "google_service_account.default"
+                  ]
+                },
+                "scopes": {
+                  "constant_value": [
+                    "cloud-platform"
+                  ]
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": [
+                "foo",
+                "bar"
+              ]
+            },
+            "zone": {
+              "constant_value": "us-central1-c"
+            }
+          },
+          "schema_version": 6
+        },
+        {
+          "address": "google_service_account.default",
+          "mode": "managed",
+          "type": "google_service_account",
+          "name": "default",
+          "provider_config_key": "google",
+          "expressions": {
+            "account_id": {
+              "constant_value": "abc123"
+            },
+            "display_name": {
+              "constant_value": "Service Account"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

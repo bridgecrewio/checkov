@@ -31,6 +31,7 @@ definition:
         - aws_elasticsearch_domain
         - aws_elb
         - aws_emr_cluster
+        - aws_glue_dev_endpoint
         - aws_instance
         - aws_lambda_function
         - aws_launch_configuration
