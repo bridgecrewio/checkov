@@ -14,4 +14,7 @@ RUN chown -R app:app /app
 # change to the app user
 USER app
 
+# mention "admissionController" as the source of integration to bridgecrew.cloud
+ENV BC_SOURCE=admissionController
+
 CMD gunicorn --certfile=/certs/webhook.crt --keyfile=/certs/webhook.key --bind 0.0.0.0:8443 wsgi:webhook

@@ -16,6 +16,7 @@ class BCSourceType:
     GITHUB_ACTIONS = 'githubActions'
     CODEBUILD = 'codebuild'
     JENKINS = 'jenkins'
+    ADMISSION_CONTROLLER = 'admissionController'
     CIRCLECI = 'circleci'
     DISABLED = 'disabled'  # use this as a placeholder for generic no-upload logic
 
@@ -29,7 +30,8 @@ SourceTypes = {
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
     BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
     BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
-    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True)
+    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True),
+    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, True)
 }
 
 
