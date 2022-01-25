@@ -1,4 +1,4 @@
 FROM base
 
-LABEL foo="bar baz
+LABEL foo="bar baz"
 USER  me
