@@ -23,7 +23,7 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         if isinstance(conf['policy'][0], str):
             try:
                 policy_block = json.loads(conf['policy'][0])
-            except: # nosec
+            except:  # nosec
                 return CheckResult.PASSED
         else:
             if isinstance(conf['policy'][0], dict):
@@ -41,13 +41,12 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                 if principal == '*':
                     return CheckResult.FAILED
      
-                    if 'AWS' in statement['Principal']:
-                        # Can be a string or an array of strings
-                        aws = statement['Principal']['AWS']
-                        if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
-                            return CheckResult.FAILED
-        except Exception: # nosec
-            pass
+                if 'AWS' in statement['Principal']:
+                    # Can be a string or an array of strings
+                    aws = statement['Principal']['AWS']
+                    if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
+                        return CheckResult.FAILED
+
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
