@@ -11,6 +11,10 @@ on:
       - 'README.md'
       - '.github/**'
 
+concurrency:
+  group: 'build'
+  cancel-in-progress: true
+
 jobs:
   integration-tests:
     strategy:
