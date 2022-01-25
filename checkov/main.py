@@ -12,6 +12,8 @@ import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
+from checkov.common.util.data_structures_utils import SEVERITY_RANKING
+
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -108,7 +110,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
-                                 all_external=config.run_all_external_checks, var_files=config.var_file)
+                                 all_external=config.run_all_external_checks, var_files=config.var_file,
+                                 min_cve_severity=config.min_cve_severity, skip_cve_package=config.skip_cve_package)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -393,6 +396,11 @@ def add_parser_args(parser):
         ),
         default=None,
     )
+    parser.add('--min-cve-severity', help='Set minimum severity that will cause returning non-zero exit code',
+               choices=SEVERITY_RANKING.keys(), default='none')
+    parser.add('--skip-cve-package',
+               help='filter scan to run on all packages but a specific package identifier (denylist), You can '
+                    'specify this argument multiple times to skip multiple packages', action='append', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')

@@ -78,6 +78,7 @@ class Runner(BaseRunner):
                     file_abs_path=result["repository"],
                     check_class=f"{scanner.__module__}.{scanner.__class__.__qualname__}",
                     vulnerability_details=vulnerability,
+                    runner_filter=runner_filter
                 )
                 if not runner_filter.should_run_check(record.check_id, record.bc_check_id):
                     if runner_filter.checks:
