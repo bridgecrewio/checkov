@@ -1,6 +1,6 @@
 resource "aws_iam_role" "fail" {
-            name="fail-default"
-            assume_role_policy=<<POLICY
+  name               = "fail-default"
+  assume_role_policy = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -15,8 +15,8 @@ POLICY
 }
 
 resource "aws_iam_role" "fail2" {
-  name="fail-default"
-  assume_role_policy=<<POLICY
+  name               = "fail-default"
+  assume_role_policy = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [{
@@ -30,15 +30,15 @@ POLICY
 }
 
 
-resource "aws_iam_role" "pass2"{
-  name="pass2-default"
-  assume_role_policy= ""
+resource "aws_iam_role" "pass2" {
+  name               = "pass2-default"
+  assume_role_policy = ""
 }
 
 resource "aws_iam_role" "pass" {
-  name="pass-default"
+  name = "pass-default"
 
-  assume_role_policy=<<POLICY
+  assume_role_policy = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [{

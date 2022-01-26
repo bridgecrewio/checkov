@@ -1,7 +1,7 @@
 # pass
 resource "aws_sns_topic_policy" "sns_tp1" {
   arn = aws_sns_topic.test.arn
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -64,7 +64,7 @@ POLICY
 # fail
 resource "aws_sns_topic_policy" "sns_tp3" {
   arn = aws_sns_topic.test.arn
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -95,7 +95,7 @@ POLICY
 # fail
 resource "aws_sns_topic_policy" "sns_tp4" {
   arn = aws_sns_topic.test.arn
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -126,7 +126,7 @@ POLICY
 # fail
 resource "aws_sns_topic_policy" "sns_tp5" {
   arn = aws_sns_topic.test.arn
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -155,7 +155,7 @@ POLICY
 # pass
 resource "aws_sns_topic_policy" "sns_tp6" {
   arn = aws_sns_topic.test.arn
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",

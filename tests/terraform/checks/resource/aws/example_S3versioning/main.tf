@@ -105,5 +105,5 @@ resource "aws_s3_bucket" "this" {
 }
 
 variable "enabled" {
-  default=true
+  default = true
 }

@@ -10,7 +10,7 @@ resource "google_compute_firewall" "restricted" {
   }
 
   source_ranges = ["172.1.2.3/32"]
-  target_tags = ["ssh"]
+  target_tags   = ["ssh"]
 }
 
 resource "google_compute_firewall" "allow_different_int" {
@@ -23,7 +23,7 @@ resource "google_compute_firewall" "allow_different_int" {
   }
 
   source_ranges = ["172.1.2.3/32"]
-  target_tags = ["ssh"]
+  target_tags   = ["ssh"]
 }
 
 resource "google_compute_firewall" "allow_null" {
@@ -36,7 +36,7 @@ resource "google_compute_firewall" "allow_null" {
   }
 
   source_ranges = ["172.1.2.3/32"]
-  target_tags = ["ssh"]
+  target_tags   = ["ssh"]
 }
 
 # fail
