@@ -375,7 +375,7 @@ def add_parser_args(parser):
                help="evaluate the values of variables and locals",
                default=True)
     parser.add('-ca', '--ca-certificate',
-               help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
+               help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
     parser.add('--repo-root-for-plan-enrichment',
                help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
                dest="repo_root_for_plan_enrichment", action='append')
