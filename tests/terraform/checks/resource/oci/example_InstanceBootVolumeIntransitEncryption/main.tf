@@ -135,7 +135,7 @@ resource "oci_core_instance" "pass" {
 
   metadata = var.instance_metadata
   platform_config {
-        type = var.instance_platform_config_type
+    type                               = var.instance_platform_config_type
     is_measured_boot_enabled           = var.instance_platform_config_is_measured_boot_enabled
     is_secure_boot_enabled             = var.instance_platform_config_is_secure_boot_enabled
     is_trusted_platform_module_enabled = var.instance_platform_config_is_trusted_platform_module_enabled
@@ -144,7 +144,7 @@ resource "oci_core_instance" "pass" {
 
   preemptible_instance_config {
     preemption_action {
-            type = var.instance_preemptible_instance_config_preemption_action_type
+      type                 = var.instance_preemptible_instance_config_preemption_action_type
       preserve_boot_volume = var.instance_preemptible_instance_config_preemption_action_preserve_boot_volume
     }
   }
@@ -155,8 +155,8 @@ resource "oci_core_instance" "pass" {
   }
 
   source_details {
-        source_id = oci_core_image.test_image.id
-        source_type = "image"
+    source_id               = oci_core_image.test_image.id
+    source_type             = "image"
     boot_volume_size_in_gbs = var.instance_source_details_boot_volume_size_in_gbs
     kms_key_id              = oci_kms_key.test_key.id
   }

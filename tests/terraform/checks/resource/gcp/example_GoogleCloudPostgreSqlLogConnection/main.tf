@@ -10,35 +10,35 @@ resource "google_sql_database_instance" "fail" {
     database_flags {
       name  = "log_checkpoints"
       value = "on"
-      }
-
-     database_flags {
-        name  = "log_connections"
-        value = "off"
-      }
-     database_flags {
-        name  = "log_disconnections"
-        value = "on"
-        }
-    database_flags {
-        name  = "log_min_messages"
-        value = "debug6"
-        }
-    database_flags {
-        name  = "log_lock_waits"
-        value = "on"
-        }
-    database_flags {
-        name  = "log_temp_files"
-        value = "10"
-        }
-    database_flags {
-        name  = "log_min_duration_statement"
-        value = "1"
     }
-    pricing_plan     = "PER_USE"
 
-    tier             = "db-custom-1-3840"
+    database_flags {
+      name  = "log_connections"
+      value = "off"
+    }
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_min_messages"
+      value = "debug6"
+    }
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_temp_files"
+      value = "10"
+    }
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = "1"
+    }
+    pricing_plan = "PER_USE"
+
+    tier = "db-custom-1-3840"
   }
 }
 
@@ -79,8 +79,8 @@ resource "google_sql_database_instance" "pass2" {
       name  = "log_min_duration_statement"
       value = "1"
     }
-    pricing_plan     = "PER_USE"
-    tier             = "db-custom-1-3840"
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-3840"
   }
 }
 
@@ -126,6 +126,6 @@ resource "google_sql_database_instance" "unknown" {
       name  = "local_infile"
       value = "on"
     }
-    tier         = "db-custom-1-3840"
+    tier = "db-custom-1-3840"
   }
 }

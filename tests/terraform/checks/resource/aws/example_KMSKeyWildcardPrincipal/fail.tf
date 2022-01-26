@@ -1,6 +1,6 @@
 resource "aws_kms_key" "fail_0" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -27,7 +27,7 @@ POLICY
 
 resource "aws_kms_key" "fail_1" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -44,7 +44,7 @@ POLICY
 
 resource "aws_kms_key" "fail_2" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -61,7 +61,7 @@ POLICY
 
 resource "aws_kms_key" "fail_3" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -78,7 +78,7 @@ POLICY
 
 resource "aws_kms_key" "fail_4" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [

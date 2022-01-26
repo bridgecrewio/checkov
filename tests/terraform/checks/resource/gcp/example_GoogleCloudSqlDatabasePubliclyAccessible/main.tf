@@ -1,39 +1,39 @@
 resource "google_sql_database_instance" "instance1-fail" {
-  database_version="MYSQL_8_0"
-  name   = "instance"
-  region = "us-central1"
+  database_version = "MYSQL_8_0"
+  name             = "instance"
+  region           = "us-central1"
   settings {
     tier = "db-f1-micro"
     ip_configuration {
       ipv4_enabled = true
       authorized_networks {
-          name  = "XYZ"
-          value = "1.2.3.4"
-        }
-    authorized_networks     {
-          name  = "Public"
-          value = "0.0.0.0/0"
-        }
+        name  = "XYZ"
+        value = "1.2.3.4"
+      }
       authorized_networks {
-          name  = "ABC"
-          value = "5.5.5.0/24"
-        }
+        name  = "Public"
+        value = "0.0.0.0/0"
+      }
+      authorized_networks {
+        name  = "ABC"
+        value = "5.5.5.0/24"
+      }
     }
   }
 }
 
 resource "google_sql_database_instance" "instance2-pass" {
-    database_version="MYSQL_8_0"
-  name   = "instance"
-  region = "us-central1"
+  database_version = "MYSQL_8_0"
+  name             = "instance"
+  region           = "us-central1"
   settings {
     tier = "db-f1-micro"
     ip_configuration {
       ipv4_enabled = true
       authorized_networks {
-          name  = "XYZ"
-          value = "1.2.3.4"
-        }
+        name  = "XYZ"
+        value = "1.2.3.4"
+      }
       authorized_networks {
         name  = "ABC"
         value = "5.5.5.0/24"
@@ -44,9 +44,9 @@ resource "google_sql_database_instance" "instance2-pass" {
 
 # this isn't actually valid without the settings block, but testing parsing
 resource "google_sql_database_instance" "instance3-pass" {
-      database_version="MYSQL_8_0"
-  name   = "instance"
-  region = "us-central1"
+  database_version = "MYSQL_8_0"
+  name             = "instance"
+  region           = "us-central1"
 }
 
 resource "google_sql_database_instance" "instance4-fail" {

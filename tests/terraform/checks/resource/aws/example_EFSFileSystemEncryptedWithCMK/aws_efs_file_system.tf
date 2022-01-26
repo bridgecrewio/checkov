@@ -4,5 +4,5 @@ resource "aws_efs_file_system" "pass" {
 }
 
 resource "aws_efs_file_system" "fail" {
-  encrypted  = true
- }
+  encrypted = true
+}

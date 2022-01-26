@@ -15,9 +15,9 @@ resource "google_container_cluster" "fail1" {
     services_secondary_range_name = var.ip_allocation_policy["services_secondary_range_name"]
   }
 
-  remove_default_node_pool = var.remove_default_node_pool
-  enable_binary_authorization=false
-  
+  remove_default_node_pool    = var.remove_default_node_pool
+  enable_binary_authorization = false
+
   node_config {
     workload_metadata_config {
       node_metadata = "GKE_METADATA_SERVER"
@@ -151,13 +151,13 @@ resource "google_container_cluster" "fail2" {
 }
 
 resource "google_container_cluster" "success" {
-  name               = var.name
-  location           = var.location
-  initial_node_count = 1
-  project            = data.google_project.project.name
-  enable_binary_authorization=true
-  network    = var.network
-  subnetwork = var.subnetwork
+  name                        = var.name
+  location                    = var.location
+  initial_node_count          = 1
+  project                     = data.google_project.project.name
+  enable_binary_authorization = true
+  network                     = var.network
+  subnetwork                  = var.subnetwork
 
   ip_allocation_policy {
     cluster_ipv4_cidr_block       = var.ip_allocation_policy["cluster_ipv4_cidr_block"]

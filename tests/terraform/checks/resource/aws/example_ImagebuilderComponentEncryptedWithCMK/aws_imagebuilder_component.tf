@@ -13,9 +13,9 @@ resource "aws_imagebuilder_component" "fail" {
     }]
     schemaVersion = 1.0
   })
-  name       = "examplea"
-  platform   = "Linux"
-  version    = "1.0.0"
+  name     = "examplea"
+  platform = "Linux"
+  version  = "1.0.0"
 }
 
 resource "aws_imagebuilder_component" "pass" {
