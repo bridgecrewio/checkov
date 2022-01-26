@@ -40,7 +40,7 @@ nav_order: 2
 | `--var-file VAR_FILE` | Variable files to load in addition to the default files (see https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).Currently only supported for source Terraform (.tf file), and Helm chart scans.Requires using --directory, not --file. | 
 | `--external-modules-download-path EXTERNAL_MODULES_DOWNLOAD_PATH` | set the path for the download external terraform modules [env var: EXTERNAL_MODULES_DIR] | 
 | `--evaluate-variables EVALUATE_VARIABLES` | evaluate the values of variables and locals | 
-| `-ca CA_CERTIFICATE`, `--ca-certificate CA_CERTIFICATE` | custom CA (bundle) file [env var: CA_CERTIFICATE] | 
+| `-ca CA_CERTIFICATE`, `--ca-certificate CA_CERTIFICATE` | Custom CA certificate (bundle) file [env var: BC_CA_BUNDLE] |
 | `--repo-root-for-plan-enrichment REPO_ROOT_FOR_PLAN_ENRICHMENT` | Directory containing the hcl code used to generate a given plan file. Use with -f. | 
 | `--config-file CONFIG_FILE` | path to the Checkov configuration YAML file | 
 | `--create-config CREATE_CONFIG` | takes the current command line args and writes them out to a config file at the given path
