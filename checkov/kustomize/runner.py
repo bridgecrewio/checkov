@@ -105,6 +105,7 @@ class Runner(BaseRunner):
     potentialOverlays = []
     kustomizeProcessedFolderAndMeta = {}
     kustomizeFileMappings = {}
+    kustomizeSupportedFileTypes = ['kustomization.yaml','kustomization.yml']
 
     @staticmethod
     def findKustomizeDirectories(root_folder, files, excluded_paths):
@@ -114,15 +115,14 @@ class Runner(BaseRunner):
         if files:
             logging.info('Running with --file argument; file must be a kustomization.yaml file')
             for file in files:
-                if os.path.basename(file) == 'kustomization.yaml':
+                if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
                     kustomizeDirectories.append(os.path.dirname(file))
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, excluded_paths)
                 filter_ignored_paths(root, f_names, excluded_paths)
-                if 'kustomization.yaml' in f_names:
-                    kustomizeDirectories.append(os.path.abspath(root))
+                [kustomizeDirectories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
 
         return kustomizeDirectories
 
