@@ -175,7 +175,7 @@ class Runner(BaseRunner):
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
 
-        if shutil.which(self.kubectl_command) != None:
+        if shutil.which(self.kubectl_command) is not None:
             try:
                 proc = subprocess.Popen([self.kubectl_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
@@ -193,7 +193,7 @@ class Runner(BaseRunner):
             except Exception:
                 pass
 
-        elif shutil.which(self.kustomize_command) != None:
+        elif shutil.which(self.kustomize_command) is not None:
     
             try:
                 proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
@@ -209,7 +209,7 @@ class Runner(BaseRunner):
                     return self.check_type
 
             except Exception:
-               pass
+                pass
         
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
@@ -280,7 +280,7 @@ class Runner(BaseRunner):
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
-                    if not 'calculated_bases' in self.kustomizeProcessedFolderAndMeta[filePath]:
+                    if 'calculated_bases' not in self.kustomizeProcessedFolderAndMeta[filePath]:
                         logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {filePath}")
                         envOrBasePathPrefix = ""
                     else:
