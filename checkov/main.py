@@ -302,7 +302,7 @@ def add_parser_args(parser):
     parser.add('-l', '--list', help='List checks', action='store_true')
     parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
                default=None,
-               help='Report output format. Can be repeated')
+               help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
