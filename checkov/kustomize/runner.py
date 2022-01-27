@@ -262,9 +262,9 @@ class Runner(BaseRunner):
                         logging.warning(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
             
 
-                if self.templateRendererCommand is "kubectl":
+                if self.templateRendererCommand == "kubectl":
                     templateRenderCommandOptions = "kustomize"
-                if self.templateRendererCommand is "kustomize":
+                if self.templateRendererCommand == "kustomize":
                     templateRenderCommandOptions = "build"
                     
                 # Template out the Kustomizations to Kubernetes YAML
