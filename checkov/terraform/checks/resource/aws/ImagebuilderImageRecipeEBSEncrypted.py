@@ -19,14 +19,11 @@ class ImagebuilderImageRecipeEBSEncrypted(BaseResourceCheck):
             for mapping in mappings:
                 if mapping.get("ebs"):
                     ebs = mapping["ebs"][0]
-                    if ebs.get("encrypted"):
-                        # test for kms key
-                        if ebs.get("kms_key_id"):
-                            return CheckResult.PASSED
-                    return CheckResult.FAILED
-                # no ebs details
-                return CheckResult.PASSED
-        # no Disks
+                    if not ebs.get("encrypted"):
+                        return CheckResult.FAILED
+                    if not ebs.get("kms_key_id"):
+                        return CheckResult.FAILED
+        # pass thru
         return CheckResult.PASSED
 
 

@@ -26,13 +26,14 @@ class TestImagebuilderImageRecipeEBSEncrypted(unittest.TestCase):
             "aws_imagebuilder_image_recipe.fail",
             "aws_imagebuilder_image_recipe.fail2",
             "aws_imagebuilder_image_recipe.fail3",
+            "aws_imagebuilder_image_recipe.fail4",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
