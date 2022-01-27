@@ -1,0 +1,33 @@
+from typing import Dict, List, Any
+
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
+
+
+class ImagebuilderImageRecipeEBSEncrypted(BaseResourceCheck):
+
+    def __init__(self):
+        name = "Ensure that Image Recipe EBS Disk are encrypted with CMK"
+        id = "CKV_AWS_200"
+        supported_resources = ["aws_imagebuilder_image_recipe"]
+        categories = [CheckCategories.ENCRYPTION]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if conf.get('block_device_mapping'):
+            mappings = conf.get('block_device_mapping')
+            for mapping in mappings:
+                if mapping.get("ebs"):
+                    ebs = mapping["ebs"][0]
+                    if ebs.get("encrypted"):
+                        # test for kms key
+                        if ebs.get("kms_key_id"):
+                            return CheckResult.PASSED
+                    return CheckResult.FAILED
+                # no ebs details
+                return CheckResult.PASSED
+        # no Disks
+        return CheckResult.PASSED
+
+
+check = ImagebuilderImageRecipeEBSEncrypted()
