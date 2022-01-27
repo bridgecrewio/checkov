@@ -120,16 +120,17 @@ class Module:
 
     def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for module_dict in blocks:
-            for name in module_dict:
-                module_block = TerraformBlock(
-                    block_type=BlockType.MODULE,
-                    name=name,
-                    config=module_dict,
-                    path=path,
-                    attributes=module_dict[name],
-                    source=self.source,
-                )
-                self._add_to_blocks(module_block)
+            for name, attributes in module_dict.items():
+                if isinstance(attributes, dict):
+                    module_block = TerraformBlock(
+                        block_type=BlockType.MODULE,
+                        name=name,
+                        config=module_dict,
+                        path=path,
+                        attributes=attributes,
+                        source=self.source,
+                    )
+                    self._add_to_blocks(module_block)
 
     def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for resource_dict in blocks:

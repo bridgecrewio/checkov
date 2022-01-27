@@ -313,8 +313,13 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(checks='CKV_AWS_41'))
-        self.assertEqual(len(result.passed_checks), 16)
+        self.assertEqual(len(result.passed_checks), 17)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
+
+        # check if a one line provider is correctly processed
+        provider = next(check for check in result.passed_checks if check.resource == "aws.one-line")
+        self.assertIsNotNone(provider.file_line_range)
+
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"
