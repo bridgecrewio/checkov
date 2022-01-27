@@ -280,9 +280,13 @@ class Runner(BaseRunner):
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
-                    basePathParents = pathlib.Path(self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases']).parents
-                    mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
-                    envOrBasePathPrefix = mostSignificantBasePath + "/" + str(self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'])
+                    if not 'calculated_bases' in self.kustomizeProcessedFolderAndMeta[filePath]:
+                        logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {filePath}")
+                        envOrBasePathPrefix = ""
+                    else:
+                        basePathParents = pathlib.Path(self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases']).parents
+                        mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
+                        envOrBasePathPrefix = mostSignificantBasePath + "/" + str(self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'])
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "base":
                     # Validated base last three parents as a path
