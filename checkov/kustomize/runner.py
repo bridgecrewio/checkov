@@ -10,6 +10,7 @@ from functools import reduce
 import yaml
 import pathlib
 import glob
+import json
 
 from checkov.common.output.report import Report, report_to_cyclonedx, CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -98,14 +99,16 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
 class Runner(BaseRunner):
-    check_type = CheckType.KUSTOMIZE
     kustomize_command = 'kustomize'
+    kubectl_command = 'kubectl'
+    check_type = CheckType.KUSTOMIZE
     system_deps = True
     potentialBases = []
     potentialOverlays = []
     kustomizeProcessedFolderAndMeta = {}
     kustomizeFileMappings = {}
     kustomizeSupportedFileTypes = ['kustomization.yaml','kustomization.yml']
+    templateRendererCommand = None
 
     @staticmethod
     def findKustomizeDirectories(root_folder, files, excluded_paths):
@@ -171,19 +174,45 @@ class Runner(BaseRunner):
         # Ensure local system dependancies are available and of the correct version.
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
-        try:
-            proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-            o, e = proc.communicate()
-            oString = str(o, 'utf-8')
 
-            if "Version:" in oString:
-                kustomizeVersionOutput = oString[oString.find('/') + 1: oString.find('G') - 1]
-                logging.info(f"Found working version of {self.check_type} dependancies: {kustomizeVersionOutput}")
-                return None
-            else:
-                return self.check_type
-        except Exception:
-            logging.info(f"Error running necessary tools to process {self.check_type} checks.")
+        if shutil.which(self.kubectl_command) != None:
+            try:
+                proc = subprocess.Popen([self.kubectl_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                o, e = proc.communicate()
+                oString = str(o, 'utf-8')
+
+                if "Client Version:" in oString:
+                    kubectlVersionMajor = oString.split('\n')[0].split('Major:\"')[1].split('"')[0]
+                    kubectlVersionMinor = oString.split('\n')[0].split('Minor:\"')[1].split('"')[0]
+                    kubectlVersion = float(f"{kubectlVersionMajor}.{kubectlVersionMinor}")
+                    if kubectlVersion >= 1.14:
+                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectlVersion}")
+                        self.templateRendererCommand = self.kubectl_command
+                        return None
+            
+            except Exception:
+                pass
+
+        elif shutil.which(self.kustomize_command) != None:
+    
+            try:
+                proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                o, e = proc.communicate()
+                oString = str(o, 'utf-8')
+
+                if "Version:" in oString:
+                    kustomizeVersionOutput = oString[oString.find('/') + 1: oString.find('G') - 1]
+                    logging.info(f"Found working version of {self.check_type} dependancy {self.kustomize_command}: {kustomizeVersionOutput}")
+                    self.templateRendererCommand = self.kustomize_command
+                    return None
+                else:
+                    return self.check_type
+
+            except Exception:
+               pass
+        
+        else:
+            logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
@@ -232,17 +261,22 @@ class Runner(BaseRunner):
                         self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
                         logging.warning(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
             
+
+                if self.templateRendererCommand is "kubectl":
+                    templateRenderCommandOptions = "kustomize"
+                if self.templateRendererCommand is "kustomize":
+                    templateRenderCommandOptions = "build"
+                    
                 # Template out the Kustomizations to Kubernetes YAML
                 try:
-                
-                    proc = subprocess.Popen([self.kustomize_command, 'build', filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                    proc = subprocess.Popen([self.templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                     o, e = proc.communicate()
                     logging.info(
-                        f"Ran {self.kustomize_command} command to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
+                        f"Ran {self.templateRendererCommand} to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
 
                 except Exception as e:
                     logging.warning(
-                        f"Error build Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
+                        f"Error building Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
