@@ -41,8 +41,8 @@ class TestRunnerValid(unittest.TestCase):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources", "overlays", "dev")
+        scan_dir_path = Path(__file__).parent / "runner/resources/overlays/dev"
+
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')

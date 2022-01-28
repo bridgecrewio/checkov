@@ -191,6 +191,7 @@ class Runner(BaseRunner):
                         return None
             
             except Exception:
+                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e}")
                 pass
 
         elif shutil.which(self.kustomize_command) is not None:
@@ -209,6 +210,7 @@ class Runner(BaseRunner):
                     return self.check_type
 
             except Exception:
+                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e}")
                 pass
         
         else:
@@ -286,7 +288,7 @@ class Runner(BaseRunner):
                     else:
                         basePathParents = pathlib.Path(self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases']).parents
                         mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
-                        envOrBasePathPrefix = mostSignificantBasePath + "/" + str(self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'])
+                        envOrBasePathPrefix = f"{mostSignificantBasePath}/{self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name']}"
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "base":
                     # Validated base last three parents as a path
