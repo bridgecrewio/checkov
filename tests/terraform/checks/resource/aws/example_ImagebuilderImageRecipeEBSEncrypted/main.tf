@@ -179,7 +179,7 @@ resource "aws_imagebuilder_image_recipe" "fail4" {
     }
   }
 
-    block_device_mapping {
+  block_device_mapping {
     device_name = "/dev/xvdc"
 
     ebs {
