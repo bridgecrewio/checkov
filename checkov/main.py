@@ -169,12 +169,11 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             return
         except Exception:
             if bc_integration.prisma_url:
-                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
-                          'token and PRISMA_API_URL environment variable and try again. The PRISMA_API_URL value ' \
-                          'should be similar to: `https://api0.prismacloud.io`'
+                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                          'Please check your Prisma Cloud API token and URL and try again.'
             else:
-                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
-                          'token and try again.'
+                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                          'Please check your API token and try again.'
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(message, exc_info=True)
             else:
@@ -340,7 +339,11 @@ def add_parser_args(parser):
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
                     'in the --check list. This allows you to always ensure that new checks present in the external '
                     'source are used. If an external check is included in --skip-check, it will still be skipped.')
-    parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY', sanitize=True)
+    parser.add('--bc-api-key', env_var='BC_API_KEY', sanitize=True,
+               help='Bridgecrew API key')
+    parser.add('--prisma-api-url', env_var='PRISMA_API_URL', default=None,
+               help='The Prisma Cloud API URL (see: https://prisma.pan.dev/api/cloud/api-urls). '
+                    'Requires --bc-api-key to be a Prisma Cloud Access Key in the following format: <access_key_id>::<secret_key>')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
     parser.add('--repo-id',
@@ -402,8 +405,6 @@ def add_parser_args(parser):
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
-    parser.add('--prisma_api_url',
-               help='Example: https://api0.prismacloud.io', default=None, env_var='PRISMA_API_URL')
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
