@@ -57,6 +57,10 @@ class BaseConnectionSolver(BaseSolver):
         ]
 
     def reduce_graph_by_target_types(self, graph_connector: DiGraph) -> DiGraph:
+        # no need to create a subgraph, if there are no vertices to be checked
+        if not self.vertices_under_resource_types:
+            return graph_connector
+
         resource_nodes = {
             node
             for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
