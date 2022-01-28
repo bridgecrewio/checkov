@@ -107,7 +107,7 @@ class Runner(BaseRunner):
     potentialOverlays = []
     kustomizeProcessedFolderAndMeta = {}
     kustomizeFileMappings = {}
-    kustomizeSupportedFileTypes = ['kustomization.yaml','kustomization.yml']
+    kustomizeSupportedFileTypes = ('kustomization.yaml', 'kustomization.yml')
     templateRendererCommand = None
 
     @staticmethod
