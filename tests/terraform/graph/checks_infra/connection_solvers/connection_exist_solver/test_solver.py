@@ -28,8 +28,6 @@ class ConnectionSolver(TestBaseSolver):
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
-        self.runner
-
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
 
@@ -48,6 +46,6 @@ class ConnectionSolver(TestBaseSolver):
         assert len(graph_connector.nodes) >= 661
         assert len(graph_connector.edges) >= 327
 
-        assert len(reduced_graph.nodes) <= 10
-        assert len(reduced_graph.edges) <= 3
+        assert len(reduced_graph.nodes) <= 52
+        assert len(reduced_graph.edges) <= 12
 

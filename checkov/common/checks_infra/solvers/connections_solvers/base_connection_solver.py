@@ -5,9 +5,14 @@ from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class BaseConnectionSolver(BaseSolver):
+    # resource is automatically supported
+    SUPPORTED_CONNECTION_BLOCK_TYPES = (BlockType.OUTPUT,)
+
     def __init__(
         self,
         resource_types: List[str],
@@ -47,16 +52,25 @@ class BaseConnectionSolver(BaseSolver):
         ]
         self.excluded_vertices = [
             v
-            for v in self.vertices_under_resource_types + self.vertices_under_connected_resources_types
+            for v in itertools.chain(self.vertices_under_resource_types, self.vertices_under_connected_resources_types)
             if v in exclude_vertices
         ]
 
     def reduce_graph_by_target_types(self, graph_connector: DiGraph) -> DiGraph:
-        resource_nodes = [
+        resource_nodes = {
             node
-            for node, resource_type in graph_connector.nodes(data="resource_type")
+            for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
             if resource_type in self.targeted_resources_types
-        ]
+        }
+
+        # tuple needs to be adjusted, if more connection block types are supported
+        connection_nodes = {
+            node
+            for node, block_type in graph_connector.nodes(data=CustomAttributes.BLOCK_TYPE)
+            if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
+        }
+        resource_nodes.update(connection_nodes)
+
         return graph_connector.subgraph(resource_nodes)
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
