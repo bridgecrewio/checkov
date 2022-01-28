@@ -78,9 +78,7 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
-        self.prisma_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
-        if self.prisma_url:
-            self.api_url = f"{self.prisma_url}/bridgecrew"
+        self.prisma_url = None
         self.bc_source = None
         self.bc_source_version = None
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
@@ -141,7 +139,8 @@ class BcPlatformIntegration(object):
                 self.http = urllib3.PoolManager()
 
     def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_suppressions=False,
-                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None):
+                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None,
+                                     prisma_api_url=os.getenv('PRISMA_API_URL', None)):
         """
         Setup credentials against Bridgecrew's platform.
         :param source:
@@ -156,7 +155,9 @@ class BcPlatformIntegration(object):
         self.bc_source = source
         self.bc_source_version = source_version
 
-        if self.prisma_url:
+        if prisma_api_url:
+            self.prisma_url = normalize_prisma_url(prisma_api_url)
+            self.api_url = f"{self.prisma_url}/bridgecrew"
             logging.info(f'Using Prisma API URL: {self.prisma_url}')
 
         if self.bc_source.upload_results:

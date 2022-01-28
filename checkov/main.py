@@ -161,7 +161,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                                         skip_suppressions=config.skip_suppressions,
                                                         skip_policy_download=config.skip_policy_download,
                                                         source=source, source_version=source_version,
-                                                        repo_branch=config.branch)
+                                                        repo_branch=config.branch,
+                                                        prisma_api_url=config.prisma_api_url)
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except MaxRetryError:
@@ -401,6 +402,8 @@ def add_parser_args(parser):
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
+    parser.add('--prisma_api_url',
+               help='Example: https://api0.prismacloud.io', default=None, env_var='PRISMA_API_URL')
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
