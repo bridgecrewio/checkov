@@ -77,16 +77,18 @@ class BcPlatformIntegration(object):
         self.skip_policy_download = False
         self.timestamp = None
         self.scan_reports = []
-        self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_url = None
+        # The following URLs will be (re)set by setup_bridgecrew_credentials() 
+        # when '--prisma-api-url' is specified on the command-line.
+        self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+        self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
+        self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
+        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
+        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
+        self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
         self.bc_source = None
         self.bc_source_version = None
-        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
-        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
-        self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
-        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
-        self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
-        self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
         self.guidelines = None
         self.bc_id_mapping = None
         self.ckv_to_bc_id_mapping = None
@@ -104,12 +106,11 @@ class BcPlatformIntegration(object):
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
-        # This is a Prisma Cloud token
+        # A Prisma Cloud Access Key was specified as the Bridgecrew token.
         if not self.prisma_url:
-            raise ValueError("Got a prisma token, but the env variable PRISMA_API_URL is not set")
-        elif '::' not in self.bc_api_key:
-            raise ValueError("PRISMA_API_URL was set, but the API key does not appear to be a valid Prisma API key "
-                             "(must be in format key::secret)")
+            raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
+        if '::' not in self.bc_api_key:
+            raise ValueError("A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
@@ -140,7 +141,7 @@ class BcPlatformIntegration(object):
 
     def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_suppressions=False,
                                      skip_policy_download=False, source=None, source_version=None, repo_branch=None,
-                                     prisma_api_url=os.getenv('PRISMA_API_URL', None)):
+                                     prisma_api_url=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param source:
@@ -158,6 +159,12 @@ class BcPlatformIntegration(object):
         if prisma_api_url:
             self.prisma_url = normalize_prisma_url(prisma_api_url)
             self.api_url = f"{self.prisma_url}/bridgecrew"
+            self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
+            self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
+            self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+            self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
+            self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
+            self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
             logging.info(f'Using Prisma API URL: {self.prisma_url}')
 
         if self.bc_source.upload_results:
