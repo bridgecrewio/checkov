@@ -88,7 +88,7 @@ class K8sKustomizeRunner(K8sRunner):
                     code_block=entity_context.get("code_lines"),
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=[],
-                    resource=kustomizeResourceID, #entity.get(CustomAttributes.ID),
+                    resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path

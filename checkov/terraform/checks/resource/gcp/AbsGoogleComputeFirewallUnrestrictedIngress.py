@@ -21,7 +21,7 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
                     if self._is_port_in_range(block['ports']):
                         if 'source_ranges' in conf.keys():
                             source_ranges = conf['source_ranges'][0]
-                            if "0.0.0.0/0" in source_ranges: # nosec
+                            if "0.0.0.0/0" in source_ranges:  # nosec
                                 self.evaluated_keys = [f'allow/[{allow_blocks.index(block)}]/ports', 'source_ranges']
                                 return CheckResult.FAILED
         return CheckResult.PASSED

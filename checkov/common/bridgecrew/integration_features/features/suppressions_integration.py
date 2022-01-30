@@ -101,7 +101,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             entity_tags = record.entity_tags
             if not entity_tags:
                 return False
-            suppression_tags = suppression['tags'] # a list of objects of the form {key: str, value: str}
+            suppression_tags = suppression['tags']  # a list of objects of the form {key: str, value: str}
 
             for tag in suppression_tags:
                 key = tag['key']
