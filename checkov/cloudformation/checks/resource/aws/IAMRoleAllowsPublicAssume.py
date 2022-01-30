@@ -20,7 +20,7 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
             assume_role_policy_doc = properties.get("AssumeRolePolicyDocument")
             if isinstance(assume_role_policy_doc, str):
                 assume_role_policy_doc = json.loads(assume_role_policy_doc)
-            if "Statement" in assume_role_policy_doc:
+            if isinstance(assume_role_policy_doc, dict) and assume_role_policy_doc.get("Statement"):
                 statements = assume_role_policy_doc["Statement"]
                 if isinstance(statements, list):
                     for statement_index, statement in enumerate(statements):
