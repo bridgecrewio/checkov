@@ -25,7 +25,7 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
                             return CheckResult.FAILED
                 if 'SecurityGroupEgress' in conf['Properties']:
                     for rule in conf['Properties']['SecurityGroupEgress']:
-                        if 'Description' not in rule.keys() or not rule['Description']:
+                        if isinstance(rule, dict) and 'Description' not in rule.keys() or not rule['Description']:
                             return CheckResult.FAILED
                 return CheckResult.PASSED
 
