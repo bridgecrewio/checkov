@@ -97,8 +97,8 @@ class NodeConstructor(SafeConstructor):
 
     def construct_yaml_seq(self, node):
         obj, = SafeConstructor.construct_yaml_seq(self, node)
-        assert isinstance(obj, list) # nosec
-        return ListNode(obj, node.start_mark, node.end_mark) # nosec
+        assert isinstance(obj, list)  # nosec
+        return ListNode(obj, node.start_mark, node.end_mark)  # nosec
 
     #def construct_yaml_null_error(self, node):
     #    """Throw a null error"""
