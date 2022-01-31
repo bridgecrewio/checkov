@@ -189,11 +189,13 @@ Start using Checkov by reading the [Getting Started](docs/1.Welcome/Quick%20Star
 
 ```sh
 docker pull bridgecrew/checkov
-docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
+docker run --tty --volume /user/tf:/tf --workdir /tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
 
 Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
+
+If you are using the SARIF output `-o sarif` this will output the results.sarif file to the mounted volume (`/user/tf` in the example above).
 
 ### Running or skipping checks 
 
