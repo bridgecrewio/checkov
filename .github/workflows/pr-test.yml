@@ -68,7 +68,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v2.0
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - uses: dschep/install-pipenv-action@v1
@@ -110,7 +110,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
       - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v2.0
       - uses: imranismail/setup-kustomize@v1
       - uses: dschep/install-pipenv-action@v1
       - name: Build & install checkov package
