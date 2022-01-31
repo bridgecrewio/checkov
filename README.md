@@ -195,7 +195,7 @@ Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will 
 
 Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
 
-If you are using the SARIF output `-o sarif` this will output the results.sarif file to the mounted volume (`/user/tf` in the example above).
+The `--workdir /tf` flag is optional to change the working directory to the mounted volume. If you are using the SARIF output `-o sarif` this will output the results.sarif file to the mounted volume (`/user/tf` in the example above). If you do not include that flag, the working directory will be "/".
 
 ### Running or skipping checks 
 
