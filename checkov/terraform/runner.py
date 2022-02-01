@@ -77,7 +77,8 @@ class Runner(BaseRunner):
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+        collect_skip_comments: bool = True,
+        resource_suppressions = None,
     ) -> Report:
         report = Report(self.check_type)
         parsing_errors = {}
@@ -116,7 +117,7 @@ class Runner(BaseRunner):
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
-        self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
+        self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments, resource_suppressions)
 
         report.add_parsing_errors(list(parsing_errors.keys()))
 
@@ -196,12 +197,12 @@ class Runner(BaseRunner):
             logging.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True, resource_suppression=None):
         parser_registry.reset_definitions_context()
         if not self.context:
             definitions_context = {}
             for definition in self.definitions.items():
-                definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
+                definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments, resource_suppression=resource_suppression)
             self.context = definitions_context
             logging.debug('Created definitions context')
 
