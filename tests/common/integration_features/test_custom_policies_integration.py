@@ -534,5 +534,6 @@ def _get_policies_from_platform(self):
             }
         ]
 
+
 if __name__ == '__main__':
     unittest.main()
