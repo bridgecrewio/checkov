@@ -13,8 +13,10 @@ class TestGraphBuilder(TestCase):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         source_files = ["pass_s3.tf", "variables.tf"]
         runner = Runner()
+        runner.external_registries = []
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
         tf_definitions = runner.definitions
+        self.assertEqual(3, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):
                 s3_bucket_config = definitions['resource'][0]['aws_s3_bucket']['bucket_with_versioning']
@@ -26,6 +28,7 @@ class TestGraphBuilder(TestCase):
     def test_run_clean(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         runner = Runner()
+        runner.external_registries = []
         report = runner.run(root_folder=resources_path)
         self.assertEqual(4, len(report.failed_checks))
         self.assertEqual(6, len(report.passed_checks))
