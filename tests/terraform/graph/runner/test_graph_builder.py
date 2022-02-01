@@ -10,7 +10,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestGraphBuilder(TestCase):
 
     def test_build_graph(self):
-        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
+        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test_partial")
         source_files = ["pass_s3.tf", "variables.tf"]
         runner = Runner()
         runner.external_registries = []
