@@ -250,23 +250,28 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
 
-        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir,
+                               runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 0)
 
-        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir,
+                               runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 0)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
 
@@ -277,7 +282,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform, custom_policies_integration)
+        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
+                                                                                   custom_policies_integration)
 
         custom_policies_integration.pre_scan()
         self.assertEqual(5, len(custom_policies_integration.policies))
@@ -290,7 +296,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform, custom_policies_integration)
+        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
+                                                                                   custom_policies_integration)
         custom_policies_integration.pre_scan()
 
         scan_reports = Report("terraform")
@@ -317,222 +324,222 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
 def _get_policies_from_platform(self):
     return [
-            {
-                "provider": "AWS",
-                "id": "mikepolicies_AWS_1625063607541",
-                "title": "yaml1",
-                "severity": "MEDIUM",
-                "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:33:54.638Z"
-                    }
-                },
-                "guideline": "yaml1",
-                "isCustom": True,
-                "conditionQuery": {
-                    "or": [
-                        {
-                            "value": "xyz",
-                            "operator": "equals",
-                            "attribute": "xyz",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "aws_s3_bucket"
-                            ]
-                        }
-                    ]
-                },
-                "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: "
-                        "\"yaml1\" #add text that explains the configuration the policy looks for, its implications, "
-                        "and how to fix it\n  category: \"general\" #choose one: "
-                        "\"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking"
-                        "\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: "
-                        "\"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: "
-                        "\"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n "
-                        "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
-                        "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
-                        "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
-                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n ",
-                "sourceIncidentId": ""
+        {
+            "provider": "AWS",
+            "id": "mikepolicies_AWS_1625063607541",
+            "title": "yaml1",
+            "severity": "MEDIUM",
+            "category": "General",
+            "resourceTypes": [
+                "aws_s3_bucket"
+            ],
+            "accountsData": {
+                "mikeurbanski1/terragoat3": {
+                    "amounts": {
+                        "CLOSED": 0,
+                        "DELETED": 0,
+                        "OPEN": 1,
+                        "REMEDIATED": 0,
+                        "SUPPRESSED": 0
+                    },
+                    "lastUpdateDate": "2021-06-30T14:33:54.638Z"
+                }
             },
-            {
-                "provider": "AWS",
-                "id": "mikepolicies_aws_1625063842021",
-                "title": "ui1",
-                "severity": "HIGH",
-                "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:42:29.534Z"
+            "guideline": "yaml1",
+            "isCustom": True,
+            "conditionQuery": {
+                "or": [
+                    {
+                        "value": "xyz",
+                        "operator": "equals",
+                        "attribute": "xyz",
+                        "cond_type": "attribute",
+                        "resource_types": [
+                            "aws_s3_bucket"
+                        ]
                     }
-                },
-                "guideline": "ui1",
-                "isCustom": True,
-                "conditionQuery": {
-                    "value": "abc",
-                    "operator": "equals",
-                    "attribute": "region",
-                    "cond_type": "attribute",
-                    "resource_types": [
-                        "aws_s3_bucket"
-                    ]
-                },
-                "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": None,
-                "sourceIncidentId": ""
+                ]
             },
-            {
-                "provider": "AWS",
-                "id": "kpande_AWS_1635180094606",
-                "title": "Check that all EC2 instances are tagged with yor_trace",
-                "descriptiveTitle": "null",
-                "constructiveTitle": "null",
-                "severity": "LOW",
-                "pcSeverity": "null",
-                "category": "General",
-                "resourceTypes": [
+            "benchmarks": {},
+            "createdBy": "mike+policies@bridgecrew.io",
+            "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: "
+                    "\"yaml1\" #add text that explains the configuration the policy looks for, its implications, "
+                    "and how to fix it\n  category: \"general\" #choose one: "
+                    "\"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking"
+                    "\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: "
+                    "\"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: "
+                    "\"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n "
+                    "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
+                    "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
+                    "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
+                    "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n ",
+            "sourceIncidentId": ""
+        },
+        {
+            "provider": "AWS",
+            "id": "mikepolicies_aws_1625063842021",
+            "title": "ui1",
+            "severity": "HIGH",
+            "category": "General",
+            "resourceTypes": [
+                "aws_s3_bucket"
+            ],
+            "accountsData": {
+                "mikeurbanski1/terragoat3": {
+                    "amounts": {
+                        "CLOSED": 0,
+                        "DELETED": 0,
+                        "OPEN": 1,
+                        "REMEDIATED": 0,
+                        "SUPPRESSED": 0
+                    },
+                    "lastUpdateDate": "2021-06-30T14:42:29.534Z"
+                }
+            },
+            "guideline": "ui1",
+            "isCustom": True,
+            "conditionQuery": {
+                "value": "abc",
+                "operator": "equals",
+                "attribute": "region",
+                "cond_type": "attribute",
+                "resource_types": [
+                    "aws_s3_bucket"
+                ]
+            },
+            "benchmarks": {},
+            "createdBy": "mike+policies@bridgecrew.io",
+            "code": None,
+            "sourceIncidentId": ""
+        },
+        {
+            "provider": "AWS",
+            "id": "kpande_AWS_1635180094606",
+            "title": "Check that all EC2 instances are tagged with yor_trace",
+            "descriptiveTitle": "null",
+            "constructiveTitle": "null",
+            "severity": "LOW",
+            "pcSeverity": "null",
+            "category": "General",
+            "resourceTypes": [
+                "AWS::EC2::Instance"
+            ],
+            "guideline": "Check for YOR tagging",
+            "isCustom": True,
+            "conditionQuery": {
+                "operator": "exists",
+                "attribute": "Tags.yor_trace",
+                "cond_type": "attribute",
+                "resource_types": [
                     "AWS::EC2::Instance"
-                ],
-                "guideline": "Check for YOR tagging",
-                "isCustom": True,
-                "conditionQuery": {
-                    "operator": "exists",
-                    "attribute": "Tags.yor_trace",
-                    "cond_type": "attribute",
-                    "resource_types": [
-                        "AWS::EC2::Instance"
-                    ]
-                },
-                "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n name: \"Check that all resources are tagged with the key - yor_trace\"\n "
-                        "guidelines: \"Check for YOR tagging\"\n category: \"general\"\n severity: \"low\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n       cond_type: \"attribute\"\n       resource_types: \n   "
-                        "    - \"AWS::EC2::Instance\"\n       attribute: \"Tags.yor_trace\"\n       operator: "
-                        "\"exists\"",
-                "frameworks": [
-                    "Terraform",
-                    "CloudFormation"
-                ],
-                "sourceIncidentId": ""
+                ]
             },
-            {
-                "provider": "AWS",
-                "id": "kpande_AWS_1635187541652",
-                "title": "Custom - ensure MSK Cluster logging is enabled",
-                "descriptiveTitle": "null",
-                "constructiveTitle": "null",
-                "severity": "MEDIUM",
-                "pcSeverity": "null",
-                "category": "Logging",
-                "resourceTypes": [
-                    "AWS::MSK::Cluster"
-                ],
-                "accountsData": {},
-                "guideline": "Some sample guidelines",
-                "isCustom": True,
-                "conditionQuery": {
-                    "or": [
-                        {
-                            "value": "true",
-                            "operator": "equals",
-                            "attribute": "LoggingInfo.BrokerLogs.S3.Enabled",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "AWS::MSK::Cluster"
-                            ]
-                        },
-                        {
-                            "value": "true",
-                            "operator": "equals",
-                            "attribute": "LoggingInfo.BrokerLogs.Firehose.Enabled",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "AWS::MSK::Cluster"
-                            ]
-                        },
-                        {
-                            "value": "true",
-                            "operator": "equals",
-                            "attribute": "LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "AWS::MSK::Cluster"
-                            ]
-                        }
-                    ]
-                },
-                "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n  name: \"Custom - ensure MSK Cluster logging is enabled\"\n  category: "
-                        "\"logging\"\n  severity: \"medium\"\n  guidelines: \"Some sample guidelines\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n  or:\n    - cond_type: attribute\n      attribute: "
-                        "LoggingInfo.BrokerLogs.S3.Enabled\n      operator: equals\n      value: \"true\"\n      "
-                        "resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: attribute\n      "
-                        "attribute: LoggingInfo.BrokerLogs.Firehose.Enabled\n      operator: equals\n      value: "
-                        "\"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: "
-                        "attribute\n      attribute: LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled\n      operator: "
-                        "equals\n      value: \"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"",
-                "frameworks": [
-                    "Terraform",
-                    "CloudFormation"
-                ],
-                "sourceIncidentId": ""
-            },
-            {
-                "provider": "AWS",
-                "id": "mikepolicies_cloned_AWS_1625063607541",
-                "title": "Cloned policy",
-                "severity": "CRITICAL",
-                "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:33:54.638Z"
+            "benchmarks": {},
+            "createdBy": "kpande@paloaltonetworks.com",
+            "code": "---\nmetadata:\n name: \"Check that all resources are tagged with the key - yor_trace\"\n "
+                    "guidelines: \"Check for YOR tagging\"\n category: \"general\"\n severity: \"low\"\nscope:\n  "
+                    "provider: \"aws\"\ndefinition:\n       cond_type: \"attribute\"\n       resource_types: \n   "
+                    "    - \"AWS::EC2::Instance\"\n       attribute: \"Tags.yor_trace\"\n       operator: "
+                    "\"exists\"",
+            "frameworks": [
+                "Terraform",
+                "CloudFormation"
+            ],
+            "sourceIncidentId": ""
+        },
+        {
+            "provider": "AWS",
+            "id": "kpande_AWS_1635187541652",
+            "title": "Custom - ensure MSK Cluster logging is enabled",
+            "descriptiveTitle": "null",
+            "constructiveTitle": "null",
+            "severity": "MEDIUM",
+            "pcSeverity": "null",
+            "category": "Logging",
+            "resourceTypes": [
+                "AWS::MSK::Cluster"
+            ],
+            "accountsData": {},
+            "guideline": "Some sample guidelines",
+            "isCustom": True,
+            "conditionQuery": {
+                "or": [
+                    {
+                        "value": "true",
+                        "operator": "equals",
+                        "attribute": "LoggingInfo.BrokerLogs.S3.Enabled",
+                        "cond_type": "attribute",
+                        "resource_types": [
+                            "AWS::MSK::Cluster"
+                        ]
+                    },
+                    {
+                        "value": "true",
+                        "operator": "equals",
+                        "attribute": "LoggingInfo.BrokerLogs.Firehose.Enabled",
+                        "cond_type": "attribute",
+                        "resource_types": [
+                            "AWS::MSK::Cluster"
+                        ]
+                    },
+                    {
+                        "value": "true",
+                        "operator": "equals",
+                        "attribute": "LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled",
+                        "cond_type": "attribute",
+                        "resource_types": [
+                            "AWS::MSK::Cluster"
+                        ]
                     }
-                },
-                "guideline": "mikepolicies_cloned_AWS_1625063607541",
-                "isCustom": True,
-                "conditionQuery": {},
-                "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": "",
-                "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
-            }
-        ]
+                ]
+            },
+            "benchmarks": {},
+            "createdBy": "kpande@paloaltonetworks.com",
+            "code": "---\nmetadata:\n  name: \"Custom - ensure MSK Cluster logging is enabled\"\n  category: "
+                    "\"logging\"\n  severity: \"medium\"\n  guidelines: \"Some sample guidelines\"\nscope:\n  "
+                    "provider: \"aws\"\ndefinition:\n  or:\n    - cond_type: attribute\n      attribute: "
+                    "LoggingInfo.BrokerLogs.S3.Enabled\n      operator: equals\n      value: \"true\"\n      "
+                    "resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: attribute\n      "
+                    "attribute: LoggingInfo.BrokerLogs.Firehose.Enabled\n      operator: equals\n      value: "
+                    "\"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: "
+                    "attribute\n      attribute: LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled\n      operator: "
+                    "equals\n      value: \"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"",
+            "frameworks": [
+                "Terraform",
+                "CloudFormation"
+            ],
+            "sourceIncidentId": ""
+        },
+        {
+            "provider": "AWS",
+            "id": "mikepolicies_cloned_AWS_1625063607541",
+            "title": "Cloned policy",
+            "severity": "CRITICAL",
+            "category": "General",
+            "resourceTypes": [
+                "aws_s3_bucket"
+            ],
+            "accountsData": {
+                "mikeurbanski1/terragoat3": {
+                    "amounts": {
+                        "CLOSED": 0,
+                        "DELETED": 0,
+                        "OPEN": 1,
+                        "REMEDIATED": 0,
+                        "SUPPRESSED": 0
+                    },
+                    "lastUpdateDate": "2021-06-30T14:33:54.638Z"
+                }
+            },
+            "guideline": "mikepolicies_cloned_AWS_1625063607541",
+            "isCustom": True,
+            "conditionQuery": {},
+            "benchmarks": {},
+            "createdBy": "mike+policies@bridgecrew.io",
+            "code": "",
+            "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
+        }
+    ]
 
 
 if __name__ == '__main__':
