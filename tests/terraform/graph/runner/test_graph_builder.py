@@ -15,7 +15,6 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
         tf_definitions = runner.definitions
-        self.assertEqual(3, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
             if file.endswith('pass_s3.tf'):
                 s3_bucket_config = definitions['resource'][0]['aws_s3_bucket']['bucket_with_versioning']
@@ -24,13 +23,13 @@ class TestGraphBuilder(TestCase):
                 # Evaluation does not run for un-included vars
                 self.assertEqual(s3_bucket_config['server_side_encryption_configuration'][0]['rule'][0]['apply_server_side_encryption_by_default'][0]['sse_algorithm'][0], 'var.encryption')
 
-    # def test_run_clean(self):
-    #     resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
-    #     runner = Runner()
-    #     report = runner.run(root_folder=resources_path)
-    #     self.assertEqual(4, len(report.failed_checks))
-    #     self.assertEqual(6, len(report.passed_checks))
-    #     self.assertEqual(0, len(report.skipped_checks))
+    def test_run_clean(self):
+        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path)
+        self.assertEqual(4, len(report.failed_checks))
+        self.assertEqual(6, len(report.passed_checks))
+        self.assertEqual(0, len(report.skipped_checks))
 
     def test_run_persistent_data(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
