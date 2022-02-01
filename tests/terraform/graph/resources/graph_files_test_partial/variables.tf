@@ -1,3 +1,0 @@
-variable "versioning" {
-  default = true
-}
