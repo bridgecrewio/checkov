@@ -82,7 +82,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         return policies
 
     def post_runner(self, scan_reports):
-        if self.bc_cloned_checks.keys():
+        if self.bc_cloned_checks:
             scan_reports.failed_checks = self.extend_records_with_cloned_policies(scan_reports.failed_checks)
             scan_reports.passed_checks = self.extend_records_with_cloned_policies(scan_reports.passed_checks)
             scan_reports.skipped_checks = self.extend_records_with_cloned_policies(scan_reports.skipped_checks)
