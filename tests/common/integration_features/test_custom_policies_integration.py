@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -17,6 +17,9 @@ from pathlib import Path
 
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
+    def tearDown(self) -> None:
+        get_graph_checks_registry("cloudformation").checks = []
+        get_graph_checks_registry("terraform").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
