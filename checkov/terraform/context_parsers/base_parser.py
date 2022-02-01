@@ -75,14 +75,15 @@ class BaseContextParser(ABC):
             for line in file.readlines():
                 if 'resource' in line:
                     file_lines.append((ind, line))
-                    for resource in resource_suppression.keys():
-                        resource_id = resource.split('.')
-                        if resource_id[0] in line and resource_id[1] in line:
-                            for id_and_comment in resource_suppression.get(resource):
-                                check_id = id_and_comment.get('id')
-                                comment = id_and_comment.get('comment')
-                                ind += 1
-                                file_lines.append((ind, f'#checkov:skip={check_id}:{comment}'))
+                    if resource_suppression:
+                        for resource in resource_suppression.keys():
+                            resource_id = resource.split('.')
+                            if resource_id[0] in line and resource_id[1] in line:
+                                for id_and_comment in resource_suppression.get(resource):
+                                    check_id = id_and_comment.get('id')
+                                    comment = id_and_comment.get('comment')
+                                    ind += 1
+                                    file_lines.append((ind, f'#checkov:skip={check_id}:{comment}'))
                 else:
                     file_lines.append((ind, line))
                 ind += 1
