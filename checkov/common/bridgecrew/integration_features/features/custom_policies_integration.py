@@ -88,7 +88,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             scan_reports.skipped_checks = self.extend_records_with_cloned_policies(scan_reports.skipped_checks)
 
     def extend_records_with_cloned_policies(self, records):
-        bc_check_ids = [record.bc_check_id for records in records]
+        bc_check_ids = [record.bc_check_id for record in records]
         for idx, bc_check_id in enumerate(bc_check_ids):
             cloned_policies = self.bc_cloned_checks.get(bc_check_id, [])
             for cloned_policy in cloned_policies:
