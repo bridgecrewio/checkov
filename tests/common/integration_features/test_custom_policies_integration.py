@@ -1,11 +1,15 @@
 import os
+import types
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.models.enums import CheckResult
+from checkov.common.output.record import Record
+from checkov.common.output.report import Report
 from checkov.terraform.runner import Runner as TerraformRunner
 from checkov.cloudformation.runner import Runner as CFNRunner
 from checkov.runner_filter import RunnerFilter
@@ -13,6 +17,9 @@ from pathlib import Path
 
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
+    def tearDown(self) -> None:
+        get_graph_checks_registry("cloudformation").checks = []
+        get_graph_checks_registry("terraform").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -86,7 +93,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                         "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
                         "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
                         "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
-                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n "
+                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n ",
+                "sourceIncidentId": ""
             },
             {
                 "provider": "AWS",
@@ -122,7 +130,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 },
                 "benchmarks": {},
                 "createdBy": "mike+policies@bridgecrew.io",
-                "code": None
+                "code": None,
+                "sourceIncidentId": ""
             },
             {
                 "provider": "AWS",
@@ -156,7 +165,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
-                ]
+                ],
+                "sourceIncidentId": ""
             },
             {
                 "provider": "AWS",
@@ -218,7 +228,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
-                ]
+                ],
+                "sourceIncidentId": ""
             }
         ]
 
@@ -242,25 +253,110 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
 
-        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir,
+                               runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 0)
 
-        report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
+        report = tf_runner.run(root_folder=test_files_dir,
+                               runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 0)
 
-        report = cfn_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
+        report = cfn_runner.run(root_folder=test_files_dir,
+                                runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+
+    def test_pre_scan_with_cloned_checks(self):
+        instance = BcPlatformIntegration()
+        instance.skip_policy_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        # mock _get_policies_from_platform method
+        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
+                                                                                   custom_policies_integration)
+
+        custom_policies_integration.pre_scan()
+        self.assertEqual(1, len(custom_policies_integration.policies))
+        self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
+
+    def test_post_runner_with_cloned_checks(self):
+        instance = BcPlatformIntegration()
+        instance.skip_policy_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        # mock _get_policies_from_platform method
+        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
+                                                                                   custom_policies_integration)
+        custom_policies_integration.pre_scan()
+
+        scan_reports = Report("terraform")
+        record = Record(
+            check_id="CKV_AWS_5",
+            check_name="Ensure all data stored in the Elasticsearch is securely encrypted at rest",
+            check_result={"result": CheckResult.FAILED},
+            code_block=[],
+            file_path="./main.tf",
+            file_line_range=[7, 10],
+            resource="aws_elasticsearch_domain.enabled",
+            evaluations=None,
+            check_class='',
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+            bc_check_id="BC_AWS_ELASTICSEARCH_3"
+        )
+        scan_reports.failed_checks.append(record)
+
+        custom_policies_integration.post_runner(scan_reports)
+        self.assertEqual(2, len(scan_reports.failed_checks))
+        self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
+
+
+def _get_policies_from_platform(self):
+    return [
+        {
+            "provider": "AWS",
+            "id": "mikepolicies_cloned_AWS_1625063607541",
+            "title": "Cloned policy",
+            "severity": "CRITICAL",
+            "category": "General",
+            "resourceTypes": [
+                "aws_s3_bucket"
+            ],
+            "accountsData": {
+                "mikeurbanski1/terragoat3": {
+                    "amounts": {
+                        "CLOSED": 0,
+                        "DELETED": 0,
+                        "OPEN": 1,
+                        "REMEDIATED": 0,
+                        "SUPPRESSED": 0
+                    },
+                    "lastUpdateDate": "2021-06-30T14:33:54.638Z"
+                }
+            },
+            "guideline": "mikepolicies_cloned_AWS_1625063607541",
+            "isCustom": True,
+            "conditionQuery": {},
+            "benchmarks": {},
+            "createdBy": "mike+policies@bridgecrew.io",
+            "code": "",
+            "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
+        }
+    ]
 
 
 if __name__ == '__main__':

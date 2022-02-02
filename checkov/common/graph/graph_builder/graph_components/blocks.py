@@ -39,11 +39,10 @@ class Block:
 
     def _extract_inner_attributes(self) -> Dict[str, Any]:
         attributes_to_add = {}
-        for attribute_key in self.attributes:
-            attribute_value = self.attributes[attribute_key]
+        for attribute_key, attribute_value in self.attributes.items():
             if isinstance(attribute_value, dict) or (
-                    isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0],
-                                                                                                  dict)):
+                isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
+            ):
                 inner_attributes = self.get_inner_attributes(
                     attribute_key=attribute_key,
                     attribute_value=attribute_value,

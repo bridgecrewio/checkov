@@ -33,8 +33,8 @@ resource "google_container_cluster" "success" {
     services_secondary_range_name = var.ip_allocation_policy["services_secondary_range_name"]
   }
 
-  authenticator_groups_config{
-    security_group="gke-security-groups@yourdomain.com"
+  authenticator_groups_config {
+    security_group = "gke-security-groups@yourdomain.com"
   }
 
   node_config {

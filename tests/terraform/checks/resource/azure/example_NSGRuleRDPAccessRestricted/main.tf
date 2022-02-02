@@ -98,8 +98,8 @@ resource "azurerm_network_security_rule" "ranges_prefixes" {
   protocol                    = "Tcp"
   resource_group_name         = "azurerm_resource_group.example.name"
 
-  destination_port_range  = null
-  source_address_prefix   = null
+  destination_port_range = null
+  source_address_prefix  = null
   destination_port_ranges = [
     3389,
     443
@@ -126,6 +126,6 @@ resource "azurerm_network_security_group" "ranges" {
       "3000-4000",
       "8000-9000"
     ]
-    source_address_prefix  = "*"
+    source_address_prefix = "*"
   }
 }

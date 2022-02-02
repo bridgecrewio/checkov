@@ -1,5 +1,5 @@
 provider "aws" {
-    region = "eu-west-2"
+  region = "eu-west-2"
 }
 
 resource "aws_ecr_repository" "public" {
@@ -7,8 +7,8 @@ resource "aws_ecr_repository" "public" {
 }
 
 resource "aws_ecr_repository_policy" "fail" {
-    repository=aws_ecr_repository.public.name
-    policy=<<POLICY
+  repository = aws_ecr_repository.public.name
+  policy     = <<POLICY
 {   "Version": "2008-10-17",
     "Statement": [
         {
@@ -42,8 +42,8 @@ resource "aws_ecr_repository" "private" {
 }
 
 resource "aws_ecr_repository_policy" "pass" {
-    repository=aws_ecr_repository.private.name
-    policy=<<POLICY
+  repository = aws_ecr_repository.private.name
+  policy     = <<POLICY
 {   "Version": "2008-10-17",
     "Statement": [
         {
@@ -80,6 +80,6 @@ resource "aws_ecr_repository" "empty" {
 }
 
 resource "aws_ecr_repository_policy" "empty" {
-    repository=aws_ecr_repository.empty.name
-    policy=""
+  repository = aws_ecr_repository.empty.name
+  policy     = ""
 }

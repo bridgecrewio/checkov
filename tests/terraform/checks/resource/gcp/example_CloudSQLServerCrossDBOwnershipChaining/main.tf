@@ -21,9 +21,9 @@ resource "google_sql_database_instance" "fail" {
     database_flags {
       name  = "cross db ownership chaining"
       value = "on"
-      }
+    }
 
-    database_flags{
+    database_flags {
       name  = "contained database authentication"
       value = "off"
     }
@@ -47,8 +47,8 @@ resource "google_sql_database_instance" "fail" {
       hour = "0"
     }
 
-    pricing_plan     = "PER_USE"
-    tier             = "db-custom-1-4096"
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-4096"
   }
 }
 
@@ -100,8 +100,8 @@ resource "google_sql_database_instance" "pass3" {
       hour = "0"
     }
 
-    pricing_plan     = "PER_USE"
-    tier             = "db-custom-1-4096"
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-4096"
   }
 }
 
@@ -147,8 +147,8 @@ resource "google_sql_database_instance" "pass2" {
       hour = "0"
     }
 
-    pricing_plan     = "PER_USE"
-    tier             = "db-custom-1-4096"
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-4096"
   }
 }
 
@@ -159,7 +159,7 @@ resource "google_sql_database_instance" "pass" {
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
   settings {
-    tier="db-custom-1-4096"
+    tier = "db-custom-1-4096"
   }
 }
 
@@ -199,8 +199,8 @@ resource "google_sql_database_instance" "unknown" {
       name  = "log_min_duration_statement"
       value = "1"
     }
-    pricing_plan     = "PER_USE"
-    tier             = "db-custom-1-3840"
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-3840"
   }
 }
 

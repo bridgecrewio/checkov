@@ -12,17 +12,24 @@ resource "aws_iam_policy_attachment" "null" {
   users = null
 }
 
+resource "aws_iam_policy_attachment" "empty" {
+  name       = "example"
+  policy_arn = "aws_iam_policy.policy.arn"
+
+  users = []
+}
+
 # fail
 
 resource "aws_iam_policy_attachment" "fail" {
   name       = "example"
   policy_arn = "aws_iam_policy.policy.arn"
 
-  users      = ["example"]
+  users = ["example"]
 }
 
 resource "aws_iam_user_policy" "fail" {
-  user   = "example"
+  user = "example"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Tuple, Dict, Any
@@ -41,8 +42,16 @@ class Scanner:
             )
             for input_path, output_path in input_output_paths
         ]
-        async with Pool() as pool:
-            scan_results = await pool.starmap(self.run_scan, args)
+        if os.getenv("PYCHARM_HOSTED") == "1":
+            # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
+            # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
+            logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
+            scan_results = []
+            for curr_arg in args:
+                scan_results.append(await self.run_scan(*curr_arg))
+        else:
+            async with Pool() as pool:
+                scan_results = await pool.starmap(self.run_scan, args)
 
         return scan_results
 

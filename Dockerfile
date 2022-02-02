@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN apk add --no-cache git util-linux bash openssl
+RUN apk add --no-cache git util-linux bash openssl curl
 
 RUN apk add --no-cache --virtual .build_deps build-base libffi-dev \
  && pip install --no-cache-dir -U checkov \

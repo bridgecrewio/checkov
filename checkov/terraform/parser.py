@@ -101,15 +101,17 @@ class Parser:
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
-    def parse_file(self, file: str, parsing_errors: Dict[str, Exception] = None, scan_hcl = False) -> Optional[Dict]:
+    def parse_file(
+        self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None, scan_hcl: bool = False
+    ) -> Optional[Dict[str, Any]]:
         if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
             parse_result = _load_or_die_quietly(Path(file), parsing_errors)
             if parse_result:
                 parse_result = self._serialize_definitions(parse_result)
                 parse_result = self._clean_parser_types(parse_result)
                 return parse_result
-        else:
-            return None
+
+        return None
 
     def _parse_directory(self, include_sub_dirs: bool = True,
                          module_loader_registry: ModuleLoaderRegistry = default_ml_registry,
