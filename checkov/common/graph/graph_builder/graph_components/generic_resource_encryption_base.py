@@ -3,7 +3,7 @@ from typing import Dict, List, Union, Tuple, Any
 from checkov.common.graph.graph_builder import EncryptionTypes
 
 
-class GenericResourceEncryption:
+class GenericResourceEncryptionBase:
     def __init__(
         self,
         resource_type: str,
