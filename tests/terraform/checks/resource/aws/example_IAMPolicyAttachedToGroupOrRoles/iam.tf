@@ -12,6 +12,13 @@ resource "aws_iam_policy_attachment" "null" {
   users = null
 }
 
+resource "aws_iam_policy_attachment" "empty" {
+  name       = "example"
+  policy_arn = "aws_iam_policy.policy.arn"
+
+  users = []
+}
+
 # fail
 
 resource "aws_iam_policy_attachment" "fail" {
