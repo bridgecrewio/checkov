@@ -339,7 +339,6 @@ class CloudformationLocalGraph(LocalGraph):
             self.out_edges[origin_vertex_index].append(edge)
             self.in_edges[dest_vertex_index].append(edge)
 
-
     def calculate_encryption_attribute(self) -> None:
         for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE, []):
             vertex = self.vertices[vertex_index]
