@@ -6,7 +6,7 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.graph_resources_encription_manager import GraphResourcesEncryptionManager
-from checkov.common.graph.graph_builder.graph_components.encryption_attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.encryption_attribute_names import EncryptionCustomAttributes
 
 
 class LocalGraph:
@@ -97,5 +97,5 @@ class LocalGraph:
             encryption_result = self._graph_resource_encryption_manager.get_encryption_result(vertex)
             if not encryption_result:
                 continue
-            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.enctypted
-            vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason
+            vertex.attributes[EncryptionCustomAttributes.ENCRYPTION] = encryption_result.enctypted
+            vertex.attributes[EncryptionCustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason
