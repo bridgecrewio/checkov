@@ -9,7 +9,6 @@ from checkov.cloudformation.graph_builder.utils import GLOBALS_RESOURCE_TYPE_MAP
 from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
-from checkov.common.graph.graph_builder.graph_components.attribute_names import EncryptionValues
 from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph

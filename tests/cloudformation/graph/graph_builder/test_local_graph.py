@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from unittest import TestCase
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.cloudformation.cfn_utils import create_definitions
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
