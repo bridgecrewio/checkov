@@ -20,7 +20,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

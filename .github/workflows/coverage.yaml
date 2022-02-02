@@ -21,7 +21,9 @@ jobs:
         with:
           python-version: 3.7
       - uses: imranismail/setup-kustomize@v1
-      - uses: dschep/install-pipenv-action@v1
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
