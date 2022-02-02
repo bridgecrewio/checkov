@@ -22,8 +22,6 @@ jobs:
           python-version: 3.7
       - uses: imranismail/setup-kustomize@v1
       - uses: dschep/install-pipenv-action@v1
-        with:
-          version: 2021.5.29
       - name: Install dependencies
         run: |
           pipenv --python 3.7

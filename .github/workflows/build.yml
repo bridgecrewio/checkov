@@ -31,9 +31,6 @@ jobs:
       - uses: actions/setup-node@v2
       - uses: azure/setup-helm@v1
       - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
@@ -67,9 +64,6 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Build & install checkov package
@@ -97,8 +91,6 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-        with:
-          version: 2021.5.29
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -126,8 +118,6 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-        with:
-          version: 2021.5.29
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -209,9 +199,6 @@ jobs:
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
       - name: Install dependencies
         run: |
           pipenv --python 3.7
