@@ -108,7 +108,7 @@ class TestLocalGraph(TestCase):
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
-        local_graph.calculate_encryption_attribute()
+        local_graph.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")

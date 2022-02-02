@@ -232,7 +232,7 @@ class TestLocalGraph(TestCase):
         definitions, _ = create_definitions(root_folder="", files=[str(sam_file_path)], runner_filter=RunnerFilter())
         local_graph = CloudformationLocalGraph(definitions)
         local_graph._create_vertices()
-        local_graph.calculate_encryption_attribute()
+        local_graph.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
