@@ -43,3 +43,21 @@ resource "aws_lb" "lb_bad_2" {
 resource "aws_alb" "alb_bad_1" {
   internal=false
 }
+
+// NLB or Gateway LB can't have a WAF associated
+
+resource "aws_lb" "network" {
+  internal           = false
+  load_balancer_type = "network"
+  name               = "nlb"
+  subnets            = var.public_subnet_ids
+}
+
+resource "aws_lb" "gateway" {
+  load_balancer_type = "gateway"
+  name               = "glb"
+
+  subnet_mapping {
+    subnet_id = var.subnet_id
+  }
+}
