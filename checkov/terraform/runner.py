@@ -27,7 +27,7 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph

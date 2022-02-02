@@ -5,7 +5,7 @@ from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable
 
 from checkov.common.util.type_forcers import force_int
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 

@@ -11,7 +11,7 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 from checkov.common.util.type_forcers import force_int
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,

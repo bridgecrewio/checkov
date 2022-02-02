@@ -10,7 +10,7 @@ from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver imp
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
