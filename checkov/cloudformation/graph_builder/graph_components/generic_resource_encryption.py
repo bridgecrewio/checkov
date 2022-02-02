@@ -4,7 +4,7 @@ from checkov.common.graph.graph_builder.graph_components.generic_resource_encryp
 
 
 class GenericResourceEncryption(GenericResourceEncryptionBase):
-   def __init__(
+    def __init__(
         self,
         resource_type: str,
         attribute_values_map: Dict[str, Union[List[bool], List[str]]],
