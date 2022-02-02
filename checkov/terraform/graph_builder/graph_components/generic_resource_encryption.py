@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 from checkov.common.graph.graph_builder import EncryptionTypes
 from checkov.common.graph.graph_builder.graph_components.generic_resource_encryption_base import GenericResourceEncryptionBase
 
@@ -20,7 +20,7 @@ class GenericResourceEncryption(GenericResourceEncryptionBase):
 
 # This map allows dynamically creating the check for each resource type based on GenericResourceEncryption.
 # Please check out the constructor to understand all the edge cases.
-ENCRYPTION_BY_RESOURCE_TYPE = {
+ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
     "aws_ecr_repository": GenericResourceEncryption(
         "aws_ecr_repository",
         {

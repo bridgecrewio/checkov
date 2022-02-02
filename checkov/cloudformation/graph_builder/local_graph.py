@@ -14,7 +14,6 @@ from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 
 
@@ -49,7 +48,7 @@ class CloudformationLocalGraph(LocalGraph):
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs()
-        self.calculate_encryption_attribute()
+        self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
 
     def _create_vertices(self) -> None:
 
@@ -338,21 +337,6 @@ class CloudformationLocalGraph(LocalGraph):
             self.edges.append(edge)
             self.out_edges[origin_vertex_index].append(edge)
             self.in_edges[dest_vertex_index].append(edge)
-
-    def calculate_encryption_attribute(self) -> None:
-        for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE, []):
-            vertex = self.vertices[vertex_index]
-            resource_type =  vertex.id.split(".")[0]
-            encryption_conf = ENCRYPTION_BY_RESOURCE_TYPE.get(resource_type)
-            if encryption_conf:
-                attributes = vertex.get_attribute_dict()
-                is_encrypted, reason = encryption_conf.is_encrypted(attributes)
-                # TODO: Does not support possible dependency (i.e. S3 Object being encrypted due to S3 Bucket config)
-                vertex.attributes[CustomAttributes.ENCRYPTION] = (
-                    EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value
-                )
-                vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = reason
-
 
     @staticmethod
     def _is_of_type(cfndict, identifier, *template_sections):
