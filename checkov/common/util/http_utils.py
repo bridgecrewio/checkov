@@ -43,7 +43,7 @@ def get_version_headers(client, client_version):
 
 
 def get_user_agent_header():
-    return {'User-Agent': 'Mozilla/5.0 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'}
+    return {'User-Agent': f'checkov/{checkov_version}'}
 
 
 def get_default_get_headers(client: SourceType, client_version: str):
