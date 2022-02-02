@@ -243,7 +243,7 @@ class TestLocalGraph(TestCase):
                                  else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
                 if is_encrypted == EncryptionValues.ENCRYPTED.value:
                     attribute_dict_keys = '\t'.join(list(attribute_dict.keys()))
-                    if 'KmsKeyId' in attribute_dict_keys or 'KMSMasterKeyId' in attribute_dict:
+                    if 'KmsKeyId' in attribute_dict_keys or 'KMSMasterKeyId' in attribute_dict_keys:
                         self.assertEqual(details, EncryptionTypes.KMS_VALUE.value, f'Bad encryption details for "{resource_type}.{resource_name}"')
                     else:
                         self.assertIn(details, [EncryptionTypes.AES256.value, EncryptionTypes.KMS_VALUE.value, EncryptionTypes.NODE_TO_NODE.value, EncryptionTypes.DEFAULT_KMS.value], f'Bad encryption details for "{resource_type}.{resource_name}"')
