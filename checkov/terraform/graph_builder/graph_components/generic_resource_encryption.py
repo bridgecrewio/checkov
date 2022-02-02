@@ -1,9 +1,9 @@
 from typing import Dict, List, Union
 from checkov.common.graph.graph_builder import EncryptionTypes
-from checkov.common.graph.graph_builder.graph_components import generic_resource_encryption_base
+from checkov.common.graph.graph_builder.graph_components.generic_resource_encryption_base import GenericResourceEncryptionBase
 
 
-class GenericResourceEncryption(generic_resource_encryption_base):
+class GenericResourceEncryption(GenericResourceEncryptionBase):
     def __init__(
         self,
         resource_type: str,
