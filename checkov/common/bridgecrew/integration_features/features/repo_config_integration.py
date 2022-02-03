@@ -6,7 +6,6 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
-from checkov.common.util.consts import SEVERITY_LEVELS
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 

@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 import re
@@ -6,6 +7,7 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.models.enums import Severities
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 
@@ -29,11 +31,12 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
 
     def pre_scan(self):
         try:
-            self.policies = self._get_policies_from_platform()
+            self.policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in self.policies:
                 converted_check = self._convert_raw_check(policy)
                 resource_types = Registry._get_resource_types(converted_check['metadata'])
                 check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
+                check.bc_severity = Severities[policy['severity']]
                 if re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
                     get_graph_checks_registry("cloudformation").checks.append(check)
                 else:
@@ -48,14 +51,11 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         metadata = {
             'id': policy['id'],
             'name': policy['title'],
-            'category': policy['category'],
-            'scope': {
-                'provider': policy['provider']
-            }
+            'category': policy['category']
         }
         check = {
             'metadata': metadata,
-            'definition': policy['conditionQuery']
+            'definition': json.loads(policy['code'])
         }
         return check
 
