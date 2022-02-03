@@ -1,8 +1,13 @@
+import asyncio
 import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List, Union, Dict, Any
+from pathlib import Path
+from typing import List, Union, Dict, Any, Sequence
+import os
+import logging
+from aiomultiprocess import Pool
 
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
@@ -12,6 +17,8 @@ from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
 from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 from checkov.runner_filter import RunnerFilter
+from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -339,3 +346,38 @@ def create_package_overview_table_part(
             package_table_lines.append(f"\t{line}")
 
     return package_table_lines
+
+
+async def _report_results_to_bridgecrew_async(
+        scan_results: List[Dict[str, Any]],
+        input_paths: List[Path],
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
+) -> "Sequence[int]":
+    package_scanning_int = PackageScanningIntegration()
+    args = [
+        (scan_results[i], bc_integration, bc_api_key, input_paths[i])
+        for i in range(len(scan_results))
+    ]
+
+    if os.getenv("PYCHARM_HOSTED") == "1":
+        # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
+        # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
+        logging.warning("reporting the results in sequence for avoiding crashing when running via Pycharm")
+        exit_codes = []
+        for curr_arg in args:
+            exit_codes.append(await package_scanning_int.report_results_async(*curr_arg))
+    else:
+        async with Pool() as pool:
+            scan_results = await pool.starmap(package_scanning_int.report_results_async, args)
+
+    return scan_results
+
+
+def report_results_to_bridgecrew(
+    scan_results: List[Dict[str, Any]],
+    input_paths: List[Path],
+    bc_integration: BcPlatformIntegration,
+    bc_api_key: str
+):
+    return asyncio.run(_report_results_to_bridgecrew_async(scan_results, input_paths, bc_integration, bc_api_key))

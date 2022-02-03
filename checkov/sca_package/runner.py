@@ -25,7 +25,7 @@ class Runner(BaseRunner):
         root_folder: Union[str, Path],
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> "Optional[Sequence[Dict[str, Any]]]":
+    ) -> "Optional[Tuple[List[Dict[str, Any]], List[Tuple[Path, Path]]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
             return None
@@ -59,10 +59,10 @@ class Runner(BaseRunner):
 
         scanner = Scanner()
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}",
-        scan_results = scanner.scan(input_output_paths)
+        scan_results = list(scanner.scan(input_output_paths))
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
-        return scan_results
+        return scan_results, input_output_paths
 
     def run(
         self,
@@ -113,7 +113,7 @@ class Runner(BaseRunner):
 
     def find_scannable_files(
         self, root_path: Path, files: Optional[List[str]], excluded_paths: Set[str]
-    ) -> Set[Tuple[Path, Path]]:
+    ) -> List[Tuple[Path, Path]]:
         input_paths = {
             file_path
             for file_path in root_path.glob("**/*")
@@ -124,7 +124,7 @@ class Runner(BaseRunner):
         package_lock_parent_paths = {
             file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
         }
-        input_output_paths = {
+        input_output_paths_set = {
             (file_path, file_path.parent / f"{file_path.stem}_result.json")
             for file_path in input_paths
             if file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths
@@ -136,6 +136,6 @@ class Runner(BaseRunner):
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
 
-            input_output_paths.add((file_path, file_path.parent / f"{file_path.stem}_result.json"))
+            input_output_paths_set.add((file_path, file_path.parent / f"{file_path.stem}_result.json"))
 
-        return input_output_paths
+        return list(input_output_paths_set)

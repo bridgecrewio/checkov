@@ -124,7 +124,7 @@ def test_find_scannable_files():
     # then
     assert len(input_output_paths) == 3
 
-    assert input_output_paths == {
+    assert set(input_output_paths) == {
         (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
         (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
         (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
