@@ -31,9 +31,22 @@ class ECRPolicy(BaseResourceCheck):
                     for statement_index, statement in enumerate(policy_text['Statement']):
                         if 'Principal' in statement.keys():
                             for principal_index, principal in enumerate(statement['Principal']):
-                                if principal == "*":
+                                if principal == "*" and self.check_for_constrained_condition(statement) == False:
                                     self.evaluated_keys = [f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"]
                                     return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def check_for_constrained_condition(self, statement):
+        """
+        Checks to see if there is a constraint on a a wildcarded principal
+        :param statement: statement from aws_repository_configuration
+        :return: true if there is a constraint
+        """
+        if 'Condition' in statement.keys():
+          condition = statement['Condition']
+          if 'ForAllValues:StringEquals' in condition.keys():
+            if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals'].keys():
+              return True
+        return False
 
 check = ECRPolicy()
