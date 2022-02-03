@@ -39,7 +39,8 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
     enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.util.http_utils import normalize_prisma_url
+from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -85,18 +86,17 @@ class BcPlatformIntegration(object):
         self.bc_source_version = None
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
-        self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
         self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
-        self.guidelines = None
-        self.bc_id_mapping = None
-        self.ckv_to_bc_id_mapping = None
+        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
+        self.customer_run_config_response = None
+        self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http = None
-        self.excluded_paths = []
         self.bc_skip_mapping = False
+        self.skip_download = False
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -140,8 +140,8 @@ class BcPlatformIntegration(object):
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_suppressions=False,
-                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None):
+    def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_download=False, source=None,
+                                     source_version=None, repo_branch=None):
         """
         Setup credentials against Bridgecrew's platform.
         :param source:
@@ -151,8 +151,7 @@ class BcPlatformIntegration(object):
         self.repo_id = repo_id
         self.repo_branch = repo_branch
         self.skip_fixes = skip_fixes
-        self.skip_suppressions = skip_suppressions
-        self.skip_policy_download = skip_policy_download
+        self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
 
@@ -191,7 +190,7 @@ class BcPlatformIntegration(object):
                 logging.error("Received an error response during authentication")
                 raise e
 
-        self.get_id_mapping()
+        # self.get_id_mapping()  TODO
 
         self.platform_integration_configured = True
 
@@ -348,44 +347,56 @@ class BcPlatformIntegration(object):
             logging.error(
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
-    def get_guidelines(self) -> dict:
-        if not self.guidelines:
-            self.get_checkov_mapping_metadata()
-        return self.guidelines
-
-    def get_id_mapping(self) -> Dict[str, str]:
-        if not self.bc_id_mapping:
-            self.get_checkov_mapping_metadata()
-        return self.bc_id_mapping
-
-    def get_ckv_to_bc_id_mapping(self) -> Dict[str, str]:
-        if not self.ckv_to_bc_id_mapping:
-            self.get_checkov_mapping_metadata()
-        return self.ckv_to_bc_id_mapping
-
-    def get_checkov_mapping_metadata(self) -> None:
-        if self.bc_skip_mapping is True:
-            logging.debug("Skipped mapping API call")
-            self.ckv_to_bc_id_mapping = {}
+    def get_platform_run_config(self):
+        if self.skip_download is True:
+            logging.debug("Skipping downloading configs from platform")
             return
-        guidelines_url = self.guidelines_api_url
-        headers = {}
+
+        if self.is_integration_configured():
+            self.get_customer_run_config()
+        else:
+            self.get_public_run_config()
+
+    def get_customer_run_config(self) -> None:
+        if self.skip_download is True:
+            logging.debug("Skipping getting run config")
+            return
+
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception("Tried to get customer run config, but the API key was missing or the integration was not set up")
+
         try:
-            if (self.bc_api_key is not None):
-                guidelines_url = self.customer_all_guidelines_api_url
-                headers = {"Authorization": self.get_auth_token(), "Content-Type": "application/json"}
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token), get_default_get_headers(self.bc_source, self.bc_source_version))
             if not self.http:
                 self.setup_http_manager()
-            request = self.http.request("GET", guidelines_url, headers=headers)
-            response = json.loads(request.data.decode("utf8"))
-            self.guidelines = response["guidelines"]
-            self.bc_id_mapping = response.get("idMapping")
-            self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
+            request = self.http.request("GET", self.platform_run_config_url, headers=headers)
+
+            self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+
+            # self.guidelines = response["guidelines"]
+            # self.bc_id_mapping = response.get("idMapping")
+            # self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
+            logging.debug("Got customer run config from Bridgecrew BE")
+        except Exception as e:
+            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+
+    def get_public_run_config(self) -> None:
+        if self.skip_download is True:
+            logging.debug("Skipping ID mapping and guidelines API call")
+            return
+        headers = {}
+        try:
+            if not self.http:
+                self.setup_http_manager()
+            request = self.http.request("GET", self.guidelines_api_url, headers=headers)
+            self.public_metadata_response = json.loads(request.data.decode("utf8"))
+            # self.guidelines = response["guidelines"]
+            # self.bc_id_mapping = response.get("idMapping")
+            # self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug("Got checkov mappings from Bridgecrew BE")
         except Exception as e:
-            logging.debug(f"Failed to get the guidelines from {guidelines_url}, error:\n{e}")
-            self.ckv_to_bc_id_mapping = {}
-            return
+            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
 
     def onboarding(self):
         if not self.bc_api_key:
@@ -580,24 +591,9 @@ class BcPlatformIntegration(object):
                 t.set_postfix(refresh=False)
                 sleep(SLEEP_SECONDS)
 
-    def get_excluded_paths(self):
-        repo_settings_api_url = f'{self.api_url}/api/v1/vcs/settings/scheme'
-        try:
-            request = self.http.request("GET", repo_settings_api_url,
-                                        headers={"Authorization": self.get_auth_token(),
-                                                 "Content-Type": "application/json"})
-            response = json.loads(request.data.decode("utf8"))
-            if 'scannedFiles' in response:
-                for section in response.get('scannedFiles').get('sections'):
-                    if self.repo_id in section.get('repos') and section.get('rule').get('excludePaths'):
-                        self.excluded_paths.extend(section.get('rule').get('excludePaths'))
-            return self.excluded_paths
-        except HTTPError as e:
-            logging.error(f"Failed to get vcs settings for repo {self.repo_path}\n{e}")
-            raise e
-        except JSONDecodeError as e:
-            logging.error(f"Response of {repo_settings_api_url} is not a valid JSON\n{e}")
-            raise e
+    def repo_matches(self, repo_name):
+        # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
+        return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
 
 
 bc_integration = BcPlatformIntegration()
