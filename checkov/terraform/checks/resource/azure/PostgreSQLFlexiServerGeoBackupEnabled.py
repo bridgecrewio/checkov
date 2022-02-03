@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class PostgreSQLFlexiServerGeoBackupEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that PostgreSQL Flexi server enables geo-redundant backups"
+        name = "Ensure that PostgreSQL Flexible server enables geo-redundant backups"
         id = "CKV_AZURE_136"
         supported_resources = ['azurerm_postgresql_flexible_server']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
