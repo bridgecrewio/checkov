@@ -16,7 +16,7 @@ from checkov.common.util.http_utils import get_default_get_headers, get_auth_hea
 class SuppressionsIntegration(BaseIntegrationFeature):
 
     def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
+        super().__init__(bc_integration, order=1)  # must be after the policy metadata
         self.suppressions = {}
         self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
@@ -33,7 +33,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def pre_scan(self):
         try:
-            suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
+            suppressions = self.bc_integration.customer_run_config_response.get('suppressions')
+
+            for suppression in suppressions:
+                if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
+                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
+                else:
+                    suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
+
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
@@ -116,28 +123,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return True
 
         return False
-
-    def _get_suppressions_from_platform(self):
-        headers = merge_dicts(
-            get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-            get_auth_header(self.bc_integration.get_auth_token()))
-        response = requests.request('GET', self.suppressions_url, headers=headers)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(
-                f'Get suppressions request failed with response code {response.status_code}: {error_message}')
-
-        # filter out suppressions that we know just don't apply
-        suppressions = [s for s in json.loads(response.content) if self._suppression_valid_for_run(s)]
-
-        for suppression in suppressions:
-            if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
-                suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
-            else:
-                suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
-
-        return suppressions
 
     def _suppression_valid_for_run(self, suppression):
         """
