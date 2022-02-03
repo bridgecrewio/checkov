@@ -68,19 +68,6 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         }
         return check
 
-    def _get_policies_from_platform(self):
-        headers = merge_dicts(get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-                              get_auth_header(self.bc_integration.get_auth_token()))
-        response = requests.request('GET', self.policies_url, headers=headers)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
-
-        policies = response.json().get('data', [])
-        policies = [p for p in policies if p['isCustom']]
-        return policies
-
     def post_runner(self, scan_reports):
         if self.bc_cloned_checks:
             scan_reports.failed_checks = self.extend_records_with_cloned_policies(scan_reports.failed_checks)

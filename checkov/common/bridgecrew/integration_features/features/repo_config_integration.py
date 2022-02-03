@@ -4,8 +4,7 @@ import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.models.enums import Severities
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 
@@ -17,7 +16,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.skip_paths = []
-        self.code_review_threshold = 'CRITICAL'  # will be changed to a lower threshold when we read the config
+        self.code_review_threshold = None
         self.code_review_skip_policies = []
 
     def is_valid(self) -> bool:
@@ -51,9 +50,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                     if any(repo for repo in repos if self.bc_integration.repo_matches(repo)):
                         logging.debug(f'Found code reviews config section for repo: {section}')
                         severity_level = section['rule']['severityLevel']
-                        if SEVERITY_LEVELS[severity_level] < SEVERITY_LEVELS[self.code_review_threshold]:
+                        if not self.code_review_threshold or Severities[severity_level].value < self.code_review_threshold.value:
                             logging.debug(f'Severity threshold of {severity_level} is lower than {self.code_review_threshold}')
-                            self.code_review_threshold = severity_level
+                            self.code_review_threshold = Severities[severity_level]
                         self.code_review_skip_policies += section['rule']['excludePolicies']
                 self.code_review_skip_policies = list(set(self.code_review_skip_policies))
                 logging.debug(f'Found the following code review policy exclusions: {self.code_review_skip_policies}')
@@ -78,19 +77,6 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             'definition': policy['conditionQuery']
         }
         return check
-
-    def _get_policies_from_platform(self):
-        headers = merge_dicts(get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-                              get_auth_header(self.bc_integration.get_auth_token()))
-        response = requests.request('GET', self.policies_url, headers=headers)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get custom policies request failed with response code {response.status_code}: {error_message}')
-
-        policies = response.json().get('data', [])
-        policies = [p for p in policies if p['isCustom']]
-        return policies
 
 
 integration = RepoConfigIntegration(bc_integration)
