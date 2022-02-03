@@ -25,6 +25,13 @@ class CheckCategories(Enum):
     SUPPLY_CHAIN = 11
 
 
+class Severities(Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    CRITICAL = 4
+
+
 class OutputFormat(Enum):
     CONSOLE = 1
     JSON = 2
