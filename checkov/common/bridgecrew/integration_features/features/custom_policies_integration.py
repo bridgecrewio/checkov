@@ -1,5 +1,9 @@
 import json
 import logging
+from collections import defaultdict
+from copy import deepcopy
+from typing import Dict, List
+
 import requests
 import re
 
@@ -21,6 +25,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         self.policies = {}
         self.platform_policy_parser = NXGraphCheckParser()
         self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
+        self.bc_cloned_checks: Dict[str, List[dict]] = defaultdict(list)
 
     def is_valid(self) -> bool:
         return (
@@ -34,6 +39,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             self.policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in self.policies:
                 converted_check = self._convert_raw_check(policy)
+                source_incident_id = policy.get('sourceIncidentId')
+                if source_incident_id:
+                    self.bc_cloned_checks[source_incident_id].append(policy)
+                    continue
                 resource_types = Registry._get_resource_types(converted_check['metadata'])
                 check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                 check.bc_severity = Severities[policy['severity']]
@@ -71,6 +80,26 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         policies = response.json().get('data', [])
         policies = [p for p in policies if p['isCustom']]
         return policies
+
+    def post_runner(self, scan_reports):
+        if self.bc_cloned_checks:
+            scan_reports.failed_checks = self.extend_records_with_cloned_policies(scan_reports.failed_checks)
+            scan_reports.passed_checks = self.extend_records_with_cloned_policies(scan_reports.passed_checks)
+            scan_reports.skipped_checks = self.extend_records_with_cloned_policies(scan_reports.skipped_checks)
+
+    def extend_records_with_cloned_policies(self, records):
+        bc_check_ids = [record.bc_check_id for record in records]
+        for idx, bc_check_id in enumerate(bc_check_ids):
+            cloned_policies = self.bc_cloned_checks.get(bc_check_id, [])
+            for cloned_policy in cloned_policies:
+                new_record = deepcopy(records[idx])
+                new_record.check_id = cloned_policy['id']
+                new_record.bc_check_id = cloned_policy['id']
+                new_record.guideline = cloned_policy['guideline']
+                new_record.severity = cloned_policy['severity']
+                new_record.check_name = cloned_policy['title']
+                records.append(new_record)
+        return records
 
 
 integration = CustomPoliciesIntegration(bc_integration)

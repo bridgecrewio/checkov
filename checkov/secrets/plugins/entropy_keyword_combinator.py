@@ -4,6 +4,8 @@ from detect_secrets.plugins.keyword import KeywordDetector
 from detect_secrets.plugins.base import BasePlugin
 from typing import Generator, Any, Set
 
+MAX_LINE_LENGTH = 10000
+
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = None
@@ -23,12 +25,13 @@ class EntropyKeywordCombinator(BasePlugin):
         This method first runs the keyword plugin. If it finds a match - it runs the entropy scanners, and if
         one of the entropy scanners find a match (on a line which was already matched by keyword plugin) - it is returned.
         """
-        keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
-        if keyword_matches:
-            for entropy_scanner in self.high_entropy_scanners:
-                matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-                if matches:
-                    return matches
+        if len(line) <= MAX_LINE_LENGTH:
+            keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
+            if keyword_matches:
+                for entropy_scanner in self.high_entropy_scanners:
+                    matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
+                    if matches:
+                        return matches
         return set([])
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:

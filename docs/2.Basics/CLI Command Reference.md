@@ -18,7 +18,7 @@ nav_order: 2
 | `--external-checks-dir EXTERNAL_CHECKS_DIR` | Directory for custom checks to be loaded. Can be repeated. |
 | `--external-checks-git EXTERNAL_CHECKS_GIT` | Github url of external checks to be added. \n you can specify a subdirectory after a double-slash //. \n cannot be used together with --external-checks-dir' |
 | `-l`, `--list` | List checks. |
-| `-o [{cli,cyclonedx,json,junitxml,github_failed_only,sarif}]`, `--output [{cli,cyclonedx,json,junitxml,github_failed_only,sarif}]` | Report output format. |
+| `-o {cli,cyclonedx,json,junitxml,github_failed_only,sarif}`, `--output {cli,cyclonedx,json,junitxml,github_failed_only,sarif}` | Report output format. Add multiple outputs by using the flag multiple times (`-o sarif -o cli`) |
 | `--output-bc-ids` | Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform |
 | `--no-guide` | Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. Note: this prevents Bridgecrew platform check IDs from being used anywhere in the CLI. |
 | `--quiet` | Display only failed checks in CLI output. | [View Scan Results](doc:scan-use-cases#section-view-scan-results) |

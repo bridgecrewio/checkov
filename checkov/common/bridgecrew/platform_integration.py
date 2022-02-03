@@ -40,7 +40,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers
+from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, get_user_agent_header
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -57,11 +57,10 @@ DEFAULT_REGION = "us-west-2"
 MAX_RETRIES = 40
 ONBOARDING_SOURCE = "checkov"
 
-SIGNUP_HEADER = {
+SIGNUP_HEADER = merge_dicts({
     'Accept': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36',
-    'Content-Type': 'application/json;charset=UTF-8'
-}
+    'Content-Type': 'application/json;charset=UTF-8'},
+    get_user_agent_header())
 
 
 class BcPlatformIntegration(object):
@@ -115,7 +114,7 @@ class BcPlatformIntegration(object):
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
-                                    headers={"Content-Type": "application/json"})
+                                    headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
             raise BridgecrewAuthError()
         token = json.loads(request.data.decode("utf8"))['token']
@@ -197,7 +196,8 @@ class BcPlatformIntegration(object):
     def get_s3_role(self, repo_id):
         token = self.get_auth_token()
         request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
-                                    headers={"Authorization": token, "Content-Type": "application/json"})
+                                    headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
+                                                        get_user_agent_header()))
         if request.status == 403:
             raise BridgecrewAuthError()
         response = json.loads(request.data.decode("utf8"))
@@ -209,7 +209,9 @@ class BcPlatformIntegration(object):
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
                 request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
-                                            headers={"Authorization": token, "Content-Type": "application/json"})
+                                            headers=merge_dicts(
+                                                {"Authorization": token, "Content-Type": "application/json"},
+                                                get_user_agent_header()))
                 response = json.loads(request.data.decode("utf8"))
 
         repo_full_path = response["path"]
@@ -299,11 +301,12 @@ class BcPlatformIntegration(object):
                                                  "author": BC_AUTHOR_NAME, "author_url": BC_AUTHOR_URL,
                                                  "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
                                                  "repository_url": BC_REPOSITORY_URL}),
-                                            headers={"Authorization": self.get_auth_token(),
-                                                     "Content-Type": "application/json",
-                                                     'x-api-client': self.bc_source.name,
-                                                     'x-api-checkov-version': checkov_version
-                                                     })
+                                            headers=merge_dicts({"Authorization": self.get_auth_token(),
+                                                                 "Content-Type": "application/json",
+                                                                 'x-api-client': self.bc_source.name,
+                                                                 'x-api-checkov-version': checkov_version},
+                                                                get_user_agent_header()
+                                                                ))
                 response = json.loads(request.data.decode("utf8"))
                 url = response.get("url", None)
                 return url
@@ -385,6 +388,7 @@ class BcPlatformIntegration(object):
         if self.skip_download is True:
             logging.debug("Skipping ID mapping and guidelines API call")
             return
+
         headers = {}
         try:
             if not self.http:
@@ -433,7 +437,7 @@ class BcPlatformIntegration(object):
                     bc_api_token, response = self.get_api_token(email, org)
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
-                        print(Style.BRIGHT + colored("\nComplete!",'green', attrs=['bold']))
+                        print(Style.BRIGHT + colored("\nComplete!", 'green', attrs=['bold']))
                         print('\nSaving API key to {}'.format(bridgecrew_file))
                         print(Style.BRIGHT + colored("\nCheckov will automatically check this location for a key.  If you forget it you’ll find it here\nhttps://bridgecrew.cloud/integrations/api-token\n\n",'green'))
                         persist_key(self.bc_api_key)

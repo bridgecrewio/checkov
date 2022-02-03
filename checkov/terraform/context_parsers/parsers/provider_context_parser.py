@@ -19,9 +19,10 @@ class ProviderContextParser(BaseContextParser):
         # Ignore the alias as it is not part of the signature
         is_provider = super()._is_block_signature(line_num, line_tokens, entity_context_path[0:-1])
         if not is_provider or "=" in line_tokens or line_tokens[0] != "provider":
-            # The line provider = alias is not a provider block although it has the correct words
-            # Also skips comments that include words like provider and aws
-            return False
+            if not all(bracket in line_tokens for bracket in ("{", "}")):
+                # The line provider = alias is not a provider block although it has the correct words
+                # Also skips comments that include words like provider and aws
+                return False
 
         end_line = self._compute_definition_end_line(line_num)
         provider_type = entity_context_path[0]
