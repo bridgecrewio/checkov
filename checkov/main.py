@@ -199,7 +199,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     integration_feature_registry.run_pre_scan()
 
-    runner_filter.excluded_paths = runner_filter.excluded_paths + repo_config_integration.skip_paths
+    runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)

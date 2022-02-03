@@ -36,6 +36,11 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
 
     def pre_scan(self):
         try:
+            if not self.bc_integration.customer_run_config_response:
+                logging.warning('In the pre-scan for custom policies, but nothing was fetched from the platform')
+                self.integration_feature_failures = True
+                return
+
             self.policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in self.policies:
                 converted_check = self._convert_raw_check(policy)

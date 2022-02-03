@@ -30,6 +30,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         try:
             if not self.bc_integration.customer_run_config_response:
                 logging.warning('In the pre-scan for repo config settings, but nothing was fetched from the platform')
+                self.integration_feature_failures = True
                 return
 
             vcs_config = self.bc_integration.customer_run_config_response['vcsConfig']
@@ -40,7 +41,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                     logging.debug(f'Found path exclusion config section for repo: {section}')
                     self.skip_paths += section['rule']['excludePaths']
 
-            self.skip_paths = list(set(self.skip_paths))
+            self.skip_paths = set(self.skip_paths)
             logging.debug(f'Skipping the following paths based on platform settings: {self.skip_paths}')
 
             code_reviews = vcs_config['codeReviews']
@@ -54,7 +55,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                             logging.debug(f'Severity threshold of {severity_level} is lower than {self.code_review_threshold}')
                             self.code_review_threshold = Severities[severity_level]
                         self.code_review_skip_policies += section['rule']['excludePolicies']
-                self.code_review_skip_policies = list(set(self.code_review_skip_policies))
+                self.code_review_skip_policies = set(self.code_review_skip_policies)
                 logging.debug(f'Found the following code review policy exclusions: {self.code_review_skip_policies}')
             else:
                 logging.info('Code reviews are disabled in the platform, so will not be applied to this run')

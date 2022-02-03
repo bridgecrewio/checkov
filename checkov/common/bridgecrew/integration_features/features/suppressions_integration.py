@@ -33,6 +33,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def pre_scan(self):
         try:
+            if not self.bc_integration.customer_run_config_response:
+                logging.warning('In the pre-scan for suppressions, but nothing was fetched from the platform')
+                self.integration_feature_failures = True
+                return
+
             suppressions = self.bc_integration.customer_run_config_response.get('suppressions')
 
             for suppression in suppressions:
