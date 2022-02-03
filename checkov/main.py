@@ -10,6 +10,7 @@ from pathlib import Path
 
 import argcomplete
 import configargparse
+from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 from checkov.common.util.data_structures_utils import SEVERITY_RANKING
@@ -21,6 +22,8 @@ from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.repo_config_integration import integration as repo_config_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
@@ -74,6 +77,14 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     argcomplete.autocomplete(parser)
     config = parser.parse_args(argv)
 
+    normalize_config(config)
+
+    logger.debug(f'Checkov version: {version}')
+    logger.debug(f'Python executable: {sys.executable}')
+    logger.debug(f'Python version: {sys.version}')
+    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
+    logger.debug(parser.format_values(sanitize=True))
+
     if config.add_check:
         resp = prompt.Prompt()
         check = prompt.Check(resp.responses)
@@ -83,12 +94,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
-
-    logger.debug(f'Checkov version: {version}')
-    logger.debug(f'Python executable: {sys.executable}')
-    logger.debug(f'Python version: {sys.version}')
-    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
-    logger.debug(parser.format_values(sanitize=True))
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
@@ -158,12 +163,10 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             bc_integration.bc_api_key = config.bc_api_key
             bc_integration.setup_bridgecrew_credentials(repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,
-                                                        skip_suppressions=config.skip_suppressions,
-                                                        skip_policy_download=config.skip_policy_download,
-                                                        source=source, source_version=source_version,
+                                                        skip_download=config.skip_download,
+                                                        source=source,
+                                                        source_version=source_version,
                                                         repo_branch=config.branch)
-            platform_excluded_paths = bc_integration.get_excluded_paths() or []
-            runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except MaxRetryError:
             return
         except Exception:
@@ -188,20 +191,15 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
             return
 
+    BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING", "FALSE")
+    if config.skip_download or BC_SKIP_MAPPING.upper() == "TRUE":
+        bc_integration.skip_download = True
+
+    bc_integration.get_platform_run_config()
+
     integration_feature_registry.run_pre_scan()
 
-    guidelines = {}
-    BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING", "FALSE")
-    if config.no_guide or BC_SKIP_MAPPING.upper() == "TRUE":
-        bc_integration.bc_skip_mapping = True
-    else:
-        guidelines = bc_integration.get_guidelines()
-
-        ckv_to_bc_mapping = bc_integration.get_ckv_to_bc_id_mapping()
-        if ckv_to_bc_mapping:
-            all_checks = BaseCheckRegistry.get_all_registered_checks()
-            for check in all_checks:
-                check.bc_id = ckv_to_bc_mapping.get(check.id)
+    runner_filter.excluded_paths = runner_filter.excluded_paths + repo_config_integration.skip_paths
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
@@ -221,7 +219,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         for root_folder in config.directory:
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file, guidelines=guidelines)
+                                               files=file)
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
@@ -305,10 +303,6 @@ def add_parser_args(parser):
                help='Report output format. Can be repeated')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
-    parser.add('--no-guide', action='store_true',
-               default=False,
-               help='Do not fetch Bridgecrew platform IDs and guidelines for the checkov output report. Note: this '
-                    'prevents Bridgecrew platform check IDs from being used anywhere in the CLI.')
     parser.add('--quiet', action='store_true',
                default=False,
                help='in case of CLI output, display only failed checks')
@@ -328,12 +322,14 @@ def add_parser_args(parser):
                default=None,
                nargs="+")
     parser.add('-c', '--check',
-               help='filter scan to run only on a specific check identifier(allowlist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               help='Checks to run; any other checks will be skipped. Enter one or more items separated by commas. '
+                    'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
+                    'a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append', default=None,
                env_var='CKV_CHECK')
     parser.add('--skip-check',
-               help='filter scan to run on all check but a specific check identifier(denylist), You can '
-                    'specify multiple checks separated by comma delimiter', action='append', default=None,
+               help='Checks to skip; any other checks will not be run. Enter one or more items separated by commas. '
+                    'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
+                    'a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append', default=None,
                env_var='CKV_SKIP_CHECK')
     parser.add('--run-all-external-checks', action='store_true',
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
@@ -347,18 +343,22 @@ def add_parser_args(parser):
     parser.add('-b', '--branch',
                help="Selected branch of the persisted repository. Only has effect when using the --bc-api-key flag",
                default='master')
-    parser.add('--skip-fixes',
-               help='Do not download fixed resource templates from Bridgecrew. Only has effect when using the '
-                    '--bc-api-key flag',
+    parser.add('--skip-download',
+               help='Do not download any data from Bridgecrew. This will omit doc links, severities, etc., as well as '
+                    'custom policies and suppressions if using an API token. Note: it will prevent BC platform IDs from '
+                    'being available in Checkov.',
                action='store_true')
+    parser.add('--no-guide', action='store_true',
+               default=False,
+               help='Deprecated - use --skip-download')
     parser.add('--skip-suppressions',
-               help='Do not download preconfigured suppressions from the Bridgecrew platform. Code comment '
-                    'suppressions will still be honored. '
-                    'Only has effect when using the --bc-api-key flag',
+               help='Deprecated - use --skip-download',
                action='store_true')
     parser.add('--skip-policy-download',
-               help='Do not download custom policies configured in the Bridgecrew platform. '
-                    'Only has effect when using the --bc-api-key flag',
+               help='Deprecated - use --skip-download',
+               action='store_true')
+    parser.add('--skip-fixes',
+               help='Do not download fixed resource templates from Bridgecrew. Only has effect when using the API key.',
                action='store_true')
     parser.add('--download-external-modules',
                help="download external terraform modules from public git repositories and terraform registry",
@@ -404,11 +404,16 @@ def add_parser_args(parser):
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
-    exit_code_group.add('--soft-fail-on', help='Exits with a 0 exit code for specified checks. You can specify '
-                                               'multiple checks separated by comma delimiter', action='append',
+    exit_code_group.add('--soft-fail-on',
+                        help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
+                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL)',
+                        action='append',
                         default=None)
-    exit_code_group.add('--hard-fail-on', help='Exits with a non-zero exit code for specified checks. You can specify '
-                                               'multiple checks separated by comma delimiter', action='append',
+    exit_code_group.add('--hard-fail-on',
+                        help='Exits with a non-zero exit code for specified checks. Enter one or more items '
+                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append',
                         default=None)
 
 
@@ -419,6 +424,18 @@ def get_external_checks_dir(config):
         external_checks_dir = [git_getter.get()]
         atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
     return external_checks_dir
+
+
+def normalize_config(config: Namespace):
+    if config.no_guide:
+        logger.warning('--no-guide is deprecated and will be removed in a future release. Use --skip-download instead')
+        config.skip_download = True
+    if config.skip_suppressions:
+        logger.warning('--skip-suppressions is deprecated and will be removed in a future release. Use --skip-download instead')
+        config.skip_download = True
+    if config.skip_policy_download:
+        logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
+        config.skip_download = True
 
 
 if __name__ == '__main__':
