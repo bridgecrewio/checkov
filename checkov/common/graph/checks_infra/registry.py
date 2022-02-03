@@ -22,7 +22,7 @@ class BaseRegistry:
         self, graph_connector: DiGraph, runner_filter: RunnerFilter
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         check_results = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c.id, c.bc_id)]
+        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c)]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
                 [executor.submit(self.run_check_parallel, check, check_results, graph_connector)

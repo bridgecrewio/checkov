@@ -5,7 +5,7 @@ import re
 from functools import reduce
 from typing import List, Tuple, Optional, Union, Generator
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.typing import _SkippedCheck
@@ -114,8 +114,7 @@ class ContextParser(object):
     @staticmethod
     def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
         skipped_checks = []
-        bc_id_mapping = bc_integration.get_id_mapping()
-        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+        bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         for line in entity_code_lines:
             skip_search = re.search(COMMENT_REGEX, str(line))
             if skip_search:
@@ -127,8 +126,8 @@ class ContextParser(object):
                 if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                     skipped_check["bc_id"] = skipped_check["id"]
                     skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                elif ckv_to_bc_id_mapping:
-                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+                elif metadata_integration.check_metadata:
+                    skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                 skipped_checks.append(skipped_check)
         if resource_config:
@@ -148,8 +147,8 @@ class ContextParser(object):
                         if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                        elif ckv_to_bc_id_mapping:
-                            skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+                        elif metadata_integration.check_metadata:
+                            skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                         skipped_checks.append(skipped_check)
 

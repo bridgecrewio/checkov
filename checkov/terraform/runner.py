@@ -163,7 +163,10 @@ class Runner(BaseRunner):
                         evaluations=entity_evaluations,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
-                        resource_address=entity_context.get('address')
+                        resource_address=entity_context.get('address'),
+                        severity=check.bc_severity,
+                        bc_category=check.bc_category,
+                        benchmarks=check.benchmarks
                     )
                     if self.breadcrumbs:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
@@ -297,14 +300,25 @@ class Runner(BaseRunner):
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             for check, check_result in results.items():
-                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                code_block=entity_code_lines, file_path=scanned_file,
-                                file_line_range=entity_lines_range,
-                                resource=entity_id, evaluations=entity_evaluations,
-                                check_class=check.__class__.__module__, file_abs_path=absolut_scanned_file_path,
-                                entity_tags=tags,
-                                caller_file_path=caller_file_path,
-                                caller_file_line_range=caller_file_line_range)
+                record = Record(
+                    check_id=check.id,
+                    bc_check_id=check.bc_id,
+                    check_name=check.name,
+                    check_result=check_result,
+                    code_block=entity_code_lines,
+                    file_path=scanned_file,
+                    file_line_range=entity_lines_range,
+                    resource=entity_id,
+                    evaluations=entity_evaluations,
+                    check_class=check.__class__.__module__,
+                    file_abs_path=absolut_scanned_file_path,
+                    entity_tags=tags,
+                    caller_file_path=caller_file_path,
+                    caller_file_line_range=caller_file_line_range,
+                    severity=check.bc_severity,
+                    bc_category=check.bc_category,
+                    benchmarks=check.benchmarks
+                )
                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
                 if breadcrumb:
                     record = GraphRecord(record, breadcrumb)

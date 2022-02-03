@@ -80,7 +80,7 @@ class Runner(BaseRunner):
                     vulnerability_details=vulnerability,
                     runner_filter=runner_filter
                 )
-                if not runner_filter.should_run_check(record.check_id, record.bc_check_id):
+                if not runner_filter.should_run_check(record):
                     if runner_filter.checks:
                         continue
                     else:

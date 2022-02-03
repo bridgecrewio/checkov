@@ -22,6 +22,11 @@ class BaseGraphCheck:
         self.type: Optional[SolverType] = None
         self.solver: Optional[BaseSolver] = None
         self.guideline: Optional[str] = None
+        self.benchmarks: Dict[str: list] = {}
+        self.bc_severity: Optional[str] = None
+        self.pc_severity: Optional[str] = None
+        self.bc_category: Optional[str] = None
+        self.pc_title: Optional[str] = None
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
