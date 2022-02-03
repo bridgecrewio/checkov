@@ -31,7 +31,7 @@ class ECRPolicy(BaseResourceCheck):
                     for statement_index, statement in enumerate(policy_text['Statement']):
                         if 'Principal' in statement.keys():
                             for principal_index, principal in enumerate(statement['Principal']):
-                                if principal == "*" and self.check_for_constrained_condition(statement) == False:
+                                if principal == "*" and not self.check_for_constrained_condition(statement):
                                     self.evaluated_keys = [f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"]
                                     return CheckResult.FAILED
         return CheckResult.PASSED
@@ -43,10 +43,10 @@ class ECRPolicy(BaseResourceCheck):
         :return: true if there is a constraint
         """
         if 'Condition' in statement.keys():
-          condition = statement['Condition']
-          if 'ForAllValues:StringEquals' in condition.keys():
-            if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals'].keys():
-              return True
+            condition = statement['Condition']
+            if 'ForAllValues:StringEquals' in condition.keys():
+                if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals'].keys():
+                    return True
         return False
 
 check = ECRPolicy()

@@ -11,10 +11,6 @@ Resources:
             Sid: AllowPushPull
             Effect: Allow
             Principal: "*"
-            #Principal: 
-            #   AWS: 
-            #     - "arn:aws:iam::123456789012:user/Bob"
-            #     - "arn:aws:iam::123456789012:user/Alice"
             Action: 
               - "ecr:GetDownloadUrlForLayer"
               - "ecr:BatchGetImage"
