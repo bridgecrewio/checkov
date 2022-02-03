@@ -18,6 +18,7 @@ from checkov import sca_package
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.runner_filter import RunnerFilter
 from checkov.version import version
 
 init(autoreset=True)
@@ -178,12 +179,8 @@ class Report:
         if soft_fail_on:
             soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
             if all(
-                any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
-                    for pattern in soft_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
+                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, soft_fail_on)
+                for failed_check in self.failed_checks
             ):
                 # List of "failed checks" is a subset of the "soft fail on" list.
                 return 0
@@ -192,11 +189,8 @@ class Report:
         if hard_fail_on:
             hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
             if any(
-                (check_id in hard_fail_on or bc_check_id in hard_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
+                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, hard_fail_on)
+                for failed_check in self.failed_checks
             ):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".
                 return 1
