@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.azure.PostgreSQLFlexiServerGeoBackupEnabl
 from checkov.common.models.enums import CheckResult
 
 
-class TestPostgressSQLGeoBackupEnabled(unittest.TestCase):
+class TestPostgreSQLFlexiServerGeoBackupEnabled(unittest.TestCase):
 
     def test_failure_1(self):
         hcl_res = hcl2.loads("""
