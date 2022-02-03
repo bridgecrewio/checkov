@@ -3,6 +3,7 @@ import unittest
 from unittest import mock
 
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.output.record import Record
 
@@ -59,9 +60,11 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_suppression_valid(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
-        instance.bc_id_mapping = {
+
+        metadata_integration.bc_to_ckv_id_mapping = {
             'BC_AWS_1': 'CKV_AWS_20'
         }
+        metadata_integration.bc_integration = instance
 
         suppressions_integration = SuppressionsIntegration(instance)
 
