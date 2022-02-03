@@ -39,7 +39,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
     enrich_and_persist_checks_metadata
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.util.http_utils import normalize_prisma_url
+from checkov.common.util.http_utils import normalize_url
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -77,7 +77,7 @@ class BcPlatformIntegration(object):
         self.skip_policy_download = False
         self.timestamp = None
         self.scan_reports = []
-        self.prisma_url = None
+        self.prisma_api_url = None
         # The following URLs will be (re)set by setup_bridgecrew_credentials() 
         # when '--prisma-api-url' is specified on the command-line.
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
@@ -107,12 +107,12 @@ class BcPlatformIntegration(object):
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
         # A Prisma Cloud Access Key was specified as the Bridgecrew token.
-        if not self.prisma_url:
+        if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
         if '::' not in self.bc_api_key:
             raise ValueError("A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         username, password = self.bc_api_key.split('::')
-        request = self.http.request("POST", f"{self.prisma_url}/login",
+        request = self.http.request("POST", f"{self.prisma_api_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
                                     headers={"Content-Type": "application/json"})
         if request.status == 401:
@@ -157,15 +157,15 @@ class BcPlatformIntegration(object):
         self.bc_source_version = source_version
 
         if prisma_api_url:
-            self.prisma_url = normalize_prisma_url(prisma_api_url)
-            self.api_url = f"{self.prisma_url}/bridgecrew"
+            self.prisma_api_url = normalize_url(prisma_api_url)
+            self.api_url = f"{self.prisma_api_url}/bridgecrew"
             self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
             self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
             self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
             self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
             self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
             self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
-            logging.info(f'Using Prisma API URL: {self.prisma_url}')
+            logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source.upload_results:
             try:

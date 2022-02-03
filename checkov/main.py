@@ -168,7 +168,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         except MaxRetryError:
             return
         except Exception:
-            if bc_integration.prisma_url:
+            if bc_integration.prisma_api_url:
                 message = 'An error occurred setting up the Bridgecrew platform integration. ' \
                           'Please check your Prisma Cloud API token and URL and try again.'
             else:
