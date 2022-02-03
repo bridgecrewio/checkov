@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from unittest import TestCase
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
-from checkov.common.graph.graph_builder.graph_components.encryption_attribute_names import EncryptionCustomAttributes
 from checkov.cloudformation.cfn_utils import create_definitions
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
@@ -238,8 +237,8 @@ class TestLocalGraph(TestCase):
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
-                is_encrypted = attribute_dict[EncryptionCustomAttributes.ENCRYPTION]
-                details = attribute_dict[EncryptionCustomAttributes.ENCRYPTION_DETAILS]
+                is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
+                details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
                 self.assertEqual(is_encrypted, EncryptionValues.ENCRYPTED.value if resource_name.startswith("Encrypted")
                                  else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
                 if is_encrypted == EncryptionValues.ENCRYPTED.value:
@@ -251,5 +250,5 @@ class TestLocalGraph(TestCase):
                 else:
                     self.assertEqual(details, "")
             else:
-                self.assertIsNone(attribute_dict.get(EncryptionCustomAttributes.ENCRYPTION))
-                self.assertIsNone(attribute_dict.get(EncryptionCustomAttributes.ENCRYPTION_DETAILS))
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION))
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION_DETAILS))
