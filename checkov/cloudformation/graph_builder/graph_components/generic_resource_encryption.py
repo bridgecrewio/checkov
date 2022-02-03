@@ -32,9 +32,6 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
         "AWS::Neptune::DBCluster", {"StorageEncrypted": [True], "KmsKeyId": []}
     ),
     "AWS::EFS::FileSystem": GenericResourceEncryption("AWS::EFS::FileSystem", {"Encrypted": [True], "KmsKeyId": []}),
-    # "AWS::SageMaker::FeatureGroup": GenericResourceEncryption(
-    #     "AWS::SageMaker::FeatureGroup", {"security_config.kms_key_id": []} # TODO
-    # ),
     "AWS::EC2::Volume": GenericResourceEncryption("AWS::EC2::Volume", {"Encrypted": [True], "KmsKeyId": []}),
     "AWS::ElastiCache::ReplicationGroup": GenericResourceEncryption(
         "AWS::ElastiCache::ReplicationGroup", {"AtRestEncryptionEnabled": [True], "KmsKeyId": ["arn"],}
@@ -57,13 +54,6 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
             "ExportConfig.S3Destination.EncryptionKey": [],
         },
     ),
-    # "aws_athena_database": GenericResourceEncryption(  # TODO
-    #     "aws_athena_database",
-    #     {
-    #         "encryption_configuration.encryption_option": ["SSE_S3", "SSE_KMS", "CSE_KMS"],
-    #         "encryption_configuration.kms_key": [],
-    #     },
-    # ),
     "AWS::Athena::WorkGroup": GenericResourceEncryption(
         "AWS::Athena::WorkGroup",
         {
@@ -96,16 +86,6 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
             "server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.KMSMasterKeyID": [],
         },
     ),
-    # "aws_s3_bucket_inventory": GenericResourceEncryption(  # TODO
-    #     "aws_s3_bucket_inventory", {"destination.bucket.encryption": []}
-    # ),
-    # "aws_s3_bucket_object": GenericResourceEncryption(  # TODO
-    #     "aws_s3_bucket_object",
-    #     {
-    #         "server_side_encryption": [EncryptionTypes.AWS_KMS_VALUE.value, EncryptionTypes.AES256.value],
-    #         "kms_key_id": [],
-    #     },
-    # ),
     "AWS::Logs::LogGroup": GenericResourceEncryption(
         "AWS::Logs::LogGroup", {"KmsKeyId": []}, enabled_by_default=True
     ),
