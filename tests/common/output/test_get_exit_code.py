@@ -1,7 +1,7 @@
 import unittest
 
 
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, Severities
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 
@@ -16,6 +16,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
+                         severity=Severities.LOW,
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -27,6 +28,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
+                         severity=Severities.HIGH,
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -39,6 +41,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
+                         severity=Severities.LOW,
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -50,6 +53,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
+                         severity=Severities.HIGH,
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -67,10 +71,15 @@ class TestGetExitCode(unittest.TestCase):
         # soft_fail_on list
         positive_test_soft_fail_on_code = r.get_exit_code(None, soft_fail_on=['CKV_AWS_157', 'CKV_AWS_16'],
                                                           hard_fail_on=None)
+        positive_test_soft_fail_on_code_one_sev = r.get_exit_code(None, soft_fail_on=['LOW', 'CKV_AWS_16'],
+                                                          hard_fail_on=None)
+        positive_test_soft_fail_on_code_two_sev = r.get_exit_code(None, soft_fail_on=['LOW', 'HIGH'],
+                                                                  hard_fail_on=None)
         positive_test_soft_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=['BC_AWS_157', 'BC_AWS_16'],
                                                                 hard_fail_on=None)
 
         negative_test_soft_fail_on_code = r.get_exit_code(None, soft_fail_on=['CKV_AWS_157'], hard_fail_on=None)
+        negative_test_soft_fail_on_code_one_sev = r.get_exit_code(None, soft_fail_on=['LOW'], hard_fail_on=None)
         negative_test_soft_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=['BC_AWS_157'], hard_fail_on=None)
 
         positive_test_soft_fail_on_wildcard_code = r.get_exit_code(None, soft_fail_on=['CKV_AWS*'])
@@ -81,6 +90,7 @@ class TestGetExitCode(unittest.TestCase):
 
         # When hard_fail_on=['check1', 'check2'], exit code should be 1 if any checks in the hard_fail_on list fail
         positive_test_hard_fail_on_code = r.get_exit_code(None, soft_fail_on=None, hard_fail_on=['CKV_AWS_157'])
+        positive_test_hard_fail_on_code_one_sev = r.get_exit_code(None, soft_fail_on=None, hard_fail_on=['LOW'])
         positive_test_hard_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=None, hard_fail_on=['BC_AWS_157'])
 
         negative_test_hard_fail_on_code = r.get_exit_code(None, soft_fail_on=None,
@@ -90,8 +100,11 @@ class TestGetExitCode(unittest.TestCase):
 
         self.assertEqual(test_soft_fail, 0)
         self.assertEqual(positive_test_soft_fail_on_code, 0)
+        self.assertEqual(positive_test_soft_fail_on_code_one_sev, 0)
+        self.assertEqual(positive_test_soft_fail_on_code_two_sev, 0)
         self.assertEqual(positive_test_soft_fail_on_code_bc_id, 0)
         self.assertEqual(negative_test_soft_fail_on_code, 1)
+        self.assertEqual(negative_test_soft_fail_on_code_one_sev, 1)
         self.assertEqual(negative_test_soft_fail_on_code_bc_id, 1)
 
         self.assertEqual(positive_test_soft_fail_on_wildcard_code, 0)
@@ -100,6 +113,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(negative_test_soft_fail_on_wildcard_code_bc_id, 1)
 
         self.assertEqual(positive_test_hard_fail_on_code, 1)
+        self.assertEqual(positive_test_hard_fail_on_code_one_sev, 1)
         self.assertEqual(positive_test_hard_fail_on_code_bc_id, 1)
         self.assertEqual(negative_test_hard_fail_on_code, 0)
         self.assertEqual(negative_test_hard_fail_on_code_bc_id, 0)
