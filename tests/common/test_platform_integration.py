@@ -3,6 +3,7 @@ import unittest
 from unittest import mock
 
 from checkov.common.bridgecrew.bc_source import get_source_type
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 
@@ -27,15 +28,21 @@ class TestBCApiUrl(unittest.TestCase):
         # Default is False so mapping is obtained
         instance = BcPlatformIntegration()
         instance.setup_http_manager()
-        instance.get_id_mapping()
-        self.assertIsNotNone(instance.ckv_to_bc_id_mapping)
+        instance.get_public_run_config()
+        metadata_integration.bc_integration = instance
+        metadata_integration.pre_scan()
+        self.assertIsNotNone(metadata_integration.check_metadata)
+        self.assertGreater(len(metadata_integration.check_metadata), 0)
 
     def test_skip_mapping_true(self):
         instance = BcPlatformIntegration()
-        instance.bc_skip_mapping = True
+        instance.skip_download = True
         instance.setup_http_manager()
-        instance.get_id_mapping()
-        self.assertDictEqual({}, instance.ckv_to_bc_id_mapping)
+        instance.get_public_run_config()
+        metadata_integration.bc_integration = instance
+        metadata_integration.pre_scan()
+        self.assertIsNotNone(metadata_integration.check_metadata)
+        self.assertDictEqual({}, metadata_integration.check_metadata)
 
     def test_should_upload(self):
         self.assertFalse(get_source_type('vscode').upload_results)
