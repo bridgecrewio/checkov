@@ -3,7 +3,10 @@ from collections import defaultdict
 from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
 
 from checkov.common.graph.graph_builder import Edge
+from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
+from checkov.common.graph.graph_builder.graph_resources_encription_manager import GraphResourcesEncryptionManager
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class LocalGraph:
@@ -15,6 +18,7 @@ class LocalGraph:
         self.vertices_by_block_type: Dict[str, List[int]] = defaultdict(list)
         self.vertex_hash_cache: Dict[int, str] = defaultdict(str)
         self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self._graph_resource_encryption_manager = GraphResourcesEncryptionManager()
 
     @abstractmethod
     def build_graph(self, render_variables: bool) -> None:
@@ -85,3 +89,13 @@ class LocalGraph:
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest, transform_step
         )
+
+    def calculate_encryption_attribute(self, encription_by_resource_type: Dict[str, Any]) -> None:
+        self._graph_resource_encryption_manager.set_encription_by_resource_type(encription_by_resource_type)
+        for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE, []):
+            vertex = self.vertices[vertex_index]
+            encryption_result = self._graph_resource_encryption_manager.get_encryption_result(vertex)
+            if not encryption_result:
+                continue
+            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.enctypted
+            vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason

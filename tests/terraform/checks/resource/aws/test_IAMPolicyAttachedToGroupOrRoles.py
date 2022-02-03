@@ -20,6 +20,7 @@ class TestIAMPolicyAttachedToGroupOrRoles(unittest.TestCase):
         passing_resources = {
             "aws_iam_policy_attachment.pass",
             "aws_iam_policy_attachment.null",
+            "aws_iam_policy_attachment.empty",
         }
         failing_resources = {
             "aws_iam_policy_attachment.fail",
@@ -30,7 +31,7 @@ class TestIAMPolicyAttachedToGroupOrRoles(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["passed"], 3)
         self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

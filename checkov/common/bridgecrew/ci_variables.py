@@ -2,7 +2,7 @@ import os
 
 BC_FROM_BRANCH = os.getenv('BC_FROM_BRANCH', "")
 BC_TO_BRANCH = os.getenv('BC_TO_BRANCH', "")
-if not BC_TO_BRANCH: # support flow of direct commit from the branch into the same branch
+if not BC_TO_BRANCH:  # support flow of direct commit from the branch into the same branch
     BC_TO_BRANCH = BC_FROM_BRANCH
 BC_PR_ID = os.getenv('BC_PR_ID', "")
 BC_PR_URL = os.getenv('BC_PR_URL', "")
