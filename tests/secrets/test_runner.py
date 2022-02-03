@@ -3,7 +3,7 @@ import unittest
 import os
 from pathlib import Path
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
@@ -120,9 +120,13 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         # the other tests will implicitly test this value being None
-        bc_integration.ckv_to_bc_id_mapping = {
-            'CKV_SECRET_2': 'BC_GIT_2'
+
+        metadata_integration.check_metadata = {
+            'CKV_SECRET_2': {
+                'id': 'BC_GIT_2'
+            }
         }
+
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
         for fc in report.failed_checks:
