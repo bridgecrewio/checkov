@@ -5,7 +5,8 @@ from unittest import TestCase
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.common.graph.graph_builder.utils import calculate_hash
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.encryption_attribute_names import EncryptionCustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -108,13 +109,13 @@ class TestLocalGraph(TestCase):
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
-        local_graph.calculate_encryption_attribute()
+        local_graph.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
             if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
-                is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
-                details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
+                is_encrypted = attribute_dict[EncryptionCustomAttributes.ENCRYPTION]
+                details = attribute_dict[EncryptionCustomAttributes.ENCRYPTION_DETAILS]
                 self.assertEqual(is_encrypted, EncryptionValues.ENCRYPTED.value if resource_name.startswith("encrypted")
                                  else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
                 if is_encrypted == EncryptionValues.ENCRYPTED.value:
@@ -125,8 +126,8 @@ class TestLocalGraph(TestCase):
                 else:
                     self.assertEqual(details, "")
             else:
-                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION))
-                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION_DETAILS))
+                self.assertIsNone(attribute_dict.get(EncryptionCustomAttributes.ENCRYPTION))
+                self.assertIsNone(attribute_dict.get(EncryptionCustomAttributes.ENCRYPTION_DETAILS))
 
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,

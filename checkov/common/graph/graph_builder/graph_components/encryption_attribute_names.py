@@ -4,9 +4,9 @@ from checkov.common.graph.graph_builder import CustomAttributes as CommonCustomA
 
 
 @dataclass
-class CustomAttributes(CommonCustomAttributes):
+class EncryptionCustomAttributes(CommonCustomAttributes):
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
 
 
-reserved_attribute_names = props(CustomAttributes)
+reserved_attribute_names = props(EncryptionCustomAttributes)
