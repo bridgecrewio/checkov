@@ -41,10 +41,10 @@ class ECRPolicy(BaseResourceCheck):
         :param statement: statement from aws_repository_configuration
         :return: True if there is a constraint
         """
-        if 'Condition' in statement and isinstance(statement['Condition'] is dict):
+        if 'Condition' in statement and isinstance(statement['Condition'], dict):
             condition = statement['Condition']
-            if 'ForAllValues:StringEquals' in condition and isinstance(condition['ForAllValues:StringEquals'] is dict):
-                if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals'].keys():
+            if 'ForAllValues:StringEquals' in condition and isinstance(condition['ForAllValues:StringEquals'], dict):
+                if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals']:
                     return True
         return False
 
