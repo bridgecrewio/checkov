@@ -7,7 +7,7 @@ class AMIEncryptionWithCMK(BaseResourceCheck):
         name = "Ensure AMIs are encrypted using KMS CMKs"
         id = "CKV_AWS_204"
         supported_resources = ['aws_ami']
-        categories = [CheckCategories.LOGGING]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
