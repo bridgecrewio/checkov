@@ -14,7 +14,7 @@ resource "azurerm_virtual_machine" "no_secret" {
   os_profile {
     admin_username = "example"
     computer_name  = "hostname"
-    custom_data = <<EOF
+    custom_data    = <<EOF
 example
 EOF
   }
@@ -48,7 +48,7 @@ resource "azurerm_virtual_machine" "empty_os_profile" {
     name          = ""
   }
 
-  os_profile = []  # just for a test
+  os_profile = [] # just for a test
 }
 
 resource "azurerm_virtual_machine" "no_os_profile" {
@@ -79,7 +79,7 @@ resource "azurerm_virtual_machine" "secret" {
   os_profile {
     admin_username = "example"
     computer_name  = "hostname"
-    custom_data = <<EOF
+    custom_data    = <<EOF
 0000-0000-0000-0000-000000000000
 EOF
   }
