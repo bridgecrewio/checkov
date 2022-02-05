@@ -3,7 +3,7 @@ import logging
 import os
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType

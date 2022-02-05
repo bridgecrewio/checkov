@@ -32,5 +32,12 @@ definition:
         - aws_lb
         - aws_alb
         operator: equals
-       
-        
+      - cond_type: attribute
+        resource_types:
+        - aws_lb
+        - aws_alb
+        attribute: load_balancer_type
+        operator: within
+        value:
+          - network
+          - gateway
