@@ -1,82 +1,42 @@
 import unittest
+import os
 
-from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.gcp.GKEBasicAuth import check
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 
 
-class TestGKEBasicAuth(unittest.TestCase):
+class TestGKEBinaryAuthorization(unittest.TestCase):
 
-    def test_failure(self):
-        resource_conf = {
-            'name': ['google_cluster_bad'],
-            'monitoring_service': ['none'],
-            'enable_legacy_abac': [True],
-            'master_authorized_networks_config': [
-                {
-                    'cidr_blocks': [
-                        {
-                            'cidr_block': ['0.0.0.0/0'],
-                            'display_name': ['The world'],
-                        }
-                    ]
-                }
-            ],
-            'master_auth': [
-                {
-                    'username': ['test'],
-                    'password': ['password'],
-                }
-            ],
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files_dir = current_dir + "/example_GKEBasicAuth"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
+
+        passing_resources = {
+            'google_container_cluster.pass',
+            'google_container_cluster.pass2',
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure2(self):
-        resource_conf = {
-            'name': ['google_cluster'],
-            'monitoring_service': ['monitoring.googleapis.com'],
-            'master_authorized_networks_config': [{}],
+        failing_resources = {
+            'google_container_cluster.fail',
+            'google_container_cluster.fail2',
+            'google_container_cluster.fail3',
+            'google_container_cluster.fail4',
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
-        resource_conf = {
-            'name': ['google_cluster'],
-            'monitoring_service': ['monitoring.googleapis.com'],
-            'master_authorized_networks_config': [{}],
-            'master_auth': [
-                {
-                    'client_certificate_config': [
-                        {
-                            'issue_client_certificate': [False],
-                        }
-                    ],
-                }
-            ],
-        }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success_no_basic_out_if_username_and_password_are_present_but_empty(self):
-        resource_conf = {
-            'name': ['google_cluster'],
-            'monitoring_service': ['monitoring.googleapis.com'],
-            'master_authorized_networks_config': [{}],
-            'master_auth': [
-                {
-                    'username': [''],
-                    'password': [''],
-                    'client_certificate_config': [
-                        {
-                            'issue_client_certificate': [False],
-                        }
-                    ],
-                }
-            ]
-        }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['failed'], 4)
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':
