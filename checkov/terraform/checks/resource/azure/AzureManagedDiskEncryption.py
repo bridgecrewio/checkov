@@ -16,7 +16,7 @@ class AzureManagedDiskEncryption(BaseResourceCheck):
             return CheckResult.PASSED
         if 'encryption_settings' in conf:
             if isinstance(conf['encryption_settings'][0], dict):
-                self.evaluated_keys = ['encryption_settings]/[0]/enabled']
+                self.evaluated_keys = ['encryption_settings/[0]/enabled']
                 if conf['encryption_settings'][0]['enabled'] == [True]:
                     return CheckResult.PASSED
                 else:
