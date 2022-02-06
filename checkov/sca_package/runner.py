@@ -58,7 +58,7 @@ class Runner(BaseRunner):
         logging.info(f"SCA package scanning will scan {len(input_output_paths)} files")
 
         scanner = Scanner()
-        self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}",
+        self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan(input_output_paths)
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
