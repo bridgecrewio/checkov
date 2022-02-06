@@ -83,3 +83,83 @@ resource "aws_ecr_repository_policy" "empty" {
   repository = aws_ecr_repository.empty.name
   policy     = ""
 }
+
+resource "aws_ecr_repository" "conditional_ok" {
+  name = "conditional_ok_repo"
+}
+
+resource "aws_ecr_repository_policy" "pass_conditional" {
+  repository = aws_ecr_repository.conditional_ok.name
+  policy     = <<POLICY
+{   "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Sid": "new policy",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability",                
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",                
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",                
+                "ecr:DescribeRepositories",                
+                "ecr:GetRepositoryPolicy",                
+                "ecr:ListImages",                
+                "ecr:DeleteRepository",
+                "ecr:BatchDeleteImage",                
+                "ecr:SetRepositoryPolicy",
+                "ecr:DeleteRepositoryPolicy"
+            ],        
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "aws:PrincipalOrgID": "o-12345678"
+                }
+            }
+        }   
+    ]
+    }
+POLICY
+}
+
+resource "aws_ecr_repository" "conditional_bad" {
+  name = "conditional_bad_repo"
+}
+
+resource "aws_ecr_repository_policy" "fail_conditional" {
+  repository = aws_ecr_repository.conditional_bad.name
+  policy     = <<POLICY
+{   "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Sid": "new policy",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability",                
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",                
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",                
+                "ecr:DescribeRepositories",                
+                "ecr:GetRepositoryPolicy",                
+                "ecr:ListImages",                
+                "ecr:DeleteRepository",
+                "ecr:BatchDeleteImage",                
+                "ecr:SetRepositoryPolicy",
+                "ecr:DeleteRepositoryPolicy"
+            ],
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "aws:username": "pull-user-1"
+                }
+            }
+        }   
+    ]
+    }
+POLICY
+}
