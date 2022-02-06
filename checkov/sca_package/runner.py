@@ -25,7 +25,7 @@ class Runner(BaseRunner):
         root_folder: Union[str, Path],
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> "Optional[Tuple[List[Dict[str, Any]], List[Tuple[Path, Path]]]]":
+    ) -> "Optional[List[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
             return None
@@ -62,7 +62,7 @@ class Runner(BaseRunner):
         scan_results = list(scanner.scan(input_output_paths))
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
-        return scan_results, input_output_paths
+        return scan_results
 
     def run(
         self,
