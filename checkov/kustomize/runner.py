@@ -16,7 +16,7 @@ from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
-import os
+
 
 class K8sKustomizeRunner(K8sRunner):
 
