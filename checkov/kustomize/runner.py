@@ -1,29 +1,22 @@
 import io
 import logging
-import operator
 import os
+import pathlib
 import shutil
 import subprocess  # nosec
 import tempfile
-from functools import reduce
 
 import yaml
-import pathlib
-import glob
-import json
 
-from checkov.common.output.report import Report, report_to_cyclonedx, CheckType
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.runner import Runner as K8sRunner
-from checkov.runner_filter import RunnerFilter
-from checkov.common.util.data_structures_utils import search_deep_keys
-from checkov.common.util.type_forcers import force_list
-from checkov.common.output.record import Record
-from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_manager import GraphManager
+from checkov.common.output.record import Record
+from checkov.common.output.report import Report, CheckType
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.kubernetes.kubernetes_utils import get_resource_id
+from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.runner_filter import RunnerFilter
+
 
 class K8sKustomizeRunner(K8sRunner):
 
@@ -138,30 +131,40 @@ class Runner(BaseRunner):
         ## We need parse some of the Kustomization.yaml files to work out which
         ## This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
         ## TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
-        with open(f"{parseKustomizationData}/kustomization.yaml", 'r') as kustomizationFile:
+        yaml_path = os.path.join(parseKustomizationData,"kustomization.yaml")
+        yml_path = os.path.join(parseKustomizationData,"kustomization.yml")
+        if os.path.isfile(yml_path):
+            kustomization_path = yml_path
+        elif os.path.isfile(yaml_path):
+            kustomization_path = yaml_path
+        else:
+            return {}
+
+
+        with open(kustomization_path, 'r') as kustomizationFile:
             metadata = {}
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
             except yaml.YAMLError as exc:
-                logging.info(f"Failed to load Kustomize metadata from {parseKustomizationData}/kustomization.yaml. details: {exc}")
+                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}. details: {exc}")
     
             if 'resources' in fileContent:
-                logging.debug(f"Kustomization contains resources: section. Likley a base. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] =  "base"
 
             elif 'patchesStrategicMerge' in fileContent:
-                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] =  "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
-                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] =  "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
             metadata['fileContent'] = fileContent
-            metadata['filePath'] = f"{parseKustomizationData}/kustomization.yaml"
+            metadata['filePath'] = f"{kustomization_path}"
             if metadata['type'] == "base":
                 Runner.potentialBases.append(metadata['filePath'])
 
