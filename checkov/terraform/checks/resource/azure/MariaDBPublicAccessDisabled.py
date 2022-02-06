@@ -12,7 +12,7 @@ class MariaDBPublicAccessDisabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        #Whether or not public network access is allowed for this server. Defaults to true. Which is not optimal
+        # Whether or not public network access is allowed for this server. Defaults to true. Which is not optimal
         if 'public_network_access_enabled' not in conf or conf['public_network_access_enabled'][0]:
             return CheckResult.FAILED
         return CheckResult.PASSED

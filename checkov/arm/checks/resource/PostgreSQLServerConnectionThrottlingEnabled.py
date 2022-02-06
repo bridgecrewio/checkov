@@ -8,7 +8,7 @@ class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
     def __init__(self):
         name = "Ensure server parameter 'connection_throttling' is set to 'ON' for PostgreSQL Database Server"
         id = "CKV_AZURE_32"
-        #supported_resources = ['Microsoft.DBforPostgreSQL/servers']
+        # supported_resources = ['Microsoft.DBforPostgreSQL/servers']
         supported_resources = ['Microsoft.DBforPostgreSQL/servers/configurations', 'configurations']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
