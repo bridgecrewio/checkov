@@ -147,8 +147,9 @@ class TerraformLocalGraph(LocalGraph):
                             dest_module_version=module_version
                         )
                         if dest_module_path == dir_name:
-                            module_dependency_num = self.module.module_address_map[(module_vertex.path, module_vertex.name)]
-                            block_dirs_to_modules[(dir_name, path_to_module_str)].setdefault(module_dependency_num, set()).add(module_index)
+                            module_dependency_num = self.module.module_address_map.get((module_vertex.path, module_vertex.name))
+                            if module_dependency_num:
+                                block_dirs_to_modules[(dir_name, path_to_module_str)].setdefault(module_dependency_num, set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
