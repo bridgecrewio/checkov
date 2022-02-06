@@ -1,11 +1,12 @@
-import sys
-
 import logging
 import os
 
 
-def init():
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
+def init(level=None):
+    if level:
+        LOG_LEVEL = level.upper()
+    else:
+        LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
     logging.basicConfig(level=LOG_LEVEL)
     log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
     root_logger = logging.getLogger()

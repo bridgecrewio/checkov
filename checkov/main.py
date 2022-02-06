@@ -54,7 +54,10 @@ from checkov.version import version
 
 outer_registry = None
 
-logging_init()
+if "--support" in sys.argv[1:]:
+    logging_init("DEBUG")
+else:
+    logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
@@ -401,6 +404,8 @@ def add_parser_args(parser):
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
+    parser.add('--support',
+               help='generates debug logs', action='store_true', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
