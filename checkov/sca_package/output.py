@@ -368,14 +368,14 @@ async def _report_results_to_bridgecrew_async(
             exit_codes.append(await package_scanning_int.report_results_async(*curr_arg))
     else:
         async with Pool() as pool:
-            scan_results = await pool.starmap(package_scanning_int.report_results_async, args)
+            exit_codes = await pool.starmap(package_scanning_int.report_results_async, args)
 
-    return scan_results
+    return exit_codes
 
 
 def report_results_to_bridgecrew(
     scan_results: List[Dict[str, Any]],
     bc_integration: BcPlatformIntegration,
     bc_api_key: str
-):
+) -> "Sequence[int]":
     return asyncio.run(_report_results_to_bridgecrew_async(scan_results, bc_integration, bc_api_key))
