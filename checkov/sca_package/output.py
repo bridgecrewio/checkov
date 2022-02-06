@@ -350,14 +350,13 @@ def create_package_overview_table_part(
 
 async def _report_results_to_bridgecrew_async(
         scan_results: List[Dict[str, Any]],
-        input_paths: List[Path],
         bc_integration: BcPlatformIntegration,
         bc_api_key: str
 ) -> "Sequence[int]":
     package_scanning_int = PackageScanningIntegration()
     args = [
-        (scan_results[i], bc_integration, bc_api_key, input_paths[i])
-        for i in range(len(scan_results))
+        (result, bc_integration, bc_api_key, Path(result["repository"]))
+        for result in scan_results
     ]
 
     if os.getenv("PYCHARM_HOSTED") == "1":
@@ -376,8 +375,7 @@ async def _report_results_to_bridgecrew_async(
 
 def report_results_to_bridgecrew(
     scan_results: List[Dict[str, Any]],
-    input_paths: List[Path],
     bc_integration: BcPlatformIntegration,
     bc_api_key: str
 ):
-    return asyncio.run(_report_results_to_bridgecrew_async(scan_results, input_paths, bc_integration, bc_api_key))
+    return asyncio.run(_report_results_to_bridgecrew_async(scan_results, bc_integration, bc_api_key))
