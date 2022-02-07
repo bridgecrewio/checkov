@@ -136,8 +136,8 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
 def test_prepare_and_scan_sca_package_scan_disabled(mocker: MockerFixture, scan_result):
     # for now, sca-package scan is enabled only in case the virtual-env "ENABLE_SCA_PACKAGE_SCAN" is set to True
     # here, we want to make sure that the scanner is disabled otherwise.
-    # this test should be removed (and also fails) as soon as we
-    # enable the scan regardless virtual-env "ENABLE_SCA_PACKAGE_SCAN", sso feel free to delete it then
+    # this test should be removed (and also fails) as soon as we enable the scan regardless virtual-env
+    # "ENABLE_SCA_PACKAGE_SCAN", so feel free to delete it when it is fully ready for production use
 
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
