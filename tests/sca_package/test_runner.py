@@ -145,8 +145,6 @@ def test_prepare_and_scan_sca_package_scan_disabled(mocker: MockerFixture, scan_
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
 
-    # first check for making sure that the runner doesn't scan in case ENABLE_SCA_PACKAGE_SCAN isn't set to 'True'
-    # it is needed till is ready for production use
     # when
     runner = Runner()
     real_result = runner.prepare_and_scan(root_folder=EXAMPLES_DIR)
