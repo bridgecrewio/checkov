@@ -24,7 +24,7 @@ class RedShiftSSL(BaseResourceCheck):
                 self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']
                 return CheckResult.PASSED
 
-        #no matching params
+        # no matching params
         return CheckResult.FAILED
 
 

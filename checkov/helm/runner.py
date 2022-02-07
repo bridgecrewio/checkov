@@ -214,7 +214,7 @@ class Runner(BaseRunner):
                             f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
                         shutil.move(target_dir, save_error_dir)
 
-                        ## TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+                        # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
         return report
 
 

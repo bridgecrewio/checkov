@@ -1,14 +1,9 @@
-import dis
-import inspect
 import os
 import unittest
 from pathlib import Path
-from typing import Dict, Any, List
 
-from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.kustomize.runner import Runner
-from checkov.common.output.report import Report
 
 class TestRunnerValid(unittest.TestCase):
     @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
@@ -33,7 +28,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # Kustomize deals with absolute paths
-            #self.assertEqual(record.repo_file_path in record.file_path)
+            # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
     @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
@@ -58,7 +53,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # Kustomize deals with absolute paths
-            #self.assertEqual(record.repo_file_path in record.file_path)
+            # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
     @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
@@ -83,7 +78,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # Kustomize deals with absolute paths
-            #self.assertEqual(record.repo_file_path in record.file_path)
+            # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
 
