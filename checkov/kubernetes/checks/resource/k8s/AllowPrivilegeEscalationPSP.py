@@ -11,7 +11,7 @@ class AllowPrivilegeEscalationPSP(BaseK8Check):
         # https://kubernetes.io/docs/concepts/policy/pod-security-policy/
         # AllowPrivilegeEscalation - This defaults to allow to not break setuid binaries
         # DefaultAllowPrivilegeEscalation - Default is to allow as to not breat setuid binaries
-        ## If you omit allowPrivilegeEscalation from PSP, it defaults to true
+        # If you omit allowPrivilegeEscalation from PSP, it defaults to true
         # Location: PodSecurityPolicy.spec.allowPrivilegeEscalation
         name = "Containers should not run with allowPrivilegeEscalation"
         id = "CKV_K8S_5"
