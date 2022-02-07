@@ -24,7 +24,6 @@ class RootContainersPSP(BaseK8Check):
                     elif inspected_value == "MustRunAs":
                         if "ranges" in conf["spec"]["runAsUser"]:
                             for range in conf["spec"]["runAsUser"]["ranges"]:
-                                #if conf["spec"]["runAsUser"]["ranges"]["min"] == 0:
                                 if range["min"] == 0:
                                     return CheckResult.FAILED
                             return CheckResult.PASSED

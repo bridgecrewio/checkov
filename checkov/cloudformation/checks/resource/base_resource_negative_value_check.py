@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Any, Optional, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -12,8 +13,8 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

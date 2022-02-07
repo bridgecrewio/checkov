@@ -125,12 +125,12 @@ class Runner(BaseRunner):
     @staticmethod
     def parseKustomization(parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
-        ## - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
-        ## - OR, Multiple different Kustomize-powered deployments
-        ## - OR, a mixture of the two.
-        ## We need parse some of the Kustomization.yaml files to work out which
-        ## This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
-        ## TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
+        # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
+        # - OR, Multiple different Kustomize-powered deployments
+        # - OR, a mixture of the two.
+        # We need parse some of the Kustomization.yaml files to work out which
+        # This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
+        # TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
         yaml_path = os.path.join(parseKustomizationData,"kustomization.yaml")
         yml_path = os.path.join(parseKustomizationData,"kustomization.yml")
         if os.path.isfile(yml_path):
@@ -231,9 +231,9 @@ class Runner(BaseRunner):
         with tempfile.TemporaryDirectory() as target_dir:
             for filePath in self.kustomizeProcessedFolderAndMeta:    
                 # Name our Kustomize overlays/environments.
-                ## We try to validate any existing base references in the yaml and also find our own "bases" if possible as absolute paths.
-                ## The delta of paths between the closest base and an overlay dir will be used as the env name for a given kustomize overlay
-                ## as they dont have "names" per-se, and we need a unique resource name for the checkov results.
+                # We try to validate any existing base references in the yaml and also find our own "bases" if possible as absolute paths.
+                # The delta of paths between the closest base and an overlay dir will be used as the env name for a given kustomize overlay
+                # as they dont have "names" per-se, and we need a unique resource name for the checkov results.
 
                 logging.debug(f"Kustomization at {filePath} likley a {self.kustomizeProcessedFolderAndMeta[filePath]['type']}")
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
@@ -244,9 +244,9 @@ class Runner(BaseRunner):
                             if parent == potentialBasePath.resolve():
                                 self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases'] = str(pathlibBaseObject.parent)
                     # Normalize referenced bases vs calculated (referenced will usually be relative, calculated absolute)
-                    ## TODO: If someone can show me an example where base: isnt relative:
-                    ### if "../" in self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases']:
-                    #### TODO: Validate if this breaks non POSIX windows paths, as everything else is handled by pathlib/os.paths
+                    # TODO: If someone can show me an example where base: isnt relative:
+                    # if "../" in self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases']:
+                    # TODO: Validate if this breaks non POSIX windows paths, as everything else is handled by pathlib/os.paths
                     try: 
                         relativeToFullPath = f"{filePath}/{self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases'][0]}"
 
@@ -310,7 +310,7 @@ class Runner(BaseRunner):
                 line_num = 1
                 file_num = 0
 
-                #page-to-file parser from helm framework works well, but we expect the file to start with --- in this case from Kustomize.
+                # page-to-file parser from helm framework works well, but we expect the file to start with --- in this case from Kustomize.
                 output = "---\n" + output
                 reader = io.StringIO(output)
                 
@@ -327,7 +327,7 @@ class Runner(BaseRunner):
 
                         if not s.startswith('apiVersion:'):
                             raise Exception(f'Line {line_num}: Expected line to start with apiVersion:  {s}')
-                        #TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
+                        # TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
                         source = file_num
                         file_num += 1 
                         if source != cur_source_file:
@@ -361,7 +361,7 @@ class Runner(BaseRunner):
             try:
                 k8s_runner = K8sKustomizeRunner()
                 reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings}
-                #k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
+                # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
                 chart_results = k8s_runner.run(target_dir, external_checks_dir=None,
                                                 runner_filter=runner_filter, reportMutatorData=reportMutatorData)
                 logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
