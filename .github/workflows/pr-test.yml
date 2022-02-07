@@ -67,7 +67,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v2.0
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -108,7 +108,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
       - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v2.0
       - uses: imranismail/setup-kustomize@v1
       - name: Install pipenv
         run: |
