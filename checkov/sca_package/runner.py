@@ -34,6 +34,7 @@ class Runner(BaseRunner):
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
             return None
 
+
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return None
