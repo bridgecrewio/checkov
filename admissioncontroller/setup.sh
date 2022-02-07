@@ -14,10 +14,10 @@ k8sdir="$(dirname "$0")/${codedir}"
 certdir="$(mktemp -d)"
 
 # Get the files we need
-deployment=https://raw.githubusercontent.com/bridgecrewio/master/admissioncontroller/k8s/deployment.yaml
-configmap=https://raw.githubusercontent.com/bridgecrewio/master/admissioncontroller/k8s/checkovconfig.yaml
-admissionregistration=https://raw.githubusercontent.com/bridgecrewio/master/admissioncontroller/k8s/admissionconfiguration.yaml
-service=https://raw.githubusercontent.com/bridgecrewio/master/admissioncontroller/k8s/service.yaml
+deployment=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/deployment.yaml
+configmap=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/checkovconfig.yaml
+admissionregistration=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/admissionconfiguration.yaml
+service=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/service.yaml
 
 curl -o $k8sdir/deployment.yaml $deployment
 curl -o $k8sdir/service.yaml $service

@@ -58,7 +58,7 @@ spec:
         - containerPort: 8443
         env:
         - name: BC_SOURCE
-          value: cli
+          value: admissionController
         - name: CKV_GITHUB_CONFIG_FETCH_DATA
           value: "False"
         volumeMounts:
