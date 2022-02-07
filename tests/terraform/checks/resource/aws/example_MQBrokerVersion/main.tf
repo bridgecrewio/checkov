@@ -1,3 +1,18 @@
+resource "aws_mq_broker" "unknown" {
+  broker_name = "example"
+
+  engine_type         = "ActiveMQ"
+  engine_version      = var.engine_version
+  host_instance_type  = "mq.t2.micro"
+  publicly_accessible = true
+  deployment_mode     = "SINGLE_INSTANCE"
+  # auto_minor_version_upgrade = true
+  user {
+    username = "ExampleUser"
+    password = "MindTheGapps"
+  }
+}
+
 
 resource "aws_mq_broker" "fail" {
   broker_name = "example"
@@ -103,3 +118,5 @@ resource "aws_mq_configuration" "pass" {
 </broker>
 DATA
 }
+
+
