@@ -11,7 +11,7 @@ class MQBrokerVersion(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure MQBroker version is current"
         id = "CKV_AWS_208"
-        supported_resources = ("aws_mq_broker",)
+        supported_resources = ("aws_mq_broker", "aws_mq_configuration")
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

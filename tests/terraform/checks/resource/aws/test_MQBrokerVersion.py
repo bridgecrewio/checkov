@@ -20,17 +20,19 @@ class TestMQBrokerVersion(unittest.TestCase):
         passing_resources = {
             "aws_mq_broker.pass",
             "aws_mq_broker.pass2",
+            "aws_mq_configuration.pass",
         }
         failing_resources = {
             "aws_mq_broker.fail",
             "aws_mq_broker.fail2",
+            "aws_mq_configuration.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
