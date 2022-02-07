@@ -120,17 +120,7 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
 
-    # first check for making sure that the runner doesn't scan in case ENABLE_SCA_PACKAGE_SCAN isn't set to 'True'
-    # it is needed till is ready for production use
-    # when
-    runner = Runner()
-    real_result = runner.prepare_and_scan(root_folder=EXAMPLES_DIR)
-
-    # then
-    assert real_result is None
-
-    # second check for case thatsca-package scan is enabled.
-    # also, it is needed till is ready for production use
+    # needed till is ready for production use
     mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
 
     # when
@@ -141,6 +131,28 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
     assert real_result is not None
     assert runner._check_class == 'mock.mock.MagicMock'
     assert runner._code_repo_path == EXAMPLES_DIR
+
+
+def test_prepare_and_scan_sca_package_scan_disabled(mocker: MockerFixture, scan_result):
+    # for now, sca-package scan is enabled only in case the virtual-env "ENABLE_SCA_PACKAGE_SCAN" is set to True
+    # here, we want to make sure that the scanner is disabled otherwise.
+    # this test should be removed (and also fails) as soon as we
+    # enable the scan regardless virtual-env "ENABLE_SCA_PACKAGE_SCAN", sso feel free to delete it then
+
+    # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result
+    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+
+    # first check for making sure that the runner doesn't scan in case ENABLE_SCA_PACKAGE_SCAN isn't set to 'True'
+    # it is needed till is ready for production use
+    # when
+    runner = Runner()
+    real_result = runner.prepare_and_scan(root_folder=EXAMPLES_DIR)
+
+    # then
+    assert real_result is None
 
 
 def test_find_scannable_files():
