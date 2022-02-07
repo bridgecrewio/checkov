@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Optional, List, Tuple, Set, Union
+from typing import Optional, List, Tuple, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
@@ -28,6 +28,54 @@ SUPPORTED_PACKAGE_FILES = {
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
+    def __init__(self):
+        self._check_class: Optional[str] = None
+        self._code_repo_path: Optional[Path] = None
+
+    def prepare_and_scan(
+        self,
+        root_folder: Union[str, Path],
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+    ) -> "Optional[Sequence[Dict[str, Any]]]":
+
+        if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
+            return None
+
+        # skip complete run, if flag '--check' was used without a CVE check ID
+        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+            return None
+
+        if not bc_integration.bc_api_key:
+            logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
+            return None
+
+        logging.info("SCA package scanning searching for scannable files")
+
+        self._code_repo_path = Path(root_folder)
+
+        excluded_paths = {*ignored_directories}
+        if runner_filter.excluded_paths:
+            excluded_paths.update(runner_filter.excluded_paths)
+
+        input_output_paths = self.find_scannable_files(
+            root_path=self._code_repo_path,
+            files=files,
+            excluded_paths=excluded_paths,
+        )
+        if not input_output_paths:
+            # no packages found
+            return None
+
+        logging.info(f"SCA package scanning will scan {len(input_output_paths)} files")
+
+        scanner = Scanner()
+        self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
+        scan_results = scanner.scan(input_output_paths)
+
+        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        return scan_results
+
     def run(
         self,
         root_folder: Union[str, Path],
@@ -38,45 +86,14 @@ class Runner(BaseRunner):
     ) -> Report:
         report = Report(self.check_type)
 
-        if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
+        scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
+        if scan_results is None:
             return report
-
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
-            return report
-
-        if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
-            return report
-
-        logging.info("SCA package scanning searching for scannable files")
-
-        code_repo_path = Path(root_folder)
-
-        excluded_paths = {*ignored_directories}
-        if runner_filter.excluded_paths:
-            excluded_paths.update(runner_filter.excluded_paths)
-
-        input_output_paths = self.find_scannable_files(
-            root_path=code_repo_path,
-            files=files,
-            excluded_paths=excluded_paths,
-        )
-        if not input_output_paths:
-            # no packages found
-            return report
-
-        logging.info(f"SCA package scanning will scan {len(input_output_paths)} files")
-
-        scanner = Scanner()
-        scan_results = scanner.scan(input_output_paths)
-
-        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
 
         for result in scan_results:
             package_file_path = Path(result["repository"])
             try:
-                package_file_path = package_file_path.relative_to(code_repo_path)
+                package_file_path = package_file_path.relative_to(self._code_repo_path)
             except ValueError:
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
@@ -88,7 +105,7 @@ class Runner(BaseRunner):
                 record = create_report_record(
                     rootless_file_path=rootless_file_path,
                     file_abs_path=result["repository"],
-                    check_class=f"{scanner.__module__}.{scanner.__class__.__qualname__}",
+                    check_class=self._check_class,
                     vulnerability_details=vulnerability,
                     runner_filter=runner_filter
                 )
