@@ -51,7 +51,7 @@ class K8sKustomizeRunner(K8sRunner):
                 check_result=check_result, code_block=entity_context.get("code_lines"), file_path=realKustomizeEnvMetadata['filePath'],
                 file_line_range=[],
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'])
+                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.bc_severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
         
@@ -91,7 +91,8 @@ class K8sKustomizeRunner(K8sRunner):
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
-                    file_abs_path=entity_file_abs_path
+                    file_abs_path=entity_file_abs_path,
+                    severity=check.bc_severity
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)

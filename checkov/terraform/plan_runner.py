@@ -112,7 +112,8 @@ class Runner(TerraformRunner):
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, resource_address=entity_address, evaluations=None,
-                                    check_class=check.__class__.__module__, file_abs_path=full_file_path)
+                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,
+                                    severity=check.bc_severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 

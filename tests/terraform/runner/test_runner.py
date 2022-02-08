@@ -6,6 +6,9 @@ import unittest
 import dis
 from pathlib import Path
 
+# do not remove; prevents circular import error
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.output.report import Report

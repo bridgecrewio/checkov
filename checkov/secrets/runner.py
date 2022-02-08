@@ -160,7 +160,7 @@ class Runner(BaseRunner):
                     resource=secret.secret_hash,
                     check_class=None,
                     evaluations=None,
-                    file_abs_path=os.path.abspath(secret.filename)
+                    file_abs_path=os.path.abspath(secret.filename),
                 ))
 
             return report

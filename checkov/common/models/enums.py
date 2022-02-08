@@ -25,11 +25,11 @@ class CheckCategories(Enum):
     SUPPLY_CHAIN = 11
 
 
-class Severities(Enum):
-    LOW = 1
-    MEDIUM = 2
-    HIGH = 3
-    CRITICAL = 4
+class Severities(str, Enum):
+    LOW = 'LOW'
+    MEDIUM = 'MEDIUM'
+    HIGH = 'HIGH'
+    CRITICAL = 'CRITICAL'
 
     @staticmethod
     def is_severity(severity: str):

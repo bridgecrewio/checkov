@@ -73,7 +73,8 @@ class Runner(BaseRunner):
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(json_file_path),
-                    entity_tags=None
+                    entity_tags=None,
+                    severity=check.bc_severity
                 )
                 report.add_record(record)
 

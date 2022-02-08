@@ -241,7 +241,6 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
-                                           guidelines=guidelines,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
         if baseline:
             baseline.compare_and_reduce_reports(scan_reports)
