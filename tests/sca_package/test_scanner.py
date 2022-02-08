@@ -1,13 +1,11 @@
 import json
 from pathlib import Path
 
+import pytest
 from mock import AsyncMock, MagicMock
 from pytest_mock import MockerFixture
-import pytest
 
 from checkov.sca_package.scanner import Scanner
-
-EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 
 def test_setup_scan_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
