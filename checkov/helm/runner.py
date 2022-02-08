@@ -9,7 +9,7 @@ from functools import reduce
 
 import yaml
 
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.registry import registry
@@ -20,7 +20,7 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 class Runner(BaseRunner):
-    check_type = "helm"
+    check_type = CheckType.HELM
     helm_command = 'helm'
     system_deps = True
 
@@ -214,7 +214,7 @@ class Runner(BaseRunner):
                             f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
                         shutil.move(target_dir, save_error_dir)
 
-                        ## TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+                        # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
         return report
 
 

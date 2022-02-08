@@ -19,7 +19,7 @@ class KubernetesLocalGraph(LocalGraph):
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
                 if resource.get('kind') == "List":
-                    file_conf.extend(resource.get("items", []))
+                    file_conf.extend(item for item in resource.get("items", []) if item)
                     file_conf.remove(resource)
 
             for resource in file_conf:

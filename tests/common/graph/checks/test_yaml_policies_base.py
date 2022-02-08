@@ -2,10 +2,10 @@ import json
 import os
 import yaml
 from abc import abstractmethod
-from pathlib import Path
-from typing import List
+from typing import List, Optional
 from unittest import TestCase
 
+from checkov.cloudformation.runner import Runner
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.graph.graph_manager import GraphManager
@@ -14,10 +14,13 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestYamlPoliciesBase(TestCase):
-    def __init__(self, graph_manager: GraphManager, checks, check_type, test_file_path, args):
+    def __init__(self, graph_manager: GraphManager, real_graph_checks_path: str,
+                 test_checks_path: Optional[str], check_type: str, test_file_path: str,
+                 args):
         super().__init__(args)
         self.check_type = check_type
-        self.checks = checks
+        self.real_graph_checks_path = real_graph_checks_path
+        self.checks_dir = test_checks_path
         self.test_file_path = test_file_path
         self.graph_manager = graph_manager
 
@@ -25,10 +28,9 @@ class TestYamlPoliciesBase(TestCase):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(self.test_file_path)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
-        policy_dir_path = os.path.dirname(self.checks.__file__)
-        assert os.path.exists(policy_dir_path)
+        assert os.path.exists(self.checks_dir)
         found = False
-        for root, d_names, f_names in os.walk(policy_dir_path):
+        for root, d_names, f_names in os.walk(self.checks_dir):
             for f_name in f_names:
                 check_name = dir_name if check_name is None else check_name
                 if f_name == f"{check_name}.yaml":
@@ -73,10 +75,9 @@ class TestYamlPoliciesBase(TestCase):
         return self.create_report_from_graph_checks_results(checks_results, policy['metadata'])
 
     def get_checks_registry(self):
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
-            Path(
-                self.test_file_path).parent.parent.parent.parent.parent / "checkov" / self.check_type / "checks" / "graph_checks"))
+        registry = Registry(parser=NXGraphCheckParser(), checks_dir=self.real_graph_checks_path)
         registry.load_checks()
+        registry.load_external_checks(self.checks_dir)
         return registry
 
     @abstractmethod
@@ -97,3 +98,10 @@ def load_yaml_data(source_file_name, dir_path):
         expected_data = yaml.safe_load(f)
 
     return json.loads(json.dumps(expected_data))
+
+
+def get_policy_results(root_folder, policy):
+    check_id = policy['metadata']['id']
+    graph_runner = Runner()
+    report = graph_runner.run(root_folder, runner_filter=RunnerFilter(checks=[check_id]))
+    return report

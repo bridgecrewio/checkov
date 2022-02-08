@@ -5,6 +5,9 @@ from abc import abstractmethod
 
 import urllib3
 
+from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.http_utils import get_user_agent_header
+
 
 class BaseVCSDAL:
     def __init__(self):
@@ -63,8 +66,8 @@ class BaseVCSDAL:
 
     @abstractmethod
     def _headers(self):
-        return {"Accept": "application/vnd.github.v3+json",
-                "Authorization": "token {}".format(self.token)}
+        return merge_dicts({"Accept": "application/vnd.github.v3+json",
+                "Authorization": "token {}".format(self.token)}, get_user_agent_header())
 
     def _graphql_headers(self):
         return {

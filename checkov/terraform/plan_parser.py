@@ -1,8 +1,8 @@
 import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
-from checkov.terraform.context_parsers.tf_plan import parse
 from checkov.common.parsers.node import DictNode, ListNode
+from checkov.terraform.context_parsers.tf_plan import parse
 
 simple_types = (str, int, float, bool)
 
@@ -64,10 +64,16 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             else:
                 ret_dict[key] = [child_dict]
     if conf and isinstance(conf, dict):
+        found_ref = False
         for conf_key in conf.keys() - obj.keys():
             ref = next((x for x in conf[conf_key].get("references", []) if not x.startswith(("var.", "local."))), None)
             if ref:
                 ret_dict[conf_key] = [ref]
+                found_ref = True
+        if not found_ref:
+            for value in conf.values():
+                if isinstance(value, dict) and "references" in value.keys():
+                    ret_dict["references_"] = value["references"]
 
     return ret_dict
 

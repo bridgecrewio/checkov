@@ -22,7 +22,7 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
             if period and 0 < period <= 35:
                 return CheckResult.PASSED
             return CheckResult.FAILED
-        #Default value is 1 which passes ^^^
+        # Default value is 1 which passes ^^^
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:

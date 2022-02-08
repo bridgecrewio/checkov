@@ -2,8 +2,8 @@
 
 resource "aws_lambda_function" "active" {
   function_name = "test-env"
-  role = ""
-  runtime = "python3.8"
+  role          = ""
+  runtime       = "python3.8"
 
   tracing_config {
     mode = "Active"
@@ -12,8 +12,8 @@ resource "aws_lambda_function" "active" {
 
 resource "aws_lambda_function" "pass_through" {
   function_name = "test-env"
-  role = ""
-  runtime = "python3.8"
+  role          = ""
+  runtime       = "python3.8"
 
   tracing_config {
     mode = "PassThrough"
@@ -24,6 +24,6 @@ resource "aws_lambda_function" "pass_through" {
 
 resource "aws_lambda_function" "default" {
   function_name = "test-env"
-  role = ""
-  runtime = "python3.8"
+  role          = ""
+  runtime       = "python3.8"
 }
