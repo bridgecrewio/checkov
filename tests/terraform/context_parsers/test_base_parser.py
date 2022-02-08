@@ -1,6 +1,8 @@
 import os
 import unittest
 
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.terraform.context_parsers.registry import parser_registry
 from tests.terraform.context_parsers.mock_context_parser import MockContextParser
 
@@ -10,6 +12,8 @@ mock_definition = (mock_tf_file, {"mock": [{"mock_type": {"mock_name": {"value":
 
 class TestBaseParser(unittest.TestCase):
     def test_enrich_definition_block(self):
+        bc_integration.get_public_run_config()
+        metadata_integration.pre_scan()
         mock_parser = MockContextParser()
         parser_registry.register(mock_parser)
         definition_context = parser_registry.enrich_definitions_context(mock_definition)
