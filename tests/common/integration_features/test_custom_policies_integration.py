@@ -1,3 +1,4 @@
+import json
 import os
 import types
 import unittest
@@ -46,29 +47,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # response from API
         policies = [
             {
-                "provider": "AWS",
                 "id": "mikepolicies_AWS_1625063607541",
                 "title": "yaml1",
                 "severity": "MEDIUM",
                 "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:33:54.638Z"
-                    }
-                },
                 "guideline": "yaml1",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "or": [
                         {
                             "value": "xyz",
@@ -80,46 +64,16 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                             ]
                         }
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: "
-                        "\"yaml1\" #add text that explains the configuration the policy looks for, its implications, "
-                        "and how to fix it\n  category: \"general\" #choose one: "
-                        "\"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking"
-                        "\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: "
-                        "\"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: "
-                        "\"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n "
-                        "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
-                        "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
-                        "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
-                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n ",
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "mikepolicies_aws_1625063842021",
                 "title": "ui1",
                 "severity": "HIGH",
                 "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:42:29.534Z"
-                    }
-                },
                 "guideline": "ui1",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "value": "abc",
                     "operator": "equals",
                     "attribute": "region",
@@ -127,14 +81,10 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                     "resource_types": [
                         "aws_s3_bucket"
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": None,
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "kpande_AWS_1635180094606",
                 "title": "Check that all EC2 instances are tagged with yor_trace",
                 "descriptiveTitle": "null",
@@ -142,34 +92,22 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "severity": "LOW",
                 "pcSeverity": "null",
                 "category": "General",
-                "resourceTypes": [
-                    "AWS::EC2::Instance"
-                ],
                 "guideline": "Check for YOR tagging",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "operator": "exists",
                     "attribute": "Tags.yor_trace",
                     "cond_type": "attribute",
                     "resource_types": [
                         "AWS::EC2::Instance"
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n name: \"Check that all resources are tagged with the key - yor_trace\"\n "
-                        "guidelines: \"Check for YOR tagging\"\n category: \"general\"\n severity: \"low\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n       cond_type: \"attribute\"\n       resource_types: \n   "
-                        "    - \"AWS::EC2::Instance\"\n       attribute: \"Tags.yor_trace\"\n       operator: "
-                        "\"exists\"",
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
                 ],
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "kpande_AWS_1635187541652",
                 "title": "Custom - ensure MSK Cluster logging is enabled",
                 "descriptiveTitle": "null",
@@ -183,7 +121,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "accountsData": {},
                 "guideline": "Some sample guidelines",
                 "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "or": [
                         {
                             "value": "true",
@@ -213,23 +151,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                             ]
                         }
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n  name: \"Custom - ensure MSK Cluster logging is enabled\"\n  category: "
-                        "\"logging\"\n  severity: \"medium\"\n  guidelines: \"Some sample guidelines\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n  or:\n    - cond_type: attribute\n      attribute: "
-                        "LoggingInfo.BrokerLogs.S3.Enabled\n      operator: equals\n      value: \"true\"\n      "
-                        "resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: attribute\n      "
-                        "attribute: LoggingInfo.BrokerLogs.Firehose.Enabled\n      operator: equals\n      value: "
-                        "\"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: "
-                        "attribute\n      attribute: LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled\n      operator: "
-                        "equals\n      value: \"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"",
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
                 ],
-                "sourceIncidentId": ""
             }
         ]
 
