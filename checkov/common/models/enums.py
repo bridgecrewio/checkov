@@ -31,6 +31,10 @@ class Severities(Enum):
     HIGH = 3
     CRITICAL = 4
 
+    @staticmethod
+    def is_severity(severity: str):
+        return severity in Severities._member_names_
+
 
 class OutputFormat(Enum):
     CONSOLE = 1
