@@ -8,7 +8,7 @@ COPY whorf.py /app
 COPY wsgi.py /app
 
 # create the app user
-RUN addgroup --gid 11000 app && adduser --uid 11000 --ingroup app app
+RUN addgroup --gid 11000 app && adduser --disabled-password --gecos "" --uid 11000 --ingroup app app
 # chown all the files to the app user
 RUN chown -R app:app /app
 # change to the app user

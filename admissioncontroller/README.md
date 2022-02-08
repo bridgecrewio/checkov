@@ -8,7 +8,7 @@ It is easily deployed by simply running the setup.sh script.  This will download
 
 ### Step 1:
 ```
-curl –o setup.sh https://raw.githubusercontent.com/bridgecrewio/master/admissioncontroller/setup.sh
+curl –o setup.sh https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/setup.sh
 ```
 
 ### Step 2:
