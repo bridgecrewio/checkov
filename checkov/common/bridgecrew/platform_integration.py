@@ -40,7 +40,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_url, get_user_agent_header
+from checkov.common.util.http_utils import normalize_prisma_url, get_user_agent_header
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -78,7 +78,7 @@ class BcPlatformIntegration(object):
         self.timestamp = None
         self.scan_reports = []
         self.prisma_api_url = None
-        # The following URLs will be (re)set by setup_bridgecrew_credentials() 
+        # The following URLs will be (re)set by setup_bridgecrew_credentials()
         # when '--prisma-api-url' is specified on the command-line.
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
@@ -157,7 +157,7 @@ class BcPlatformIntegration(object):
         self.bc_source_version = source_version
 
         if prisma_api_url:
-            self.prisma_api_url = normalize_url(prisma_api_url)
+            self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
             self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
             self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
