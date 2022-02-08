@@ -3,7 +3,7 @@ import unittest
 from unittest import mock
 
 from checkov.common.bridgecrew.bc_source import get_source_type
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import PolicyMetadataIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 
@@ -29,6 +29,7 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.setup_http_manager()
         instance.get_public_run_config()
+        metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
         self.assertIsNotNone(metadata_integration.check_metadata)
@@ -39,6 +40,7 @@ class TestBCApiUrl(unittest.TestCase):
         instance.skip_download = True
         instance.setup_http_manager()
         instance.get_public_run_config()
+        metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
         self.assertIsNotNone(metadata_integration.check_metadata)

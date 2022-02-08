@@ -12,20 +12,20 @@ class TestSuppressionsIntegration(unittest.TestCase):
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
-        instance.skip_suppressions = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
 
         suppressions_integration = SuppressionsIntegration(instance)
 
         self.assertTrue(suppressions_integration.is_valid())
 
-        instance.skip_suppressions = True
+        instance.skip_download = True
         self.assertFalse(suppressions_integration.is_valid())
 
         instance.platform_integration_configured = False
         self.assertFalse(suppressions_integration.is_valid())
 
-        instance.skip_suppressions = False
+        instance.skip_download = False
         self.assertFalse(suppressions_integration.is_valid())
 
         suppressions_integration.integration_feature_failures = True

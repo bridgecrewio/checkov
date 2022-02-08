@@ -73,8 +73,6 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.repo_branch = None
         self.skip_fixes = False
-        self.skip_suppressions = False
-        self.skip_policy_download = False
         self.timestamp = None
         self.scan_reports = []
         self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")

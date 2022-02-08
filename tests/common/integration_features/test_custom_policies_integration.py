@@ -23,20 +23,20 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
 
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         self.assertTrue(custom_policies_integration.is_valid())
 
-        instance.skip_policy_download = True
+        instance.skip_download = True
         self.assertFalse(custom_policies_integration.is_valid())
 
         instance.platform_integration_configured = False
         self.assertFalse(custom_policies_integration.is_valid())
 
-        instance.skip_policy_download = False
+        instance.skip_download = False
         self.assertFalse(custom_policies_integration.is_valid())
 
         custom_policies_integration.integration_feature_failures = True
