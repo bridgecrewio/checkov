@@ -62,7 +62,18 @@ resource "aws_api_gateway_stage" "pass" {
   stage_name    = "example"
 }
 
+resource "aws_api_gateway_stage_wafv2" "pass" {
+  deployment_id = aws_api_gateway_deployment.example.id
+  rest_api_id   = aws_api_gateway_rest_api.pass.id
+  stage_name    = "example"
+}
+
 resource "aws_wafregional_web_acl_association" "pass" {
   resource_arn = aws_api_gateway_stage.pass.arn
   web_acl_id   = aws_wafregional_web_acl.foo.id
+}
+
+resource "aws_wafv2_web_acl_association" "pass" {
+  resource_arn = aws_api_gateway_stage_wafv2.pass.arn
+  web_acl_id   = aws_wafv2_web_acl.foo.id
 }
