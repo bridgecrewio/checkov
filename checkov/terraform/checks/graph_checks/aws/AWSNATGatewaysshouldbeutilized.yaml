@@ -3,7 +3,6 @@ metadata:
   id: "CKV2_AWS_35"
   guidelines: "This policy identifies Route Tables which have NAT instances for the default route instead of NAT gateways. It is recommended to use NAT gateways as the AWS managed NAT Gateway provides a scalable and resilient method for allowing outbound internet traffic from your private VPC subnets."
   category: "networking"
-  severity: "medium"
 scope:
   provider: "aws"
 definition:
