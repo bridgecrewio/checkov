@@ -389,3 +389,13 @@ class TestTerraformEvaluation(TestCase):
         input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s")'
         expected = "2018-05-13T09:01:01Z"
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds_milliseconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s1001ms")'
+        expected = "2018-05-13T09:01:02Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds_milliseconds_microseconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s1001ms1000001us")'
+        expected = "2018-05-13T09:01:03Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
