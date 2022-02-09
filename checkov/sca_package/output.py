@@ -7,7 +7,7 @@ from typing import List, Union, Dict, Any
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, Severities
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
 from checkov.common.util.data_structures_utils import SEVERITY_RANKING
@@ -108,7 +108,7 @@ def create_report_record(
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
-        severity=severity,
+        severity=Severities[severity.upper()],
         description=description,
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,

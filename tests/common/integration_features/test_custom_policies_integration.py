@@ -207,13 +207,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
     def test_pre_scan_with_cloned_checks(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
-                                                                                   custom_policies_integration)
+        instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()
         self.assertEqual(1, len(custom_policies_integration.policies))
@@ -221,13 +220,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
-                                                                                   custom_policies_integration)
+        instance.customer_run_config_response = mock_custom_policies_response()
         custom_policies_integration.pre_scan()
 
         scan_reports = Report("terraform")
@@ -252,39 +250,25 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
 
 
-def _get_policies_from_platform(self):
-    return [
-        {
-            "provider": "AWS",
-            "id": "mikepolicies_cloned_AWS_1625063607541",
-            "title": "Cloned policy",
-            "severity": "CRITICAL",
-            "category": "General",
-            "resourceTypes": [
-                "aws_s3_bucket"
-            ],
-            "accountsData": {
-                "mikeurbanski1/terragoat3": {
-                    "amounts": {
-                        "CLOSED": 0,
-                        "DELETED": 0,
-                        "OPEN": 1,
-                        "REMEDIATED": 0,
-                        "SUPPRESSED": 0
-                    },
-                    "lastUpdateDate": "2021-06-30T14:33:54.638Z"
-                }
-            },
-            "guideline": "mikepolicies_cloned_AWS_1625063607541",
-            "isCustom": True,
-            "conditionQuery": {},
-            "benchmarks": {},
-            "createdBy": "mike+policies@bridgecrew.io",
-            "code": "",
-            "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
-        }
-    ]
-
+def mock_custom_policies_response():
+    return {
+        "customPolicies": [
+            {
+                "id": "mikepolicies_cloned_AWS_1625063607541",
+                "title": "Cloned policy",
+                "severity": "CRITICAL",
+                "category": "General",
+                "resourceTypes": [
+                    "aws_s3_bucket"
+                ],
+                "guideline": "mikepolicies_cloned_AWS_1625063607541",
+                "benchmarks": {},
+                "createdBy": "mike+policies@bridgecrew.io",
+                "code": "null",
+                "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
+            }
+        ]
+    }
 
 if __name__ == '__main__':
     unittest.main()

@@ -316,7 +316,7 @@ class Report:
                 record.file_line_range[1] = 1
 
             if record.severity:
-                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity, "none")
+                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
             elif record.check_result.get("result") == CheckResult.FAILED:
                 level = "error"
 
