@@ -31,13 +31,13 @@ resource "google_kms_key_ring" "key_ring_bad_4" {
 # Non-public IAM policies
 
 resource "google_kms_key_ring_iam_member" "key_ring_iam_good1" {
-  crypto_key_id = google_kms_key_ring.key_ring_good_1.id
+  key_ring_id = google_kms_key_ring.key_ring_good_1.id
   role = "roles/cloudkms.cryptoKeyEncrypter"
   member = "user:jane@example.com"
 }
 
 resource "google_kms_key_ring_iam_binding" "key_ring_iam_good2" {
-  crypto_key_id = google_kms_key_ring.key_ring_good_2.id
+  key_ring_id = google_kms_key_ring.key_ring_good_2.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
 
   members = [
@@ -48,20 +48,20 @@ resource "google_kms_key_ring_iam_binding" "key_ring_iam_good2" {
 # Public IAM policies
 
 resource "google_kms_key_ring_iam_member" "key_ring_iam_bad_1" {
-  crypto_key_id = google_kms_key_ring.key_ring_bad_1.id
+  key_ring_id = google_kms_key_ring.key_ring_bad_1.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
   member        = "allUsers"
 }
 
 resource "google_kms_key_ring_iam_member" "key_ring_iam_bad_2" {
-  crypto_key_id = google_kms_key_ring.key_ring_bad_2.id
+  key_ring_id = google_kms_key_ring.key_ring_bad_2.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
   member        = "allAuthenticatedUsers"
 }
 
 
 resource "google_kms_key_ring_iam_binding" "key_ring_iam_bad_3" {
-  crypto_key_id = google_kms_key_ring.key_ring_bad_3.id
+  key_ring_id = google_kms_key_ring.key_ring_bad_3.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
 
   members = [
@@ -70,7 +70,7 @@ resource "google_kms_key_ring_iam_binding" "key_ring_iam_bad_3" {
 }
 
 resource "google_kms_key_ring_iam_binding" "key_ring_iam_bad_4" {
-  crypto_key_id = google_kms_key_ring.key_ring_bad_4.id
+  key_ring_id = google_kms_key_ring.key_ring_bad_4.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
 
   members = [
