@@ -14,9 +14,10 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("container_properties"):
             if type(conf.get("container_properties")[0]) is str:
-                if "file(" in conf.get("container_properties")[0]:
+                try:
+                    container = json.loads(conf.get("container_properties")[0])
+                except json.JSONDecodeError as e:
                     return CheckResult.UNKNOWN
-                container = json.loads(conf.get("container_properties")[0])
             else:
                 container = conf.get("container_properties")[0]
             if container.get("privileged"):
