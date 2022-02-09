@@ -181,7 +181,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 logger.debug(message, exc_info=True)
             else:
                 logger.error(message)
-                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
+                logger.error('Please add the "--support" flag to your command or try setting the environment variable '
+                             'LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
             return
     else:
         logger.debug('No API key found. Scanning locally only.')
