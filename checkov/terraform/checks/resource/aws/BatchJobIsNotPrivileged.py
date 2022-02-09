@@ -1,4 +1,6 @@
 import json
+import logging
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -17,6 +19,7 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
                 try:
                     container = json.loads(conf.get("container_properties")[0])
                 except json.JSONDecodeError as e:
+                    logging.error(e)
                     return CheckResult.UNKNOWN
             else:
                 container = conf.get("container_properties")[0]
