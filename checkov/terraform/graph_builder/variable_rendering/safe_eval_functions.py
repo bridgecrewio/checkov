@@ -119,7 +119,6 @@ def update_datetime(dt: datetime, delta: datetime.timedelta, adding: bool) -> da
         dt = dt + delta
     else:
         dt = dt - delta
-    print("***dt:", dt)
     return dt
 
 '''
@@ -129,7 +128,6 @@ duration is a string representation of a time difference, consisting of sequence
  The first number may be negative to indicate a negative duration, like "-2h5m".
 '''
 def timeadd(input_str: str, time_delta: str) -> str:
-    print('*** In timeadd ***', input_str, time_delta)
     # Convert the date to allowing parsing
     input_str = input_str.replace("Z", "+00:00")
     dt = datetime.datetime.fromisoformat(input_str)
@@ -145,7 +143,6 @@ def timeadd(input_str: str, time_delta: str) -> str:
         amount = float(deltas[0])
         interval = deltas[1]
         deltas = deltas[2:]
-        print("****Time: ",amount, interval, deltas)
         delta = datetime.timedelta(0)
         if interval == 'h':
             delta = datetime.timedelta(hours=amount)
