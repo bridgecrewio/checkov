@@ -7,7 +7,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, Dict
+from typing import Dict
 
 import boto3
 import dpath.util
@@ -97,6 +97,7 @@ class BcPlatformIntegration(object):
         self.http = None
         self.excluded_paths = []
         self.bc_skip_mapping = False
+        self.cicd_details = {}
 
     @staticmethod
     def is_bc_token(token: str) -> bool:

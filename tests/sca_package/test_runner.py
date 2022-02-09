@@ -169,3 +169,23 @@ def test_find_scannable_files():
         (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
         (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
     }
+
+
+def test_find_scannable_files_with_package_json():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        exclude_package_json=False,
+    )
+
+    # then
+    assert len(input_output_paths) == 4
+
+    assert input_output_paths == {
+        (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
+        (EXAMPLES_DIR / "package.json", EXAMPLES_DIR / "package_result.json"),
+        (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
+        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
+    }
