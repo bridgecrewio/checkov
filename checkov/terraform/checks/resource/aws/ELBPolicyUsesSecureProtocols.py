@@ -16,7 +16,7 @@ class ELBPolicyUsesSecureProtocols(BaseResourceCheck):
         policies = conf.get('policy_attribute')
         for policy in policies:
             name = policy.get("name")[0]
-            if name in ["Protocol-TLSv1", "Protocol-TLSv1.1"]:
+            if name in ("Protocol-SSLv3", "Protocol-TLSv1", "Protocol-TLSv1.1"):
                 if policy.get("value")[0]:
                     return CheckResult.FAILED
         return CheckResult.PASSED
