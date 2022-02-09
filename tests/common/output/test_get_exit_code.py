@@ -1,7 +1,7 @@
 import unittest
 
-
-from checkov.common.models.enums import CheckResult, Severities
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 
@@ -16,7 +16,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
-                         severity=Severities.LOW,
+                         severity=Severities[BcSeverities.LOW],
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -28,7 +28,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
-                         severity=Severities.HIGH,
+                         severity=Severities[BcSeverities.HIGH],
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -41,7 +41,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
-                         severity=Severities.LOW,
+                         severity=Severities[BcSeverities.LOW],
                          entity_tags={
                              'tag1': 'value1'
                          })
@@ -53,7 +53,7 @@ class TestGetExitCode(unittest.TestCase):
                          file_line_range='1:3',
                          resource='aws_db_instance.sample', evaluations=None,
                          check_class=None, file_abs_path=',.',
-                         severity=Severities.HIGH,
+                         severity=Severities[BcSeverities.HIGH],
                          entity_tags={
                              'tag1': 'value1'
                          })

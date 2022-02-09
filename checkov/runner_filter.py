@@ -3,7 +3,7 @@ import fnmatch
 from collections.abc import Iterable
 from typing import Set, Optional, Union, List
 
-from checkov.common.models.enums import Severities
+from checkov.common.bridgecrew.severities import Severity
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 
@@ -71,7 +71,7 @@ class RunnerFilter(object):
         return True
 
     @staticmethod
-    def check_matches(check_id: str, bc_check_id: str, severity: Optional[Severities], pattern_list: List[str]):
+    def check_matches(check_id: str, bc_check_id: str, severity: Optional[Severity], pattern_list: List[str]):
         for pattern in pattern_list:
             if (
                     ((check_id and fnmatch.fnmatch(check_id, pattern))

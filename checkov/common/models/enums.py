@@ -25,17 +25,6 @@ class CheckCategories(Enum):
     SUPPLY_CHAIN = 11
 
 
-class Severities(str, Enum):
-    LOW = 'LOW'
-    MEDIUM = 'MEDIUM'
-    HIGH = 'HIGH'
-    CRITICAL = 'CRITICAL'
-
-    @staticmethod
-    def is_severity(severity: str):
-        return severity in Severities._member_names_
-
-
 class OutputFormat(Enum):
     CONSOLE = 1
     JSON = 2

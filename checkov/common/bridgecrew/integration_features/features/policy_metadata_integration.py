@@ -3,10 +3,10 @@ import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 # service-provider::service-name::data-type-name
-from checkov.common.models.enums import Severities
 
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
 

@@ -6,6 +6,7 @@ from packaging import version as packaging_version
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner
@@ -56,7 +57,7 @@ def test_run(mocker: MockerFixture, scan_result):
     assert record.file_path == "/path/to/go.sum"
     assert record.repo_file_path == "/path/to/go.sum"
     assert record.resource == "path/to/go.sum.golang.org/x/crypto"
-    assert record.severity == "high"
+    assert record.severity == BcSeverities.HIGH
     assert record.short_description == "CVE-2020-29652 - golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"
     assert record.vulnerability_details["lowest_fixed_version"] == "v0.0.0-20201216223049-8b5274cf687f"
     assert record.vulnerability_details["fixed_versions"] == [

@@ -1,5 +1,6 @@
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
@@ -58,7 +59,7 @@ def test_create_report_record():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
+    assert record.severity == BcSeverities.CRITICAL
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -115,7 +116,7 @@ def test_create_report_record_severity_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "medium"
+    assert record.severity == BcSeverities.MEDIUM
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -172,7 +173,7 @@ def test_create_report_record_package_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
+    assert record.severity == BcSeverities.CRITICAL
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [

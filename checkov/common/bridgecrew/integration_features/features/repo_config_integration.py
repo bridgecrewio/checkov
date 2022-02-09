@@ -4,7 +4,7 @@ import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.models.enums import Severities
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 
@@ -51,7 +51,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                     if any(repo for repo in repos if self.bc_integration.repo_matches(repo)):
                         logging.debug(f'Found code reviews config section for repo: {section}')
                         severity_level = section['rule']['severityLevel']
-                        if not self.code_review_threshold or Severities[severity_level].value < self.code_review_threshold.value:
+                        if not self.code_review_threshold or Severities[severity_level].level < self.code_review_threshold.level:
                             logging.debug(f'Severity threshold of {severity_level} is lower than {self.code_review_threshold}')
                             self.code_review_threshold = Severities[severity_level]
                         self.code_review_skip_policies += section['rule']['excludePolicies']

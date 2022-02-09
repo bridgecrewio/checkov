@@ -10,10 +10,11 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.models.enums import CheckResult, Severities
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -185,7 +186,7 @@ class Runner(BaseRunner):
     def search_for_suppression(
         check_id: str,
         bc_check_id: str,
-        severity: Severities,
+        severity: Severity,
         secret: PotentialSecret,
         runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:

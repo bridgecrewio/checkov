@@ -1,7 +1,7 @@
 import unittest
 
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks.base_check import BaseCheck
-from checkov.common.models.enums import Severities
 from checkov.runner_filter import RunnerFilter
 
 

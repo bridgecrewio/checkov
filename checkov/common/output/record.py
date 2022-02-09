@@ -6,7 +6,8 @@ from typing import Union, List, Tuple, Optional, Dict, Any
 from colorama import init, Fore, Style
 from termcolor import colored
 
-from checkov.common.models.enums import CheckResult, Severities
+from checkov.common.bridgecrew.severities import Severity
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _CheckResult
 from checkov.common.util.file_utils import convert_to_unix_path
 
@@ -51,7 +52,7 @@ class Record:
         caller_file_line_range: Optional[Tuple[int, int]] = None,
         bc_check_id: Optional[str] = None,
         resource_address: Optional[str] = None,
-        severity: Optional[Severities] = None,
+        severity: Optional[Severity] = None,
         bc_category: Optional[str] = None,
         benchmarks: Optional[Dict[str, list]] = None,
         description: Optional[str] = None,

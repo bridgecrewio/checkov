@@ -13,8 +13,6 @@ import configargparse
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
-from checkov.common.util.data_structures_utils import SEVERITY_RANKING
-
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 from checkov.arm.runner import Runner as arm_runner
@@ -395,8 +393,6 @@ def add_parser_args(parser):
         ),
         default=None,
     )
-    parser.add('--min-cve-severity', help='Set minimum severity that will cause returning non-zero exit code',
-               choices=SEVERITY_RANKING.keys(), default='none')
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)

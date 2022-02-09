@@ -1,15 +1,15 @@
 import unittest
 from typing import Optional
 
+from checkov.common.bridgecrew.severities import Severity, Severities, BcSeverities
 from checkov.common.checks.base_check import BaseCheck
-from checkov.common.models.enums import Severities
 from checkov.kubernetes.checks.resource.base_registry import Registry
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
 
 
 class TestCheck:
-    def __init__(self, id: str, bc_id: Optional[str] = None, severity: Optional[Severities] = None):
+    def __init__(self, id: str, bc_id: Optional[str] = None, severity: Optional[Severity] = None):
         self.id = id
         self.bc_id = bc_id
         self.bc_severity = severity
@@ -32,25 +32,25 @@ class TestRunnerFilter(unittest.TestCase):
     def test_run_by_severity(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=["LOW"], skip_checks=[])
-        check = TestCheck('CKV_1', severity=Severities.LOW)
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertTrue(instance._should_run_scan(check, {}, run_filter))
 
     def test_run_by_severity_omitted(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=["HIGH"], skip_checks=[])
-        check = TestCheck('CKV_1', severity=Severities.LOW)
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertFalse(instance._should_run_scan(check, {}, run_filter))
 
     def test_run_by_skip_severity(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["LOW"])
-        check = TestCheck('CKV_1', severity=Severities.LOW)
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertFalse(instance._should_run_scan(check, {}, run_filter))
 
     def test_run_by_skip_severity_omitted(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["HIGH"])
-        check = TestCheck('CKV_1', severity=Severities.LOW)
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertTrue(instance._should_run_scan(check, {}, run_filter))
 
     def test_run_by_id_specific_enable_bc_id(self):

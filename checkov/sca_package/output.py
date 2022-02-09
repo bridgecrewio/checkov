@@ -7,10 +7,10 @@ from typing import List, Union, Dict, Any
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.models.enums import CheckResult, Severities
+from checkov.common.bridgecrew.severities import Severities
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
-from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 from checkov.runner_filter import RunnerFilter
 
 UNFIXABLE_VERSION = "N/A"
@@ -61,7 +61,7 @@ def create_report_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": f"Filtered by package '{package_name}'"
         }
-    elif SEVERITY_RANKING[severity] > SEVERITY_RANKING[runner_filter.min_cve_severity]:
+    elif Severities[severity.upper()] > Severities[runner_filter.min_cve_severity]:
         check_result = {
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity"
@@ -146,7 +146,8 @@ def calculate_lowest_compliant_version(
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
-    return SEVERITY_RANKING[cve.get("severity") or DEFAULT_SEVERITY]
+    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
+    return Severities[severity].value
 
 
 def create_cli_output(*cve_records: List[Record]) -> str:
@@ -176,7 +177,8 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                     cve_count.to_fix += 1
 
                 # best way to dynamically access an class instance attribute
-                setattr(cve_count, record.severity, getattr(cve_count, record.severity) + 1)
+                severity_str = record.severity.name.lower()
+                setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
                 if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
                     cve_count.fixable += 1
@@ -188,7 +190,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                 package_details_map[package_name].setdefault("cves", []).append(
                     {
                         "id": record.vulnerability_details["id"],
-                        "severity": record.severity,
+                        "severity": severity_str,
                         "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                     }
                 )

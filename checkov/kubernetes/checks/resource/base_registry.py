@@ -1,5 +1,5 @@
+from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.models.enums import Severities
 
 
 class Registry(BaseCheckRegistry):
@@ -36,8 +36,8 @@ class Registry(BaseCheckRegistry):
             # If namespaces not specified, all namespaces are scanned
             # If checks not specified, all checks are scanned
             run_check = False
-            allowed_namespaces = [string for string in check_id_allowlist if ("CKV_" not in string and "BC_" not in string and not Severities.is_severity(string))]
-            if not any(("CKV_" in check or "BC_" in check or Severities.is_severity(check)) for check in check_id_allowlist):
+            allowed_namespaces = [string for string in check_id_allowlist if ("CKV_" not in string and "BC_" not in string and not get_severity(string))]
+            if not any(("CKV_" in check or "BC_" in check or get_severity(check)) for check in check_id_allowlist):
                 if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:
                     if entity_configuration["metadata"]["namespace"] in allowed_namespaces:
                         run_check = True
