@@ -8,11 +8,11 @@ from typing import List, Optional, Union, Any, Dict, Set, Tuple
 from typing_extensions import TypedDict
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.common.graph.graph_builder import reserved_attribute_names, EncryptionValues
+from checkov.common.graph.graph_builder import reserved_attribute_names
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -48,7 +48,7 @@ class TerraformLocalGraph(LocalGraph):
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         self._build_edges()
-        self.calculate_encryption_attribute()
+        self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
@@ -147,8 +147,9 @@ class TerraformLocalGraph(LocalGraph):
                             dest_module_version=module_version
                         )
                         if dest_module_path == dir_name:
-                            module_dependency_num = self.module.module_address_map[(module_vertex.path, module_vertex.name)]
-                            block_dirs_to_modules[(dir_name, path_to_module_str)].setdefault(module_dependency_num, set()).add(module_index)
+                            module_dependency_num = self.module.module_address_map.get((module_vertex.path, module_vertex.name))
+                            if module_dependency_num:
+                                block_dirs_to_modules[(dir_name, path_to_module_str)].setdefault(module_dependency_num, set()).add(module_index)
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
@@ -438,20 +439,6 @@ class TerraformLocalGraph(LocalGraph):
             if any(i in breadcrumbs_list for i in connection_list):
                 return True
         return False
-
-    def calculate_encryption_attribute(self) -> None:
-        for vertex_index in self.vertices_by_block_type.get(BlockType.RESOURCE, []):
-            vertex = self.vertices[vertex_index]
-            resource_type = vertex.id.split(".")[0]
-            encryption_conf = ENCRYPTION_BY_RESOURCE_TYPE.get(resource_type)
-            if encryption_conf:
-                attributes = vertex.get_attribute_dict()
-                is_encrypted, reason = encryption_conf.is_encrypted(attributes)
-                # TODO: Does not support possible dependency (i.e. S3 Object being encrypted due to S3 Bucket config)
-                vertex.attributes[CustomAttributes.ENCRYPTION] = (
-                    EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value
-                )
-                vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = reason
 
     def get_dirname(self, path: str) -> str:
         dir_name = self.dirname_cache.get(path)

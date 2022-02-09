@@ -84,6 +84,7 @@ class BaseVCSDAL:
             if request.status == 200:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
+                    logging.debug("received errors %s",data)
                     return None
                 return data
 

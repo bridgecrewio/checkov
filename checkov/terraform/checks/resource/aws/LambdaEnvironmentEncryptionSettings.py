@@ -23,7 +23,7 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
             self.evaluated_keys = ["environment"]
             return CheckResult.FAILED
 
-        #no env vars so should be no key as that causes state mismatch
+        # no env vars so should be no key as that causes state mismatch
         if 'kms_key_arn' in conf:
             if len(conf["kms_key_arn"]) == 0:
                 return CheckResult.PASSED

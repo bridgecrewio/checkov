@@ -13,6 +13,7 @@ from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
+from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 
 
 class CloudformationLocalGraph(LocalGraph):
@@ -46,6 +47,7 @@ class CloudformationLocalGraph(LocalGraph):
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs()
+        self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
 
     def _create_vertices(self) -> None:
 

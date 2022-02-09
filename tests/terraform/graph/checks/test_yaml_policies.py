@@ -202,6 +202,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AWSSSMParameterShouldBeEncrypted(self):
         self.go("AWSSSMParametershouldbeEncrypted", "AWSSSMParameterShouldBeEncrypted")
+        
+    def test_AWSNATGatewaysshouldbeutilized(self):
+        self.go("AWSNATGatewaysshouldbeutilized")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(

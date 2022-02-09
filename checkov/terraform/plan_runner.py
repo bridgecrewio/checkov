@@ -1,9 +1,10 @@
 import json
 import logging
 import os
+from typing import Optional, List
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
@@ -27,8 +28,14 @@ class Runner(TerraformRunner):
         'resource': resource_registry,
     }
 
-    def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
-            collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: Optional[str] = None,
+        external_checks_dir: Optional[List[str]] = None,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        collect_skip_comments: bool = True
+    ) -> Report:
         report = Report(self.check_type)
         self.tf_definitions = {}
         parsing_errors = {}
@@ -68,7 +75,7 @@ class Runner(TerraformRunner):
                 else:
                     logging.debug(f'Failed to load {file} as is not a .json file, skipping')
 
-        report.add_parsing_errors(list(parsing_errors.keys()))
+        report.add_parsing_errors(parsing_errors.keys())
 
         if self.tf_definitions:
             graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
