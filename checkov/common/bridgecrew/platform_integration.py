@@ -37,7 +37,7 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_user_agent_header
@@ -242,8 +242,9 @@ class BcPlatformIntegration(object):
         files_to_persist = []
         if files:
             for f in files:
+                f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
-                if file_extension in SUPPORTED_FILE_EXTENSIONS:
+                if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append((f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
@@ -253,7 +254,7 @@ class BcPlatformIntegration(object):
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS:
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append((full_file_path, relative_file_path))
