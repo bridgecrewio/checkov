@@ -1,5 +1,6 @@
 import os
-from unittest import TestCase
+from unittest import TestCase, mock
+from datetime import datetime
 
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
@@ -349,3 +350,42 @@ class TestTerraformEvaluation(TestCase):
         expected = '10\\.0\\.\\0.\\0/8'
         evaluated = evaluate_terraform(input_str)
         self.assertEqual(expected, evaluated)
+
+    # Date Function
+    @mock.patch('checkov.terraform.graph_builder.variable_rendering.safe_eval_functions.datetime')
+    def test_timestamp(self,mock_dt):
+        testdt = datetime(2018, 5, 13, 7, 44, 12, 0)
+        mock_dt.utcnow = mock.Mock(return_value=testdt)
+        input_str = 'timestamp()'
+        expected = "2018-05-13T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","24h")'
+        expected = "2018-05-14T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_negative_hours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","-24h")'
+        expected = "2018-05-12T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_partialhours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1.5h")'
+        expected = "2018-05-13T09:14:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_minutes(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","16m")'
+        expected = "2018-05-13T08:00:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m")'
+        expected = "2018-05-13T09:00:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s")'
+        expected = "2018-05-13T09:01:01Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))

@@ -4,6 +4,7 @@ import re
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
+import datetime
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tomap, tostring
 
@@ -113,6 +114,55 @@ def wrap_func(f: Callable[..., Any], *args: Any) -> Any:
         raise ValueError
     return res
 
+def update_datetime(dt: datetime, delta: datetime.timedelta, adding: bool) -> datetime:
+    if adding is True:
+        dt = dt + delta
+    else:
+        dt = dt - delta
+    print("***dt:", dt)
+    return dt
+
+'''
+From docs:
+duration is a string representation of a time difference, consisting of sequences of number and unit pairs,
+ like "1.5h" or "1h30m". The accepted units are "ns", "us" (or "µs"), "ms", "s", "m", and "h". 
+ The first number may be negative to indicate a negative duration, like "-2h5m".
+'''
+def timeadd(input_str: str, time_delta: str) -> str:
+    print('*** In timeadd ***', input_str, time_delta)
+    # Convert the date to allowing parsing
+    input_str = input_str.replace("Z", "+00:00")
+    dt = datetime.datetime.fromisoformat(input_str)
+    adding = True
+    if time_delta[0] == '-':
+        adding = False
+        time_delta = time_delta[1:]
+    # Split out into each of the deltas
+    deltas = re.split(r'(\d*\.*\d+)',time_delta)
+    # Needed to strip the leading empty element
+    deltas = list(filter(None,deltas))
+    while len(deltas) > 0:
+        amount = float(deltas[0])
+        interval = deltas[1]
+        deltas = deltas[2:]
+        print("****Time: ",amount, interval, deltas)
+        delta = datetime.timedelta(0)
+        if interval == 'h':
+            delta = datetime.timedelta(hours=amount)
+        elif interval == 'm':
+            delta = datetime.timedelta(minutes=amount)
+        elif interval == 's':
+            delta = datetime.timedelta(seconds=amount)
+        elif interval == 'ms':
+            delta = datetime.timedelta(milliseconds=amount)
+        elif interval == 'us' or interval == 'µs':
+            delta = datetime.timedelta(microseconds=amount)
+        elif interval == 'ns':  # Crude, but timedelta does not deal with nanoseconds
+            delta = datetime.timedelta(microseconds=(amount / 1000))
+
+        dt = update_datetime(dt,delta,adding)
+        
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 SAFE_EVAL_FUNCTIONS: List[str] = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
@@ -181,6 +231,10 @@ SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_f
 
 # encoding
 SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
+
+# date functions
+SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+SAFE_EVAL_DICT["timeadd"] = timeadd
 
 
 def evaluate(input_str: str) -> Any:
