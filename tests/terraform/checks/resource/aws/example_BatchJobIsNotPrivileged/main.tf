@@ -1,3 +1,9 @@
+resource "aws_batch_job_definition" "unknown2" {
+  name                 = "foobar"
+  type                 = "container"
+  container_properties = file("${path.module}/job_definition.json")
+}
+
 
 resource "aws_batch_job_definition" "fail" {
   name = "tf_test_batch_job_definition"
@@ -164,3 +170,5 @@ resource "aws_batch_job_definition" "pass3" {
     ]
   })
 }
+
+
