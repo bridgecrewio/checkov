@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from checkov.sca_package.scanner import Scanner
 
 
-def test_setup_scan_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
+def test_setup_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
     # given
     scanner = Scanner()
 
@@ -24,14 +24,14 @@ def test_setup_scan_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
     scanner.twistcli_path = twistcli_path
 
     # when
-    scanner.setup_scan()
+    scanner.setup_twictcli()
 
     # then
     assert twistcli_path.exists()
     integration_mock.assert_not_called()
 
 
-def test_setup_scan_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
+def test_setup_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
     # given
     scanner = Scanner()
 
@@ -50,14 +50,14 @@ def test_setup_scan_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
     scanner.twistcli_path = twistcli_path
 
     # when
-    scanner.setup_scan()
+    scanner.setup_twictcli()
 
     # then
     assert twistcli_path.exists()
     integration_mock.assert_called_once_with(twistcli_path)
 
 
-def test_cleanup_scan_twistcli_exists(tmp_path: Path):
+def test_cleanup_twistcli_exists(tmp_path: Path):
     # given
     scanner = Scanner()
 
@@ -67,13 +67,13 @@ def test_cleanup_scan_twistcli_exists(tmp_path: Path):
     scanner.twistcli_path = twistcli_path
 
     # when
-    scanner.cleanup_scan()
+    scanner.cleanup_twictcli()
 
     # then
     assert not twistcli_path.exists()
 
 
-def test_cleanup_scan_twistcli_not_exists(tmp_path: Path):
+def test_cleanup_twistcli_not_exists(tmp_path: Path):
     # given
     scanner = Scanner()
 
@@ -82,7 +82,7 @@ def test_cleanup_scan_twistcli_not_exists(tmp_path: Path):
     scanner.twistcli_path = twistcli_path
 
     # when
-    scanner.cleanup_scan()
+    scanner.cleanup_twictcli()
 
     # then
     assert not twistcli_path.exists()

@@ -17,21 +17,22 @@ class Scanner:
     def __init__(self) -> None:
         self.twistcli_path = Path(TWISTCLI_FILE_NAME)
 
-    def setup_scan(self) -> None:
+    def setup_twictcli(self) -> None:
         try:
             if not self.twistcli_path.exists():
                 package_scanning_integration.download_twistcli(self.twistcli_path)
         except Exception as e:
-            logging.error(f"Failed to setup package scanning\n{e}")
+            logging.error(f"Failed to setup twictcli for package scanning\n{e}")
             raise e
 
-    def cleanup_scan(self) -> None:
+    def cleanup_twictcli(self) -> None:
         if self.twistcli_path.exists():
             self.twistcli_path.unlink()
         logging.info('twistcli file removed')
 
-    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]") -> "Sequence[Dict[str, Any]]":
-        self.setup_scan()
+    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = True) \
+            -> "Sequence[Dict[str, Any]]":
+        self.setup_twictcli()
 
         scan_results = asyncio.run(
             self.run_scan_multi(
@@ -40,8 +41,8 @@ class Scanner:
                 input_output_paths=input_output_paths,
             )
         )
-
-        self.cleanup_scan()
+        if cleanup_twictcli:
+            self.cleanup_twictcli()
         return scan_results
 
     async def run_scan_multi(
