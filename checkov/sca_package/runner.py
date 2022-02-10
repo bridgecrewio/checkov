@@ -37,6 +37,7 @@ class Runner(BaseRunner):
         root_folder: Union[str, Path],
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
+        exclude_package_json: bool = True,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -62,6 +63,7 @@ class Runner(BaseRunner):
             root_path=self._code_repo_path,
             files=files,
             excluded_paths=excluded_paths,
+            exclude_package_json=exclude_package_json
         )
         if not input_output_paths:
             # no packages found
@@ -124,7 +126,7 @@ class Runner(BaseRunner):
         return report
 
     def find_scannable_files(
-        self, root_path: Path, files: Optional[List[str]], excluded_paths: Set[str]
+        self, root_path: Path, files: Optional[List[str]], excluded_paths: Set[str], exclude_package_json: bool = True
     ) -> Set[Tuple[Path, Path]]:
         input_paths = {
             file_path
@@ -132,10 +134,13 @@ class Runner(BaseRunner):
             if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
         }
 
-        # filter out package.json, if package-lock.json exists
-        package_lock_parent_paths = {
-            file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
-        }
+        package_lock_parent_paths = set()
+        if exclude_package_json:
+            # filter out package.json, if package-lock.json exists
+            package_lock_parent_paths = {
+                file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
+            }
+
         input_output_paths = {
             (file_path, file_path.parent / f"{file_path.stem}_result.json")
             for file_path in input_paths
