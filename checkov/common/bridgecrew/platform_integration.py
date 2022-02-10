@@ -7,7 +7,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Dict
+from typing import Dict, Optional, List
 
 import boto3
 import dpath.util
@@ -227,7 +227,7 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir, files=None, excluded_paths=None):
+    def persist_repository(self, root_dir, files=None, excluded_paths=None, included_paths: Optional[List[str]] = None):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
         that are specified will be persisted.
@@ -250,7 +250,7 @@ class BcPlatformIntegration(object):
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
                 # but here we expect the list from runner_registry as well (which includes self.excluded_paths).
-                filter_ignored_paths(root_path, d_names, excluded_paths)
+                filter_ignored_paths(root_path, d_names, excluded_paths, included_paths=included_paths)
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
