@@ -225,7 +225,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths)
+                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
