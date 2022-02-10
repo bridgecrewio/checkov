@@ -1,0 +1,63 @@
+metadata:
+  id: "CKV2_GCP_8"
+  name: "Ensure that Cloud KMS Key Rings are not anonymously or publicly accessible"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_kms_key_ring
+      operator: within
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - google_kms_key_ring
+          connected_resource_types:
+            - google_kms_key_ring_iam_member
+        - and:
+            - cond_type: connection
+              operator: exists
+              resource_types:
+                - google_kms_key_ring
+              connected_resource_types:
+                - google_kms_key_ring_iam_member
+            - cond_type: attribute
+              attribute: member
+              operator: not_equals
+              value: "allAuthenticatedUsers"
+              resource_types:
+                - google_kms_key_ring_iam_member
+            - cond_type: attribute
+              attribute: member
+              operator: not_equals
+              value: "allUsers"
+              resource_types:
+                - google_kms_key_ring_iam_member
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - google_kms_key_ring
+          connected_resource_types:
+            - google_kms_key_ring_iam_binding
+        - and:
+            - cond_type: connection
+              operator: exists
+              resource_types:
+                - google_kms_key_ring
+              connected_resource_types:
+                - google_kms_key_ring_iam_binding
+            - cond_type: attribute
+              attribute: members
+              operator: not_contains
+              value: "allAuthenticatedUsers"
+              resource_types:
+                - google_kms_key_ring_iam_binding
+            - cond_type: attribute
+              attribute: members
+              operator: not_contains
+              value: "allUsers"
+              resource_types:
+                - google_kms_key_ring_iam_binding
