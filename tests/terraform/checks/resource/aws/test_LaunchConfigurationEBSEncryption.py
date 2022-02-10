@@ -46,7 +46,7 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_failure_omission_root_block_device_1(self):
-        #Test to ensure no false negative as raised in issue 496
+        # Test to ensure no false negative as raised in issue 496
         hcl_res = hcl2.loads("""
                             resource "aws_instance" "test" {
                               ami                  = var.ami_id
@@ -66,7 +66,7 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)    
 
     def test_failure_omission_root_block_device_2(self):
-        #Test to ensure no false negative as raised in issue 496
+        # Test to ensure no false negative as raised in issue 496
         hcl_res = hcl2.loads("""
                             resource "aws_instance" "test" {
                               ami                  = var.ami_id

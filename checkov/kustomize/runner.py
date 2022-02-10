@@ -1,29 +1,22 @@
 import io
 import logging
-import operator
 import os
+import pathlib
 import shutil
 import subprocess  # nosec
 import tempfile
-from functools import reduce
 
 import yaml
-import pathlib
-import glob
-import json
 
-from checkov.common.output.report import Report, report_to_cyclonedx, CheckType
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.kubernetes.runner import Runner as K8sRunner
-from checkov.runner_filter import RunnerFilter
-from checkov.common.util.data_structures_utils import search_deep_keys
-from checkov.common.util.type_forcers import force_list
-from checkov.common.output.record import Record
-from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_manager import GraphManager
+from checkov.common.output.record import Record
+from checkov.common.output.report import Report, CheckType
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.kubernetes.kubernetes_utils import get_resource_id
+from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.runner_filter import RunnerFilter
+
 
 class K8sKustomizeRunner(K8sRunner):
 
@@ -49,7 +42,7 @@ class K8sKustomizeRunner(K8sRunner):
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                 check_result=check_result, code_block=entity_context.get("code_lines"), file_path=realKustomizeEnvMetadata['filePath'],
-                file_line_range=[],
+                file_line_range=[0,0],
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.bc_severity)
             record.set_guideline(check.guideline)
@@ -87,7 +80,7 @@ class K8sKustomizeRunner(K8sRunner):
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
                     file_path=realKustomizeEnvMetadata['filePath'],
-                    file_line_range=[],
+                    file_line_range=[0,0],
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
@@ -133,36 +126,46 @@ class Runner(BaseRunner):
     @staticmethod
     def parseKustomization(parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
-        ## - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
-        ## - OR, Multiple different Kustomize-powered deployments
-        ## - OR, a mixture of the two.
-        ## We need parse some of the Kustomization.yaml files to work out which
-        ## This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
-        ## TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
-        with open(f"{parseKustomizationData}/kustomization.yaml", 'r') as kustomizationFile:
+        # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
+        # - OR, Multiple different Kustomize-powered deployments
+        # - OR, a mixture of the two.
+        # We need parse some of the Kustomization.yaml files to work out which
+        # This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
+        # TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
+        yaml_path = os.path.join(parseKustomizationData,"kustomization.yaml")
+        yml_path = os.path.join(parseKustomizationData,"kustomization.yml")
+        if os.path.isfile(yml_path):
+            kustomization_path = yml_path
+        elif os.path.isfile(yaml_path):
+            kustomization_path = yaml_path
+        else:
+            return {}
+
+
+        with open(kustomization_path, 'r') as kustomizationFile:
             metadata = {}
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
             except yaml.YAMLError as exc:
-                logging.info(f"Failed to load Kustomize metadata from {parseKustomizationData}/kustomization.yaml. details: {exc}")
+                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}. details: {exc}")
     
             if 'resources' in fileContent:
-                logging.debug(f"Kustomization contains resources: section. Likley a base. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] =  "base"
 
             elif 'patchesStrategicMerge' in fileContent:
-                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] =  "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
-                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {parseKustomizationData}/kustomization.yaml")
+                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] =  "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
             metadata['fileContent'] = fileContent
-            metadata['filePath'] = f"{parseKustomizationData}/kustomization.yaml"
+            metadata['filePath'] = f"{kustomization_path}"
             if metadata['type'] == "base":
                 Runner.potentialBases.append(metadata['filePath'])
 
@@ -229,9 +232,9 @@ class Runner(BaseRunner):
         with tempfile.TemporaryDirectory() as target_dir:
             for filePath in self.kustomizeProcessedFolderAndMeta:    
                 # Name our Kustomize overlays/environments.
-                ## We try to validate any existing base references in the yaml and also find our own "bases" if possible as absolute paths.
-                ## The delta of paths between the closest base and an overlay dir will be used as the env name for a given kustomize overlay
-                ## as they dont have "names" per-se, and we need a unique resource name for the checkov results.
+                # We try to validate any existing base references in the yaml and also find our own "bases" if possible as absolute paths.
+                # The delta of paths between the closest base and an overlay dir will be used as the env name for a given kustomize overlay
+                # as they dont have "names" per-se, and we need a unique resource name for the checkov results.
 
                 logging.debug(f"Kustomization at {filePath} likley a {self.kustomizeProcessedFolderAndMeta[filePath]['type']}")
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
@@ -242,9 +245,9 @@ class Runner(BaseRunner):
                             if parent == potentialBasePath.resolve():
                                 self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases'] = str(pathlibBaseObject.parent)
                     # Normalize referenced bases vs calculated (referenced will usually be relative, calculated absolute)
-                    ## TODO: If someone can show me an example where base: isnt relative:
-                    ### if "../" in self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases']:
-                    #### TODO: Validate if this breaks non POSIX windows paths, as everything else is handled by pathlib/os.paths
+                    # TODO: If someone can show me an example where base: isnt relative:
+                    # if "../" in self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases']:
+                    # TODO: Validate if this breaks non POSIX windows paths, as everything else is handled by pathlib/os.paths
                     try: 
                         relativeToFullPath = f"{filePath}/{self.kustomizeProcessedFolderAndMeta[filePath]['referenced_bases'][0]}"
 
@@ -255,14 +258,14 @@ class Runner(BaseRunner):
                             self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
                             logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[filePath]['validated_base']}, naming overlay {checkovKustomizeEnvNameByPath} for Checkov Results.")
                         else:
-                            checkovKustomizeEnvNameByPath = f"UNVALIDATEDBASEDIR/{pathlib.Path(filePath).stem}"
+                            checkovKustomizeEnvNameByPath = f"{pathlib.Path(filePath).stem}"
                             self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
-                            logging.warning(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
+                            logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
 
                     except KeyError:
-                        checkovKustomizeEnvNameByPath = f"UNVALIDATEDBASEDIR/{pathlib.Path(filePath).stem}"
+                        checkovKustomizeEnvNameByPath = f"{pathlib.Path(filePath).stem}"
                         self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
-                        logging.warning(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
+                        logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
             
 
                 if self.templateRendererCommand == "kubectl":
@@ -308,7 +311,7 @@ class Runner(BaseRunner):
                 line_num = 1
                 file_num = 0
 
-                #page-to-file parser from helm framework works well, but we expect the file to start with --- in this case from Kustomize.
+                # page-to-file parser from helm framework works well, but we expect the file to start with --- in this case from Kustomize.
                 output = "---\n" + output
                 reader = io.StringIO(output)
                 
@@ -325,7 +328,7 @@ class Runner(BaseRunner):
 
                         if not s.startswith('apiVersion:'):
                             raise Exception(f'Line {line_num}: Expected line to start with apiVersion:  {s}')
-                        #TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
+                        # TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
                         source = file_num
                         file_num += 1 
                         if source != cur_source_file:
@@ -359,7 +362,7 @@ class Runner(BaseRunner):
             try:
                 k8s_runner = K8sKustomizeRunner()
                 reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings}
-                #k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
+                # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
                 chart_results = k8s_runner.run(target_dir, external_checks_dir=None,
                                                 runner_filter=runner_filter, reportMutatorData=reportMutatorData)
                 logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")

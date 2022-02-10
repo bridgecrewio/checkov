@@ -1,7 +1,7 @@
 from typing import List, Any
 
 from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
@@ -19,5 +19,11 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
     def get_expected_values(self) -> List[Any]:
         return [ANY_VALUE]
 
+    def scan_resource_conf(self, conf):
+        # can't be set for private cluster
+        private_cluster_enabled = conf.get('private_cluster_enabled',[False])[0]
+        if private_cluster_enabled:
+            return CheckResult.PASSED
+        return super().scan_resource_conf(conf)
 
 check = AKSApiServerAuthorizedIpRanges()

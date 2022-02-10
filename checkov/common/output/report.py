@@ -3,6 +3,7 @@ import itertools
 import json
 import sys
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set
 
@@ -60,7 +61,7 @@ class Report:
         self.parsing_errors: List[str] = []
         self.resources: Set[str] = set()
 
-    def add_parsing_errors(self, errors: List[str]) -> None:
+    def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
             self.add_parsing_error(file)
 

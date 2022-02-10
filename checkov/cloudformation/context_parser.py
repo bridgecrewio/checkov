@@ -42,7 +42,7 @@ class ContextParser(object):
                 )
                 self._set_in_dict(self.cf_template, ref, default_value)
 
-                ## TODO - Add Variable Eval Message for Output
+                # TODO - Add Variable Eval Message for Output
                 # Output in Checkov looks like this:
                 # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
