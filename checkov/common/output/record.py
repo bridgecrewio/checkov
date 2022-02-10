@@ -148,10 +148,7 @@ class Record:
                 + Style.RESET_ALL
             )
 
-        try:
-            severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
-        except:
-            print(1)
+        severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
 
         file_details = colored(
             "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])), "magenta"

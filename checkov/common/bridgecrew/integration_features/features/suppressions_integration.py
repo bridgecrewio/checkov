@@ -6,7 +6,8 @@ from itertools import groupby
 import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -26,9 +27,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def is_valid(self):
         return (
-            self.bc_integration.is_integration_configured()
-            and not self.bc_integration.skip_download
-            and not self.integration_feature_failures
+                self.bc_integration.is_integration_configured()
+                and not self.bc_integration.skip_download
+                and not self.integration_feature_failures
         )
 
     def pre_scan(self):
@@ -111,8 +112,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
             for resource in suppression['resources']:
-                if self.bc_integration.repo_matches(resource['accountId']) and resource[
-                    'resourceId'] == f'{record.repo_file_path}:{record.resource}':
+                if self.bc_integration.repo_matches(resource['accountId']) \
+                        and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
             return False
         elif type == 'Tags':
@@ -138,7 +139,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         :return:
         """
         policyId = suppression['policyId']
-        if policyId not in metadata_integration.bc_to_ckv_id_mapping and not self.custom_policy_id_regex.match(policyId):
+        if policyId not in metadata_integration.bc_to_ckv_id_mapping and not self.custom_policy_id_regex.match(
+                policyId):
             return False
 
         if suppression['suppressionType'] == 'Accounts':
