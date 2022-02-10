@@ -21,7 +21,8 @@ class TestUserExists(unittest.TestCase):
         }
         failing_resources = {
             "/failure_no_user/Dockerfile.FROM",
-            "/failure_no_gosu/Dockerfile.FROM",
+            "/failure_no_gosu_entrypoint/Dockerfile.FROM",
+            "/failure_no_gosu_cmd/Dockerfile.FROM",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
