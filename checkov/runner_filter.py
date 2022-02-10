@@ -115,6 +115,11 @@ class RunnerFilter(object):
                 return True
         return False
 
+    def within_threshold(self, severity):
+        above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
+        below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
+        return above_min and not below_max
+
     @staticmethod
     def notify_external_check(check_id: str) -> None:
         RunnerFilter.__EXTERNAL_CHECK_IDS.add(check_id)

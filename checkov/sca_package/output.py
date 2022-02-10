@@ -61,7 +61,7 @@ def create_report_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": f"Filtered by package '{package_name}'"
         }
-    elif Severities[severity.upper()].level < Severities[runner_filter.min_cve_severity]:
+    elif not runner_filter.within_threshold(Severities[severity.upper()]):
         check_result = {
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity"
@@ -147,7 +147,7 @@ def calculate_lowest_compliant_version(
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
     severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
-    return Severities[severity].value
+    return Severities[severity].level
 
 
 def create_cli_output(*cve_records: List[Record]) -> str:

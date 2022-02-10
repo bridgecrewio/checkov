@@ -247,6 +247,28 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
         self.assertEqual(instance.skip_checks, [])
 
+    def test_within_threshold(self):
+        instance = RunnerFilter(checks=['LOW'])
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+
+        instance = RunnerFilter(checks=['HIGH'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+
+        instance = RunnerFilter(skip_checks=['HIGH'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+
+        instance = RunnerFilter(skip_checks=['LOW'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+
+        instance = RunnerFilter(checks=['HIGH'], skip_checks=['LOW'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.HIGH]))
+
 
 if __name__ == '__main__':
     unittest.main()
