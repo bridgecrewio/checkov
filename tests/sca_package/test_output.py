@@ -375,7 +375,7 @@ def test_compare_cve_severity():
     ]
 
     # when
-    cve.sort(key=compare_cve_severity)
+    cve.sort(key=compare_cve_severity, reverse=True)
 
     # then
     assert cve == [

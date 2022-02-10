@@ -196,7 +196,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                 )
 
             if package_name in package_details_map.keys():
-                package_details_map[package_name]["cves"].sort(key=compare_cve_severity)
+                package_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
                 package_details_map[package_name]["current_version"] = package_version
                 package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists

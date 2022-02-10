@@ -18,6 +18,7 @@ from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
 from checkov.version import version
@@ -89,7 +90,7 @@ class Report:
         }
 
     def get_json(self) -> str:
-        return json.dumps(self.get_dict(), indent=4)
+        return json.dumps(self.get_dict(), indent=4, cls=CustomJSONEncoder)
 
     def get_cyclonedx_bom(self) -> Bom:
         bom = Bom()

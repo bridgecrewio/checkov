@@ -12,7 +12,9 @@ mock_definition = (mock_tf_file, {"mock": [{"mock_type": {"mock_name": {"value":
 
 class TestBaseParser(unittest.TestCase):
     def test_enrich_definition_block(self):
-        bc_integration.get_public_run_config()
+        this_integration = BcPlatformIntegration()
+        this_integration.get_public_run_config()
+        metadata_integration.bc_integration = this_integration
         metadata_integration.pre_scan()
         mock_parser = MockContextParser()
         parser_registry.register(mock_parser)
@@ -22,6 +24,7 @@ class TestBaseParser(unittest.TestCase):
         self.assertEqual(len(skipped_checks), 3)
         # Ensure checkov IDs are mapped to BC IDs
         self.assertEqual(skipped_checks[2]["id"], "CKV_AWS_15")
+        metadata_integration.bc_integration = bc_integration
 
     def test__compute_definition_end_line_with_multi_curly_brackets(self):
         # given
