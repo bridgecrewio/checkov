@@ -41,16 +41,28 @@ class TestRunnerFilter(unittest.TestCase):
         check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertFalse(instance._should_run_scan(check, {}, run_filter))
 
+    def test_run_by_severity_implicit(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=["LOW"], skip_checks=[])
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.HIGH])
+        self.assertTrue(instance._should_run_scan(check, {}, run_filter))
+
     def test_run_by_skip_severity(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["LOW"])
         check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
         self.assertFalse(instance._should_run_scan(check, {}, run_filter))
 
-    def test_run_by_skip_severity_omitted(self):
+    def test_run_by_skip_severity_implicit(self):
         instance = Registry()
         run_filter = RunnerFilter(checks=[], skip_checks=["HIGH"])
         check = TestCheck('CKV_1', severity=Severities[BcSeverities.LOW])
+        self.assertFalse(instance._should_run_scan(check, {}, run_filter))
+
+    def test_run_by_skip_severity_omitted(self):
+        instance = Registry()
+        run_filter = RunnerFilter(checks=[], skip_checks=["LOW"])
+        check = TestCheck('CKV_1', severity=Severities[BcSeverities.HIGH])
         self.assertTrue(instance._should_run_scan(check, {}, run_filter))
 
     def test_run_by_id_specific_enable_bc_id(self):

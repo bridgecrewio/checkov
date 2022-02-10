@@ -31,13 +31,13 @@ class Registry(BaseCheckRegistry):
     def _should_run_scan(check, entity_configuration, runner_filter):
         check_id_allowlist = runner_filter.checks
         check_id_denylist = runner_filter.skip_checks
-        if check_id_allowlist:
+        if check_id_allowlist or runner_filter.check_threshold:
             # Allow list provides namespace-only allows, check-only allows, or both
             # If namespaces not specified, all namespaces are scanned
             # If checks not specified, all checks are scanned
             run_check = False
-            allowed_namespaces = [string for string in check_id_allowlist if ("CKV_" not in string and "BC_" not in string and not get_severity(string))]
-            if not any(("CKV_" in check or "BC_" in check or get_severity(check)) for check in check_id_allowlist):
+            allowed_namespaces = [string for string in check_id_allowlist if ("CKV_" not in string and "BC_" not in string)]
+            if not any(("CKV_" in check or "BC_" in check) for check in check_id_allowlist) and not runner_filter.check_threshold:
                 if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:
                     if entity_configuration["metadata"]["namespace"] in allowed_namespaces:
                         run_check = True
@@ -65,7 +65,7 @@ class Registry(BaseCheckRegistry):
                         run_check = True
             if run_check:
                 return True
-        elif check_id_denylist:
+        elif check_id_denylist or runner_filter.skip_check_threshold:
             namespace_skip = False
             if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:
                 if entity_configuration["metadata"]["namespace"] in check_id_denylist:

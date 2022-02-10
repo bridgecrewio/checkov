@@ -3,7 +3,7 @@ import fnmatch
 from collections.abc import Iterable
 from typing import Set, Optional, Union, List
 
-from checkov.common.bridgecrew.severities import Severity
+from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 
@@ -27,12 +27,33 @@ class RunnerFilter(object):
             excluded_paths: Optional[List[str]] = None,
             all_external: bool = False,
             var_files: Optional[List[str]] = None,
-            min_cve_severity: str = 'none',
             skip_cve_package: Optional[List] = None
     ) -> None:
 
-        self.checks = convert_csv_string_arg_to_list(checks)
-        self.skip_checks = convert_csv_string_arg_to_list(skip_checks)
+        checks = convert_csv_string_arg_to_list(checks)
+        skip_checks = convert_csv_string_arg_to_list(skip_checks)
+
+        # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
+        # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
+        self.check_threshold = None
+        self.skip_check_threshold = None
+        self.checks = []
+        self.skip_checks = []
+
+        # split out check/skip thresholds so we can access them easily later
+        for val in checks:
+            if val in Severities:
+                if not self.check_threshold or self.check_threshold.level > Severities[val].level:
+                    self.check_threshold = Severities[val]
+            else:
+                self.checks.append(val)
+
+        for val in skip_checks:
+            if val in Severities:
+                if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
+                    self.skip_check_threshold = Severities[val]
+            else:
+                self.skip_checks.append(val)
 
         self.framework: "Iterable[str]" = framework if framework else ["all"]
         if skip_framework:
@@ -51,8 +72,8 @@ class RunnerFilter(object):
         self.excluded_paths = excluded_paths
         self.all_external = all_external
         self.var_files = var_files
-        self.min_cve_severity = min_cve_severity
         self.skip_cve_package = skip_cve_package
+
 
     def should_run_check(self, check=None, check_id=None, bc_check_id=None, severity=None) -> bool:
         if check:
@@ -61,22 +82,35 @@ class RunnerFilter(object):
             severity = check.bc_severity
         if RunnerFilter.is_external_check(check_id) and self.all_external:
             pass  # enabled unless skipped
-        elif self.checks:
-            if self.check_matches(check_id, bc_check_id, severity, self.checks):
+        elif self.checks or self.check_threshold:
+            if self.check_matches(check_id, bc_check_id, severity, self.checks, self.check_threshold, False):
                 return True
             return False
 
-        if self.skip_checks and self.check_matches(check_id, bc_check_id, severity, self.skip_checks):
+        if (self.skip_checks or self.skip_check_threshold) and self.check_matches(check_id, bc_check_id, severity, self.skip_checks, self.skip_check_threshold, threshold_is_max=True):
             return False
         return True
 
     @staticmethod
-    def check_matches(check_id: str, bc_check_id: str, severity: Optional[Severity], pattern_list: List[str]):
+    def check_matches(check_id: str,
+                      bc_check_id: str,
+                      severity: Optional[Severity],
+                      pattern_list: List[str],
+                      threshold: Optional[Severity] = None,
+                      threshold_is_max: Optional[bool] = None):
+
+        # if it matches the threshold, then we can just return the result. If it doesn't, then we will check specific
+        # exclusions below
+        if severity and threshold:
+            if severity.level <= threshold.level and threshold_is_max:
+                return True
+            if severity.level >= threshold.level and not threshold_is_max:
+                return True
+
         for pattern in pattern_list:
             if (
                     ((check_id and fnmatch.fnmatch(check_id, pattern))
                      or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
-                    or (severity and severity.name == pattern)
             ):
                 return True
         return False

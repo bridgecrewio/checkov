@@ -15,6 +15,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from checkov import sca_package
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -177,9 +178,18 @@ class Report:
         :return: Exit code 0 or 1.
         """
         if soft_fail_on:
-            soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
+            soft_fail_on_checks = []
+            soft_fail_threshold = None
+            # soft fail on the highest severity threshold in the list
+            for val in convert_csv_string_arg_to_list(soft_fail_on):
+                if val in Severities:
+                    if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
+                        soft_fail_threshold = Severities[val]
+                else:
+                    soft_fail_on_checks.append(val)
+
             if all(
-                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, soft_fail_on)
+                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, soft_fail_on_checks, soft_fail_threshold, True)
                 for failed_check in self.failed_checks
             ):
                 # List of "failed checks" is a subset of the "soft fail on" list.
@@ -187,9 +197,16 @@ class Report:
             else:
                 return 1
         if hard_fail_on:
-            hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
+            hard_fail_on_checks = []
+            hard_fail_threshold = None
+            for val in convert_csv_string_arg_to_list(hard_fail_on):
+                if val in Severities:
+                    if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
+                        hard_fail_threshold = Severities[val]
+                else:
+                    hard_fail_on_checks.append(val)
             if any(
-                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, hard_fail_on)
+                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, hard_fail_on_checks, hard_fail_threshold, False)
                 for failed_check in self.failed_checks
             ):
                 # Any check from the list of "failed checks" is in the list of "hard fail on checks".

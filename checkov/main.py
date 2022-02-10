@@ -114,7 +114,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 min_cve_severity=config.min_cve_severity, skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -321,12 +321,14 @@ def add_parser_args(parser):
     parser.add('-c', '--check',
                help='Checks to run; any other checks will be skipped. Enter one or more items separated by commas. '
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
-                    'a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append', default=None,
+                    'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
+                    'above the severity will be included.', action='append', default=None,
                env_var='CKV_CHECK')
     parser.add('--skip-check',
                help='Checks to skip; any other checks will not be run. Enter one or more items separated by commas. '
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
-                    'a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append', default=None,
+                    'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
+                    'below the severity will be skipped.', action='append', default=None,
                env_var='CKV_SKIP_CHECK')
     parser.add('--run-all-external-checks', action='store_true',
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '

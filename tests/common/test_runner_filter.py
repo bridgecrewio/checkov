@@ -1,6 +1,6 @@
 import unittest
 
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.checks.base_check import BaseCheck
 from checkov.runner_filter import RunnerFilter
 
@@ -121,19 +121,19 @@ class TestRunnerFilter(unittest.TestCase):
 
     def test_should_run_severity1(self):
         instance = RunnerFilter(checks=["LOW"])
-        self.assertTrue(instance.should_run_check(severity=Severities.LOW))
+        self.assertTrue(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
 
     def test_should_run_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
-        self.assertTrue(instance.should_run_check(severity=Severities.HIGH))
+        self.assertTrue(instance.should_run_check(severity=Severities[BcSeverities.HIGH]))
 
     def test_should_skip_severity1(self):
         instance = RunnerFilter(checks=["HIGH"])
-        self.assertFalse(instance.should_run_check(severity=Severities.LOW))
+        self.assertFalse(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
 
     def test_should_skip_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
-        self.assertFalse(instance.should_run_check(severity=Severities.LOW))
+        self.assertFalse(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
 
     def test_should_run_check_id(self):
         instance = RunnerFilter(checks=['CKV_AWS_45'])
@@ -182,26 +182,70 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_check_severity(self):
         instance = RunnerFilter(checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities.LOW
+        check.bc_severity = Severities[BcSeverities.LOW]
         self.assertTrue(instance.should_run_check(check=check))
 
     def test_should_run_check_severity_omitted(self):
         instance = RunnerFilter(checks=['HIGH'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities.LOW
+        check.bc_severity = Severities[BcSeverities.LOW]
         self.assertFalse(instance.should_run_check(check=check))
+
+    def test_should_run_check_severity_implicit(self):
+        instance = RunnerFilter(checks=['LOW'])
+        from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
+        check.bc_severity = Severities[BcSeverities.HIGH]
+        self.assertTrue(instance.should_run_check(check=check))
 
     def test_should_skip_check_severity(self):
         instance = RunnerFilter(skip_checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities.LOW
+        check.bc_severity = Severities[BcSeverities.LOW]
         self.assertFalse(instance.should_run_check(check=check))
 
-    def test_should_skip_check_severity_omitted(self):
+    def test_should_skip_check_severity_implicit(self):
         instance = RunnerFilter(skip_checks=['HIGH'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities.LOW
+        check.bc_severity = Severities[BcSeverities.LOW]
+        self.assertFalse(instance.should_run_check(check=check))
+
+    def test_should_skip_check_severity_threshold_exceeded(self):
+        instance = RunnerFilter(skip_checks=['LOW'])
+        from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
+        check.bc_severity = Severities[BcSeverities.HIGH]
         self.assertTrue(instance.should_run_check(check=check))
+
+    def test_check_severity_split_no_sev(self):
+        instance = RunnerFilter(checks=['XYZ'])
+        self.assertIsNone(instance.check_threshold)
+        self.assertEqual(instance.checks, ['XYZ'])
+
+    def test_check_severity_split_skip_no_sev(self):
+        instance = RunnerFilter(skip_checks=['XYZ'])
+        self.assertIsNone(instance.skip_check_threshold)
+        self.assertEqual(instance.skip_checks, ['XYZ'])
+
+    def test_check_severity_split_one_sev(self):
+        instance = RunnerFilter(checks=['MEDIUM'])
+        self.assertEqual(instance.check_threshold, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(instance.checks, [])
+
+    def test_check_severity_split_two_sev(self):
+        instance = RunnerFilter(checks=['MEDIUM', 'LOW'])
+        # should take the lowest severity
+        self.assertEqual(instance.check_threshold, Severities[BcSeverities.LOW])
+        self.assertEqual(instance.checks, [])
+
+    def test_check_severity_split_skip_one_sev(self):
+        instance = RunnerFilter(skip_checks=['MEDIUM'])
+        self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(instance.skip_checks, [])
+
+    def test_check_severity_split_skip_two_sev(self):
+        instance = RunnerFilter(skip_checks=['LOW', 'MEDIUM'])
+        # should take the highest severity
+        self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(instance.skip_checks, [])
 
 
 if __name__ == '__main__':

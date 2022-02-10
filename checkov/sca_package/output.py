@@ -61,7 +61,7 @@ def create_report_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": f"Filtered by package '{package_name}'"
         }
-    elif Severities[severity.upper()] > Severities[runner_filter.min_cve_severity]:
+    elif Severities[severity.upper()].level < Severities[runner_filter.min_cve_severity]:
         check_result = {
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity"
