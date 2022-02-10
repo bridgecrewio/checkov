@@ -24,8 +24,5 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "private_ipv6_google_access"
 
-    # def get_expected_values(self) -> List[Any]:
-    #     return [ANY_VALUE]
-
 
 check = GoogleSubnetworkLoggingEnabled()
