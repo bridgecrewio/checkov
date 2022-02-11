@@ -77,6 +77,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         }
 
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
 
         suppression = {
             "suppressionType": "Accounts",
@@ -198,6 +199,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
 
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
 
         suppression = {
             "suppressionType": "Policy",
@@ -225,6 +227,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
         suppression = {
             "suppressionType": "Accounts",
             "policyId": "BC_AWS_S3_13",
@@ -251,6 +254,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
         suppression = {
             "suppressionType": "Accounts",
             "policyId": "BC_AWS_S3_13",
@@ -277,6 +281,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
         suppression = {
             "suppressionType": "Resources",
             "policyId": "BC_AWS_S3_13",
@@ -317,6 +322,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
         suppression = {
             "suppressionType": "Resources",
             "policyId": "BC_AWS_S3_13",
@@ -356,6 +362,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_tag_suppression(self):
         instance = BcPlatformIntegration()
         suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
         suppression = {
             "suppressionType": "Tags",
             "policyId": "BC_AWS_S3_16",
