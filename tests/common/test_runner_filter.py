@@ -81,6 +81,11 @@ class TestRunnerFilter(unittest.TestCase):
         instance.notify_external_check("EXT_CHECK_999")
         self.assertTrue(instance.should_run_check(check_id="EXT_CHECK_999"))
 
+    def test_should_run_external_severity(self):
+        instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_2", "HIGH"], all_external=True)
+        instance.notify_external_check("EXT_CHECK_999")
+        self.assertFalse(instance.should_run_check(check_id="EXT_CHECK_999", severity=Severities[BcSeverities.HIGH]))
+
     def test_should_run_external_disabled(self):
         instance = RunnerFilter(skip_checks=["CHECK_1", "EXT_CHECK_999"])
         instance.notify_external_check("EXT_CHECK_999")
@@ -93,7 +98,8 @@ class TestRunnerFilter(unittest.TestCase):
 
     def test_should_run_specific_disable_AND_enable(self):
         instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_1"])
-        self.assertTrue(instance.should_run_check(check_id="CHECK_1"))
+        # prioritze disable - also this is not valid input and would be blocked in main.py
+        self.assertFalse(instance.should_run_check(check_id="CHECK_1"))
     
     def test_should_run_omitted_wildcard(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
@@ -246,6 +252,41 @@ class TestRunnerFilter(unittest.TestCase):
         # should take the highest severity
         self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
         self.assertEqual(instance.skip_checks, [])
+
+    def test_run_sev_id_1(self):
+        instance = RunnerFilter(checks=['HIGH'], skip_checks=['CKV_AWS_123'])
+        # run all high and above, but skip this one ID regardless of severity
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.CRITICAL]))
+
+    def test_run_sev_id_2(self):
+        instance = RunnerFilter(checks=['CKV_AWS_123'], skip_checks=['HIGH'])
+        # this is actually just saying we are only running the one ID, and running by ID takes precedence over skipping
+        # by severity
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.CRITICAL]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
+
+    def test_run_two_sev_1(self):
+        instance = RunnerFilter(checks=['MEDIUM'], skip_checks=['HIGH'])
+        # run medium and higher, skip high and lower; skip takes priority
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
+
+    def test_run_two_sev_2(self):
+        instance = RunnerFilter(checks=['MEDIUM'], skip_checks=['HIGH'])
+        # run medium and higher, skip high and lower; skip takes priority
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
 
     def test_within_threshold(self):
         instance = RunnerFilter(checks=['LOW'])
