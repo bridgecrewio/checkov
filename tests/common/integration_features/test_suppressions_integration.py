@@ -30,7 +30,6 @@ class TestSuppressionsIntegration(unittest.TestCase):
         suppressions_integration.integration_feature_failures = True
         self.assertFalse(suppressions_integration.is_valid())
 
-
     def test_policy_id_regex(self):
         suppressions_integration = SuppressionsIntegration(BcPlatformIntegration())
 
@@ -39,7 +38,8 @@ class TestSuppressionsIntegration(unittest.TestCase):
             'bcORrg_aws_1234567891011',
             'bcORrg_AWS_1234567891011',
             'bcorg12_aws_1234567891011',
-            'bcorgabcdefgh_azure_1234567891011'
+            'bcorgabcdefgh_azure_1234567891011',
+            '0123456_azure_1234567891011'
         ]
 
         non_matching_ids = [
@@ -55,6 +55,19 @@ class TestSuppressionsIntegration(unittest.TestCase):
 
         for id in non_matching_ids:
             self.assertIsNone(suppressions_integration.custom_policy_id_regex.match(id))
+
+    def test_repo_match(self):
+        integration = BcPlatformIntegration()
+        integration.repo_id = 'org/repo'
+        suppressions_integration = SuppressionsIntegration(integration)
+        suppressions_integration._init_repo_regex()
+
+        self.assertTrue(suppressions_integration._repo_matches('org/repo'))
+        self.assertTrue(suppressions_integration._repo_matches('xyz_org/repo'))
+        self.assertTrue(suppressions_integration._repo_matches('80001234_org/repo'))
+        self.assertFalse(suppressions_integration._repo_matches('org/repo1'))
+        self.assertFalse(suppressions_integration._repo_matches('xyz_org/repo1'))
+        self.assertFalse(suppressions_integration._repo_matches('80001234_org/repo1'))
 
     def test_suppression_valid(self):
         instance = BcPlatformIntegration()
