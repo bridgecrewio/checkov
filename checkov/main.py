@@ -93,6 +93,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     if config.output is None:
         config.output = ['cli']
 
+    if config.soft_fail and (config.soft_fail_on and config.hard_fail_on):
+        logger.warning('--soft-fail was used with --soft-fail-on and / or --hard-fail-on. --soft-fail will be ignored.')
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
@@ -322,18 +325,53 @@ def add_parser_args(parser):
                help='Checks to run; any other checks will be skipped. Enter one or more items separated by commas. '
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
                     'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
-                    'above the severity will be included.', action='append', default=None,
+                    'above the lowest severity in the list will be included. This option can be combined with '
+                    '--skip-check. If it is, priority is given to checks explicitly listed by ID or wildcard over '
+                    'checks listed by severity. For example, if you use --check CKV_123 and --skip-check LOW, then '
+                    'CKV_123 will run even if it is a LOW severity. In the case of a tie (e.g., --check MEDIUM and '
+                    '--skip-check HIGH for a medium severity check), then the check will be skipped.',
+               action='append', default=None,
                env_var='CKV_CHECK')
     parser.add('--skip-check',
                help='Checks to skip; any other checks will not be run. Enter one or more items separated by commas. '
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
                     'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
-                    'below the severity will be skipped.', action='append', default=None,
+                    'below the highest severity in the list will be skipped. This option can be combined with --check. '
+                    'If it is, priority is given to checks explicitly listed by ID or wildcard over checks listed by '
+                    'severity. For example, if you use --skip-check CKV_123 and --check HIGH, then CKV_123 will be '
+                    'skipped even if it is a HIGH severity. In the case of a tie (e.g., --check MEDIUM and '
+                    '--skip-check HIGH for a medium severity check), then the check will be skipped.',
+               action='append', default=None,
                env_var='CKV_SKIP_CHECK')
     parser.add('--run-all-external-checks', action='store_true',
                help='Run all external checks (loaded via --external-checks options) even if the checks are not present '
                     'in the --check list. This allows you to always ensure that new checks present in the external '
                     'source are used. If an external check is included in --skip-check, it will still be skipped.')
+    parser.add('-s', '--soft-fail',
+               help='Runs checks but always returns a 0 exit code. Using either --soft-fail-on and / or --hard-fail-on '
+                    'overrides this option, except for the case when a result does not match either of the soft fail '
+                    'or hard fail criteria, in which case this flag determines the result.', action='store_true')
+    parser.add('--soft-fail-on',
+                        help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
+                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use '
+                             'a severity, then any severity equal to or less than the highest severity in the list '
+                             'will result in a soft fail. This option may be used with --hard-fail-on, using the same '
+                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                             'taking precedence in a tie. If a given result does not meet the --soft-fail-on nor '
+                             'the --hard-fail-on criteria, then the default is to hard fail',
+                        action='append',
+                        default=None)
+    parser.add('--hard-fail-on',
+                        help='Exits with a non-zero exit code for specified checks. Enter one or more items '
+                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a '
+                             'severity, then any severity equal to or greater than the lowest severity in the list will '
+                             'result in a hard fail. This option can be used with --soft-fail-on, using the same '
+                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                             'taking precedence in a tie.',
+                        action='append',
+                        default=None)
     parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY', sanitize=True)
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
@@ -398,20 +436,6 @@ def add_parser_args(parser):
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
-    # Add mutually exclusive groups of arguments
-    exit_code_group = parser.add_mutually_exclusive_group()
-    exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
-    exit_code_group.add('--soft-fail-on',
-                        help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL)',
-                        action='append',
-                        default=None)
-    exit_code_group.add('--hard-fail-on',
-                        help='Exits with a non-zero exit code for specified checks. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL)', action='append',
-                        default=None)
 
 
 def get_external_checks_dir(config):

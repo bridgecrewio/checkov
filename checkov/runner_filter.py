@@ -88,7 +88,6 @@ class RunnerFilter(object):
         is_external = RunnerFilter.is_external_check(check_id)
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
-
         implicit_run = not explicit_skip and not self.checks and not self.check_threshold
         implicit_skip = not explicit_run
 

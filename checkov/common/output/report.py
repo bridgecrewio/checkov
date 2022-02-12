@@ -179,46 +179,55 @@ class Report:
         result exit code 0.
         :return: Exit code 0 or 1.
         """
-        if soft_fail_on:
-            soft_fail_on_checks = []
-            soft_fail_threshold = None
-            # soft fail on the highest severity threshold in the list
-            for val in convert_csv_string_arg_to_list(soft_fail_on):
-                if val in Severities:
-                    if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
-                        soft_fail_threshold = Severities[val]
-                else:
-                    soft_fail_on_checks.append(val)
 
-            if all(
-                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, soft_fail_on_checks, soft_fail_threshold, True)
-                for failed_check in self.failed_checks
-            ):
-                # List of "failed checks" is a subset of the "soft fail on" list.
-                return 0
-            else:
-                return 1
-        if hard_fail_on:
-            hard_fail_on_checks = []
-            hard_fail_threshold = None
-            for val in convert_csv_string_arg_to_list(hard_fail_on):
-                if val in Severities:
-                    if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
-                        hard_fail_threshold = Severities[val]
-                else:
-                    hard_fail_on_checks.append(val)
-            if any(
-                RunnerFilter.check_matches(failed_check.check_id, failed_check.bc_check_id, failed_check.severity, hard_fail_on_checks, hard_fail_threshold, False)
-                for failed_check in self.failed_checks
-            ):
-                # Any check from the list of "failed checks" is in the list of "hard fail on checks".
-                return 1
-            else:
-                return 0
-        if soft_fail:
+        if not soft_fail_on and not hard_fail_on and soft_fail:
             return 0
-        elif len(self.failed_checks) > 0:
-            return 1
+
+        soft_fail_on_checks = []
+        soft_fail_threshold = None
+        # soft fail on the highest severity threshold in the list
+        for val in convert_csv_string_arg_to_list(soft_fail_on):
+            if val in Severities:
+                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
+                    soft_fail_threshold = Severities[val]
+            else:
+                soft_fail_on_checks.append(val)
+
+        hard_fail_on_checks = []
+        hard_fail_threshold = None
+        # hard fail on the lowest threshold in the list
+        for val in convert_csv_string_arg_to_list(hard_fail_on):
+            if val in Severities:
+                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
+                    hard_fail_threshold = Severities[val]
+            else:
+                hard_fail_on_checks.append(val)
+
+        for failed_check in self.failed_checks:
+            check_id = failed_check.check_id
+            bc_check_id = failed_check.bc_check_id
+            severity = failed_check.severity
+
+            # run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
+            # skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
+            # is_external = RunnerFilter.is_external_check(check_id)
+            # explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
+            # explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
+            # implicit_run = not explicit_skip and not self.checks and not self.check_threshold
+            # implicit_skip = not explicit_run
+
+            soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
+            hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
+            explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
+            explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
+            implicit_soft_fail = not explicit_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
+            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity
+
+            if explicit_hard_fail or \
+                    (hard_fail_severity and not explicit_soft_fail) or \
+                    (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                return 1
+
         return 0
 
     def is_empty(self) -> bool:

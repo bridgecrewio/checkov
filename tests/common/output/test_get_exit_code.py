@@ -98,6 +98,10 @@ class TestGetExitCode(unittest.TestCase):
         negative_test_hard_fail_on_code_bc_id = r.get_exit_code(None, soft_fail_on=None,
                                                                 hard_fail_on=['BC_AWS_161', 'BC_AWS_118'])
 
+        combined_test_soft_fail_sev_hard_fail_id = r.get_exit_code(None, soft_fail_on=['LOW'], hard_fail_on=['CKV_AWS_157'])
+        combined_test_soft_fail_id_hard_fail_sev = r.get_exit_code(None, soft_fail_on=['CKV_AWS_16'], hard_fail_on=['HIGH'])
+        combined_test_soft_fail_id_hard_fail_sev_fail = r.get_exit_code(True, soft_fail_on=['CKV_AWS_16'], hard_fail_on=['HIGH'])
+
         self.assertEqual(test_soft_fail, 0)
         self.assertEqual(positive_test_soft_fail_on_code, 0)
         self.assertEqual(positive_test_soft_fail_on_code_one_sev, 0)
@@ -117,6 +121,10 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(positive_test_hard_fail_on_code_bc_id, 1)
         self.assertEqual(negative_test_hard_fail_on_code, 0)
         self.assertEqual(negative_test_hard_fail_on_code_bc_id, 0)
+
+        self.assertEqual(combined_test_soft_fail_sev_hard_fail_id, 1)
+        self.assertEqual(combined_test_soft_fail_id_hard_fail_sev, 1)
+        self.assertEqual(combined_test_soft_fail_id_hard_fail_sev_fail, 0)
 
 
 if __name__ == '__main__':
