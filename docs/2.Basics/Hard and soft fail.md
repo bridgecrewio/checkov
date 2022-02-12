@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Hard and soft fail
-nav_order: 7
+nav_order: 4
 ---
 
 # Hard and soft fail
