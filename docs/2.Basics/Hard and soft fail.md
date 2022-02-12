@@ -53,3 +53,9 @@ Assume we have a scan with two failed results:
 |---------|--------|
 |CKV_123|LOW|
 |CKV_789|HIGH|
+
+The table below shows how different values of `--soft-fail`, `--soft-fail-on`, and `--hard-fail-on` will yield an exit code.
+
+|Soft Fail|Soft Fail On|Hard Fail On|Scan Result|
+|-|-|-|-|
+| True | - | - |0 (soft fail)|
