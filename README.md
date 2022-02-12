@@ -200,7 +200,7 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 ### Running or skipping checks 
 
 Using command line flags you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list).
+those listed (deny list). If you are using the platform integration, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
 
 List available checks:
 ```sh
@@ -220,6 +220,26 @@ checkov -d . --skip-check CKV_AWS_20
 Run all checks except checks with specified patterns:
 ```sh
 checkov -d . --skip-check CKV_AWS*
+```
+
+Run all checks that are MEDIUM severity or higher (requires API key):
+```sh
+checkov -d . --check MEDIUM --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower:
+```sh
+checkov -d . --skip-check MEDIUM --bc-api-key ...
+```
+
+Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assume this is a medium or higher severity check):
+```sh
+checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower, but skip check CKV_789 (assume this is a medium or lower severity check):
+```sh
+checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```
 
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
