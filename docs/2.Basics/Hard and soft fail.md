@@ -21,8 +21,35 @@ Use the `--soft-fail` (`-s`) option to have Checkov always return a `0` exit cod
 
 ### --soft-fail-on
 
-Use the `--soft-fail-on` option to pass one or more check IDs and / or severity levels to specify which failed checks will result in a soft fail result. Any failed check that does not match a criteria in the soft-fail list will result in an error exit code (`1`).
+Use the `--soft-fail-on` option to pass one or more check IDs (including wildcards) and / or severity levels to specify which failed checks will result in a soft fail result. Any failed check that does not match a criteria in the soft-fail list will result in an error exit code (`1`).
+
+For soft fails, a a failed check *matches* the threshold if its severity is less than or equal to the soft fail severity. If you specify more than one severity for soft fail, then the highest severity will be used as the threshold.
 
 ### --hard-fail-on
 
 Use the `--hard-fail-on` option to pass one or more check IDs and / or severity levels to specify which failed checks will result in an error result. If all failed checks do *not* match any criteria in the hard-fail list, then the result of the scan will be a soft fail (`0`).
+
+For hard fails, a a failed check *matches* the threshold if its severity is greater than or equal to the hard fail severity. If you specify more than one severity for hard fail, then the lowest severity will be used as the threshold.
+
+## Combining options
+
+You can combine the use of the three flags described above. In this case, the logic to determine the scan result is as follows:
+
+For each check result, go through the following checks in order:
+
+1. If the failed check matches a check ID (or wildcard) in the *hard fail* list, then the result is a hard failure.
+2. If the failed check matches a check ID (or wildcard) in the *soft fail* list, then the result is a soft failure.
+3. If the failed check's severity is equal to or greater than the severity in the *hard fail* list, then the result is a hard failure.
+4. If the failed check's severity is equal to or less than the severity in the *soft fail* list, then the result is a soft failure.
+5. If the failed check does not match a check ID, wildcard, or severity in either list, then the result is the value of the `--soft-fail` flag.
+
+Using the logic above, if *any* failed check results hard failure, then the result of the run is a hard failure. If *all* failed checks result in a soft failure, then the result is a soft failure.
+
+# Examples
+
+Assume we have a scan with two failed results:
+
+|Policy Id|Severity|
+|---------|--------|
+|CKV_123|LOW|
+|CKV_789|HIGH|
