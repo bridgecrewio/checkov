@@ -33,15 +33,13 @@ For hard fails, a a failed check *matches* the threshold if its severity is grea
 
 ## Combining options
 
-You can combine the use of the three flags described above. In this case, the logic to determine the scan result is as follows:
-
-For each check result, go through the following checks in order:
+You can combine the use of the three flags described above. In this case, Checkov will evaluate each failed check, applying the following logic in order of precedence:
 
 1. If the failed check matches a check ID (or wildcard) in the *hard fail* list, then the result is a hard failure.
 2. If the failed check matches a check ID (or wildcard) in the *soft fail* list, then the result is a soft failure.
 3. If the failed check's severity is equal to or greater than the severity in the *hard fail* list, then the result is a hard failure.
 4. If the failed check's severity is equal to or less than the severity in the *soft fail* list, then the result is a soft failure.
-5. If the failed check does not match a check ID, wildcard, or severity in either list, then the result is the value of the `--soft-fail` flag.
+6. If the failed check does not match a check ID, wildcard, or severity in either list, then the result is the value of the `--soft-fail` flag.
 
 Using the logic above, if *any* failed check results hard failure, then the result of the run is a hard failure. If *all* failed checks result in a soft failure, then the result is a soft failure.
 
@@ -58,5 +56,9 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 
 |Soft Fail|Soft Fail On|Hard Fail On|Scan Result|Comments|
 |-|-|-|-|-|
-| True | - | - |0 (soft fail)|All errors are soft fails|
-| False|CKV_123|-|1 (hard fail)|soft fail requires all failures to match a soft fail critera|
+|True | - | - |0 (soft fail)|All errors are soft fails|
+|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail critera|
+|False|-|CKV_999|0|Every failed check did not match a hard fail criteria, so the result is implicitly soft fail|
+|False|LOW,CKV_789|CKV_123|1|The explicit match of the hard fail criteria results in a hard fail|
+|False|CKV_789|HIGH|1|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to the value of soft fail, which is false|
+|True|CKV_789|HIGH|1|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to soft fail, which is true|
