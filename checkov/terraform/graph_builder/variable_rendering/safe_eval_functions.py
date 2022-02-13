@@ -161,6 +161,93 @@ def timeadd(input_str: str, time_delta: str) -> str:
         
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
+def process_formatting_codes(format_str: str, dt: datetime) -> str:
+    format_mapping = {
+        "YYYY": "%Y",
+        "YY": "%y",
+        "MMMM": "%B",
+        "MMM": "%b",
+        "MM": "%m",
+        "M": "%-m",
+        "DD" : "%d",
+        "D" : "%-d",
+        "EEEE" : "%A",
+        "EEE" : "%a",
+        "HH" : "%I",
+        "H" : "%-I",
+        "hh" : "%H",
+        "h" : "%-H",
+        "mm" : "%M",
+        "m" : "%-M",
+        "ss" : "%S",
+        "s" : "%-S",
+        "AA" : "%p",
+        # "aa" : "%p",  # included for completeness but requires separate handling
+        "ZZZZZ" : "%z",
+        "ZZZZ" : "%z",
+        "ZZZ" : "%z",
+        "Z " : "%z"}
+
+    if format_str == 'aa':
+        format_str = dt.strftime('%p').lower()
+    elif format_str == 'ZZZZZ':
+        tz = dt.strftime("%z")
+        format_str = tz[:3] + ":" + tz[3:]
+    elif format_str == 'ZZZ':
+        tz = dt.strftime("%z")
+        if tz == '+0000':
+            tz = 'UTC'
+        format_str = tz
+    elif format_str == 'Z':
+        tz = dt.strftime("%z")
+        if tz == '+0000':
+            tz = 'Z'
+        format_str = tz
+    else:
+        format_str = format_mapping.get(format_str, format_str)
+
+    return format_str
+
+'''
+From docs: This function is intended for producing common machine-oriented timestamp formats such as 
+those defined in RFC822, RFC850, and RFC1123. It is not suitable for truly human-oriented date 
+formatting because it is not locale-aware.
+Any non-letter characters, such as punctuation, are reproduced verbatim in the output. 
+To include literal letters in the format string, enclose them in single quotes '. 
+To include a literal quote, escape it by doubling the quotes.
+Function works through the format string halting on single quotes to process any formatting
+'''
+def formatdate(format_str:str, input_str: str) -> str:
+    # Convert the input str to a date
+    input_str = input_str.replace("Z", "+00:00")
+    dt = datetime.datetime.fromisoformat(input_str)
+
+    processed_format_str = ""
+    format_str_segment = ""
+    in_quote = False  # Keep track of whether in formatting or quoted text
+    last_ch = ""  # Used to identify the '' scenario
+    for ch in format_str:
+        if ch == "'" or in_quote is True:
+            if len(format_str_segment) > 0:
+                processed_format_str += process_formatting_codes(format_str_segment, dt)
+                format_str_segment = ""
+            if ch == "'":
+                if last_ch == "'":
+                    processed_format_str += "'"
+                in_quote = not in_quote
+            else:
+                processed_format_str += ch 
+        else:
+            if ch != last_ch and last_ch != "":  # new format code and the start of the string
+                processed_format_str += process_formatting_codes(format_str_segment, dt)
+                format_str_segment = ""
+            format_str_segment += ch
+        last_ch = ch
+    if len(format_str_segment) > 0:
+        processed_format_str += process_formatting_codes(format_str_segment, dt)
+
+    return dt.strftime(processed_format_str)
+
 SAFE_EVAL_FUNCTIONS: List[str] = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
 
@@ -232,6 +319,7 @@ SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 # date functions
 SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 SAFE_EVAL_DICT["timeadd"] = timeadd
+SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
 def evaluate(input_str: str) -> Any:
