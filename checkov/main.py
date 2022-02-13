@@ -216,6 +216,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
     created_baseline_path = None
 
+    git_configuration_folders = [os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf'),
+                                 os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
+
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -226,6 +229,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
                 bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths)
+                bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
@@ -260,6 +264,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
+            bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
         return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
@@ -323,7 +328,7 @@ def add_parser_args(parser):
     parser.add('--skip-framework',
                help='filter scan to skip specific infrastructure code frameworks. \n'
                     'will be included automatically for some frameworks if system dependencies '
-                    'are missing.',
+                'are missing.',
                choices=checkov_runners,
                default=None,
                nargs="+")
