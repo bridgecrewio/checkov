@@ -48,8 +48,5 @@ jobs:
           setup-python-dependencies: false
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
-      - name: Utils
-        run: |
-          which python3
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
