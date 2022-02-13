@@ -4,6 +4,7 @@ from checkov.common.util.config_utils import should_scan_hcl_files
 
 SCAN_HCL_FLAG = "CKV_SCAN_HCL"
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
+SUPPORTED_FILES = ["Dockerfile"]
 if should_scan_hcl_files():
     SUPPORTED_FILE_EXTENSIONS.append(".hcl")
 ANY_VALUE = "CKV_ANY"
