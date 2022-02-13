@@ -53,11 +53,12 @@ class RunnerRegistry:
         guidelines: Optional[Dict[str, str]] = None,
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
+        resource_suppressions = None,
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
             reports = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                           runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)]
+                                           runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments, resource_suppressions=resource_suppressions)]
         else:
             reports = parallel_runner.run_function(
                 lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,

@@ -21,7 +21,7 @@ class ParserRegistry:
         self.definitions_context = {}
 
     def enrich_definitions_context(
-        self, definitions: Tuple[str, Dict[str, List[Dict[str, Any]]]], collect_skip_comments: bool = True
+        self, definitions: Tuple[str, Dict[str, List[Dict[str, Any]]]], collect_skip_comments: bool = True, resource_suppression=None
     ) -> Dict[str, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_file, definition_blocks_types) = definitions
@@ -33,7 +33,7 @@ class ParserRegistry:
                     context_parser = self.context_parsers[definition_type]
                     definition_blocks = definition_blocks_types[definition_type]
                     self.definitions_context[tf_file][definition_type] = context_parser.run(
-                        tf_file, definition_blocks, collect_skip_comments
+                        tf_file, definition_blocks, collect_skip_comments, resource_suppression=resource_suppression
                     )
 
         return self.definitions_context

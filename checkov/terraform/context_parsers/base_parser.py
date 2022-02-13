@@ -64,11 +64,31 @@ class BaseContextParser(ABC):
         self.filtered_line_numbers = [ind for ind, _ in self.filtered_lines]
         return self.filtered_lines
 
-    def _read_file_lines(self) -> List[Tuple[int, str]]:
+    def _read_file_lines(self, resource_suppression={}) -> List[Tuple[int, str]]:
+        if resource_suppression:
+            resource_suppression = eval(resource_suppression)
+
         with open(self.tf_file, "r") as file:
             file.seek(0)
-            file_lines = [(ind + 1, line) for ind, line in enumerate(file.readlines())]
-            return file_lines
+            file_lines = []
+            ind = 1
+            for line in file.readlines():
+                if 'resource' in line:
+                    file_lines.append((ind, line))
+                    if resource_suppression:
+                        for resource in resource_suppression.keys():
+                            resource_id = resource.split('.')
+                            if resource_id[0] in line and resource_id[1] in line:
+                                for id_and_comment in resource_suppression.get(resource):
+                                    check_id = id_and_comment.get('id')
+                                    comment = id_and_comment.get('comment')
+                                    ind += 1
+                                    file_lines.append((ind, f'#checkov:skip={check_id}:{comment}'))
+                else:
+                    file_lines.append((ind, line))
+                ind += 1
+
+        return file_lines
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
@@ -144,7 +164,7 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(
-            self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
+            self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True, resource_suppression=None
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
@@ -155,7 +175,7 @@ class BaseContextParser(ABC):
             self.tf_file = tf_file
             self.tf_file_path = Path(tf_file)
         self.context = {}
-        self.file_lines = self._read_file_lines()
+        self.file_lines = self._read_file_lines(resource_suppression=resource_suppression)
         self.context = self.enrich_definition_block(definition_blocks)
         if collect_skip_comments:
             self.context = self._collect_skip_comments(definition_blocks)
