@@ -328,7 +328,7 @@ def add_parser_args(parser):
     parser.add('--skip-framework',
                help='filter scan to skip specific infrastructure code frameworks. \n'
                     'will be included automatically for some frameworks if system dependencies '
-                'are missing.',
+                    'are missing.',
                choices=checkov_runners,
                default=None,
                nargs="+")
