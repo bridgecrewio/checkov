@@ -248,7 +248,7 @@ class BcPlatformIntegration(object):
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
-                    files_to_persist.append((f, os.path.relpath(f, root_dir)))
+                    files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
