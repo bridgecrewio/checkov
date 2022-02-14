@@ -41,17 +41,14 @@ def force_float(var: Any) -> Optional[float]:
     except Exception:
         return None
 
-def convert_str_to_bool_if_possible(bool_str: Union[bool, str]) -> Union[bool, str]:
+
+def convert_str_to_bool(bool_str: Union[bool, str]) -> Union[bool, str]:
     if bool_str in ["true", '"true"', "True", '"True"']:
         return True
     elif bool_str in ["false", '"false"', "False", '"False"']:
         return False
     else:
         return bool_str
-
-
-def convert_str_to_bool(bool_str: Union[bool, str]) -> bool:
-    return bool(convert_str_to_bool_if_possible(bool_str))
 
 
 def force_dict(obj: Any) -> Optional[Dict[str, Any]]:
