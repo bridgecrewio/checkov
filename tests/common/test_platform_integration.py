@@ -16,6 +16,7 @@ class TestBCApiUrl(unittest.TestCase):
     def test_overriding_pc_api_url(self):
         instance = BcPlatformIntegration()
         instance.setup_bridgecrew_credentials(
+            repo_id="bridgecrewio/checkov"
             prisma_api_url="https://api0.prismacloud.io"
         )
         self.assertEqual(instance.api_url, "https://api0.prismacloud.io/bridgecrew")
