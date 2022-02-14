@@ -27,7 +27,7 @@ class RunnerFilter(object):
         all_external: bool = False,
         var_files: Optional[List[str]] = None,
         min_cve_severity: str = 'none',
-        skip_cve_package: Optional[List[Any]] = None
+        skip_cve_package: Optional[List[str]] = None
     ) -> None:
 
         self.checks = convert_csv_string_arg_to_list(checks)
