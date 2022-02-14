@@ -9,14 +9,30 @@ from typing import Tuple, Dict, Any
 from aiomultiprocess import Pool
 
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import package_scanning_integration
-from checkov.common.bridgecrew.vulnerability_scanning.package_scanner import TWISTCLI_FILE_NAME, PackageScanner
+
+TWISTCLI_FILE_NAME = 'twistcli'
 
 
 class Scanner:
-    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]") -> "Sequence[Dict[str, Any]]":
-        package_scanner = PackageScanner()
+    def __init__(self) -> None:
+        self.twistcli_path = Path(TWISTCLI_FILE_NAME)
 
-        package_scanner.setup_scan()
+    def setup_twictcli(self) -> None:
+        try:
+            if not self.twistcli_path.exists():
+                package_scanning_integration.download_twistcli(self.twistcli_path)
+        except Exception as e:
+            logging.error(f"Failed to setup twictcli for package scanning\n{e}")
+            raise e
+
+    def cleanup_twictcli(self) -> None:
+        if self.twistcli_path.exists():
+            self.twistcli_path.unlink()
+        logging.info('twistcli file removed')
+
+    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = True) \
+            -> "Sequence[Dict[str, Any]]":
+        self.setup_twictcli()
 
         scan_results = asyncio.run(
             self.run_scan_multi(
@@ -25,7 +41,8 @@ class Scanner:
                 input_output_paths=input_output_paths,
             )
         )
-
+        if cleanup_twictcli:
+            self.cleanup_twictcli()
         return scan_results
 
     async def run_scan_multi(
