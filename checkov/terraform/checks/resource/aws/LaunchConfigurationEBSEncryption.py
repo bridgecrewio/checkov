@@ -38,7 +38,7 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
 
         allblocks = root + blocks
 
-        if len(allblocks) == 0:
+        if not allblocks:
             return CheckResult.Unknown
 
         for block in allblocks:
