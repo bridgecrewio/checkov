@@ -1,9 +1,11 @@
 import json
-from typing import List
+import logging
+import re
 
 from checkov.common.parsers.node import StrNode
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.serverless.parsers.parser import DEFAULT_VAR_PATTERN
 
 
 class ECRPolicy(BaseResourceCheck):
@@ -26,7 +28,17 @@ class ECRPolicy(BaseResourceCheck):
             if 'RepositoryPolicyText' in conf['Properties'].keys():
                 policy_text = conf['Properties']['RepositoryPolicyText']
                 if type(policy_text) in (str, StrNode):
-                    policy_text = json.loads(str(policy_text))
+                    try:
+                        policy_text = json.loads(str(policy_text))
+                    except json.decoder.JSONDecodeError as e:
+                        if re.match(DEFAULT_VAR_PATTERN, str(policy_text)):
+                            # Case where the template is a sub-CFN configuration inside a serverless configuration,
+                            # and the policy is a variable expression
+                            logging.info(f"Encountered variable expression {str(policy_text)} in resource ${self.entity_path}")
+                        else:
+                            logging.error(
+                                f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}")
+                        return CheckResult.UNKNOWN
                 if 'Statement' in policy_text.keys():
                     for statement_index, statement in enumerate(policy_text['Statement']):
                         if 'Principal' in statement.keys():
@@ -48,5 +60,6 @@ class ECRPolicy(BaseResourceCheck):
                 if 'aws:PrincipalOrgID' in condition['ForAllValues:StringEquals'].keys():
                     return True
         return False
+
 
 check = ECRPolicy()
