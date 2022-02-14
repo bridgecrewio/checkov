@@ -23,10 +23,10 @@ class GKENetworkPolicyEnabled(BaseResourceValueCheck):
             datapath_provider = conf.get('datapath_provider')
 
             if 'enabled' in network_policy[0]:
-                policy_enabled = network_policy[0].get('enabled')
+                policy_enabled = network_policy[0].get('enabled')[0]
                 if policy_enabled:
                     return CheckResult.PASSED
-                elif not policy_enabled and datapath_provider == 'ADVANCED_DATAPATH':
+                elif not policy_enabled and datapath_provider == ['ADVANCED_DATAPATH']:
                     return CheckResult.PASSED
 
         return CheckResult.FAILED

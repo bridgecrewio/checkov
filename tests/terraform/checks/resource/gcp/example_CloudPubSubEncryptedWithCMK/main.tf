@@ -1,5 +1,5 @@
 resource "google_pubsub_topic" "fail" {
-  name         = "example-topic"
+  name = "example-topic"
   # kms_key_name = google_kms_crypto_key.crypto_key.id
 }
 

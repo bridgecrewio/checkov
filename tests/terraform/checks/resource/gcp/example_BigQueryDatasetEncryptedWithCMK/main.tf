@@ -28,6 +28,6 @@ resource "google_bigquery_dataset" "pass" {
   default_table_expiration_ms = var.dataset.default_table_expiration_ms
 
   default_encryption_configuration {
-    kms_key_name=google_kms_crypto_key.example.name
+    kms_key_name = google_kms_crypto_key.example.name
   }
 }
