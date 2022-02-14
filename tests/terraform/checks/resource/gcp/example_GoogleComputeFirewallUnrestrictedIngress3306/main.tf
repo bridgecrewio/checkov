@@ -49,8 +49,8 @@ resource "google_compute_firewall" "allow_null" {
 #####################
 
 
-# fails b/c of unrestricted CIDR
-# + port 3306 is in the range
+# fails b/c of unrestricted CIDR +
+# port 3306 is in the range
 resource "google_compute_firewall" "allow_all" {
   name    = "example"
   network = "google_compute_network.vpc.name"
