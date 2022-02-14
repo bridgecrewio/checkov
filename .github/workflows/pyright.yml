@@ -1,0 +1,27 @@
+- name: Run pyright
+  # You may pin to the exact commit or the version.
+  # uses: jakebailey/pyright-action@474a259945bd1ec4c148032917e0e04a8248ffbc
+  uses: jakebailey/pyright-action@v1.0.3
+  with:
+    # Version of pyright to run. If not specified, the latest version will be used.
+    version: # optional
+    # Directory to run pyright in. If not specified, the repo root will be used.
+    working-directory: # optional
+    # Analyze for a specific platform (Darwin, Linux, Windows).
+    python-platform: # optional
+    # Analyze for a specific version (3.3, 3.4, etc.).
+    python-version: # optional
+    # Use typeshed type stubs at this location.
+    typeshed-path: # optional
+    # Directory that contains virtual environments.
+    venv-path: # optional
+    # Use the configuration file at this location.
+    project: # optional
+    # Use library code to infer types when stubs are missing.
+    lib: # optional, default is false
+    # Use exit code of 1 if warnings are reported.
+    warnings: # optional, default is false
+    # Extra arguments; can be used to specify specific files to check.
+    extra-args: # optional
+    # Disable issue/commit comments
+    no-comments: # optional, default is false 
