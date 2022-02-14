@@ -18,6 +18,7 @@ class Github(BaseVCSDAL):
                                                                      "branch_protection_rules.json")
 
     def discover(self):
+
         self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com")
         self.graphql_api_url = f"{self.api_url}/graphql"
 
