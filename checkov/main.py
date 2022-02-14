@@ -7,7 +7,7 @@ import shutil
 import signal
 import sys
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Optional
 
 import argcomplete
 import configargparse

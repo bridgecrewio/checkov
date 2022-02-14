@@ -47,7 +47,7 @@ class RunnerFilter(object):
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
-        self.excluded_paths = excluded_paths
+        self.excluded_paths = excluded_paths or []
         self.all_external = all_external
         self.var_files = var_files
         self.min_cve_severity = min_cve_severity
