@@ -65,6 +65,7 @@ class TestGetExitCode(unittest.TestCase):
         r.add_record(record4)
 
         # When soft_fail=True, the exit code should always be 0.
+        test_default = r.get_exit_code(soft_fail=False, soft_fail_on=None, hard_fail_on=None)
         test_soft_fail = r.get_exit_code(soft_fail=True, soft_fail_on=None, hard_fail_on=None)
 
         # When soft_fail_on=['check1', 'check2'], exit code should be 0 if the only failing checks are in the
@@ -102,6 +103,7 @@ class TestGetExitCode(unittest.TestCase):
         combined_test_soft_fail_id_hard_fail_sev = r.get_exit_code(None, soft_fail_on=['CKV_AWS_16'], hard_fail_on=['HIGH'])
         combined_test_soft_fail_id_hard_fail_sev_fail = r.get_exit_code(True, soft_fail_on=['CKV_AWS_16'], hard_fail_on=['HIGH'])
 
+        self.assertEqual(test_default, 1)
         self.assertEqual(test_soft_fail, 0)
         self.assertEqual(positive_test_soft_fail_on_code, 0)
         self.assertEqual(positive_test_soft_fail_on_code_one_sev, 0)

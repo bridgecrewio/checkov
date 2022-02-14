@@ -288,6 +288,20 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
 
+    def test_run_sev_explicit(self):
+        instance = RunnerFilter(checks=['MEDIUM', 'CKV_AWS_789'])
+        # run medium and higher, skip high and lower; skip takes priority
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
+
+    def test_skip_sev_explicit(self):
+        instance = RunnerFilter(skip_checks=['MEDIUM', 'CKV_AWS_789'])
+        # run medium and higher, skip high and lower; skip takes priority
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
+
     def test_within_threshold(self):
         instance = RunnerFilter(checks=['LOW'])
         self.assertTrue(instance.within_threshold(Severities[BcSeverities.LOW]))

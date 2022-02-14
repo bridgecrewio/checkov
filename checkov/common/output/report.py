@@ -180,8 +180,10 @@ class Report:
         :return: Exit code 0 or 1.
         """
 
-        if not soft_fail_on and not hard_fail_on and soft_fail:
+        if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
             return 0
+        elif not soft_fail_on and not hard_fail_on and self.failed_checks:
+            return 1
 
         soft_fail_on_checks = []
         soft_fail_threshold = None
@@ -207,14 +209,6 @@ class Report:
             check_id = failed_check.check_id
             bc_check_id = failed_check.bc_check_id
             severity = failed_check.severity
-
-            # run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
-            # skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
-            # is_external = RunnerFilter.is_external_check(check_id)
-            # explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
-            # explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
-            # implicit_run = not explicit_skip and not self.checks and not self.check_threshold
-            # implicit_skip = not explicit_run
 
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
             hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
