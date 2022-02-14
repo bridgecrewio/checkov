@@ -34,7 +34,7 @@ class TestGoogleComputeFirewallUnrestrictedIngress3306(unittest.TestCase):
                     'ports': [[str(PORT)]]
                 }
             ],
-            'source_ranges': [['172.1.2.3/32']] # Non-public CIDR
+            'source_ranges': [['172.1.2.3/32']]  # Non-public CIDR
             }
 
         # This passes b/c we specify a non-public CIDR/IP
