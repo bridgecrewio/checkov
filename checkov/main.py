@@ -66,7 +66,7 @@ DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    gitlab_configuration_runner(), kustomize_runner(), sca_package_runner())
 
 
-def run(banner: str=checkov_banner, argv: List[str]=sys.argv[1:]) -> Optional[int]:
+def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
                                default_config_files=default_config_paths,
