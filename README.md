@@ -200,7 +200,7 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 ### Running or skipping checks 
 
 Using command line flags you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list). If you are using the platform integration, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
 
 List available checks:
 ```sh
@@ -227,9 +227,19 @@ Run all checks that are MEDIUM severity or higher (requires API key):
 checkov -d . --check MEDIUM --bc-api-key ...
 ```
 
+Run all checks that are MEDIUM severity or higher, as well as check CKV_123 (assume this is a LOW severity check):
+```sh
+checkov -d . --check MEDIUM,CKV_123 --bc-api-key ...
+```
+
 Skip all checks that are MEDIUM severity or lower:
 ```sh
 checkov -d . --skip-check MEDIUM --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower, as well as check CKV_789 (assume this is a high severity check):
+```sh
+checkov -d . --skip-check MEDIUM,CKV_789 --bc-api-key ...
 ```
 
 Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assume this is a medium or higher severity check):
@@ -237,7 +247,7 @@ Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assum
 checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
 ```
 
-Skip all checks that are MEDIUM severity or lower, but skip check CKV_789 (assume this is a medium or lower severity check):
+Skip all checks that are MEDIUM severity or lower, but run check CKV_789 (assume this is a medium or lower severity check):
 ```sh
 checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```

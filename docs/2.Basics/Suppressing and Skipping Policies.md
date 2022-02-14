@@ -191,6 +191,8 @@ If you specify a severity with the `--check` flag, then any check that is equal 
 
 You can also combine the `--check` and `--skip-check` flags when using severities to get a very granular policy set for the run.
 
+In order to filter by severity, you must run with the platform integration via API key.
+
 ## Examples
 
 Allow only the two specified checks to run: 
@@ -213,9 +215,19 @@ Run all checks that are MEDIUM severity or higher (requires API key):
 checkov -d . --check MEDIUM --bc-api-key ...
 ```
 
+Run all checks that are MEDIUM severity or higher, as well as check CKV_123 (assume this is a LOW severity check):
+```sh
+checkov -d . --check MEDIUM,CKV_123 --bc-api-key ...
+```
+
 Skip all checks that are MEDIUM severity or lower:
 ```sh
 checkov -d . --skip-check MEDIUM --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower, as well as check CKV_789 (assume this is a high severity check):
+```sh
+checkov -d . --skip-check MEDIUM,CKV_789 --bc-api-key ...
 ```
 
 Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assume this is a medium or higher severity check):
@@ -223,7 +235,7 @@ Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assum
 checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
 ```
 
-Skip all checks that are MEDIUM severity or lower, but skip check CKV_789 (assume this is a medium or lower severity check):
+Skip all checks that are MEDIUM severity or lower, but run check CKV_789 (assume this is a medium or lower severity check):
 ```sh
 checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```
