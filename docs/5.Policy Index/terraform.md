@@ -676,6 +676,7 @@ nav_order: 1
 | 665 | CKV_OPENSTACK_4 | resource | openstack_compute_instance_v2                  | Ensure that instance does not use basic credentials                                                                                                                                                      | Terraform |
 | 666 | CKV_OPENSTACK_5 | resource | openstack_fw_rule_v1                           | Ensure firewall rule set a destination IP                                                                                                                                                                | Terraform |
 | 667 | CKV_PAN_1       | provider | panos                                          | Ensure no hard coded PAN-OS credentials exist in provider                                                                                                                                                | Terraform |
+| 668 | CKV_PAN_2       | resource | panos_management_profile                       | Ensure plain-text management HTTP is not enabled for an Interface Management Profile                                                                                                                     | Terraform |
 
 
 ---
