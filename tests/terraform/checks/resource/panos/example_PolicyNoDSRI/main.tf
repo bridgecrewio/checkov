@@ -37,7 +37,7 @@ resource "panos_security_rule_group" "fail2" {
     }
 }
 
-# DSRI is set to false, ensuring server-to-client inspection is enable, which is a pass
+# DSRI is set to false, ensuring server-to-client inspection is enabled, which is a pass
 resource "panos_security_policy" "pass1" {
     rule {
         name = "my-rule"
@@ -55,7 +55,7 @@ resource "panos_security_policy" "pass1" {
     }
 }
 
-# DSRI is set to false, ensuring server-to-client inspection is enable, which is a pass
+# DSRI is set to false, ensuring server-to-client inspection is enabled, which is a pass
 resource "panos_security_rule_group" "pass2" {
     rule {
         name = "my-rule"
@@ -73,7 +73,7 @@ resource "panos_security_rule_group" "pass2" {
     }
 }
 
-# Not explicitly setting the DSRI attribute when creating a rule leads to the default setting of false, which ensures server-to-client inspection is enable, which is a pass
+# Not explicitly setting the DSRI attribute when creating a rule leads to the default setting of false, which ensures server-to-client inspection is enabled, which is a pass
 resource "panos_security_policy" "pass3" {
     rule {
         name = "my-rule"
@@ -90,7 +90,7 @@ resource "panos_security_policy" "pass3" {
     }
 }
 
-# Not explicitly setting the DSRI attribute when creating a rule leads to the default setting of false, which ensures server-to-client inspection is enable, which is a pass
+# Not explicitly setting the DSRI attribute when creating a rule leads to the default setting of false, which ensures server-to-client inspection is enabled, which is a pass
 resource "panos_security_rule_group" "pass4" {
     rule {
         name = "my-rule"
