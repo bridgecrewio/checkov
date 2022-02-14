@@ -26,15 +26,11 @@ class LaunchConfigurationEBSEncryption(BaseResourceValueCheck):
         #     # If present, the encrypted flag will be determined by the snapshot
         #     # Note: checkov does not know if snapshot is encrypted, so we default to PASSED
 
-        if conf.get('ebs_block_device'):
-            blocks = conf.get('ebs_block_device')
-        else:
-            blocks = []
-        if conf.get('root_block_device'):
-            root = conf.get('root_block_device')
-        else:
+        root = conf.get('root_block_device')
+        if not root:
             # Issue 496 - TF will create unencrypted EBS root by default if whole root_block_device block is omitted.
             return CheckResult.FAILED
+        blocks = conf.get('ebs_block_device') or []
 
         allblocks = root + blocks
 
