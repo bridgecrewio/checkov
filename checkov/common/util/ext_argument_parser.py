@@ -2,7 +2,7 @@ from io import StringIO
 
 import configargparse
 
-from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.type_forcers import convert_str_to_bool_if_possible
 
 
 class ExtArgumentParser(configargparse.ArgumentParser):
@@ -85,7 +85,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                 config_items['hard-fail-on'] = config_items['hard-fail-on'][0].split(",")
             # convert strings to booleans
             for k in config_items.keys():
-                config_items[k] = convert_str_to_bool(config_items[k])
+                config_items[k] = convert_str_to_bool_if_possible(config_items[k])
 
             file_contents = self._config_file_parser.serialize(config_items)
             for output_file_path in output_file_paths:

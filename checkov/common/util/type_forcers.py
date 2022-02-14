@@ -51,6 +51,15 @@ def convert_str_to_bool(bool_str: Union[bool, str]) -> bool:
         return bool(bool_str)
 
 
+def convert_str_to_bool_if_possible(bool_str: Union[bool, str]) -> Union[bool, str]:
+    if bool_str in ["true", '"true"', "True", '"True"']:
+        return True
+    elif bool_str in ["false", '"false"', "False", '"False"']:
+        return False
+    else:
+        return bool_str
+
+
 def force_dict(obj: Any) -> Optional[Dict[str, Any]]:
     """
     If the specified object is a dict, returns the object. If the object is a list of length 1 or more, and the first

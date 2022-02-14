@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Dict, List, Union, Any
 
-from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.type_forcers import convert_str_to_bool_if_possible
 from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
 
 #
@@ -64,7 +64,7 @@ def concat(original, var_resolver, **_):
 
 def tobool(original: Union[bool, str], **_: Any) -> Union[bool, str]:
     # https://www.terraform.io/docs/configuration/functions/tobool.html
-    bool_value = convert_str_to_bool(original)
+    bool_value = convert_str_to_bool_if_possible(original)
     return bool_value if isinstance(bool_value, bool) else FUNCTION_FAILED
 
 
@@ -86,7 +86,7 @@ def tostring(original, **_):
     if original.startswith('"') and original.endswith('"'):
         return original[1:-1]
     # Otherwise, need to check for valid types (number or bool)
-    bool_value = convert_str_to_bool(original)
+    bool_value = convert_str_to_bool_if_possible(original)
     if isinstance(bool_value, bool):
         return bool_value
     else:
