@@ -16,5 +16,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, (Version, LegacyVersion)):
             return str(o)
+        elif isinstance(o, complex):
+            return str(o)
         else:
             return json.JSONEncoder.default(self, o)

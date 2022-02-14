@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Optional, List, Tuple, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.vulnerability_scanning.package_scanner import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories, strtobool
@@ -12,6 +11,19 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
 
+SUPPORTED_PACKAGE_FILES = {
+    "bower.json",
+    "build.gradle",
+    "build.gradle.kts",
+    "go.sum",
+    "gradle.properties",
+    "METADATA",
+    "npm-shrinkwrap.json",
+    "package.json",
+    "package-lock.json",
+    "pom.xml",
+    "requirements.txt",
+}
 
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
@@ -26,6 +38,7 @@ class Runner(BaseRunner):
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
         exclude_package_json: bool = True,
+        cleanup_twictcli: bool = True,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -61,7 +74,7 @@ class Runner(BaseRunner):
 
         scanner = Scanner()
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_output_paths)
+        scan_results = scanner.scan(input_output_paths, cleanup_twictcli)
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
