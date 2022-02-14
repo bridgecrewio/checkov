@@ -13,8 +13,8 @@ class ACRAnonymousPullDisabled(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         # anonymous_pull_enabled only applies to Standard and Premium skus, by default is set to false
         if ('sku' in conf.keys() and conf['sku'][0] in ["Standard", "Premium"] 
-            and 'anonymous_pull_enabled' in conf.keys() and conf['anonymous_pull_enabled'][0] == True):
-                return CheckResult.FAILED
+            and 'anonymous_pull_enabled' in conf.keys() and conf['anonymous_pull_enabled'][0]):
+            return CheckResult.FAILED
 
         return CheckResult.PASSED
 
