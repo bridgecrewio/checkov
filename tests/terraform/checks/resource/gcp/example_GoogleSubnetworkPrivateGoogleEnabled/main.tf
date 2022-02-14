@@ -22,8 +22,8 @@ resource "google_compute_subnetwork" "fail" {
 }
 
 resource "google_compute_subnetwork" "fail2" {
-  name          = "example"
-  ip_cidr_range = "10.0.0.0/16"
-  network       = "google_compute_network.vpc.id"
+  name                     = "example"
+  ip_cidr_range            = "10.0.0.0/16"
+  network                  = "google_compute_network.vpc.id"
   private_ip_google_access = false
 }
