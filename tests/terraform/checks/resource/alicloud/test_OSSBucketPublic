@@ -18,7 +18,8 @@ class TestOSSBucketPublic(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'alicloud_oss_bucket.good-bucket'
+            'alicloud_oss_bucket.good-bucket',
+            'alicloud_oss_bucket.good-bucket2',
         }
         failing_resources = {
             'alicloud_oss_bucket.bad-bucket',

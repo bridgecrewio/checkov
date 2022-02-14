@@ -3,6 +3,10 @@ resource "alicloud_oss_bucket" "good-bucket" {
   acl    = "private"
 }
 
+resource "alicloud_oss_bucket" "good-bucket2" {
+  bucket = "bucket-170309-acl"
+}
+
 resource "alicloud_oss_bucket" "bad-bucket" {
   bucket = "bucket-170309-acl"
   acl    = "public-read-write"
