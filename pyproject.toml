@@ -2,3 +2,4 @@
 include = ["checkov"]
 exclude = ["checkov/arm","checkov/cloudformation","checkov/common","checkov/dockerfile","checkov/github","checkov/gitlab","checkov/helm","checkov/json_doc","checkov/kubernetes","checkov/kustomize","checkov/sca_package","checkov/secrets","checkov/serverless","checkov/terraform"]
 reportMissingImports = false
+reportMissingModuleSource = false
