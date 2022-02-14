@@ -34,7 +34,7 @@ resource "google_bigquery_table" "pass" {
     ]
   }
 
-   encryption_configuration {
-     kms_key_name = var.kms_key_name
-   }
+  encryption_configuration {
+    kms_key_name = var.kms_key_name
+  }
 }
