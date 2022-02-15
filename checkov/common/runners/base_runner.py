@@ -77,7 +77,7 @@ class BaseRunner(ABC):
         return checks_results
 
 
-def filter_ignored_paths(root_dir: str, names: List[Union[str, os.DirEntry]], excluded_paths: Optional[List[str]]) -> None:
+def filter_ignored_paths(root_dir: str, names: List[Union[str, os.DirEntry]], excluded_paths: Optional[List[str]], included_paths: Optional[List[str]] = None) -> None:
     # we need to handle legacy logic, where directories to skip could be specified using the env var (default value above)
     # or a directory starting with '.'; these look only at directory basenames, not relative paths.
     #
@@ -97,11 +97,12 @@ def filter_ignored_paths(root_dir: str, names: List[Union[str, os.DirEntry]], ex
 
     # first handle the legacy logic - this will also remove files starting with '.' but that's probably fine
     # mostly this will just remove those problematic directories hardcoded above.
+    included_paths = included_paths or []
     for entry in list(names):
         path = entry if type(entry) == str else entry.name
         if path in ignored_directories:
             safe_remove(names, entry)
-        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV:
+        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV and path not in included_paths:
             safe_remove(names, entry)
 
     # now apply the new logic

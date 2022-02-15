@@ -1,7 +1,7 @@
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List
+from typing import Any, Set, Optional, Union, List
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -27,7 +27,7 @@ class RunnerFilter(object):
         all_external: bool = False,
         var_files: Optional[List[str]] = None,
         min_cve_severity: str = 'none',
-        skip_cve_package: Optional[List] = None
+        skip_cve_package: Optional[List[str]] = None
     ) -> None:
 
         self.checks = convert_csv_string_arg_to_list(checks)
@@ -47,7 +47,7 @@ class RunnerFilter(object):
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
-        self.excluded_paths = excluded_paths
+        self.excluded_paths = excluded_paths or []
         self.all_external = all_external
         self.var_files = var_files
         self.min_cve_severity = min_cve_severity

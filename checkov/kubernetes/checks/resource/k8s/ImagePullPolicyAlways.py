@@ -29,9 +29,12 @@ class ImagePullPolicyAlways(BaseK8sContainerCheck):
                 return CheckResult.UNKNOWN
             if "@" in image_val:
                 image_val = image_val[0 : image_val.index("@")]
-
-            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
             if "imagePullPolicy" not in conf:
+                image_tag_match = re.findall(DOCKER_IMAGE_REGEX, image_val)
+                if len(image_tag_match) != 1:
+                    # If image name is invalid, check result can not be determined
+                    return CheckResult.UNKNOWN
+                (image, tag) = image_tag_match[0]
                 if tag == "latest" or tag == "":
                     # Default imagePullPolicy = Always
                     return CheckResult.PASSED

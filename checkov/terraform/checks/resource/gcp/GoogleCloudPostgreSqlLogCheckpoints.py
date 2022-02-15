@@ -18,7 +18,7 @@ class GoogleCloudPostgreSqlLogCheckpoints(BaseResourceCheck):
             configuration
             :return: < CheckResult >
         """
-        if 'database_version' in conf.keys() and 'POSTGRES' in conf['database_version'][0]:
+        if 'database_version' in conf.keys() and isinstance(conf['database_version'][0], str) and 'POSTGRES' in conf['database_version'][0]:
             if 'settings' in conf.keys():
                 self.evaluated_keys = ['database_version/[0]/POSTGRES', 'settings']
                 flags = conf['settings'][0].get('database_flags')
