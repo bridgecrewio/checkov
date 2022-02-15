@@ -38,4 +38,3 @@ module "latest_s3_bucket" {
   stage                    = "test"
   namespace                = "eg"
 }
-
