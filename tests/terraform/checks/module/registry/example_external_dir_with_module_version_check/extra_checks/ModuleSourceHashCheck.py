@@ -1,8 +1,7 @@
-from packaging import version as v
+import re
 
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
-import re
 
 MODULE_GIT_VERSION_PATTERN = re.compile(r"git::https?:\/\/[^\/]+\/.+.git\?ref=(\b[0-9a-f]{5,40}\b)")
 
