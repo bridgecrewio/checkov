@@ -1,6 +1,7 @@
 import logging
 from typing import List, Optional, Dict, Type, Tuple, Any
 
+from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -9,7 +10,7 @@ from checkov.terraform.parser import Parser
 
 
 class TerraformGraphManager(GraphManager):
-    def __init__(self, db_connector, source=""):
+    def __init__(self, db_connector: DBConnector, source: str = "") -> None:
         super().__init__(db_connector=db_connector, parser=Parser(), source=source)
 
     def build_graph_from_source_directory(

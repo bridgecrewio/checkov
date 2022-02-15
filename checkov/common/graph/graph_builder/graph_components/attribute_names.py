@@ -18,6 +18,10 @@ class CustomAttributes:
     RESOURCE_TYPE = "resource_type"
     RESOURCE_ID = "resource_id"
     SOURCE_MODULE = "source_module_"
+    MODULE_DEPENDENCY = "module_dependency_"
+    MODULE_DEPENDENCY_NUM = "module_dependency_num_"
+    ENCRYPTION = "encryption_"
+    ENCRYPTION_DETAILS = "encryption_details_"
 
 
 def props(cls: Any) -> List[str]:

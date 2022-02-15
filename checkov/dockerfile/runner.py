@@ -4,7 +4,7 @@ import re
 from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -16,7 +16,7 @@ DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
 
 
 class Runner(BaseRunner):
-    check_type = "dockerfile"
+    check_type = CheckType.DOCKERFILE
 
     @staticmethod
     def _is_docker_file(file):

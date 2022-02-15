@@ -97,16 +97,8 @@ class NodeConstructor(SafeConstructor):
 
     def construct_yaml_seq(self, node):
         obj, = SafeConstructor.construct_yaml_seq(self, node)
-        assert isinstance(obj, list) # nosec
-        return ListNode(obj, node.start_mark, node.end_mark) # nosec
-
-    #def construct_yaml_null_error(self, node):
-    #    """Throw a null error"""
-    #    raise CfnParseError(
-    #        self.filename,
-    #        'Null value at line {0} column {1}'.format(
-    #            node.start_mark.line + 1, node.start_mark.column + 1),
-    #        node.start_mark.line, node.start_mark.column, ' ')
+        assert isinstance(obj, list)  # nosec
+        return ListNode(obj, node.start_mark, node.end_mark)  # nosec
 
 
 NodeConstructor.add_constructor(
@@ -121,9 +113,6 @@ NodeConstructor.add_constructor(
     u'tag:yaml.org,2002:seq',
     NodeConstructor.construct_yaml_seq)
 
-#NodeConstructor.add_constructor(
-#    u'tag:yaml.org,2002:null',
-#    NodeConstructor.construct_yaml_null_error)
 
 class Representer(Representer):
     def represent_none(self, data):

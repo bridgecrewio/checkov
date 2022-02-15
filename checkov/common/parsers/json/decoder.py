@@ -1,3 +1,4 @@
+import logging
 from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
 from typing import List
@@ -296,7 +297,8 @@ class Decoder(JSONDecoder):
             try:
                 value, end = scan_once(s, end)
             except StopIteration as err:
-                raise DecodeError('Expecting value', s, str(err))
+                logging.error(err)
+                raise DecodeError('Expecting value', s, end_mark.line)
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
             try:

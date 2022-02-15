@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
 from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.common.graph.graph_builder.utils import calculate_hash
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -107,7 +108,7 @@ class TestLocalGraph(TestCase):
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
-        local_graph.calculate_encryption_attribute()
+        local_graph.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
         for attribute_dict in all_attributes:
             [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
@@ -166,13 +167,131 @@ class TestLocalGraph(TestCase):
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'sub-module', module.blocks))), 1)
 
     def test_vertices_from_local_graph_module(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
+        parent_dir = Path(TEST_DIRNAME).parent
+        resources_dir = str(parent_dir / "resources/modules/stacks")
         hcl_config_parser = Parser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
 
         self.assertEqual(12, len(local_graph.edges))
+
+        # check vertex breadcrumbs
+        bucket_vertex_1 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {4}
+        )
+        bucket_vertex_2 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {5}
+        )
+        bucket_vertex_3 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {6}
+        )
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "sub-module",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
+                    },
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                    },
+                ],
+            },
+            bucket_vertex_1.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                    },
+                ],
+            },
+            bucket_vertex_2.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                    },
+                ],
+            },
+            bucket_vertex_3.breadcrumbs,
+        )
 
     def test_variables_same_name_different_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))

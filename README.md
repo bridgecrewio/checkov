@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), Terraform plan, [Cloudformation](https://aws.amazon.com/cloudformation/), [AWS SAM](https://aws.amazon.com/serverless/sam/), [Kubernetes](https://kubernetes.io/), [Dockerfile](https://www.docker.com/),  [Serverless](https://www.serverless.com/) or [ARM Templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
  
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
@@ -189,11 +189,13 @@ Start using Checkov by reading the [Getting Started](docs/1.Welcome/Quick%20Star
 
 ```sh
 docker pull bridgecrew/checkov
-docker run --tty --volume /user/tf:/tf bridgecrew/checkov --directory /tf
+docker run --tty --volume /user/tf:/tf --workdir /tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
 
 Note that there are certain cases where redirecting `docker run --tty` output to a file - for example, if you want to save the Checkov JUnit output to a file - will cause extra control characters to be printed. This can break file parsing. If you encounter this, remove the `--tty` flag.
+
+The `--workdir /tf` flag is optional to change the working directory to the mounted volume. If you are using the SARIF output `-o sarif` this will output the results.sarif file to the mounted volume (`/user/tf` in the example above). If you do not include that flag, the working directory will be "/".
 
 ### Running or skipping checks 
 

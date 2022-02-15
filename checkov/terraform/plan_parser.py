@@ -1,8 +1,8 @@
 import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
-from checkov.terraform.context_parsers.tf_plan import parse
 from checkov.common.parsers.node import DictNode, ListNode
+from checkov.terraform.context_parsers.tf_plan import parse
 
 simple_types = (str, int, float, bool)
 
@@ -45,7 +45,7 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             if parent_key == "tags":
                 ret_dict[key] = value
             else:
-                ret_dict[key] = [value]
+                ret_dict[key] = _clean_simple_type_list([value])
 
         if _is_list_of_dicts(value):
             child_list = []
@@ -64,10 +64,16 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             else:
                 ret_dict[key] = [child_dict]
     if conf and isinstance(conf, dict):
+        found_ref = False
         for conf_key in conf.keys() - obj.keys():
             ref = next((x for x in conf[conf_key].get("references", []) if not x.startswith(("var.", "local."))), None)
             if ref:
                 ret_dict[conf_key] = [ref]
+                found_ref = True
+        if not found_ref:
+            for value in conf.values():
+                if isinstance(value, dict) and "references" in value.keys():
+                    ret_dict["references_"] = value["references"]
 
     return ret_dict
 
@@ -149,3 +155,19 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
     for resource in resource_blocks:
         tf_defintions[tf_plan_file]["resource"].append(resource)
     return tf_defintions, template_lines
+
+
+def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
+    """
+    Given a list of simple types return a cleaned list of simple types.
+    Converts booleans that are input as strings back to booleans to maintain consistent expectations for later evaluation.
+    Sometimes Terraform Plan will output Map values as strings regardless of boolean input.
+    """
+    for i in range(len(value_list)):
+        if isinstance(value_list[i], str):
+            lower_case_value = value_list[i].lower()
+            if lower_case_value == "true":
+                value_list[i] = True
+            if lower_case_value == "false":
+                value_list[i] = False         
+    return value_list

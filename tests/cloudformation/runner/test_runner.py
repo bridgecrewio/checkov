@@ -3,7 +3,9 @@ import inspect
 import os
 import unittest
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
+
+import pytest
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -186,7 +188,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "dockerfile", "helm", "kubernetes", "serverless", "terraform"]
-        ignore_files = ["BaseCloudsplainingIAMCheck.py"]
+        ignore_files = ["BaseCloudsplainingIAMCheck.py", "ECRPolicy.py"]
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
@@ -205,6 +207,7 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    @pytest.mark.skip("No graph checks implemented yet for cloudformation")
     def test_run_graph_checks(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "../graph/checks/resources/MSKClusterLogging")

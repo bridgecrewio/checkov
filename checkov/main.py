@@ -7,10 +7,13 @@ import shutil
 import signal
 import sys
 from pathlib import Path
+from typing import Any, List, Optional
 
 import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
+
+from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -22,6 +25,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
+from checkov.common.output.report import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
@@ -29,6 +33,7 @@ from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
+from configargparse import ArgumentParser
 from checkov.common.util import prompt
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -43,8 +48,9 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.github.runner import Runner as github_configuration_runner
+from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
-
+from checkov.sca_package.runner import Runner as sca_package_runner
 
 from checkov.version import version
 
@@ -52,16 +58,15 @@ outer_registry = None
 
 logging_init()
 logger = logging.getLogger(__name__)
-checkov_runners = ['cloudformation', 'terraform', 'kubernetes', 'serverless', 'arm', 'terraform_plan', 'helm',
-                   'dockerfile', 'secrets', 'json', 'github_configuration', 'gitlab_configuration']
+checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner())
+                   gitlab_configuration_runner(), kustomize_runner(), sca_package_runner())
 
 
-def run(banner=checkov_banner, argv=sys.argv[1:]):
+def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
                                default_config_files=default_config_paths,
@@ -75,7 +80,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
         resp = prompt.Prompt()
         check = prompt.Check(resp.responses)
         check.action()
-        return
+        return None
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
@@ -107,7 +112,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
-                                 all_external=config.run_all_external_checks, var_files=config.var_file)
+                                 all_external=config.run_all_external_checks, var_files=config.var_file,
+                                 min_cve_severity=config.min_cve_severity, skip_cve_package=config.skip_cve_package)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -119,7 +125,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     if config.show_config:
         print(parser.format_values())
-        return
+        return None
 
     if config.bc_api_key == '':
         parser.error('The --bc-api-key flag was specified but the value was blank. If this value was passed as a '
@@ -161,7 +167,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             platform_excluded_paths = bc_integration.get_excluded_paths() or []
             runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except MaxRetryError:
-            return
+            return None
         except Exception:
             if bc_integration.prisma_url:
                 message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
@@ -175,14 +181,14 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             else:
                 logger.error(message)
                 logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
-            return
+            return None
     else:
         logger.debug('No API key found. Scanning locally only.')
 
     if config.check and config.skip_check:
         if any(item in runner_filter.checks for item in runner_filter.skip_checks):
             parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
-            return
+            return None
 
     integration_feature_registry.run_pre_scan()
 
@@ -201,7 +207,7 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
-        return
+        return None
 
     baseline = None
     if config.baseline:
@@ -212,6 +218,9 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
     url = None
     created_baseline_path = None
 
+    git_configuration_folders = [os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf'),
+                                 os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
+
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -221,7 +230,8 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths)
+                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
+                bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 url = bc_integration.commit_repository(config.branch)
 
@@ -256,29 +266,31 @@ def run(banner=checkov_banner, argv=sys.argv[1:]):
             files = [os.path.abspath(file) for file in config.file]
             root_folder = os.path.split(os.path.commonprefix(files))[0]
             bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
+            bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
             url = bc_integration.commit_repository(config.branch)
-        return runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path,
-                                             baseline=baseline)
+        exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
+        return exit_code
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
-            return
+            return None
         if config.dockerfile_path is None:
             parser.error("--dockerfile-path argument is required when using --docker-image")
-            return
+            return None
         if config.branch is None:
             parser.error("--branch argument is required when using --docker-image")
-            return
+            return None
         bc_integration.commit_repository(config.branch)
         image_scanner.scan(config.docker_image, config.dockerfile_path)
     elif not config.quiet:
         print(f"{banner}")
 
         bc_integration.onboarding()
+    return None
 
 
-def add_parser_args(parser):
+def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('-v', '--version',
                help='version', action='version', version=version)
     parser.add('-d', '--directory', action='append',
@@ -298,7 +310,7 @@ def add_parser_args(parser):
     parser.add('-l', '--list', help='List checks', action='store_true')
     parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
                default=None,
-               help='Report output format. Can be repeated')
+               help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',
@@ -371,7 +383,7 @@ def add_parser_args(parser):
                help="evaluate the values of variables and locals",
                default=True)
     parser.add('-ca', '--ca-certificate',
-               help='custom CA (bundle) file', default=None, env_var='CA_CERTIFICATE')
+               help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
     parser.add('--repo-root-for-plan-enrichment',
                help='Directory containing the hcl code used to generate a given plan file. Use with -f.',
                dest="repo_root_for_plan_enrichment", action='append')
@@ -384,9 +396,19 @@ def add_parser_args(parser):
     parser.add('--create-baseline', help='Alongside outputting the findings, save all results to .checkov.baseline file'
                                          ' so future runs will not re-flag the same noise. Works only with `--directory` flag',
                action='store_true', default=False)
-    parser.add('--baseline',
-               help='Use a .checkov.baseline file to compare current results with a known baseline. Report will include only failed checks that are new'
-                    'with respect to the provided baseline', default=None)
+    parser.add(
+        '--baseline',
+        help=(
+            "Use a .checkov.baseline file to compare current results with a known baseline. "
+            "Report will include only failed checks that are new with respect to the provided baseline"
+        ),
+        default=None,
+    )
+    parser.add('--min-cve-severity', help='Set minimum severity that will cause returning non-zero exit code',
+               choices=SEVERITY_RANKING.keys(), default='none')
+    parser.add('--skip-cve-package',
+               help='filter scan to run on all packages but a specific package identifier (denylist), You can '
+                    'specify this argument multiple times to skip multiple packages', action='append', default=None)
     # Add mutually exclusive groups of arguments
     exit_code_group = parser.add_mutually_exclusive_group()
     exit_code_group.add('-s', '--soft-fail', help='Runs checks but suppresses error code', action='store_true')
@@ -398,7 +420,7 @@ def add_parser_args(parser):
                         default=None)
 
 
-def get_external_checks_dir(config):
+def get_external_checks_dir(config: Any) -> Any:
     external_checks_dir = config.external_checks_dir
     if config.external_checks_git:
         git_getter = GitGetter(config.external_checks_git[0])

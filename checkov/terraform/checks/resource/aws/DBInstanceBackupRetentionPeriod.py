@@ -15,11 +15,14 @@ class DBInstanceBackupRetentionPeriod(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         key = "backup_retention_period"
         if key in conf.keys():
-            period = force_int(conf[key][0])
+            period = conf[key][0]
+            if self._is_variable_dependant(period):
+                return CheckResult.UNKNOWN
+            period = force_int(period)
             if period and 0 < period <= 35:
                 return CheckResult.PASSED
             return CheckResult.FAILED
-        #Default value is 1 which passes ^^^
+        # Default value is 1 which passes ^^^
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:

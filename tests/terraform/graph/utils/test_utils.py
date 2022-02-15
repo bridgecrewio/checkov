@@ -3,7 +3,7 @@ import pprint
 from typing import List, Tuple
 from unittest import TestCase
 
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value, \
     replace_map_attribute_access_with_dot, generate_possible_strings_from_wildcards, \

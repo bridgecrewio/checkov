@@ -79,7 +79,7 @@ class TestRenderer(TestCase):
         expected_aws_instance = {"instance_type": "bar"}
         self.compare_vertex_attributes(local_graph, expected_aws_instance, BlockType.RESOURCE, "aws_instance.example")
         expected_output_bucket_acl = {"value": "z"}
-        self.compare_vertex_attributes(local_graph, expected_output_bucket_acl, BlockType.OUTPUT,  "bucket_acl")
+        self.compare_vertex_attributes(local_graph, expected_output_bucket_acl, BlockType.OUTPUT, "bucket_acl")
 
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
@@ -94,7 +94,7 @@ class TestRenderer(TestCase):
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
-        s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
+        s3_vertex = list(filter(lambda vertex: vertex.block_type == BlockType.RESOURCE, vertices))[0]
         changed_attributes = list(s3_vertex.changed_attributes.keys())
         self.assertCountEqual(changed_attributes, ['versioning.enabled', 'acl'])
 
@@ -114,7 +114,7 @@ class TestRenderer(TestCase):
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
-        s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
+        s3_vertex = list(filter(lambda vertex: vertex.block_type == BlockType.RESOURCE, vertices))[0]
         changed_attributes = list(s3_vertex.changed_attributes.keys())
         self.assertListEqual(changed_attributes, ['region', 'bucket'])
 

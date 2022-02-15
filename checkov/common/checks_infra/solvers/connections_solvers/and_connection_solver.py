@@ -5,7 +5,7 @@ from networkx.classes.digraph import DiGraph
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
 class AndConnectionSolver(ComplexConnectionSolver):
@@ -15,7 +15,7 @@ class AndConnectionSolver(ComplexConnectionSolver):
         super().__init__(solvers, operator)
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        if not self.vertices_under_resource_types + self.vertices_under_resource_types:
+        if not self.vertices_under_resource_types:
             return [], []
         subgraph = graph_connector.subgraph(graph_connector)
         passed, failed = self.run_attribute_solvers(subgraph)

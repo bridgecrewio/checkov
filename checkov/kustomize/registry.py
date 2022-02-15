@@ -1,0 +1,1 @@
+from checkov.kubernetes.registry import Registry as KubernetesRegistry

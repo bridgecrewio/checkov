@@ -34,17 +34,8 @@ class TestGraphChecks(unittest.TestCase):
     def test_external_checks_and_graph_checks_load(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
-
-        # without external yaml checks the external graph registry checks should be 0
-        extra_checks_dir_path = [current_dir + "/extra_checks"]
-        runner_filter = RunnerFilter(framework='terraform')
-        runner.run(root_folder=current_dir, external_checks_dir=extra_checks_dir_path,
-                   runner_filter=runner_filter)
+        runner_filter = RunnerFilter(framework=['terraform'])
         external_graph_checks = 0
-        for check in runner.graph_registry.checks:
-            if runner_filter.is_external_check(check.id):
-                external_graph_checks += 1
-        self.assertEqual(external_graph_checks, 0)
 
         # with external yaml checks external graph registry checks count should be equal to the external graph checks
         extra_checks_dir_path = [current_dir + "/extra_checks", current_dir + "/extra_yaml_checks"]
@@ -53,8 +44,8 @@ class TestGraphChecks(unittest.TestCase):
         for check in runner.graph_registry.checks:
             if runner_filter.is_external_check(check.id):
                 external_graph_checks += 1
-        self.assertTrue(len(runner.graph_registry.checks) > 1)
-        self.assertEqual(external_graph_checks, 1)
+        self.assertGreater(len(runner.graph_registry.checks), 1)
+        self.assertGreaterEqual(external_graph_checks, 1)
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
                                            "CUSTOM_GRAPH_AWS_1" not in check.id]
 

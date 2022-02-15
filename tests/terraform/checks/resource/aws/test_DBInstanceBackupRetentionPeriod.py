@@ -27,6 +27,9 @@ class TestDBInstanceBackupRetentionPeriod(unittest.TestCase):
             "aws_db_instance.fail",
             "aws_db_instance.fail2",
         }
+        unknown_resources = {
+            "aws_db_instance.unknown"
+        }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
@@ -38,6 +41,7 @@ class TestDBInstanceBackupRetentionPeriod(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+        self.assertEqual(len([r for r in report.resources if r in unknown_resources]), 0)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,16 @@
+metadata:
+  name: "AWS SSM Parameter should be Encrypted"
+  id: "CKV2_AWS_34"
+  guidelines: "AWS Systems Manager (SSM) parameters that store sensitive data, for example, passwords, database strings, and permit codes are encrypted so as to meet security and compliance prerequisites. An encrypted SSM parameter is any sensitive information that should be kept and referenced in a protected way."
+  category: "Encryption"
+  severity: "medium"
+scope:
+  provider: "aws"
+definition:
+    and:
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_ssm_parameter"
+        attribute: "type"
+        operator: "equals"
+        value: "SecureString"

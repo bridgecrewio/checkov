@@ -289,6 +289,15 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_13':
                 # CKV2_AWS_13 is not supported by AWS
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_24':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_25':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
+                # Was a test policy
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
@@ -304,8 +313,13 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(checks='CKV_AWS_41'))
-        self.assertEqual(len(result.passed_checks), 16)
+        self.assertEqual(len(result.passed_checks), 17)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
+
+        # check if a one line provider is correctly processed
+        provider = next(check for check in result.passed_checks if check.resource == "aws.one-line")
+        self.assertIsNotNone(provider.file_line_range)
+
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"
@@ -1123,7 +1137,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_do_exist(self):
@@ -1139,7 +1153,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_resource_negative_values_dont_exist(self):
