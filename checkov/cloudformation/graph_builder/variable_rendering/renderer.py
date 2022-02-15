@@ -332,7 +332,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             condition_name = value[0]
             operand_if_true = value[1]
             operand_if_false = value[2]
-        except KeyError as e:
+        except KeyError:
             logging.info(f'Unexpected input for cfn if evaluation: {value}. '
                          f'Template: {condition_vertex_attributes[CustomAttributes.FILE_PATH]}'
                          f'Block: {condition_vertex_attributes[CustomAttributes.BLOCK_NAME]}')
@@ -421,7 +421,7 @@ class CloudformationVariableRenderer(VariableRenderer):
                 try:
                     (evaluated_value, changed_origin_id, attribute_at_dest) = self._evaluate_cfn_function(
                         edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
-                except KeyError as e:
+                except KeyError:
                     logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
 
 
