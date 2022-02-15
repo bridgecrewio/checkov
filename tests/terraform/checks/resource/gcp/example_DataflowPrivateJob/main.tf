@@ -16,7 +16,7 @@ resource "google_dataflow_job" "pass" {
 # Fails due to "ip_configuration" not existing
 # Dataflow jobs are public by default
 resource "google_dataflow_job" "fail1" {
-  name              = "my-pass-job"
+  name              = "my-fail-job1"
   template_gcs_path = "gs://my-bucket/templates/template_file"
   temp_gcs_location = "gs://my-bucket/tmp_dir"
   parameters = {
@@ -28,7 +28,7 @@ resource "google_dataflow_job" "fail1" {
 
 # Fails due to "ip_configuration" existing but set to public
 resource "google_dataflow_job" "fail2" {
-  name              = "my-pass-job"
+  name              = "my-fail-job2"
   template_gcs_path = "gs://my-bucket/templates/template_file"
   temp_gcs_location = "gs://my-bucket/tmp_dir"
   parameters = {
