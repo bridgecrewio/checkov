@@ -9,7 +9,7 @@ class ExternalData(BaseDataCheck):
         name = 'Ensure terraform external data blocks runs vetted code'
         id = "CKV_TF_DATA_EXTERNAL_1"
         supported_data = ["external"]
-        categories = [CheckCategories.CONVENTION]
+        categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
     def scan_data_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
