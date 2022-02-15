@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.LaunchConfigurationEBSEncryption import check
+from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngress3306 import check
 from checkov.terraform.runner import Runner
 
 
-class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
+class TestGoogleComputeFirewallUnrestrictedIngress3306(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_LaunchConfigurationEBSEncryption"
+        test_files_dir = Path(__file__).parent / "example_GoogleComputeFirewallUnrestrictedIngress3306"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,30 +18,25 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_instance.pass",
-            "aws_instance.pass2",
-            "aws_instance.pass3",
-            "aws_launch_configuration.pass",
-            "aws_launch_configuration.pass2",
+            "google_compute_firewall.restricted",
+            "google_compute_firewall.allow_different_int",
+            "google_compute_firewall.allow_null",
         }
+
         failing_resources = {
-            "aws_instance.fail",
-            "aws_instance.fail2",
-            "aws_instance.fail3",
-            "aws_instance.fail4",
-            "aws_instance.fail5",
-            "aws_instance.fail_empty_root_list",
-            "aws_instance.fail_empty_ebs_list",
-            "aws_launch_configuration.fail",
+            "google_compute_firewall.allow_multiple",
+            "google_compute_firewall.allow_mysql_int",
+            "google_compute_firewall.allow_all",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 8)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 7)  # 1 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
