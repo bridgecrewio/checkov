@@ -202,17 +202,14 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 Using command line flags you can specify to run only named checks (allow list) or run all checks except 
 those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
 
-List available checks:
-```sh
-checkov --list 
-```
+## Examples
 
-Allow only 2 checks to run: 
+Allow only the two specified checks to run: 
 ```sh
 checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 ```
 
-Run all checks except 1 specified:
+Run all checks except the one specified:
 ```sh
 checkov -d . --skip-check CKV_AWS_20
 ```
@@ -247,7 +244,7 @@ Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assum
 checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
 ```
 
-Skip all checks that are MEDIUM severity or lower, but run check CKV_789 (assume this is a medium or lower severity check):
+Run check CKV_789, but skip it if it is a medium severity (the --check logic is always applied before --skip-check)
 ```sh
 checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```

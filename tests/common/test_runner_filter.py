@@ -263,14 +263,14 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.CRITICAL]))
 
     def test_run_sev_id_2(self):
-        instance = RunnerFilter(checks=['CKV_AWS_123'], skip_checks=['HIGH'])
-        # this is actually just saying we are only running the one ID, and running by ID takes precedence over skipping
-        # by severity
+        instance = RunnerFilter(checks=['CKV_AWS_123'], skip_checks=['MEDIUM'])
+        # Run AWS_123, unless it is MEDIUM or below
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.CRITICAL]))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
-        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
 
     def test_run_two_sev_1(self):
         instance = RunnerFilter(checks=['MEDIUM'], skip_checks=['HIGH'])
@@ -281,23 +281,21 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
 
     def test_run_two_sev_2(self):
-        instance = RunnerFilter(checks=['MEDIUM'], skip_checks=['HIGH'])
-        # run medium and higher, skip high and lower; skip takes priority
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+        instance = RunnerFilter(checks=['HIGH'], skip_checks=['MEDIUM'])
+        # run HIGH and higher, skip MEDIUM and lower (so just run HIGH or higher)
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.CRITICAL]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM]))
 
     def test_run_sev_explicit(self):
         instance = RunnerFilter(checks=['MEDIUM', 'CKV_AWS_789'])
-        # run medium and higher, skip high and lower; skip takes priority
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
 
     def test_skip_sev_explicit(self):
         instance = RunnerFilter(skip_checks=['MEDIUM', 'CKV_AWS_789'])
-        # run medium and higher, skip high and lower; skip takes priority
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW]))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))

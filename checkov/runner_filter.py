@@ -84,31 +84,53 @@ class RunnerFilter(object):
             severity = check.bc_severity
 
         run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
-        skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
-        is_external = RunnerFilter.is_external_check(check_id)
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
-        explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
-        implicit_run = not explicit_skip and not self.checks and not self.check_threshold
-        implicit_skip = not explicit_run
+        implicit_run = not self.checks and not self.check_threshold
+        is_external = RunnerFilter.is_external_check(check_id)
 
-        if explicit_skip:  # skip anything skipped by ID
+        # True if this check is present in the allow list, or if there is no allow list - this is not necessarily the return value
+        should_run_check = run_severity or explicit_run or implicit_run or (is_external and self.all_external)
+
+        if not should_run_check:
             return False
-        elif skip_severity and not explicit_run:  # prioritize skip by severity
+
+        skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
+        explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
+
+        should_skip_check = skip_severity or explicit_skip
+
+        if should_skip_check:
             return False
-        elif is_external and self.all_external:  # run any external check that is not skipped
+        elif should_run_check:
             return True
-        elif explicit_run or run_severity:
-            return True
-        elif implicit_run:  # run if we listed --skip-checks but it did not cover this one, or if we did not use --check or --skip at all
-            return True
-        elif implicit_skip:  # do not run if we listed --checks but it did not cover this one
-            return False
         else:
-            # this can occur if the check is not in either of the lists at all. Example:
-            # Check ID = CKV_AWS_123
-            # --check HIGH, --skip-check CKV_AWS_789
-            # the check does not match either list, so we default to skip
             return False
+        #
+        # if should_run_check and not should_skip_check:
+        #     return True
+        # elif should_skip_check and implicit_run:
+        #     return False
+        # elif should_skip_check and not sh:
+        #     return should_run_check
+        #
+        # if explicit_skip:  # skip anything skipped by ID
+        #     return False
+        # elif skip_severity and not explicit_run:  # prioritize skip by severity
+        #     return False
+        # elif is_external and self.all_external:  # run any external check that is not skipped
+        #     return True
+        # elif explicit_run or run_severity:
+        #     return True
+        # elif implicit_run:  # run if we listed --skip-checks but it did not cover this one, or if we did not use --check or --skip at all
+        #     return True
+        # elif implicit_skip:  # do not run if we listed --checks but it did not cover this one
+        #     return False
+        # else:
+        #     # this can occur if the check is not in either of the lists at all. Example:
+        #     # Check ID = CKV_AWS_123
+        #     # --check HIGH, --skip-check CKV_AWS_789
+        #     # the check does not match either list, so we default to skip
+        #     return False
 
     @staticmethod
     def check_matches(check_id: str,

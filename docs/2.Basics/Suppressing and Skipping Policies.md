@@ -189,7 +189,7 @@ You can also fine-tune which checks run or do not run for the overall scan using
 
 If you specify a severity with the `--check` flag, then any check that is equal to or greater than that severity will be included. If you specify a severity with the `--skip-check` flag, then any check less than or equal to that severity will be skipped.
 
-You can also combine the `--check` and `--skip-check` flags when using severities to get a very granular policy set for the run.
+You can also combine the `--check` and `--skip-check` flags when using severities to get a very granular policy set for the run. In this case, the `--check` filter will be applied first to explicitly include checks, and then the `--skip-check` list will be applied to remove any remaining checks. See below for examples.
 
 In order to filter by severity, you must run with the platform integration via API key.
 
@@ -235,7 +235,7 @@ Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assum
 checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
 ```
 
-Skip all checks that are MEDIUM severity or lower, but run check CKV_789 (assume this is a medium or lower severity check):
+Run check CKV_789, but skip it if it is a medium severity (the --check logic is always applied before --skip-check)
 ```sh
 checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```
