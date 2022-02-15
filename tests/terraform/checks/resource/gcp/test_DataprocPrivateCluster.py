@@ -26,6 +26,7 @@ class TestDataprocPrivateCluster(unittest.TestCase):
         failing_resources = {
             'google_dataproc_cluster_iam_binding.fail1',
             'google_dataproc_cluster_iam_binding.fail2',
+            'google_dataproc_cluster_iam_binding.fail3',
             'google_dataproc_cluster_iam_member.fail1',
             'google_dataproc_cluster_iam_member.fail2',
         }
@@ -34,7 +35,7 @@ class TestDataprocPrivateCluster(unittest.TestCase):
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], 4)
-        self.assertEqual(summary['failed'], 4)
+        self.assertEqual(summary['failed'], 5)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 

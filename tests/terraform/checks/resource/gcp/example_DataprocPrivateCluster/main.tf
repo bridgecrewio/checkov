@@ -7,6 +7,7 @@ resource "google_dataproc_cluster_iam_binding" "pass1" {
   role    = "roles/dataproc.serviceAgent"
   members = [
     "user:jane@example.com",
+    "group:mygroup@example.com",
   ]
 }
 
@@ -48,6 +49,15 @@ resource "google_dataproc_cluster_iam_binding" "fail2" {
   role    = "roles/dataproc.editor"
   members = [
     "allUsers",
+  ]
+}
+
+resource "google_dataproc_cluster_iam_binding" "fail3" {
+  cluster = "my-public-cluster-binding2"
+  role    = "roles/dataproc.editor"
+  members = [
+    "allUsers",
+    "user:jason@example.com",
   ]
 }
 
