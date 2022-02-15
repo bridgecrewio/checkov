@@ -4,4 +4,3 @@ class BridgecrewAuthError(Exception):
 
     def __str__(self):
         return 'BCAuthError, {0} '.format(self.message)
-
