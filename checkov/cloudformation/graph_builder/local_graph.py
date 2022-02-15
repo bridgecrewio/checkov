@@ -1,7 +1,7 @@
 import logging
 import re
 from inspect import ismethod
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
@@ -54,6 +54,8 @@ class CloudformationLocalGraph(LocalGraph):
         def extract_resource_attributes(resource: DictNode) -> DictNode:
             resource_type = resource.get("Type")
             attributes = resource.get("Properties", {})
+            if not isinstance(attributes, dict):
+                attributes = DictNode({}, resource.start_mark, resource.end_mark)
             attributes["resource_type"] = resource_type
             attributes["__startline__"] = resource["__startline__"]
             attributes["__endline__"] = resource["__endline__"]
@@ -111,7 +113,7 @@ class CloudformationLocalGraph(LocalGraph):
                 for vertex in self.vertices
                 if vertex.block_type == BlockType.RESOURCE
                 and vertex.path == globals_vertex.path
-                and vertex.attributes.get("resource_type") == GLOBALS_RESOURCE_TYPE_MAP[globals_vertex.name]
+                and vertex.attributes.get("resource_type") == GLOBALS_RESOURCE_TYPE_MAP.get(globals_vertex.name)
             ]
 
             for property, value in globals_vertex.attributes.items():
@@ -346,5 +348,7 @@ class CloudformationLocalGraph(LocalGraph):
         return False
 
 
-def get_only_dict_items(origin_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def get_only_dict_items(origin_dict: Union[Dict[str, Any], Any]) -> Dict[str, Dict[str, Any]]:
+    if not isinstance(origin_dict, dict):
+        return {}
     return {key: value for key, value in origin_dict.items() if isinstance(value, dict)}
