@@ -1,19 +1,19 @@
-
 resource "aws_ssm_parameter" "param" {
-  name  = var.parameter_name
-  type  = "SecureString"
+  name = var.parameter_name
+  type = "SecureString"
   value = random_password.password.result
 }
 
 
 resource "aws_ssm_parameter" "param2" {
-  name  = var.parameter_name
-  type  = "String"
+  name = var.parameter_name
+  type = "String"
   value = "foo"
 }
+
 resource "random_password" "password" {
-  length           = 16
-  special          = true
+  length = 16
+  special = true
   override_special = "_%@"
 }
 

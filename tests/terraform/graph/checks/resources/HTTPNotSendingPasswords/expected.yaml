@@ -1,7 +1,7 @@
 pass:
-  - "data.http.nonleak2"
-  - "data.http.nonleak"
+  - "http.nonleak2"
+  - "http.nonleak"
 
 
 fail:
-  - "data.http.leak"
+  - "http.leak"
