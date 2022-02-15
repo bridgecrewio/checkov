@@ -1,9 +1,22 @@
 import os
 import unittest
+from collections import defaultdict
 from pathlib import Path
 
+# do not remove - prevents circular import
+from typing import Dict, Any
+
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.plan_runner import Runner
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.plan_runner import Runner, resource_registry
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+
+
+orig_checks = None
+orig_graph_checks = None
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -30,6 +43,185 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(record.check_id, checks_allowlist)
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 3)
+
+    def test_runner_record_severity(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        global orig_checks
+        orig_checks = resource_registry.checks
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.bc_severity = Severities[BcSeverities.LOW]
+        checks_allowlist = [custom_check_id]
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_runner_check_severity_filter_omit(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        global orig_checks
+        orig_checks = resource_registry.checks
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.bc_severity = Severities[BcSeverities.LOW]
+        checks_allowlist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_severity_filter_include(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        global orig_checks
+        orig_checks = resource_registry.checks
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.bc_severity = Severities[BcSeverities.HIGH]
+        checks_allowlist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_skip_filter_omit(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        global orig_checks
+        orig_checks = resource_registry.checks
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.bc_severity = Severities[BcSeverities.LOW]
+        checks_denylist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], skip_checks=checks_denylist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_skip_filter_omit(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        global orig_checks
+        orig_checks = resource_registry.checks
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.bc_severity = Severities[BcSeverities.HIGH]
+        checks_denylist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], skip_checks=checks_denylist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -355,6 +547,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
         self.assertEqual(summary["resource_count"], 0)
+
+    def tearDown(self) -> None:
+        if orig_checks:
+            resource_registry.checks = orig_checks
 
 
 if __name__ == "__main__":

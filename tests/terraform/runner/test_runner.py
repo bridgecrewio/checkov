@@ -29,7 +29,6 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 
 orig_checks = None
-orig_graph_checks = None
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -1454,8 +1453,6 @@ class TestRunnerValid(unittest.TestCase):
         parser_registry.context = {}
         if orig_checks:
             resource_registry.checks = orig_checks
-        if orig_graph_checks:
-            get_graph_checks_registry('terraform').checks = orig_graph_checks
 
 
 if __name__ == '__main__':
