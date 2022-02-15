@@ -51,6 +51,34 @@ resource "aws_instance" "fail5" {
   key_name      = var.key_name
 }
 
+# empty array defaults
+
+variable "empty_list" {
+  default = []
+}
+
+resource "aws_instance" "fail_empty_root_list" {
+  image_id      = "ami-123"
+  instance_type = "t2.micro"
+
+  root_block_device = "${var.empty_list}"
+}
+
+resource "aws_instance" "fail_empty_ebs_list" {
+  image_id      = "ami-123"
+  instance_type = "t2.micro"
+
+  root_block_device = {
+    volume_type = "gp2"
+    volume_size = var.root_volume_size
+    encrypted   = true
+  }
+
+  ebs_block_device = "${var.empty_list}"
+}
+
+# pass
+
 resource "aws_instance" "pass" {
   ami           = var.ami_id
   instance_type = var.instance_type
