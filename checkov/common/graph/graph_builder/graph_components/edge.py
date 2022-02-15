@@ -7,11 +7,11 @@ class Edge:
     def __str__(self) -> str:
         return f"[{self.origin} -({self.label})-> {self.dest}]"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Edge) and str(self) == str(other)
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))

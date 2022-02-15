@@ -5,7 +5,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 
 
 class NetworkxConnector(DBConnector):
-    def __init__(self):
+    def __init__(self) -> None:
         self.graph = nx.DiGraph()
 
     def save_graph(self, local_graph, add_bulk_edges=False):

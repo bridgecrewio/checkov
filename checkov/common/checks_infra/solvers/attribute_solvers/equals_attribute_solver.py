@@ -12,4 +12,4 @@ class EqualsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return str(vertex.get(attribute)) == str(self.value)
+        return str(vertex.get(attribute), '') == str(self.value)

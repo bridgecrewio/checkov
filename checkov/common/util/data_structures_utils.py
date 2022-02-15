@@ -1,8 +1,8 @@
 import logging
-from typing import Generator, Any, Union, Dict
+from typing import Generator, Any, Union, Dict, List
 
 
-def get_inner_dict(source_dict, path_as_list):
+def get_inner_dict(source_dict: Dict[Any, Any], path_as_list: List[Any]) -> Dict[str, Any]:
     result = source_dict
     for index in path_as_list:
         result = result[index]
@@ -29,7 +29,7 @@ def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
     try:
         return next(g)
     except StopIteration:
-        return
+        return None
 
 
 def search_deep_keys(search_text, obj, path):

@@ -53,7 +53,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
 
         return r.getvalue()
 
-    def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False):
+    def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False) -> None:
         """
         Write the given settings to output files. Overrides write_config_file from the class ArgumentParser for
         correcting types of some attributes (example: check, skip_check)

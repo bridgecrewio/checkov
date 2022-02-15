@@ -140,14 +140,14 @@ class DictNode(dict):
         raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
 
     @staticmethod
-    def __name__():
+    def __name__() -> str:
         return f'{super().__name__}_node'
 
 
 class ListNode(list):
     """Node class created based on the input class"""
 
-    def __init__(self, x, start_mark, end_mark):
+    def __init__(self, x, start_mark, end_mark) -> None:
         try:
             super().__init__(x)
         except TypeError:
@@ -164,7 +164,7 @@ class ListNode(list):
 
         return result
 
-    def __copy__(self):
+    def __copy__(self) -> "ListNode":
         return self
 
     def items_safe(self, path=None, type_t=()):
@@ -179,9 +179,9 @@ class ListNode(list):
                 if isinstance(v, type_t) or not type_t:
                     yield v, path[:] + [i]
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> None:
         raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
 
     @staticmethod
-    def __name__():
+    def __name__() -> str:
         return f'{super().__name__}_node'

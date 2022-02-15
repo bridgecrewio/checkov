@@ -1,3 +1,6 @@
+from typing import Tuple, Any
+
+
 class DuplicateError(Exception):
     """
     Error thrown when the template contains duplicates
@@ -20,7 +23,7 @@ class DecodeError(ValueError):
     """
     # Note that this exception is used from _json
 
-    def __init__(self, msg, doc, pos, key=' '):
+    def __init__(self, msg: str, doc: str, pos: int, key: str = ' ') -> None:
         lineno = doc.count('\n', 0, pos) + 1
         colno = pos - doc.rfind('\n', 0, pos)
         errmsg = '%s: line %d column %d (char %d)' % (msg, lineno, colno, pos)
@@ -31,5 +34,5 @@ class DecodeError(ValueError):
         self.lineno = lineno
         self.colno = colno
 
-    def __reduce__(self):
+    def __reduce__(self) -> Tuple[Any, Any]:
         return self.__class__, (self.msg, self.doc, self.pos)

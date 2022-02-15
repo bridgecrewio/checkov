@@ -18,7 +18,7 @@ DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratin
 class Record:
     check_id = ""
     check_name = ""
-    check_result = None
+    check_result = _CheckResult()
     check_class = ""
     code_block: List[Tuple[int, str]] = []
     file_path = ""

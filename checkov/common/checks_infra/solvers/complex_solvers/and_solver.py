@@ -13,7 +13,7 @@ class AndSolver(BaseComplexSolver):
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)
 
-    def _get_operation(self, *args: Any) -> Any:
+    def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(and_, args)
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:

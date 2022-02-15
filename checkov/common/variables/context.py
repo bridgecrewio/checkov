@@ -12,7 +12,7 @@ class VarReference:
     definition_path: str               # Example: 'resource/0/aws_s3_bucket/foo-bucket/region/0'
 
     # Make the object subscriptable for backwards compatibility to when a simple dict was used
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> str:
         if not isinstance(item, str):
             raise TypeError("Item key must be a str")
 
