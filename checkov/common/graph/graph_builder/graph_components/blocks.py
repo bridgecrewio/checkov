@@ -4,6 +4,7 @@ from typing import Union, Dict, Any, List, Optional
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class Block:
@@ -76,6 +77,9 @@ class Block:
 
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
+
+        if self.block_type == BlockType.DATA:
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
