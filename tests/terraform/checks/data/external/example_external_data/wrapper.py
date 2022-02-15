@@ -1,4 +1,5 @@
-# pylint: skip-file
+# flake8: noqa
+
 # skip this file from pylint since it vulnerable by design
 import json
 import os
