@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 class DataflowJobEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure data flow jobs are encrypted with Customer Supplied Encryption Keys (CSEK)"
-        id = "CKV_GCP_88"
+        id = "CKV_GCP_89"
         supported_resources = ['google_dataflow_job']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
