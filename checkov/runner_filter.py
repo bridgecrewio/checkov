@@ -43,14 +43,14 @@ class RunnerFilter(object):
         self.skip_checks = []
 
         # split out check/skip thresholds so we can access them easily later
-        for val in checks:
+        for val in (checks or []):
             if val in Severities:
                 if not self.check_threshold or self.check_threshold.level > Severities[val].level:
                     self.check_threshold = Severities[val]
             else:
                 self.checks.append(val)
 
-        for val in skip_checks:
+        for val in (skip_checks or []):
             if val in Severities:
                 if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
                     self.skip_check_threshold = Severities[val]
@@ -77,7 +77,11 @@ class RunnerFilter(object):
         self.skip_cve_package = skip_cve_package
 
 
-    def should_run_check(self, check=None, check_id=None, bc_check_id=None, severity=None) -> bool:
+    def should_run_check(self,
+                         check=None,
+                         check_id: Optional[str] = None,
+                         bc_check_id: Optional[str] = None,
+                         severity: Optional[Severity] = None) -> bool:
         if check:
             check_id = check.id
             bc_check_id = check.bc_id
@@ -135,10 +139,10 @@ class RunnerFilter(object):
     @staticmethod
     def check_matches(check_id: str,
                       bc_check_id: Optional[str],
-                      pattern_list: List[str]):
+                      pattern_list: List[str]) -> bool:
         return any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in pattern_list)
 
-    def within_threshold(self, severity):
+    def within_threshold(self, severity) -> bool:
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
         return above_min and not below_max
