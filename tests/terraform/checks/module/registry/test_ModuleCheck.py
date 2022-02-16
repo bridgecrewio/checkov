@@ -37,5 +37,7 @@ class TestModuleCheck(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+        check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_2")
+        module_registry.checks["module"].remove(check)
 if __name__ == "__main__":
     unittest.main()
