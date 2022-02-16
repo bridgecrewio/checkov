@@ -20,6 +20,7 @@ jobs:
         python -m pip install --no-cache-dir --upgrade pipenv
     - name: Install dependencies
       run: |
+        pipenv --python 3.7
         pipenv install --dev
         pipenv run pip install mypy
     - name: Run Mypy
