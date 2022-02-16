@@ -21,7 +21,7 @@ class DataprocPrivateCluster(BaseResourceCheck):
         if self.entity_type == "google_dataproc_cluster_iam_member":
             # conf.get returns as a list
             # so we create a string for comparison
-            member = ''.join(conf.get("member"))
+            member = conf.get("member")[0]
             if member in public_principals:
                 return CheckResult.FAILED
             else:
