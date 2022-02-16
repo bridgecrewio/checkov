@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class PubSubPrivateTopic(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure that PubSub Topics are not anonymously or publicly accessible"
+        name = "Ensure that Pub/Sub Topics are not anonymously or publicly accessible"
         id = "CKV_GCP_99"
         supported_resources = ['google_pubsub_topic_iam_member', 'google_pubsub_topic_iam_binding']
         categories = [CheckCategories.GENERAL_SECURITY]
