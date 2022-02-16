@@ -142,12 +142,6 @@ class TestRunnerFilter(unittest.TestCase):
         check = TestCheck('CKV_EXT_999')
         self.assertFalse(instance._should_run_scan(check, {}, run_filter))
 
-    def test_run_by_id_specific_disable_AND_enable(self):
-        instance = Registry()
-        run_filter = RunnerFilter(checks=["CKV_1"], skip_checks=["CKV_1"])
-        check = TestCheck('CKV_1')
-        self.assertTrue(instance._should_run_scan(check, {}, run_filter))
-
     # Namespace filtering
 
     def test_namespace_allow_default(self):

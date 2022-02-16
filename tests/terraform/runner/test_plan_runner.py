@@ -3,23 +3,21 @@ import unittest
 from collections import defaultdict
 from pathlib import Path
 
-# do not remove - prevents circular import
-from typing import Dict, Any
 
+from typing import Dict, Any
+# do not remove - prevents circular import
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.plan_runner import Runner, resource_registry
-from checkov.common.checks_infra.registry import get_graph_checks_registry
-
-
-orig_checks = None
-orig_graph_checks = None
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = resource_registry.checks
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -51,8 +49,6 @@ class TestRunnerValid(unittest.TestCase):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -86,8 +82,6 @@ class TestRunnerValid(unittest.TestCase):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -122,8 +116,6 @@ class TestRunnerValid(unittest.TestCase):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -158,8 +150,6 @@ class TestRunnerValid(unittest.TestCase):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -194,8 +184,6 @@ class TestRunnerValid(unittest.TestCase):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -549,8 +537,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["resource_count"], 0)
 
     def tearDown(self) -> None:
-        if orig_checks:
-            resource_registry.checks = orig_checks
+        resource_registry.checks = self.orig_checks
 
 
 if __name__ == "__main__":

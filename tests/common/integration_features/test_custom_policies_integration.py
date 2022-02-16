@@ -211,7 +211,6 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.platform_integration_configured = True
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
-        # mock _get_policies_from_platform method
         instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()

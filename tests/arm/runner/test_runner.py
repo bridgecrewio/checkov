@@ -14,10 +14,10 @@ from checkov.arm.runner import Runner
 from checkov.arm.registry import arm_resource_registry
 
 
-orig_checks = None
-
-
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = arm_resource_registry.checks
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -128,8 +128,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_record_includes_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = arm_resource_registry.checks
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -159,8 +157,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_check_filter_omit(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = arm_resource_registry.checks
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -187,14 +183,12 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertEqual(len(all_checks), 0)
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_severity_check_filter_include(self):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = arm_resource_registry.checks
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -221,14 +215,13 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertGreater(len(all_checks), 0)
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_severity_skip_check_filter_omit(self):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = arm_resource_registry.checks
+
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -255,14 +248,13 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertEqual(len(all_checks), 0)
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_severity_skip_check_filter_include(self):
 
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = arm_resource_registry.checks
+
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -289,11 +281,10 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         all_checks = report.failed_checks + report.passed_checks
-        self.assertGreater(len(all_checks), 0)
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def tearDown(self):
-        if orig_checks:
-            arm_resource_registry.checks = orig_checks
+        arm_resource_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

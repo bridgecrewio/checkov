@@ -28,10 +28,10 @@ CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
-orig_checks = None
-
-
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = resource_registry.checks
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1289,8 +1289,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_record_includes_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1320,8 +1318,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_check_filter_omit(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1353,8 +1349,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_check_filter(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
+
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1386,8 +1381,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_skip_check_filter_omit(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
+
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1419,8 +1413,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_skip_check_filter_include(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-        global orig_checks
-        orig_checks = resource_registry.checks
+
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1451,8 +1444,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self):
         parser_registry.context = {}
-        if orig_checks:
-            resource_registry.checks = orig_checks
+        resource_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

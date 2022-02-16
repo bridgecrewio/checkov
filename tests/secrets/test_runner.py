@@ -4,11 +4,15 @@ import os
 from pathlib import Path
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_metadata = metadata_integration.check_metadata
 
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -94,9 +98,54 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
 
+    def test_record_has_severity(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/cfn"
+
+        metadata_integration.check_metadata = {
+            'CKV_SECRET_2': {
+                'severity': Severities[BcSeverities.LOW]
+            }
+        }
+
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets', checks=['CKV_SECRET_2']))
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_runner_check_severity(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/cfn"
+
+        metadata_integration.check_metadata = {
+            'CKV_SECRET_2': {
+                'severity': Severities[BcSeverities.LOW]
+            },
+            'CKV_SECRET_6': {
+                'severity': Severities[BcSeverities.HIGH]
+            }
+        }
+
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets', checks=['MEDIUM']))
+        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+
     def test_runner_skip_check_severity(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/cfn"
+
+        metadata_integration.check_metadata = {
+            'CKV_SECRET_2': {
+                'severity': Severities[BcSeverities.LOW]
+            },
+            'CKV_SECRET_6': {
+                'severity': Severities[BcSeverities.HIGH]
+            }
+        }
+
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', skip_checks=['MEDIUM']))
@@ -144,6 +193,9 @@ class TestRunnerValid(unittest.TestCase):
                 self.assertEqual(fc.bc_check_id, 'BC_GIT_2')
             else:
                 self.assertIsNone(fc.bc_check_id)
+
+    def tearDown(self) -> None:
+        metadata_integration.check_metadata = self.orig_metadata
 
 
 if __name__ == '__main__':
