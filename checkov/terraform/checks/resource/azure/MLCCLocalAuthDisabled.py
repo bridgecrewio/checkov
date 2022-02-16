@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class MLCCLocalAuthDisabled(BaseResourceValueCheck):
     def __init__(self):
         # This is the full description of your check
-        description = "xxxx"
+        description = "Ensure Machine Learning Compute Cluster Local Authentication is disabled"
 
         # This is the Unique ID for your check
         id = "CKV_AZURE_142"
