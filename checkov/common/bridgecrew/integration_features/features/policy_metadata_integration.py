@@ -1,9 +1,10 @@
 import logging
 import re
 
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 # service-provider::service-name::data-type-name
@@ -36,8 +37,6 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
             all_checks = BaseCheckRegistry.get_all_registered_checks()
 
-            # avoid circular import
-            from checkov.common.checks_infra.registry import get_graph_checks_registry
             graph_registry = get_graph_checks_registry("terraform")
             graph_registry.load_checks()
 
@@ -47,8 +46,8 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 if metadata:
                     check.bc_id = metadata.get('id')
                     check.guideline = metadata.get('guideline')
-                    check.bc_severity = Severities[metadata.get('severity')]
-                    check.pc_severity = Severities[metadata.get('pcSeverity')]
+                    check.bc_severity = get_severity(metadata.get('severity'))
+                    check.pc_severity = get_severity(metadata.get('pcSeverity'))
                     check.bc_category = metadata.get('category')
                     check.benchmarks = metadata.get('benchmarks')
                     # check.pc_title = metadata.get('pcTitle')  # TODO needs to be deployed to platform

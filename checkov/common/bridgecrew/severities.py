@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 class Severity:
@@ -25,5 +26,7 @@ Severities = {
 }
 
 
-def get_severity(severity: str):
+def get_severity(severity: Optional[str]):
+    if not severity:
+        return None
     return Severities.get(severity.upper())

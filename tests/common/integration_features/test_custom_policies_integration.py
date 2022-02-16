@@ -214,7 +214,6 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()
-        self.assertEqual(1, len(custom_policies_integration.policies))
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
 
     def test_post_runner_with_cloned_checks(self):

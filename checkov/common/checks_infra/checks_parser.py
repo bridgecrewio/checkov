@@ -1,6 +1,5 @@
 from typing import Dict, Any, List, Optional
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -83,7 +82,6 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
-        check.bc_id = metadata_integration.get_bc_id(check.id)
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
