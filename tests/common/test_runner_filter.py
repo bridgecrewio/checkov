@@ -127,19 +127,19 @@ class TestRunnerFilter(unittest.TestCase):
 
     def test_should_run_severity1(self):
         instance = RunnerFilter(checks=["LOW"])
-        self.assertTrue(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
+        self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
     def test_should_run_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
-        self.assertTrue(instance.should_run_check(severity=Severities[BcSeverities.HIGH]))
+        self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.HIGH]))
 
     def test_should_skip_severity1(self):
         instance = RunnerFilter(checks=["HIGH"])
-        self.assertFalse(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
     def test_should_skip_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
-        self.assertFalse(instance.should_run_check(severity=Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
     def test_should_run_check_id(self):
         instance = RunnerFilter(checks=['CKV_AWS_45'])
