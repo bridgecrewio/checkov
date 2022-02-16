@@ -31,10 +31,9 @@ class DataprocPrivateCluster(BaseResourceCheck):
             # Since conf.get returns a list and iam_binding returns a list (nested list)
             # we pull out the members list using the index 0
             members_list = conf.get("members")[0]
-            for member in members_list:
-                if member in public_principals:
-                    return CheckResult.FAILED
-                else:
-                    return CheckResult.PASSED
+            if any(member in public_principals for member in members_list):
+                return CheckResult.FAILED
+            else:
+                return CheckResult.PASSED
 
 check = DataprocPrivateCluster()
