@@ -18,6 +18,7 @@ class Runner(JsonRunner):
         report = super().run(root_folder=self.gitlab.gitlab_conf_dir_path, external_checks_dir=external_checks_dir,
                              files=files,
                              runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        JsonRunner._change_files_path_to_relative(report)
         return report
 
     def prepare_data(self):

@@ -197,7 +197,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "dockerfile", "helm", "kubernetes", "serverless", "terraform"]
-        ignore_files = ["BaseCloudsplainingIAMCheck.py"]
+        ignore_files = ["BaseCloudsplainingIAMCheck.py", "ECRPolicy.py"]
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")

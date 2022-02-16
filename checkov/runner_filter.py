@@ -2,7 +2,7 @@ import json
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List
+from typing import Any, Set, Optional, Union, List
 
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -17,19 +17,19 @@ class RunnerFilter(object):
     __EXTERNAL_CHECK_IDS: Set[str] = set()
 
     def __init__(
-            self,
-            framework: Optional[List[str]] = None,
-            checks: Union[str, List[str], None] = None,
-            skip_checks: Union[str, List[str], None] = None,
-            download_external_modules: bool = False,
-            external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-            evaluate_variables: bool = True,
-            runners: Optional[List[str]] = None,
-            skip_framework: Optional[List[str]] = None,
-            excluded_paths: Optional[List[str]] = None,
-            all_external: bool = False,
-            var_files: Optional[List[str]] = None,
-            skip_cve_package: Optional[List] = None
+        self,
+        framework: Optional[List[str]] = None,
+        checks: Union[str, List[str], None] = None,
+        skip_checks: Union[str, List[str], None] = None,
+        download_external_modules: bool = False,
+        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+        evaluate_variables: bool = True,
+        runners: Optional[List[str]] = None,
+        skip_framework: Optional[List[str]] = None,
+        excluded_paths: Optional[List[str]] = None,
+        all_external: bool = False,
+        var_files: Optional[List[str]] = None,
+        skip_cve_package: Optional[List] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -71,7 +71,7 @@ class RunnerFilter(object):
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
         self.evaluate_variables = evaluate_variables
-        self.excluded_paths = excluded_paths
+        self.excluded_paths = excluded_paths or []
         self.all_external = all_external
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package

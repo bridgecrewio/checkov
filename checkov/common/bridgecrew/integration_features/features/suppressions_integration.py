@@ -24,6 +24,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # bcorgname_provider_timestamp (ex: companyxyz_aws_1234567891011)
         # the provider may be lower or upper depending on where the policy was created
         self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
+        self.repo_name_regex = None
 
     def is_valid(self):
         return (
@@ -46,6 +47,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
                 else:
                     suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
+
+            self._init_repo_regex()
+            suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
 
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
@@ -149,5 +153,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         return True
 
+    def _repo_matches(self, repo_name):
+        # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
+        return self.repo_name_regex.match(repo_name) is not None
+
+    def _init_repo_regex(self):
+        self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
 
 integration = SuppressionsIntegration(bc_integration)

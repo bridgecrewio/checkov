@@ -10,8 +10,6 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
 from checkov.terraform.parser_functions import handle_dynamic_values
-from checkov.terraform.parser_utils import find_var_blocks
-
 
 
 class BaseResourceValueCheck(BaseResourceCheck):

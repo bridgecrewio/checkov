@@ -20,7 +20,7 @@ class Runner(BaseRunner):
             (definitions[file], definitions_raw[file]) = result
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
-            runner_filter=RunnerFilter(), collect_skip_comments=True):
+            runner_filter=RunnerFilter(), collect_skip_comments=True) -> Report:
         registry = self.import_registry()
 
         definitions = {}
@@ -86,3 +86,9 @@ class Runner(BaseRunner):
 
     def require_external_checks(self):
         return True
+
+    @staticmethod
+    def _change_files_path_to_relative(report: Report):
+        for record in report.get_all_records():
+            record.file_path = record.file_path.replace(os.getcwd(), '')
+            record.resource = record.resource.replace(os.getcwd(), '')

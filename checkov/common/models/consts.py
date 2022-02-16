@@ -8,7 +8,7 @@ SUPPORTED_FILES = ["Dockerfile"]
 if should_scan_hcl_files():
     SUPPORTED_FILE_EXTENSIONS.append(".hcl")
 ANY_VALUE = "CKV_ANY"
-DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+/)?([^\s:]+):?([^\s]*)')
+DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+\/)?([^\s:]+):?([^\s]*)')
 access_key_pattern = re.compile("(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])")  # nosec
 secret_key_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])")  # nosec
 linode_token_pattern = re.compile("(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{64}(?![A-Za-z0-9/+=])")  # nosec

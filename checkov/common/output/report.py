@@ -93,6 +93,9 @@ class Report:
     def get_json(self) -> str:
         return json.dumps(self.get_dict(), indent=4, cls=CustomJSONEncoder)
 
+    def get_all_records(self) -> List[Record]:
+        return self.failed_checks + self.passed_checks + self.skipped_checks
+
     def get_cyclonedx_bom(self) -> Bom:
         bom = Bom()
 

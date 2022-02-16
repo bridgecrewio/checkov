@@ -39,3 +39,15 @@ resource "github_actions_secret" "pass" {
   secret_name       = "example_secret_name"
   encrypted_value   = "WOULDBEENCRYPTED"
 }
+
+# value ref
+
+resource "azuread_service_principal_password" "gh_actions" {
+  service_principal_id = azuread_service_principal.gh_actions.object_id
+}
+
+resource "github_actions_secret" "value_ref" {
+  repository       = "example_repository"
+  secret_name      = "example_secret_name"
+  plaintext_value  = azuread_service_principal_password.gh_actions.value
+}

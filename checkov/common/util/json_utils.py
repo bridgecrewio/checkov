@@ -20,5 +20,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, Severity):
             return o.name
+        elif isinstance(o, complex):
+            return str(o)
         else:
             return json.JSONEncoder.default(self, o)

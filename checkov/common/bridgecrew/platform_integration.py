@@ -42,6 +42,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, get_user_agent_header
 from checkov.version import version as checkov_version
+from collections import namedtuple
 
 SLEEP_SECONDS = 1
 
@@ -52,6 +53,8 @@ ACCOUNT_CREATION_TIME = 180  # in seconds
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole'
+
+FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
 MAX_RETRIES = 40
@@ -235,13 +238,13 @@ class BcPlatformIntegration(object):
 
         if not self.use_s3_integration:
             return
-        files_to_persist = []
+        files_to_persist: List[FileToPersist] = []
         if files:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
-                    files_to_persist.append((f, os.path.relpath(f, root_dir)))
+                    files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
@@ -253,16 +256,31 @@ class BcPlatformIntegration(object):
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
-                        files_to_persist.append((full_file_path, relative_file_path))
+                        files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+        
+        self.persist_files(files_to_persist)
+        
+    def persist_git_configuration(self, root_dir, git_config_folders: List[str]):
+        if not self.use_s3_integration:
+            return
+        files_to_persist: List[FileToPersist] = []
+    
+        for git_config_folder in git_config_folders:
+            if not os.path.isdir(git_config_folder):
+                continue
+            if not len(os.listdir(git_config_folder)):
+                continue
+        
+            for root_path, _, f_names in os.walk(git_config_folder):
+                for file_path in f_names:
+                    _, file_extension = os.path.splitext(file_path)
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS:
+                        full_file_path = os.path.join(root_path, file_path)
+                        relative_file_path = os.path.relpath(full_file_path, root_dir)
+                        files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
 
-        logging.info(f"Persisting {len(files_to_persist)} files")
-        with futures.ThreadPoolExecutor() as executor:
-            futures.wait(
-                [executor.submit(self._persist_file, full_file_path, relative_file_path) for
-                 full_file_path, relative_file_path in files_to_persist],
-                return_when=futures.FIRST_EXCEPTION,
-            )
-        logging.info(f"Done persisting {len(files_to_persist)} files")
+        self.persist_files(files_to_persist)
+
 
     def persist_scan_results(self, scan_reports):
         """
@@ -328,10 +346,20 @@ class BcPlatformIntegration(object):
                     raise Exception(
                         f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
-    def _persist_file(self, full_file_path, relative_file_path):
+    def persist_files(self, files_to_persist: List[FileToPersist]):
+        logging.info(f"Persisting {len(files_to_persist)} files")
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(self._persist_file, file_to_persist.full_file_path, file_to_persist.s3_file_key) for
+                 file_to_persist in files_to_persist],
+                return_when=futures.FIRST_EXCEPTION,
+            )
+        logging.info(f"Done persisting {len(files_to_persist)} files")
+
+    def _persist_file(self, full_file_path, s3_file_key):
         tries = MAX_RETRIES
         curr_try = 0
-        file_object_key = os.path.join(self.repo_path, relative_file_path).replace("\\", "/")
+        file_object_key = os.path.join(self.repo_path, s3_file_key).replace("\\", "/")
         while curr_try < tries:
             try:
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
