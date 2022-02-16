@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class PolicyNoDSRI(BaseResourceNegativeValueCheck):
+class PolicyNoDSRI(BaseResourceCheck):
     def __init__(self):
         name = "Ensure DSRI is not enabled within security policies"
         id = "CKV_PAN_4"
@@ -10,11 +10,35 @@ class PolicyNoDSRI(BaseResourceNegativeValueCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
-        return 'rule/[0]/disable_server_response_inspection'
+    def scan_resource_conf(self, conf):
+    
+        # Check there is a rule defined in the resource
+        if 'rule' in conf:
 
-    def get_forbidden_values(self):
-        return [True]
+            # Report the area of evaluation
+            self.evaluated_keys = ['rule']
 
+            # Get all the rules defined in the resource
+            rules = conf.get('rule')
+
+            # Iterate over each rule
+            for secrule in rules:
+
+                # Check if DSRI is defined in the resource
+                if 'disable_server_response_inspection' in secrule:
+
+                    # If DSRI is defined, get the value
+                    dsriflag = secrule.get('disable_server_response_inspection')
+
+                    # Setting DSRI to true is a fail as server-to-client inspection will be disabled
+                    if dsriflag:
+                        return CheckResult.FAILED
+
+            # The other value for DSRI is false, which is a pass
+            # Also, if the DSRI attribute is not explicitly set, the default is false, which is also a pass
+            return CheckResult.PASSED
+
+        # If there's no rules we have nothing to check
+        return CheckResult.UNKNOWN
 
 check = PolicyNoDSRI()

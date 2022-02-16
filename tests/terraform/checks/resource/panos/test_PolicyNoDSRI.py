@@ -21,17 +21,21 @@ class PolicyNoDSRI(unittest.TestCase):
             'panos_security_rule_group.pass2',
             'panos_security_policy.pass3',
             'panos_security_rule_group.pass4',
+            'panos_security_policy.pass5',
+            'panos_security_rule_group.pass6',
         }
         failing_resources = {
             'panos_security_policy.fail1',
             'panos_security_rule_group.fail2',
+            'panos_security_policy.fail3',
+            'panos_security_rule_group.fail4',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 4)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['passed'], 6)
+        self.assertEqual(summary['failed'], 4)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
