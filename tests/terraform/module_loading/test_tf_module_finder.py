@@ -28,7 +28,8 @@ class TestModuleFinder(unittest.TestCase):
         modules = find_modules(self.get_src_dir())
         module_list = list(map(lambda mod: mod.module_link, modules))
         for m in module_list:
-            self.assertNotIn(m, ["comment/local_module", "terraform-aws-modules/s3-bucket/ignore"])
+            self.assertIn(m, ["terraform-aws-modules/s3-bucket/aws",
+                              "../../../../../../../platform/src/stacks/accountStack"])
 
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
