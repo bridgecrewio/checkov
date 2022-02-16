@@ -29,7 +29,7 @@ class RunnerFilter(object):
         excluded_paths: Optional[List[str]] = None,
         all_external: bool = False,
         var_files: Optional[List[str]] = None,
-        skip_cve_package: Optional[List] = None
+        skip_cve_package: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)

@@ -268,7 +268,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
-    def test_record_check_skip_severity(self):
+    def test_record_check_skip_severity_omit(self):
         custom_check_id = "CKV_MY_CUSTOM_CHECK"
 
         registry.checks = defaultdict(list)
