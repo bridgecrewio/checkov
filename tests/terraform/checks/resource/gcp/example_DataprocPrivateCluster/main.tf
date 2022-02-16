@@ -53,7 +53,7 @@ resource "google_dataproc_cluster_iam_binding" "fail2" {
 }
 
 resource "google_dataproc_cluster_iam_binding" "fail3" {
-  cluster = "my-public-cluster-binding2"
+  cluster = "my-public-cluster-binding3"
   role    = "roles/dataproc.editor"
   members = [
     "allUsers",
@@ -62,7 +62,7 @@ resource "google_dataproc_cluster_iam_binding" "fail3" {
 }
 
 resource "google_dataproc_cluster_iam_binding" "fail4" {
-  cluster = "my-public-cluster-binding2"
+  cluster = "my-public-cluster-binding4"
   role    = "roles/dataproc.editor"
   members = [
     "user:jason@example.com",
