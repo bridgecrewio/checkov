@@ -262,6 +262,26 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH]))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.CRITICAL]))
 
+    def test_run_sev_no_check_sev(self):
+        instance = RunnerFilter(checks=['HIGH'])
+        # if a check severity is used, skip any check without it
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_run_sev_no_check_sev_with_id(self):
+        instance = RunnerFilter(checks=['HIGH', 'CKV_AWS_789'])
+        # if a check severity is used, skip any check without it
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_skip_sev_no_check_sev(self):
+        instance = RunnerFilter(skip_checks=['HIGH'])
+        # if a skip check severity is used, run any check without it
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_skip_sev_no_check_sev_with_id(self):
+        instance = RunnerFilter(skip_checks=['HIGH', 'CKV_AWS_789'])
+        # if a skip check severity is used, run any check without it
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
     def test_run_sev_id_2(self):
         instance = RunnerFilter(checks=['CKV_AWS_123'], skip_checks=['MEDIUM'])
         # Run AWS_123, unless it is MEDIUM or below
