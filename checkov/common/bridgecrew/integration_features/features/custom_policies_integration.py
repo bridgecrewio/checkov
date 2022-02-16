@@ -22,7 +22,6 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
-        self.policies = {}
         self.platform_policy_parser = NXGraphCheckParser()
         self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: Dict[str, List[dict]] = defaultdict(list)
@@ -37,12 +36,12 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def pre_scan(self):
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.warning('In the pre-scan for custom policies, but nothing was fetched from the platform')
+                logging.debug('In the pre-scan for custom policies, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 
-            self.policies = self.bc_integration.customer_run_config_response.get('customPolicies')
-            for policy in self.policies:
+            policies = self.bc_integration.customer_run_config_response.get('customPolicies')
+            for policy in policies:
                 converted_check = self._convert_raw_check(policy)
                 source_incident_id = policy.get('sourceIncidentId')
                 if source_incident_id:
@@ -55,7 +54,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     get_graph_checks_registry("cloudformation").checks.append(check)
                 else:
                     get_graph_checks_registry("terraform").checks.append(check)
-            logging.debug(f'Found {len(self.policies)} custom policies from the platform.')
+            logging.debug(f'Found {len(policies)} custom policies from the platform.')
         except Exception as e:
             self.integration_feature_failures = True
             logging.debug(f'{e} \nScanning without applying custom policies from the platform.', exc_info=True)

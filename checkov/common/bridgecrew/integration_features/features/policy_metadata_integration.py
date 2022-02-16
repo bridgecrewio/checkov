@@ -30,7 +30,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             elif self.bc_integration.public_metadata_response:
                 self._handle_public_metadata(self.bc_integration.public_metadata_response)
             else:
-                logging.warning('In the pre-scan for policy metadata, but nothing was fetched from the platform')
+                logging.debug('In the pre-scan for policy metadata, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 

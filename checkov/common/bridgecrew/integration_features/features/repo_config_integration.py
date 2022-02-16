@@ -3,7 +3,7 @@ import requests
 import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.platform_integration import bc_integration, BcPlatformIntegration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
@@ -13,8 +13,8 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
-    def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
+    def __init__(self, integration_instance: BcPlatformIntegration = bc_integration):
+        super().__init__(integration_instance, order=0)
         self.skip_paths = []
         self.code_review_threshold = None
         self.code_review_skip_policies = []
@@ -29,7 +29,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
     def pre_scan(self):
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.warning('In the pre-scan for repo config settings, but nothing was fetched from the platform')
+                logging.debug('In the pre-scan for repo config settings, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 

@@ -191,8 +191,6 @@ class BcPlatformIntegration(object):
                 logging.error("Received an error response during authentication")
                 raise e
 
-        # self.get_id_mapping()  TODO
-
         self.platform_integration_configured = True
 
     def get_s3_role(self, repo_id):
@@ -405,12 +403,9 @@ class BcPlatformIntegration(object):
 
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
-            # self.guidelines = response["guidelines"]
-            # self.bc_id_mapping = response.get("idMapping")
-            # self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug("Got customer run config from Bridgecrew BE")
         except Exception as e:
-            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
@@ -423,12 +418,9 @@ class BcPlatformIntegration(object):
                 self.setup_http_manager()
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
-            # self.guidelines = response["guidelines"]
-            # self.bc_id_mapping = response.get("idMapping")
-            # self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
             logging.debug("Got checkov mappings from Bridgecrew BE")
         except Exception as e:
-            logging.debug(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
 
     def onboarding(self):
         if not self.bc_api_key:
