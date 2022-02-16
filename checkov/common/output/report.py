@@ -93,13 +93,9 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_cyclonedx_bom(self) -> Bom:
+    def get_cyclonedx_bom(self) -> Bom:        
         bom = Bom()
-
-        if sys.version_info >= (3, 8, 0):
-            from importlib.metadata import version as meta_version
-        else:
-            from importlib_metadata import version as meta_version
+        from importlib_metadata import version as meta_version
 
         try:
             this_tool = Tool(vendor='bridgecrew', name='checkov', version=meta_version('checkov'))
@@ -139,7 +135,7 @@ class Report:
 
         return bom
 
-    def get_dict(self, is_quiet=False, url="") -> dict:
+    def get_dict(self, is_quiet: bool = False, url: str = "") -> Dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -286,7 +282,7 @@ class Report:
         xml_string = self.get_junit_xml_string(ts)
         print(xml_string)
 
-    def get_sarif_json(self, tool) -> Dict[str, Any]:
+    def get_sarif_json(self, tool: str) -> Dict[str, Any]:
         runs = []
         rules = []
         results = []
@@ -386,7 +382,7 @@ class Report:
         }
         return sarif_template_report
 
-    def write_sarif_output(self, tool) -> None:
+    def write_sarif_output(self, tool: str) -> None:
         try:
             with open("results.sarif", "w") as f:
                 f.write(json.dumps(self.get_sarif_json(tool)))

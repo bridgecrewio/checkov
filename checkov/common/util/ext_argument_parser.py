@@ -7,7 +7,7 @@ from checkov.common.util.type_forcers import convert_str_to_bool
 
 class ExtArgumentParser(configargparse.ArgumentParser):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.fields_to_sanitize = set()
 

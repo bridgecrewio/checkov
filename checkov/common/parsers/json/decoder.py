@@ -21,7 +21,7 @@ class Mark(object):
 
 # pylint: disable=W0102
 # Exception based on builtin Python Function
-def py_scanstring(s, end, strict=True,
+def py_scanstring(s: str, end: int, strict: bool = True,
                   _b=BACKSLASH, _m=STRINGCHUNK.match):
     """Scan the string s for a JSON string. End is the index of the
     character in s after the quote that started the JSON string.
@@ -81,7 +81,7 @@ def py_scanstring(s, end, strict=True,
     return ''.join(chunks), end
 
 
-def _decode_uXXXX(s, pos):
+def _decode_uXXXX(s: str, pos: int) -> int:
     esc = s[pos + 1:pos + 5]
     if len(esc) == 4 and esc[1] not in 'xX':
         try:
@@ -336,7 +336,7 @@ class Decoder(JSONDecoder):
             pairs = object_hook(pairs, beg_mark, end_mark)
         return pairs, end
 
-    def check_duplicates(self, ordered_pairs, beg_mark, end_mark):
+    def check_duplicates(self, ordered_pairs, beg_mark, end_mark) -> None:
         """
             Check for duplicate keys on the current level, this is not desirable
             because a dict does not support this. It overwrites it with the last

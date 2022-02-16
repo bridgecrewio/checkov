@@ -1,11 +1,18 @@
 
 
+from typing import List
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+
+
+
 class IntegrationFeatureRegistry:
 
     def __init__(self) -> None:
-        self.features = []
+        self.features: List[BaseIntegrationFeature] = []
 
-    def register(self, integration_feature) -> None:
+    def register(self, integration_feature: BaseIntegrationFeature) -> None:
         self.features.append(integration_feature)
         self.features.sort(key=lambda f: f.order)
 
