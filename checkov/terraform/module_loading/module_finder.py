@@ -34,6 +34,8 @@ def find_modules(path: str) -> List[ModuleDownload]:
                     in_module = False
                     curr_md = None
                     for line in f:
+                        if line.strip().startswith('#'):
+                            continue
                         if not in_module:
                             if line.startswith('module'):
                                 in_module = True

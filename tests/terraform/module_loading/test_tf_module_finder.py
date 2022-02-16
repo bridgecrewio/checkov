@@ -24,6 +24,12 @@ class TestModuleFinder(unittest.TestCase):
             else:
                 self.assertIsNone(m.version)
 
+    def test_module_finder_ignore_comments(self):
+        modules = find_modules(self.get_src_dir())
+        module_list = list(map(lambda mod: mod.module_link, modules))
+        for m in module_list:
+            self.assertNotIn(m, ["comment/local_module", "terraform-aws-modules/s3-bucket/ignore"])
+
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
 
