@@ -6,7 +6,7 @@ from typing import List
 class DataprocPrivateCluster(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Dataproc clusters are not anonymously or publicly accessible"
-        id = "CKV_GCP_95"
+        id = "CKV_GCP_98"
         supported_resources = ['google_dataproc_cluster_iam_member', 'google_dataproc_cluster_iam_binding']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
