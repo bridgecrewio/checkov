@@ -32,7 +32,7 @@ dlint = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = ">=0.3.21"
+bc-python-hcl2 = ">=0.3.21,<=0.3.28"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
