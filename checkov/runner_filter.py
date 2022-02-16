@@ -88,7 +88,7 @@ class RunnerFilter(object):
             bc_check_id = check.bc_id
             severity = check.bc_severity
 
-        assert check_id is not None  # mypy
+        assert check_id is not None  # nosec (for mypy (and then for bandit))
 
         run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
@@ -112,32 +112,6 @@ class RunnerFilter(object):
             return True
         else:
             return False
-        #
-        # if should_run_check and not should_skip_check:
-        #     return True
-        # elif should_skip_check and implicit_run:
-        #     return False
-        # elif should_skip_check and not sh:
-        #     return should_run_check
-        #
-        # if explicit_skip:  # skip anything skipped by ID
-        #     return False
-        # elif skip_severity and not explicit_run:  # prioritize skip by severity
-        #     return False
-        # elif is_external and self.all_external:  # run any external check that is not skipped
-        #     return True
-        # elif explicit_run or run_severity:
-        #     return True
-        # elif implicit_run:  # run if we listed --skip-checks but it did not cover this one, or if we did not use --check or --skip at all
-        #     return True
-        # elif implicit_skip:  # do not run if we listed --checks but it did not cover this one
-        #     return False
-        # else:
-        #     # this can occur if the check is not in either of the lists at all. Example:
-        #     # Check ID = CKV_AWS_123
-        #     # --check HIGH, --skip-check CKV_AWS_789
-        #     # the check does not match either list, so we default to skip
-        #     return False
 
     @staticmethod
     def check_matches(check_id: str,
