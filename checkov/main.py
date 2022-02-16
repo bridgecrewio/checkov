@@ -455,7 +455,7 @@ def get_external_checks_dir(config: Any) -> Any:
     return external_checks_dir
 
 
-def normalize_config(config: Namespace):
+def normalize_config(config: Namespace) -> None:
     if config.no_guide:
         logger.warning('--no-guide is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True

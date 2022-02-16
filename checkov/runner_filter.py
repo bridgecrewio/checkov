@@ -145,7 +145,7 @@ class RunnerFilter(object):
                       pattern_list: List[str]) -> bool:
         return any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in pattern_list)
 
-    def within_threshold(self, severity) -> bool:
+    def within_threshold(self, severity: Severity) -> bool:
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
         return above_min and not below_max
