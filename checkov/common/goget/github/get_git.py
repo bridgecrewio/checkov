@@ -14,7 +14,7 @@ except ImportError as e:
 
 
 class GitGetter(BaseGetter):
-    def __init__(self, url, create_clone_and_result_dirs=True):
+    def __init__(self, url: str, create_clone_and_result_dirs=True) -> None:
         self.logger = logging.getLogger(__name__)
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
@@ -28,7 +28,7 @@ class GitGetter(BaseGetter):
 
         super().__init__(url)
 
-    def do_get(self):
+    def do_get(self) -> str:
         if git_import_error is not None:
             raise ImportError("Unable to load git module (is the git executable available?)") \
                 from git_import_error

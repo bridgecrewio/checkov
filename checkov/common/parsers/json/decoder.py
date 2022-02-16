@@ -1,7 +1,7 @@
 import logging
 from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
-from typing import List
+from typing import List, Tuple
 
 from json.scanner import NUMBER_RE
 
@@ -21,8 +21,7 @@ class Mark(object):
 
 # pylint: disable=W0102
 # Exception based on builtin Python Function
-def py_scanstring(s: str, end: int, strict: bool = True,
-                  _b=BACKSLASH, _m=STRINGCHUNK.match):
+def py_scanstring(s: str, end: int, strict: bool = True, _b = BACKSLASH, _m = STRINGCHUNK.match) -> Tuple[str, int]:
     """Scan the string s for a JSON string. End is the index of the
     character in s after the quote that started the JSON string.
     Unescapes all valid JSON string escape sequences and raises ValueError
@@ -92,7 +91,7 @@ def _decode_uXXXX(s: str, pos: int) -> int:
     raise DecodeError(msg, s, pos)
 
 
-def py_make_scanner(context):
+def py_make_scanner(context) -> Tuple:
     """
         Make python based scanner
         For this use case we will not use the C based scanner
@@ -160,7 +159,7 @@ def py_make_scanner(context):
     return _scan_once
 
 
-def find_indexes(s, ch='\n'):
+def find_indexes(s: str, ch: str = '\n') -> List[int]:
     """Finds all instances of given char and returns list of indexes """
     return [i for i, ltr in enumerate(s) if ltr == ch]
 
@@ -336,7 +335,7 @@ class Decoder(JSONDecoder):
             pairs = object_hook(pairs, beg_mark, end_mark)
         return pairs, end
 
-    def check_duplicates(self, ordered_pairs, beg_mark, end_mark) -> None:
+    def check_duplicates(self, ordered_pairs, beg_mark, end_mark) -> DictNode:
         """
             Check for duplicate keys on the current level, this is not desirable
             because a dict does not support this. It overwrites it with the last

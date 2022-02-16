@@ -417,7 +417,7 @@ class Report:
         )
         print("\n\n---\n\n")
 
-    def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
+    def get_test_suites(self, use_bc_ids: bool = False) -> List[TestSuite]:
         test_cases = defaultdict(list)
         
         records = self.passed_checks + self.failed_checks + self.skipped_checks
@@ -507,8 +507,8 @@ def merge_reports(base_report, report_to_merge):
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
 
 
-def remove_duplicate_results(report):
-    def dedupe_records(origin_records):
+def remove_duplicate_results(report: Report) -> Report:
+    def dedupe_records(origin_records: List[Record]) -> List[Record]:
         record_cache = []
         new_records = []
         for record in origin_records:

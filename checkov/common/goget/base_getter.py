@@ -6,7 +6,7 @@ from typing import Optional
 
 class BaseGetter(object):
     def __init__(self, url: str) -> None:
-        self.url = url
+        self.url: str = url
         self.temp_dir: Optional[str] = None
 
     def get(self) -> str:

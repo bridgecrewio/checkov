@@ -32,7 +32,7 @@ def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
         return None
 
 
-def search_deep_keys(search_text, obj, path):
+def search_deep_keys(search_text: str, obj: Any, path: List[Any]) -> List[Any]:
     """Search deep for keys and get their values"""
     keys = []
     if isinstance(obj, dict):
