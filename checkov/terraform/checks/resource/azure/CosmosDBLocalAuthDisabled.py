@@ -19,10 +19,7 @@ class CosmosDBLocalAuthDisabled(BaseResourceValueCheck):
 
     def get_inspected_key(self) -> str:
         return "local_authentication_disabled"
-<<<<<<< HEAD
-=======
-        
->>>>>>> cdc760b2a1bba75f79182664a611db240143e0d6
+
     def get_expected_value(self):
         return True
 
