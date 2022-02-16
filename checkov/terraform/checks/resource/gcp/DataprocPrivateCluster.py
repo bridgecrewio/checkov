@@ -6,21 +6,35 @@ from typing import List
 class DataprocPrivateCluster(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Dataproc clusters are not anonymously or publicly accessible"
-        id = "CKV_GCP_96"
+        id = "CKV_GCP_95"
         supported_resources = ['google_dataproc_cluster_iam_member', 'google_dataproc_cluster_iam_binding']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        members = conf.get('members', [[]])[0]
-        members = members if isinstance(members, list) else []
-        member_conf = conf.get('member', []) + members
-        if not any(member in member_conf for member in ['allUsers', 'allAuthenticatedUsers']):
-            return CheckResult.PASSED
-        return CheckResult.FAILED
-
-    def get_evaluated_keys(self) -> List[str]:
-        return ['members', 'member']
-
+        public_principals = (
+            "allUsers",
+            "allAuthenticatedUsers"
+            )
+        # Depending on the terraform resource type -
+        # The member config is either a list or single principal
+        if self.entity_type == "google_dataproc_cluster_iam_member":
+            # conf.get returns as a list
+            # so we create a string for comparison
+            member = ''.join(conf.get("member"))
+            if member in public_principals:
+                return CheckResult.FAILED
+            else:
+                return CheckResult.PASSED
+        # iam_binding returns a list of principals
+        elif self.entity_type == "google_dataproc_cluster_iam_binding":
+            # Since conf.get returns a list and iam_binding returns a list (nested list)
+            # we pull out the members list using the index 0
+            members_list = conf.get("members")[0]
+            for member in members_list:
+                if member in public_principals:
+                    return CheckResult.FAILED
+                else:
+                    return CheckResult.PASSED
 
 check = DataprocPrivateCluster()
