@@ -1,8 +1,9 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
+from typing import List, Any
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
-class MLDisablePublicAccess(BaseResourceValueCheck):
+class MLDisablePublicAccess(BaseResourceNegativeValueCheck):
     def __init__(self):
         # This is the full description of your check
         description = "Ensure that Public Access is disabled for Machine Learning Workspace"
@@ -20,7 +21,7 @@ class MLDisablePublicAccess(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "public_network_access_enabled"
 
-    def get_expected_value(self):
-        return False
+    def get_forbidden_values(self) -> List[Any]:
+        return [True]
 
 check = MLDisablePublicAccess()

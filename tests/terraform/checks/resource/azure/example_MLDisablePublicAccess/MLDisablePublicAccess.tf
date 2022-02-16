@@ -1,11 +1,12 @@
-## SHOULD PASS: Do not explicitly assign value to parameter public_network_access_enabled as default value is false
+## SHOULD PASS: Explicitly define parameter public_network_access_enabled to false
 resource "azurerm_machine_learning_workspace" "ckv_unittest_pass" {
-  name                    = "example-workspace"
-  location                = azurerm_resource_group.example.location
-  resource_group_name     = azurerm_resource_group.example.name
-  application_insights_id = azurerm_application_insights.example.id
-  key_vault_id            = azurerm_key_vault.example.id
-  storage_account_id      = azurerm_storage_account.example.id
+  name                          = "example-workspace"
+  location                      = azurerm_resource_group.example.location
+  resource_group_name           = azurerm_resource_group.example.name
+  application_insights_id       = azurerm_application_insights.example.id
+  key_vault_id                  = azurerm_key_vault.example.id
+  storage_account_id            = azurerm_storage_account.example.id
+  public_network_access_enabled = false
 
   identity {
     type = "SystemAssigned"
@@ -17,7 +18,7 @@ resource "azurerm_machine_learning_workspace" "ckv_unittest_pass" {
   }
 }
 
-## SHOULD PASS: Explicitly define parameter public_network_access_enabled to false
+## SHOULD PASS: Parameter public_network_access_enabled defaults to false
 resource "azurerm_machine_learning_workspace" "ckv_unittest_pass_2" {
   name                          = "example-workspace"
   location                      = azurerm_resource_group.example.location
@@ -25,7 +26,6 @@ resource "azurerm_machine_learning_workspace" "ckv_unittest_pass_2" {
   application_insights_id       = azurerm_application_insights.example.id
   key_vault_id                  = azurerm_key_vault.example.id
   storage_account_id            = azurerm_storage_account.example.id
-  public_network_access_enabled = false
 
   identity {
     type = "SystemAssigned"

@@ -18,14 +18,15 @@ class TestMLDisablePublicAccess(unittest.TestCase):
 
         passing_resources = {
             'azurerm_machine_learning_workspace.ckv_unittest_pass',
-            'azurerm_machine_learning_workspace.ckv_unittest_pass_2'
+            'azurerm_machine_learning_workspace.ckv_unittest_pass_2',
         }
         failing_resources = {
-            'azurerm_machine_learning_workspace.ckv_unittest_fail'
+            'azurerm_machine_learning_workspace.ckv_unittest_fail',
         }
         skipped_resources = {}
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
+        print(passed_check_resources)
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], len(passing_resources))
