@@ -27,6 +27,7 @@ from checkov.common.checks_infra.solvers import (
     GreaterThanOrEqualAttributeSolver,
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
+    JsonpathEqualsAttributeSolver,
 )
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
@@ -53,6 +54,7 @@ operators_to_attributes_solver_classes = {
     "greater_than_or_equal": GreaterThanOrEqualAttributeSolver,
     "less_than": LessThanAttributeSolver,
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
+    "jsonpath_equals": JsonpathEqualsAttributeSolver
 }
 
 operators_to_complex_solver_classes = {
@@ -109,9 +111,9 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         else:
             resource_type = raw_check.get("resource_types", [])
             if (
-                not resource_type
-                or (isinstance(resource_type, str) and resource_type.lower() == "all")
-                or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
+                    not resource_type
+                    or (isinstance(resource_type, str) and resource_type.lower() == "all")
+                    or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types
             else:
