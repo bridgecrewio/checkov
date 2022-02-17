@@ -34,6 +34,8 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             type = force_list(conf['type'])[0]
             if type == 'ingress':
                 self.evaluated_keys = ['port_range', 'cidr_ip']
+                if not conf.get('port_range'):
+                    return CheckResult.PASSED
                 if self.contains_violation(conf):
                     return CheckResult.FAILED
                 return CheckResult.PASSED
@@ -45,10 +47,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         from_port = force_int(force_list(conf.get('port_range',[{-1}]))[0].split('/')[0])
         to_port = force_int(force_list(conf.get('port_range',[{-1}]))[0].split('/')[1])
 
-        if from_port == 0 and to_port == 0:
-            to_port = 65535
-
-        if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
+        if from_port <= self.port <= to_port:
             conf_cidr_blocks = conf.get('cidr_ip', [[]])
             cidr_blocks = force_list(conf_cidr_blocks)
             if "0.0.0.0/0" in cidr_blocks or not cidr_blocks[0]:
