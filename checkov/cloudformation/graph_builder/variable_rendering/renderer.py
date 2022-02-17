@@ -126,6 +126,9 @@ class CloudformationVariableRenderer(VariableRenderer):
             return None
         if isinstance(values_list, str):
             values_list = values_list.split(', ')
+        for value in values_list:
+            if not isinstance(value, str):
+                return None
         if isinstance(delimiter, str) and isinstance(values_list, list):
             for curr_value in values_list:
                 if isinstance(curr_value, dict):
