@@ -93,7 +93,7 @@ class Block:
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
                 attribute_value = attribute_value[0]
             if isinstance(attribute_value, (list, dict)):
-                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value)
+                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
                 base_attributes.update(inner_attributes)
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
@@ -168,6 +168,7 @@ class Block:
         cls,
         attribute_key: str,
         attribute_value: Union[str, List[str], Dict[str, Any]],
+        strip_list: bool = True  # used by subclass
     ) -> Dict[str, Any]:
         inner_attributes: Dict[str, Any] = {}
 
