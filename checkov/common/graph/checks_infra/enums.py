@@ -42,3 +42,4 @@ class Operators:
     WITHIN = 'within'
     AND = 'and'
     OR = 'or'
+    JSONPATH_EQUALS = 'jsonpath_equals'
