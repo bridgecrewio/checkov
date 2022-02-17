@@ -72,23 +72,23 @@ definition:
 
 ### Attribute Condition: Operators
 
-| Operator | Value in YAML |
-| ----- | ----- |
-| Equals | `equals` |
-| Not Equals | `not_equals` |
-| Regex Match | `regex_match` |
-| Not Regex Match | `not_regex_match` |
-| Exists | `exists` |
-| Not Exists | `not_exists` |
-| Any | `any` |
-| Contains | `contains` |
-| Not Contains | `not_contains` |
-| Within | `within` |
-| Starts With | `starting_with` |
-| Not Starts With | `not_starting_with` |
-| Ends With | `ending_with` |
-| Not Ends With | `not_ending_with` |
-| Greater Than | `greater_than` |
+| Operator              | Value in YAML           |
+|-----------------------|-------------------------|
+| Equals                | `equals`                |
+| Not Equals            | `not_equals`            |
+| Regex Match           | `regex_match`           |
+| Not Regex Match       | `not_regex_match`       |
+| Exists                | `exists`                |
+| Not Exists            | `not_exists`            |
+| Any                   | `any`                   |
+| Contains              | `contains`              |
+| Not Contains          | `not_contains`          |
+| Within                | `within`                |
+| Starts With           | `starting_with`         |
+| Not Starts With       | `not_starting_with`     |
+| Ends With             | `ending_with`           |
+| Not Ends With         | `not_ending_with`       |
+| Greater Than          | `greater_than`          |
 | Greater Than Or Equal | `greater_than_or_equal` |
 | Less Than | `less_than` |
 | Less Than Or Equal | `less_than_or_equal` |
@@ -104,6 +104,19 @@ definition:
 | `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period` |
 | `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `subset`, `not_subset` |
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input. |
+| Less Than             | `less_than`             |
+| Less Than Or Equal    | `less_than_or_equal`    |
+| Json Path Equals      | `jsonpath_equals`       |
+
+### Attribute Condition: Keys and Values
+
+| Key | Type | Value(s)                                                                                                                                                                                                                                                                              |
+| --- | --- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `cond_type` | string | Must be `attribute`                                                                                                                                                                                                                                                                   |
+| `resource_type` | collection of strings | Use either `all` or `[resource types from list]`                                                                                                                                                                                                                                      |
+| `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period`                                                                                                                                                                                               |
+| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `jsonpath_equals` |
+| `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                           |
 
 
 ## Connection State Block

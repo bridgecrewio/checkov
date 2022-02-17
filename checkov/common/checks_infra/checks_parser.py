@@ -27,7 +27,7 @@ from checkov.common.checks_infra.solvers import (
     GreaterThanOrEqualAttributeSolver,
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
-
+    JsonpathEqualsAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
@@ -57,7 +57,8 @@ operators_to_attributes_solver_classes = {
     "less_than": LessThanAttributeSolver,
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
     "subset": SubsetAttributeSolver,
-    "not_subset": NotSubsetAttributeSolver
+    "not_subset": NotSubsetAttributeSolver,
+    "jsonpath_equals": JsonpathEqualsAttributeSolver
 }
 
 operators_to_complex_solver_classes = {
@@ -114,9 +115,9 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         else:
             resource_type = raw_check.get("resource_types", [])
             if (
-                not resource_type
-                or (isinstance(resource_type, str) and resource_type.lower() == "all")
-                or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
+                    not resource_type
+                    or (isinstance(resource_type, str) and resource_type.lower() == "all")
+                    or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types
             else:
