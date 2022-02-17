@@ -324,9 +324,6 @@ class Runner(BaseRunner):
                     if last_line_dashes:
                         # The next line should contain a "apiVersion" line for the next Kubernetes manifest
                         # So we will close the old file, open a new file, and write the dashes from last iteration plus this line
-
-                        #if not s.startswith('apiVersion:'):
-                        #    raise Exception(f'Line {line_num}: Expected line to start with apiVersion:  {s}')
                         source = file_num
                         file_num += 1 
                         if source != cur_source_file:
@@ -345,10 +342,7 @@ class Runner(BaseRunner):
                         last_line_dashes = False
                     
                     else:
-
-                        #if s.startswith('apiVersion:'):
-                        #    raise Exception(f'Line {line_num}: Unexpected line starting with apiVersion:  {s}')
-
+                        
                         if not cur_writer:
                             continue
                         else:
