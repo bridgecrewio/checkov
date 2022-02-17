@@ -44,5 +44,6 @@ definition:
               - aws_globalaccelerator_accelerator
               - aws_cloudfront_distribution
               - aws_db_instance
+              - aws_apigatewayv2_domain_name
            operator: exists
            attribute: networking
