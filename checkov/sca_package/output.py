@@ -1,6 +1,7 @@
 import asyncio
 import itertools
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -349,9 +350,9 @@ def create_package_overview_table_part(
 
 
 async def _report_results_to_bridgecrew_async(
-        scan_results: List[Dict[str, Any]],
-        bc_integration: BcPlatformIntegration,
-        bc_api_key: str
+    scan_results: "Iterable[Dict[str, Any]]",
+    bc_integration: BcPlatformIntegration,
+    bc_api_key: str
 ) -> "Sequence[int]":
     package_scanning_int = PackageScanningIntegration()
     args = [
@@ -374,7 +375,7 @@ async def _report_results_to_bridgecrew_async(
 
 
 def report_results_to_bridgecrew(
-    scan_results: List[Dict[str, Any]],
+    scan_results: "Iterable[Dict[str, Any]]",
     bc_integration: BcPlatformIntegration,
     bc_api_key: str
 ) -> "Sequence[int]":

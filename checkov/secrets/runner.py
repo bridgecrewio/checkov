@@ -1,3 +1,4 @@
+import datetime
 import linecache
 import logging
 import os
@@ -47,6 +48,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '6291456'))  # 6 MB is default limit
 
 
 class Runner(BaseRunner):
@@ -166,8 +168,21 @@ class Runner(BaseRunner):
     def _scan_files(files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
         def _safe_scan(f):
+            full_file_path = os.path.join(secrets.root, f)
+            file_size = os.path.getsize(full_file_path)
+            if file_size > MAX_FILE_SIZE > 0:
+                logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
+                             f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
+                             f'to 0 or {file_size + 1}')
+                return list()
             try:
-                return list(scan.scan_file(os.path.join(secrets.root, f)))
+                start_time = datetime.datetime.now()
+                file_results = list(scan.scan_file(full_file_path))
+                end_time = datetime.datetime.now()
+                run_time = end_time - start_time
+                if run_time > datetime.timedelta(seconds=10):
+                    logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
+                return file_results
             except Exception as err:
                 logging.warning(f"Secret scanning:could not process file {f}, {err}")
                 return list()

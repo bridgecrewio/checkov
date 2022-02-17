@@ -9,6 +9,19 @@ from checkov.terraform.parser_functions import handle_dynamic_values
 from checkov.terraform.parser_utils import find_var_blocks
 
 
+PROVIDER_PREFIXES = (
+    "aws_",
+    "azurerm_",
+    "azuread_",
+    "digitalocean_",
+    "google_",
+    "github_",
+    "linode_",
+    "oci_",
+    "openstack_",
+)
+
+
 class BaseResourceCheck(BaseCheck):
     def __init__(
         self,
@@ -34,7 +47,10 @@ class BaseResourceCheck(BaseCheck):
         if not isinstance(value, str):
             return False
 
-        if value.startswith(('var.', 'local.', 'module.')):
+        if value.startswith(("var.", "local.", "module.")):
+            return True
+
+        if value.startswith(PROVIDER_PREFIXES):
             return True
 
         if "${" not in value:
