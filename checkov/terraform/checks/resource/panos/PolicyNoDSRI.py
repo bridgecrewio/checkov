@@ -31,7 +31,7 @@ class PolicyNoDSRI(BaseResourceCheck):
                     dsriflag = secrule.get('disable_server_response_inspection')
 
                     # Setting DSRI to true is a fail as server-to-client inspection will be disabled
-                    if dsriflag:
+                    if dsriflag[0]:
                         return CheckResult.FAILED
 
             # The other value for DSRI is false, which is a pass
