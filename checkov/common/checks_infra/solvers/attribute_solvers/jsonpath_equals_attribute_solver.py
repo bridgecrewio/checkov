@@ -26,7 +26,7 @@ class JsonpathEqualsAttributeSolver(BaseAttributeSolver):
 
                 attribute_matches.append(full_path)
 
-            return self.resource_type_pred(vertex, self.resource_types) and any(
+            return self.resource_type_pred(vertex, self.resource_types) and len(attribute_matches) > 0 and all(
                 self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
             )
 
