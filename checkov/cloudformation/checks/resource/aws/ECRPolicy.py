@@ -24,28 +24,27 @@ class ECRPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         self.evaluated_keys = ["Properties/RepositoryPolicyText/Statement"]
-        if 'Properties' in conf.keys():
-            if 'RepositoryPolicyText' in conf['Properties'].keys():
-                policy_text = conf['Properties']['RepositoryPolicyText']
-                if type(policy_text) in (str, StrNode):
-                    try:
-                        policy_text = json.loads(str(policy_text))
-                    except json.decoder.JSONDecodeError as e:
-                        if re.match(DEFAULT_VAR_PATTERN, str(policy_text)):
-                            # Case where the template is a sub-CFN configuration inside a serverless configuration,
-                            # and the policy is a variable expression
-                            logging.info(f"Encountered variable expression {str(policy_text)} in resource ${self.entity_path}")
-                        else:
-                            logging.error(
-                                f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}")
-                        return CheckResult.UNKNOWN
-                if 'Statement' in policy_text.keys():
-                    for statement_index, statement in enumerate(policy_text['Statement']):
-                        if 'Principal' in statement.keys():
-                            for principal_index, principal in enumerate(statement['Principal']):
-                                if principal == "*" and not self.check_for_constrained_condition(statement):
-                                    self.evaluated_keys = [f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"]
-                                    return CheckResult.FAILED
+        policy_text = conf.get('Properties', {}).get('RepositoryPolicyText')
+        if policy_text:
+            if type(policy_text) in (str, StrNode):
+                try:
+                    policy_text = json.loads(str(policy_text))
+                except json.decoder.JSONDecodeError as e:
+                    if re.match(DEFAULT_VAR_PATTERN, str(policy_text)):
+                        # Case where the template is a sub-CFN configuration inside a serverless configuration,
+                        # and the policy is a variable expression
+                        logging.info(f"Encountered variable expression {str(policy_text)} in resource ${self.entity_path}")
+                    else:
+                        logging.error(
+                            f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}")
+                    return CheckResult.UNKNOWN
+            if 'Statement' in policy_text.keys():
+                for statement_index, statement in enumerate(policy_text['Statement']):
+                    if 'Principal' in statement.keys():
+                        for principal_index, principal in enumerate(statement['Principal']):
+                            if principal == "*" and not self.check_for_constrained_condition(statement):
+                                self.evaluated_keys = [f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"]
+                                return CheckResult.FAILED
         return CheckResult.PASSED
 
     def check_for_constrained_condition(self, statement):
