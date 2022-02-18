@@ -711,6 +711,8 @@ nav_order: 1
 | 700 | CKV_PAN_4              | resource | panos_security_rule_group                      | Ensure DSRI is not enabled within security policies                                                                                                                                                      | Terraform |
 | 701 | CKV_PAN_5              | resource | panos_security_policy                          | Ensure security rules do not have 'applications' set to 'any'                                                                                                                                            | Terraform |
 | 702 | CKV_PAN_5              | resource | panos_security_rule_group                      | Ensure security rules do not have 'applications' set to 'any'                                                                                                                                            | Terraform |
+| 703 | CKV_PAN_6              | resource | panos_security_policy                          | Ensure security rules do not have 'services' set to 'any'                                                                                                                                                | Terraform |
+| 704 | CKV_PAN_6              | resource | panos_security_rule_group                      | Ensure security rules do not have 'services' set to 'any'                                                                                                                                                | Terraform |
 
 
 ---
