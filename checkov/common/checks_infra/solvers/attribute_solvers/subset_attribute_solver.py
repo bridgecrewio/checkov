@@ -18,7 +18,7 @@ class SubsetAttributeSolver(BaseAttributeSolver):
 
     @staticmethod
     def to_set(value: Any) -> Set[Any]:
-        if isinstance(value, Set):
+        if isinstance(value, set):
             return value
         elif isinstance(value, (list, dict)):
             return set(value)
