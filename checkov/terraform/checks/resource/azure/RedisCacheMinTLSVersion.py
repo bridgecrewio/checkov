@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class RedisCacheMinTLSVersion(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Redis Cache is using the latest version of TLS encryption"
-        id = "CKV_AZURE_147"
+        id = "CKV_AZURE_148"
         supported_resources = ['azurerm_redis_cache']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
