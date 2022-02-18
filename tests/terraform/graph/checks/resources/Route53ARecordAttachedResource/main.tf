@@ -97,6 +97,18 @@ resource "aws_route53_record" "pass4" {
   }
 }
 
+resource "aws_route53_record" "pass_alb" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = data.aws_alb.example.dns_name
+    zone_id                = data.aws_alb.example.zone_id
+    evaluate_target_health = true
+  }
+}
+
 resource "aws_route53_record" "pass5" {
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.fqdn
