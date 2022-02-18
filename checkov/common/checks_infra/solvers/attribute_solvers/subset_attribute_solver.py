@@ -23,6 +23,4 @@ class SubsetAttributeSolver(BaseAttributeSolver):
         elif isinstance(value, (list, dict)):
             return set(value)
         else:
-            s = set()
-            s.add(value)
-            return s
+            return {value}
