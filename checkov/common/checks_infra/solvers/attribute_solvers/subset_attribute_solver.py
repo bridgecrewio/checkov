@@ -20,7 +20,7 @@ class SubsetAttributeSolver(BaseAttributeSolver):
     def to_set(value: Any) -> Set[Any]:
         if isinstance(value, Set):
             return value
-        elif isinstance(value, Iterable):
+        elif isinstance(value, (list, dict)):
             return set(value)
         else:
             s = set()
