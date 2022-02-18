@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class FunctionAppMinTLSVersion(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Function app is using the latest version of TLS encryption"
-        id = "CKV_AZURE_143"
+        id = "CKV_AZURE_145"
         supported_resources = ['azurerm_function_app']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
