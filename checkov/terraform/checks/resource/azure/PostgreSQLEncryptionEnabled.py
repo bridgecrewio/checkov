@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class PostgersSQLEncryptionEnaled(BaseResourceValueCheck):
+class PostgreSQLEncryptionEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that PostgreSQL server enables infrastructure encryption"
         id = "CKV_AZURE_130"
@@ -14,5 +14,4 @@ class PostgersSQLEncryptionEnaled(BaseResourceValueCheck):
         return 'infrastructure_encryption_enabled'
 
 
-
-check = PostgersSQLEncryptionEnaled()
+check = PostgreSQLEncryptionEnabled()

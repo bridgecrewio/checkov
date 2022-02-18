@@ -2,11 +2,11 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.PostgersSQLEncryptionEnaled import check
+from checkov.terraform.checks.resource.azure.PostgreSQLEncryptionEnabled import check
 from checkov.common.models.enums import CheckResult
 
 
-class TestMySQLEncryptionEnaled(unittest.TestCase):
+class TestMySQLEncryptionEnabled(unittest.TestCase):
 
     def test_failure_1(self):
         hcl_res = hcl2.loads("""
