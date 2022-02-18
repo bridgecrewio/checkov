@@ -13,7 +13,7 @@ resource "azurerm_function_app" "fail" {
     min_tls_version          = 1.1
     ftps_state               = "AllAllowed"
     http2_enabled            = false
-        cors {
+    cors {
       allowed_origins = ["*"]
     }
   }
@@ -33,7 +33,7 @@ resource "azurerm_function_app" "pass" {
     scm_type                 = "LocalGit"
     ftps_state               = "AllAllowed"
     http2_enabled            = false
-        cors {
+    cors {
       allowed_origins = ["*"]
     }
   }
@@ -53,7 +53,7 @@ resource "azurerm_function_app" "pass2" {
     min_tls_version          = 1.2
     ftps_state               = "AllAllowed"
     http2_enabled            = false
-        cors {
+    cors {
       allowed_origins = ["*"]
     }
   }
