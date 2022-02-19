@@ -54,7 +54,7 @@ class TestTerraformEvaluation(TestCase):
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = 'regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", "https://terraform.io/docs/")'
-        expected = {"authority":"terraform.io", "scheme" : "https"}
+        expected = {"authority":"terraform.io", "scheme": "https"}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = 'regex(r"(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "2019-02-01")'
@@ -238,22 +238,20 @@ class TestTerraformEvaluation(TestCase):
 
     def test_complex_merge(self):
         cases = [
-            ("merge(local.one, local.two)",
-             "merge(local.one, local.two)"),
-            ("merge({\"Tag4\" = \"four\"}, {\"Tag5\" = \"five\"})",
-             {"Tag4" : "four", "Tag5" : "five"}),
-            ("merge({\"a\"=\"b\"}, {\"b\"=[1,2], \"c\"=\"z\"}, {\"d\"=3})",
-             {"a":"b", "b":[1,2], "c":"z", "d":3}),
-            ('merge({\'a\': \'}, evil\'})',
-             {"a": '}, evil'}),
-            ('merge(local.common_tags,,{\'Tag4\': \'four\'},,{\'Tag2\': \'Dev\'},)',
-             'merge(local.common_tags,{\'Tag4\': \'four\'},{\'Tag2\': \'Dev\'},)')
+            ("merge(local.one, local.two)", "merge(local.one, local.two)"),
+            ('merge({"Tag4" = "four"}, {"Tag5" = "five"})', {"Tag4": "four", "Tag5": "five"}),
+            ('merge({"a"="b"}, {"b"=[1,2], "c"="z"}, {"d"=3})', {"a": "b", "b": [1, 2], "c": "z", "d": 3}),
+            ("merge({'a': '}, evil'})", {"a": "}, evil"}),
+            (
+                "merge(local.common_tags,,{'Tag4': 'four'},,{'Tag2': 'Dev'},)",
+                "merge(local.common_tags,{'Tag4': 'four'},{'Tag2': 'Dev'},)",
+            ),
         ]
         for case in cases:
             input_str = case[0]
             expected = input_str if case[1] is None else case[1]
             actual = evaluate_terraform(input_str)
-            assert actual == expected, f"Case \"{input_str}\" failed. Expected: {expected}  Actual: {actual}"
+            assert actual == expected, f'Case "{input_str}" failed. Expected: {expected}  Actual: {actual}'
 
     def test_map_access(self):
         input_str = '{\'module-input-bucket\':\'mapped-bucket-name\'}[module-input-bucket]-works-yay'

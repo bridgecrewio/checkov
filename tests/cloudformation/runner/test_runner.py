@@ -18,7 +18,6 @@ from checkov.cloudformation.cfn_utils import create_definitions
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def test_record_relative_path_with_relative_dir(self):
 
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
@@ -298,7 +297,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parse_relevant_files_only(self):
         definitions, _ = create_definitions(None, ['main.tf'])
         # just check that we skip the file and return normally
-        self.assertFalse('main.tf' in definitions)
+        self.assertNotIn('main.tf', definitions)
 
     def tearDown(self):
         pass

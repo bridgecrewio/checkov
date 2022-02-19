@@ -150,17 +150,17 @@ class Runner(BaseRunner):
     
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
-                metadata['type'] =  "base"
+                metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in fileContent:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
             metadata['fileContent'] = fileContent

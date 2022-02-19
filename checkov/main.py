@@ -13,10 +13,6 @@ import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
-from checkov.common.util.data_structures_utils import SEVERITY_RANKING
-
-signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
-
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
@@ -31,6 +27,7 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from configargparse import ArgumentParser
@@ -51,8 +48,9 @@ from checkov.github.runner import Runner as github_configuration_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
-
 from checkov.version import version
+
+signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
 
