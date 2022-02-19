@@ -53,7 +53,7 @@ class TestJunitReport(unittest.TestCase):
         # given
         test_file = Path(__file__).parent / "fixtures/main.tf"
         checks = ["CKV_AWS_18", "CKV_AWS_19", "CKV_AWS_21"]  # 1 pass, 1 fail, 1 skip
-        config = argparse.Namespace(file=str(test_file), framework=["terraform"])
+        config = argparse.Namespace(file="fixtures/main.tf", framework=["terraform"])
         report = TerrafomrRunner().run(
             root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
         )
@@ -73,7 +73,7 @@ class TestJunitReport(unittest.TestCase):
                         '<testsuites disabled="0" errors="0" failures="1" tests="3" time="0.0">\n',
                         '\t<testsuite disabled="0" errors="0" failures="1" name="terraform scan" skipped="1" tests="3" time="0">\n',
                         "\t\t<properties>\n",
-                        '\t\t\t<property name="file" value="/Users/agruebel/repos/checkov/tests/common/output/fixtures/main.tf"/>\n',
+                        '\t\t\t<property name="file" value="fixtures/main.tf"/>\n',
                         '\t\t\t<property name="framework" value="[\'terraform\']"/>\n',
                         "\t\t</properties>\n",
                         '\t\t<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/main.tf.aws_s3_bucket.destination" file="/main.tf"/>\n',
