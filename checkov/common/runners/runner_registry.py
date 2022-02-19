@@ -102,7 +102,6 @@ class RunnerRegistry:
                     report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
-                    # report.print_junit_xml()
                 if "github_failed_only" in config.output:
                     report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 if "sarif" in config.output:
@@ -157,15 +156,19 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "junitxml" in config.output:
-            if len(junit_reports) == 1:
-                junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
+            properties = Report.create_test_suite_properties_block(config)
+
+            if junit_reports:
+                test_suites = [
+                    report.get_test_suite(properties=properties, use_bc_ids=config.output_bc_ids)
+                    for report in junit_reports
+                ]
             else:
-                master_report = Report(None)
-                for report in junit_reports:
-                    master_report.skipped_checks += report.skipped_checks
-                    master_report.passed_checks += report.passed_checks
-                    master_report.failed_checks += report.failed_checks
-                master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
+                test_suites = [Report(None).get_test_suite(properties=properties)]
+
+            xml_string = Report.get_junit_xml_string(test_suites)
+            print(xml_string)
+
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)
