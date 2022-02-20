@@ -311,6 +311,8 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
                default=None,
                help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
+    parser.add('--output-file-path', default=None,
+               help='Path for output file. The first output you use in the output flag will be the serve to the file (default output is cli)')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--no-guide', action='store_true',

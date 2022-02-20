@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import json
 from json import dumps
 import logging
 import os
@@ -78,6 +79,15 @@ class RunnerRegistry:
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
 
+    def seve_output_to_file(self, file_name, data, data_format):
+        try:
+            with open(file_name, 'w') as f:
+                f.write(data)
+            print(f"\nWrote output in {data_format} format to the file '{file_name}')")
+        except EnvironmentError as e:
+            print(f"\nAn error occurred while writing {data_format} results to file: {file_name}")
+            print(f"More details: \n {e}")
+
     def print_reports(
         self,
         scan_reports: List[Report],
@@ -90,12 +100,14 @@ class RunnerRegistry:
 
         if "cli" in config.output and not config.quiet:
             print(f"{self.banner}\n")
+        file_output_format = config.output[0]
         exit_codes = []
         cli_reports = []
         report_jsons = []
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
+        data_outputs = {'cli': '', 'github_failed_only': ''}
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
@@ -104,7 +116,7 @@ class RunnerRegistry:
                     junit_reports.append(report)
                     # report.print_junit_xml()
                 if "github_failed_only" in config.output:
-                    report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
+                    data_outputs["github_failed_only"] += report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 if "sarif" in config.output:
                     sarif_reports.append(report)
                 if "cli" in config.output:
@@ -115,7 +127,7 @@ class RunnerRegistry:
 
         if "cli" in config.output:
             for report in cli_reports:
-                report.print_console(
+                data_outputs["cli"] += report.print_console(
                     is_quiet=config.quiet,
                     is_compact=config.compact,
                     created_baseline_path=created_baseline_path,
@@ -143,33 +155,36 @@ class RunnerRegistry:
             if url:
                 print("More details: {}".format(url))
             master_report.write_sarif_output(self.tool)
+            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool))
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4))
+                output_data = Report(None).get_summary()
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
+                output_data = report_jsons[0]
             else:
                 print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
+            data_outputs['json'] = json.dumps(report_jsons)
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "junitxml" in config.output:
             if len(junit_reports) == 1:
-                junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
+                data_outputs['junitxml'] = junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
             else:
                 master_report = Report(None)
                 for report in junit_reports:
                     master_report.skipped_checks += report.skipped_checks
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
-                master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
+                data_outputs['junitxml'] = master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)
-
         if "cyclonedx" in config.output:
             if cyclonedx_reports:
                 # More than one Report - combine Reports first
@@ -182,9 +197,15 @@ class RunnerRegistry:
                 report = cyclonedx_reports[0]
             cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
             print(cyclonedx_output.output_as_string())
+            data_outputs['cyclonedx'] = cyclonedx_output.output_as_string()
             output_formats.remove("cyclonedx")
             if output_formats:
                 print(OUTPUT_DELIMITER)
+
+        # Save output to file
+        if config.output_file_path:
+            self.seve_output_to_file(file_name=config.output_file_path, data=data_outputs[file_output_format],
+                                     data_format=file_output_format)
 
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
