@@ -1,7 +1,7 @@
-from checkov.common.vcs.vcs_schema import VCSSchema
+from checkov.github.schemas.base_schema import GithubConfSchema
 
 
-class BranchProtectionSchema(VCSSchema):
+class BranchProtectionSchema(GithubConfSchema):
     def __init__(self):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
