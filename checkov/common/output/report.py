@@ -259,7 +259,6 @@ class Report:
 
         if not is_quiet:
             for file in self.parsing_errors:
-                Report._print_parsing_error_console(file)
                 output_data += colored(f"Error parsing file {file}", "red")
 
         if created_baseline_path:
