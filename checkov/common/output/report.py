@@ -264,13 +264,11 @@ class Report:
         if created_baseline_path:
             output_data += colored(
                     f"Created a checkov baseline file at {created_baseline_path}",
-                    "blue",
-                )
+                    "blue",)
         if baseline:
             output_data += colored(
                     f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                    "blue",
-                )
+                    "blue",)
         print(output_data)
         # Remove colors from the output
         ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
@@ -415,8 +413,7 @@ class Report:
                 result,
                 headers=["check_id", "file", "resource", "check_name", "guideline"],
                 tablefmt="github",
-                showindex=True,
-            ) + "\n\n---\n\n"
+                showindex=True,) + "\n\n---\n\n"
         print(output_data)
         return output_data
 
