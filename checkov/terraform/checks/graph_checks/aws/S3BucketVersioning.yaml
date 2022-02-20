@@ -10,6 +10,30 @@ definition:
       attribute: versioning.enabled
       operator: equals
       value: true
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: versioning.enabled
+      operator: starting_with
+      value: "module."
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: versioning.enabled
+      operator: starting_with
+      value: "data."
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: versioning.enabled
+      operator: starting_with
+      value: "var."
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: versioning.enabled
+      operator: starting_with
+      value: "local."
     - and:
       - cond_type: filter
         attribute: resource_type
@@ -22,9 +46,34 @@ definition:
         connected_resource_types:
           - aws_s3_bucket_versioning
         operator:  exists
-      - cond_type: attribute
-        resource_types:
-          - aws_s3_bucket_versioning
-        attribute: versioning_configuration.status
-        operator: equals
-        value: Enabled
+      - or:
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_versioning
+          attribute: versioning_configuration.status
+          operator: starting_with
+          value: "module."
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_versioning
+          attribute: versioning_configuration.status
+          operator: starting_with
+          value: "data."
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_versioning
+          attribute: versioning_configuration.status
+          operator: starting_with
+          value: "var."
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_versioning
+          attribute: versioning_configuration.status
+          operator: starting_with
+          value: "local."
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_versioning
+          attribute: versioning_configuration.status
+          operator: equals
+          value: Enabled

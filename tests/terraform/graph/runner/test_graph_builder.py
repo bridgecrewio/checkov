@@ -44,7 +44,7 @@ class TestGraphBuilder(TestCase):
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
         self.assertGreaterEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 6)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_module_and_variables(self):
