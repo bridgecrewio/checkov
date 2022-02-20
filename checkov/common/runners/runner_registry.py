@@ -79,7 +79,7 @@ class RunnerRegistry:
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
 
-    def seve_output_to_file(self, file_name, data, data_format):
+    def save_output_to_file(self, file_name, data, data_format):
         try:
             with open(file_name, 'w') as f:
                 f.write(data)
