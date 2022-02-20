@@ -111,7 +111,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-                            skipped_checks =  resource_context.get("skipped_checks")
+                            skipped_checks = resource_context.get("skipped_checks")
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)

@@ -1,5 +1,4 @@
 import unittest
-from typing import Dict, Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry

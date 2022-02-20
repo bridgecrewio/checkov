@@ -12,7 +12,6 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestGraphBuilder(TestCase):
-
     def test_build_graph(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
 
@@ -199,4 +198,4 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         lambda_attributes = local_graph.vertices[0].attributes
-        self.assertTrue("dead_letter_config" in lambda_attributes.keys())
+        self.assertIn("dead_letter_config", lambda_attributes.keys())
