@@ -71,7 +71,7 @@ def validating_webhook():
                         if (ckv == fail["check_id"]):
                             hard_fails[ckv] = f"\n  Description: {fail['check_name']}"
                             if fail['guideline'] != "":
-                                hard_fails[ckv] = hard_fails[ckv] + f"\n  Guidance: {fail['guideline']}"
+                                hard_fails[ckv] += f"\n  Guidance: {fail['guideline']}"
     
             finally:
                 print("hard fail error")
