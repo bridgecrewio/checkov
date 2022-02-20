@@ -438,8 +438,7 @@ class Report:
                 headers=["check_id", "file", "resource", "check_name", "guideline"],
                 tablefmt="github",
                 showindex=True,
-            ) + "\n\n---\n\n"
-
+        ) + "\n\n---\n\n"
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)

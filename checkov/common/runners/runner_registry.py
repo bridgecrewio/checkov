@@ -162,13 +162,13 @@ class RunnerRegistry:
         if "json" in config.output:
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4))
-                output_data = Report(None).get_summary()
+                data_outputs['json'] = json.dumps(Report(None).get_summary())
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
-                output_data = report_jsons[0]
+                data_outputs['json'] = json.dumps(report_jsons[0])
             else:
                 print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
-            data_outputs['json'] = json.dumps(report_jsons)
+                data_outputs['json'] = json.dumps(report_jsons)
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
