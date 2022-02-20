@@ -398,7 +398,7 @@ class Runner(BaseRunner):
                         itemName.append("noname")
             
                     filename = f"{'-'.join(itemName)}.yaml"
-                    newFullPathFilename = str(pathlib.Path(currentFileName).parent) + "/" + filename
+                    newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename) 
                     os.rename(currentFileName, newFullPathFilename) 
                     self.kustomizeFileMappings[newFullPathFilename] = FilePath
                 
