@@ -414,21 +414,14 @@ class Report:
                     record.guideline,
                 ]
             )
-        print(
-            tabulate(
+        output_data = tabulate(
                 result,
                 headers=["check_id", "file", "resource", "check_name", "guideline"],
                 tablefmt="github",
                 showindex=True,
-            )
-        )
-        print("\n\n---\n\n")
-        return tabulate(
-                result,
-                headers=["check_id", "file", "resource", "check_name", "guideline"],
-                tablefmt="github",
-                showindex=True,
-        ) + "\n\n---\n\n"
+            ) + "\n\n---\n\n"
+        print(output_data)
+        return output_data
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)

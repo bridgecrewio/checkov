@@ -83,10 +83,10 @@ class RunnerRegistry:
         try:
             with open(file_name, 'w') as f:
                 f.write(data)
-            print(f"\nWrote output in {data_format} format to the file '{file_name}')")
+            logging.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
         except EnvironmentError as e:
-            print(f"\nAn error occurred while writing {data_format} results to file: {file_name}")
-            print(f"More details: \n {e}")
+            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}")
+            logging.error(f"More details: \n {e}")
 
     def print_reports(
         self,
@@ -107,7 +107,7 @@ class RunnerRegistry:
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
-        data_outputs = {'cli': '', 'github_failed_only': ''}
+        data_outputs = {}
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
@@ -116,7 +116,11 @@ class RunnerRegistry:
                     junit_reports.append(report)
                     # report.print_junit_xml()
                 if "github_failed_only" in config.output:
-                    data_outputs["github_failed_only"] += report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
+                    if "github_failed_only" not in data_outputs:
+                        data_outputs["github_failed_only"] = report.print_failed_github_md(
+                            use_bc_ids=config.output_bc_ids)
+                    else:
+                        data_outputs["github_failed_only"] += report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 if "sarif" in config.output:
                     sarif_reports.append(report)
                 if "cli" in config.output:
@@ -126,6 +130,7 @@ class RunnerRegistry:
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "cli" in config.output:
+            data_outputs["cli"] = ''
             for report in cli_reports:
                 data_outputs["cli"] += report.print_console(
                     is_quiet=config.quiet,
