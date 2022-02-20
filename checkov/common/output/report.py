@@ -267,13 +267,11 @@ class Report:
                     f"Created a checkov baseline file at {created_baseline_path}",
                     "blue",
                 )
-
         if baseline:
             output_data += colored(
                     f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
                     "blue",
                 )
-
         print(output_data)
         # Remove colors from the output
         ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
@@ -425,7 +423,7 @@ class Report:
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)
-        
+
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
