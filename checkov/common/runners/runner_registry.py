@@ -204,7 +204,7 @@ class RunnerRegistry:
 
         # Save output to file
         if config.output_file_path:
-            self.seve_output_to_file(file_name=config.output_file_path, data=data_outputs[file_output_format],
+            self.save_output_to_file(file_name=config.output_file_path, data=data_outputs[file_output_format],
                                      data_format=file_output_format)
 
         exit_code = 1 if 1 in exit_codes else 0
