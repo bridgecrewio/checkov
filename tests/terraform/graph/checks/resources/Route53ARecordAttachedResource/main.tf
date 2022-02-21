@@ -97,14 +97,22 @@ resource "aws_route53_record" "pass4" {
   }
 }
 
+resource "aws_alb" "example" {
+  name               = "example"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+  subnets            = [for subnet in aws_subnet.public : subnet.id]
+}
+
 resource "aws_route53_record" "pass_alb" {
   zone_id = data.aws_route53_zone.example.zone_id
   name    = "example"
   type    = "A"
 
   alias {
-    name                   = data.aws_alb.example.dns_name
-    zone_id                = data.aws_alb.example.zone_id
+    name                   = aws_alb.example.dns_name
+    zone_id                = aws_alb.example.zone_id
     evaluate_target_health = true
   }
 }
