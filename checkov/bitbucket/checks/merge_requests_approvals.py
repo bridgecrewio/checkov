@@ -7,7 +7,7 @@ from checkov.json_doc.enums import BlockType
 class MergeRequestRequiresApproval(BaseBitbucketCheck):
     def __init__(self):
         name = "Merge requests should require at least 2 approvals"
-        id = "CKV_GITLAB_1"
+        id = "CKV_BITBUCKET_1"
         categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(
             name=name,

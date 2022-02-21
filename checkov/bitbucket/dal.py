@@ -1,12 +1,10 @@
 import os
 
 import urllib3
-from requests.auth import HTTPBasicAuth
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 
-import re
 
 class Bitbucket(BaseVCSDAL):
     def __init__(self):
@@ -18,10 +16,9 @@ class Bitbucket(BaseVCSDAL):
         """
         bitbucket_conf_dir_name = os.getenv('CKV_BITBUCKET_CONF_DIR_NAME', 'bitbucket_conf')
         self.bitbucket_conf_dir_path = os.path.join(os.getcwd(), bitbucket_conf_dir_name)
-        self.bitbucket_project_approvals_file_path = os.path.join(self.bitbucket_conf_dir_path,
+        self.bitbucket_branch_restrictions_file_path = os.path.join(self.bitbucket_conf_dir_path,
                                                                "project_approvals.json")
-        self.bitbucket_groups_file_path = os.path.join(self.bitbucket_conf_dir_path,
-                                                    "groups.json")
+
 
     def discover(self):
         """
@@ -45,32 +42,20 @@ class Bitbucket(BaseVCSDAL):
 
     def get_branch_restrictions(self):
         if self.project_id:
-            project_approvals = self._request(
+            branch_restrictions = self._request(
                 endpoint=f"repositories/{self.current_repository}/branch-restrictions")
-            return project_approvals
+            return branch_restrictions
         return None
 
-    def persist_project_approvals(self):
-        project_approvals = self.get_branch_restrictions()
+    def persist_branch_restrictions(self):
+        branch_restrictions = self.get_branch_restrictions()
 
-        if project_approvals:
-            BaseVCSDAL.persist(path=self.bitbucket_project_approvals_file_path, conf=project_approvals)
-
-    def get_groups(self):
-        groups = self._request(
-            endpoint="groups")
-        return groups
-
-    def persist_groups(self):
-        groups = self.get_groups()
-        if groups:
-            BaseVCSDAL.persist(path=self.bitbucket_groups_file_path, conf=groups)
-
+        if branch_restrictions:
+            BaseVCSDAL.persist(path=self.bitbucket_branch_restrictions_file_path, conf=branch_restrictions)
 
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_BITBUCKET_CONFIG_FETCH_DATA", "True")):
-            self.persist_project_approvals()
-            self.persist_groups()
+            self.persist_branch_restrictions()
 
 
 bb = Bitbucket()

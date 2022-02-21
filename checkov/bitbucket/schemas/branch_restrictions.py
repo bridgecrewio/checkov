@@ -1,7 +1,7 @@
 from checkov.common.vcs.vcs_schema import VCSSchema
 
 
-class ProjectApprovalsSchema(VCSSchema):
+class BranchRestrictionsSchema(VCSSchema):
     def __init__(self):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
@@ -38,4 +38,4 @@ class ProjectApprovalsSchema(VCSSchema):
         super().__init__(schema=schema)
 
 
-schema = ProjectApprovalsSchema()
+schema = BranchRestrictionsSchema()
