@@ -209,6 +209,11 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPKMSKeyRingsAreNotPubliclyAccessible(self):
         self.go("GCPKMSKeyRingsAreNotPubliclyAccessible")
 
+    # AWS provider v4 S3 Bucket checks
+
+    def test_S3BucketVersioning(self):
+        self.go("S3BucketVersioning")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
