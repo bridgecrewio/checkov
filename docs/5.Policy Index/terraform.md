@@ -731,6 +731,8 @@ nav_order: 1
 | 720 | CKV_PAN_6       | resource | panos_security_rule_group                      | Ensure security rules do not have 'services' set to 'any'                                                                                                                                                | Terraform |
 | 721 | CKV_PAN_7       | resource | panos_security_policy                          | Ensure security rules do not have 'source_addresses' and 'destination_addresses' both containing values of 'any'                                                                                         | Terraform |
 | 722 | CKV_PAN_7       | resource | panos_security_rule_group                      | Ensure security rules do not have 'source_addresses' and 'destination_addresses' both containing values of 'any'                                                                                         | Terraform |
+| 723 | CKV_PAN_8       | resource | panos_security_policy                          | Ensure description is populated within security policies                                                                                                                                                 | Terraform |
+| 724 | CKV_PAN_8       | resource | panos_security_rule_group                      | Ensure description is populated within security policies                                                                                                                                                 | Terraform |
 
 
 ---
