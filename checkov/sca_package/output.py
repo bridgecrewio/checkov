@@ -13,10 +13,10 @@ from aiomultiprocess import Pool
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
-from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -69,7 +69,7 @@ def create_report_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": f"Filtered by package '{package_name}'"
         }
-    elif SEVERITY_RANKING[severity] > SEVERITY_RANKING[runner_filter.min_cve_severity]:
+    elif not runner_filter.within_threshold(Severities[severity.upper()]):
         check_result = {
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity"
@@ -116,7 +116,7 @@ def create_report_record(
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
-        severity=severity,
+        severity=Severities[severity.upper()],
         description=description,
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,
@@ -154,7 +154,8 @@ def calculate_lowest_compliant_version(
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
-    return SEVERITY_RANKING[cve.get("severity") or DEFAULT_SEVERITY]
+    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
+    return Severities[severity].level
 
 
 def create_cli_output(*cve_records: List[Record]) -> str:
@@ -184,7 +185,8 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                     cve_count.to_fix += 1
 
                 # best way to dynamically access an class instance attribute
-                setattr(cve_count, record.severity, getattr(cve_count, record.severity) + 1)
+                severity_str = record.severity.name.lower()
+                setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
                 if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
                     cve_count.fixable += 1
@@ -196,13 +198,13 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                 package_details_map[package_name].setdefault("cves", []).append(
                     {
                         "id": record.vulnerability_details["id"],
-                        "severity": record.severity,
+                        "severity": severity_str,
                         "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                     }
                 )
 
             if package_name in package_details_map.keys():
-                package_details_map[package_name]["cves"].sort(key=compare_cve_severity)
+                package_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
                 package_details_map[package_name]["current_version"] = package_version
                 package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists

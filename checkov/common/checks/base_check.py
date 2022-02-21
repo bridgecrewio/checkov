@@ -36,6 +36,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.entity_path = ""
         self.entity_type = ""
         self.guideline = guideline
+        self.benchmarks = {}
+        self.bc_severity = None
+        self.pc_severity = None
+        self.bc_category = None
+        self.pc_title = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
 

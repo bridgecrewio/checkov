@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Tuple, Optional
 
 import dpath.util
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -81,8 +81,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with with skipped checks per skipped entity
         """
-        bc_id_mapping = bc_integration.get_id_mapping()
-        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+        bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         parsed_file_lines = self.filtered_lines
         comments = [
             (
@@ -118,8 +117,8 @@ class BaseContextParser(ABC):
                     if bc_id_mapping and skip_check["id"] in bc_id_mapping:
                         skip_check["bc_id"] = skip_check["id"]
                         skip_check["id"] = bc_id_mapping[skip_check["id"]]
-                    elif ckv_to_bc_id_mapping:
-                        skip_check["bc_id"] = ckv_to_bc_id_mapping.get(skip_check["id"])
+                    elif metadata_integration.check_metadata:
+                        skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
                     skipped_checks.append(skip_check)
             dpath.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
         return self.context

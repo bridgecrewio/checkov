@@ -6,7 +6,7 @@ from typing import Tuple, Dict, Optional, List, Any
 import dpath
 from checkov.runner_filter import RunnerFilter
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
@@ -57,8 +57,7 @@ def get_files_definitions(files: List[str]) \
 def get_skipped_checks(entity_conf):
     skipped = []
     metadata = {}
-    bc_id_mapping = bc_integration.get_id_mapping()
-    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+    bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
     if not isinstance(entity_conf, dict):
         return skipped
     if "metadata" in entity_conf.keys():
@@ -84,8 +83,8 @@ def get_skipped_checks(entity_conf):
                         if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
                             skipped_item["bc_id"] = skipped_item["id"]
                             skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
-                        elif ckv_to_bc_id_mapping:
-                            skipped_item["bc_id"] = ckv_to_bc_id_mapping.get(skipped_item["id"])
+                        elif metadata_integration.check_metadata:
+                            skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
                         logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
