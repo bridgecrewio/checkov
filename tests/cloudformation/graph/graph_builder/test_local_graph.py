@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
 from unittest import TestCase
-
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.cloudformation.cfn_utils import create_definitions
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
+from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
+from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.cloudformation.parser import parse, TemplateSections
 from checkov.runner_filter import RunnerFilter
 
@@ -164,7 +166,7 @@ class TestLocalGraph(TestCase):
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
 
-        self.assertEqual(len(local_graph.vertices), 5)
+        self.assertEqual(len(local_graph.vertices), 7)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.GLOBALS]), 1)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 3)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUTS]), 1)
@@ -180,6 +182,9 @@ class TestLocalGraph(TestCase):
             "Tracing",
             "Environment.Variables",
             "Environment.Variables.STAGE",
+            "Environment.Variables.QUEUE_URL",
+            "Environment.Variables.QUEUE_URL.Fn::If",
+            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
             "VpcConfig.SecurityGroupIds",
             "VpcConfig.SubnetIds",
         ]
@@ -193,6 +198,9 @@ class TestLocalGraph(TestCase):
             "Environment.Variables",
             "Environment.Variables.STAGE",
             "Environment.Variables.TABLE_NAME",
+            "Environment.Variables.QUEUE_URL",
+            "Environment.Variables.QUEUE_URL.Fn::If",
+            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
             "VpcConfig",
             "VpcConfig.SecurityGroupIds",
             "VpcConfig.SubnetIds",
@@ -218,3 +226,29 @@ class TestLocalGraph(TestCase):
         self.assertEqual(['sg-123', 'sg-456'], function_2_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
         self.assertEqual(['subnet-123', 'subnet-456'], function_2_vertex.attributes["VpcConfig"]["SubnetIds"])
 
+
+    def test_encryption_aws(self):
+        sam_file_path = Path(TEST_DIRNAME) / "resources/encryption/test.json"
+        definitions, _ = create_definitions(root_folder="", files=[str(sam_file_path)], runner_filter=RunnerFilter())
+        local_graph = CloudformationLocalGraph(definitions)
+        local_graph._create_vertices()
+        local_graph.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
+        all_attributes = [vertex.get_attribute_dict() for vertex in local_graph.vertices]
+        for attribute_dict in all_attributes:
+            [resource_type, resource_name] = attribute_dict[CustomAttributes.ID].split(".")
+            if resource_type in ENCRYPTION_BY_RESOURCE_TYPE:
+                is_encrypted = attribute_dict[CustomAttributes.ENCRYPTION]
+                details = attribute_dict[CustomAttributes.ENCRYPTION_DETAILS]
+                self.assertEqual(is_encrypted, EncryptionValues.ENCRYPTED.value if resource_name.startswith("Encrypted")
+                                 else EncryptionValues.UNENCRYPTED.value, f'failed for "{resource_type}.{resource_name}"')
+                if is_encrypted == EncryptionValues.ENCRYPTED.value:
+                    attribute_dict_keys = '\t'.join(list(attribute_dict.keys()))
+                    if 'KmsKeyId' in attribute_dict_keys or 'KMSMasterKeyId' in attribute_dict_keys:
+                        self.assertEqual(details, EncryptionTypes.KMS_VALUE.value, f'Bad encryption details for "{resource_type}.{resource_name}"')
+                    else:
+                        self.assertIn(details, [EncryptionTypes.AES256.value, EncryptionTypes.KMS_VALUE.value, EncryptionTypes.NODE_TO_NODE.value, EncryptionTypes.DEFAULT_KMS.value], f'Bad encryption details for "{resource_type}.{resource_name}"')
+                else:
+                    self.assertEqual(details, "")
+            else:
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION))
+                self.assertIsNone(attribute_dict.get(CustomAttributes.ENCRYPTION_DETAILS))

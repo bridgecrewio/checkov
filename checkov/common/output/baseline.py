@@ -72,7 +72,6 @@ class Baseline:
         return False
 
     def from_json(self, file_path: str) -> None:
-
         self.path = file_path
         with open(file_path, 'r') as f:
             baseline_raw = json.load(f)

@@ -4,6 +4,7 @@ from typing import Union, Dict, Any, List, Optional
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class Block:
@@ -39,11 +40,10 @@ class Block:
 
     def _extract_inner_attributes(self) -> Dict[str, Any]:
         attributes_to_add = {}
-        for attribute_key in self.attributes:
-            attribute_value = self.attributes[attribute_key]
+        for attribute_key, attribute_value in self.attributes.items():
             if isinstance(attribute_value, dict) or (
-                    isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0],
-                                                                                                  dict)):
+                isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
+            ):
                 inner_attributes = self.get_inner_attributes(
                     attribute_key=attribute_key,
                     attribute_value=attribute_value,
@@ -63,6 +63,10 @@ class Block:
         base_attributes = self.get_base_attributes()
         self.get_origin_attributes(base_attributes)
 
+        if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
+
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
             base_attributes["changed_attributes"] = sorted(self.changed_attributes.keys())
@@ -73,6 +77,9 @@ class Block:
 
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
+
+        if self.block_type == BlockType.DATA:
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
@@ -86,7 +93,7 @@ class Block:
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
                 attribute_value = attribute_value[0]
             if isinstance(attribute_value, (list, dict)):
-                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value)
+                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
                 base_attributes.update(inner_attributes)
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
@@ -99,8 +106,13 @@ class Block:
         return attributes_dict.get(CustomAttributes.HASH, "")
 
     def update_attribute(
-            self, attribute_key: str, attribute_value: Any, change_origin_id: Optional[int],
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]
+        self,
+        attribute_key: str,
+        attribute_value: Any,
+        change_origin_id: Optional[int],
+        previous_breadcrumbs: List[BreadcrumbMetadata],
+        attribute_at_dest: Optional[str],
+        transform_step: bool = False,
     ) -> None:
         if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
@@ -120,7 +132,11 @@ class Block:
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 self.attributes[key] = attribute_value
-                attribute_value = {attribute_key_parts[len(attribute_key_parts) - 1 - i]: attribute_value}
+                end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
+                if transform_step and end_key_part in ("1", "2"):
+                    # if condition logic during the transform step breaks the values
+                    return
+                attribute_value = {end_key_part: attribute_value}
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
 
@@ -152,6 +168,7 @@ class Block:
         cls,
         attribute_key: str,
         attribute_value: Union[str, List[str], Dict[str, Any]],
+        strip_list: bool = True  # used by subclass
     ) -> Dict[str, Any]:
         inner_attributes: Dict[str, Any] = {}
 

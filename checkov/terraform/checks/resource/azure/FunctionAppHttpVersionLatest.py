@@ -6,7 +6,7 @@ class FunctionAppHttpVersionLatest(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that 'HTTP Version' is the latest, if used to run the Function app"
         id = "CKV_AZURE_67"
-        supported_resources = ['azurerm_function_app']
+        supported_resources = ['azurerm_function_app', 'azurerm_function_app_slot']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

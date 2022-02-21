@@ -12,9 +12,10 @@ class ApiServerSecurePort(BaseK8sContainerCheck):
 
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["command"]
-        if "command" in conf:
-            if "kube-apiserver" in conf["command"]:
-                if "--secure-port=0" in conf["command"]:
+        command = conf.get("command")
+        if isinstance(command, list):
+            if "kube-apiserver" in command:
+                if "--secure-port=0" in command:
                     return CheckResult.FAILED
 
         return CheckResult.PASSED

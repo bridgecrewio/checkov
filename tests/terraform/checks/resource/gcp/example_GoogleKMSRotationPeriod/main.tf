@@ -21,6 +21,6 @@ resource "google_kms_crypto_key" "half_year" {
 }
 
 resource "google_kms_crypto_key" "default" {
-  name            = "crypto-key-example"
-  key_ring        = "google_kms_key_ring.keyring.id"
+  name     = "crypto-key-example"
+  key_ring = "google_kms_key_ring.keyring.id"
 }

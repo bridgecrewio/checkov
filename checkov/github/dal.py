@@ -19,15 +19,22 @@ class Github(BaseVCSDAL):
 
     def discover(self):
 
-        self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com/")
-        self.graphql_api_url = f"{self.api_url}graphql"
+        self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com")
+        self.graphql_api_url = f"{self.api_url}/graphql"
 
         self.token = os.getenv('GITHUB_TOKEN', '')
 
         self.current_repository = os.getenv('GITHUB_REPOSITORY', '')
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
+        if not self.current_branch:
+            self.current_branch = os.getenv('GITHUB_REF', '')
+            if self.current_branch:
+                extracted_branch_array = self.current_branch.split("/")
+                if len(extracted_branch_array) == 3:
+                    self.current_branch = extracted_branch_array[2]
 
         self.default_branch_cache = {}
+        self.org = os.getenv('GITHUB_ORG', '')
 
     def _headers(self):
         return {"Accept": "application/vnd.github.v3+json",
@@ -66,7 +73,7 @@ class Github(BaseVCSDAL):
                         }
                     }
                 }
-                """, variables={'org': 'bridgecrewio'})
+                """, variables={'org': self.org})
             if org_security_schema.validate(data):
                 self._organization_security = data
         return self._organization_security

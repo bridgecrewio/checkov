@@ -1,5 +1,4 @@
 import os
-from unittest import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType

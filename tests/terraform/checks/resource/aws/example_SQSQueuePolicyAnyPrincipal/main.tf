@@ -1,7 +1,7 @@
 # pass
 resource "aws_sqs_queue_policy" "q1" {
   queue_url = aws_sqs_queue.q.id
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -20,7 +20,7 @@ POLICY
 # fail
 resource "aws_sqs_queue_policy" "q2" {
   queue_url = aws_sqs_queue.q.id
- 
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -44,7 +44,7 @@ POLICY
 # fail
 resource "aws_sqs_queue_policy" "q3" {
   queue_url = aws_sqs_queue.q.id
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -65,7 +65,7 @@ POLICY
 # fail
 resource "aws_sqs_queue_policy" "q4" {
   queue_url = aws_sqs_queue.q.id
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -86,7 +86,7 @@ POLICY
 # fail
 resource "aws_sqs_queue_policy" "q5" {
   queue_url = aws_sqs_queue.q.id
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",
@@ -105,7 +105,7 @@ POLICY
 # pass
 resource "aws_sqs_queue_policy" "q6" {
   queue_url = aws_sqs_queue.q.id
-  
+
   policy = <<POLICY
 {
     "Version":"2012-10-17",

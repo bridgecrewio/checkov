@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2>=0.3.24",
+        "bc-python-hcl2>=0.3.30",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -64,7 +64,8 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath_ng",
-        "jsonschema==3.0.2"
+        "jsonschema~=3.0",
+        "prettytable>=3.0.0"
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -84,6 +85,9 @@ setup(
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
+        ],
+        "checkov.common.util.templates": [
+            "*.jinja2"
         ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],

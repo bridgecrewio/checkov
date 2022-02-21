@@ -1,10 +1,11 @@
+from checkov.common.output.report import CheckType
 from checkov.gitlab.dal import Gitlab
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(JsonRunner):
-    check_type = "gitlab_configuration"
+    check_type = CheckType.GITLAB_CONFIGURATION
 
     def __init__(self):
         self.gitlab = Gitlab()
@@ -17,6 +18,7 @@ class Runner(JsonRunner):
         report = super().run(root_folder=self.gitlab.gitlab_conf_dir_path, external_checks_dir=external_checks_dir,
                              files=files,
                              runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        JsonRunner._change_files_path_to_relative(report)
         return report
 
     def prepare_data(self):

@@ -19,6 +19,6 @@ resource "aws_secretsmanager_secret" "default" {
 }
 
 resource "aws_secretsmanager_secret" "default_explicit" {
-  name = "secret"
+  name       = "secret"
   kms_key_id = "alias/aws/secretsmanager"
 }

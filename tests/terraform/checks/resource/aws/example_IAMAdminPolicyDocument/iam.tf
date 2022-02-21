@@ -1,6 +1,6 @@
 resource "aws_iam_policy" "pass1" {
-  name = "pass1"
-  path = "/"
+  name   = "pass1"
+  path   = "/"
   policy = <<POLICY
 {
   "Statement": [
@@ -58,8 +58,8 @@ POLICY
 }
 
 resource "aws_iam_policy" "fail2" {
-  name = "fail2"
-  path = "/"
+  name   = "fail2"
+  path   = "/"
   policy = <<POLICY
 {
   "Statement": [
@@ -80,8 +80,8 @@ POLICY
 }
 
 resource "aws_iam_policy" "fail3" {
-  name = "fail3"
-  path = "/"
+  name   = "fail3"
+  path   = "/"
   policy = <<POLICY
 {
   "Statement": [
@@ -138,7 +138,7 @@ POLICY
 resource "aws_ssoadmin_permission_set_inline_policy" "pass1" {
   instance_arn       = aws_ssoadmin_permission_set.example.instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.example.arn
-  inline_policy = <<POLICY
+  inline_policy      = <<POLICY
 {
   "Statement": [
     {
@@ -171,7 +171,7 @@ POLICY
 resource "aws_ssoadmin_permission_set_inline_policy" "fail1" {
   instance_arn       = aws_ssoadmin_permission_set.example.instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.example.arn
-  inline_policy = <<POLICY
+  inline_policy      = <<POLICY
 {
   "Statement": [
     {

@@ -27,7 +27,27 @@ resource "aws_route53_record" "pass2" {
   }
 }
 
+resource "aws_apigatewayv2_domain_name" "example" {
+  domain_name     = "api-v2.example.com"
 
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate_validation.example.certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
+
+resource "aws_route53_record" "pass_apiv2" {
+  name    = aws_apigatewayv2_domain_name.example.domain_name
+  type    = "A"
+  zone_id = aws_route53_zone.example.id
+
+  alias {
+    evaluate_target_health = true
+    name                   = aws_apigatewayv2_domain_name.example.target_domain_name
+    zone_id                = aws_apigatewayv2_domain_name.example.hosted_zone_id
+  }
+}
 
 resource "aws_route53_record" "fail" {
   zone_id = data.aws_route53_zone.primary.zone_id
@@ -73,6 +93,26 @@ resource "aws_route53_record" "pass4" {
   alias {
     name                   = data.aws_lb.example.dns_name
     zone_id                = data.aws_lb.example.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_alb" "example" {
+  name               = "example"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+  subnets            = [for subnet in aws_subnet.public : subnet.id]
+}
+
+resource "aws_route53_record" "pass_alb" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = aws_alb.example.dns_name
+    zone_id                = aws_alb.example.zone_id
     evaluate_target_health = true
   }
 }

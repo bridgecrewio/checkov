@@ -19,7 +19,7 @@ from checkov.serverless.checks.service.registry import service_registry
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.serverless.parsers.parser import parse
 from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
@@ -41,7 +41,7 @@ SINGLE_ITEM_SECTIONS = [
 
 
 class Runner(BaseRunner):
-    check_type = "serverless"
+    check_type = CheckType.SERVERLESS
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
@@ -141,7 +141,7 @@ class Runner(BaseRunner):
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         variable_evaluations = {}
-                        if token == "functions": #nosec
+                        if token == "functions":  # nosec
                             # "Enriching" copies things like "environment" and "stackTags" down into the
                             # function data from the provider block since logically that's what serverless
                             # does. This allows checks to see what the complete data would be.

@@ -5,6 +5,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.FSXOntapFSEncryptedWithCMK import check
 from checkov.terraform.runner import Runner
 
+
 class TestFSXOntapFSEncryptedWithCMK(unittest.TestCase):
     def test(self):
         runner = Runner()

@@ -152,7 +152,10 @@ def build_definitions_context(
                             {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
                         )
                         if file_path_definition.upper() == TemplateSections.RESOURCES.value.upper():
-                            skipped_checks = ContextParser.collect_skip_comments(code_lines)
+                            skipped_checks = ContextParser.collect_skip_comments(
+                                entity_code_lines=code_lines,
+                                resource_config=attr_value,
+                            )
                             dpath.new(
                                 definitions_context,
                                 [file_path, str(file_path_definition), str(attribute), "skipped_checks"],

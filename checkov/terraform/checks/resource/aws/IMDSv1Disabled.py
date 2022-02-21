@@ -1,18 +1,18 @@
+from typing import List
+
 from checkov.common.models.enums import (
     CheckCategories,
     CheckResult,
 )
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from typing import List
 
 
 class IMDSv1Disabled(BaseResourceCheck):
-
     def __init__(self):
         name = "Ensure Instance Metadata Service Version 1 is not enabled"
         id = "CKV_AWS_79"
         categories = [CheckCategories.GENERAL_SECURITY]
-        supported_resources = ['aws_instance', 'aws_launch_template']
+        supported_resources = ['aws_instance', 'aws_launch_template', 'aws_launch_configuration']
         super().__init__(
             name=name,
             id=id,

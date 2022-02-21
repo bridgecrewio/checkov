@@ -1,0 +1,196 @@
+{
+  "format_version": "0.2",
+  "terraform_version": "1.0.11",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_s3_bucket.example",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "arn": "arn:aws:s3:::example",
+            "bucket": "example",
+            "bucket_domain_name": "example.s3.amazonaws.com",
+            "bucket_regional_domain_name": "example.s3.amazonaws.com",
+            "id": "example",
+            "object_lock_configuration": [
+              {
+                "object_lock_enabled": "Enabled",
+                "rule": [
+                  {
+                    "default_retention": [
+                      {
+                        "days": 7,
+                        "mode": "COMPLIANCE",
+                        "years": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "kms_master_key_id": "",
+                        "sse_algorithm": "AES256"
+                      }
+                    ],
+                    "bucket_key_enabled": false
+                  }
+                ]
+              }
+            ]
+          },
+          "sensitive_values": {
+            "object_lock_configuration": [
+              {
+                "rule": [
+                  {
+                    "default_retention": [
+                      {}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "versioning": [
+              {}
+            ]
+          }
+        },
+        {
+          "address": "aws_s3_bucket_public_access_block.example",
+          "mode": "managed",
+          "type": "aws_s3_bucket_public_access_block",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "block_public_acls": true,
+            "block_public_policy": true,
+            "bucket": "example",
+            "id": "example",
+            "ignore_public_acls": true,
+            "restrict_public_buckets": true
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "version_constraint": "~> 3.50.0"
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_s3_bucket.example",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "acl": {
+              "constant_value": "log-delivery-write"
+            },
+            "bucket": {
+              "constant_value": "example"
+            },
+            "object_lock_configuration": [
+              {
+                "object_lock_enabled": {
+                  "constant_value": "Enabled"
+                },
+                "rule": [
+                  {
+                    "default_retention": [
+                      {
+                        "days": {
+                          "constant_value": 7
+                        },
+                        "mode": {
+                          "constant_value": "COMPLIANCE"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "sse_algorithm": {
+                          "references": [
+                            "var.s3_defaults.sse_algorithm",
+                            "var.s3_defaults"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_s3_bucket_public_access_block.example",
+          "mode": "managed",
+          "type": "aws_s3_bucket_public_access_block",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "block_public_acls": {
+              "constant_value": true
+            },
+            "block_public_policy": {
+              "constant_value": true
+            },
+            "bucket": {
+              "references": [
+                "aws_s3_bucket.example.id",
+                "aws_s3_bucket.example"
+              ]
+            },
+            "ignore_public_acls": {
+              "constant_value": true
+            },
+            "restrict_public_buckets": {
+              "constant_value": true
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

@@ -118,7 +118,7 @@ def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw:
 
         for resource in resources:
             if resource.get("kind") == "List":
-                resources.extend(resource.get("items", []))
+                resources.extend(item for item in resource.get("items", []) if item)
                 resources.remove(resource)
 
         # iterate on the resources

@@ -316,6 +316,25 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)
 
+    def test_runner_with_resource_reference_graph_check(self):
+        # given
+        valid_plan_path = Path(__file__).parent / "resources/plan_with_resource_reference/tfplan_graph.json"
+        allowed_checks = ["CKV2_AWS_6"]
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(valid_plan_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=allowed_checks),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["passed"], 1)
+
     def test_runner_skip_graph_when_no_plan_exists(self):
         # given
         tf_file_path = Path(__file__).parent / "resource/example/example.tf"

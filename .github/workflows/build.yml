@@ -11,6 +11,10 @@ on:
       - 'README.md'
       - '.github/**'
 
+concurrency:
+  group: 'build'
+  cancel-in-progress: true
+
 jobs:
   integration-tests:
     strategy:
@@ -25,11 +29,12 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
-      - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
+      - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - uses: imranismail/setup-kustomize@v1
+        if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
@@ -60,10 +65,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Build & install checkov package
@@ -90,13 +94,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-        with:
-          version: 2021.5.29
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
           pipenv install --dev
+      - uses: imranismail/setup-kustomize@v1
       - name: Test with pytest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -118,9 +123,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-        with:
-          version: 2021.5.29
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -201,10 +206,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-        with:
-          # version 2021.11.5, 2021.11.5.post0 do not work
-          version: 2021.5.29
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -271,33 +275,13 @@ jobs:
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
-#  publish-to-brew:
-#    runs-on: macos-latest
-#    needs: publish-package
-#    steps:
-#      - name: Get release version
-#        id: get_version
-#        run: |
-#          checkov_version=${{ needs.publish-package.outputs.version }}
-#          micro_version=$(echo $checkov_version | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d", $3)}')
-#          echo $micro_version
-#          ZERO_IF_SHOULD_RELEASE=$(($micro_version%15))
-#          echo $ZERO_IF_SHOULD_RELEASE
-#          echo ::set-env name=ZERO_IF_SHOULD_RELEASE::$(echo $ZERO_IF_SHOULD_RELEASE)
-#        env:
-#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-#      - name: release homebrew
-#        uses: dawidd6/action-homebrew-bump-formula@v3.8.0
-#        if: env.ZERO_IF_SHOULD_RELEASE == 0
-#        with:
-#          formula: checkov
-#          token: ${{ secrets.PAT_TOKEN }}
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     steps:
       - uses: actions/checkout@v2
       - name: update checkov release
         run: |
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
-          curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
+          curl -XPOST -u "${{ secrets.GH_PAT_USE}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'

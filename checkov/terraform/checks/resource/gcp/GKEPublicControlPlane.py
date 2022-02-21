@@ -23,7 +23,7 @@ class GKEPublicControlPlane(BaseResourceCheck):
             if isinstance(master_authorized_networks_conf, dict) and 'cidr_blocks' in master_authorized_networks_conf:
                 cidr_blocks_conf = master_authorized_networks_conf['cidr_blocks']
                 for cidr_block_conf in cidr_blocks_conf:
-                    if isinstance(cidr_block_conf, dict) and '0.0.0.0/0' in cidr_block_conf['cidr_block']: # nosec
+                    if isinstance(cidr_block_conf, dict) and '0.0.0.0/0' in cidr_block_conf['cidr_block']:  # nosec
                         self.evaluated_keys = [f'master_authorized_networks_config/[0]/cidr_blocks/'
                                                f'[{cidr_blocks_conf.index(cidr_block_conf)}]/cidr_block']
                         return CheckResult.FAILED

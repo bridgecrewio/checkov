@@ -10,8 +10,6 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
 from checkov.terraform.parser_functions import handle_dynamic_values
-from checkov.terraform.parser_utils import find_var_blocks
-
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -34,17 +32,6 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :return: List of named attributes with respect to the input JSONPath order
         """
         return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+]?$"), x)]
-
-    @staticmethod
-    def _is_variable_dependant(value: Any) -> bool:
-        if not isinstance(value, str):
-            return False
-        if "${" not in value:
-            return False
-
-        if find_var_blocks(value):
-            return True
-        return False
 
     @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: List[str]) -> bool:

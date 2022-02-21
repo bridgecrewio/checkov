@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional
 
@@ -60,7 +61,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def _render_variables_from_vertices(self) -> None:
         for vertex in self.local_graph.vertices:
-            for attr_key, attr_value in vertex.attributes.items():
+            vertex_attributes = deepcopy(vertex.attributes)
+            for attr_key, attr_value in vertex_attributes.items():
                 # Iterating on Fn::Join, Fn::Select and checking if they are
                 # in the current attribute value
                 cfn_evaluation_function = next(
@@ -125,6 +127,9 @@ class CloudformationVariableRenderer(VariableRenderer):
             return None
         if isinstance(values_list, str):
             values_list = values_list.split(', ')
+        for value in values_list:
+            if not isinstance(value, str):
+                return None
         if isinstance(delimiter, str) and isinstance(values_list, list):
             for curr_value in values_list:
                 if isinstance(curr_value, dict):
@@ -327,9 +332,15 @@ class CloudformationVariableRenderer(VariableRenderer):
         """
 
         evaluated_condition, evaluated_value, evaluated_value_hierarchy = (None, None, None)
-        condition_name = value[0]
-        operand_if_true = value[1]
-        operand_if_false = value[2]
+        try:
+            condition_name = value[0]
+            operand_if_true = value[1]
+            operand_if_false = value[2]
+        except KeyError:
+            logging.info(f'Unexpected input for cfn if evaluation: {value}. '
+                         f'Template: {condition_vertex_attributes[CustomAttributes.FILE_PATH]}'
+                         f'Block: {condition_vertex_attributes[CustomAttributes.BLOCK_NAME]}')
+            return evaluated_value, evaluated_value_hierarchy
 
         # First, we evaluate the ConditionName
         if isinstance(condition_name, str) and\
@@ -411,9 +422,12 @@ class CloudformationVariableRenderer(VariableRenderer):
             evaluated_edges = list()
             for edge in edge_list:
                 dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
+                try:
+                    (evaluated_value, changed_origin_id, attribute_at_dest) = self._evaluate_cfn_function(
+                        edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
+                except KeyError:
+                    logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
 
-                (evaluated_value, changed_origin_id, attribute_at_dest) = self._evaluate_cfn_function(
-                    edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
 
                 if evaluated_value and evaluated_value != original_value:
                     # succeeded to evaluate an edge

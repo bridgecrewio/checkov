@@ -1,8 +1,8 @@
 import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
-from checkov.terraform.context_parsers.tf_plan import parse
 from checkov.common.parsers.node import DictNode, ListNode
+from checkov.terraform.context_parsers.tf_plan import parse
 
 simple_types = (str, int, float, bool)
 
@@ -15,19 +15,19 @@ def _is_simple_type(obj: Any) -> bool:
     return False
 
 
-def _is_list_of_simple_types(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_simple_types(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if not _is_simple_type(i):
             return False
     return True
 
 
-def _is_list_of_dicts(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_dicts(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if isinstance(i, dict):
             return True
     return False
@@ -45,8 +45,7 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             if parent_key == "tags":
                 ret_dict[key] = value
             else:
-                ret_dict[key] = [value]
-                ret_dict[key] = _clean_simple_type_list(ret_dict[key])
+                ret_dict[key] = _clean_simple_type_list([value])
 
         if _is_list_of_dicts(value):
             child_list = []
@@ -65,10 +64,16 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
             else:
                 ret_dict[key] = [child_dict]
     if conf and isinstance(conf, dict):
+        found_ref = False
         for conf_key in conf.keys() - obj.keys():
             ref = next((x for x in conf[conf_key].get("references", []) if not x.startswith(("var.", "local."))), None)
             if ref:
                 ret_dict[conf_key] = [ref]
+                found_ref = True
+        if not found_ref:
+            for value in conf.values():
+                if isinstance(value, dict) and "references" in value.keys():
+                    ret_dict["references_"] = value["references"]
 
     return ret_dict
 

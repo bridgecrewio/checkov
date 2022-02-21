@@ -1,0 +1,4 @@
+pass:
+  - "aws_ssm_parameter.aws_ssm_parameter_ok"
+fail:
+  - "aws_ssm_parameter.aws_ssm_parameter_not_ok"

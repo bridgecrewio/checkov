@@ -1,6 +1,8 @@
 import os
+import re
 import unittest
 
+from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -38,7 +40,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(res['a'], '1')
         self.assertEqual(res['b'], '2')
 
-
     def test_should_scan_hcl_env_var(self):
         orig_value = os.getenv(SCAN_HCL_FLAG)
 
@@ -54,12 +55,24 @@ class TestUtils(unittest.TestCase):
         if orig_value:
             os.environ[SCAN_HCL_FLAG] = orig_value
 
-
     def test_normalize_prisma_url(self):
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://app0.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('http://api0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io/'))
         self.assertIsNone(normalize_prisma_url(''))
         self.assertIsNone(normalize_prisma_url(None))
+
+    def test_skip_comment_regex(self):
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145: ADD REASON'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145:ADD REASON'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=CKV_AWS_145:ADD REASON'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=CKV_AWS_145'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=BC_AWS_GENERAL_123'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=bcorg_AWS_1234567'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=bcorg_AWS_1234567'))
+
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import logging
 import re
 from inspect import ismethod
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
@@ -13,6 +13,7 @@ from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
+from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 
 
 class CloudformationLocalGraph(LocalGraph):
@@ -46,12 +47,15 @@ class CloudformationLocalGraph(LocalGraph):
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs()
+        self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
 
     def _create_vertices(self) -> None:
 
         def extract_resource_attributes(resource: DictNode) -> DictNode:
             resource_type = resource.get("Type")
             attributes = resource.get("Properties", {})
+            if not isinstance(attributes, dict):
+                attributes = DictNode({}, resource.start_mark, resource.end_mark)
             attributes["resource_type"] = resource_type
             attributes["__startline__"] = resource["__startline__"]
             attributes["__endline__"] = resource["__endline__"]
@@ -82,6 +86,7 @@ class CloudformationLocalGraph(LocalGraph):
             attributes = attributes_operator(obj)
             block_name = name if not is_resources_section else f"{obj.get('Type', 'UnTyped')}.{name}"
             config = obj if not is_resources_section else obj.get("Properties")
+            metadata = obj.get("Metadata")
             id = f"{block_type}.{block_name}" if not is_resources_section else block_name
             self.vertices.append(CloudformationBlock(
                 name=block_name,
@@ -90,7 +95,8 @@ class CloudformationLocalGraph(LocalGraph):
                 block_type=block_type,
                 attributes=attributes,
                 id=id,
-                source=self.source
+                source=self.source,
+                metadata=metadata
             ))
 
             if not self._vertices_indexes.get(file_path):
@@ -107,7 +113,7 @@ class CloudformationLocalGraph(LocalGraph):
                 for vertex in self.vertices
                 if vertex.block_type == BlockType.RESOURCE
                 and vertex.path == globals_vertex.path
-                and vertex.attributes.get("resource_type") == GLOBALS_RESOURCE_TYPE_MAP[globals_vertex.name]
+                and vertex.attributes.get("resource_type") == GLOBALS_RESOURCE_TYPE_MAP.get(globals_vertex.name)
             ]
 
             for property, value in globals_vertex.attributes.items():
@@ -122,6 +128,7 @@ class CloudformationLocalGraph(LocalGraph):
                             attribute_value=value,
                             change_origin_id=index,
                             attribute_at_dest=property,
+                            transform_step=True,
                         )
                     elif isinstance(value, list):
                         self.update_vertex_attribute(
@@ -130,6 +137,7 @@ class CloudformationLocalGraph(LocalGraph):
                             attribute_value=[*vertex.attributes[property], *value],
                             change_origin_id=index,
                             attribute_at_dest=property,
+                            transform_step=True,
                         )
 
     def update_vertices_breadcrumbs(self) -> None:
@@ -340,5 +348,7 @@ class CloudformationLocalGraph(LocalGraph):
         return False
 
 
-def get_only_dict_items(origin_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def get_only_dict_items(origin_dict: Union[Dict[str, Any], Any]) -> Dict[str, Dict[str, Any]]:
+    if not isinstance(origin_dict, dict):
+        return {}
     return {key: value for key, value in origin_dict.items() if isinstance(value, dict)}
