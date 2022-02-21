@@ -149,13 +149,13 @@ class RunnerRegistry:
             master_report = Report("merged")
             print(self.banner)
             for report in sarif_reports:
-                report.print_console(
+                print(report.print_console(
                         is_quiet=config.quiet,
                         is_compact=config.compact,
                         created_baseline_path=created_baseline_path,
                         baseline=baseline,
                         use_bc_ids=config.output_bc_ids,
-                )
+                ))
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks
             if url:
