@@ -5,7 +5,7 @@ from typing import Any, List
 
 class ECSClusterLoggingEnabled(BaseResourceNegativeValueCheck):
     def __init__(self):
-        name = "Ensure ECS Cluster enables logging"
+        name = "Ensure ECS Cluster enables logging of ECS Exec"
         id = "CKV_AWS_223"
         supported_resources = ["aws_ecs_cluster"]
         categories = [CheckCategories.LOGGING]
