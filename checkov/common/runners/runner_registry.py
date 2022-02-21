@@ -102,7 +102,6 @@ class RunnerRegistry:
 
         if "cli" in config.output and not config.quiet:
             print(f"{self.banner}\n")
-        file_output_format = config.output[0]
         exit_codes = []
         cli_reports = []
         report_jsons = []
