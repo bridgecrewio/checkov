@@ -199,6 +199,42 @@ resource "panos_security_rule_group" "fail8" {
     }
 }
 
+# Security rules should should have a description populated to communicate the purpose for the rule, any empty description attribute is therefore a fail (even strings of spaces) 
+resource "panos_security_policy" "fail9" {
+    rule {
+        name = "my-bad-rule-fail9"
+        source_zones = ["any"]
+        source_addresses = ["10.10.10.10/32"]
+        source_users = ["any"]
+        hip_profiles = ["any"]
+        destination_zones = ["any"]
+        destination_addresses = ["8.8.8.8/32"]
+        applications = ["web-browsing","ssl"]
+        categories = ["any"]
+        services = ["any"]
+        action = "allow"
+        description = "  "
+    }
+}
+
+# Security rules should should have a description populated to communicate the purpose for the rule, an empty description attribute is therefore a fail (even strings of spaces)
+resource "panos_security_rule_group" "fail10" {
+    rule {
+        name = "my-bad-rule-fail10"
+        source_zones = ["any"]
+        source_addresses = ["10.10.10.10/32"]
+        source_users = ["any"]
+        hip_profiles = ["any"]
+        destination_zones = ["any"]
+        destination_addresses = ["8.8.8.8/32"]
+        applications = ["web-browsing","ssl"]
+        categories = ["any"]
+        services = ["any"]
+        action = "allow"
+        description = "  "
+    }
+}
+
 
 # Passes
 

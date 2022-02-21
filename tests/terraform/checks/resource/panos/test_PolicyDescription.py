@@ -31,13 +31,15 @@ class TestPolicyDescription(unittest.TestCase):
             'panos_security_rule_group.fail6',
             'panos_security_policy.fail7',
             'panos_security_rule_group.fail8',
+            'panos_security_policy.fail9',
+            'panos_security_rule_group.fail10',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], 4)
-        self.assertEqual(summary['failed'], 8)
+        self.assertEqual(summary['failed'], 10)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
