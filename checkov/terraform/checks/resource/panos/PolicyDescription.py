@@ -30,7 +30,7 @@ class PolicyDescription(BaseResourceCheck):
                     # If a description is defined, get the value
                     desc = secrule.get('description')
 
-                    if desc[0] == "":
+                    if desc[0].strip() == "":
                         # An empty string is no description, which is a fail
                         return CheckResult.FAILED
                 else:
