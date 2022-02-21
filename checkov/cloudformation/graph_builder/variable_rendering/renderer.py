@@ -61,7 +61,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def _render_variables_from_vertices(self) -> None:
         for vertex in self.local_graph.vertices:
-            for attr_key, attr_value in vertex.attributes.items():
+            vertex_attributes = deepcopy(vertex.attributes)
+            for attr_key, attr_value in vertex_attributes.items():
                 # Iterating on Fn::Join, Fn::Select and checking if they are
                 # in the current attribute value
                 cfn_evaluation_function = next(
@@ -126,6 +127,9 @@ class CloudformationVariableRenderer(VariableRenderer):
             return None
         if isinstance(values_list, str):
             values_list = values_list.split(', ')
+        for value in values_list:
+            if not isinstance(value, str):
+                return None
         if isinstance(delimiter, str) and isinstance(values_list, list):
             for curr_value in values_list:
                 if isinstance(curr_value, dict):

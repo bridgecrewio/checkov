@@ -306,7 +306,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parse_relevant_files_only(self):
         definitions, _ = create_definitions(None, ['main.tf'])
         # just check that we skip the file and return normally
-        self.assertFalse('main.tf' in definitions)
+        self.assertNotIn('main.tf', definitions)
 
     def test_record_includes_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"

@@ -7,3 +7,4 @@ from checkov.terraform.checks.resource.oci import *
 from checkov.terraform.checks.resource.openstack import *
 from checkov.terraform.checks.resource.panos import *
 from checkov.terraform.checks.resource.digitalocean import *
+from checkov.terraform.checks.resource.alicloud import *

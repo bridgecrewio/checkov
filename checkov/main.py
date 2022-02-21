@@ -14,8 +14,6 @@ import configargparse
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
-signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
-
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
@@ -52,8 +50,9 @@ from checkov.github.runner import Runner as github_configuration_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
-
 from checkov.version import version
+
+signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
 
@@ -169,17 +168,19 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         skip_download=config.skip_download,
                                                         source=source,
                                                         source_version=source_version,
-                                                        repo_branch=config.branch)
+                                                        repo_branch=config.branch,
+                                                        prisma_api_url=config.prisma_api_url)
+            platform_excluded_paths = bc_integration.get_excluded_paths() or []
+            runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except MaxRetryError:
             return None
         except Exception:
-            if bc_integration.prisma_url:
-                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
-                          'token and PRISMA_API_URL environment variable and try again. The PRISMA_API_URL value ' \
-                          'should be similar to: `https://api0.prismacloud.io`'
+            if bc_integration.prisma_api_url:
+                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                          'Please check your Prisma Cloud API token and URL and try again.'
             else:
-                message = 'An error occurred setting up the Bridgecrew platform integration. Please check your API ' \
-                          'token and try again.'
+                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                          'Please check your API token and try again.'
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(message, exc_info=True)
             else:
@@ -309,6 +310,8 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('-o', '--output', action='append', choices=OUTPUT_CHOICES,
                default=None,
                help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
+    parser.add('--output-file-path', default=None,
+               help='Name for output file. The first selected output via output flag will be saved to the file (default output is cli)')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--quiet', action='store_true',
@@ -380,7 +383,11 @@ def add_parser_args(parser: ArgumentParser) -> None:
                              'taking precedence in a tie.',
                         action='append',
                         default=None)
-    parser.add('--bc-api-key', help='Bridgecrew API key', env_var='BC_API_KEY', sanitize=True)
+    parser.add('--bc-api-key', env_var='BC_API_KEY', sanitize=True,
+               help='Bridgecrew API key or Prisma access key / secret (see --prisma-api-url)')
+    parser.add('--prisma-api-url', env_var='PRISMA_API_URL', default=None,
+               help='The Prisma Cloud API URL (see: https://prisma.pan.dev/api/cloud/api-urls). '
+                    'Requires --bc-api-key to be a Prisma Cloud Access Key in the following format: <access_key_id>::<secret_key>')
     parser.add('--docker-image', help='Scan docker images by name or ID. Only works with --bc-api-key flag')
     parser.add('--dockerfile-path', help='Path to the Dockerfile of the scanned docker image')
     parser.add('--repo-id',
