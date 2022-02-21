@@ -39,6 +39,8 @@ class Operators:
     LESS_THAN_OR_EQUAL = 'less_than_or_equal'
     STARTING_WITH = 'starting_with'
     NOT_STARTING_WITH = 'not_starting_with'
+    SUBSET = 'subset'
+    NOT_SUBSET = 'not_subset'
     WITHIN = 'within'
     AND = 'and'
     OR = 'or'

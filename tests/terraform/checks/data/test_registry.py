@@ -2,11 +2,8 @@ import os
 import unittest
 from unittest.mock import patch
 
-from checkov.runner_filter import RunnerFilter
-
 
 class TestRegistry(unittest.TestCase):
-
     def setUp(self):
         from checkov.terraform.checks.data.registry import data_registry
         self.registry = data_registry

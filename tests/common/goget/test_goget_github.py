@@ -1,11 +1,9 @@
-import os
 import unittest
 
 from checkov.common.goget.github.get_git import GitGetter
 
 
 class TestGitGetter(unittest.TestCase):
-
     def test_parse_source(self):
         url = "https://my-git.com/repository-name/"
         getter = GitGetter(url)
@@ -68,6 +66,7 @@ class TestGitGetter(unittest.TestCase):
         git_url, subdir = getter._source_subdir()
         self.assertEqual("my-git.com/repository-name?key=value", git_url, "Parsed source url should contain hostname, path and query")
         self.assertEqual("/sub/path", subdir, "Parsed source subdirectory should contain absolute (sub)path")
+
 
 if __name__ == '__main__':
     unittest.main()

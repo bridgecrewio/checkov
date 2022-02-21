@@ -1,66 +1,44 @@
+import os
 import unittest
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.FunctionAppHttpVersionLatest import check
-from checkov.common.models.enums import CheckResult
 
 
 class TestFunctionAppHttpVersionLatest(unittest.TestCase):
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_function_app" "example" {
-          name                       = "test-azure-functions"
-          location                   = azurerm_resource_group.example.location
-          resource_group_name        = azurerm_resource_group.example.name
-          app_service_plan_id        = azurerm_app_service_plan.example.id
-          storage_account_name       = azurerm_storage_account.example.name
-          storage_account_access_key = azurerm_storage_account.example.primary_access_key
-          os_type                    = "linux"
-        }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_function_app']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_function_app" "example" {
-          name                       = "test-azure-functions"
-          location                   = azurerm_resource_group.example.location
-          resource_group_name        = azurerm_resource_group.example.name
-          app_service_plan_id        = azurerm_app_service_plan.example.id
-          storage_account_name       = azurerm_storage_account.example.name
-          storage_account_access_key = azurerm_storage_account.example.primary_access_key
-          os_type                    = "linux"
-            site_config {
-                http2_enabled = false
-              }
-            }
-            """)
-        resource_conf = hcl_res['resource'][0]['azurerm_function_app']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = os.path.join(current_dir, "example_FunctionAppHttpVersionLatest")
+        report = runner.run(root_folder=test_files_dir,
+                            runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_function_app" "example" {
-          name                       = "test-azure-functions"
-          location                   = azurerm_resource_group.example.location
-          resource_group_name        = azurerm_resource_group.example.name
-          app_service_plan_id        = azurerm_app_service_plan.example.id
-          storage_account_name       = azurerm_storage_account.example.name
-          storage_account_access_key = azurerm_storage_account.example.primary_access_key
-          os_type                    = "linux"
-          site_config {
-            http2_enabled = true
-          }
+        passing_resources = {
+            'azurerm_function_app.pass',
+            'azurerm_function_app_slot.pass',
         }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_function_app']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            'azurerm_function_app.fail',
+            'azurerm_function_app.fail2',
+            'azurerm_function_app_slot.fail',
+            'azurerm_function_app_slot.fail2',
+        }
+        skipped_resources = {}
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary['passed'], len(passing_resources))
+        self.assertEqual(summary['failed'], len(failing_resources))
+        self.assertEqual(summary['skipped'], len(skipped_resources))
+        self.assertEqual(summary['parsing_errors'], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':

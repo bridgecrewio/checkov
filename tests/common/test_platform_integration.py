@@ -13,11 +13,15 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         self.assertEqual(instance.api_url, "foo")
 
-    @mock.patch.dict(os.environ, {'PRISMA_API_URL': 'prisma'})
     def test_overriding_pc_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.api_url, "prisma/bridgecrew")
-        self.assertEqual(instance.prisma_url, "prisma")
+        instance.setup_bridgecrew_credentials(
+            repo_id="bridgecrewio/checkov",
+            prisma_api_url="https://api0.prismacloud.io",
+            source=get_source_type('disabled')
+        )
+        self.assertEqual(instance.api_url, "https://api0.prismacloud.io/bridgecrew")
+        self.assertEqual(instance.prisma_api_url, "https://api0.prismacloud.io")
 
     def test_no_overriding_api_url(self):
         instance = BcPlatformIntegration()

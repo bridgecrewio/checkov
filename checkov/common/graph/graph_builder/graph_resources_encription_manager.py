@@ -18,7 +18,7 @@ class GraphResourcesEncryptionManager():
         self._encription_by_resource_type = encription_by_resource_type
 
     def get_encryption_result(self, vertex: Block) -> Optional[EncryptionResult]:
-        resource_type =  vertex.id.split(".")[0]
+        resource_type = vertex.id.split(".")[0]
         encryption_conf = self._encription_by_resource_type.get(resource_type)
         if not encryption_conf:
             return None

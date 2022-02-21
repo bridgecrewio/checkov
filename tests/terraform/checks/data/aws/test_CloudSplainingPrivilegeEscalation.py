@@ -1,12 +1,8 @@
 import unittest
 from pathlib import Path
 
-import hcl2
-
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.aws.IAMPrivilegeEscalation import check
-
-from checkov.common.models.enums import CheckResult
 from checkov.terraform.runner import Runner
 
 
