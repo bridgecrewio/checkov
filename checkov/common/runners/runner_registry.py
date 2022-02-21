@@ -212,12 +212,12 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
 
         # Save output to file
-        file_names = {'cli': 'results.txt', 'github_failed_only': 'results.txt', 'sarif': 'results.sarif',
-                      'json': 'results.json', 'junitxml': 'results.xml', 'cyclonedx': 'results.xml'}
+        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt', 'sarif': 'results_sarif.sarif',
+                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml', 'cyclonedx': 'results_cyclonedx.xml'}
         if config.output_file_path:
             for output in config.output:
-                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}', data=data_outputs[file_output_format],
-                                     data_format=file_output_format)
+                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}', data=data_outputs[output],
+                                     data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
 
