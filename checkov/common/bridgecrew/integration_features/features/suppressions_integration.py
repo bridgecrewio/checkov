@@ -49,7 +49,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
 
             self._init_repo_regex()
-            suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
+            suppressions = sorted(suppressions, key=lambda s: s['checkovPolicyId'])
 
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
@@ -159,5 +159,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _init_repo_regex(self):
         self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
+
 
 integration = SuppressionsIntegration(bc_integration)

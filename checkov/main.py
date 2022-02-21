@@ -170,8 +170,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
-            platform_excluded_paths = bc_integration.get_excluded_paths() or []
-            runner_filter.excluded_paths = runner_filter.excluded_paths + platform_excluded_paths
         except MaxRetryError:
             return None
         except Exception:
