@@ -7,10 +7,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
-# service-provider::service-name::data-type-name
-
-CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
-
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
