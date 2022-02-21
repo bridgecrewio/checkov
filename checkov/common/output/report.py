@@ -226,11 +226,11 @@ class Report:
             created_baseline_path=None,
             baseline=None,
             use_bc_ids=False,
-    ) -> None:
+    ) -> str:
         summary = self.get_summary()
-        print(colored(f"{self.check_type} scan results:", "blue"))
+        output_data = colored(f"{self.check_type} scan results:\n", "blue")
         if self.parsing_errors:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n\n".format(
                 summary["passed"],
                 summary["failed"],
                 summary["skipped"],
@@ -238,53 +238,46 @@ class Report:
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE:
-                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n"
+                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n\n"
             else:
-                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n"
-        print(colored(message, "cyan"))
-
+                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
+        output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type == CheckType.SCA_PACKAGE:
             if self.failed_checks or self.skipped_checks:
-                print(sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks))
+                output_data += sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
-                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                    output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             for record in self.failed_checks:
-                print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
                 for record in self.skipped_checks:
-                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                    output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
 
         if not is_quiet:
             for file in self.parsing_errors:
-                Report._print_parsing_error_console(file)
+                output_data += colored(f"Error parsing file {file}", "red")
 
         if created_baseline_path:
-            print(
-                colored(
+            output_data += colored(
                     f"Created a checkov baseline file at {created_baseline_path}",
-                    "blue",
-                )
-            )
-
+                    "blue",)
         if baseline:
-            print(
-                colored(
+            output_data += colored(
                     f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                    "blue",
-                )
-            )
+                    "blue",)
+        return output_data
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def print_junit_xml(self, use_bc_ids: bool = False) -> None:
+    def print_junit_xml(self, use_bc_ids: bool = False):
         ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
-        print(xml_string)
+        return xml_string
 
     def get_sarif_json(self, tool) -> Dict[str, Any]:
         runs = []
@@ -399,7 +392,7 @@ class Report:
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
         return to_xml_report_string(ts)
 
-    def print_failed_github_md(self, use_bc_ids=False) -> None:
+    def print_failed_github_md(self, use_bc_ids=False) -> str:
         result = []
         for record in self.failed_checks:
             result.append(
@@ -411,19 +404,17 @@ class Report:
                     record.guideline,
                 ]
             )
-        print(
-            tabulate(
+        output_data = tabulate(
                 result,
                 headers=["check_id", "file", "resource", "check_name", "guideline"],
                 tablefmt="github",
-                showindex=True,
-            )
-        )
-        print("\n\n---\n\n")
+                showindex=True,) + "\n\n---\n\n"
+        print(output_data)
+        return output_data
 
     def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
         test_cases = defaultdict(list)
-        
+
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"

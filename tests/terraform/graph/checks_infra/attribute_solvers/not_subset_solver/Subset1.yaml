@@ -1,0 +1,15 @@
+metadata:
+  id: "NotSubset1"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "x"
+  attribute: "arr"
+  operator: "not_subset"
+  value:
+    - "allowed1"
+    - "allowed2"
+    - "allowed3"
+

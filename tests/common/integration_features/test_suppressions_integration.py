@@ -1,6 +1,4 @@
-import os
 import unittest
-from unittest import mock
 
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -8,7 +6,6 @@ from checkov.common.output.record import Record
 
 
 class TestSuppressionsIntegration(unittest.TestCase):
-
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
         instance.skip_suppressions = False

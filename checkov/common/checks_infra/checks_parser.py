@@ -29,6 +29,8 @@ from checkov.common.checks_infra.solvers import (
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
 )
+from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -54,6 +56,8 @@ operators_to_attributes_solver_classes = {
     "greater_than_or_equal": GreaterThanOrEqualAttributeSolver,
     "less_than": LessThanAttributeSolver,
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
+    "subset": SubsetAttributeSolver,
+    "not_subset": NotSubsetAttributeSolver,
     "jsonpath_equals": JsonpathEqualsAttributeSolver
 }
 

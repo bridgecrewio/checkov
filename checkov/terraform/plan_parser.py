@@ -15,19 +15,19 @@ def _is_simple_type(obj: Any) -> bool:
     return False
 
 
-def _is_list_of_simple_types(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_simple_types(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if not _is_simple_type(i):
             return False
     return True
 
 
-def _is_list_of_dicts(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_dicts(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if isinstance(i, dict):
             return True
     return False

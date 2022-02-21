@@ -150,17 +150,17 @@ class Runner(BaseRunner):
     
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
-                metadata['type'] =  "base"
+                metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in fileContent:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
             metadata['fileContent'] = fileContent
@@ -324,15 +324,13 @@ class Runner(BaseRunner):
                     if last_line_dashes:
                         # The next line should contain a "apiVersion" line for the next Kubernetes manifest
                         # So we will close the old file, open a new file, and write the dashes from last iteration plus this line
-
-                        if not s.startswith('apiVersion:'):
-                            raise Exception(f'Line {line_num}: Expected line to start with apiVersion:  {s}')
-                        # TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
                         source = file_num
                         file_num += 1 
                         if source != cur_source_file:
                             if cur_writer:
-                                self._curWriterRenameAndClose(cur_writer, filePath)
+                                # Here we are about to close a "complete" file. The function will validate it looks like a K8S manifest before continuing.
+                                self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
+                                # 
                             file_path = os.path.join(extractDir, str(source))
                             parent = os.path.dirname(file_path)
                             os.makedirs(parent, exist_ok=True)
@@ -344,10 +342,7 @@ class Runner(BaseRunner):
                         last_line_dashes = False
                     
                     else:
-
-                        if s.startswith('apiVersion:'):
-                            raise Exception(f'Line {line_num}: Unexpected line starting with apiVersion:  {s}')
-
+                        
                         if not cur_writer:
                             continue
                         else:
@@ -356,7 +351,7 @@ class Runner(BaseRunner):
                     line_num += 1
 
                 if cur_writer:
-                    self._curWriterRenameAndClose(cur_writer, filePath)
+                    self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
 
             try:
                 k8s_runner = K8sKustomizeRunner()
@@ -380,30 +375,35 @@ class Runner(BaseRunner):
 
         return report
 
-    def _curWriterRenameAndClose(self, cur_writer, FilePath):
+    def _curWriterValidateStoreMapAndClose(self, cur_writer, FilePath):
         currentFileName = cur_writer.name
         cur_writer.close()
         # Now we have a complete k8s manifest as we closed the writer, and it's temporary file name (currentFileName) plus the original file templated out (FilePath)
         # Rename them to useful information from the K8S metadata before conting.
-        # Then keep a mapping of temp files to original repo locations for use with Checkov output later.
+        # Then keep a mapping of template files to original kustomize repo locations for use with Checkov output later.
         try:
             with open(currentFileName) as f:
                 currentYamlObject = yaml.safe_load(f)
-                itemName = []
-                itemName.append(currentYamlObject['kind'])
-                if 'namespace' in currentYamlObject['metadata']:
-                    itemName.append(currentYamlObject['metadata']['namespace'])
+                # Validate we have a K8S manifest
+                if "apiVersion" in currentYamlObject:
+                    itemName = []
+                    itemName.append(currentYamlObject['kind'])
+                    if 'namespace' in currentYamlObject['metadata']:
+                        itemName.append(currentYamlObject['metadata']['namespace'])
+                    else:
+                        itemName.append("default")
+                    if 'name' in currentYamlObject['metadata']:
+                        itemName.append(currentYamlObject['metadata']['name'])
+                    else:
+                        itemName.append("noname")
+            
+                    filename = f"{'-'.join(itemName)}.yaml"
+                    newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename) 
+                    os.rename(currentFileName, newFullPathFilename) 
+                    self.kustomizeFileMappings[newFullPathFilename] = FilePath
+                
                 else:
-                    itemName.append("default")
-                if 'name' in currentYamlObject['metadata']:
-                    itemName.append(currentYamlObject['metadata']['name'])
-                else:
-                    itemName.append("noname")
-        
-                filename = f"{'-'.join(itemName)}.yaml"
-                newFullPathFilename = str(pathlib.Path(currentFileName).parent) + "/" + filename
-                os.rename(currentFileName, newFullPathFilename) 
-                self.kustomizeFileMappings[newFullPathFilename] = FilePath
+                    raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
 
         except IsADirectoryError:
             pass
