@@ -1,7 +1,6 @@
 import fnmatch
 import itertools
 import json
-import re
 import sys
 from collections import defaultdict
 from collections.abc import Iterable
@@ -269,10 +268,7 @@ class Report:
             output_data += colored(
                     f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
                     "blue",)
-        print(output_data)
-        # Remove colors from the output
-        ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
-        return ansi_escape.sub('', output_data)
+        return output_data
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
@@ -281,7 +277,6 @@ class Report:
     def print_junit_xml(self, use_bc_ids: bool = False):
         ts = self.get_test_suites(use_bc_ids)
         xml_string = self.get_junit_xml_string(ts)
-        print(xml_string)
         return xml_string
 
     def get_sarif_json(self, tool) -> Dict[str, Any]:

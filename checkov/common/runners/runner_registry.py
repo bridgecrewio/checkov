@@ -1,6 +1,7 @@
 import argparse
 import itertools
 import json
+import re
 from collections import defaultdict
 from json import dumps
 import logging
@@ -127,14 +128,19 @@ class RunnerRegistry:
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "cli" in config.output:
+            cli_output = ''
             for report in cli_reports:
-                data_outputs["cli"] += report.print_console(
+                cli_output += report.print_console(
                     is_quiet=config.quiet,
                     is_compact=config.compact,
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
                 )
+            print(cli_output)
+            # Remove colors from the cli output
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+            data_outputs['cli'] = ansi_escape.sub('', cli_output)
             if url:
                 print("More details: {}".format(url))
             output_formats.remove("cli")
@@ -176,6 +182,7 @@ class RunnerRegistry:
         if "junitxml" in config.output:
             if len(junit_reports) == 1:
                 data_outputs['junitxml'] = junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
+                print(data_outputs['junitxml'])
             else:
                 master_report = Report(None)
                 for report in junit_reports:
@@ -183,6 +190,7 @@ class RunnerRegistry:
                     master_report.passed_checks += report.passed_checks
                     master_report.failed_checks += report.failed_checks
                 data_outputs['junitxml'] = master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
+                print(data_outputs['junitxml'])
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -204,10 +212,12 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
 
         # Save output to file
-        if config.output_file_name:
-            self.save_output_to_file(file_name=config.output_file_name, data=data_outputs[file_output_format],
+        file_names = {'cli': 'results.txt', 'github_failed_only': 'results.txt', 'sarif': 'results.sarif',
+                      'json': 'results.json', 'junitxml': 'results.xml', 'cyclonedx': 'results.xml'}
+        if config.output_file_path:
+            for output in config.output:
+                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}', data=data_outputs[file_output_format],
                                      data_format=file_output_format)
-
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
 
