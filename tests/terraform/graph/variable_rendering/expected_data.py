@@ -1,5 +1,3 @@
-from lark import Tree
-
 expected_postgres_module = {"create": True,
                             "name": "${var.name}",
                             "use_name_prefix": True,
@@ -49,4 +47,3 @@ expected_provider = {
         }
     }
 }
-

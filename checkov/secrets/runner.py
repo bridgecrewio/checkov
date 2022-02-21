@@ -1,3 +1,4 @@
+import datetime
 import linecache
 import logging
 import os
@@ -8,7 +9,6 @@ from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
-from typing_extensions import TypedDict
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.comment.enum import COMMENT_REGEX
@@ -16,9 +16,10 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
+from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 
@@ -47,15 +48,11 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
-
-
-class _CheckResult(TypedDict, total=False):
-    result: CheckResult
-    suppress_comment: str
+MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '6291456'))  # 6 MB is default limit
 
 
 class Runner(BaseRunner):
-    check_type = 'secrets'
+    check_type = CheckType.SECRETS
 
     def run(
         self,
@@ -171,8 +168,21 @@ class Runner(BaseRunner):
     def _scan_files(files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
         def _safe_scan(f):
+            full_file_path = os.path.join(secrets.root, f)
+            file_size = os.path.getsize(full_file_path)
+            if file_size > MAX_FILE_SIZE > 0:
+                logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
+                             f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
+                             f'to 0 or {file_size + 1}')
+                return list()
             try:
-                return list(scan.scan_file(os.path.join(secrets.root, f)))
+                start_time = datetime.datetime.now()
+                file_results = list(scan.scan_file(full_file_path))
+                end_time = datetime.datetime.now()
+                run_time = end_time - start_time
+                if run_time > datetime.timedelta(seconds=10):
+                    logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
+                return file_results
             except Exception as err:
                 logging.warning(f"Secret scanning:could not process file {f}, {err}")
                 return list()

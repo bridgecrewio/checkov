@@ -30,7 +30,10 @@ class ImageTagFixed(BaseK8sContainerCheck):
             if "@" in image_val:
                 return CheckResult.PASSED
 
-            (image, tag) = re.findall(DOCKER_IMAGE_REGEX, image_val)[0]
+            re_result = re.findall(DOCKER_IMAGE_REGEX, image_val)
+            if not re_result:
+                return CheckResult.UNKNOWN
+            (image, tag) = re_result[0]
             if tag == "latest" or tag == "":
                 return CheckResult.FAILED
         else:

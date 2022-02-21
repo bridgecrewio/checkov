@@ -13,7 +13,7 @@ resource "aws_mq_broker" "enabled" {
 
   logs {
     general = true
-    audit = true
+    audit   = true
   }
 }
 
@@ -44,14 +44,14 @@ resource "aws_mq_broker" "disabled" {
 
   logs {
     general = false
-    audit = false
+    audit   = false
   }
 }
 
 
 resource "aws_mq_broker" "unknown" {
-  broker_name        = "example"
-  engine_type        = "RabbitMQ"
+  broker_name = "example"
+  engine_type = "RabbitMQ"
 
   host_instance_type = "mq.t3.micro"
 

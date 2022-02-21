@@ -27,6 +27,6 @@ resource "google_compute_subnetwork" "internal_https_lb" {
   ip_cidr_range = "10.0.0.0/22"
   network       = "google_compute_network.vpc.id"
 
-  purpose       = "INTERNAL_HTTPS_LOAD_BALANCER"
-  role          = "ACTIVE"
+  purpose = "INTERNAL_HTTPS_LOAD_BALANCER"
+  role    = "ACTIVE"
 }

@@ -1,10 +1,11 @@
+from checkov.common.output.report import CheckType
 from checkov.github.dal import Github
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(JsonRunner):
-    check_type = "github_configuration"
+    check_type = CheckType.GITHUB_CONFIGURATION
 
     def __init__(self):
         self.github = Github()
@@ -17,6 +18,7 @@ class Runner(JsonRunner):
         report = super().run(root_folder=self.github.github_conf_dir_path, external_checks_dir=external_checks_dir,
                              files=files,
                              runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        JsonRunner._change_files_path_to_relative(report)
         return report
 
     def prepare_data(self):

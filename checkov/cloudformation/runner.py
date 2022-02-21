@@ -20,13 +20,13 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 
 
 class Runner(BaseRunner):
-    check_type = "cloudformation"
+    check_type = CheckType.CLOUDFORMATION
 
     def __init__(
         self,
@@ -111,7 +111,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-                            skipped_checks =  resource_context.get("skipped_checks")
+                            skipped_checks = resource_context.get("skipped_checks")
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)

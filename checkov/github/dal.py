@@ -34,6 +34,7 @@ class Github(BaseVCSDAL):
                     self.current_branch = extracted_branch_array[2]
 
         self.default_branch_cache = {}
+        self.org = os.getenv('GITHUB_ORG', '')
 
     def _headers(self):
         return {"Accept": "application/vnd.github.v3+json",
@@ -42,7 +43,7 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="/repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch))
+                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch))
             return branch_protection_rules
         return None
 
@@ -72,7 +73,7 @@ class Github(BaseVCSDAL):
                         }
                     }
                 }
-                """, variables={'org': 'bridgecrewio'})
+                """, variables={'org': self.org})
             if org_security_schema.validate(data):
                 self._organization_security = data
         return self._organization_security

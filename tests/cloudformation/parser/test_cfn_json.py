@@ -16,7 +16,7 @@ class TestCfnJson(unittest.TestCase):
         test_files = f'{current_dir}/success.json'
         cfn = load(test_files)
         self.assertEqual(cfn[0]['AWSTemplateFormatVersion'], '2010-09-09')
-        Runner().run(None, files=[test_files],runner_filter=RunnerFilter())
+        Runner().run(None, files=[test_files], runner_filter=RunnerFilter())
 
     def test_fail_parsing(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

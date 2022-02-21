@@ -205,7 +205,7 @@ resource "aws_cloudfront_distribution" "fail2" {
 
   viewer_certificate {
     cloudfront_default_certificate = false
-    minimum_protocol_version = "TLSv1"
+    minimum_protocol_version       = "TLSv1"
   }
 }
 
@@ -418,7 +418,7 @@ resource "aws_cloudfront_distribution" "pass" {
 
   viewer_certificate {
     cloudfront_default_certificate = false
-    minimum_protocol_version = "TLSv1.2_2018"
+    minimum_protocol_version       = "TLSv1.2_2018"
   }
 }
 
@@ -523,8 +523,8 @@ resource "aws_cloudfront_distribution" "pass1" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.cert.arn
-	ssl_support_method = "sni-only"
-	minimum_protocol_version = "TLSv1.2_2019"
+    acm_certificate_arn      = aws_acm_certificate.cert.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2019"
   }
 }

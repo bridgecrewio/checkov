@@ -8,7 +8,7 @@ nav_order: 20
 # Gitlab configuration scanning
 Checkov supports the evaluation of policies on your Gitlab organization and repositories settings.
 When using checkov with Gitlab token it can collect your current org settings and validate it complies with Gitlab security best practices such as having 2FA defined, having SSO and more.
-Full list of gitlab organization and repository settings related checks can [here](https://www.checkov.io/5.Policy%20Index/gitlab_configuration.html).
+Full list of gitlab organization and repository settings related checks can be found  [here](https://www.checkov.io/5.Policy%20Index/gitlab_configuration.html).
 
 ## Gitlab scanning configuration
 
@@ -116,8 +116,8 @@ gitlab_configuration scan results:
 Passed checks: 0, Failed checks: 1, Skipped checks: 0
 
 Check: CKV_GITLAB_2: "Ensure all Gitlab groups require two factor authentication"
-	FAILED for resource: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github/gitlab_conf/groups.json
-	File: /Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github/gitlab_conf/groups.json:2-27
+	FAILED for resource: /gitlab_conf/groups.json
+	File: /gitlab_conf/groups.json:2-27
 
 		2  |     {
 		3  |         "id": 15483421,

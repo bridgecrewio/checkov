@@ -2,16 +2,17 @@ import json
 import os
 import unittest
 import warnings
+from pathlib import Path
+from typing import List
 
 import yaml
-from checkov.terraform import checks
+
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
-from typing import List
-from pathlib import Path
-from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform import checks
+from checkov.terraform.runner import Runner
 
 
 class TestYamlPolicies(unittest.TestCase):
@@ -179,6 +180,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
+    def test_HTTPNotSendingPasswords(self):
+        self.go("HTTPNotSendingPasswords")
+
     def test_PostgresDBHasQueryLoggingEnabled(self):
         self.go("PostgresDBHasQueryLoggingEnabled")
 
@@ -202,6 +206,12 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AWSSSMParameterShouldBeEncrypted(self):
         self.go("AWSSSMParametershouldbeEncrypted", "AWSSSMParameterShouldBeEncrypted")
+
+    def test_AWSNATGatewaysshouldbeutilized(self):
+        self.go("AWSNATGatewaysshouldbeutilized")
+
+    def test_GCPKMSKeyRingsAreNotPubliclyAccessible(self):
+        self.go("GCPKMSKeyRingsAreNotPubliclyAccessible")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(

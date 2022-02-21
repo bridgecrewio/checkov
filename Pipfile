@@ -32,7 +32,7 @@ dlint = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = ">=0.3.21"
+bc-python-hcl2 = ">=0.3.30"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
@@ -65,6 +65,7 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonpath_ng = "*"
 jsonschema = "~=3.0"
+prettytable = ">=3.0.0"
 
 [requires]
 python_version = "3.7"
