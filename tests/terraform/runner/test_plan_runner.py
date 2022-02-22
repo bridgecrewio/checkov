@@ -28,12 +28,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["all"], checks=checks_allowlist),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -219,12 +219,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -240,12 +240,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=[current_dir + "/extra_yaml_checks"],
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -272,12 +272,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -316,12 +316,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -348,7 +348,7 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -374,7 +374,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(
             root_folder=dir_rel_path,
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
@@ -397,7 +397,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(
             root_folder=dir_abs_path,
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
@@ -422,7 +422,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             external_checks_dir=None,
             files=[file_rel_path],
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
@@ -446,7 +446,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             external_checks_dir=None,
             files=[file_abs_path],
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
@@ -462,12 +462,12 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 0)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -483,13 +483,13 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all", checks=allowed_checks),
+            runner_filter=RunnerFilter(framework=["all"], checks=allowed_checks),
         )
 
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 0)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 

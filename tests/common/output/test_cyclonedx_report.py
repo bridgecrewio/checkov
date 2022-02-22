@@ -24,7 +24,7 @@ class TestCycloneDxReport(unittest.TestCase):
         # outputter.output_to_file(filename='/tmp/test.xml', allow_overwrite=True)
         self.assertEqual(len(cyclonedx_bom.get_components()), 1)
         first_component = cyclonedx_bom.get_components()[0]
-        self.assertEqual(len(first_component.get_vulnerabilities()), 5)
+        self.assertEqual(len(first_component.get_vulnerabilities()), 4)
 
 
 if __name__ == '__main__':
