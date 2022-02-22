@@ -83,7 +83,8 @@ class Runner(BaseRunner):
                                                  endline + 1],
                                 resource=f"{docker_file_path}.{result_instruction}",
                                 evaluations=None, check_class=check.__class__.__module__,
-                                file_abs_path=file_abs_path, entity_tags=None)
+                                file_abs_path=file_abs_path, entity_tags=None,
+                                severity=check.bc_severity)
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
 

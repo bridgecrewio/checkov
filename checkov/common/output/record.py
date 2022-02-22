@@ -6,6 +6,7 @@ from typing import Union, List, Tuple, Optional, Dict, Any
 from colorama import init, Fore, Style
 from termcolor import colored
 
+from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _CheckResult
 from checkov.common.util.file_utils import convert_to_unix_path
@@ -51,7 +52,9 @@ class Record:
         caller_file_line_range: Optional[Tuple[int, int]] = None,
         bc_check_id: Optional[str] = None,
         resource_address: Optional[str] = None,
-        severity: Optional[str] = None,
+        severity: Optional[Severity] = None,
+        bc_category: Optional[str] = None,
+        benchmarks: Optional[Dict[str, list]] = None,
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
@@ -80,6 +83,8 @@ class Record:
         self.caller_file_line_range = caller_file_line_range
         self.resource_address = resource_address
         self.severity = severity
+        self.bc_category = bc_category
+        self.benchmarks = benchmarks
         self.description = description
         self.short_description = short_description
         self.vulnerability_details = vulnerability_details
@@ -142,6 +147,9 @@ class Record:
                 + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
                 + Style.RESET_ALL
             )
+
+        severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
+
         file_details = colored(
             "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])), "magenta"
         )
@@ -171,12 +179,12 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{suppress_comment}{file_details}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{suppress_comment}{file_details}{caller_file_details}{guideline_message}"
         else:
-            return f"{check_message}{status_message}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
 
     def __str__(self) -> str:
         return self.to_string()

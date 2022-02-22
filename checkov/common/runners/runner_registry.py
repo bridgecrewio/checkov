@@ -12,6 +12,7 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
@@ -53,7 +54,6 @@ class RunnerRegistry:
         root_folder: Optional[str] = None,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
-        guidelines: Optional[Dict[str, str]] = None,
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
@@ -68,13 +68,13 @@ class RunnerRegistry:
                 self.runners, 1)
 
         for scan_report in reports:
-            self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
+            self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports
 
-    def _handle_report(self, scan_report, guidelines, repo_root_for_plan_enrichment):
+    def _handle_report(self, scan_report, repo_root_for_plan_enrichment):
         integration_feature_registry.run_post_runner(scan_report)
-        if guidelines:
-            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
+        if metadata_integration.check_metadata:
+            RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment:
             enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
@@ -234,10 +234,11 @@ class RunnerRegistry:
             self.runners.remove(runner)
 
     @staticmethod
-    def enrich_report_with_guidelines(scan_report: Report, guidelines: Dict[str, str]) -> None:
+    def enrich_report_with_guidelines(scan_report: Report) -> None:
         for record in itertools.chain(scan_report.failed_checks, scan_report.passed_checks, scan_report.skipped_checks):
-            if record.check_id in guidelines:
-                record.set_guideline(guidelines[record.check_id])
+            guideline = metadata_integration.get_guideline(record.check_id)
+            if guideline:
+                record.set_guideline(guideline)
 
     @staticmethod
     def get_enriched_resources(repo_roots: List[Union[str, os.PathLike]]) -> Dict[str, Dict[str, Any]]:

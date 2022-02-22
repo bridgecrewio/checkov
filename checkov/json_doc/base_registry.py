@@ -64,7 +64,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check.id, check.bc_id):
+            if runner_filter.should_run_check(check=check):
                 scanner = self._scanner.get(check.block_type, self._scan_json_document)
                 if check.path:
                     target = entity

@@ -4,7 +4,7 @@ import re
 from functools import reduce
 
 # COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.util.type_forcers import force_list
 
 COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
@@ -120,8 +120,7 @@ class ContextParser(object):
     @staticmethod
     def collect_skip_comments(resource):
         skipped_checks = []
-        bc_id_mapping = bc_integration.get_id_mapping()
-        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+        bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         if "metadata" in resource:
             if "checkov" in resource["metadata"]:
                 for index, item in enumerate(force_list(resource["metadata"]["checkov"])):
@@ -135,8 +134,8 @@ class ContextParser(object):
                         if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                        elif ckv_to_bc_id_mapping:
-                            skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+                        elif metadata_integration.check_metadata:
+                            skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                         skipped_checks.append(skipped_check)
 
