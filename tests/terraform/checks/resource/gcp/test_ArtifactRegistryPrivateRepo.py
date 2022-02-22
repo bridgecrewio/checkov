@@ -6,7 +6,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 
 
-class ArtifactRegistryPrivateRepo(unittest.TestCase):
+class TestArtifactRegistryPrivateRepo(unittest.TestCase):
 
     def test(self):
         runner = Runner()
