@@ -735,6 +735,8 @@ nav_order: 1
 | 724 | CKV_PAN_7       | resource | panos_security_rule_group                      | Ensure security rules do not have 'source_addresses' and 'destination_addresses' both containing values of 'any'                                                                                         | Terraform |
 | 725 | CKV_PAN_8       | resource | panos_security_policy                          | Ensure description is populated within security policies                                                                                                                                                 | Terraform |
 | 726 | CKV_PAN_8       | resource | panos_security_rule_group                      | Ensure description is populated within security policies                                                                                                                                                 | Terraform |
+| 727 | CKV_PAN_9       | resource | panos_security_policy                          | Ensure a Log Forwarding Profile is selected for each security policy rule                                                                                                                                | Terraform |
+| 728 | CKV_PAN_9       | resource | panos_security_rule_group                      | Ensure a Log Forwarding Profile is selected for each security policy rule                                                                                                                                | Terraform |
 
 
 ---
