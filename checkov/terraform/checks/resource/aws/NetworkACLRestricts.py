@@ -18,9 +18,10 @@ class NetworkACLRestrictsSSH(BaseResourceCheck):
             for rule in ingress:
                 if rule.get('cidr_block'):
                     if rule.get('cidr_block') == "0.0.0.0/0":
-                        for port in ports:
-                            if rule.get('from_port') >= port and rule.get('to_port') <= port:
-                                return CheckResult.FAILED
+                        if rule.get('action') == "allow":
+                            for port in ports:
+                                if rule.get('from_port') >= port and rule.get('to_port') <= port:
+                                    return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN
 
