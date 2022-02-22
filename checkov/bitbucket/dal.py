@@ -1,8 +1,8 @@
-import json
 import logging
 import os
 
 import requests
+
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 
@@ -18,8 +18,7 @@ class Bitbucket(BaseVCSDAL):
         bitbucket_conf_dir_name = os.getenv('CKV_BITBUCKET_CONF_DIR_NAME', 'bitbucket_conf')
         self.bitbucket_conf_dir_path = os.path.join(os.getcwd(), bitbucket_conf_dir_name)
         self.bitbucket_branch_restrictions_file_path = os.path.join(self.bitbucket_conf_dir_path,
-                                                               "branch_restrictions.json")
-
+                                                                    "branch_restrictions.json")
 
     def discover(self):
         """
@@ -34,8 +33,7 @@ class Bitbucket(BaseVCSDAL):
         self.current_repository = os.getenv('BITBUCKET_REPO_FULL_NAME', '')
         self.current_branch = os.getenv('BITBUCKET_BRANCH', '')
         self.default_branch_cache = {}
-        self.username="bschostergoi"
-
+        self.username = "bschostergoi"
 
     def _request(self, endpoint):
         if not self.token:
@@ -43,7 +41,7 @@ class Bitbucket(BaseVCSDAL):
         url_endpoint = "{}/{}".format(self.api_url, endpoint)
         try:
             s = requests.Session()
-            s.auth =(self.username, self.token)
+            s.auth = (self.username, self.token)
             request = s.get(url_endpoint)
             if request.status_code == 200:
                 data = request.json()

@@ -27,7 +27,7 @@ from checkov.runner_filter import RunnerFilter
                     "terraform_plan",
                     "github_configuration",
                     "gitlab_configuration",
-                    "bitbucket_configuration"
+                    "bitbucket_configuration",
                     "kustomize",
                     "sca_package"
                 },
