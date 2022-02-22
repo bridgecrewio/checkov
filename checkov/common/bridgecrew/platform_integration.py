@@ -400,7 +400,7 @@ class BcPlatformIntegration(object):
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping getting run config")
+            logging.debug("Skipping customer run config API call")
             return
 
         if not self.bc_api_key or not self.is_integration_configured():
@@ -412,27 +412,25 @@ class BcPlatformIntegration(object):
             if not self.http:
                 self.setup_http_manager()
             request = self.http.request("GET", self.platform_run_config_url, headers=headers)
-
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
-
             logging.debug("Got customer run config from Bridgecrew BE")
         except Exception as e:
-            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}, error:\n{e}")
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping ID mapping and guidelines API call")
+            logging.debug("Skipping checkov mapping and guidelines API call")
             return
 
-        headers = {}
         try:
+            headers = {}
             if not self.http:
                 self.setup_http_manager()
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
-            logging.debug("Got checkov mappings from Bridgecrew BE")
+            logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
         except Exception as e:
-            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}, error:\n{e}")
 
     def onboarding(self):
         if not self.bc_api_key:
