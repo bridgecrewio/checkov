@@ -115,7 +115,6 @@ class RunnerRegistry:
                     report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
-                    # report.print_junit_xml()
                 if "github_failed_only" in config.output:
                     data_outputs["github_failed_only"] += report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 if "sarif" in config.output:
@@ -161,35 +160,37 @@ class RunnerRegistry:
             if url:
                 print("More details: {}".format(url))
             master_report.write_sarif_output(self.tool)
-            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool))
+            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool), cls=CustomJSONEncoder)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
-                print(dumps(Report(None).get_summary(), indent=4))
-                data_outputs['json'] = json.dumps(Report(None).get_summary())
+                print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
-                data_outputs['json'] = json.dumps(report_jsons[0])
+                data_outputs['json'] = json.dumps(report_jsons[0], cls=CustomJSONEncoder)
             else:
                 print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
-                data_outputs['json'] = json.dumps(report_jsons)
+                data_outputs['json'] = json.dumps(report_jsons, cls=CustomJSONEncoder)
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "junitxml" in config.output:
-            if len(junit_reports) == 1:
-                data_outputs['junitxml'] = junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
-                print(data_outputs['junitxml'])
+            properties = Report.create_test_suite_properties_block(config)
+
+            if junit_reports:
+                test_suites = [
+                    report.get_test_suite(properties=properties, use_bc_ids=config.output_bc_ids)
+                    for report in junit_reports
+                ]
             else:
-                master_report = Report(None)
-                for report in junit_reports:
-                    master_report.skipped_checks += report.skipped_checks
-                    master_report.passed_checks += report.passed_checks
-                    master_report.failed_checks += report.failed_checks
-                data_outputs['junitxml'] = master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
-                print(data_outputs['junitxml'])
+                test_suites = [Report(None).get_test_suite(properties=properties)]
+
+            data_outputs['junitxml'] = Report.get_junit_xml_string(test_suites)
+            print(data_outputs['junitxml'])
+
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)

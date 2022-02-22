@@ -49,6 +49,7 @@ from checkov.json_doc.runner import Runner as json_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
+from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.version import version
 
@@ -63,7 +64,7 @@ checkov_runners = [value for attr, value in CheckType.__dict__.items() if not at
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner(), kustomize_runner(), sca_package_runner())
+                   gitlab_configuration_runner(), bitbucket_configuration_runner(), kustomize_runner(), sca_package_runner())
 
 
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:

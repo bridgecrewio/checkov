@@ -110,17 +110,18 @@ class Record:
         return any(stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block)
 
     @staticmethod
-    def _code_line_string(code_block):
-        string_block = ""
-        last_line_number, _ = code_block[-1]
+    def _code_line_string(code_block: List[Tuple[int, str]], colorized: bool = True) -> str:
+        code_output = []
+        color_codes = (Fore.WHITE if colorized else "", Fore.YELLOW if colorized else "")
+        last_line_number_len = len(str(code_block[-1][0]))
 
-        for (line_num, line) in code_block:
-            spaces = " " * (len(str(last_line_number)) - len(str(line_num)))
+        for line_num, line in code_block:
+            spaces = " " * (last_line_number_len - len(str(line_num)))
             if line.lstrip().startswith("#"):
-                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + " | " + line
+                code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {line}")
             else:
-                string_block += "\t\t" + Fore.WHITE + str(line_num) + spaces + " | " + Fore.YELLOW + line
-        return string_block
+                code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {color_codes[1]}{line}")
+        return "".join(code_output)
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
