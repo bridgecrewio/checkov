@@ -51,16 +51,16 @@ class TestJunitReport(unittest.TestCase):
 
     def test_get_junit_xml_string_with_terraform(self):
         # given
-        # remove metadata, if it was retrieved before
-        from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration
-        integration.check_metadata = {}
-
         test_file = Path(__file__).parent / "fixtures/main.tf"
         checks = ["CKV_AWS_18", "CKV_AWS_19", "CKV_AWS_21"]  # 1 pass, 1 fail, 1 skip
         config = argparse.Namespace(file="fixtures/main.tf", framework=["terraform"])
         report = TerrafomrRunner().run(
             root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
         )
+
+        # remove guideline from failed checks, if they were fetched before
+        for check in report.failed_checks:
+            check.guideline = None
 
         # then
         properties = Report.create_test_suite_properties_block(config=config)
