@@ -1,3 +1,13 @@
+resource "aws_ecs_cluster" "fail4" {
+  name = "white-hart"
+  configuration {
+    execute_command_configuration {
+       kms_key_id = aws_kms_key.example.arn
+    }
+  }
+  tags = { test = "fail" }
+}
+
 resource "aws_ecs_cluster" "unknown" {
   name = "white-hart"
   tags = { test = "fail" }
@@ -41,6 +51,8 @@ resource "aws_ecs_cluster" "fail" {
   }
   tags = { test = "fail" }
 }
+
+
 
 resource "aws_ecs_cluster" "fail2" {
   name = "white-hart"
