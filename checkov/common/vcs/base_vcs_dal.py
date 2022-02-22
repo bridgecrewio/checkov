@@ -12,6 +12,7 @@ from checkov.common.util.http_utils import get_user_agent_header
 class BaseVCSDAL:
     def __init__(self):
         self.http = None
+        self.request_lib_http = None
         self._organization_security = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
@@ -54,20 +55,21 @@ class BaseVCSDAL:
             return
         url_endpoint = "{}/{}".format(self.api_url, endpoint)
         try:
+            headers = self._headers()
             request = self.http.request("GET", url_endpoint,
-                                        headers=self._headers())
+                                        headers=headers)
             if request.status == 200:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
-        except Exception:
-            logging.debug("Query failed to run by returning code of {}.".format(url_endpoint))
+        except Exception as e:
+            logging.debug("Query failed to run by returning code of {}. error {}".format(url_endpoint, e))
 
     @abstractmethod
     def _headers(self):
         return merge_dicts({"Accept": "application/vnd.github.v3+json",
-                "Authorization": "token {}".format(self.token)}, get_user_agent_header())
+                            "Authorization": "token {}".format(self.token)}, get_user_agent_header())
 
     def _graphql_headers(self):
         return {
@@ -84,7 +86,7 @@ class BaseVCSDAL:
             if request.status == 200:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
-                    logging.debug("received errors %s",data)
+                    logging.debug("received errors %s", data)
                     return None
                 return data
 

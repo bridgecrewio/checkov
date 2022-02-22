@@ -1,8 +1,8 @@
+import argparse
 import fnmatch
 import itertools
 import json
 import sys
-from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set
@@ -16,9 +16,12 @@ from tabulate import tabulate
 from termcolor import colored
 
 from checkov import sca_package
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.runner_filter import RunnerFilter
 from checkov.version import version
 
 init(autoreset=True)
@@ -30,6 +33,7 @@ class CheckType:
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
     GITLAB_CONFIGURATION = "gitlab_configuration"
+    BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
     JSON = "json"
     KUBERNETES = "kubernetes"
@@ -88,7 +92,7 @@ class Report:
         }
 
     def get_json(self) -> str:
-        return json.dumps(self.get_dict(), indent=4)
+        return json.dumps(self.get_dict(), indent=4, cls=CustomJSONEncoder)
 
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
@@ -179,37 +183,49 @@ class Report:
         result exit code 0.
         :return: Exit code 0 or 1.
         """
-        if soft_fail_on:
-            soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
-            if all(
-                any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
-                    for pattern in soft_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
-            ):
-                # List of "failed checks" is a subset of the "soft fail on" list.
-                return 0
-            else:
-                return 1
-        if hard_fail_on:
-            hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
-            if any(
-                (check_id in hard_fail_on or bc_check_id in hard_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
-            ):
-                # Any check from the list of "failed checks" is in the list of "hard fail on checks".
-                return 1
-            else:
-                return 0
-        if soft_fail:
+
+        if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
             return 0
-        elif len(self.failed_checks) > 0:
+        elif not soft_fail_on and not hard_fail_on and self.failed_checks:
             return 1
+
+        soft_fail_on_checks = []
+        soft_fail_threshold = None
+        # soft fail on the highest severity threshold in the list
+        for val in convert_csv_string_arg_to_list(soft_fail_on):
+            if val in Severities:
+                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
+                    soft_fail_threshold = Severities[val]
+            else:
+                soft_fail_on_checks.append(val)
+
+        hard_fail_on_checks = []
+        hard_fail_threshold = None
+        # hard fail on the lowest threshold in the list
+        for val in convert_csv_string_arg_to_list(hard_fail_on):
+            if val in Severities:
+                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
+                    hard_fail_threshold = Severities[val]
+            else:
+                hard_fail_on_checks.append(val)
+
+        for failed_check in self.failed_checks:
+            check_id = failed_check.check_id
+            bc_check_id = failed_check.bc_check_id
+            severity = failed_check.severity
+
+            soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
+            hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
+            explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
+            explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
+            implicit_soft_fail = not explicit_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
+            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity
+
+            if explicit_hard_fail or \
+                    (hard_fail_severity and not explicit_soft_fail) or \
+                    (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                return 1
+
         return 0
 
     def is_empty(self) -> bool:
@@ -226,11 +242,11 @@ class Report:
             created_baseline_path=None,
             baseline=None,
             use_bc_ids=False,
-    ) -> None:
+    ) -> str:
         summary = self.get_summary()
-        print(colored(f"{self.check_type} scan results:", "blue"))
+        output_data = colored(f"{self.check_type} scan results:\n", "blue")
         if self.parsing_errors:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n\n".format(
                 summary["passed"],
                 summary["failed"],
                 summary["skipped"],
@@ -238,53 +254,41 @@ class Report:
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE:
-                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n"
+                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n\n"
             else:
-                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n"
-        print(colored(message, "cyan"))
-
+                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
+        output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type == CheckType.SCA_PACKAGE:
             if self.failed_checks or self.skipped_checks:
-                print(sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks))
+                output_data += sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
-                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                    output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             for record in self.failed_checks:
-                print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
                 for record in self.skipped_checks:
-                    print(record.to_string(compact=is_compact, use_bc_ids=use_bc_ids))
+                    output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
 
         if not is_quiet:
             for file in self.parsing_errors:
-                Report._print_parsing_error_console(file)
+                output_data += colored(f"Error parsing file {file}", "red")
 
         if created_baseline_path:
-            print(
-                colored(
+            output_data += colored(
                     f"Created a checkov baseline file at {created_baseline_path}",
-                    "blue",
-                )
-            )
-
+                    "blue",)
         if baseline:
-            print(
-                colored(
+            output_data += colored(
                     f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                    "blue",
-                )
-            )
+                    "blue",)
+        return output_data
 
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
-
-    def print_junit_xml(self, use_bc_ids: bool = False) -> None:
-        ts = self.get_test_suites(use_bc_ids)
-        xml_string = self.get_junit_xml_string(ts)
-        print(xml_string)
 
     def get_sarif_json(self, tool) -> Dict[str, Any]:
         runs = []
@@ -326,7 +330,7 @@ class Report:
                 record.file_line_range[1] = 1
 
             if record.severity:
-                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity, "none")
+                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
             elif record.check_result.get("result") == CheckResult.FAILED:
                 level = "error"
 
@@ -399,7 +403,7 @@ class Report:
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
         return to_xml_report_string(ts)
 
-    def print_failed_github_md(self, use_bc_ids=False) -> None:
+    def print_failed_github_md(self, use_bc_ids=False) -> str:
         result = []
         for record in self.failed_checks:
             result.append(
@@ -411,48 +415,131 @@ class Report:
                     record.guideline,
                 ]
             )
-        print(
-            tabulate(
+        output_data = tabulate(
                 result,
                 headers=["check_id", "file", "resource", "check_name", "guideline"],
                 tablefmt="github",
-                showindex=True,
-            )
-        )
-        print("\n\n---\n\n")
+                showindex=True,) + "\n\n---\n\n"
+        print(output_data)
+        return output_data
 
-    def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
-        test_cases = defaultdict(list)
+    def get_test_suite(self, properties: Optional[Dict[str, Any]] = None, use_bc_ids: bool = False) -> TestSuite:
+        """Creates a test suite for the JUnit XML report"""
+
+        test_cases = []
         
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
+            severity = (record.severity or "none").upper()
 
-            test_name = f"{self.check_type} {check_name} {record.resource}"
-            test_case = TestCase(
-                name=test_name, file=record.file_path, classname=record.check_class
-            )
+            if self.check_type == CheckType.SCA_PACKAGE:
+                check_id = record.vulnerability_details["id"]
+                test_name_detail = f"{record.vulnerability_details['package_name']}: {record.vulnerability_details['package_version']}"
+                class_name = f"{record.file_path}.{record.vulnerability_details['package_name']}"
+            else:
+                check_id = record.bc_check_id if use_bc_ids else record.check_id
+                test_name_detail = record.check_name
+                class_name = f"{record.file_path}.{record.resource}"
+
+            test_name = f"[{severity}][{check_id}] {test_name_detail}"
+
+            test_case = TestCase(name=test_name, file=record.file_path, classname=class_name)
             if record.check_result["result"] == CheckResult.FAILED:
-                if record.file_path and record.file_line_range:
-                    test_case.add_failure_info(
-                        f"Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range} - Guideline: {record.guideline}"
-                    )
-                else:
-                    test_case.add_failure_info(
-                        f"Resource {record.resource} failed in check {check_name}"
-                    )
-            if record.check_result["result"] == CheckResult.SKIPPED:
-                test_case.add_skipped_info(
-                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]} - Guideline: {record.guideline}'
+                test_case.add_failure_info(
+                    message=record.check_name,
+                    output=self._create_test_case_failure_output(record)
                 )
+            if record.check_result["result"] == CheckResult.SKIPPED:
+                if self.check_type == CheckType.SCA_PACKAGE:
+                    test_case.add_skipped_info(f"{check_id} skipped for {test_name_detail}")
+                else:
+                    test_case.add_skipped_info(record.check_result["suppress_comment"])
 
-            test_cases[check_name].append(test_case)
-        test_suites = [
-            TestSuite(name=key, test_cases=value, package=value[0].classname)
-            for key, value in test_cases.items()
-        ]
-        
-        return test_suites
+            test_cases.append(test_case)
+
+        test_suite = TestSuite(name=f"{self.check_type} scan", test_cases=test_cases, properties=properties)
+        return test_suite
+
+    @staticmethod
+    def create_test_suite_properties_block(config: argparse.Namespace) -> Dict[str, Any]:
+        """Creates a dictionary without 'None' values for the JUnit XML properties block"""
+
+        properties = {k: v for k, v in config.__dict__.items() if v is not None}
+        return properties
+
+
+    def _create_test_case_failure_output(self, record: Record) -> str:
+        """Creates the failure output for a JUnit XML test case
+
+        IaC example:
+            Resource: azurerm_network_security_rule.fail_rdp
+            File: /main.tf: 71-83
+            Guideline: https://docs.bridgecrew.io/docs/bc_azr_networking_2
+
+                    71 | resource "azurerm_network_security_rule" "fail_rdp" {
+                    72 |   resource_group_name = azurerm_resource_group.example.name
+                    73 |   network_security_group_name=azurerm_network_security_group.example_rdp.name
+                    74 |   name                       = "fail_security_rule"
+                    75 |   direction                  = "Inbound"
+                    76 |   access                     = "Allow"
+                    77 |   protocol                   = "TCP"
+                    78 |   source_port_range          = "*"
+                    79 |   destination_port_range     = "3389"
+                    80 |   source_address_prefix      = "*"
+                    81 |   destination_address_prefix = "*"
+                    82 |   priority = 120
+                    83 | }
+
+        SCA example:
+            Description: Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover.
+            Link: https://nvd.nist.gov/vuln/detail/CVE-2019-19844
+            Published Date: 2019-12-18T20:15:00+01:00
+            Base Score: 9.8
+            Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']
+
+            Resource: requirements.txt.django
+            File: /requirements.txt: 0-0
+
+                    0 | django: 1.2
+        """
+
+        failure_output = []
+
+        if self.check_type == CheckType.SCA_PACKAGE:
+            failure_output.extend(
+                [
+                    "",
+                    f"Description: {record.description}",
+                    f"Link: {record.vulnerability_details.get('link')}",
+                    f"Published Date: {record.vulnerability_details.get('published_date')}",
+                    f"Base Score: {record.vulnerability_details.get('cvss')}",
+                    f"Vector: {record.vulnerability_details.get('vector')}",
+                    f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                ]
+            )
+
+        failure_output.extend(
+            [
+                "",
+                f"Resource: {record.resource}",
+            ]
+        )
+
+        if record.file_path:
+            file_line = f"File: {record.file_path}"
+            if record.file_line_range:
+                file_line += f": {record.file_line_range[0]}-{record.file_line_range[1]}"
+            failure_output.append(file_line)
+
+        if self.check_type != CheckType.SCA_PACKAGE:
+            failure_output.append(f"Guideline: {record.guideline}")
+
+        if record.code_block:
+            failure_output.append("")
+            failure_output.append(record._code_line_string(code_block=record.code_block, colorized=False))
+
+        return "\n".join(failure_output)
 
     def print_json(self) -> None:
         print(self.get_json())

@@ -36,6 +36,7 @@ definition:
               - aws_eip
               - aws_elb
               - aws_lb
+              - aws_alb
               - aws_route53_record
               - aws_s3_bucket
               - aws_api_gateway_domain_name
@@ -44,5 +45,6 @@ definition:
               - aws_globalaccelerator_accelerator
               - aws_cloudfront_distribution
               - aws_db_instance
+              - aws_apigatewayv2_domain_name
            operator: exists
            attribute: networking

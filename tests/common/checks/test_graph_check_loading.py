@@ -5,11 +5,10 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.runner_filter import RunnerFilter
 from pathlib import Path
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
 
 
 class TestGraphChecks(unittest.TestCase):
-
     def test_internal_graph_checks_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

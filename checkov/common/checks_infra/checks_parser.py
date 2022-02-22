@@ -1,6 +1,5 @@
 from typing import Dict, Any, List, Optional
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -27,7 +26,10 @@ from checkov.common.checks_infra.solvers import (
     GreaterThanOrEqualAttributeSolver,
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
+    JsonpathEqualsAttributeSolver,
 )
+from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -53,6 +55,9 @@ operators_to_attributes_solver_classes = {
     "greater_than_or_equal": GreaterThanOrEqualAttributeSolver,
     "less_than": LessThanAttributeSolver,
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
+    "subset": SubsetAttributeSolver,
+    "not_subset": NotSubsetAttributeSolver,
+    "jsonpath_equals": JsonpathEqualsAttributeSolver
 }
 
 operators_to_complex_solver_classes = {
@@ -83,8 +88,6 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
-        if bc_integration.ckv_to_bc_id_mapping:
-            check.bc_id = bc_integration.ckv_to_bc_id_mapping.get(check.id)
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
@@ -109,9 +112,9 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         else:
             resource_type = raw_check.get("resource_types", [])
             if (
-                not resource_type
-                or (isinstance(resource_type, str) and resource_type.lower() == "all")
-                or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
+                    not resource_type
+                    or (isinstance(resource_type, str) and resource_type.lower() == "all")
+                    or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types
             else:
