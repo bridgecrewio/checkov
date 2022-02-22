@@ -161,20 +161,20 @@ class RunnerRegistry:
             if url:
                 print("More details: {}".format(url))
             master_report.write_sarif_output(self.tool)
-            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool))
+            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool), cls=CustomJSONEncoder)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
-                print(dumps(Report(None).get_summary(), indent=4))
-                data_outputs['json'] = json.dumps(Report(None).get_summary())
+                print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
-                data_outputs['json'] = json.dumps(report_jsons[0])
+                data_outputs['json'] = json.dumps(report_jsons[0], cls=CustomJSONEncoder)
             else:
                 print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
-                data_outputs['json'] = json.dumps(report_jsons)
+                data_outputs['json'] = json.dumps(report_jsons, cls=CustomJSONEncoder)
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
