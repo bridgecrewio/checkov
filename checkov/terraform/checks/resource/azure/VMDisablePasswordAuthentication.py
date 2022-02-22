@@ -11,7 +11,7 @@ class VMDisablePasswordAuthentication(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_forbidden_values(self) -> str:
-        return [True]
+        return [False]
 
     def get_inspected_key(self) -> str:
         return "disable_password_authentication"
