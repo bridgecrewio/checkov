@@ -49,7 +49,7 @@ class Bitbucket(BaseVCSDAL):
                     return None
                 return data
         except Exception as e:
-            logging.debug("Query failed to run by returning code of {}.".format(url_endpoint))
+            logging.debug("Query failed to run by returning code of {} {}.".format(url_endpoint,e))
 
     def get_branch_restrictions(self):
         if self.current_repository:
