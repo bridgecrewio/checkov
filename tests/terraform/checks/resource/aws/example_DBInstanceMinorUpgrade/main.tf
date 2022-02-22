@@ -10,7 +10,6 @@ resource "aws_rds_cluster_instance" "fail2" {
   name                         = "bar"
   performance_insights_enabled = false
   publicly_accessible = true
-  auto_minor_version_upgrade = false
   tags                = { test = "Fail" }
 }
 
