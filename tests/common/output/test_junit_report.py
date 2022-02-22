@@ -58,6 +58,10 @@ class TestJunitReport(unittest.TestCase):
             root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
         )
 
+        # remove guideline from failed checks, if they were fetched before
+        for check in report.failed_checks:
+            check.guideline = None
+
         # then
         properties = Report.create_test_suite_properties_block(config=config)
         test_suite = report.get_test_suite(properties=properties)
