@@ -33,6 +33,7 @@ class CheckType:
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
     GITLAB_CONFIGURATION = "gitlab_configuration"
+    BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
     JSON = "json"
     KUBERNETES = "kubernetes"

@@ -12,6 +12,7 @@ from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegist
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
 from checkov.gitlab.registry import registry as gitlab_configuration_registry
+from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
 from checkov.serverless.registry import sls_registry
@@ -79,6 +80,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")
     if any(x in framework_list for x in ("all", "gitlab_configuration")):
         add_from_repository(gitlab_configuration_registry, "gitlab_configuration", "gitlab_configuration")
+    if any(x in framework_list for x in ("all", "bitbucket_configuration")):
+        add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
