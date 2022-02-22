@@ -1,8 +1,8 @@
+import argparse
 import fnmatch
 import itertools
 import json
 import sys
-from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set
@@ -290,11 +290,6 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def print_junit_xml(self, use_bc_ids: bool = False):
-        ts = self.get_test_suites(use_bc_ids)
-        xml_string = self.get_junit_xml_string(ts)
-        return xml_string
-
     def get_sarif_json(self, tool) -> Dict[str, Any]:
         runs = []
         rules = []
@@ -428,38 +423,123 @@ class Report:
         print(output_data)
         return output_data
 
-    def get_test_suites(self, use_bc_ids=False) -> List[TestSuite]:
-        test_cases = defaultdict(list)
+    def get_test_suite(self, properties: Optional[Dict[str, Any]] = None, use_bc_ids: bool = False) -> TestSuite:
+        """Creates a test suite for the JUnit XML report"""
 
+        test_cases = []
+        
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            check_name = f"{record.get_output_id(use_bc_ids)}/{record.check_name}"
+            severity = (record.severity or "none").upper()
 
-            test_name = f"{self.check_type} {check_name} {record.resource}"
-            test_case = TestCase(
-                name=test_name, file=record.file_path, classname=record.check_class
-            )
+            if self.check_type == CheckType.SCA_PACKAGE:
+                check_id = record.vulnerability_details["id"]
+                test_name_detail = f"{record.vulnerability_details['package_name']}: {record.vulnerability_details['package_version']}"
+                class_name = f"{record.file_path}.{record.vulnerability_details['package_name']}"
+            else:
+                check_id = record.bc_check_id if use_bc_ids else record.check_id
+                test_name_detail = record.check_name
+                class_name = f"{record.file_path}.{record.resource}"
+
+            test_name = f"[{severity}][{check_id}] {test_name_detail}"
+
+            test_case = TestCase(name=test_name, file=record.file_path, classname=class_name)
             if record.check_result["result"] == CheckResult.FAILED:
-                if record.file_path and record.file_line_range:
-                    test_case.add_failure_info(
-                        f"Resource {record.resource} failed in check {check_name} - {record.file_path}:{record.file_line_range} - Guideline: {record.guideline}"
-                    )
-                else:
-                    test_case.add_failure_info(
-                        f"Resource {record.resource} failed in check {check_name}"
-                    )
-            if record.check_result["result"] == CheckResult.SKIPPED:
-                test_case.add_skipped_info(
-                    f'Resource {record.resource} skipped in check {check_name} \n Suppress comment: {record.check_result["suppress_comment"]} - Guideline: {record.guideline}'
+                test_case.add_failure_info(
+                    message=record.check_name,
+                    output=self._create_test_case_failure_output(record)
                 )
+            if record.check_result["result"] == CheckResult.SKIPPED:
+                if self.check_type == CheckType.SCA_PACKAGE:
+                    test_case.add_skipped_info(f"{check_id} skipped for {test_name_detail}")
+                else:
+                    test_case.add_skipped_info(record.check_result["suppress_comment"])
 
-            test_cases[check_name].append(test_case)
-        test_suites = [
-            TestSuite(name=key, test_cases=value, package=value[0].classname)
-            for key, value in test_cases.items()
-        ]
-        
-        return test_suites
+            test_cases.append(test_case)
+
+        test_suite = TestSuite(name=f"{self.check_type} scan", test_cases=test_cases, properties=properties)
+        return test_suite
+
+    @staticmethod
+    def create_test_suite_properties_block(config: argparse.Namespace) -> Dict[str, Any]:
+        """Creates a dictionary without 'None' values for the JUnit XML properties block"""
+
+        properties = {k: v for k, v in config.__dict__.items() if v is not None}
+        return properties
+
+
+    def _create_test_case_failure_output(self, record: Record) -> str:
+        """Creates the failure output for a JUnit XML test case
+
+        IaC example:
+            Resource: azurerm_network_security_rule.fail_rdp
+            File: /main.tf: 71-83
+            Guideline: https://docs.bridgecrew.io/docs/bc_azr_networking_2
+
+                    71 | resource "azurerm_network_security_rule" "fail_rdp" {
+                    72 |   resource_group_name = azurerm_resource_group.example.name
+                    73 |   network_security_group_name=azurerm_network_security_group.example_rdp.name
+                    74 |   name                       = "fail_security_rule"
+                    75 |   direction                  = "Inbound"
+                    76 |   access                     = "Allow"
+                    77 |   protocol                   = "TCP"
+                    78 |   source_port_range          = "*"
+                    79 |   destination_port_range     = "3389"
+                    80 |   source_address_prefix      = "*"
+                    81 |   destination_address_prefix = "*"
+                    82 |   priority = 120
+                    83 | }
+
+        SCA example:
+            Description: Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover.
+            Link: https://nvd.nist.gov/vuln/detail/CVE-2019-19844
+            Published Date: 2019-12-18T20:15:00+01:00
+            Base Score: 9.8
+            Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']
+
+            Resource: requirements.txt.django
+            File: /requirements.txt: 0-0
+
+                    0 | django: 1.2
+        """
+
+        failure_output = []
+
+        if self.check_type == CheckType.SCA_PACKAGE:
+            failure_output.extend(
+                [
+                    "",
+                    f"Description: {record.description}",
+                    f"Link: {record.vulnerability_details.get('link')}",
+                    f"Published Date: {record.vulnerability_details.get('published_date')}",
+                    f"Base Score: {record.vulnerability_details.get('cvss')}",
+                    f"Vector: {record.vulnerability_details.get('vector')}",
+                    f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                ]
+            )
+
+        failure_output.extend(
+            [
+                "",
+                f"Resource: {record.resource}",
+            ]
+        )
+
+        if record.file_path:
+            file_line = f"File: {record.file_path}"
+            if record.file_line_range:
+                file_line += f": {record.file_line_range[0]}-{record.file_line_range[1]}"
+            failure_output.append(file_line)
+
+        if self.check_type != CheckType.SCA_PACKAGE:
+            failure_output.append(f"Guideline: {record.guideline}")
+
+        if record.code_block:
+            failure_output.append("")
+            failure_output.append(record._code_line_string(code_block=record.code_block, colorized=False))
+
+        return "\n".join(failure_output)
 
     def print_json(self) -> None:
         print(self.get_json())
