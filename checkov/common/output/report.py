@@ -16,9 +16,12 @@ from tabulate import tabulate
 from termcolor import colored
 
 from checkov import sca_package
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.runner_filter import RunnerFilter
 from checkov.version import version
 
 init(autoreset=True)
@@ -30,6 +33,7 @@ class CheckType:
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
     GITLAB_CONFIGURATION = "gitlab_configuration"
+    BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
     JSON = "json"
     KUBERNETES = "kubernetes"
@@ -88,7 +92,7 @@ class Report:
         }
 
     def get_json(self) -> str:
-        return json.dumps(self.get_dict(), indent=4)
+        return json.dumps(self.get_dict(), indent=4, cls=CustomJSONEncoder)
 
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
@@ -179,37 +183,49 @@ class Report:
         result exit code 0.
         :return: Exit code 0 or 1.
         """
-        if soft_fail_on:
-            soft_fail_on = convert_csv_string_arg_to_list(soft_fail_on)
-            if all(
-                any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern)))
-                    for pattern in soft_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
-            ):
-                # List of "failed checks" is a subset of the "soft fail on" list.
-                return 0
-            else:
-                return 1
-        if hard_fail_on:
-            hard_fail_on = convert_csv_string_arg_to_list(hard_fail_on)
-            if any(
-                (check_id in hard_fail_on or bc_check_id in hard_fail_on)
-                for (check_id, bc_check_id) in (
-                    (failed_check.check_id, failed_check.bc_check_id)
-                    for failed_check in self.failed_checks
-                )
-            ):
-                # Any check from the list of "failed checks" is in the list of "hard fail on checks".
-                return 1
-            else:
-                return 0
-        if soft_fail:
+
+        if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
             return 0
-        elif len(self.failed_checks) > 0:
+        elif not soft_fail_on and not hard_fail_on and self.failed_checks:
             return 1
+
+        soft_fail_on_checks = []
+        soft_fail_threshold = None
+        # soft fail on the highest severity threshold in the list
+        for val in convert_csv_string_arg_to_list(soft_fail_on):
+            if val in Severities:
+                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
+                    soft_fail_threshold = Severities[val]
+            else:
+                soft_fail_on_checks.append(val)
+
+        hard_fail_on_checks = []
+        hard_fail_threshold = None
+        # hard fail on the lowest threshold in the list
+        for val in convert_csv_string_arg_to_list(hard_fail_on):
+            if val in Severities:
+                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
+                    hard_fail_threshold = Severities[val]
+            else:
+                hard_fail_on_checks.append(val)
+
+        for failed_check in self.failed_checks:
+            check_id = failed_check.check_id
+            bc_check_id = failed_check.bc_check_id
+            severity = failed_check.severity
+
+            soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
+            hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
+            explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
+            explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
+            implicit_soft_fail = not explicit_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
+            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity
+
+            if explicit_hard_fail or \
+                    (hard_fail_severity and not explicit_soft_fail) or \
+                    (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                return 1
+
         return 0
 
     def is_empty(self) -> bool:
@@ -319,7 +335,7 @@ class Report:
                 record.file_line_range[1] = 1
 
             if record.severity:
-                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity, "none")
+                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
             elif record.check_result.get("result") == CheckResult.FAILED:
                 level = "error"
 

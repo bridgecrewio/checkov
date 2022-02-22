@@ -5,7 +5,7 @@ from dockerfile_parse import DockerfileParser
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
 
 # class CheckovDockerFileParser(DockerfileParser)
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 
 
@@ -27,8 +27,7 @@ def dfp_group_by_instructions(dfp):
 
 def collect_skipped_checks(parse_result):
     skipped_checks = []
-    bc_id_mapping = bc_integration.get_id_mapping()
-    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+    bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
     if COMMENT_INSTRUCTION in parse_result:
         for comment in parse_result[COMMENT_INSTRUCTION]:
             skip_search = re.search(COMMENT_REGEX, comment["value"])
@@ -42,8 +41,8 @@ def collect_skipped_checks(parse_result):
                 if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                     skipped_check["bc_id"] = skipped_check["id"]
                     skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                elif ckv_to_bc_id_mapping:
-                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+                elif metadata_integration.check_metadata:
+                    skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
                 skipped_checks.append(skipped_check)
     return skipped_checks
 

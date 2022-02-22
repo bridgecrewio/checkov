@@ -123,7 +123,7 @@ class Runner(BaseRunner):
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                entity_tags=tags)
+                                                entity_tags=tags, severity=check.bc_severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
@@ -155,7 +155,7 @@ class Runner(BaseRunner):
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags)
+                                            entity_tags=tags, severity=check.bc_severity)
                             record.set_guideline(check.guideline)
                             report.add_record(record=record)
             # Sub-sections that are a single item
@@ -178,7 +178,7 @@ class Runner(BaseRunner):
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.bc_severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
@@ -199,7 +199,7 @@ class Runner(BaseRunner):
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.bc_severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 

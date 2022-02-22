@@ -87,12 +87,3 @@ def find_in_dict(input_dict: Dict[str, Any], key_path: str) -> Any:
         return None
 
     return value
-
-
-SEVERITY_RANKING = {
-    "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 3,
-    "none": 4,
-}
