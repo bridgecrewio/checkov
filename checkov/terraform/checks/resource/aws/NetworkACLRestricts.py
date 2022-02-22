@@ -1,7 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-ports = (22, 3389)
+ports = (20, 21, 22, 3389)
 
 
 class NetworkACLRestrictsSSH(BaseResourceCheck):
