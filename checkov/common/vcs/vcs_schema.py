@@ -9,6 +9,6 @@ class VCSSchema():
     def validate(self, data):
         try:
             validate(instance=data, schema=self.schema)
-        except jsonschema.exceptions.ValidationError:
+        except jsonschema.exceptions.ValidationError as e:
             return False
         return True

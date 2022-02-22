@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.bitbucket.base_bitbucket_configuration_check import BaseBitbucketCheck
-from checkov.bitbucket.schemas.project_approvals import schema as project_aprovals_schema
+from checkov.bitbucket.schemas.branch_restrictions import schema as branch_restrictions_schema
 from checkov.json_doc.enums import BlockType
 
 
@@ -18,10 +18,12 @@ class MergeRequestRequiresApproval(BaseBitbucketCheck):
         )
 
     def scan_entity_conf(self, conf):
-        if project_aprovals_schema.validate(conf):
-            if conf.get("approvals_before_merge", 0) < 2:
-                return CheckResult.FAILED, conf
-            return CheckResult.PASSED, conf
+        if branch_restrictions_schema.validate(conf):
+            for value in conf.get("values", []):
+                if value.get('kind','') == 'require_approvals_to_merge':
+                    if value.get('value',0)>=2:
+                        return CheckResult.PASSED, conf
+            return CheckResult.FAILED, conf
 
 
 check = MergeRequestRequiresApproval()
