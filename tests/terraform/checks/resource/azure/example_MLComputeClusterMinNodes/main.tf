@@ -1,5 +1,5 @@
 ## SHOULD PASS: Min nodes set to 0
-resource "machine_learning_compute_cluster" "ckv_unittest_pass" {
+resource "azurerm_machine_learning_compute_cluster" "ckv_unittest_pass" {
     name                          = "example"
     location                      = "West Europe"
     vm_priority                   = "LowPriority"
@@ -15,7 +15,7 @@ resource "machine_learning_compute_cluster" "ckv_unittest_pass" {
 }
 
 ## SHOULD FAIL: Min nodes set to 1
-resource "machine_learning_compute_cluster" "ckv_unittest_fail" {
+resource "azurerm_machine_learning_compute_cluster" "ckv_unittest_fail" {
     name                          = "example"
     location                      = "West Europe"
     vm_priority                   = "LowPriority"

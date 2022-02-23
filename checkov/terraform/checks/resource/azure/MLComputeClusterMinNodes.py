@@ -6,7 +6,7 @@ class MLComputeClusterMinNodes(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Machine Learning Compute Cluster Minimum Nodes Set To 0"
         id = "CKV_AZURE_150"
-        supported_resources = ['machine_learning_compute_cluster']
+        supported_resources = ['azurerm_machine_learning_compute_cluster']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

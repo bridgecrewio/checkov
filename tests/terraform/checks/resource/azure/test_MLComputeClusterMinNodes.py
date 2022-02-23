@@ -18,10 +18,10 @@ class TestMLComputeClusterMinNodes(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'machine_learning_compute_cluster.ckv_unittest_pass'
+            'azurerm_machine_learning_compute_cluster.ckv_unittest_pass'
         }
         failing_resources = {
-            'machine_learning_compute_cluster.ckv_unittest_fail',
+            'azurerm_machine_learning_compute_cluster.ckv_unittest_fail',
         }
         skipped_resources = {}
 
