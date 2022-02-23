@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.aws.AbsNACLUnrestrictedIngress import Abs
 
 class NACLUnrestrictedIngress22(AbsNACLUnrestrictedIngress):
     def __init__(self):
-        super().__init__(check_id="CKV_AWS_228", port=22)
+        super().__init__(check_id="CKV_AWS_232", port=22)
 
 
 check = NACLUnrestrictedIngress22()
