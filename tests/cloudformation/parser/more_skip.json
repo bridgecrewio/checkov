@@ -1,0 +1,48 @@
+{
+   "AWSTemplateFormatVersion" : "2010-09-09",
+   "Resources" : {
+      "Bucket1" : {
+         "Type" : "AWS::S3::Bucket",
+         "Metadata" : {
+            "checkov" : {
+              "skip": [
+                {
+                  "id": "CKV_AWS_56"
+                },
+                {
+                  "id": "CKV_AWS_54",
+                  "comment": "some comment"
+                }
+              ]
+            }
+         }
+      },
+     "Bucket2" : {
+         "Type" : "AWS::S3::Bucket",
+         "Metadata" : {
+            "checkov" : {
+              "skip": [
+                {
+                  "id": "CKV_AWS_56"
+                },
+                {
+                  "severity": "MEDIUM"
+                },
+                {
+                  "severity": "HIGH",
+                  "comment": "high justification"
+                },
+                {
+                  "id": "CKV_AWS_54",
+                  "comment": "some comment"
+                },
+                {
+                  "severity": "LOW",
+                  "comment": "this does nothing"
+                }
+              ]
+            }
+         }
+      }
+   }
+}

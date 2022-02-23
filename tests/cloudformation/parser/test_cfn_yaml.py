@@ -3,6 +3,7 @@ import unittest
 
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.runner import Runner
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.parser import parse
 
@@ -130,6 +131,49 @@ class TestCfnYaml(unittest.TestCase):
         self.assertEqual(entity_lines_range[0], 10)
         self.assertEqual(entity_lines_range[1], 20)
 
+    def test_collect_skip_comments_yaml(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file = os.path.join(current_dir, 'more_skip.yaml')
+        runner = Runner()
+        runner.run(None, files=[file], runner_filter=RunnerFilter())
+
+        resources = runner.context[file]['Resources']
+
+        db = resources['MyDB']
+        self.assertEqual(len(db['skipped_checks']), 1)
+        self.assertEqual(db['skipped_checks'][0]['id'], 'CKV_AWS_16')
+
+        db = resources['MyDB2']
+        self.assertEqual(len(db['skipped_checks']), 3)
+        self.assertEqual(db['skipped_checks'][0]['id'], 'CKV_AWS_16')
+        self.assertEqual(db['skipped_checks'][1]['id'], 'CKV_AWS_21')
+        self.assertEqual(db['skipped_checks'][-1]['severity'], Severities[BcSeverities.HIGH])
+        self.assertEqual(db['skipped_checks'][-1]['suppress_comment'], "high justification")
+
+        db = resources['MyDB3']
+        self.assertEqual(len(db['skipped_checks']), 5)
+        self.assertEqual(db['skipped_checks'][0]['id'], 'CKV_AWS_16')
+        self.assertEqual(db['skipped_checks'][1]['id'], 'CKV_AWS_21')
+        self.assertEqual(db['skipped_checks'][2]['id'], 'CKV_AWS_56')
+        self.assertEqual(db['skipped_checks'][3]['id'], 'CKV_AWS_54')
+        self.assertEqual(db['skipped_checks'][-1]['severity'], Severities[BcSeverities.HIGH])
+        self.assertEqual(db['skipped_checks'][-1]['suppress_comment'], "high in metadata")
+
+        db = resources['MyDB4']
+        self.assertEqual(len(db['skipped_checks']), 5)
+        self.assertEqual(db['skipped_checks'][0]['id'], 'CKV_AWS_16')
+        self.assertEqual(db['skipped_checks'][1]['id'], 'CKV_AWS_21')
+        self.assertEqual(db['skipped_checks'][2]['id'], 'CKV_AWS_56')
+        self.assertEqual(db['skipped_checks'][3]['id'], 'CKV_AWS_54')
+        self.assertEqual(db['skipped_checks'][-1]['severity'], Severities[BcSeverities.HIGH])
+        self.assertEqual(db['skipped_checks'][-1]['suppress_comment'], "No comment provided")
+
+        db = resources['MyDB5']
+        self.assertEqual(len(db['skipped_checks']), 3)
+        self.assertEqual(db['skipped_checks'][0]['id'], 'CKV_AWS_16')
+        self.assertEqual(db['skipped_checks'][1]['id'], 'CKV_AWS_21')
+        self.assertEqual(db['skipped_checks'][-1]['severity'], Severities[BcSeverities.HIGH])
+        self.assertEqual(db['skipped_checks'][-1]['suppress_comment'], "high justification")
 
 
 if __name__ == '__main__':

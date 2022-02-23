@@ -6,6 +6,7 @@ from functools import reduce
 from typing import List, Tuple, Optional, Union, Generator
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.typing import _SkippedCheck
@@ -115,14 +116,24 @@ class ContextParser(object):
     def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
         skipped_checks = []
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
-        for line in entity_code_lines:
-            skip_search = re.search(COMMENT_REGEX, str(line))
+        max_severity_skip = None
+        for line_num, line in entity_code_lines:
+            skip_search = re.search(COMMENT_REGEX, line)
             if skip_search:
                 skipped_check: _SkippedCheck = {
                     "id": skip_search.group(2),
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
                 }
+                severity = get_severity(skipped_check["id"])
+                # THe ID could be a severity, so normalize the fields and save only the highest severity
                 # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                if severity and (not max_severity_skip or max_severity_skip['severity'].level < severity.level):
+                    skipped_check["severity"] = severity
+                    skipped_check.pop("id")
+                    max_severity_skip = skipped_check
+                    continue
+                elif severity:
+                    continue
                 if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                     skipped_check["bc_id"] = skipped_check["id"]
                     skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
@@ -130,6 +141,7 @@ class ContextParser(object):
                     skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                 skipped_checks.append(skipped_check)
+
         if resource_config:
             metadata = resource_config.get("Metadata")
             if metadata:
@@ -138,19 +150,43 @@ class ContextParser(object):
                 if ckv_skip or bc_skip:
                     for skip in itertools.chain(ckv_skip, bc_skip):
                         skip_id = skip.get("id")
+                        skip_severity_str = skip.get("severity")
+                        skip_severity = None
                         skip_comment = skip.get("comment", "No comment provided")
-                        if skip_id is None:
-                            logging.warning("Check suppression is missing key 'id'")
+
+                        if skip_id and skip_severity_str:
+                            logging.warning(f"Ignoring skip severity because an ID was provided")
+                            skip_severity_str = None
+
+                        if skip_severity_str:
+                            skip_severity = get_severity(skip_severity_str)
+                            if not skip_severity:
+                                logging.warning(f"Check suppression provided an invalid severity: {skip_severity_str}")
+
+                        if skip_id is None and not skip_severity:
+                            logging.warning("Check suppression is missing key 'id' or 'severity' (or severity is invalid)")
                             continue
 
-                        skipped_check = {"id": skip_id, "suppress_comment": skip_comment}
-                        if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                        skipped_check = {"suppress_comment": skip_comment}
+                        if skip_id:
+                            skipped_check["id"] = skip_id
+                        elif not max_severity_skip or max_severity_skip['severity'].level < skip_severity.level:
+                            skipped_check["severity"] = skip_severity
+                            max_severity_skip = skipped_check
+                            continue
+
+                        if skip_severity:
+                            continue
+                        elif bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
                         elif metadata_integration.check_metadata:
                             skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                         skipped_checks.append(skipped_check)
+
+        if max_severity_skip:
+            skipped_checks.append(max_severity_skip)
 
         return skipped_checks
 

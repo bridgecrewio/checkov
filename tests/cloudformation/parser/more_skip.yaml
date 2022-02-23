@@ -1,0 +1,82 @@
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    # Test case for check skip via comment
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+  MyDB2:
+    Type: 'AWS::RDS::DBInstance'
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    # checkov:skip=MEDIUM:medium justification
+    # checkov:skip=HIGH:high justification
+    # checkov:skip=CKV_AWS_21
+    # checkov:skip=LOW:low justification
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+  MyDB3:
+    Type: 'AWS::RDS::DBInstance'
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    # checkov:skip=MEDIUM:medium justification
+    # checkov:skip=CKV_AWS_21
+    # checkov:skip=LOW:low justification
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_56
+          - severity: HIGH
+            comment: high in metadata
+          - id: CKV_AWS_54
+            comment: metadata just
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+  MyDB4:
+    Type: 'AWS::RDS::DBInstance'
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    # checkov:skip=HIGH
+    # checkov:skip=CKV_AWS_21
+    # checkov:skip=LOW:low justification
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_56
+          - severity: LOW
+            comment: low in metadata
+          - id: CKV_AWS_54
+            comment: metadata just
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+  MyDB5:
+    Type: 'AWS::RDS::DBInstance'
+    # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
+    # checkov:skip=HIGH:high justification
+    # checkov:skip=CKV_AWS_21
+    # checkov:skip=LOW:low justification
+    Metadata:
+      checkov:
+        skip:
+          - comment: missing id or severity
+          - severity: not_a_severity
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+
