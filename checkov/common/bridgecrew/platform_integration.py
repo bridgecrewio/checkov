@@ -3,11 +3,12 @@ import logging
 import os.path
 import re
 import webbrowser
+from collections import namedtuple
 from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Dict, Optional, List
+from typing import Optional, List
 
 import boto3
 import dpath.util
@@ -40,9 +41,9 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, get_user_agent_header
+from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
+    get_user_agent_header
 from checkov.version import version as checkov_version
-from collections import namedtuple
 
 SLEEP_SECONDS = 1
 
@@ -90,6 +91,7 @@ class BcPlatformIntegration(object):
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
+        self.run_id_url = f"{self.api_url}/api/v1/cicd/data/runs"
         self.customer_run_config_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
@@ -98,6 +100,7 @@ class BcPlatformIntegration(object):
         self.bc_skip_mapping = False
         self.skip_download = False
         self.cicd_details = {}
+        self.run_temp_id = None
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -230,6 +233,21 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
+    def set_run_details(self) -> None:
+        if self.run_temp_id:
+            request = self.http.request("GET", f'{self.run_id_url}?repositoryId={self.repo_id}&pr={self.run_temp_id}&branch={self.repo_branch}',
+                                        headers=merge_dicts({
+                                            "Authorization": self.get_auth_token(),
+                                            "Content-Type": "application/json"
+                                        }, get_user_agent_header()))
+            response = json.loads(request.data.decode("utf8"))
+            if isinstance(response, list) and len(response) > 0:
+                self.cicd_details = {
+                    "runId": response.get('runId'),
+                    "pr": self.run_temp_id,
+                    "commit": response.get('commit'),
+                }
+
     def persist_repository(self, root_dir, files=None, excluded_paths=None, included_paths: Optional[List[str]] = None):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
@@ -237,6 +255,7 @@ class BcPlatformIntegration(object):
         :param files: Absolute path of the files passed in the --file flag.
         :param root_dir: Absolute path of the directory containing the repository root level.
         :param excluded_paths: Paths to exclude from persist process
+        :param included_paths: Paths to exclude from persist process
         """
         excluded_paths = excluded_paths if excluded_paths is not None else []
 
@@ -261,20 +280,20 @@ class BcPlatformIntegration(object):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
-        
+
         self.persist_files(files_to_persist)
-        
+
     def persist_git_configuration(self, root_dir, git_config_folders: List[str]):
         if not self.use_s3_integration:
             return
         files_to_persist: List[FileToPersist] = []
-    
+
         for git_config_folder in git_config_folders:
             if not os.path.isdir(git_config_folder):
                 continue
             if not len(os.listdir(git_config_folder)):
                 continue
-        
+
             for root_path, _, f_names in os.walk(git_config_folder):
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
@@ -330,7 +349,8 @@ class BcPlatformIntegration(object):
                                                                 get_user_agent_header()
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
-                url = response.get("url", None)
+                url = response.get("url")
+                self.run_temp_id = response.get("id")
                 return url
             except HTTPError as e:
                 logging.error(f"Failed to commit repository {self.repo_path}\n{e}")

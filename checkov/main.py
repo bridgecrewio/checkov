@@ -246,6 +246,21 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                             baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
+    elif config.docker_image:
+        if config.bc_api_key is None:
+            parser.error("--bc-api-key argument is required when using --docker-image")
+            return None
+        if config.dockerfile_path is None:
+            parser.error("--dockerfile-path argument is required when using --docker-image")
+            return None
+        if config.branch is None:
+            parser.error("--branch argument is required when using --docker-image")
+            return None
+        files = [os.path.abspath(config.dockerfile_path)]
+        bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), included_paths=files)
+        bc_integration.commit_repository(config.branch)
+        exit_code = image_scanner.scan(config.docker_image, config.dockerfile_path)
+        return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
@@ -269,18 +284,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
-    elif config.docker_image:
-        if config.bc_api_key is None:
-            parser.error("--bc-api-key argument is required when using --docker-image")
-            return None
-        if config.dockerfile_path is None:
-            parser.error("--dockerfile-path argument is required when using --docker-image")
-            return None
-        if config.branch is None:
-            parser.error("--branch argument is required when using --docker-image")
-            return None
-        bc_integration.commit_repository(config.branch)
-        image_scanner.scan(config.docker_image, config.dockerfile_path)
     elif not config.quiet:
         print(f"{banner}")
 
