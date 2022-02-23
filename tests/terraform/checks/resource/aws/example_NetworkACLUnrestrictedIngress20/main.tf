@@ -17,15 +17,15 @@ resource "aws_network_acl" "fail" {
       protocol   = "tcp"
       rule_no    = 100
       action     = "allow"
-      cidr_block = "10.0.0.0/32"
-      from_port  = 22
-      to_port    = 22
+      cidr_block = "0.0.0.0/0"
+      from_port  = 20
+      to_port    = 20
     },
     {
       protocol   = "tcp"
       rule_no    = 110
       action     = "allow"
-      cidr_block = "0.0.0.0/0"
+      cidr_block = "10.0.0.0/32"
       from_port  = 3389
       to_port    = 3389
     }
@@ -57,8 +57,8 @@ resource "aws_network_acl" "fail2" {
       rule_no    = 100
       action     = "allow"
       cidr_block = "0.0.0.0/0"
-      from_port  = 22
-      to_port    = 22
+      from_port  = 20
+      to_port    = 20
     },
     {
       protocol   = "tcp"
@@ -75,6 +75,7 @@ resource "aws_network_acl" "fail2" {
     test = "fail"
   }
 }
+
 
 resource "aws_network_acl" "pass" {
   vpc_id = aws_vpc.main.id
@@ -96,8 +97,8 @@ resource "aws_network_acl" "pass" {
       rule_no    = 100
       action     = "allow"
       cidr_block = "10.0.0.0/32"
-      from_port  = 22
-      to_port    = 22
+      from_port  = 20
+      to_port    = 20
     },
     {
       protocol   = "tcp"
@@ -115,6 +116,45 @@ resource "aws_network_acl" "pass" {
   }
 }
 
+
+resource "aws_network_acl" "pass2" {
+  vpc_id = aws_vpc.main.id
+
+  egress = [
+    {
+      protocol   = "tcp"
+      rule_no    = 200
+      action     = "allow"
+      cidr_block = "10.3.0.0/18"
+      from_port  = 443
+      to_port    = 443
+    }
+  ]
+
+  ingress = [
+    {
+      protocol   = "tcp"
+      rule_no    = 100
+      action     = "deny"
+      cidr_block = "00.0.0.0/0"
+      from_port  = 20
+      to_port    = 20
+    },
+    {
+      protocol   = "tcp"
+      rule_no    = 110
+      action     = "allow"
+      cidr_block = "10.0.0.0/32"
+      from_port  = 3389
+      to_port    = 3389
+    }
+  ]
+
+  tags = {
+    Name = "main"
+    test = "fail"
+  }
+}
 
 
 resource "aws_network_acl" "unknown" {
