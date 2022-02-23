@@ -200,3 +200,26 @@ resource "aws_network_acl" "fail3" {
     test = "fail"
   }
 }
+
+resource "aws_network_acl_rule" "fail" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 20
+  to_port        = 20
+}
+
+
+resource "aws_network_acl_rule" "pass" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "10.0.0.0/32"
+  from_port      = 20
+  to_port        = 20
+}

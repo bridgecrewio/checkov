@@ -206,3 +206,27 @@ resource "aws_vpc" "main" {
 provider "aws" {
   region = "eu-west-2"
 }
+
+
+resource "aws_network_acl_rule" "fail" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 22
+  to_port        = 22
+}
+
+
+resource "aws_network_acl_rule" "pass" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "10.0.0.0/32"
+  from_port      = 22
+  to_port        = 22
+}
