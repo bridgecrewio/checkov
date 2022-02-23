@@ -76,28 +76,37 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.repo_branch = None
         self.skip_fixes = False
-        self.timestamp = None
-        self.scan_reports = []
-        # The following URLs will be (re)set by setup_bridgecrew_credentials()
-        # when '--prisma-api-url' is specified on the command-line.
-        self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
-        self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
-        if self.prisma_api_url:
-            self.api_url = f"{self.prisma_api_url}/bridgecrew"
+        self.skip_download = False
         self.bc_source = None
         self.bc_source_version = None
-        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
-        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
-        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
-        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
+        self.timestamp = None
+        self.scan_reports = []
+        self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+        self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.setup_api_urls()
         self.customer_run_config_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http = None
         self.bc_skip_mapping = False
-        self.skip_download = False
         self.cicd_details = {}
+
+    def setup_api_urls(self):
+        """
+        API URLs vary depending upon whether the platform is Bridgecrew or Prisma Cloud.
+        Bridgecrew has one default that can be used when initializing the class,
+        but Prisma Cloud requires resetting them in setup_bridgecrew_credentials,
+        which is where command-line parameters are first made available.
+        """
+        if self.prisma_api_url:
+            self.api_url = f"{self.prisma_api_url}/bridgecrew"
+        else:
+            self.api_url = self.bc_api_url
+        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
+        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
+        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -144,10 +153,11 @@ class BcPlatformIntegration(object):
                                      source_version=None, repo_branch=None, prisma_api_url=None):
         """
         Setup credentials against Bridgecrew's platform.
+        :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
+        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param skip_download: whether to skip downloading data (guidelines, custom policies, etc) from the platform
         :param source:
-        :param skip_fixes: whether to skip querying fixes from Bridgecrew
-        :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
+        :param prisma_api_url: optional URL for the Prisma Cloud platform, requires a Prisma Cloud Access Key as bc_api_key
         """
         self.repo_id = repo_id
         self.repo_branch = repo_branch
@@ -158,11 +168,7 @@ class BcPlatformIntegration(object):
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
-            self.api_url = f"{self.prisma_api_url}/bridgecrew"
-            self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
-            self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
-            self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
-            self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
+            self.setup_api_urls()
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source.upload_results:
@@ -394,7 +400,7 @@ class BcPlatformIntegration(object):
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping getting run config")
+            logging.debug("Skipping customer run config API call")
             return
 
         if not self.bc_api_key or not self.is_integration_configured():
@@ -406,27 +412,25 @@ class BcPlatformIntegration(object):
             if not self.http:
                 self.setup_http_manager()
             request = self.http.request("GET", self.platform_run_config_url, headers=headers)
-
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
-
             logging.debug("Got customer run config from Bridgecrew BE")
         except Exception as e:
-            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}, error:\n{e}")
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping ID mapping and guidelines API call")
+            logging.debug("Skipping checkov mapping and guidelines API call")
             return
 
-        headers = {}
         try:
+            headers = {}
             if not self.http:
                 self.setup_http_manager()
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
-            logging.debug("Got checkov mappings from Bridgecrew BE")
+            logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
         except Exception as e:
-            logging.warning(f"Failed to get the guidelines from {self.guidelines_api_url}, error:\n{e}")
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}, error:\n{e}")
 
     def onboarding(self):
         if not self.bc_api_key:
