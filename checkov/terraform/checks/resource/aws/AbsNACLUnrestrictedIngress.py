@@ -30,12 +30,17 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         """
 
         if conf.get("ingress"):
-            ingress = conf.get("ingress")[0]
+            ingress = conf.get("ingress")
             for rule in ingress:
                 if rule.get('cidr_block'):
-                    if rule.get('cidr_block') == "0.0.0.0/0":
-                        if rule.get('action') == "allow":
-                            if rule.get('from_port') >= self.port and rule.get('to_port') <= self.port:
+                    if rule.get('cidr_block') == ["0.0.0.0/0"]:
+                        if rule.get('action') == ["allow"]:
+                            if rule.get('from_port')[0] >= self.port and rule.get('to_port')[0] <= self.port:
+                                return CheckResult.FAILED
+                if rule.get('ipv6_cidr_block'):
+                    if rule.get('ipv6_cidr_block') == ["::/0"]:
+                        if rule.get('action') == ["allow"]:
+                            if rule.get('from_port')[0] >= self.port and rule.get('to_port')[0] <= self.port:
                                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN
