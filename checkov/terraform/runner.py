@@ -144,7 +144,8 @@ class Runner(BaseRunner):
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = copy.deepcopy(check_result)
                     for skipped_check in entity_context.get('skipped_checks', []):
-                        if skipped_check['id'] == check.id:
+                        if skipped_check.get('id') == check.id or \
+                                check.bc_severity and 'severity' in skipped_check and check.bc_severity.level <= skipped_check['severity'].level:
                             copy_of_check_result['result'] = CheckResult.SKIPPED
                             copy_of_check_result['suppress_comment'] = skipped_check['suppress_comment']
                             break
