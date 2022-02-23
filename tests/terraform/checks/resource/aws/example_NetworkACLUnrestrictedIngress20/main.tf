@@ -1,3 +1,14 @@
+resource "aws_network_acl_rule" "fail2" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 5
+  to_port        = 25
+}
+
 resource "aws_network_acl" "fail" {
   vpc_id = aws_vpc.main.id
 
@@ -223,3 +234,15 @@ resource "aws_network_acl_rule" "pass" {
   from_port      = 20
   to_port        = 20
 }
+
+resource "aws_network_acl_rule" "pass2" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "10.0.0.0/32"
+  from_port      = 5
+  to_port        = 25
+}
+
