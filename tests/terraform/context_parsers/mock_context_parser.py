@@ -25,7 +25,7 @@ class MockContextParser(BaseContextParser):
             line_tokens = [x.replace('"', "") for x in line.split()]
             if all(x in line_tokens for x in ['mock', mock_type, mock_name]):
                 self.context[mock_type][mock_name]["start_line"] = 1
-                self.context[mock_type][mock_name]["end_line"] = 5
+                self.context[mock_type][mock_name]["end_line"] = 9
                 self.context[mock_type][mock_name]["code_lines"] = ['ABC', '123']
         return self.context
 

@@ -114,8 +114,11 @@ class BaseCheckRegistry(object):
         for check in checks:
             skip_info: _SkippedCheck = {}
             if skipped_checks:
-                if check.id in [x["id"] for x in skipped_checks]:
-                    skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
+                # if there is a severity skip, it will be at the end
+                if check.id in [x["id"] for x in skipped_checks if "id" in x]:
+                    skip_info = [x for x in skipped_checks if x.get("id") == check.id][0]
+                elif check.bc_severity and "severity" in skipped_checks[-1] and check.bc_severity.level <= skipped_checks[-1]["severity"].level:
+                    skip_info = skipped_checks[-1]
 
             if runner_filter.should_run_check(check):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)

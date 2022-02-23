@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Tuple, Optional
 import dpath.util
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -110,16 +111,28 @@ class BaseContextParser(ABC):
                     break
             if not found:
                 continue
+            max_severity_skip = None
             for (skip_check_line_num, skip_check) in comments:
                 if "start_line" in entity_context and "end_line" in entity_context \
                         and entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
+                    # The regex will catch any skip comment, so here we normalize ID(s) and severity
                     # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                    if bc_id_mapping and skip_check["id"] in bc_id_mapping:
+                    severity = get_severity(skip_check["id"])
+                    if severity and (not max_severity_skip or max_severity_skip['severity'].level < severity.level):
+                        skip_check["severity"] = severity
+                        skip_check.pop("id")
+                        max_severity_skip = skip_check
+                        continue
+                    elif severity:
+                        continue
+                    elif bc_id_mapping and skip_check["id"] in bc_id_mapping:
                         skip_check["bc_id"] = skip_check["id"]
                         skip_check["id"] = bc_id_mapping[skip_check["id"]]
                     elif metadata_integration.check_metadata:
                         skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
                     skipped_checks.append(skip_check)
+            if max_severity_skip:
+                skipped_checks.append(max_severity_skip)
             dpath.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
         return self.context
 

@@ -3,6 +3,7 @@ import unittest
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.terraform.context_parsers.registry import parser_registry
 from tests.terraform.context_parsers.mock_context_parser import MockContextParser
 
@@ -21,9 +22,11 @@ class TestBaseParser(unittest.TestCase):
         definition_context = parser_registry.enrich_definitions_context(mock_definition)
         skipped_checks = definition_context[mock_tf_file]["mock"]["mock_type"]["mock_name"].get("skipped_checks")
         self.assertIsNotNone(skipped_checks)
-        self.assertEqual(len(skipped_checks), 3)
+        self.assertEqual(len(skipped_checks), 4)
         # Ensure checkov IDs are mapped to BC IDs
         self.assertEqual(skipped_checks[2]["id"], "CKV_AWS_15")
+        # Ensure severity is at the end and is the highest severity of them all
+        self.assertEqual(skipped_checks[-1]["severity"], Severities[BcSeverities.HIGH])
         metadata_integration.bc_integration = bc_integration
 
     def test__compute_definition_end_line_with_multi_curly_brackets(self):

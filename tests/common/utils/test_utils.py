@@ -72,7 +72,14 @@ class TestUtils(unittest.TestCase):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=BC_AWS_GENERAL_123'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=bcorg_AWS_1234567'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=bcorg_AWS_1234567'))
-
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=MEDIUM'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=LOW'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=HIGH'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CRITICAL'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=MEDIUM: some reason'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=LOW:a reason'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=HIGH:stop skipping me'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CRITICAL:uh oh'))
 
 
 if __name__ == '__main__':
