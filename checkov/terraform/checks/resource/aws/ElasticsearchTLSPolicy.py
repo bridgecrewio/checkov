@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class ElasticsearchTLSPolicy(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Verify ElasticSearch domain is using an up to date TLS policy"
+        name = "Verify Elasticsearch domain is using an up to date TLS policy"
         id = "CKV_AWS_228"
         supported_resources = ("aws_elasticsearch_domain",)
         categories = (CheckCategories.ENCRYPTION,)
