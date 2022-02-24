@@ -34,8 +34,8 @@ resource "aws_network_acl" "fail" {
       rule_no    = 110
       action     = "allow"
       cidr_block = "0.0.0.0/0"
-      from_port  = 3389
-      to_port    = 3389
+      from_port  = "3389"
+      to_port    = "3389"
     }
 
 
