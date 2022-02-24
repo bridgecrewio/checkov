@@ -1,0 +1,6 @@
+- bar:
+    toggle: true
+- bar:
+    toggle: true
+  baz:
+    toggle: false

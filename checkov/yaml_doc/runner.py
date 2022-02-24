@@ -11,4 +11,5 @@ class Runner(ObjectRunner):
         return registry
 
     def _parse_file(self, f):
-        parse(f)
+        content = parse(f)
+        return content

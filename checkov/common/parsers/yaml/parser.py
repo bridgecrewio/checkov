@@ -2,7 +2,7 @@ import logging
 
 from yaml import YAMLError
 
-from checkov.common.parsers.yaml.yaml import yaml
+import checkov.common.parsers.yaml.loader as loader
 
 logger = logging.getLogger(__name__)
 
@@ -10,16 +10,18 @@ logger = logging.getLogger(__name__)
 def parse(filename):
     template = None
     template_lines = None
-    valid_templates = []
     try:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            (template, template_lines) = yaml.load(filename)
+            (template, template_lines) = loader.load(filename)
 
         if template:
             if isinstance(template, list):
                 for t in template:
                     if t and isinstance(t, dict):
-                        valid_templates.append(t)
+                        return t, template_lines
+                    if t and isinstance(t, list):
+                        return t, template_lines
+
             else:
                 return
         else:
@@ -44,4 +46,3 @@ def parse(filename):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
         return
 
-    return valid_templates, template_lines

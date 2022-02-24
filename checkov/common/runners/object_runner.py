@@ -61,8 +61,11 @@ class Runner(BaseRunner):
             )
             for check, result in results.items():
                 result_config = result["results_configuration"]
-                start = result_config.start_mark.line
-                end = result_config.end_mark.line
+                start = 0
+                end = 0
+                if result_config and isinstance(result_config, list):
+                    start = result_config[0]['__startline__']
+                    end = result_config[len(result_config) - 1]['__endline__']
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,

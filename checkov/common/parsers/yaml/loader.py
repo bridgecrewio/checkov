@@ -5,7 +5,7 @@ import yaml
 from yaml.loader import SafeLoader
 
 
-def loads(content: str) -> List[Dict[str, Any]]:
+def loads(content: str) -> Dict[str, Any]:
     """
     Load the given YAML string
     """
