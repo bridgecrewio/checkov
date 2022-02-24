@@ -63,9 +63,7 @@ class Runner(BaseRunner):
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
-                if result_config and isinstance(result_config, list):
-                    start = result_config[0]['__startline__']
-                    end = result_config[len(result_config) - 1]['__endline__']
+                end, start = self.get_start_end_lines(end, result_config, start)
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
@@ -84,6 +82,10 @@ class Runner(BaseRunner):
                 report.add_record(record)
 
         return report
+
+    @abstractmethod
+    def get_start_end_lines(self, end, result_config, start):
+        raise Exception("should be handled by derived class")
 
     @abstractmethod
     def import_registry(self):
