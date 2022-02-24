@@ -206,7 +206,7 @@ def test_calculate_lowest_compliant_version():
 def test_create_cli_table():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, fixable=5, to_fix=5)
+    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
     package_details_map = {
         "django": {
             "cves": [
@@ -259,7 +259,7 @@ def test_create_cli_table():
 def test_create_cli_table_with_no_found_vulnerabilities():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, fixable=0, to_fix=0)
+    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
     package_details_map = {}
 
     # when

@@ -282,7 +282,7 @@ def create_fixable_cve_summary_table_part(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
-    if cve_count.fixable > 0:
+    if cve_count.fixable:
         fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
