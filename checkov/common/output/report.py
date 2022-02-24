@@ -16,7 +16,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from checkov import sca_package
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -430,7 +430,9 @@ class Report:
         
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            severity = (record.severity.name if record.severity else "none").upper()
+            severity = BcSeverities.NONE
+            if record.severity:
+                severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
                 check_id = record.vulnerability_details["id"]

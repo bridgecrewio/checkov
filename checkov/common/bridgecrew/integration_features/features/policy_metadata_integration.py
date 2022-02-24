@@ -94,6 +94,15 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def _handle_customer_run_config(self, run_config):
         self.check_metadata = run_config['policyMetadata']
+
+        # Custom policies are returned in run_config['customPolicies'] rather than run_config['policyMetadata'].
+        if 'customPolicies' in run_config:
+            for custom_policy in run_config['customPolicies']:
+                if 'guideline' in custom_policy:
+                    self.check_metadata[custom_policy['id']] = {
+                        'guideline': custom_policy['guideline']
+                    }
+
         self.bc_to_ckv_id_mapping = {pol['id']: ckv_id for (ckv_id, pol) in self.check_metadata.items()}
 
 
