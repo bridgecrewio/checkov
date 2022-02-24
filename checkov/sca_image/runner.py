@@ -17,16 +17,11 @@ from checkov.sca_package.runner import Runner as PackageRunner
 class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
-        self.raw_report = None
-
-    def pop_raw_report(self):
-        report = self.raw_report
-        self.raw_report = None
-        return report
+        self.raw_report: Optional[Dict[str, Any]] = None
 
     def scan(
             self,
@@ -71,7 +66,7 @@ class Runner(PackageRunner):
             return {}
 
         # read and delete the report file
-        scan_result = json.loads(output_path.read_text())
+        scan_result: Dict[str, Any] = json.loads(output_path.read_text())
         output_path.unlink()
 
         return scan_result
@@ -83,7 +78,7 @@ class Runner(PackageRunner):
             files: Optional[List[str]] = None,
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
-            **kwargs
+            **kwargs: str
     ) -> Report:
         report = Report(self.check_type)
 
