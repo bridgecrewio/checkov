@@ -49,8 +49,8 @@ class Runner(PackageRunner):
         logging.info(f"SCA image scanning successfully scanned the image {image_id}")
         return scan_result
 
+    @staticmethod
     async def execute_scan(
-            self,
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:

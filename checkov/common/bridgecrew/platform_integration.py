@@ -100,7 +100,6 @@ class BcPlatformIntegration(object):
         self.bc_skip_mapping = False
         self.skip_download = False
         self.cicd_details = {}
-        self.run_temp_id = None
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -338,8 +337,7 @@ class BcPlatformIntegration(object):
                                                                 get_user_agent_header()
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
-                url = response.get("url")
-                self.run_temp_id = response.get("id")
+                url = response.get("url", None)
                 return url
             except HTTPError as e:
                 logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
