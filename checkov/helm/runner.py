@@ -9,12 +9,16 @@ from functools import reduce
 
 import yaml
 
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.registry import registry
+from checkov.kubernetes.kubernetes_utils import is_skip_annotation
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
@@ -221,6 +225,7 @@ class Runner(BaseRunner):
 def get_skipped_checks(entity_conf):
     skipped = []
     metadata = {}
+    bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
     if not isinstance(entity_conf, dict):
         return skipped
     if entity_conf["kind"] == "containers" or entity_conf["kind"] == "initContainers":
@@ -229,19 +234,38 @@ def get_skipped_checks(entity_conf):
         if "metadata" in entity_conf.keys():
             metadata = entity_conf["metadata"]
     if "annotations" in metadata.keys() and metadata["annotations"] is not None:
+        max_severity_skip = None
         for key in metadata["annotations"].keys():
             skipped_item = {}
             if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                if "CKV_K8S" in metadata["annotations"][key]:
-                    if "=" in metadata["annotations"][key]:
-                        (skipped_item["id"], skipped_item["suppress_comment"]) = metadata["annotations"][key].split("=")
+                if is_skip_annotation(key):
+                    if "=" in key:
+                        (skipped_item["id"], skipped_item["suppress_comment"]) = key.split("=")
                     else:
-                        skipped_item["id"] = metadata["annotations"][key]
+                        skipped_item["id"] = key
                         skipped_item["suppress_comment"] = "No comment provided"
+
+                    severity = get_severity(skipped_item["id"])
+                    # The ID could be a severity, so normalize the fields and save only the highest severity
+                    # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                    if severity and (not max_severity_skip or max_severity_skip['severity'].level < severity.level):
+                        skipped_item["severity"] = severity
+                        skipped_item.pop("id")
+                        max_severity_skip = skipped_item
+                        continue
+                    elif severity:
+                        continue
+                    if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
+                        skipped_item["bc_id"] = skipped_item["id"]
+                        skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
+                    elif metadata_integration.check_metadata:
+                        skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
                     skipped.append(skipped_item)
                 else:
-                    logging.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
+                    logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                     continue
+        if max_severity_skip:
+            skipped.append(max_severity_skip)
     return skipped
 
 

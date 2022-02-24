@@ -11,7 +11,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-from checkov.common.bridgecrew.severities import Severity
+from checkov.common.bridgecrew.severities import Severity, get_severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -214,7 +214,12 @@ class Runner(BaseRunner):
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
             lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
-            if skip_search and (skip_search.group(2) == check_id or skip_search.group(2) == bc_check_id):
+            if not skip_search:
+                continue
+            skip_keyword = skip_search.group(2)
+            skip_severity = get_severity(skip_keyword)
+            skip_by_severity = skip_severity and severity and severity.level <= skip_severity.level
+            if skip_keyword == check_id or skip_keyword == bc_check_id or skip_by_severity:
                 return {
                     "result": CheckResult.SKIPPED,
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"

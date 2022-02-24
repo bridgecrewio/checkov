@@ -430,7 +430,7 @@ class Report:
         
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
-            severity = (record.severity or "none").upper()
+            severity = (record.severity.name if record.severity else "none").upper()
 
             if self.check_type == CheckType.SCA_PACKAGE:
                 check_id = record.vulnerability_details["id"]
