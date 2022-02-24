@@ -4,6 +4,8 @@ from copy import deepcopy
 from typing import Tuple, Dict, Optional, List, Any
 
 import dpath
+
+from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.runner_filter import RunnerFilter
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
@@ -69,17 +71,27 @@ def get_skipped_checks(entity_conf):
             if not isinstance(annotation, dict):
                 logging.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                 continue
+            max_severity_skip = None
             for key in annotation:
                 skipped_item = {}
                 if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                    if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key] or "CKV2_K8S" in annotation[key]:
+                    if is_skip_annotation(annotation[key]):
                         if "=" in annotation[key]:
                             (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
                         else:
                             skipped_item["id"] = annotation[key]
                             skipped_item["suppress_comment"] = "No comment provided"
 
+                        severity = get_severity(skipped_item["id"])
+                        # The ID could be a severity, so normalize the fields and save only the highest severity
                         # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                        if severity and (not max_severity_skip or max_severity_skip['severity'].level < severity.level):
+                            skipped_item["severity"] = severity
+                            skipped_item.pop("id")
+                            max_severity_skip = skipped_item
+                            continue
+                        elif severity:
+                            continue
                         if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
                             skipped_item["bc_id"] = skipped_item["id"]
                             skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
@@ -89,7 +101,20 @@ def get_skipped_checks(entity_conf):
                     else:
                         logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                         continue
+            if max_severity_skip:
+                skipped.append(max_severity_skip)
     return skipped
+
+
+def is_skip_annotation(annotation_key: str) -> bool:
+    if "CKV_K8S" in annotation_key or "BC_K8S" in annotation_key or "CKV2_K8S" in annotation_key:
+        return True
+
+    for severity in Severities.values():
+        if severity.name in annotation_key:
+            return True
+
+    return False
 
 
 def create_definitions(

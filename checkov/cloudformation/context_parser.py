@@ -125,7 +125,7 @@ class ContextParser(object):
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
                 }
                 severity = get_severity(skipped_check["id"])
-                # THe ID could be a severity, so normalize the fields and save only the highest severity
+                # The ID could be a severity, so normalize the fields and save only the highest severity
                 # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
                 if severity and (not max_severity_skip or max_severity_skip['severity'].level < severity.level):
                     skipped_check["severity"] = severity
