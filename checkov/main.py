@@ -17,16 +17,13 @@ from urllib3.exceptions import MaxRetryError
 from checkov.arm.runner import Runner as arm_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import integration as repo_config_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -51,6 +48,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.version import version
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
@@ -257,9 +255,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             parser.error("--branch argument is required when using --docker-image")
             return None
         files = [os.path.abspath(config.dockerfile_path)]
-        bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), included_paths=files)
-        bc_integration.commit_repository(config.branch)
-        exit_code = image_scanner.scan(config.docker_image, config.dockerfile_path)
+        runner = sca_image_runner()
+        result = runner.run(root_folder='', image_id=config.docker_image,
+                            dockerfile_path=config.dockerfile_path, runner_filter=runner_filter)
+        bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), files=files)
+        bc_integration.persist_scan_results([result])
+        bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
+                                                  config.branch)
+        url = bc_integration.commit_repository(config.branch)
+        exit_code = runner_registry.print_reports([result], config, url=url)
         return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,

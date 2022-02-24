@@ -1,5 +1,4 @@
 import argparse
-import fnmatch
 import itertools
 import json
 import sys
@@ -39,6 +38,7 @@ class CheckType:
     KUBERNETES = "kubernetes"
     KUSTOMIZE = "kustomize"
     SCA_PACKAGE = "sca_package"
+    SCA_IMAGE = "sca_image"
     SECRETS = "secrets"
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
@@ -259,9 +259,9 @@ class Report:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
         output_data += colored(message, "cyan")
         # output for vulnerabilities is different
-        if self.check_type == CheckType.SCA_PACKAGE:
+        if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += sca_package.output.create_cli_output(self.failed_checks, self.skipped_checks)
+                output_data += sca_package.output.create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:

@@ -345,7 +345,7 @@ def test_create_cli_output():
     ]
 
     # when
-    cli_output = create_cli_output(records)
+    cli_output = create_cli_output(True, records)
 
     # then
     assert cli_output == "".join(

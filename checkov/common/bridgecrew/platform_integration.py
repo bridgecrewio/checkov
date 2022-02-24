@@ -8,7 +8,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import boto3
 import dpath.util
@@ -37,8 +37,9 @@ from checkov.common.bridgecrew.ci_variables import (
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
-    enrich_and_persist_checks_metadata
+    enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
+from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
@@ -91,7 +92,6 @@ class BcPlatformIntegration(object):
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
-        self.run_id_url = f"{self.api_url}/api/v1/cicd/data/runs"
         self.customer_run_config_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
@@ -233,21 +233,6 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def set_run_details(self) -> None:
-        if self.run_temp_id:
-            request = self.http.request("GET", f'{self.run_id_url}?repositoryId={self.repo_id}&pr={self.run_temp_id}&branch={self.repo_branch}',
-                                        headers=merge_dicts({
-                                            "Authorization": self.get_auth_token(),
-                                            "Content-Type": "application/json"
-                                        }, get_user_agent_header()))
-            response = json.loads(request.data.decode("utf8"))
-            if isinstance(response, list) and len(response) > 0:
-                self.cicd_details = {
-                    "runId": response.get('runId'),
-                    "pr": self.run_temp_id,
-                    "commit": response.get('commit'),
-                }
-
     def persist_repository(self, root_dir, files=None, excluded_paths=None, included_paths: Optional[List[str]] = None):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
@@ -304,7 +289,6 @@ class BcPlatformIntegration(object):
 
         self.persist_files(files_to_persist)
 
-
     def persist_scan_results(self, scan_reports):
         """
         Persist checkov's scan result into bridgecrew's platform.
@@ -319,6 +303,11 @@ class BcPlatformIntegration(object):
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    def persist_image_scan_results(self, report: Dict[str, any], file_path: str, image_name: str, branch: str) -> None:
+        target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
+        to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
+        _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
     def commit_repository(self, branch):
         """
