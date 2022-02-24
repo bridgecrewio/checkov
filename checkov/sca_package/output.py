@@ -32,8 +32,9 @@ class CveCount:
     medium: int = 0
     low: int = 0
     skipped: int = 0
-    fixable: int = 0
+    has_fix: int = 0
     to_fix: int = 0
+    fixable: bool = True
 
     def output_row(self) -> List[str]:
         return [
@@ -170,7 +171,7 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
         ).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
-        cve_count = CveCount()
+        cve_count = CveCount(fixable=fixable)
         package_details_map = defaultdict(dict)
 
         for package_name, records in packages.items():
@@ -190,8 +191,8 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
                 severity_str = record.severity.name.lower()
                 setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
-                if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION and fixable:
-                    cve_count.fixable += 1
+                if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
+                    cve_count.has_fix += 1
 
                 fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
                 if package_version is None:
@@ -282,7 +283,7 @@ def create_fixable_cve_summary_table_part(
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable > 0:
-        fixable_table.add_row([f"To fix {cve_count.fixable}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
