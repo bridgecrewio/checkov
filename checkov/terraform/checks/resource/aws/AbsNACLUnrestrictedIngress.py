@@ -48,11 +48,11 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         if rule.get('cidr_block'):
             if rule.get('cidr_block') == ["0.0.0.0/0"]:
                 if rule.get('action') == ["allow"] or rule.get('rule_action') == ["allow"]:
-                    if rule.get('from_port')[0] <= self.port <= rule.get('to_port')[0]:
+                    if int(rule.get('from_port')[0]) <= self.port <= int(rule.get('to_port')[0]):
                         return False
         if rule.get('ipv6_cidr_block'):
             if rule.get('ipv6_cidr_block') == ["::/0"]:
                 if rule.get('action') == ["allow"] or rule.get('rule_action') == ["allow"]:
-                    if rule.get('from_port')[0] <= self.port <= rule.get('to_port')[0]:
+                    if int(rule.get('from_port')[0]) <= self.port <= int(rule.get('to_port')[0]):
                         return False
         return True
