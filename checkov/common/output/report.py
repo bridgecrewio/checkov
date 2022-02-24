@@ -1,5 +1,4 @@
 import argparse
-import fnmatch
 import itertools
 import json
 import sys
@@ -36,6 +35,7 @@ class CheckType:
     BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
     JSON = "json"
+    YAML = "yaml"
     KUBERNETES = "kubernetes"
     KUSTOMIZE = "kustomize"
     SCA_PACKAGE = "sca_package"
