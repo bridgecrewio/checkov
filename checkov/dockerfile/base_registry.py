@@ -1,5 +1,6 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
+from checkov.common.typing import _SkippedCheck
 
 
 class Registry(BaseCheckRegistry):
@@ -9,12 +10,16 @@ class Registry(BaseCheckRegistry):
         if not entity:
             return results
         for instruction, checks in self.checks.items():
-            skip_info = {}
             if instruction in entity:
-
                 for check in checks:
-                    if check.id in [x['id'] for x in skipped_checks]:
-                        skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
+                    skip_info: _SkippedCheck = {}
+                    if skipped_checks:
+                        # if there is a severity skip, it will be at the end
+                        if check.id in [x["id"] for x in skipped_checks if "id" in x]:
+                            skip_info = [x for x in skipped_checks if x.get("id") == check.id][0]
+                        elif check.bc_severity and "severity" in skipped_checks[-1] and check.bc_severity.level <= \
+                                skipped_checks[-1]["severity"].level:
+                            skip_info = skipped_checks[-1]
 
                     if runner_filter.should_run_check(check):
                         entity_name = instruction
@@ -24,10 +29,14 @@ class Registry(BaseCheckRegistry):
                                            skip_info)
 
         for check in self.wildcard_checks["*"]:
-            skip_info = {}
+            skip_info: _SkippedCheck = {}
             if skipped_checks:
-                if check.id in [x['id'] for x in skipped_checks]:
-                    skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
+                # if there is a severity skip, it will be at the end
+                if check.id in [x["id"] for x in skipped_checks if "id" in x]:
+                    skip_info = [x for x in skipped_checks if x.get("id") == check.id][0]
+                elif check.bc_severity and "severity" in skipped_checks[-1] and check.bc_severity.level <= \
+                        skipped_checks[-1]["severity"].level:
+                    skip_info = skipped_checks[-1]
 
             if runner_filter.should_run_check(check):
                 entity_name = scanned_file
