@@ -22,7 +22,7 @@ class TestModuleCheck(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_1")
+        check = next(c for c in module_registry.checks["module"] if c.id in ("CKV_TF_MODULE_1", "CKV_TF_MODULE_2"))
         module_registry.checks["module"].remove(check)
 
     def test_immutable_module(self):
@@ -39,7 +39,7 @@ class TestModuleCheck(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_2")
+        check = next(c for c in module_registry.checks["module"] if c.id in ("CKV_TF_MODULE_1", "CKV_TF_MODULE_2"))
         module_registry.checks["module"].remove(check)
 
 
