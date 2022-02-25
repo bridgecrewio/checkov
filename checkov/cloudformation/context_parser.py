@@ -155,7 +155,7 @@ class ContextParser(object):
                         skip_comment = skip.get("comment", "No comment provided")
 
                         if skip_id and skip_severity_str:
-                            logging.warning(f"Ignoring skip severity because an ID was provided")
+                            logging.warning("Ignoring skip severity because an ID was provided")
                             skip_severity_str = None
 
                         if skip_severity_str:
