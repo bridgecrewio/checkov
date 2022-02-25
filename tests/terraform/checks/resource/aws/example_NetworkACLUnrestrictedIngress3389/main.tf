@@ -248,3 +248,13 @@ resource "aws_vpc" "main" {
 provider "aws" {
   region="eu-west-2"
 }
+
+# open all
+resource "aws_network_acl_rule" "public_ingress" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 100
+  egress         = false
+  protocol       = "-1"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+}
