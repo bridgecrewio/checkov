@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "537ad9e90521cb57980d06f1de9b714a722f182fcb41990ef55f56e39882196e"
+            "sha256": "c98df5a3c0bd33cb4e25619a3c4b591fecce95fc1e9cdc443573d6346927d01d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -160,19 +160,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:8f59383fe578ac9107466a464d7198933e5332d85a4790f2e01cf24a4a7f635b",
-                "sha256:af92931f65e33e7450c3389c6cc6ab6b3e2f619697ea5566aacc0f16f3b21f61"
+                "sha256:9b6903fe9cc92d2f6111db28675263f1ab45adbcf1483025c82a304ce7790b71",
+                "sha256:f2ce641957c1782e382548ced4a447189e45851bbe58c1f6752ff2b661527de7"
             ],
             "index": "pypi",
-            "version": "==1.21.7"
+            "version": "==1.21.8"
         },
         "botocore": {
             "hashes": [
-                "sha256:5d1a2a2ac72461bbaa79317b3e4cb72c7ebb315aef184d90f72ec1f6dba0ca6c",
-                "sha256:a34118bfadc02903ab404148822fe5a6de7a3bb58943f1a6a19cc8b0446d2a50"
+                "sha256:9fbc5c57b31850c51c87abc3e166ed4e0f343665bec4e1a0ff814fbc9704642c",
+                "sha256:a5431d806dc75fb1844463d921759fcd8d387674443af8d7fd0867f296b02759"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.24.7"
+            "version": "==1.24.8"
         },
         "cached-property": {
             "hashes": [
@@ -937,11 +937,11 @@
         },
         "websocket-client": {
             "hashes": [
-                "sha256:1315816c0acc508997eb3ae03b9d3ff619c9d12d544c9a9b553704b1cc4f6af5",
-                "sha256:2eed4cc58e4d65613ed6114af2f380f7910ff416fc8c46947f6e76b6815f56c0"
+                "sha256:074e2ed575e7c822fc0940d31c3ac9bb2b1142c303eafcf3e304e6ce035522e8",
+                "sha256:6278a75065395418283f887de7c3beafb3aa68dada5cacbe4b214e8d26da499b"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.2.3"
+            "version": "==1.3.1"
         },
         "yarl": {
             "hashes": [
