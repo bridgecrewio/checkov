@@ -40,6 +40,7 @@ from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.helm.runner import Runner as helm_runner
+from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import init as logging_init
@@ -49,13 +50,6 @@ from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
-from checkov.json_doc.runner import Runner as json_runner
-from checkov.github.runner import Runner as github_configuration_runner
-from checkov.kustomize.runner import Runner as kustomize_runner
-from checkov.gitlab.runner import Runner as gitlab_configuration_runner
-from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
-from checkov.sca_package.runner import Runner as sca_package_runner
-from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 
