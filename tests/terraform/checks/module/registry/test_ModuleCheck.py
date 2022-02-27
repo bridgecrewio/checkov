@@ -7,7 +7,6 @@ from checkov.terraform.runner import Runner
 
 
 class TestModuleCheck(unittest.TestCase):
-
     def test_module_version(self):
         external_checks = Path.joinpath(Path(__file__).parent,
                                         "example_external_dir_with_module_version_check/extra_checks").as_posix()
@@ -22,7 +21,10 @@ class TestModuleCheck(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+        # remove custom checks
         check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_1")
+        module_registry.checks["module"].remove(check)
+        check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_2")
         module_registry.checks["module"].remove(check)
 
     def test_immutable_module(self):
@@ -39,6 +41,9 @@ class TestModuleCheck(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+        # remove custom checks
+        check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_1")
+        module_registry.checks["module"].remove(check)
         check = next(c for c in module_registry.checks["module"] if c.id == "CKV_TF_MODULE_2")
         module_registry.checks["module"].remove(check)
 

@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class Severity:
-    def __init__(self, name, level):
+    def __init__(self, name: str, level: int) -> None:
         self.name = name
         self.level = level
 
@@ -26,7 +26,7 @@ Severities = {
 }
 
 
-def get_severity(severity: Optional[str]):
+def get_severity(severity: Optional[str]) -> Optional[Severity]:
     if not severity:
         return None
     return Severities.get(severity.upper())
