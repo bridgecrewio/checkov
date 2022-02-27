@@ -15,7 +15,8 @@ class Runner(BaseRunner):
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
         for file, result in results:
-            (definitions[file], definitions_raw[file]) = result
+            if result:
+                (definitions[file], definitions_raw[file]) = result
 
     @abstractmethod
     def _parse_file(self, f):
@@ -35,7 +36,7 @@ class Runner(BaseRunner):
             return report
 
         if not external_checks_dir and self.require_external_checks():
-            logging.debug("The yaml runner requires that external checks are defined.")
+            logging.debug("The runner requires that external checks are defined.")
             return report
         if external_checks_dir:
             for directory in external_checks_dir:
