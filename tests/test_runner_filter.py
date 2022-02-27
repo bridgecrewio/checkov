@@ -22,6 +22,7 @@ from checkov.runner_filter import RunnerFilter
                     "dockerfile",
                     "helm",
                     "json",
+                    "yaml",
                     "kubernetes",
                     "serverless",
                     "terraform_plan",
