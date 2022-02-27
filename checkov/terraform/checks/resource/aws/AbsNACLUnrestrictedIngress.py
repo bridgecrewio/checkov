@@ -32,12 +32,16 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         if conf.get("ingress"):
             ingress = conf.get("ingress")
             for rule in ingress:
-                if not self.check_rule(rule):
-                    return CheckResult.FAILED
+                rule_lst = rule
+                if not isinstance(rule_lst, list):
+                    rule_lst = [rule_lst]
+                for sub_rule in rule_lst:
+                    if not self.check_rule(sub_rule):
+                        return CheckResult.FAILED
             return CheckResult.PASSED
         # maybe its an network_acl_rule
         if conf.get("network_acl_id"):
-            if not conf.get("egress")[0]:
+            if not conf.get("egress") or not conf.get("egress")[0]:
                 if not self.check_rule(conf):
                     return CheckResult.FAILED
             return CheckResult.PASSED
@@ -45,13 +49,15 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         return CheckResult.UNKNOWN
 
     def check_rule(self, rule):
+        from_port = rule.get('from_port')
+        to_port = rule.get('to_port')
         if rule.get('cidr_block'):
             if rule.get('cidr_block') == ["0.0.0.0/0"]:
                 if rule.get('action') == ["allow"] or rule.get('rule_action') == ["allow"]:
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if int(rule.get('from_port')[0]) <= self.port <= int(rule.get('to_port')[0]):
+                    if from_port and to_port and int(from_port[0]) <= self.port <= int(to_port[0]):
                         return False
         if rule.get('ipv6_cidr_block'):
             if rule.get('ipv6_cidr_block') == ["::/0"]:
@@ -59,6 +65,6 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if int(rule.get('from_port')[0]) <= self.port <= int(rule.get('to_port')[0]):
+                    if from_port and to_port and int(from_port[0]) <= self.port <= int(to_port[0]):
                         return False
         return True
