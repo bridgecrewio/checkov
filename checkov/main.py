@@ -23,7 +23,6 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import CheckType
@@ -46,6 +45,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
