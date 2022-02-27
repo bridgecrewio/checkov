@@ -50,7 +50,7 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
 
     def check_rule(self, rule):
         from_port = rule.get('from_port')
-        to_port = rule.get('from_port')
+        to_port = rule.get('to_port')
         if rule.get('cidr_block'):
             if rule.get('cidr_block') == ["0.0.0.0/0"]:
                 if rule.get('action') == ["allow"] or rule.get('rule_action') == ["allow"]:
