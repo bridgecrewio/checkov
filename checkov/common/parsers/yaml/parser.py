@@ -17,11 +17,8 @@ def parse(filename):
         if template:
             if isinstance(template, list):
                 for t in template:
-                    if t and isinstance(t, dict):
+                    if t and (isinstance(t, dict) or isinstance(t, list)):
                         return t, template_lines
-                    if t and isinstance(t, list):
-                        return t, template_lines
-
             else:
                 return
         else:
@@ -45,4 +42,3 @@ def parse(filename):
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
         return
-
