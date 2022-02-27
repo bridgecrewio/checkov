@@ -92,22 +92,22 @@ resource "aws_network_acl" "pass" {
       to_port    = 443
     }
 
-  ingress {
+  ingress =[{
       protocol   = "tcp"
       rule_no    = 100
       action     = "allow"
       cidr_block = "10.0.0.0/32"
       from_port  = 22
       to_port    = 22
-    }
-    ingress {
+    },
+    {
       protocol   = "tcp"
       rule_no    = 110
       action     = "allow"
       cidr_block = "10.0.0.0/32"
       from_port  = 3389
       to_port    = 3389
-    }
+    }]
 
 
   tags = {

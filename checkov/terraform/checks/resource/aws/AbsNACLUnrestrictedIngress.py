@@ -32,8 +32,12 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         if conf.get("ingress"):
             ingress = conf.get("ingress")
             for rule in ingress:
-                if not self.check_rule(rule):
-                    return CheckResult.FAILED
+                rule_lst = rule
+                if not isinstance(rule_lst, list):
+                    rule_lst = [rule_lst]
+                for sub_rule in rule_lst:
+                    if not self.check_rule(sub_rule):
+                        return CheckResult.FAILED
             return CheckResult.PASSED
         # maybe its an network_acl_rule
         if conf.get("network_acl_id"):
