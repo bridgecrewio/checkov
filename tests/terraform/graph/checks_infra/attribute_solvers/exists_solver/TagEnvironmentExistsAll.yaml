@@ -1,0 +1,11 @@
+metadata:
+  id: "TagEnvironmentExistsAll"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types: []
+  attribute: "tags.Environment"
+  operator: "exists"
+
+

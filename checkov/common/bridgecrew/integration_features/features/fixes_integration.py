@@ -68,7 +68,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         errors = list(map(lambda c: {
             'resourceId': c.resource,
-            'policyId': metadata_integration.get_bc_id(c.check_id),
+            'policyId': metadata_integration.get_bc_id(c.check_id) or c.check_id,
             'startLine': c.file_line_range[0],
             'endLine': c.file_line_range[1]
         }, failed_checks))

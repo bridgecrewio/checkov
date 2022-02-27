@@ -10,6 +10,7 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from concurrent.futures import ThreadPoolExecutor
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
@@ -29,7 +30,8 @@ class BaseAttributeSolver(BaseSolver):
         passed_vertices: List[Dict[str, Any]] = []
         failed_vertices: List[Dict[str, Any]] = []
         for _, data in graph_connector.nodes(data=True):
-            if data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types:
+            if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
+                    and data.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
                 jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
 
         concurrent.futures.wait(jobs)

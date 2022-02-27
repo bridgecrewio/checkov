@@ -756,6 +756,8 @@ nav_order: 1
 | 745 | CKV_PAN_8       | resource | panos_security_rule_group                       | Ensure description is populated within security policies                                                                                                                                                 | Terraform |
 | 746 | CKV_PAN_9       | resource | panos_security_policy                           | Ensure a Log Forwarding Profile is selected for each security policy rule                                                                                                                                | Terraform |
 | 747 | CKV_PAN_9       | resource | panos_security_rule_group                       | Ensure a Log Forwarding Profile is selected for each security policy rule                                                                                                                                | Terraform |
+| 748 | CKV_PAN_10      | resource | panos_security_policy                           | Ensure logging at session end is enabled within security policies                                                                                                                                        | Terraform |
+| 749 | CKV_PAN_10      | resource | panos_security_rule_group                       | Ensure logging at session end is enabled within security policies                                                                                                                                        | Terraform |
 
 
 ---

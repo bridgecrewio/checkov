@@ -79,7 +79,7 @@ class RunnerFilter(object):
 
 
     def should_run_check(self,
-                         check: BaseCheck = None,
+                         check: Optional[BaseCheck] = None,
                          check_id: Optional[str] = None,
                          bc_check_id: Optional[str] = None,
                          severity: Optional[Severity] = None) -> bool:
