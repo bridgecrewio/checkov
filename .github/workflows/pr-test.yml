@@ -66,7 +66,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.python-version }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - uses: imranismail/setup-kustomize@v1
       - name: Install pipenv
