@@ -32,6 +32,3 @@ class Runner(YamlRunner):
         if ".github/workflows/" in os.path.abspath(f):
             return super()._parse_file(f)
 
-# runner = Runner()
-# result = runner.run(root_folder="/Users/barak/Documents/dev/bridgecrew/checkov3/checkov/github_conf")
-# print(result)
