@@ -3,11 +3,12 @@ import logging
 import os.path
 import re
 import webbrowser
+from collections import namedtuple
 from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Dict, Optional, List
+from typing import Optional, List, Dict
 
 import boto3
 import dpath.util
@@ -36,13 +37,14 @@ from checkov.common.bridgecrew.ci_variables import (
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
-    enrich_and_persist_checks_metadata
+    enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
+from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, get_user_agent_header
+from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
+    get_user_agent_header
 from checkov.version import version as checkov_version
-from collections import namedtuple
 
 SLEEP_SECONDS = 1
 
@@ -243,6 +245,7 @@ class BcPlatformIntegration(object):
         :param files: Absolute path of the files passed in the --file flag.
         :param root_dir: Absolute path of the directory containing the repository root level.
         :param excluded_paths: Paths to exclude from persist process
+        :param included_paths: Paths to exclude from persist process
         """
         excluded_paths = excluded_paths if excluded_paths is not None else []
 
@@ -267,20 +270,20 @@ class BcPlatformIntegration(object):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
-        
+
         self.persist_files(files_to_persist)
-        
+
     def persist_git_configuration(self, root_dir, git_config_folders: List[str]):
         if not self.use_s3_integration:
             return
         files_to_persist: List[FileToPersist] = []
-    
+
         for git_config_folder in git_config_folders:
             if not os.path.isdir(git_config_folder):
                 continue
             if not len(os.listdir(git_config_folder)):
                 continue
-        
+
             for root_path, _, f_names in os.walk(git_config_folder):
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
@@ -290,7 +293,6 @@ class BcPlatformIntegration(object):
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
 
         self.persist_files(files_to_persist)
-
 
     def persist_scan_results(self, scan_reports):
         """
@@ -306,6 +308,11 @@ class BcPlatformIntegration(object):
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    def persist_image_scan_results(self, report: Dict[str, any], file_path: str, image_name: str, branch: str) -> None:
+        target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
+        to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
+        _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
     def commit_repository(self, branch):
         """

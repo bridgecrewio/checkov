@@ -32,8 +32,9 @@ class CveCount:
     medium: int = 0
     low: int = 0
     skipped: int = 0
-    fixable: int = 0
+    has_fix: int = 0
     to_fix: int = 0
+    fixable: bool = True
 
     def output_row(self) -> List[str]:
         return [
@@ -133,24 +134,26 @@ def calculate_lowest_compliant_version(
     package_versions = set()
 
     for fix_versions in fix_versions_lists:
-        package_min_versions.add(min(fix_versions))
-        package_versions.update(fix_versions)
-    package_min_version = min(package_min_versions)
-    package_max_version = max(package_min_versions)
+        if fix_versions:
+            package_min_versions.add(min(fix_versions))
+            package_versions.update(fix_versions)
+    if package_min_versions:
+        package_min_version = min(package_min_versions)
+        package_max_version = max(package_min_versions)
 
-    if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
-        package_max_version, packaging_version.LegacyVersion
-    ):
-        return str(package_max_version)
-    elif package_min_version.major == package_max_version.major:
-        return str(package_max_version)
-    else:
-        lowest_version = max(
-            version
-            for version in package_versions
-            if isinstance(version, packaging_version.Version) and version.major == package_max_version.major
-        )
-        return str(lowest_version)
+        if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
+            package_max_version, packaging_version.LegacyVersion
+        ):
+            return str(package_max_version)
+        elif package_min_version.major == package_max_version.major:
+            return str(package_max_version)
+        else:
+            lowest_version = max(
+                version
+                for version in package_versions
+                if isinstance(version, packaging_version.Version) and version.major == package_max_version.major
+            )
+            return str(lowest_version)
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
@@ -158,7 +161,7 @@ def compare_cve_severity(cve: Dict[str, str]) -> int:
     return Severities[severity].level
 
 
-def create_cli_output(*cve_records: List[Record]) -> str:
+def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
     cli_outputs = []
     group_by_file_path_package_map = defaultdict(dict)
 
@@ -168,7 +171,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
         ).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
-        cve_count = CveCount()
+        cve_count = CveCount(fixable=fixable)
         package_details_map = defaultdict(dict)
 
         for package_name, records in packages.items():
@@ -189,7 +192,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                 setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
                 if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
-                    cve_count.fixable += 1
+                    cve_count.has_fix += 1
 
                 fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
                 if package_version is None:
@@ -279,8 +282,9 @@ def create_fixable_cve_summary_table_part(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
-    fixable_table.add_row([f"To fix {cve_count.fixable}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
-    fixable_table.align = "l"
+    if cve_count.fixable:
+        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.align = "l"
 
     # hack to make multiple tables look like one
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]

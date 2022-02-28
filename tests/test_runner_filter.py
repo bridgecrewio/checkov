@@ -30,7 +30,8 @@ from checkov.runner_filter import RunnerFilter
                     "gitlab_configuration",
                     "bitbucket_configuration",
                     "kustomize",
-                    "sca_package"
+                    "sca_package",
+                    "sca_image"
                 },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

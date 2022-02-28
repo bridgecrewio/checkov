@@ -23,7 +23,6 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import CheckType
@@ -46,6 +45,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -246,6 +246,27 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                             baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
+    elif config.docker_image:
+        if config.bc_api_key is None:
+            parser.error("--bc-api-key argument is required when using --docker-image")
+            return None
+        if config.dockerfile_path is None:
+            parser.error("--dockerfile-path argument is required when using --docker-image")
+            return None
+        if config.branch is None:
+            parser.error("--branch argument is required when using --docker-image")
+            return None
+        files = [os.path.abspath(config.dockerfile_path)]
+        runner = sca_image_runner()
+        result = runner.run(root_folder='', image_id=config.docker_image,
+                            dockerfile_path=config.dockerfile_path, runner_filter=runner_filter)
+        bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), files=files)
+        bc_integration.persist_scan_results([result])
+        bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
+                                                  config.branch)
+        url = bc_integration.commit_repository(config.branch)
+        exit_code = runner_registry.print_reports([result], config, url=url)
+        return exit_code
     elif config.file:
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
@@ -269,18 +290,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
-    elif config.docker_image:
-        if config.bc_api_key is None:
-            parser.error("--bc-api-key argument is required when using --docker-image")
-            return None
-        if config.dockerfile_path is None:
-            parser.error("--dockerfile-path argument is required when using --docker-image")
-            return None
-        if config.branch is None:
-            parser.error("--branch argument is required when using --docker-image")
-            return None
-        bc_integration.commit_repository(config.branch)
-        image_scanner.scan(config.docker_image, config.dockerfile_path)
     elif not config.quiet:
         print(f"{banner}")
 
