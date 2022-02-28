@@ -60,10 +60,11 @@ class Runner(BaseRunner):
             results = registry.scan(
                 file_path, definitions[file_path], [], runner_filter
             )
-            for check, result in results.items():
+            for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
+                check = result["check"]
                 end, start = self.get_start_end_lines(end, result_config, start)
                 record = Record(
                     check_id=check.id,
@@ -73,7 +74,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start:end + 1],
                     file_path=file_path,
                     file_line_range=[start + 1, end + 1],
-                    resource=f"{file_path}",
+                    resource=f"{file_path}.{key}",
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),

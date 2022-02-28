@@ -1,0 +1,37 @@
+on: issues
+
+name: unsec33ure-worfklow
+jobs:
+  un333secure-job:
+    name: job2333
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    run: |
+      title="${{ github.event.issue.title }}"
+      if [[ ! $title =~ ^.*:\ .*$ ]]; then
+        echo "Bad issue title"
+        exit 1
+      fi
+  un333secure-job1:
+    name: job2333
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    run: |
+      title="${{ github.event.issue.title }}"
+      if [[ ! $title =~ ^.*:\ .*$ ]]; then
+        echo "Bad issue title"
+        exit 1
+      fi
+  un333secure-job2:
+    name: job2333
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    run: |
+      title="${{ github.event.issue.title }}"
+      if [[ ! $title =~ ^.*:\ .*$ ]]; then
+        echo "Bad issue title"
+        exit 1
+      fi

@@ -14,20 +14,33 @@ class Registry(BaseCheckRegistry):
     def _scan_yaml_array(
             self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
     ):
-        for item in entity:
-            if entity_name in item:
-                result = self.update_result(
-                    check,
-                    item[entity_name],
-                    entity_name,
-                    entity_type,
-                    results,
-                    scanned_file,
-                    skip_info,
-                )
-
-                if result == CheckResult.FAILED:
-                    break
+        if isinstance(entity, dict):
+            analayzed_dict = entity.get(entity_type, {})
+            for item, item_conf in analayzed_dict.items():
+                if '__startline__' != item and '__endline__' != item:
+                    result = self.update_result(
+                        check,
+                        item_conf,
+                        item,
+                        entity_type,
+                        results,
+                        scanned_file,
+                        skip_info,
+                    )
+        if isinstance(entity, list):
+            for item in entity:
+                if entity_name in item:
+                    result = self.update_result(
+                        check,
+                        item[entity_name],
+                        entity_name,
+                        entity_type,
+                        results,
+                        scanned_file,
+                        skip_info,
+                    )
+                    if result == CheckResult.FAILED:
+                        break
 
     def _scan_yaml_object(
             self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
@@ -138,11 +151,13 @@ class Registry(BaseCheckRegistry):
             scanned_file,
             skip_info,
         )
+        result_key = f'{entity_type}.{entity_name}.{check.id}'
 
         result = check_result["result"]
 
         if result == CheckResult.SKIPPED:
-            results[check] = {
+            results[result_key] = {
+                "check": check,
                 "result": result,
                 "suppress_comment": check_result["suppress_comment"],
                 "results_configuration": None,
@@ -150,13 +165,14 @@ class Registry(BaseCheckRegistry):
             return result
 
         if isinstance(result, tuple):
-            results[check] = {
+            results[result_key] = {
+                "check": check,
                 "result": result[0],
                 "results_configuration": result[1],
             }
             return result[0]
-
-        results[check] = {
+        results[result_key] = {
+            "check": check,
             "result": result,
             "results_configuration": entity_configuration,
         }
