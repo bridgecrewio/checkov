@@ -1,3 +1,4 @@
+# flake8: noqa
 terms = [
     "\${{ github.event.issue.title }}",
     "\${{ github.event.issue.body }}",
