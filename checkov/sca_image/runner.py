@@ -40,9 +40,14 @@ class Runner(PackageRunner):
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
-        scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
-        logging.info(f"SCA image scanning successfully scanned the image {image_id}")
-        return scan_result
+        try:
+            scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
+            logging.info(f"SCA image scanning successfully scanned the image {image_id}")
+            image_scanner.cleanup_scan()
+            return scan_result
+        except Exception as err:
+            image_scanner.cleanup_scan()
+            raise err
 
     @staticmethod
     async def execute_scan(

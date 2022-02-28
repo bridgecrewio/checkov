@@ -38,7 +38,7 @@ class Runner(BaseRunner):
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
         exclude_package_json: bool = True,
-        cleanup_twictcli: bool = True,
+        cleanup_twistcli: bool = True,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -74,7 +74,7 @@ class Runner(BaseRunner):
 
         scanner = Scanner()
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_output_paths, cleanup_twictcli)
+        scan_results = scanner.scan(input_output_paths, cleanup_twistcli)
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
