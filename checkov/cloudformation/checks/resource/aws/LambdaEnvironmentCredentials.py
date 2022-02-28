@@ -17,7 +17,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
         self.evaluated_keys = ['Properties/Environment/Variables']
         if 'Properties' in conf.keys():
             properties = conf['Properties']
-            if 'Environment' in properties.keys():
+            if isinstance(properties, dict) and 'Environment' in properties.keys():
                 environment = properties['Environment']
                 if 'Variables' in environment.keys():
                     variables = environment['Variables']

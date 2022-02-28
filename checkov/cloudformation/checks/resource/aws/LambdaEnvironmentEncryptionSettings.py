@@ -14,7 +14,7 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         properties = conf.get('Properties')
-        if properties is not None:
+        if properties and isinstance(properties, dict):
             env = properties.get('Environment')
             if env is not None:
                 if env.get('Variables') and not properties.get('KmsKeyArn'):
