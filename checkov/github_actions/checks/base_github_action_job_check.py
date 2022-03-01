@@ -3,7 +3,7 @@ from checkov.github_actions.checks.base_github_action_check import BaseGithubAct
 from checkov.github_actions.checks.job_registry import registry
 
 
-class BaseGithubActionJobCheck(BaseGithubActionCheck):
+class BaseGithubActionsJobCheck(BaseGithubActionsCheck):
     def __init__(self, name, id, block_type, path=None):
         super().__init__(
             name=name,
