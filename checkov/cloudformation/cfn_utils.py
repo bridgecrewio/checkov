@@ -201,16 +201,11 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
         try:
             template, template_lines = parse_result
             if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
-                template_resources = template.get("Resources")
-                is_valid = True
-                for resource in template_resources.values():
-                    if 'Properties' not in resource or (not isinstance(resource['Properties'], DictNode)):
-                        out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
-                        is_valid = False
-                        break
-                if is_valid:
+                if validate_properties_in_resources_are_dict(template):
                     definitions[path] = template
                     definitions_raw[path] = template_lines
+                else:
+                    out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
         except (TypeError, ValueError) as e:
@@ -218,3 +213,12 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
             continue
 
     return definitions, definitions_raw
+
+
+def validate_properties_in_resources_are_dict(template: DictNode) -> bool:
+    template_resources = template.get("Resources")
+    for resource in template_resources.values():
+        if 'Properties' in resource and not isinstance(resource['Properties'], DictNode):
+            return False
+    return True
+
