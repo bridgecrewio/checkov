@@ -6,7 +6,7 @@ from checkov.github_actions.common.shell_injection_list import terms as bad_inpu
 from checkov.yaml_doc.enums import BlockType
 
 
-class DontAllowShellInjectionOnJob(BaseGithubActionJobCheck):
+class DontAllowShellInjectionOnJob(BaseGithubActionsJobCheck):
     def __init__(self):
         name = "Ensure run commands are not vulnerable to shell injection"
         id = "CKV_GHA_2"
