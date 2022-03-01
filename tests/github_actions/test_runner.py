@@ -14,7 +14,7 @@ class TestRunnerValid(unittest.TestCase):
         checks = ["CKV_GHA_1", "CKV_GHA_2"]
         report = runner.run(
             root_folder=valid_dir_path,
-            runner_filter=RunnerFilter(framework='github_action', checks=checks)
+            runner_filter=RunnerFilter(framework='github_actions', checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(report.parsing_errors, [])
