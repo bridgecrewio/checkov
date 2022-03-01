@@ -3,7 +3,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories
 
 
-class BaseGithubActionCheck(BaseCheck):
+class BaseGithubActionsCheck(BaseCheck):
     def __init__(self, name, id, supported_entities, block_type, path=None):
         categories = [CheckCategories.SUPPLY_CHAIN]
 
