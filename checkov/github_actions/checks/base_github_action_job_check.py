@@ -1,4 +1,4 @@
-from checkov.github_actions.checks.base_github_action_check import BaseGithubActionCheck
+from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
 
 from checkov.github_actions.checks.job_registry import registry
 

@@ -1,7 +1,7 @@
 import re
 
 from checkov.common.models.enums import CheckResult
-from checkov.github_actions.checks.base_github_action_job_check import BaseGithubActionJobCheck
+from checkov.github_actions.checks.base_github_action_job_check import BaseGithubActionsJobCheck
 from checkov.github_actions.common.shell_injection_list import terms as bad_inputs
 from checkov.yaml_doc.enums import BlockType
 

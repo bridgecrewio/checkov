@@ -6,7 +6,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 
 class Runner(YamlRunner):
-    check_type = CheckType.GITHUB_ACTION
+    check_type = CheckType.GITHUB_ACTIONS
     block_type_registries = {
         'jobs': job_registry,
     }
