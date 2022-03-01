@@ -89,10 +89,10 @@ class BaseK8sContainerCheck(BaseK8Check):
 
         containers: List[Dict[str, Any]] = (
             spec.get("containers", []) if "containers" in self.supported_container_types else []
-        )
+        ) or []
         init_containers: List[Dict[str, Any]] = (
             spec.get("initContainers", []) if "initContainers" in self.supported_container_types else []
-        )
+        ) or []
 
         result = self._check_containers(
             evaluated_key_prefix=evaluated_key_prefix,
