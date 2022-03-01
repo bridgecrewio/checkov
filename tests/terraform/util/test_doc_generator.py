@@ -22,7 +22,7 @@ def test_get_checks_returned_check_number():
         (["all"], {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
                    "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_action"}),
         (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_action"}),
+                "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_actions"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],
