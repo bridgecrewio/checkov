@@ -37,6 +37,7 @@ from checkov.common.util.runner_dependency_handler import RunnerDependencyHandle
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
+from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
@@ -44,8 +45,8 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
+from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -64,7 +65,9 @@ checkov_runners = [value for attr, value in CheckType.__dict__.items() if not at
 DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
                    sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
                    dockerfile_runner(), secrets_runner(), json_runner(), yaml_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner(), bitbucket_configuration_runner(), kustomize_runner(), sca_package_runner())
+                   gitlab_configuration_runner(), bitbucket_configuration_runner(), kustomize_runner(),
+                   sca_package_runner(),
+                   github_actions_runner())
 
 
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
