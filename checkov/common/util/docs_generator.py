@@ -79,7 +79,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if any(x in framework_list for x in ("all", "github_configuration")):
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")
-    if any(x in framework_list for x in ("all", "github_action")):
+    if any(x in framework_list for x in ("all", "github_actions")):
         add_from_repository(github_actions_jobs_registry, "jobs", "github_action")
     if any(x in framework_list for x in ("all", "gitlab_configuration")):
         add_from_repository(gitlab_configuration_registry, "gitlab_configuration", "gitlab_configuration")
