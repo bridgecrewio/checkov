@@ -758,6 +758,8 @@ nav_order: 1
 | 747 | CKV_PAN_9       | resource | panos_security_rule_group                       | Ensure a Log Forwarding Profile is selected for each security policy rule                                                                                                                                | Terraform |
 | 748 | CKV_PAN_10      | resource | panos_security_policy                           | Ensure logging at session end is enabled within security policies                                                                                                                                        | Terraform |
 | 749 | CKV_PAN_10      | resource | panos_security_rule_group                       | Ensure logging at session end is enabled within security policies                                                                                                                                        | Terraform |
+| 750 | CKV_PAN_11      | resource | panos_ipsec_crypto_profile                      | Ensure IPsec profiles do not specify use of insecure algorithms                                                                                                                                          | Terraform |
+| 751 | CKV_PAN_11      | resource | panos_panorama_ipsec_crypto_profile             | Ensure IPsec profiles do not specify use of insecure algorithms                                                                                                                                          | Terraform |
 
 
 ---
