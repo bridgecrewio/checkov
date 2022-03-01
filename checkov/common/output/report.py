@@ -31,6 +31,7 @@ class CheckType:
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
+    GITHUB_ACTIONS = "github_actions"
     GITLAB_CONFIGURATION = "gitlab_configuration"
     BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
@@ -275,7 +276,7 @@ class Report:
 
         if not is_quiet:
             for file in self.parsing_errors:
-                output_data += colored(f"Error parsing file {file}", "red")
+                output_data += colored(f"Error parsing file {file}ֿ\n", "red")
 
         if created_baseline_path:
             output_data += colored(
@@ -428,7 +429,7 @@ class Report:
         """Creates a test suite for the JUnit XML report"""
 
         test_cases = []
-        
+
         records = self.passed_checks + self.failed_checks + self.skipped_checks
         for record in records:
             severity = BcSeverities.NONE

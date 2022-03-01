@@ -21,7 +21,7 @@ def convert_graph_vertices_to_definitions(
 
         definition = {
             "Type": vertex.attributes["resource_type"] if vertex.block_type == BlockType.RESOURCE else vertex.block_type,
-            "Properties": vertex.config,
+            "Properties": vertex.config or {},
         }
 
         if vertex.metadata:
