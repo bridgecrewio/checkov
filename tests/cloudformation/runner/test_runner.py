@@ -287,6 +287,40 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs)
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs.get("VersioningConfiguration.Status"))
 
+    def test_parsing_invalid_properties_yaml(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.yaml")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_parsing_invalid_properties_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_parsing_no_properties_yaml(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "no_properties.yaml")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 2)
+
+    def test_parsing_no_properties_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "no_properties.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 2)
+
     def test_parsing_error_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid.yaml")
