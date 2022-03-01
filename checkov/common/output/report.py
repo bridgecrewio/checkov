@@ -31,7 +31,7 @@ class CheckType:
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
-    GITHUB_ACTION = "github_action"
+    GITHUB_ACTIONS = "github_actions"
     GITLAB_CONFIGURATION = "gitlab_configuration"
     BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
