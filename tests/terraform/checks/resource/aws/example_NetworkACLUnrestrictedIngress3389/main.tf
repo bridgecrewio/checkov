@@ -258,3 +258,16 @@ resource "aws_network_acl_rule" "public_ingress" {
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
 }
+
+
+resource "aws_network_acl_rule" "count_pass" {
+  count          = length(var.public_nacl_inbound_tcp_ports)
+  network_acl_id = "test_id"
+  rule_number    = count.index + 101
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = var.public_nacl_inbound_tcp_ports[count.index]
+  to_port        = var.public_nacl_inbound_tcp_ports[count.index]
+}
