@@ -10,10 +10,11 @@ from checkov.version import version as checkov_version
 logger = logging.getLogger(__name__)
 
 
-def normalize_prisma_url(prisma_url: str):
-    if not prisma_url:
+def normalize_prisma_url(url: str):
+    """ Correct common Prisma Cloud API URL misconfigurations """
+    if not url:
         return None
-    return prisma_url[0:-1] if prisma_url.endswith('/') else prisma_url
+    return url.lower().replace('//app', '//api').replace('http:', 'https:').rstrip('/')
 
 
 def extract_error_message(response: requests.Response):

@@ -20,9 +20,9 @@ def test_get_checks_returned_check_number():
     "input_frameworks,expected_frameworks",
     [
         (["all"], {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                   "github_configuration", "gitlab_configuration"}),
+                   "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_actions"}),
         (None, {"arm", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                "github_configuration", "gitlab_configuration"}),
+                "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_actions"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],

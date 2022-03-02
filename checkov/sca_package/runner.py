@@ -38,7 +38,7 @@ class Runner(BaseRunner):
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
         exclude_package_json: bool = True,
-        cleanup_twictcli: bool = True,
+        cleanup_twistcli: bool = True,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -74,7 +74,7 @@ class Runner(BaseRunner):
 
         scanner = Scanner()
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_output_paths, cleanup_twictcli)
+        scan_results = scanner.scan(input_output_paths, cleanup_twistcli)
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
@@ -104,27 +104,32 @@ class Runner(BaseRunner):
             vulnerabilities = result.get("vulnerabilities") or []
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            for vulnerability in vulnerabilities:
-                record = create_report_record(
-                    rootless_file_path=rootless_file_path,
-                    file_abs_path=result["repository"],
-                    check_class=self._check_class,
-                    vulnerability_details=vulnerability,
-                    runner_filter=runner_filter
-                )
-                if not runner_filter.should_run_check(record.check_id, record.bc_check_id):
-                    if runner_filter.checks:
-                        continue
-                    else:
-                        record.check_result = {
-                            "result": CheckResult.SKIPPED,
-                            "suppress_comment": f"{vulnerability['id']} is skipped"
-                        }
-
-                report.add_resource(record.resource)
-                report.add_record(record)
+            self.parse_vulns_to_records(report, result, rootless_file_path, runner_filter, vulnerabilities)
 
         return report
+
+    def parse_vulns_to_records(self, report, result, rootless_file_path, runner_filter, vulnerabilities,
+                               file_abs_path=''):
+        for vulnerability in vulnerabilities:
+            record = create_report_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=file_abs_path or result.get("repository"),
+                check_class=self._check_class,
+                vulnerability_details=vulnerability,
+                runner_filter=runner_filter
+            )
+            if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
+                                                  severity=record.severity):
+                if runner_filter.checks:
+                    continue
+                else:
+                    record.check_result = {
+                        "result": CheckResult.SKIPPED,
+                        "suppress_comment": f"{vulnerability['id']} is skipped"
+                    }
+
+            report.add_resource(record.resource)
+            report.add_record(record)
 
     def find_scannable_files(
         self, root_path: Path, files: Optional[List[str]], excluded_paths: Set[str], exclude_package_json: bool = True

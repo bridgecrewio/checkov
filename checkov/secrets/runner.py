@@ -10,7 +10,8 @@ from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -132,10 +133,11 @@ class Runner(BaseRunner):
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
-                bc_check_id = bc_integration.ckv_to_bc_id_mapping.get(check_id) if bc_integration.ckv_to_bc_id_mapping else None
                 if not check_id:
                     continue
-                if runner_filter.checks and not runner_filter.should_run_check(check_id, bc_check_id):
+                bc_check_id = metadata_integration.get_bc_id(check_id)
+                severity = metadata_integration.get_severity(check_id)
+                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -144,6 +146,7 @@ class Runner(BaseRunner):
                 result = self.search_for_suppression(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
+                    severity=severity,
                     secret=secret,
                     runner_filter=runner_filter,
                 ) or result
@@ -151,6 +154,7 @@ class Runner(BaseRunner):
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
+                    severity=severity,
                     check_name=secret.type,
                     check_result=result,
                     code_block=[(secret.line_number, line_text)],
@@ -159,7 +163,7 @@ class Runner(BaseRunner):
                     resource=secret.secret_hash,
                     check_class=None,
                     evaluations=None,
-                    file_abs_path=os.path.abspath(secret.filename)
+                    file_abs_path=os.path.abspath(secret.filename),
                 ))
 
             return report
@@ -197,10 +201,11 @@ class Runner(BaseRunner):
     def search_for_suppression(
         check_id: str,
         bc_check_id: str,
+        severity: Severity,
         secret: PotentialSecret,
         runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:
-        if not runner_filter.should_run_check(check_id, bc_check_id) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

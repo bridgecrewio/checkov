@@ -1,0 +1,18 @@
+on: issues
+
+name: unsec33ure-worfklow
+jobs:
+  unsecure-job:
+    name: job1
+    runs-on: ubuntu-latest
+    run: |
+      title="${{ github.event.issue.title }}"
+      if [[ ! $title =~ ^.*:\ .*$ ]]; then
+        echo "Bad issue title"
+        exit 1
+      fi
+  secure-job:
+    name: job2
+    runs-on: ubuntu-latest
+    run: |
+      echo "foo"

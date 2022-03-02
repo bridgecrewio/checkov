@@ -1,5 +1,6 @@
 import fnmatch
 import importlib
+import importlib.util
 import logging
 import os
 import sys
@@ -15,7 +16,7 @@ from checkov.common.typing import _SkippedCheck
 from checkov.runner_filter import RunnerFilter
 
 
-class BaseCheckRegistry(object):
+class BaseCheckRegistry:
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
     __loading_external_checks = False
@@ -117,7 +118,7 @@ class BaseCheckRegistry(object):
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check.id, check.bc_id):
+            if runner_filter.should_run_check(check):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -151,7 +152,7 @@ class BaseCheckRegistry(object):
         return os.path.exists(os.path.join(directory, "__init__.py"))
 
     @staticmethod
-    def _file_can_be_imported(entry: os.DirEntry) -> bool:
+    def _file_can_be_imported(entry: "os.DirEntry[str]") -> bool:
         """ Verify if a directory entry is a non-magic Python file."""
         return entry.is_file() and not entry.name.startswith("__") and entry.name.endswith(".py")
 
@@ -162,33 +163,32 @@ class BaseCheckRegistry(object):
         when a .py file has syntax error
         """
         directory = os.path.expanduser(directory)
-        self.logger.debug("Loading external checks from {}".format(directory))
+        self.logger.debug(f"Loading external checks from {directory}")
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
                 if not self._directory_has_init_py(root):
-                    self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(root))
+                    self.logger.info(f"No __init__.py found in {root}. Cannot load any check here.")
                 else:
                     for entry in directory_content:
                         if self._file_can_be_imported(entry):
                             check_name = entry.name.replace(".py", "")
+                            check_full_path = entry.path
 
                             # Filter is set while loading external checks so the filter can be informed
                             # of the checks, which need to be handled specially.
                             try:
                                 BaseCheckRegistry.__loading_external_checks = True
-                                self.logger.debug("Importing external check '{}'".format(check_name))
-                                importlib.import_module(check_name)
-                            except SyntaxError as e:
-                                self.logger.error(
-                                    "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
-                                    "{error_line}:{error_column}) ".format(
-                                        check_name=check_name,
-                                        check_full_path=e.args[1][0],
-                                        error_message=e.args[0],
-                                        error_line=e.args[1][1],
-                                        error_column=e.args[1][2],
-                                    )
-                                )
+                                self.logger.debug(f"Importing external check '{check_name}'")
+
+                                spec = importlib.util.spec_from_file_location(check_name, check_full_path)
+                                if spec:
+                                    module = importlib.util.module_from_spec(spec)
+                                    sys.modules[check_name] = module
+                                    spec.loader.exec_module(module)  # type: ignore[union-attr] # loader can't be None here
+                                else:
+                                    self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
+                            except Exception:
+                                self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
                             finally:
                                 BaseCheckRegistry.__loading_external_checks = False

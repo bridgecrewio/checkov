@@ -1,5 +1,6 @@
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
@@ -58,7 +59,7 @@ def test_create_report_record():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
+    assert record.severity == Severities[BcSeverities.CRITICAL]
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -96,7 +97,7 @@ def test_create_report_record_severity_filter():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(min_cve_severity='high')
+        runner_filter=RunnerFilter(checks=['HIGH'])
     )
 
     # then
@@ -115,7 +116,7 @@ def test_create_report_record_severity_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "medium"
+    assert record.severity == Severities[BcSeverities.MEDIUM]
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -172,7 +173,7 @@ def test_create_report_record_package_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
+    assert record.severity == Severities[BcSeverities.CRITICAL]
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -205,7 +206,7 @@ def test_calculate_lowest_compliant_version():
 def test_create_cli_table():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, fixable=5, to_fix=5)
+    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
     package_details_map = {
         "django": {
             "cves": [
@@ -258,7 +259,7 @@ def test_create_cli_table():
 def test_create_cli_table_with_no_found_vulnerabilities():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, fixable=0, to_fix=0)
+    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
     package_details_map = {}
 
     # when
@@ -344,7 +345,7 @@ def test_create_cli_output():
     ]
 
     # when
-    cli_output = create_cli_output(records)
+    cli_output = create_cli_output(True, records)
 
     # then
     assert cli_output == "".join(
@@ -374,7 +375,7 @@ def test_compare_cve_severity():
     ]
 
     # when
-    cve.sort(key=compare_cve_severity)
+    cve.sort(key=compare_cve_severity, reverse=True)
 
     # then
     assert cve == [

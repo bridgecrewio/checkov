@@ -36,6 +36,7 @@ definition:
               - aws_eip
               - aws_elb
               - aws_lb
+              - aws_alb
               - aws_route53_record
               - aws_s3_bucket
               - aws_api_gateway_domain_name

@@ -29,6 +29,9 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     if not all(key in content for key in ("apiVersion", "kind")):
         return [{}], []
 
+    if '{{' in content:
+        return [{}], []
+
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     template = loads(content)
