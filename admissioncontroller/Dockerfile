@@ -3,7 +3,11 @@ FROM python:3.9.7-slim
 RUN apt-get update -y && apt-get install -y python3-pip python-dev
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
+COPY checkov-requirements.txt /app/checkov-requirements.txt
+
 RUN pip3 install -r /app/requirements.txt
+RUN pip3 install -r /app/checkov-requirements.txt
+
 COPY whorf.py /app
 COPY wsgi.py /app
 
