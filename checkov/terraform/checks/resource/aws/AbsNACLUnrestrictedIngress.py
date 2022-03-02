@@ -49,15 +49,20 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         return CheckResult.UNKNOWN
 
     def check_rule(self, rule):
-        from_port = rule.get('from_port')
-        to_port = rule.get('to_port')
+        try:
+            from_port = int(rule.get('from_port', [None])[0])
+            to_port = int(rule.get('to_port', [None])[0])
+        except (TypeError, ValueError):
+            from_port = None
+            to_port = None
+
         if rule.get('cidr_block'):
             if rule.get('cidr_block') == ["0.0.0.0/0"]:
                 if rule.get('action') == ["allow"] or rule.get('rule_action') == ["allow"]:
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if from_port and to_port and int(from_port[0]) <= self.port <= int(to_port[0]):
+                    if from_port and to_port and from_port <= self.port <= to_port:
                         return False
         if rule.get('ipv6_cidr_block'):
             if rule.get('ipv6_cidr_block') == ["::/0"]:
@@ -65,6 +70,6 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if from_port and to_port and int(from_port[0]) <= self.port <= int(to_port[0]):
+                    if from_port and to_port and from_port <= self.port <= to_port:
                         return False
         return True
