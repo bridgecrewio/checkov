@@ -13,8 +13,4 @@ class DataprocPublicIpCluster(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'cluster_config/[0]/gce_cluster_config/[0]/internal_ip_only'
 
-    # Accounts for if key is present but is set to False
-    def get_expected_value(self):
-        return True
-
 check = DataprocPublicIpCluster()
