@@ -128,6 +128,21 @@ resource "aws_route53_record" "pass5" {
   }
 }
 
+variable "aws_alb_dns_name" {}
+variable "aws_alb_zone_id" {}
+
+resource "aws_route53_record" "pass_var" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = var.aws_alb_dns_name
+    zone_id                = var.aws_alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
 resource "aws_cloudfront_distribution" "website" {
   provider = aws.useastone
   origin {
