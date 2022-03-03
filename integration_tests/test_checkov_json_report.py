@@ -47,6 +47,7 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
+            print(data)
             if isinstance(data, list):
                 for framework_report in data:
                     self.validate_report_not_empty(framework_report)
