@@ -98,9 +98,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.output is None:
         config.output = ['cli']
 
-    if config.soft_fail and (config.soft_fail_on and config.hard_fail_on):
-        logger.warning('--soft-fail was used with --soft-fail-on and / or --hard-fail-on. --soft-fail will be ignored.')
-
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
