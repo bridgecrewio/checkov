@@ -29,6 +29,9 @@ else
 
 fi
 
+ls
+cat checkov_report_kustomizegoat.json
+
 if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
 then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
