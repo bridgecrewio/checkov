@@ -55,3 +55,19 @@ spec:
   - name: main2
     image: alpine
     command: ["/bin/sleep", "999999"]
+---
+# Pod runAsUser is not an integer (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod4
+spec:
+  securityContext:
+    runAsUser: username
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+  - name: main2
+    image: alpine
+    command: ["/bin/sleep", "999999"]
