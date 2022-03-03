@@ -50,7 +50,7 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "a_string": ["${merge(local.foo,,{'a': 'b'},)}"]
+                    "a_string": ["${merge(local.foo,{'a': 'b'})}"]
                 }
             ]
         }
@@ -297,6 +297,6 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
     def test_splat_expression(self):
         tf = 'instances = flatten(aws_instance.ubuntu[*].id)'
         expect = {
-            'instances': ["${flatten(Tree('full_splat_expr_term', ['aws_instance.ubuntu', 'id']))}"]
+            'instances': ["${flatten(aws_instance.ubuntu[*].id)}"]
         }
         self.go(tf, expect)

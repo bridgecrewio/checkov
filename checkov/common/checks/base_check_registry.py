@@ -5,13 +5,11 @@ import logging
 import os
 import sys
 from abc import abstractmethod
+from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any
 
 from checkov.common.checks.base_check import BaseCheck
-
-from collections import defaultdict
-
 from checkov.common.typing import _SkippedCheck
 from checkov.runner_filter import RunnerFilter
 
