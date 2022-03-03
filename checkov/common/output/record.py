@@ -98,14 +98,14 @@ class Record:
 
         return f"/{'/'.join(repo_file_path.parts[1:])}"
 
-    def set_guideline(self, guideline):
+    def set_guideline(self, guideline: Optional[str]) -> None:
         self.guideline = guideline
 
     @staticmethod
-    def _trim_special_chars(expression):
+    def _trim_special_chars(expression: str) -> str:
         return "".join(re.findall(re.compile(r"[^ ${\}]+"), expression))
 
-    def _is_expression_in_code_lines(self, expression):
+    def _is_expression_in_code_lines(self, expression: str) -> bool:
         stripped_expression = self._trim_special_chars(expression)
         return any(stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block)
 
