@@ -13,6 +13,11 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat.json')
         self.validate_report(os.path.abspath(report_path))
 
+    def test_kustomizegoat_report(self):
+        if not sys.platform.startswith('win'):
+            report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kustomizegoat.json')
+            self.validate_report(os.path.abspath(report_path))
+
     def test_cfngoat_report(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_cfngoat.json')
         self.validate_report(os.path.abspath(report_path))
@@ -53,6 +58,7 @@ class TestCheckovJsonReport(unittest.TestCase):
                          f"expecting 0 parsing errors but got: {report['results']['parsing_errors']}")
         self.assertGreater(report["summary"]["failed"], 1,
                            f"expecting more than 1 failed checks, got: {report['summary']['failed']}")
+        self.assertGreater(report['results']['failed_checks'][0]['file_line_range'][1], 0)
 
     def validate_json_quiet(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_cfngoat_quiet.json')
