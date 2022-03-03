@@ -69,6 +69,7 @@ jobs:
       - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - uses: imranismail/setup-kustomize@v1
+        if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv

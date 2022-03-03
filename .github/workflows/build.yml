@@ -104,6 +104,7 @@ jobs:
           pipenv --python 3.7
           pipenv install --dev
       - uses: imranismail/setup-kustomize@v1
+        if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
