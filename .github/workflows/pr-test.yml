@@ -69,7 +69,6 @@ jobs:
       - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - uses: imranismail/setup-kustomize@v1
-        if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -97,7 +96,6 @@ jobs:
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
       - name: Run integration tests
         run: |
-          kustomize version
           pipenv run pytest integration_tests -k 'not api_key'
 
   performance-tests:
