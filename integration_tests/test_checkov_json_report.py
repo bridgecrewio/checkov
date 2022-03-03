@@ -47,7 +47,6 @@ class TestCheckovJsonReport(unittest.TestCase):
     def validate_report(self, report_path):
         with open(report_path) as json_file:
             data = json.load(json_file)
-            print(data)
             if isinstance(data, list):
                 for framework_report in data:
                     self.validate_report_not_empty(framework_report)
@@ -55,6 +54,8 @@ class TestCheckovJsonReport(unittest.TestCase):
                 self.validate_report_not_empty(data)
 
     def validate_report_not_empty(self, report):
+        print(report)
+        print("aaaaa")
         self.assertEqual(report["summary"]["parsing_errors"], 0,
                          f"expecting 0 parsing errors but got: {report['results']['parsing_errors']}")
         self.assertGreater(report["summary"]["failed"], 1,
