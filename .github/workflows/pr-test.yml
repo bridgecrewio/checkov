@@ -95,6 +95,7 @@ jobs:
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
       - name: Run integration tests
         run: |
+          kustomize version
           pipenv run pytest integration_tests -k 'not api_key'
 
   performance-tests:
