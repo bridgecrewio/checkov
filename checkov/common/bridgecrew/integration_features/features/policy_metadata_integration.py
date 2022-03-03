@@ -42,8 +42,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 if metadata:
                     check.bc_id = metadata.get('id')
                     check.guideline = metadata.get('guideline')
-                    check.bc_severity = get_severity(metadata.get('severity'))
-                    check.pc_severity = get_severity(metadata.get('pcSeverity'))
+                    check.severity = get_severity(metadata.get('severity'))
                     check.bc_category = metadata.get('category')
                     check.benchmarks = metadata.get('benchmarks')
                     # check.pc_title = metadata.get('pcTitle')  # TODO needs to be deployed to platform

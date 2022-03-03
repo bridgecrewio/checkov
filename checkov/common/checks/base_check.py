@@ -37,8 +37,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.entity_type = ""
         self.guideline = guideline
         self.benchmarks = {}
-        self.bc_severity = None
-        self.pc_severity = None
+        self.severity = None
         self.bc_category = None
         self.pc_title = None
         if self.guideline:

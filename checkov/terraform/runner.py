@@ -164,7 +164,7 @@ class Runner(BaseRunner):
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
                         resource_address=entity_context.get('address'),
-                        severity=check.bc_severity,
+                        severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks
                     )
@@ -315,7 +315,7 @@ class Runner(BaseRunner):
                     entity_tags=tags,
                     caller_file_path=caller_file_path,
                     caller_file_line_range=caller_file_line_range,
-                    severity=check.bc_severity,
+                    severity=check.severity,
                     bc_category=check.bc_category,
                     benchmarks=check.benchmarks
                 )
