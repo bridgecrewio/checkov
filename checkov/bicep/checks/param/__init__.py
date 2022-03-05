@@ -1,1 +1,1 @@
-from checkov.bicep.checks.param.azure import *
+from checkov.bicep.checks.param.azure import *  # noqa

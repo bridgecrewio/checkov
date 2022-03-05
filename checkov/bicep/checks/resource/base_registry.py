@@ -6,6 +6,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 
+
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
         self.check_id_to_enitity_map: dict[str, list[str]] = {}

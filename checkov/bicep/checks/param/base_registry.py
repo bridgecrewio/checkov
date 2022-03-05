@@ -8,6 +8,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 
+
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
         self.entity_to_check_map: dict[str, set[str]] = defaultdict(set)
@@ -15,7 +16,6 @@ class Registry(BaseCheckRegistry):
         super().__init__()
 
     def register(self, check: BaseCheck) -> None:
-        # a copy of the original method to be able to priotize Bicep styled checks over the ARM equivalent
         if self._BaseCheckRegistry__loading_external_checks:
             RunnerFilter.notify_external_check(check.id)
 
