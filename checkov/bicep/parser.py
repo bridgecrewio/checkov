@@ -9,34 +9,37 @@ from pycep import BicepParser
 from pycep.typing import BicepJson
 
 
-def parse(file_path: Path) -> tuple[BicepJson, list[tuple[int, str]]] | tuple[None, None]:
-    content = file_path.read_text()
+class Parser:
+    def __init__(self) -> None:
+        self.bicep_parser = BicepParser(add_line_numbers=True)
 
-    try:
-        template = BicepParser(text=content, add_line_numbers=True).json()
-    except UnexpectedToken:
-        logging.error(f"[bicep] Couldn't parse {file_path}", exc_info=True)
-        return None, None
+    def parse(self, file_path: Path) -> tuple[BicepJson, list[tuple[int, str]]] | tuple[None, None]:
+        content = file_path.read_text()
 
-    file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
+        try:
+            template = self.bicep_parser.parse(text=content)
+        except UnexpectedToken:
+            logging.error(f"[bicep] Couldn't parse {file_path}", exc_info=True)
+            return None, None
 
-    return template, file_lines
+        file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
+        return template, file_lines
 
-def get_files_definitions(
-    file_paths: "Collection[Path]",
-) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
-    logging.info(f"[bicep] start to parse {len(file_paths)} files")
+    def get_files_definitions(
+        self, file_paths: "Collection[Path]"
+    ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
+        logging.info(f"[bicep] start to parse {len(file_paths)} files")
 
-    definitions: dict[Path, BicepJson] = {}
-    definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+        definitions: dict[Path, BicepJson] = {}
+        definitions_raw: dict[Path, list[tuple[int, str]]] = {}
 
-    for file_path in file_paths:
-        template, file_lines = parse(file_path)
-        if template and file_lines:
-            definitions[file_path] = template
-            definitions_raw[file_path] = file_lines
+        for file_path in file_paths:
+            template, file_lines = self.parse(file_path)
+            if template and file_lines:
+                definitions[file_path] = template
+                definitions_raw[file_path] = file_lines
 
-    logging.info(f"[bicep] successfully parsed {len(definitions)} files")
+        logging.info(f"[bicep] successfully parsed {len(definitions)} files")
 
-    return definitions, definitions_raw
+        return definitions, definitions_raw

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from checkov.bicep.parser import parse
+from checkov.bicep.parser import Parser
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -10,7 +10,7 @@ def test_parse():
     test_file = EXAMPLES_DIR / "playground.bicep"
 
     # when
-    template, file_lines = parse(test_file)
+    template, file_lines = Parser().parse(test_file)
 
     # then
     assert template is not None
@@ -28,7 +28,7 @@ def test_parse_malformed_file():
     test_file = EXAMPLES_DIR / "malformed.bicep"
 
     # when
-    template, file_lines = parse(test_file)
+    template, file_lines = Parser().parse(test_file)
 
     # then
     assert template is None

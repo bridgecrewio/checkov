@@ -7,7 +7,7 @@ from typing_extensions import Literal
 
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
-from checkov.bicep.parser import get_files_definitions
+from checkov.bicep.parser import Parser
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import CheckResult
@@ -47,7 +47,7 @@ class Runner(BaseRunner):
                     file_paths.add(Path(file))
 
 
-        definitions, definitions_raw = get_files_definitions(file_paths)
+        definitions, definitions_raw = Parser().get_files_definitions(file_paths)
 
         for file_path, definition in definitions.items():
             for block_type, registry in Runner.block_type_registries.items():
