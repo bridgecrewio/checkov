@@ -14,10 +14,10 @@ class RunUsingAPT(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        for instruction, content in conf.items():
-            line = content[0]["content"]
-            if " apt " in line:
-                return CheckResult.FAILED, conf[instruction][0]
+        for run in conf:
+            content = run["content"]
+            if " apt " in content:
+                return CheckResult.FAILED, run
         return CheckResult.PASSED, None
 
 
