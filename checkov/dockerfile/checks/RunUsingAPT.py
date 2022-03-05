@@ -9,16 +9,15 @@ class RunUsingAPT(BaseDockerfileCheck):
         """
         name = "Ensure that APT isn't used"
         id = "CKV_DOCKER_9"
-        supported_instructions = ["*"]
+        supported_instructions = ["RUN"]
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
         for instruction, content in conf.items():
-            if instruction == "RUN":
-                line = content[0]["content"]
-                if " apt " in line:
-                    return CheckResult.FAILED, conf[instruction][0]
+            line = content[0]["content"]
+            if " apt " in line:
+                return CheckResult.FAILED, conf[instruction][0]
         return CheckResult.PASSED, None
 
 
