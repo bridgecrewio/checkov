@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import cast
 
 from typing_extensions import Literal
 
@@ -51,8 +52,9 @@ class Runner(BaseRunner):
 
         for file_path, definition in definitions.items():
             for block_type, registry in Runner.block_type_registries.items():
-                if block_type in definition.keys():
-                    for name, conf in definition[block_type].items():
+                block_type_confs = definition.get(block_type)
+                if block_type_confs:
+                    for name, conf in block_type_confs.items():
                         results = registry.scan(
                             scanned_file=str(file_path),
                             entity={name: conf},
@@ -62,8 +64,8 @@ class Runner(BaseRunner):
 
                         if results:
                             file_code_lines = definitions_raw[file_path]
-                            start_line = conf["__start_line__"]
-                            end_line = conf["__end_line__"]
+                            start_line = cast(int, conf["__start_line__"])  # it is alwasy set for the main block types
+                            end_line = cast(int, conf["__end_line__"])  # it is alwasy set for the main block types
 
                             cleaned_path = self.clean_file_path(file_path)
                             resource_id = f"{conf['type']}.{name}"

@@ -3,7 +3,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any, Callable, Optional
 
-from checkov.common.typing import _SkippedCheck
+from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
@@ -51,8 +51,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_name: str,
         entity_type: str,
         skip_info: _SkippedCheck,
-    ) -> Dict[str, Any]:
-        check_result: Dict[str, Any] = {}
+    ) -> _CheckResult:
+        check_result: _CheckResult = {}
         if skip_info:
             check_result["result"] = CheckResult.SKIPPED
             check_result["suppress_comment"] = skip_info["suppress_comment"]
