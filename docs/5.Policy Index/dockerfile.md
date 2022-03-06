@@ -16,6 +16,7 @@ nav_order: 1
 |  5 | CKV_DOCKER_6 | dockerfile | MAINTAINER | Ensure that LABEL maintainer is used instead of MAINTAINER (deprecated)  | dockerfile |
 |  6 | CKV_DOCKER_7 | dockerfile | FROM       | Ensure the base image uses a non latest version tag                      | dockerfile |
 |  7 | CKV_DOCKER_8 | dockerfile | USER       | Ensure the last USER is not root                                         | dockerfile |
+|  8 | CKV_DOCKER_9 | dockerfile | RUN        | Ensure that APT isn't used                                               | dockerfile |
 
 
 ---
