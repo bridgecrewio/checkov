@@ -27,6 +27,7 @@ from checkov.common.checks_infra.solvers import (
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
+    JsonpathExistsAttributeSolver
 )
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
@@ -57,7 +58,8 @@ operators_to_attributes_solver_classes = {
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
-    "jsonpath_equals": JsonpathEqualsAttributeSolver
+    "jsonpath_equals": JsonpathEqualsAttributeSolver,
+    "jsonpath_exists": JsonpathExistsAttributeSolver
 }
 
 operators_to_complex_solver_classes = {
