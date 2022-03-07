@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.gcp.AbsGoogleImpersonationRoles import Ab
 
 class GoogleProjectImpersonationRoles(AbsGoogleImpersonationRoles):
     def __init__(self):
-        name = "Ensure no roles that enable to impersonate and manage all service accounts are used at a project level"
+        name = "Ensure roles do not impersonate or manage Service Accounts used at project level"
         id = "CKV_GCP_49"
         supported_resources = ['google_project_iam_member', 'google_project_iam_binding']
         categories = [CheckCategories.IAM]
