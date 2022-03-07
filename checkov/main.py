@@ -53,6 +53,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
+from checkov.bicep.runner import Runner as bicep_runner
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -62,12 +63,26 @@ logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
-                   sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
-                   dockerfile_runner(), secrets_runner(), json_runner(), yaml_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner(), bitbucket_configuration_runner(), kustomize_runner(),
-                   sca_package_runner(),
-                   github_actions_runner())
+DEFAULT_RUNNERS = (
+    tf_graph_runner(),
+    cfn_runner(),
+    k8_runner(),
+    sls_runner(),
+    arm_runner(),
+    tf_plan_runner(),
+    helm_runner(),
+    dockerfile_runner(),
+    secrets_runner(),
+    json_runner(),
+    yaml_runner(),
+    github_configuration_runner(),
+    gitlab_configuration_runner(),
+    bitbucket_configuration_runner(),
+    kustomize_runner(),
+    sca_package_runner(),
+    github_actions_runner(),
+    bicep_runner(),
+)
 
 
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:

@@ -28,6 +28,7 @@ init(autoreset=True)
 @dataclass
 class CheckType:
     ARM = "arm"
+    BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
