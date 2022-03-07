@@ -766,6 +766,8 @@ nav_order: 1
 | 755 | CKV_PAN_11      | resource | panos_panorama_ipsec_crypto_profile             | Ensure IPsec profiles do not specify use of insecure encryption algorithms                                                                                                                               | Terraform |
 | 756 | CKV_PAN_12      | resource | panos_ipsec_crypto_profile                      | Ensure IPsec profiles do not specify use of insecure authentication algorithms                                                                                                                           | Terraform |
 | 757 | CKV_PAN_12      | resource | panos_panorama_ipsec_crypto_profile             | Ensure IPsec profiles do not specify use of insecure authentication algorithms                                                                                                                           | Terraform |
+| 758 | CKV_PAN_13      | resource | panos_ipsec_crypto_profile                      | Ensure IPsec profiles do not specify use of insecure protocols                                                                                                                                           | Terraform |
+| 759 | CKV_PAN_13      | resource | panos_panorama_ipsec_crypto_profile             | Ensure IPsec profiles do not specify use of insecure protocols                                                                                                                                           | Terraform |
 
 
 ---
