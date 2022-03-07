@@ -92,12 +92,13 @@ class Block:
             attribute_value = self.attributes[attribute_key]
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
                 attribute_value = attribute_value[0]
-            if isinstance(attribute_value, (list, dict)):
-                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
-                base_attributes.update(inner_attributes)
+            # needs to be checked before adding anything to 'base_attributes'
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
                 continue
+            if isinstance(attribute_value, (list, dict)):
+                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
+                base_attributes.update(inner_attributes)
             else:
                 base_attributes[attribute_key] = attribute_value
 
