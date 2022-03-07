@@ -110,6 +110,9 @@ class BcPlatformIntegration(object):
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
+    def is_prisma_integration(self) -> bool:
+        return not self.is_bc_token(self.bc_api_key)
+
     @staticmethod
     def is_bc_token(token: str) -> bool:
         return re.match(UUID_V4_PATTERN, token) is not None
