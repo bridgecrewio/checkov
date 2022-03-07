@@ -3,6 +3,8 @@ import re
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
+ISABSOLUTE = re.compile("(^/[A-z0-9-_+]*)|(^[A-z0-9-_+]:\\\\.*)|(^\\$[{}A-z0-9-_+].*)")
+
 
 class WorkdirIsAbsolute(BaseDockerfileCheck):
     def __init__(self):
@@ -18,7 +20,7 @@ class WorkdirIsAbsolute(BaseDockerfileCheck):
     def scan_entity_conf(self, conf):
         for mydir in conf:
             mypath = mydir["value"]
-            if not re.match("(^/[A-z0-9-_+]*)|(^[A-z0-9-_+]:\\\\.*)|(^\\$[{}A-z0-9-_+].*)", mypath):
+            if not re.match(ISABSOLUTE, mypath):
                 return CheckResult.FAILED, mydir
         return CheckResult.PASSED, None
 
