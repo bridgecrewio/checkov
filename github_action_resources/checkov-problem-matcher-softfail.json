@@ -16,7 +16,7 @@
           "line": 2
         }
       ],
-      "severity": "warning"
+      "severity": "error"
     }
   ]
 }
