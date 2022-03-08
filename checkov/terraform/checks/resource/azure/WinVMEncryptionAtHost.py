@@ -4,13 +4,13 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class WinVMEncryptionAtHost(BaseResourceValueCheck):
     def __init__(self):
-        '''
+        """
         If enabled, all the disks (including the temp disk) attached to this Virtual Machine will be encrypted
-        '''
+        """
         name = "Ensure Windows VM enables encryption"
         id = "CKV_AZURE_151"
         supported_resources = ['azurerm_windows_virtual_machine']
-        categories = [CheckCategories.KUBERNETES]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
