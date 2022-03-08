@@ -18,6 +18,7 @@ nav_order: 1
 |  7 | CKV_DOCKER_8  | dockerfile | USER       | Ensure the last USER is not root                                         | dockerfile |
 |  8 | CKV_DOCKER_9  | dockerfile | RUN        | Ensure that APT isn't used                                               | dockerfile |
 |  9 | CKV_DOCKER_10 | dockerfile | WORKDIR    | Ensure that WORKDIR values are absolute paths                            | dockerfile |
+| 10 | CKV_DOCKER_11 | dockerfile | FROM       | Ensure From Alias are unique for multistage builds.                      | dockerfile |
 
 
 ---
