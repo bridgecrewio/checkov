@@ -99,8 +99,8 @@ class Block:
             if isinstance(attribute_value, (list, dict)):
                 inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
                 base_attributes.update(inner_attributes)
-            else:
-                base_attributes[attribute_key] = attribute_value
+
+            base_attributes[attribute_key] = attribute_value
 
     def get_hash(self) -> str:
         attributes_dict = self.get_attribute_dict()
