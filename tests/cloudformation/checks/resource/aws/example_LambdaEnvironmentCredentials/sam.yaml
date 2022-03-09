@@ -17,6 +17,9 @@ Resources:
       Handler: app.lambdaHandler
       Runtime: python3.8
 
+  NoProperties:
+    Type: AWS::Serverless::Function
+
   Secret:
     Type: AWS::Serverless::Function
     Properties:
