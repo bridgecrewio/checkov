@@ -18,26 +18,22 @@ class TestZoneProtectionProfile(unittest.TestCase):
 
         passing_resources = {
             'panos_zone.pass1',
-            'panos_zone_entry.pass2',
-            'panos_panorama_zone.pass3',
+            'panos_panorama_zone.pass2',
         }
         failing_resources = {
             'panos_zone.fail1',
-            'panos_zone_entry.fail2',
-            'panos_panorama_zone.fail3',
-            'panos_zone.fail4',
-            'panos_zone_entry.fail5',
+            'panos_panorama_zone.fail2',
+            'panos_zone.fail3',
+            'panos_panorama_zone.fail4',
+            'panos_zone.fail5',
             'panos_panorama_zone.fail6',
-            'panos_zone.fail7',
-            'panos_zone_entry.fail8',
-            'panos_panorama_zone.fail9',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 3)
-        self.assertEqual(summary['failed'], 9)
+        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['failed'], 6)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
