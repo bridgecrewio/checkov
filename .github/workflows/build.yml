@@ -236,6 +236,7 @@ jobs:
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
+    environment: release
     steps:
       - uses: actions/checkout@v3
       - name: Get release version
@@ -251,13 +252,14 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: bridgecrew/checkov
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildoptions: "--no-cache"
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
+    environment: release
     steps:
       - uses: actions/checkout@v3
       - name: update checkov-k8s version
@@ -273,8 +275,8 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: bridgecrew/checkov-k8s
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
