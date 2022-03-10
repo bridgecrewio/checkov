@@ -1103,7 +1103,7 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_wrong_check_imports(self):
-        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
+        wrong_imports = ("checkov.arm", "checkov.cloudformation", "checkov.dockerfile", "checkov.helm", "checkov.kubernetes", "checkov.serverless")
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
@@ -1113,9 +1113,8 @@ class TestRunnerValid(unittest.TestCase):
                 import_names = [instr.argval for instr in instructions if "IMPORT_NAME" == instr.opname]
 
                 for import_name in import_names:
-                    wrong_import = next((import_name for x in wrong_imports if x in import_name), None)
-                    if wrong_import:
-                        check_imports.append({file.name: wrong_import})
+                    if import_name.startswith(wrong_imports):
+                        check_imports.append({file.name: import_name})
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
