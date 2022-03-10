@@ -272,7 +272,6 @@ resource "aws_elastic_beanstalk_environment" "pass_eb" {
   name        = "example"
 }
 
-
 # Lightsail
 
 resource "aws_route53_record" "pass_lightsail" {
@@ -280,5 +279,12 @@ resource "aws_route53_record" "pass_lightsail" {
   name     = var.sub_domain
   type     = "A"
   ttl      = "300"
-  records  = [aws_lightsail_instance.thing.public_ip_address]
+  records  = [aws_lightsail_instance.example.public_ip_address]
+}
+
+resource "aws_lightsail_instance" "example" {
+  name              = "example_lightsail_instance"
+  availability_zone = "us-east-1f"
+  blueprint_id      = "ubuntu_20_04"
+  bundle_id         = "medium_2_0"
 }
