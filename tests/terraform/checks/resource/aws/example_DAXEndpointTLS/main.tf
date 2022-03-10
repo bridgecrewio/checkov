@@ -15,8 +15,6 @@ resource "aws_dax_cluster" "fail2" {
   iam_role_arn         = var.iam_role_arn
   parameter_group_name = aws_dax_parameter_group.example.name
   subnet_group_name    = aws_dax_subnet_group.example.name
-  cluster_endpoint_encryption_type = "NONE"
-
   tags                 = { test = "Fail" }
 }
 
