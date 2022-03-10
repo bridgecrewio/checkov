@@ -271,3 +271,14 @@ resource "aws_elastic_beanstalk_environment" "pass_eb" {
   application = aws_elastic_beanstalk_application.example.name
   name        = "example"
 }
+
+
+# Lightsail
+
+resource "aws_route53_record" "pass_lightsail" {
+  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  name     = var.sub_domain
+  type     = "A"
+  ttl      = "300"
+  records  = [aws_lightsail_instance.thing.public_ip_address]
+}
