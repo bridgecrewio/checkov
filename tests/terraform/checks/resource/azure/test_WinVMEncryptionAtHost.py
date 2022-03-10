@@ -1,37 +1,38 @@
 import unittest
 from pathlib import Path
 
-from checkov.cloudformation.checks.resource.aws.LambdaEnvironmentCredentials import check
-from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.resource.azure.WinVMEncryptionAtHost import check
+from checkov.terraform.runner import Runner
 
 
-class TestLambdaEnvironmentCredentials(unittest.TestCase):
-    def test_summary(self):
-        test_files_dir = Path(__file__).parent / "example_LambdaEnvironmentCredentials"
+class TestWinVMEncryptionAtHost(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_WinVMEncryptionAtHost"
 
+        # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
         summary = report.get_summary()
 
         passing_resources = {
-            "AWS::Lambda::Function.NoEnv",
-            "AWS::Lambda::Function.NoSecret",
-            "AWS::Serverless::Function.NoEnv",
-            "AWS::Serverless::Function.NoProperties",
-            "AWS::Serverless::Function.NoSecret",
+            "azurerm_windows_virtual_machine.pass",
         }
         failing_resources = {
-            "AWS::Lambda::Function.Secret",
-            "AWS::Serverless::Function.Secret",
+            "azurerm_windows_virtual_machine.fail",
+            "azurerm_windows_virtual_machine.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 5)
+        self.assertEqual(summary["passed"], 1)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 3)  # 3 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
