@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.kubernetes.SharedHostNetworkNamespace import check
+from checkov.terraform.checks.resource.kubernetes.SharedHostNetworkNamespacePSP import check
 from checkov.terraform.runner import Runner
 
 
 class TestSharedHostNetworkNamespace(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_SharedHostNetworkNamespace"
+        test_files_dir = Path(__file__).parent / "example_SharedHostNetworkNamespacePSP"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,12 +18,12 @@ class TestSharedHostNetworkNamespace(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "kubernetes_pod.pass",
-            "kubernetes_pod.pass2",
+            "kubernetes_pod_security_policy.pass",
+            "kubernetes_pod_security_policy.pass2",
         }
 
         failing_resources = {
-            "kubernetes_pod.fail",
+            "kubernetes_pod_security_policy.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
