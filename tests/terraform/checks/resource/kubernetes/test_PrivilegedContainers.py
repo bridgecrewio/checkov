@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.kubernetes.PrivilegedContainerPSP import check
+from checkov.terraform.checks.resource.kubernetes.PrivilegedContainer import check
 from checkov.terraform.runner import Runner
 
 
-class TestPrivilegedContainerPSP(unittest.TestCase):
+class TestPrivilegedContainer(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_PrivilegedContainersPSP"
+        test_files_dir = Path(__file__).parent / "example_PrivilegedContainers"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -20,18 +20,21 @@ class TestPrivilegedContainerPSP(unittest.TestCase):
         passing_resources = {
             "kubernetes_pod.pass",
             "kubernetes_pod.pass2",
+            "kubernetes_pod_security_policy.pass",
+            "kubernetes_pod_security_policy.pass2",
         }
 
         failing_resources = {
             "kubernetes_pod.fail",
             "kubernetes_pod.fail2",
+            "kubernetes_pod_security_policy.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
