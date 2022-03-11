@@ -16,8 +16,6 @@ class PrivilegedContainersPSP(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf['spec'][0]
-        # test=type(spec.get("container"))
-        # if type(conf.get("container_properties")[0]) is str:
 
         containers = spec.get("container")
         for idx, container in enumerate(containers):
