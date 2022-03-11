@@ -16,13 +16,17 @@ class PrivilegedContainersPSP(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf['spec'][0]
+
         containers = spec.get("container")
         for idx, container in enumerate(containers):
+            if type(container) != dict:
+                return CheckResult.UNKNOWN
             if container.get("security_context"):
                 context = container.get("security_context")[0]
                 if context.get("privileged") == [True]:
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/security_context/[0]/privileged']
                     return CheckResult.FAILED
+
         return CheckResult.PASSED
 
 
