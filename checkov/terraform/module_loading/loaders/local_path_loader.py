@@ -12,6 +12,9 @@ class LocalPathLoader(ModuleLoader):
         super().__init__()
         self.is_external = False
 
+    def discover(self):
+        pass
+
     def _is_matching_loader(self) -> bool:
         if (
             self.module_source.startswith("./")

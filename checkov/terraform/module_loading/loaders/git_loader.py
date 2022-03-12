@@ -18,6 +18,12 @@ class ModuleSource:
 
 
 class GenericGitLoader(ModuleLoader):
+    def __init__(self):
+        super().__init__()
+
+    def discover(self):
+        pass
+
     def _is_matching_loader(self) -> bool:
         # https://www.terraform.io/docs/modules/sources.html#generic-git-repository
         return self.module_source.startswith("git::")

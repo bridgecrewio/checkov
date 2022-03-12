@@ -21,6 +21,9 @@ class RegistryLoader(ModuleLoader):
         super().__init__()
         self.module_version_url = ""
 
+    def discover(self):
+        pass
+
     def _is_matching_loader(self) -> bool:
         # Since the registry loader is the first one to be checked,
         # it shouldn't process any github modules
