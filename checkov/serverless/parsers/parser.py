@@ -12,6 +12,7 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
 from checkov.common.parsers.node import DictNode, StrNode
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,6 @@ STACK_TAGS_TOKEN = 'stackTags'  # nosec
 TAGS_TOKEN = 'tags'  # nosec
 SUPPORTED_PROVIDERS = ['aws']
 
-DEFAULT_VAR_PATTERN = re.compile(r"\${([^{}]+?)}")
 QUOTED_WORD_SYNTAX = re.compile(r"(?:('|\").*?\1)")
 FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 
@@ -101,7 +101,7 @@ Modifies the template data in-place to resolve variables.
         # Remove to prevent self-matching during processing
         del template["provider"]["variableSyntax"]
     else:
-        var_pattern = DEFAULT_VAR_PATTERN
+        var_pattern = SLS_DEFAULT_VAR_PATTERN
     compiled_var_pattern = re.compile(var_pattern)
 
     # Processing is done in a loop to deal with chained references and the like.
