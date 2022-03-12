@@ -53,6 +53,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
+from checkov.bicep.runner import Runner as bicep_runner
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -62,12 +63,26 @@ logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-DEFAULT_RUNNERS = (tf_graph_runner(), cfn_runner(), k8_runner(),
-                   sls_runner(), arm_runner(), tf_plan_runner(), helm_runner(),
-                   dockerfile_runner(), secrets_runner(), json_runner(), yaml_runner(), github_configuration_runner(),
-                   gitlab_configuration_runner(), bitbucket_configuration_runner(), kustomize_runner(),
-                   sca_package_runner(),
-                   github_actions_runner())
+DEFAULT_RUNNERS = (
+    tf_graph_runner(),
+    cfn_runner(),
+    k8_runner(),
+    sls_runner(),
+    arm_runner(),
+    tf_plan_runner(),
+    helm_runner(),
+    dockerfile_runner(),
+    secrets_runner(),
+    json_runner(),
+    yaml_runner(),
+    github_configuration_runner(),
+    gitlab_configuration_runner(),
+    bitbucket_configuration_runner(),
+    kustomize_runner(),
+    sca_package_runner(),
+    github_actions_runner(),
+    bicep_runner(),
+)
 
 
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
@@ -97,9 +112,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
-
-    if config.soft_fail and (config.soft_fail_on and config.hard_fail_on):
-        logger.warning('--soft-fail was used with --soft-fail-on and / or --hard-fail-on. --soft-fail will be ignored.')
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.

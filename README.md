@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](docs/7.Scan%20Examples/Bicep.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
  
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
@@ -39,7 +39,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework and ARM template files.
+ * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Bicep and ARM template files.
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
  * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
@@ -47,7 +47,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, SARIF and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 

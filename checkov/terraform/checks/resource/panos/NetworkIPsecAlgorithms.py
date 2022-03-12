@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class NetworkIPsecAlgorithms(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure IPsec profiles do not specify use of insecure algorithms"
+        name = "Ensure IPsec profiles do not specify use of insecure encryption algorithms"
         id = "CKV_PAN_11"
         supported_resources = ['panos_ipsec_crypto_profile','panos_panorama_ipsec_crypto_profile']
         categories = [CheckCategories.NETWORKING]

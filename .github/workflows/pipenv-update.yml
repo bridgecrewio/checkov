@@ -8,7 +8,7 @@ jobs:
   pipenv-update:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
       - name: Import GPG key
@@ -17,7 +17,7 @@ jobs:
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install pipenv

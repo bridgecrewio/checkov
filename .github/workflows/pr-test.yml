@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.9
       - name: pre-commit
@@ -16,8 +16,8 @@ jobs:
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -35,9 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
@@ -62,8 +62,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
@@ -76,7 +76,7 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==21.1.1
+          pipenv run pip install --upgrade pip==22.0.3
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -86,6 +86,8 @@ jobs:
         run: git clone https://github.com/bridgecrewio/cfngoat
       - name: Clone Kubernetes-goat - vulnerable kubernetes
         run: git clone https://github.com/madhuakula/kubernetes-goat
+      - name: Clone kustomize-goat - vulnerable kustomize
+        run: git clone https://github.com/bridgecrewio/kustomizegoat
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
@@ -103,8 +105,8 @@ jobs:
       python-version: 3.7
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.python-version }}
       - uses: actions/setup-node@v3
@@ -116,7 +118,7 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ env.python-version }}
-          pipenv run pip install --upgrade pip==21.1.1
+          pipenv run pip install --upgrade pip==22.0.3
           pipenv run pip install pytest pytest-benchmark
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'

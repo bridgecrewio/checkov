@@ -33,7 +33,7 @@ dlint = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.30"
+bc-python-hcl2 = "==0.3.33"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
@@ -49,7 +49,7 @@ update_checker = "*"
 semantic_version = "*"
 packaging = "*"
 cloudsplaining = ">=0.4.3"
-networkx = "*"
+networkx = "<2.7"
 dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
@@ -67,6 +67,7 @@ aiomultiprocess = "*"
 jsonpath_ng = "*"
 jsonschema = "~=3.0"
 prettytable = ">=3.0.0"
+pycep-parser = "==0.3.1"
 
 [requires]
 python_version = "3.7"
