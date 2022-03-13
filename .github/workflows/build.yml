@@ -196,6 +196,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
   publish-package:
     needs: bump-version
+    environment: release
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v3
@@ -227,7 +228,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
-          password: ${{ secrets.pypi_password }}
+          password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
