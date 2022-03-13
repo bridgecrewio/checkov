@@ -14,6 +14,6 @@ class Runner(ObjectRunner):
         return parse(f)
 
     def get_start_end_lines(self, end, result_config, start):
-        start = result_config.start_mark.line
-        end = result_config.end_mark.line
+        start = result_config.start_mark.line - 1
+        end = result_config.end_mark.line - 1
         return end, start
