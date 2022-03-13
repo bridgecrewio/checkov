@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.kubernetes.ShareHostPIDPSP import check
+from checkov.terraform.checks.resource.kubernetes.ShareHostIPC import check
 from checkov.terraform.runner import Runner
 
 
-class TestShareHostPIDPSP(unittest.TestCase):
+class TestShareHostIPC(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_ShareHostPIDPSP"
+        test_files_dir = Path(__file__).parent / "example_ShareHostIPC"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,12 +18,12 @@ class TestShareHostPIDPSP(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "kubernetes_pod_security_policy.pass",
-            "kubernetes_pod_security_policy.pass2",
+            "kubernetes_pod.pass",
+            "kubernetes_pod.pass2",
         }
 
         failing_resources = {
-            "kubernetes_pod_security_policy.fail",
+            "kubernetes_pod.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
