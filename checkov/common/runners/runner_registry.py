@@ -81,14 +81,13 @@ class RunnerRegistry:
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
 
-    def save_output_to_file(self, file_name, data, data_format):
+    def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
         try:
             with open(file_name, 'w') as f:
                 f.write(data)
             logging.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
-        except EnvironmentError as e:
-            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}")
-            logging.error(f"More details: \n {e}")
+        except EnvironmentError:
+            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}", exc_info=True)
 
     def print_reports(
         self,

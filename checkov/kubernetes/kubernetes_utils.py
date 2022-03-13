@@ -37,11 +37,11 @@ def get_folder_definitions(
 
 def get_files_definitions(files: List[str]) \
         -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(filename):
+    def _parse_file(filename: str):
         try:
             return filename, parse(filename)
-        except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
+        except (TypeError, ValueError):
+            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
 
     definitions = {}
     definitions_raw = {}

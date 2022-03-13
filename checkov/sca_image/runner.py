@@ -45,9 +45,9 @@ class Runner(PackageRunner):
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
             image_scanner.cleanup_scan()
             return scan_result
-        except Exception as err:
+        except Exception:
             image_scanner.cleanup_scan()
-            raise err
+            raise
 
     @staticmethod
     async def execute_scan(
