@@ -6,7 +6,6 @@ from checkov.common.models.enums import CheckResult
 
 
 class TestEKSNodeGroupRemoteAccess(unittest.TestCase):
-
     def test_failure(self):
         hcl_res = hcl2.loads("""
 resource "aws_eks_node_group" "test" {
@@ -76,5 +75,3 @@ resource "aws_eks_node_group" "test" {
 
 if __name__ == '__main__':
     unittest.main()
-
-

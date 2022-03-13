@@ -48,4 +48,3 @@ class ConnectionSolver(TestBaseSolver):
 
         assert len(reduced_graph.nodes) <= 52
         assert len(reduced_graph.edges) <= 12
-

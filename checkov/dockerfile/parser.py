@@ -45,4 +45,3 @@ def collect_skipped_checks(parse_result):
                     skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
                 skipped_checks.append(skipped_check)
     return skipped_checks
-
