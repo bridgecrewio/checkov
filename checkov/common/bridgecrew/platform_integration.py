@@ -444,7 +444,9 @@ class BcPlatformIntegration(object):
             print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
                                          attrs=['bold']) + colored(
                 u"\u2022 " + "Command line docker Image scanning\n"
-                u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
+                             u"\u2022 " + "Software Composition Analysis\n"
+                                          u"\u2022 " + "Centralized policy management\n"
+                                                       u"\u2022 " + "Free bridgecrew.cloud account with API access\n"
                 u"\u2022 " + "Auto-fix remediation suggestions\n"
                 u"\u2022 " + "Enabling of VS Code Plugin\n"
                 u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
