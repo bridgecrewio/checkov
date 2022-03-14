@@ -280,6 +280,7 @@ jobs:
           buildoptions: "--no-cache"
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
