@@ -21,9 +21,9 @@ class Scanner:
         try:
             if not self.twistcli_path.exists():
                 package_scanning_integration.download_twistcli(self.twistcli_path)
-        except Exception as e:
-            logging.error(f"Failed to setup twictcli for package scanning\n{e}")
-            raise e
+        except Exception:
+            logging.error("Failed to setup twictcli for package scanning", exc_info=True)
+            raise
 
     def cleanup_twictcli(self) -> None:
         if self.twistcli_path.exists():

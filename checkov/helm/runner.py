@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import logging
 import operator
@@ -6,6 +8,7 @@ import shutil
 import subprocess  # nosec
 import tempfile
 from functools import reduce
+from typing import Any
 
 import yaml
 
@@ -64,12 +67,12 @@ class Runner(BaseRunner):
         return chart_dependencies
 
     @staticmethod
-    def parse_helm_chart_details(chart_path):
+    def parse_helm_chart_details(chart_path: str) -> dict[str, Any]:
         with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
             try:
                 chart_meta = yaml.safe_load(chartyaml)
-            except yaml.YAMLError as exc:
-                logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml. details: {exc}")
+            except yaml.YAMLError:
+                logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
         return chart_meta
 
     def check_system_deps(self):
@@ -134,9 +137,11 @@ class Runner(BaseRunner):
                         logging.debug(
                             f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
 
-                    except Exception as e:
+                    except Exception:
                         logging.info(
-                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}.",
+                            exc_info=True,
+                        )
 
                 else:
                     try:
@@ -146,9 +151,11 @@ class Runner(BaseRunner):
                         logging.debug(
                             f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
                 
-                    except Exception as e:
+                    except Exception:
                         logging.info(
-                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                            f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}.",
+                            exc_info=True,
+                        )
               
 
                 output = str(o, 'utf-8')
@@ -207,8 +214,8 @@ class Runner(BaseRunner):
                     report.skipped_checks += chart_results.skipped_checks
                     report.resources.update(chart_results.resources)
 
-                except Exception as e:
-                    logging.warning(e, stack_info=True)
+                except Exception:
+                    logging.warning("Failed to run Kubernetes runner", exc_info=True)
                     with tempfile.TemporaryDirectory() as save_error_dir:
                         logging.debug(
                             f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")

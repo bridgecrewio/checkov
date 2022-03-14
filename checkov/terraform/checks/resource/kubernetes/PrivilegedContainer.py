@@ -18,7 +18,10 @@ class PrivilegedContainers(BaseResourceCheck):
         spec = conf['spec'][0]
         if spec.get("container"):
             containers = spec.get("container")
+
             for idx, container in enumerate(containers):
+                if type(container) != dict:
+                    return CheckResult.UNKNOWN
                 if container.get("security_context"):
                     context = container.get("security_context")[0]
                     if context.get("privileged") == [True]:

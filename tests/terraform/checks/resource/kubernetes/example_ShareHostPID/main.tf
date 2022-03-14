@@ -56,7 +56,6 @@ resource "kubernetes_pod" "fail" {
   }
 }
 
-
 resource "kubernetes_pod" "pass" {
   metadata {
     name = "terraform-example"

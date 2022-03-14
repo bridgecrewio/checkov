@@ -10,7 +10,7 @@ class PrivilegedContainersPSP(BaseResourceCheck):
         name = "Do not admit privileged containers"
         id = "CKV_K8S_2"
 
-        supported_resources = ['kubernetes_pod', 'kubernetes_pod_security_policy']
+        supported_resources = ['kubernetes_pod_security_policy']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

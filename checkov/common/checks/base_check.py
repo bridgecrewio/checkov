@@ -77,13 +77,11 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 )
                 self.logger.debug(message)
 
-            except Exception as e:
+            except Exception:
                 self.logger.error(
-                    "Failed to run check: {} for configuration: {} at file: {}".format(
-                        self.name, str(entity_configuration), scanned_file
-                    )
+                    f"Failed to run check: {self.name} for configuration: {entity_configuration} at file: {scanned_file}"
                 )
-                raise e
+                raise
         return check_result
 
     @multi_signature()
