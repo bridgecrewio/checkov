@@ -283,24 +283,31 @@ jobs:
     needs: publish-package
     steps:
       - uses: actions/checkout@v2
-      - name: update checkov-k8s version
+      - name: get versions
         run: |
           checkov_version=${{ needs.publish-package.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo ::set-env name=RELEASE_VERSION::$(echo $checkov_version)
-          echo ::set-env name=RELEASE_MAJOR_VERSION::$(echo $checkov_major_version)
-          echo $RELEASE_VERSION
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+          echo "::set-output name=version::$checkov_version"
+          echo "::set-output name=major_version::$checkov_major_version"
+        id: versions
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
         with:
-          name: bridgecrew/whorf
+          file: admissioncontroller/Dockerfile
+          push: true
+          tags: bridgecrew/whorf:${{ steps.versions.outputs.version }}, bridgecrew/whorf:${{ steps.versions.outputs.major_version }}, bridgecrew/whorf:latest
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
-          dockerfile: admissioncontroller/Dockerfile
-          buildoptions: "--no-cache"
+          no-cache: true
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      - name: Update deployment
+        uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: "- image: bridgecrew/whorf(@sha256:[a-f0-9]{64})?"
+          replace: "- image: bridgecrew/whorf@${{ steps.docker_build.outputs.digest }}"
+          include: "admissioncontroller/k8s/deployment.yaml"`
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
