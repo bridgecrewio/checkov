@@ -306,9 +306,9 @@ jobs:
       - name: Update deployment
         uses: jacobtomlinson/gha-find-replace@master
         with:
-          find: "- image: bridgecrew/whorf(@sha256:[a-f0-9]{64})?"
-          replace: "- image: bridgecrew/whorf@${{ steps.docker_build.outputs.digest }}"
-          include: "admissioncontroller/k8s/deployment.yaml"`
+          find: "image: bridgecrew/whorf(@sha256:[a-f0-9]{64})?"
+          replace: "image: bridgecrew/whorf@${{ steps.docker_build.outputs.digest }}"
+          include: "admissioncontroller/k8s/deployment.yaml"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
