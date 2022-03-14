@@ -48,7 +48,7 @@ resource "kubernetes_pod" "fail3" {
   }
 }
 
-# fails no requests
+# fails no limits
 resource "kubernetes_pod" "fail" {
   metadata {
     name = "terraform-example"
@@ -120,7 +120,7 @@ resource "kubernetes_pod" "fail4" {
       }
 
       resources {
-        requests = {
+        limits = {
           memory = "1Gi"
         }
       }
@@ -169,7 +169,7 @@ resource "kubernetes_pod" "pass" {
       }
 
       resources {
-        requests = {
+        limits = {
           cpu = "500m"
         }
 
