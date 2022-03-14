@@ -22,7 +22,7 @@ class LivenessProbe(BaseResourceValueCheck):
         if spec:
             containers = spec.get("container")
             for idx, container in enumerate(containers):
-                if type(container) != dict:
+                if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
                 if container.get("liveness_probe"):
                     return CheckResult.PASSED
