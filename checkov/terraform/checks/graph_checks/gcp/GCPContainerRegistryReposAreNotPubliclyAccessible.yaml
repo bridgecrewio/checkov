@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_GCP_9"
   name: "Ensure that Container Registry repositories are not anonymously or publicly accessible"
-  category: "SECURITY"
+  category: "GENERAL_SECURITY"
 definition:
   and:
     - cond_type: filter

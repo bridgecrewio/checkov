@@ -208,8 +208,8 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
                     out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
-        except (TypeError, ValueError) as e:
-            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
+        except (TypeError, ValueError):
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template", exc_info=True)
             continue
 
     return definitions, definitions_raw
@@ -221,4 +221,3 @@ def validate_properties_in_resources_are_dict(template: DictNode) -> bool:
         if 'Properties' in resource and not isinstance(resource['Properties'], DictNode):
             return False
     return True
-

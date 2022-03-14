@@ -39,16 +39,27 @@ class K8sKustomizeRunner(K8sRunner):
             else: 
                 kustomizeResourceID = "Unknown error. This is a bug."
 
+            code_lines = entity_context.get("code_lines")
+            file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=realKustomizeEnvMetadata['filePath'],
-                file_line_range=[0,0],
+                check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
+                file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.bc_severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
         
         return report
+
+    def line_range(self, code_lines):
+        num_of_lines = len(code_lines)
+        file_line_range = [0, 0]
+        if num_of_lines > 0:
+            first_line, code = code_lines[0]
+            last_line, code = code_lines[num_of_lines - 1]
+            file_line_range = [first_line, last_line]
+        return file_line_range
 
     def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
         # Moves report generation logic out of run() method in Runner class.
@@ -73,6 +84,8 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
                 else: 
                     kustomizeResourceID = "Unknown error. This is a bug."
+                code_lines = entity_context.get("code_lines")
+                file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
@@ -80,7 +93,7 @@ class K8sKustomizeRunner(K8sRunner):
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
                     file_path=realKustomizeEnvMetadata['filePath'],
-                    file_line_range=[0,0],
+                    file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
@@ -146,8 +159,8 @@ class Runner(BaseRunner):
             metadata = {}
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
-            except yaml.YAMLError as exc:
-                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}. details: {exc}")
+            except yaml.YAMLError:
+                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
     
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
@@ -280,9 +293,8 @@ class Runner(BaseRunner):
                     logging.info(
                         f"Ran {self.templateRendererCommand} to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
 
-                except Exception as e:
-                    logging.warning(
-                        f"Error building Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
+                except Exception:
+                    logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
@@ -367,8 +379,8 @@ class Runner(BaseRunner):
                 report.skipped_checks += chart_results.skipped_checks
                 report.resources.update(chart_results.resources)
 
-            except Exception as e:  # noqa # some weird issue with flake8
-                logging.warning(e, stack_info=True)
+            except Exception:
+                logging.warning("Failed to run Kubernetes runner", exc_info=True)
                 with tempfile.TemporaryDirectory() as save_error_dir:
                     logging.debug(
                         f"Error running k8s scan on Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
@@ -408,17 +420,3 @@ class Runner(BaseRunner):
 
         except IsADirectoryError:
             pass
-
-def find_lines(node, kv):
-    if isinstance(node, str):
-        return node
-    if isinstance(node, list):
-        for i in node:
-            for x in find_lines(i, kv):
-                yield x
-    elif isinstance(node, dict):
-        if kv in node:
-            yield node[kv]
-        for j in node.values():
-            for x in find_lines(j, kv):
-                yield x

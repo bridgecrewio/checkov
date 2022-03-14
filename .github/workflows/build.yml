@@ -24,11 +24,11 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - name: Install pipenv
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==21.1.1
+          pipenv run pip install --upgrade pip==22.0.3
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -48,6 +48,8 @@ jobs:
         run: git clone https://github.com/bridgecrewio/cfngoat
       - name: Clone Kubernetes-goat - vulnerable kubernetes
         run: git clone https://github.com/madhuakula/kubernetes-goat
+      - name: Clone kustomize-goat - vulnerable kustomize
+        run: git clone https://github.com/bridgecrewio/kustomizegoat
       - name: Create checkov reports
         run: |
           # Just making sure the API key tests don't run on PRs
@@ -61,8 +63,8 @@ jobs:
   prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -73,7 +75,7 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python 3.7
-          pipenv run pip install --upgrade pip==21.1.1
+          pipenv run pip install --upgrade pip==22.0.3
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
@@ -89,9 +91,9 @@ jobs:
     timeout-minutes: 30
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -102,6 +104,7 @@ jobs:
           pipenv --python 3.7
           pipenv install --dev
       - uses: imranismail/setup-kustomize@v1
+        if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,15 +115,15 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
+        uses: crazy-max/ghaction-import-gpg@v4.2.0
         with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -138,7 +141,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions bicep all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
@@ -194,17 +197,18 @@ jobs:
       version: ${{ steps.version.outputs.version }}
   publish-package:
     needs: bump-version
+    environment: release
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
+        uses: crazy-max/ghaction-import-gpg@v4.2.0
         with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -225,7 +229,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
-          password: ${{ secrets.pypi_password }}
+          password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
@@ -234,8 +238,9 @@ jobs:
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
+    environment: release
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get release version
         id: get_version
         run: |
@@ -249,15 +254,16 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: bridgecrew/checkov
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildoptions: "--no-cache"
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: publish-package
+    environment: release
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: update checkov-k8s version
         run: |
           checkov_version=${{ needs.publish-package.outputs.version }}
@@ -271,8 +277,8 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: bridgecrew/checkov-k8s
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tags: "latest,${{ env.RELEASE_VERSION }},${{ env.RELEASE_MAJOR_VERSION }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
@@ -304,7 +310,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: update checkov release
         run: |
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"

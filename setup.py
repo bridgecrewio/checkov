@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.30",
+        "bc-python-hcl2==0.3.33",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -65,7 +65,8 @@ setup(
         "aiomultiprocess",
         "jsonpath_ng",
         "jsonschema~=3.0",
-        "prettytable>=3.0.0"
+        "prettytable>=3.0.0",
+        "pycep-parser==0.3.1",
     ],
     license="Apache License 2.0",
     name="checkov",

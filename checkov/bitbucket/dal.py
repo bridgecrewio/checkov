@@ -35,10 +35,10 @@ class Bitbucket(BaseVCSDAL):
         self.default_branch_cache = {}
         self.username = "bschostergoi"
 
-    def _request(self, endpoint):
+    def _request(self, endpoint: str):
         if not self.token:
             return
-        url_endpoint = "{}/{}".format(self.api_url, endpoint)
+        url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             s = requests.Session()
             s.auth = (self.username, self.token)
@@ -48,8 +48,8 @@ class Bitbucket(BaseVCSDAL):
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
-        except Exception as e:
-            logging.debug("Query failed to run by returning code of {} {}.".format(url_endpoint,e))
+        except Exception:
+            logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
 
     def get_branch_restrictions(self):
         if self.current_repository:

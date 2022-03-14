@@ -61,9 +61,9 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_REPOS" ]; then
   done
 fi
 
-if [ ! -z "$INPUT_SOFT_FAIL" ]; then
+if [[ -z "$INPUT_SOFT_FAIL" ]]; then
     echo "::add-matcher::checkov-problem-matcher.json"
-    else
+else
     echo "::add-matcher::checkov-problem-matcher-softfail.json"
 fi
 

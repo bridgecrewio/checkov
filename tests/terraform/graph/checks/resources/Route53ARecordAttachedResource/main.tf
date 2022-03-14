@@ -128,6 +128,21 @@ resource "aws_route53_record" "pass5" {
   }
 }
 
+variable "aws_alb_dns_name" {}
+variable "aws_alb_zone_id" {}
+
+resource "aws_route53_record" "pass_var" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = var.aws_alb_dns_name
+    zone_id                = var.aws_alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
 resource "aws_cloudfront_distribution" "website" {
   provider = aws.useastone
   origin {
@@ -255,4 +270,21 @@ resource "aws_route53_record" "pass_eb" {
 resource "aws_elastic_beanstalk_environment" "pass_eb" {
   application = aws_elastic_beanstalk_application.example.name
   name        = "example"
+}
+
+# Lightsail
+
+resource "aws_route53_record" "pass_lightsail" {
+  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  name     = var.sub_domain
+  type     = "A"
+  ttl      = "300"
+  records  = [aws_lightsail_instance.example.public_ip_address]
+}
+
+resource "aws_lightsail_instance" "example" {
+  name              = "example_lightsail_instance"
+  availability_zone = "us-east-1f"
+  blueprint_id      = "ubuntu_20_04"
+  bundle_id         = "medium_2_0"
 }

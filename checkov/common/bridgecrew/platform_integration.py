@@ -188,22 +188,22 @@ class BcPlatformIntegration(object):
                                               )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
-            except MaxRetryError as e:
-                logging.error(f"An SSL error occurred connecting to the platform. If you are on a VPN, please try "
-                              f"disabling it and re-running the command.\n{e}")
-                raise e
-            except HTTPError as e:
-                logging.error(f"Failed to get customer assumed role\n{e}")
-                raise e
-            except ClientError as e:
-                logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
-                raise e
-            except JSONDecodeError as e:
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-                raise e
-            except BridgecrewAuthError as e:
+            except MaxRetryError:
+                logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              "disabling it and re-running the command.", exc_info=True)
+                raise
+            except HTTPError:
+                logging.error("Failed to get customer assumed role", exc_info=True)
+                raise
+            except ClientError:
+                logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
+                raise
+            except JSONDecodeError:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+                raise
+            except BridgecrewAuthError:
                 logging.error("Received an error response during authentication")
-                raise e
+                raise
 
         self.platform_integration_configured = True
 
@@ -345,12 +345,12 @@ class BcPlatformIntegration(object):
                 response = json.loads(request.data.decode("utf8"))
                 url = response.get("url", None)
                 return url
-            except HTTPError as e:
-                logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
-                raise e
-            except JSONDecodeError as e:
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-                raise e
+            except HTTPError:
+                logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
+                raise
+            except JSONDecodeError:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+                raise
             finally:
                 if request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
@@ -386,11 +386,11 @@ class BcPlatformIntegration(object):
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-                    raise e
-            except Exception as e:
-                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-                raise e
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    raise
+            except Exception:
+                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                raise
         if curr_try == tries:
             logging.error(
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
@@ -421,8 +421,8 @@ class BcPlatformIntegration(object):
             request = self.http.request("GET", self.platform_run_config_url, headers=headers)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
             logging.debug("Got customer run config from Bridgecrew BE")
-        except Exception as e:
-            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}, error:\n{e}")
+        except Exception:
+            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
@@ -436,15 +436,17 @@ class BcPlatformIntegration(object):
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
-        except Exception as e:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}, error:\n{e}")
+        except Exception:
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}", exc_info=True)
 
     def onboarding(self):
         if not self.bc_api_key:
             print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
                                          attrs=['bold']) + colored(
                 u"\u2022 " + "Command line docker Image scanning\n"
-                u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
+                             u"\u2022 " + "Software Composition Analysis\n"
+                                          u"\u2022 " + "Centralized policy management\n"
+                                                       u"\u2022 " + "Free bridgecrew.cloud account with API access\n"
                 u"\u2022 " + "Auto-fix remediation suggestions\n"
                 u"\u2022 " + "Enabling of VS Code Plugin\n"
                 u"\u2022 " + "Dashboard visualisation of Checkov scans\n"

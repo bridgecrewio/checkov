@@ -27,3 +27,12 @@ class TestJsonpathEqualsSolver(TestBaseSolver):
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_jsonpath_equals_azure_rule(self):
+        root_folder = '../../../resources/azure_secure_rule'
+        check_id = "AzureSecureRule"
+        should_pass = ['azurerm_network_security_group.sg_fail']
+        should_fail = ['azurerm_network_security_group.sg_fail2']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

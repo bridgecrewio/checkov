@@ -28,6 +28,7 @@ init(autoreset=True)
 @dataclass
 class CheckType:
     ARM = "arm"
+    BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"
@@ -292,7 +293,7 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def get_sarif_json(self, tool) -> Dict[str, Any]:
+    def get_sarif_json(self, tool: str) -> Dict[str, Any]:
         runs = []
         rules = []
         results = []
@@ -392,7 +393,7 @@ class Report:
         }
         return sarif_template_report
 
-    def write_sarif_output(self, tool) -> None:
+    def write_sarif_output(self, tool: str) -> None:
         try:
             with open("results.sarif", "w") as f:
                 f.write(json.dumps(self.get_sarif_json(tool)))
