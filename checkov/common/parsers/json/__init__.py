@@ -28,7 +28,7 @@ def load(filename, allow_nulls=True):
     return (json.loads(content, cls=Decoder, allow_nulls=allow_nulls), file_lines)
 
 
-def parse(filename, out_parsing_errors: Dict[str, str], allow_nulls=True):
+def parse(filename, allow_nulls=True, out_parsing_errors: Dict[str, str], ):
     template = None
     template_lines = None
     error = None

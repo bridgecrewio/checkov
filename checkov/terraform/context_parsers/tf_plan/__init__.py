@@ -11,7 +11,7 @@ def parse(filename, out_parsing_errors: Dict[str, str]):
     """
         Decode filename into an object
     """
-    (template, template_lines) = json_parse(filename, out_parsing_errors)
+    (template, template_lines) = json_parse(filename, out_parsing_errors=out_parsing_errors)
 
     if (
         template is not None
