@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class CPURequests(BaseResourceCheck):
+class CPULimits(BaseResourceCheck):
 
     def __init__(self):
         name = "CPU Limits should be set"
@@ -38,4 +38,4 @@ class CPURequests(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = CPURequests()
+check = CPULimits()
