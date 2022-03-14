@@ -47,8 +47,9 @@ class Runner(BaseRunner):
                 if file.endswith(".bicep"):
                     file_paths.add(Path(file))
 
+        definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
 
-        definitions, definitions_raw = Parser().get_files_definitions(file_paths)
+        report.add_parsing_errors(parsing_errors)
 
         for file_path, definition in definitions.items():
             for block_type, registry in Runner.block_type_registries.items():
@@ -71,7 +72,9 @@ class Runner(BaseRunner):
                             resource_id = f"{conf['type']}.{name}"
                             report.add_resource(f"{cleaned_path}:{resource_id}")
 
-                            suppressions = self.search_for_suppression(code_lines=file_code_lines[start_line - 1 : end_line])
+                            suppressions = self.search_for_suppression(
+                                code_lines=file_code_lines[start_line - 1 : end_line]
+                            )
 
                             for check, check_result in results.items():
                                 if check.id in suppressions.keys():
@@ -91,6 +94,7 @@ class Runner(BaseRunner):
                                     check_class=check.__class__.__module__,
                                     file_abs_path=str(file_path.absolute()),
                                     evaluations=None,
+                                    severity=check.bc_severity,
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
