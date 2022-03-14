@@ -291,26 +291,23 @@ jobs:
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
         id: versions
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Publish to Registry
+        id: docker_publish
+        uses: elgohr/Publish-Docker-Github-Action@master
         with:
+          name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          file: admissioncontroller/Dockerfile
-          push: true
-          tags: bridgecrew/whorf:${{ steps.versions.outputs.version }}, bridgecrew/whorf:${{ steps.versions.outputs.major_version }}, bridgecrew/whorf:latest
-          no-cache: true
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
+          dockerfile: admissioncontroller/Dockerfile
+          buildoptions: "--no-cache"
       - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+        run: echo ${{ steps.docker_publish.outputs.digest }}
       - name: Update deployment
         uses: jacobtomlinson/gha-find-replace@master
         with:
           find: "image: bridgecrew/whorf(@sha256:[a-f0-9]{64})?"
-          replace: "image: bridgecrew/whorf@${{ steps.docker_build.outputs.digest }}"
+          replace: "image: bridgecrew/whorf@${{ steps.docker_publish.outputs.digest }}"
           include: "admissioncontroller/k8s/deployment.yaml"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
