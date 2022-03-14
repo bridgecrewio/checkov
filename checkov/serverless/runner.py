@@ -95,7 +95,7 @@ class Runner(BaseRunner):
 
             if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
                 cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
-                if cf_sub_template.get("Resources"):
+                if isinstance(cf_sub_template.get("Resources"), dict):
                     cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
                     logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                     cf_context_parser.evaluate_default_refs()
