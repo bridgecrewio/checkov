@@ -31,7 +31,7 @@ spec:
             drop:
               - ALL
               - NET_RAW
-        image: bridgecrew/whorf@bridgecrew/whorf@sha256:58b652c08ae592d7e245d7ce3b780798a35ac698c6b804a601c409ca7816c72b@bridgecrew/whorf@sha256:8ef75a8ae4c4082f377af9f095385e7a5807f64355ead75f156d056158e9c4b8@bridgecrew/whorf@sha256:85a9636fbe49a3336aeda3b92db8bf2c1c189d84f94650ea1975957da35167d5
+        image: bridgecrew/whorf@sha256:58b652c08ae592d7e245d7ce3b780798a35ac698c6b804a601c409ca7816c72b
         imagePullPolicy: Always
         resources:
           limits:
