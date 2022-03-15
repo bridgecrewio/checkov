@@ -113,6 +113,7 @@ jobs:
   bump-version:
     needs: [integration-tests, unit-tests, prisma-tests]
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
@@ -193,37 +194,8 @@ jobs:
           body: ${{ steps.version.outputs.notes }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-  publish-package:
-    needs: bump-version
-    environment: release
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v4.2.0
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.7
-      - name: Install pipenv
-        run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
-      - name: Install dependencies
-        run: |
-          pipenv --python 3.7
-          pipenv install --dev
       - name: create python package
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git fetch --tags
-          git pull
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@master
@@ -234,17 +206,17 @@ jobs:
         run: |
           sleep 2m
     outputs:
-      version: ${{ needs.bump-version.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
-    needs: publish-package
+    needs: bump-version
     environment: release
     steps:
       - uses: actions/checkout@v3
       - name: Get release version
         id: versions
         run: |
-          checkov_version=${{ needs.publish-package.outputs.version }}
+          checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
@@ -258,13 +230,13 @@ jobs:
           tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
-    needs: publish-package
+    needs: bump-version
     environment: release
     steps:
       - uses: actions/checkout@v3
       - name: update checkov-k8s version
         run: |
-          checkov_version=${{ needs.publish-package.outputs.version }}
+          checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
@@ -281,12 +253,12 @@ jobs:
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    needs: publish-package
+    needs: bump-version
     steps:
       - uses: actions/checkout@v2
       - name: get versions
         run: |
-          checkov_version=${{ needs.publish-package.outputs.version }}
+          checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
@@ -311,6 +283,7 @@ jobs:
           include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
+          git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
   update-bridgecrew-projects:
