@@ -27,7 +27,7 @@ class ImageTagFixed(BaseResourceCheck):
                 if container.get("image"):
                     name = container.get("image")[0]
                     if ":" in name:
-                        if name.split(":")[1] == "latest" or "":
+                        if name.split(":")[1] in ("latest", ""):
                             self.evaluated_keys = [f'spec/[0]/container/[{idx}]/image']
                             return CheckResult.FAILED
                         break
