@@ -54,7 +54,7 @@ def parse(filename):
         logger.error('Cannot read file contents: %s', filename)
         return
     except CfnParseError:
-        logger.warning(f'Failed to parse file {filename}', exc_info=True)
+        logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
         return
     except YAMLError:
         logger.error(f"Failed to parse file {filename}", exc_info=True)
