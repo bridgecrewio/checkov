@@ -21,7 +21,7 @@ class AllowedCapabilitiesPSP(BaseResourceNegativeValueCheck):
         return 'spec/[0]/allowed_capabilities'
 
     def get_forbidden_values(self) -> List[Any]:
-        return ANY_VALUE
+        return [ANY_VALUE]
 
 
 check = AllowedCapabilitiesPSP()
