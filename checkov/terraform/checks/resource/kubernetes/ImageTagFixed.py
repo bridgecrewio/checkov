@@ -30,9 +30,9 @@ class ImageTagFixed(BaseResourceCheck):
                         if name.split(":")[1] in ("latest", ""):
                             self.evaluated_keys = [f'spec/[0]/container/[{idx}]/image']
                             return CheckResult.FAILED
-                        break
+                        continue
                     if "@" in name:
-                        break
+                        continue
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/image']
                     return CheckResult.FAILED
                 self.evaluated_keys = [f'spec/[0]/container/[{idx}]']
