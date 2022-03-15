@@ -36,7 +36,7 @@ bcapikey=$2
 
 # Generate keys into a temporary directory.
 echo "Generating TLS certs ..."
-/usr/local/opt/openssl/bin/openssl req -x509 -sha256 -newkey rsa:2048 -keyout $certdir/webhook.key -out $certdir/webhook.crt -days 1024 -nodes -addext "subjectAltName = DNS.1:validate.$ns.svc"
+openssl req -x509 -sha256 -newkey rsa:2048 -keyout $certdir/webhook.key -out $certdir/webhook.crt -days 1024 -nodes -addext "subjectAltName = DNS.1:validate.$ns.svc"
 
 kubectl create secret generic admission-tls -n bridgecrew --type=Opaque --from-file=$certdir/webhook.key --from-file=$certdir/webhook.crt --dry-run=client -o yaml > $k8sdir/secret.yaml
 
