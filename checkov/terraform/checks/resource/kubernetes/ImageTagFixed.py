@@ -1,10 +1,9 @@
-from typing import Any
-from checkov.common.models.consts import ANY_VALUE
+
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class ImageTagFixed(BaseResourceValueCheck):
+class ImageTagFixed(BaseResourceCheck):
 
     def __init__(self):
         """
@@ -16,11 +15,7 @@ class ImageTagFixed(BaseResourceValueCheck):
         id = "CKV_K8S_14"
         supported_resources = ["kubernetes_pod"]
         categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.FAILED)
-
-    def get_inspected_key(self) -> str:
-        return "spec/[0]/container/[0]/readiness_probe/[0]"
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec')[0]
@@ -44,9 +39,6 @@ class ImageTagFixed(BaseResourceValueCheck):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
-
-    def get_expected_value(self) -> Any:
-        return ANY_VALUE
 
 
 check = ImageTagFixed()
