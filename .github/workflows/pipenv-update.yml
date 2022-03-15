@@ -8,7 +8,7 @@ jobs:
   pipenv-update:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
       - name: Import GPG key

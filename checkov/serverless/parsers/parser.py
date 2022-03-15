@@ -12,6 +12,7 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
+from checkov.cloudformation.parser.cfn_yaml import CfnParseError
 from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
 from checkov.common.parsers.node import DictNode, StrNode
 
@@ -51,6 +52,9 @@ def parse(filename):
             return
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
+        return
+    except CfnParseError:
+        logger.warning(f'Failed to parse file {filename}', exc_info=True)
         return
     except YAMLError:
         logger.error(f"Failed to parse file {filename}", exc_info=True)

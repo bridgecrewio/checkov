@@ -309,6 +309,9 @@ jobs:
           find: "image: bridgecrew/whorf(@sha256:[a-f0-9]{64})?"
           replace: "image: bridgecrew/whorf@${{ steps.docker_publish.outputs.digest }}"
           include: "admissioncontroller/k8s/deployment.yaml"
+      - name: commit changes to deployment
+        run: |
+          git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
