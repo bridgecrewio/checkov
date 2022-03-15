@@ -32,7 +32,6 @@ spec:
               - ALL
               - NET_RAW
         image: bridgecrew/whorf@sha256:bad838af3e40cc63df58a5a95865714ef9fe63b218c6af2a1f1f755cc0eb511e
-        imagePullPolicy: Always
         resources:
           limits:
             cpu: "1"

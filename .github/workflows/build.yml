@@ -277,8 +277,8 @@ jobs:
         run: echo ${{ steps.docker_publish.outputs.digest }}
       - name: Update deployment yaml
         run: |
-          sed 's/image: bridgecrew\/whorf@sha256:.*/image: bridgecrew\/whorf@${{ steps.docker_publish.outputs.digest }}/g' admissioncontroller/k8s/deployment.yaml > admissioncontroller/k8s/deployment.yaml2
-          mv admissioncontroller/k8s/deployment.yaml2 admissioncontroller/k8s/deployment.yaml
+          sed -i'.bkp' -e 's/image: bridgecrew\/whorf@sha256:.*/image: bridgecrew\/whorf@${{ steps.docker_publish.outputs.digest }}/g' admissioncontroller/k8s/deployment.yaml
+          rm admissioncontroller/k8s/deployment.yaml.bkp
       - name: commit changes to deployment
         run: |
           git pull
