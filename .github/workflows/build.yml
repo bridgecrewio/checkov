@@ -312,6 +312,7 @@ jobs:
       - name: commit changes to deployment
         run: |
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
+          git push origin
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
