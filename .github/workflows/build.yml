@@ -275,10 +275,12 @@ jobs:
           buildoptions: "--no-cache"
       - name: Image digest
         run: echo ${{ steps.docker_publish.outputs.digest }}
-      - name: Update deployment yaml
-        run: |
-          sed -i'.bkp' -e 's/image: bridgecrew\/whorf@sha256:.*/image: bridgecrew\/whorf@${{ steps.docker_publish.outputs.digest }}/g' admissioncontroller/k8s/deployment.yaml
-          rm admissioncontroller/k8s/deployment.yaml.bkp
+      - name: Update deployment
+        uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: "image: bridgecrew/whorf@sha256:[a-f0-9]{64}"
+          replace: "image: ${{ steps.docker_publish.outputs.digest }}"
+          include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
           git pull
