@@ -67,6 +67,7 @@ setup(
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
         "pycep-parser==0.3.2",
+        "charset-normalizer",
     ],
     license="Apache License 2.0",
     name="checkov",
