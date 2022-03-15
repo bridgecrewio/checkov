@@ -73,7 +73,7 @@ class Runner(BaseRunner):
 
     def run(
         self,
-        root_folder: str,
+        root_folder: Opiontal[str] = None,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
