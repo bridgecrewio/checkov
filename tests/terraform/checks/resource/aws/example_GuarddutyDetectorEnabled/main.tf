@@ -4,7 +4,7 @@ resource "aws_guardduty_detector" "pass" {
 }
 
 resource "aws_guardduty_detector" "pass2" {
-  tags   = { test = "Fail" }
+  tags = { test = "Fail" }
 }
 
 resource "aws_guardduty_detector" "fail" {
