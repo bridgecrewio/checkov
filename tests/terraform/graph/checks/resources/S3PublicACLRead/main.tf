@@ -24,22 +24,22 @@ variable "unknown_var" {
 
 resource "aws_s3_bucket" "public_read" {
   bucket = "example"
-  acl = "public-read"
+  acl    = "public-read"
 }
 
 resource "aws_s3_bucket" "public_read_write" {
   bucket = "example"
-  acl = "public-read-write"
+  acl    = "public-read-write"
 }
 
 resource "aws_s3_bucket" "website" {
   bucket = "example"
-  acl = "website"
+  acl    = "website"
 }
 
 resource "aws_s3_bucket" "authenticated_read" {
   bucket = "example"
-  acl = "authenticated-read"
+  acl    = "authenticated-read"
 }
 
 # provider version 4
@@ -51,7 +51,7 @@ resource "aws_s3_bucket" "private_acl_v4" {
 
 resource "aws_s3_bucket_acl" "private_acl_v4" {
   bucket = aws_s3_bucket.private_acl_v4.id
-  acl = "private"
+  acl    = "private"
 }
 
 # fail
@@ -61,7 +61,7 @@ resource "aws_s3_bucket" "public_read_v4" {
 
 resource "aws_s3_bucket_acl" "public_read_v4" {
   bucket = aws_s3_bucket.public_read_v4.id
-  acl = "public-read"
+  acl    = "public-read"
 }
 
 resource "aws_s3_bucket" "public_read_write_v4" {
@@ -70,7 +70,7 @@ resource "aws_s3_bucket" "public_read_write_v4" {
 
 resource "aws_s3_bucket_acl" "public_read_write_v4" {
   bucket = aws_s3_bucket.public_read_write_v4.id
-  acl = "public-read-write"
+  acl    = "public-read-write"
 }
 
 
@@ -80,7 +80,7 @@ resource "aws_s3_bucket" "website_v4" {
 
 resource "aws_s3_bucket_acl" "website_v4" {
   bucket = aws_s3_bucket.website_v4.id
-  acl = "website"
+  acl    = "website"
 }
 
 resource "aws_s3_bucket" "authenticated_read_v4" {
@@ -89,5 +89,5 @@ resource "aws_s3_bucket" "authenticated_read_v4" {
 
 resource "aws_s3_bucket_acl" "authenticated_read_v4" {
   bucket = aws_s3_bucket.authenticated_read_v4.id
-  acl = "authenticated-read"
+  acl    = "authenticated-read"
 }
