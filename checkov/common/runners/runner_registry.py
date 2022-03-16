@@ -122,6 +122,7 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
+            logging.debug(f'Getting exit code for report {report.check_type}')
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "cli" in config.output:
