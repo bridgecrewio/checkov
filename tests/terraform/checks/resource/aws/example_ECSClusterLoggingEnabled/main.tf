@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "fail" {
   configuration {
     execute_command_configuration {
       # kms_key_id = aws_kms_key.example.arn
-      logging    = "NONE"
+      logging = "NONE"
 
       log_configuration {
         # cloud_watch_encryption_enabled = true
@@ -43,7 +43,7 @@ resource "aws_ecs_cluster" "pass2" {
   configuration {
     execute_command_configuration {
       # kms_key_id = aws_kms_key.example.arn
-      logging    = "DEFAULT"
+      logging = "DEFAULT"
 
       log_configuration {
         # cloud_watch_encryption_enabled = true

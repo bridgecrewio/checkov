@@ -33,10 +33,10 @@ resource "aws_mq_broker" "fail2" {
   }
 
   auto_minor_version_upgrade = false
-  engine_type        = "ActiveMQ"
-  engine_version     = "5.15.9"
-  host_instance_type = "mq.t2.micro"
-  security_groups    = [aws_security_group.test.id]
+  engine_type                = "ActiveMQ"
+  engine_version             = "5.15.9"
+  host_instance_type         = "mq.t2.micro"
+  security_groups            = [aws_security_group.test.id]
 
   user {
     username = "ExampleUser"
@@ -59,10 +59,10 @@ resource "aws_mq_broker" "pass" {
   }
 
   auto_minor_version_upgrade = true
-  engine_type        = "ActiveMQ"
-  engine_version     = "5.15.9"
-  host_instance_type = "mq.t2.micro"
-  security_groups    = [aws_security_group.test.id]
+  engine_type                = "ActiveMQ"
+  engine_version             = "5.15.9"
+  host_instance_type         = "mq.t2.micro"
+  security_groups            = [aws_security_group.test.id]
 
   user {
     username = "ExampleUser"
