@@ -53,14 +53,10 @@ definition:
           resource_types:
             - aws_s3_bucket_server_side_encryption_configuration
           attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: equals
-          value: 'aws:kms'
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: equals
-          value: "AES256"
+          operator: within
+          value:
+            - "aws:kms"
+            - "AES256"
         - cond_type: attribute
           resource_types:
             - aws_s3_bucket_server_side_encryption_configuration
