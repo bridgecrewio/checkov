@@ -6,6 +6,9 @@ resource "aws_s3_bucket" "private_acl" {
   acl = "private"
 }
 
+resource "aws_s3_bucket" "no_acl" {
+  bucket = "example_no_acl"
+}
 
 resource "aws_s3_bucket" "unknown_var" {
   bucket = "example"
