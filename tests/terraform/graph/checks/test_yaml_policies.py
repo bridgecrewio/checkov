@@ -216,8 +216,11 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
         self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
 
-    def test_test_S3BucketVersioning(self):
+    def test_S3BucketVersioning(self):
         self.go("S3BucketVersioning")
+
+    def test_S3PublicACLRead(self):
+        self.go("S3PublicACLRead")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
