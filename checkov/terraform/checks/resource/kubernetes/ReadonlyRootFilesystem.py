@@ -23,7 +23,7 @@ class ReadonlyRootFilesystem(BaseResourceCheck):
                 if container.get("security_context"):
                     context = container.get("security_context")[0]
                     if context.get("read_only_root_filesystem") != [True]:
-                        self.evaluated_keys = [f'spec/[0]/container/[{idx}]/security_context/[0]/privileged']
+                        self.evaluated_keys = [f'spec/[0]/container/[{idx}]/security_context/[0]/read_only_root_filesystem']
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
