@@ -57,7 +57,7 @@ def parse(filename):
         logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
         return
     except YAMLError:
-        logger.error(f"Failed to parse file {filename}", exc_info=True)
+        logger.warning(f"Failed to parse file {filename} as a yaml")
         return
 
     process_variables(template, filename)
