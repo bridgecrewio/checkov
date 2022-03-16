@@ -14,6 +14,9 @@ class KinesisFirehoseDeliveryStreamUsesCMK(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if conf.get("kinesis_source_configuration"):
+            return CheckResult.UNKNOWN
+
         if conf.get('server_side_encryption'):
             sse = conf.get('server_side_encryption')[0]
             if sse.get('enabled') != [True]:

@@ -1,3 +1,23 @@
+resource "aws_kinesis_firehose_delivery_stream" "ignore" {
+  name        = "terraform-kinesis-firehose-test-stream"
+  destination = "s3"
+
+kinesis_source_configuration {
+  kinesis_stream_arn = ""
+  role_arn           = ""
+}
+
+  # server_side_encryption {
+    # enabled=true #default is false
+    # key_type="CUSTOMER_MANAGED_CMK"
+    # key_arn=aws_kms_kmy.example.arn
+  # }
+  tags = {
+    test = "failed"
+  }
+}
+
+
 # fails default is off
 resource "aws_kinesis_firehose_delivery_stream" "fail" {
   name        = "terraform-kinesis-firehose-test-stream"
