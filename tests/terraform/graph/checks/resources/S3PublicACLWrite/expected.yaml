@@ -1,0 +1,7 @@
+pass:
+  - "aws_s3_bucket.private_acl"
+  - "aws_s3_bucket.unknown_var"
+  - "aws_s3_bucket.private_acl_v4"
+fail:
+  - "aws_s3_bucket.public_read_write"
+  - "aws_s3_bucket.public_read_write_v4"

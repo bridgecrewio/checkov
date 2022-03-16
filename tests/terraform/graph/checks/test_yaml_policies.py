@@ -222,6 +222,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3PublicACLRead(self):
         self.go("S3PublicACLRead")
 
+    def test_S3PublicACLWrite(self):
+        self.go("S3PublicACLWrite")
+
     def test_S3BucketEncryption(self):
         self.go("S3BucketEncryption")
 
