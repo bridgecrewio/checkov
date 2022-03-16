@@ -1,5 +1,5 @@
 metadata:
-  name: "Ensure all data stored in the S3 bucket have sse"
+  name: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
   category: "ENCRYPTION"
   id: "CKV2_AWS_40"
 definition:
