@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure all data stored in the S3 bucket have versioning enabled"
   category: "BACKUP_AND_RECOVERY"
-  id: "CKV_AWS_19"
+  id: "CKV2_AWS_40"
 definition:
   or:
     - cond_type: attribute
