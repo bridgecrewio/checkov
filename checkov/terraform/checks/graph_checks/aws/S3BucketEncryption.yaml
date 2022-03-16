@@ -1,6 +1,6 @@
 metadata:
-  name: "Ensure all data stored in the S3 bucket have versioning enabled"
-  category: "BACKUP_AND_RECOVERY"
+  name: "Ensure all data stored in the S3 bucket have sse"
+  category: "ENCRYPTION"
   id: "CKV2_AWS_40"
 definition:
   or:
