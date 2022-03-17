@@ -55,4 +55,3 @@ class TestYamlConnectedNodes(unittest.TestCase):
                 policy = load_yaml_data(f_name, root)
                 assert policy is not None
                 return get_policy_results(dir_path, policy)
-    
