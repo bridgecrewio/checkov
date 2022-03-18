@@ -27,7 +27,10 @@ class ECRPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         self.evaluated_keys = ["Properties/RepositoryPolicyText/Statement"]
-        policy_text = conf.get("Properties", {}).get("RepositoryPolicyText")
+        properties = conf.get("Properties")
+        if not properties or not isinstance(properties, dict):
+            return CheckResult.PASSED
+        policy_text = properties.get("RepositoryPolicyText")
         if not policy_text:
             return CheckResult.PASSED
         if isinstance(policy_text, str):
