@@ -15,6 +15,7 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties/networkAcls/defaultAction"]
         properties = conf.get("properties")
         if properties:
             nacls = properties.get("networkAcls")
@@ -23,6 +24,7 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
                 if default_action == "Deny":
                     bypass = nacls.get("bypass")
                     if not bypass or bypass == "None":
+                        self.evaluated_keys.append("properties/networkAcls/bypass")
                         return CheckResult.FAILED
 
         return CheckResult.PASSED
