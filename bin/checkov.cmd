@@ -2,6 +2,8 @@
 REM="""
 setlocal
 set PythonExe=""
+set PythonExeFlags=
+
 for %%i in (cmd bat exe) do (
     for %%j in (python.%%i) do (
         call :SetPythonExe "%%~$PATH:j"
@@ -14,9 +16,10 @@ for /f "tokens=2 delims==" %%i in ('assoc .py') do (
         )
     )
 )
-%PythonExe% -m checkov.main %*
+%PythonExe% -x %PythonExeFlags% "%~f0" %*
 exit /B %ERRORLEVEL%
 goto :EOF
+
 :SetPythonExe
 if not ["%~1"]==[""] (
     if [%PythonExe%]==[""] (
@@ -25,3 +28,17 @@ if not ["%~1"]==[""] (
 )
 goto :EOF
 """
+
+# ===================================================
+# Python script starts here
+# ===================================================
+
+#!/usr/bin/env python
+from checkov.main import run
+import warnings
+import sys
+
+if __name__ == '__main__':
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=SyntaxWarning)
+        sys.exit(run())
