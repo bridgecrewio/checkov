@@ -8,7 +8,7 @@ import signal
 import sys
 from pathlib import Path
 from typing import Any, List, Optional
-
+print ("foo)
 import argcomplete
 import configargparse
 from configargparse import ArgumentParser
