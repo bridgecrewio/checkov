@@ -6,7 +6,7 @@ tasks:
   - name: Pipenv Environment And Dev
     init: |
       pipenv sync --dev
-      pipenv run python -m coverage run -m pytest test
+      pipenv run python -m coverage run -m pytest tests
 
 image:
   file: .gitpod.Dockerfile
