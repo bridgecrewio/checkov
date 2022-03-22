@@ -4,6 +4,7 @@ resource "random_id" "db_name_suffix" {
 
 resource "google_sql_database_instance" "db_instance_good_1" {
   name = "master-instance-${random_id.db_name_suffix.hex}"
+  database_version = "MYSQL_8_0"
 
   settings {
     tier = "db-f1-micro"
@@ -12,13 +13,14 @@ resource "google_sql_database_instance" "db_instance_good_1" {
 
 resource "google_sql_database_instance" "db_instance_good_2" {
   name = "master-instance-${random_id.db_name_suffix.hex}"
+  database_version = "MYSQL_8_0"
 
   settings {
     tier = "db-f1-micro"
   }
 }
 
-resource "google_sql_database_instance" "db_instance_good_3" {
+resource "google_sql_database_instance" "db_instance_good_3_no_pass" {
   name = "master-instance-${random_id.db_name_suffix.hex}"
   database_version = "POSTGRES_13"
 
@@ -47,7 +49,7 @@ resource "google_sql_user" "root_good" {
 
 resource "google_sql_user" "root_good_3" {
   name     = "root"
-  instance = google_sql_database_instance.db_instance_good_3.name
+  instance = google_sql_database_instance.db_instance_good_3_no_pass.name
   host     = "me.com"
 }
 
