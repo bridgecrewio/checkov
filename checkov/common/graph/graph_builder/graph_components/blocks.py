@@ -4,6 +4,7 @@ from typing import Union, Dict, Any, List, Optional
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class Block:
@@ -77,6 +78,9 @@ class Block:
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
 
+        if self.block_type == BlockType.DATA:
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
+
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
             del base_attributes["changed_attributes"]
@@ -88,14 +92,15 @@ class Block:
             attribute_value = self.attributes[attribute_key]
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
                 attribute_value = attribute_value[0]
-            if isinstance(attribute_value, (list, dict)):
-                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value)
-                base_attributes.update(inner_attributes)
+            # needs to be checked before adding anything to 'base_attributes'
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
                 continue
-            else:
-                base_attributes[attribute_key] = attribute_value
+            if isinstance(attribute_value, (list, dict)):
+                inner_attributes = self.get_inner_attributes(attribute_key, attribute_value, False)
+                base_attributes.update(inner_attributes)
+
+            base_attributes[attribute_key] = attribute_value
 
     def get_hash(self) -> str:
         attributes_dict = self.get_attribute_dict()
@@ -164,6 +169,7 @@ class Block:
         cls,
         attribute_key: str,
         attribute_value: Union[str, List[str], Dict[str, Any]],
+        strip_list: bool = True  # used by subclass
     ) -> Dict[str, Any]:
         inner_attributes: Dict[str, Any] = {}
 

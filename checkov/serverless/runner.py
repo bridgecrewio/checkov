@@ -95,11 +95,12 @@ class Runner(BaseRunner):
 
             if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
                 cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
-                if cf_sub_template.get("Resources"):
+                cf_sub_resources = cf_sub_template.get("Resources")
+                if cf_sub_resources and isinstance(cf_sub_resources, dict):
                     cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
                     logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                     cf_context_parser.evaluate_default_refs()
-                    for resource_name, resource in cf_sub_template['Resources'].items():
+                    for resource_name, resource in cf_sub_resources.items():
                         if not isinstance(resource, DictNode):
                             continue
                         cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
@@ -123,7 +124,7 @@ class Runner(BaseRunner):
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                entity_tags=tags)
+                                                entity_tags=tags, severity=check.bc_severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
@@ -155,7 +156,7 @@ class Runner(BaseRunner):
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags)
+                                            entity_tags=tags, severity=check.bc_severity)
                             record.set_guideline(check.guideline)
                             report.add_record(record=record)
             # Sub-sections that are a single item
@@ -178,7 +179,7 @@ class Runner(BaseRunner):
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.bc_severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
@@ -199,7 +200,7 @@ class Runner(BaseRunner):
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.bc_severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 

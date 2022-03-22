@@ -1,5 +1,3 @@
-from lark import Tree
-
 expected_postgres_module = {"create": True,
                             "name": "${var.name}",
                             "use_name_prefix": True,
@@ -33,7 +31,7 @@ expected_eks = {
             "version": ["1.19"],
             "vpc_config": {
                 "security_group_ids": ["aws_security_group.master.id"],
-                "subnet_ids": "Tree('full_splat_expr_term', ['aws_subnet.eks', 'id'])"
+                "subnet_ids": "aws_subnet.eks[*].id"
             },
         }
     }
@@ -49,4 +47,3 @@ expected_provider = {
         }
     }
 }
-

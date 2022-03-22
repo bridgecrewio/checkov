@@ -8,6 +8,8 @@ then
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s -d cfngoat\\ -o json --external-checks-dir .\\checkov\\cloudformation\\checks\\graph_checks\\aws > checkov_report_cfngoat.json
   pipenv run checkov -s -d kubernetes-goat\\ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
+  pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
+  pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o sarif
 #  LOG_LEVEL=DEBUG pipenv run checkov -s -d kubernetes-goat\\ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
   pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat\\terraform\\ -o json > checkov_report_terragoat_with_skip.json
   pipenv run checkov -s -d cfngoat\\ -o json --quiet > checkov_report_cfngoat_quiet.json
@@ -15,12 +17,16 @@ then
 else
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
+  pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
+  pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o sarif
   pipenv run checkov -s -d cfngoat/ -o json --external-checks-dir ./checkov/cloudformation/checks/graph_checks/aws > checkov_report_cfngoat.json
   pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
   pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
+  pipenv run checkov -s -d kustomizegoat/ --framework kustomize -o json > checkov_report_kustomizegoat.json
   pipenv run checkov -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
   pipenv run checkov -s -d cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
   pipenv run checkov -s -d terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml -o json > checkov_config_report_terragoat.json
+
 fi
 
 if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]

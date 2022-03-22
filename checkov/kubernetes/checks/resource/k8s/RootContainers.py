@@ -101,7 +101,7 @@ def check_runAsNonRoot(spec):
 def check_runAsUser(spec):
     if spec.get("securityContext"):
         if "runAsUser" in spec["securityContext"]:
-            if spec["securityContext"]["runAsUser"] > 0:
+            if isinstance(spec["securityContext"]["runAsUser"], int) and spec["securityContext"]["runAsUser"] > 0:
                 return "PASSED"
             else:
                 return "FAILED"

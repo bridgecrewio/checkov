@@ -1,4 +1,6 @@
 resource "aws_s3_bucket" "destination" {
+  # checkov:skip=CKV_AWS_19: no encryption needed
+  # checkov:skip=CKV2_AWS_40: no encryption needed
   bucket = "tf-test-bucket-destination-12345"
   acl = var.acl
   versioning {

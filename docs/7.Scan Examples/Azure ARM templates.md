@@ -7,7 +7,7 @@ nav_order: 20
 
 # Azure ARM templates configuration scanning
 Checkov supports the evaluation of policies on your ARM templates files.
-When using checkov to scan a directory that contains a ARM templates template it will validate if the file is compliant with Azure best practices such as having logging and auditing enabled, Ensure that 'Public access level' is set to Private for blob containers	, Ensure no SQL Databases allow ingress from 0.0.0.0/0 (ANY IP), and more.  
+When using checkov to scan a directory that contains a ARM template it will validate if the file is compliant with Azure best practices such as having logging and auditing enabled, Ensure that 'Public access level' is set to Private for blob containers, Ensure no SQL Databases allow ingress from 0.0.0.0/0 (ANY IP), and more.  
 
 Full list of ARM templates policies checks can be found [here](https://www.checkov.io/5.Policy%20Index/arm.html).
 

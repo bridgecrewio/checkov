@@ -3,11 +3,12 @@ import logging
 import os.path
 import re
 import webbrowser
+from collections import namedtuple
 from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, Dict
+from typing import Optional, List, Dict
 
 import boto3
 import dpath.util
@@ -36,11 +37,13 @@ from checkov.common.bridgecrew.ci_variables import (
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
-    enrich_and_persist_checks_metadata
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
+    enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
+from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_user_agent_header
+from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
+    get_user_agent_header
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -52,6 +55,8 @@ ACCOUNT_CREATION_TIME = 180  # in seconds
 
 UNAUTHORIZED_MESSAGE = 'User is not authorized to access this resource with an explicit deny'
 ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole'
+
+FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
 MAX_RETRIES = 40
@@ -73,30 +78,37 @@ class BcPlatformIntegration(object):
         self.repo_id = None
         self.repo_branch = None
         self.skip_fixes = False
-        self.skip_suppressions = False
-        self.skip_policy_download = False
-        self.timestamp = None
-        self.scan_reports = []
-        self.api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
-        self.prisma_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
-        if self.prisma_url:
-            self.api_url = f"{self.prisma_url}/bridgecrew"
+        self.skip_download = False
         self.bc_source = None
         self.bc_source_version = None
-        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
-        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
-        self.customer_all_guidelines_api_url = f"{self.api_url}/api/v1/guidelines/customer"
-        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
-        self.api_token_url = f"{self.api_url}/api/v1/integrations/apiToken"
-        self.suppressions_url = f"{self.api_url}/api/v1/suppressions"
-        self.guidelines = None
-        self.bc_id_mapping = None
-        self.ckv_to_bc_id_mapping = None
+        self.timestamp = None
+        self.scan_reports = []
+        self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+        self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.setup_api_urls()
+        self.customer_run_config_response = None
+        self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http = None
-        self.excluded_paths = []
         self.bc_skip_mapping = False
+        self.cicd_details = {}
+
+    def setup_api_urls(self):
+        """
+        API URLs vary depending upon whether the platform is Bridgecrew or Prisma Cloud.
+        Bridgecrew has one default that can be used when initializing the class,
+        but Prisma Cloud requires resetting them in setup_bridgecrew_credentials,
+        which is where command-line parameters are first made available.
+        """
+        if self.prisma_api_url:
+            self.api_url = f"{self.prisma_api_url}/bridgecrew"
+        else:
+            self.api_url = self.bc_api_url
+        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
+        self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
+        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
     @staticmethod
     def is_bc_token(token: str) -> bool:
@@ -106,14 +118,13 @@ class BcPlatformIntegration(object):
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
-        # This is a Prisma Cloud token
-        if not self.prisma_url:
-            raise ValueError("Got a prisma token, but the env variable PRISMA_API_URL is not set")
-        elif '::' not in self.bc_api_key:
-            raise ValueError("PRISMA_API_URL was set, but the API key does not appear to be a valid Prisma API key "
-                             "(must be in format key::secret)")
+        # A Prisma Cloud Access Key was specified as the Bridgecrew token.
+        if not self.prisma_api_url:
+            raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
+        if '::' not in self.bc_api_key:
+            raise ValueError("A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         username, password = self.bc_api_key.split('::')
-        request = self.http.request("POST", f"{self.prisma_url}/login",
+        request = self.http.request("POST", f"{self.prisma_api_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
@@ -140,24 +151,27 @@ class BcPlatformIntegration(object):
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_suppressions=False,
-                                     skip_policy_download=False, source=None, source_version=None, repo_branch=None):
+    def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_download=False, source=None,
+                                     source_version=None, repo_branch=None, prisma_api_url=None):
         """
         Setup credentials against Bridgecrew's platform.
-        :param source:
-        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
+        :param skip_fixes: whether to skip querying fixes from Bridgecrew
+        :param skip_download: whether to skip downloading data (guidelines, custom policies, etc) from the platform
+        :param source:
+        :param prisma_api_url: optional URL for the Prisma Cloud platform, requires a Prisma Cloud Access Key as bc_api_key
         """
         self.repo_id = repo_id
         self.repo_branch = repo_branch
         self.skip_fixes = skip_fixes
-        self.skip_suppressions = skip_suppressions
-        self.skip_policy_download = skip_policy_download
+        self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
 
-        if self.prisma_url:
-            logging.info(f'Using Prisma API URL: {self.prisma_url}')
+        if prisma_api_url:
+            self.prisma_api_url = normalize_prisma_url(prisma_api_url)
+            self.setup_api_urls()
+            logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source.upload_results:
             try:
@@ -174,24 +188,22 @@ class BcPlatformIntegration(object):
                                               )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
-            except MaxRetryError as e:
-                logging.error(f"An SSL error occurred connecting to the platform. If you are on a VPN, please try "
-                              f"disabling it and re-running the command.\n{e}")
-                raise e
-            except HTTPError as e:
-                logging.error(f"Failed to get customer assumed role\n{e}")
-                raise e
-            except ClientError as e:
-                logging.error(f"Failed to initiate client with credentials {self.credentials}\n{e}")
-                raise e
-            except JSONDecodeError as e:
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-                raise e
-            except BridgecrewAuthError as e:
+            except MaxRetryError:
+                logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              "disabling it and re-running the command.", exc_info=True)
+                raise
+            except HTTPError:
+                logging.error("Failed to get customer assumed role", exc_info=True)
+                raise
+            except ClientError:
+                logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
+                raise
+            except JSONDecodeError:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+                raise
+            except BridgecrewAuthError:
                 logging.error("Received an error response during authentication")
-                raise e
-
-        self.get_id_mapping()
+                raise
 
         self.platform_integration_configured = True
 
@@ -226,45 +238,61 @@ class BcPlatformIntegration(object):
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir, files=None, excluded_paths=None):
+    def persist_repository(self, root_dir, files=None, excluded_paths=None, included_paths: Optional[List[str]] = None):
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
         that are specified will be persisted.
         :param files: Absolute path of the files passed in the --file flag.
         :param root_dir: Absolute path of the directory containing the repository root level.
         :param excluded_paths: Paths to exclude from persist process
+        :param included_paths: Paths to exclude from persist process
         """
         excluded_paths = excluded_paths if excluded_paths is not None else []
 
         if not self.use_s3_integration:
             return
-        files_to_persist = []
+        files_to_persist: List[FileToPersist] = []
         if files:
             for f in files:
+                f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
-                if file_extension in SUPPORTED_FILE_EXTENSIONS:
-                    files_to_persist.append((f, os.path.relpath(f, root_dir)))
+                if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
+                    files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
                 # but here we expect the list from runner_registry as well (which includes self.excluded_paths).
-                filter_ignored_paths(root_path, d_names, excluded_paths)
+                filter_ignored_paths(root_path, d_names, excluded_paths, included_paths=included_paths)
                 filter_ignored_paths(root_path, f_names, excluded_paths)
+                for file_path in f_names:
+                    _, file_extension = os.path.splitext(file_path)
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                        full_file_path = os.path.join(root_path, file_path)
+                        relative_file_path = os.path.relpath(full_file_path, root_dir)
+                        files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+
+        self.persist_files(files_to_persist)
+
+    def persist_git_configuration(self, root_dir, git_config_folders: List[str]):
+        if not self.use_s3_integration:
+            return
+        files_to_persist: List[FileToPersist] = []
+
+        for git_config_folder in git_config_folders:
+            if not os.path.isdir(git_config_folder):
+                continue
+            if not len(os.listdir(git_config_folder)):
+                continue
+
+            for root_path, _, f_names in os.walk(git_config_folder):
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
-                        files_to_persist.append((full_file_path, relative_file_path))
+                        files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
 
-        logging.info(f"Persisting {len(files_to_persist)} files")
-        with futures.ThreadPoolExecutor() as executor:
-            futures.wait(
-                [executor.submit(self._persist_file, full_file_path, relative_file_path) for
-                 full_file_path, relative_file_path in files_to_persist],
-                return_when=futures.FIRST_EXCEPTION,
-            )
-        logging.info(f"Done persisting {len(files_to_persist)} files")
+        self.persist_files(files_to_persist)
 
     def persist_scan_results(self, scan_reports):
         """
@@ -280,6 +308,11 @@ class BcPlatformIntegration(object):
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    def persist_image_scan_results(self, report: Dict[str, any], file_path: str, image_name: str, branch: str) -> None:
+        target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
+        to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
+        _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
     def commit_repository(self, branch):
         """
@@ -312,12 +345,12 @@ class BcPlatformIntegration(object):
                 response = json.loads(request.data.decode("utf8"))
                 url = response.get("url", None)
                 return url
-            except HTTPError as e:
-                logging.error(f"Failed to commit repository {self.repo_path}\n{e}")
-                raise e
-            except JSONDecodeError as e:
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON\n{e}")
-                raise e
+            except HTTPError:
+                logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
+                raise
+            except JSONDecodeError:
+                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+                raise
             finally:
                 if request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
@@ -330,10 +363,20 @@ class BcPlatformIntegration(object):
                     raise Exception(
                         f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
-    def _persist_file(self, full_file_path, relative_file_path):
+    def persist_files(self, files_to_persist: List[FileToPersist]):
+        logging.info(f"Persisting {len(files_to_persist)} files")
+        with futures.ThreadPoolExecutor() as executor:
+            futures.wait(
+                [executor.submit(self._persist_file, file_to_persist.full_file_path, file_to_persist.s3_file_key) for
+                 file_to_persist in files_to_persist],
+                return_when=futures.FIRST_EXCEPTION,
+            )
+        logging.info(f"Done persisting {len(files_to_persist)} files")
+
+    def _persist_file(self, full_file_path, s3_file_key):
         tries = MAX_RETRIES
         curr_try = 0
-        file_object_key = os.path.join(self.repo_path, relative_file_path).replace("\\", "/")
+        file_object_key = os.path.join(self.repo_path, s3_file_key).replace("\\", "/")
         while curr_try < tries:
             try:
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
@@ -343,60 +386,67 @@ class BcPlatformIntegration(object):
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-                    raise e
-            except Exception as e:
-                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}\n{e}")
-                raise e
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    raise
+            except Exception:
+                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                raise
         if curr_try == tries:
             logging.error(
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
-    def get_guidelines(self) -> dict:
-        if not self.guidelines:
-            self.get_checkov_mapping_metadata()
-        return self.guidelines
-
-    def get_id_mapping(self) -> Dict[str, str]:
-        if not self.bc_id_mapping:
-            self.get_checkov_mapping_metadata()
-        return self.bc_id_mapping
-
-    def get_ckv_to_bc_id_mapping(self) -> Dict[str, str]:
-        if not self.ckv_to_bc_id_mapping:
-            self.get_checkov_mapping_metadata()
-        return self.ckv_to_bc_id_mapping
-
-    def get_checkov_mapping_metadata(self) -> None:
-        if self.bc_skip_mapping is True:
-            logging.debug("Skipped mapping API call")
-            self.ckv_to_bc_id_mapping = {}
+    def get_platform_run_config(self):
+        if self.skip_download is True:
+            logging.debug("Skipping downloading configs from platform")
             return
-        guidelines_url = self.guidelines_api_url
-        headers = get_user_agent_header()
+
+        if self.is_integration_configured():
+            self.get_customer_run_config()
+        else:
+            self.get_public_run_config()
+
+    def get_customer_run_config(self) -> None:
+        if self.skip_download is True:
+            logging.debug("Skipping customer run config API call")
+            return
+
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception("Tried to get customer run config, but the API key was missing or the integration was not set up")
+
         try:
-            if (self.bc_api_key is not None):
-                guidelines_url = self.customer_all_guidelines_api_url
-                headers = merge_dicts(headers, {"Authorization": self.get_auth_token(), "Content-Type": "application/json"})
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token), get_default_get_headers(self.bc_source, self.bc_source_version))
             if not self.http:
                 self.setup_http_manager()
-            request = self.http.request("GET", guidelines_url, headers=headers)
-            response = json.loads(request.data.decode("utf8"))
-            self.guidelines = response["guidelines"]
-            self.bc_id_mapping = response.get("idMapping")
-            self.ckv_to_bc_id_mapping = {ckv_id: bc_id for (bc_id, ckv_id) in self.bc_id_mapping.items()}
-            logging.debug("Got checkov mappings from Bridgecrew BE")
-        except Exception as e:
-            logging.debug(f"Failed to get the guidelines from {guidelines_url}, error:\n{e}")
-            self.ckv_to_bc_id_mapping = {}
+            request = self.http.request("GET", self.platform_run_config_url, headers=headers)
+            self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+            logging.debug("Got customer run config from Bridgecrew BE")
+        except Exception:
+            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+
+    def get_public_run_config(self) -> None:
+        if self.skip_download is True:
+            logging.debug("Skipping checkov mapping and guidelines API call")
             return
+
+        try:
+            headers = {}
+            if not self.http:
+                self.setup_http_manager()
+            request = self.http.request("GET", self.guidelines_api_url, headers=headers)
+            self.public_metadata_response = json.loads(request.data.decode("utf8"))
+            logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
+        except Exception:
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}", exc_info=True)
 
     def onboarding(self):
         if not self.bc_api_key:
             print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
                                          attrs=['bold']) + colored(
                 u"\u2022 " + "Command line docker Image scanning\n"
-                u"\u2022 " + "Free (forever) bridgecrew.cloud account with API access\n"
+                             u"\u2022 " + "Software Composition Analysis\n"
+                                          u"\u2022 " + "Centralized policy management\n"
+                                                       u"\u2022 " + "Free bridgecrew.cloud account with API access\n"
                 u"\u2022 " + "Auto-fix remediation suggestions\n"
                 u"\u2022 " + "Enabling of VS Code Plugin\n"
                 u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
@@ -584,25 +634,9 @@ class BcPlatformIntegration(object):
                 t.set_postfix(refresh=False)
                 sleep(SLEEP_SECONDS)
 
-    def get_excluded_paths(self):
-        repo_settings_api_url = f'{self.api_url}/api/v1/vcs/settings/scheme'
-        try:
-            request = self.http.request("GET", repo_settings_api_url,
-                                        headers=merge_dicts({"Authorization": self.get_auth_token(),
-                                                             "Content-Type": "application/json"},
-                                                            get_user_agent_header()))
-            response = json.loads(request.data.decode("utf8"))
-            if 'scannedFiles' in response:
-                for section in response.get('scannedFiles').get('sections'):
-                    if self.repo_id in section.get('repos') and section.get('rule').get('excludePaths'):
-                        self.excluded_paths.extend(section.get('rule').get('excludePaths'))
-            return self.excluded_paths
-        except HTTPError as e:
-            logging.error(f"Failed to get vcs settings for repo {self.repo_path}\n{e}")
-            raise e
-        except JSONDecodeError as e:
-            logging.error(f"Response of {repo_settings_api_url} is not a valid JSON\n{e}")
-            raise e
+    def repo_matches(self, repo_name):
+        # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
+        return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
 
 
 bc_integration = BcPlatformIntegration()

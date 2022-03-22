@@ -1,4 +1,6 @@
 import json
+import logging
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -14,7 +16,11 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("container_properties"):
             if type(conf.get("container_properties")[0]) is str:
-                container = json.loads(conf.get("container_properties")[0])
+                try:
+                    container = json.loads(conf.get("container_properties")[0])
+                except json.JSONDecodeError as e:
+                    logging.error(e)
+                    return CheckResult.UNKNOWN
             else:
                 container = conf.get("container_properties")[0]
             if container.get("privileged"):

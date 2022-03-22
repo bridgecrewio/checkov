@@ -1,14 +1,18 @@
-from collections import defaultdict
-from typing import Dict, List, DefaultDict
+from __future__ import annotations
 
-from checkov.common.output.report import Report
+from collections import defaultdict
+from typing import DefaultDict, TYPE_CHECKING, Any
+
 import json
-from checkov.common.output.record import Record
+
+if TYPE_CHECKING:
+    from checkov.common.output.record import Record
+    from checkov.common.output.report import Report
 
 
 class Baseline:
     path = ""
-    failed_checks: DefaultDict[str, List[Dict[str, List[str]]]] = defaultdict(list)
+    failed_checks: DefaultDict[str, list[dict[str, list[str]]]] = defaultdict(list)
 
     def add_findings_from_report(self, report: Report) -> None:
         for check in report.failed_checks:
@@ -20,7 +24,7 @@ class Baseline:
             existing['check_ids'].append(check.check_id)
             existing['check_ids'].sort()  # Sort the check IDs to be nicer to the eye
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """
         The output of this class needs to be very explicit, hence the following structure of the dict:
         {
@@ -53,7 +57,7 @@ class Baseline:
         }
         return resp
 
-    def compare_and_reduce_reports(self, scan_reports: List[Report]) -> None:
+    def compare_and_reduce_reports(self, scan_reports: list[Report]) -> None:
         for scan_report in scan_reports:
             scan_report.passed_checks = [check for check in scan_report.passed_checks if
                                          self._is_check_in_baseline(check)]

@@ -139,3 +139,18 @@ resource "aws_alb_listener" "tls_fs_1_1" {
     target_group_arn = var.aws_lb_target_group_arn
   }
 }
+
+# mimicking a Terraform plan output by using an empty block
+
+resource "aws_lb_listener" "cognito" {
+  load_balancer_arn = var.aws_lb_arn
+  protocol          = "HTTP"
+  port              = "80"
+
+  default_action {
+    type = "authenticate-cognito"
+
+    redirect {
+    }
+  }
+}

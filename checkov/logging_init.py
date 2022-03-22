@@ -1,10 +1,8 @@
-import sys
-
 import logging
 import os
 
 
-def init():
+def init() -> None:
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
     logging.basicConfig(level=LOG_LEVEL)
     log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")

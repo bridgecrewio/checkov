@@ -39,16 +39,27 @@ class K8sKustomizeRunner(K8sRunner):
             else: 
                 kustomizeResourceID = "Unknown error. This is a bug."
 
+            code_lines = entity_context.get("code_lines")
+            file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=realKustomizeEnvMetadata['filePath'],
-                file_line_range=[0,0],
+                check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
+                file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'])
+                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.bc_severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
         
         return report
+
+    def line_range(self, code_lines):
+        num_of_lines = len(code_lines)
+        file_line_range = [0, 0]
+        if num_of_lines > 0:
+            first_line, code = code_lines[0]
+            last_line, code = code_lines[num_of_lines - 1]
+            file_line_range = [first_line, last_line]
+        return file_line_range
 
     def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
         # Moves report generation logic out of run() method in Runner class.
@@ -73,6 +84,8 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
                 else: 
                     kustomizeResourceID = "Unknown error. This is a bug."
+                code_lines = entity_context.get("code_lines")
+                file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
@@ -80,11 +93,12 @@ class K8sKustomizeRunner(K8sRunner):
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
                     file_path=realKustomizeEnvMetadata['filePath'],
-                    file_line_range=[0,0],
+                    file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
-                    file_abs_path=entity_file_abs_path
+                    file_abs_path=entity_file_abs_path,
+                    severity=check.bc_severity
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
@@ -145,22 +159,22 @@ class Runner(BaseRunner):
             metadata = {}
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
-            except yaml.YAMLError as exc:
-                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}. details: {exc}")
+            except yaml.YAMLError:
+                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
     
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
-                metadata['type'] =  "base"
+                metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in fileContent:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
-                metadata['type'] =  "overlay"
+                metadata['type'] = "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
             metadata['fileContent'] = fileContent
@@ -279,9 +293,8 @@ class Runner(BaseRunner):
                     logging.info(
                         f"Ran {self.templateRendererCommand} to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
 
-                except Exception as e:
-                    logging.warning(
-                        f"Error building Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
+                except Exception:
+                    logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
@@ -324,15 +337,13 @@ class Runner(BaseRunner):
                     if last_line_dashes:
                         # The next line should contain a "apiVersion" line for the next Kubernetes manifest
                         # So we will close the old file, open a new file, and write the dashes from last iteration plus this line
-
-                        if not s.startswith('apiVersion:'):
-                            raise Exception(f'Line {line_num}: Expected line to start with apiVersion:  {s}')
-                        # TODO: GET SOURCE FROM LATER ON AND RENAME PLACEHOLDER
                         source = file_num
                         file_num += 1 
                         if source != cur_source_file:
                             if cur_writer:
-                                self._curWriterRenameAndClose(cur_writer, filePath)
+                                # Here we are about to close a "complete" file. The function will validate it looks like a K8S manifest before continuing.
+                                self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
+                                # 
                             file_path = os.path.join(extractDir, str(source))
                             parent = os.path.dirname(file_path)
                             os.makedirs(parent, exist_ok=True)
@@ -344,10 +355,7 @@ class Runner(BaseRunner):
                         last_line_dashes = False
                     
                     else:
-
-                        if s.startswith('apiVersion:'):
-                            raise Exception(f'Line {line_num}: Unexpected line starting with apiVersion:  {s}')
-
+                        
                         if not cur_writer:
                             continue
                         else:
@@ -356,7 +364,7 @@ class Runner(BaseRunner):
                     line_num += 1
 
                 if cur_writer:
-                    self._curWriterRenameAndClose(cur_writer, filePath)
+                    self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
 
             try:
                 k8s_runner = K8sKustomizeRunner()
@@ -371,8 +379,8 @@ class Runner(BaseRunner):
                 report.skipped_checks += chart_results.skipped_checks
                 report.resources.update(chart_results.resources)
 
-            except Exception as e:  # noqa # some weird issue with flake8
-                logging.warning(e, stack_info=True)
+            except Exception:
+                logging.warning("Failed to run Kubernetes runner", exc_info=True)
                 with tempfile.TemporaryDirectory() as save_error_dir:
                     logging.debug(
                         f"Error running k8s scan on Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
@@ -380,44 +388,35 @@ class Runner(BaseRunner):
 
         return report
 
-    def _curWriterRenameAndClose(self, cur_writer, FilePath):
+    def _curWriterValidateStoreMapAndClose(self, cur_writer, FilePath):
         currentFileName = cur_writer.name
         cur_writer.close()
         # Now we have a complete k8s manifest as we closed the writer, and it's temporary file name (currentFileName) plus the original file templated out (FilePath)
         # Rename them to useful information from the K8S metadata before conting.
-        # Then keep a mapping of temp files to original repo locations for use with Checkov output later.
+        # Then keep a mapping of template files to original kustomize repo locations for use with Checkov output later.
         try:
             with open(currentFileName) as f:
                 currentYamlObject = yaml.safe_load(f)
-                itemName = []
-                itemName.append(currentYamlObject['kind'])
-                if 'namespace' in currentYamlObject['metadata']:
-                    itemName.append(currentYamlObject['metadata']['namespace'])
+                # Validate we have a K8S manifest
+                if "apiVersion" in currentYamlObject:
+                    itemName = []
+                    itemName.append(currentYamlObject['kind'])
+                    if 'namespace' in currentYamlObject['metadata']:
+                        itemName.append(currentYamlObject['metadata']['namespace'])
+                    else:
+                        itemName.append("default")
+                    if 'name' in currentYamlObject['metadata']:
+                        itemName.append(currentYamlObject['metadata']['name'])
+                    else:
+                        itemName.append("noname")
+            
+                    filename = f"{'-'.join(itemName)}.yaml"
+                    newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename) 
+                    os.rename(currentFileName, newFullPathFilename) 
+                    self.kustomizeFileMappings[newFullPathFilename] = FilePath
+                
                 else:
-                    itemName.append("default")
-                if 'name' in currentYamlObject['metadata']:
-                    itemName.append(currentYamlObject['metadata']['name'])
-                else:
-                    itemName.append("noname")
-        
-                filename = f"{'-'.join(itemName)}.yaml"
-                newFullPathFilename = str(pathlib.Path(currentFileName).parent) + "/" + filename
-                os.rename(currentFileName, newFullPathFilename) 
-                self.kustomizeFileMappings[newFullPathFilename] = FilePath
+                    raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
 
         except IsADirectoryError:
             pass
-
-def find_lines(node, kv):
-    if isinstance(node, str):
-        return node
-    if isinstance(node, list):
-        for i in node:
-            for x in find_lines(i, kv):
-                yield x
-    elif isinstance(node, dict):
-        if kv in node:
-            yield node[kv]
-        for j in node.values():
-            for x in find_lines(j, kv):
-                yield x

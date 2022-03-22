@@ -12,7 +12,6 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestGraphBuilder(TestCase):
-
     def test_build_graph(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
 
@@ -199,4 +198,23 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         lambda_attributes = local_graph.vertices[0].attributes
-        self.assertTrue("dead_letter_config" in lambda_attributes.keys())
+        self.assertIn("dead_letter_config", lambda_attributes.keys())
+
+    def test_get_attribute_dict_with_list_value(self):
+        # given
+        resources_dir = os.path.join(TEST_DIRNAME, "../resources/s3_bucket_grant")
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        # when
+        attributes = local_graph.vertices[
+            local_graph.vertices_by_block_type.get(BlockType.RESOURCE)[0]
+        ].get_attribute_dict()
+
+        # then
+        expected_grant_attribute = [
+            {"permissions": ["READ_ACP"], "type": "Group", "uri": "http://acs.amazonaws.com/groups/global/AllUsers"},
+            {"id": "1234567890", "permissions": ["FULL_CONTROL"], "type": "CanonicalUser"},
+        ]
+
+        self.assertCountEqual(expected_grant_attribute, attributes["grant"])

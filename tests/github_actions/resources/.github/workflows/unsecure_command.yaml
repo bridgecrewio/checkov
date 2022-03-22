@@ -1,0 +1,21 @@
+on: pull_request
+
+name: unsecure-worfklow
+
+jobs:
+  unsecure-job:
+    name: job2
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    steps:
+      - name: unsecure-step2
+        run: |
+          echo "goo"
+  secure-job:
+    name: job3
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: false
+    run: |
+      echo "ok"

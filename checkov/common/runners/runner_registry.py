@@ -1,5 +1,8 @@
 import argparse
 import itertools
+import json
+import re
+from collections import defaultdict
 from json import dumps
 import logging
 import os
@@ -9,6 +12,7 @@ from typing import List, Union, Dict, Any, Tuple, Optional
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
@@ -50,7 +54,6 @@ class RunnerRegistry:
         root_folder: Optional[str] = None,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
-        guidelines: Optional[Dict[str, str]] = None,
         collect_skip_comments: bool = True,
         repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
@@ -65,18 +68,26 @@ class RunnerRegistry:
                 self.runners, 1)
 
         for scan_report in reports:
-            self._handle_report(scan_report, guidelines, repo_root_for_plan_enrichment)
+            self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports
 
-    def _handle_report(self, scan_report, guidelines, repo_root_for_plan_enrichment):
+    def _handle_report(self, scan_report, repo_root_for_plan_enrichment):
         integration_feature_registry.run_post_runner(scan_report)
-        if guidelines:
-            RunnerRegistry.enrich_report_with_guidelines(scan_report, guidelines)
+        if metadata_integration.check_metadata:
+            RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment:
             enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
+
+    def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
+        try:
+            with open(file_name, 'w') as f:
+                f.write(data)
+            logging.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
+        except EnvironmentError:
+            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}", exc_info=True)
 
     def print_reports(
         self,
@@ -96,32 +107,38 @@ class RunnerRegistry:
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
+        data_outputs = defaultdict(str)
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
                     report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
-                    # report.print_junit_xml()
                 if "github_failed_only" in config.output:
-                    report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
+                    data_outputs["github_failed_only"] += report.print_failed_github_md(use_bc_ids=config.output_bc_ids)
                 if "sarif" in config.output:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
+            logging.debug(f'Getting exit code for report {report.check_type}')
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "cli" in config.output:
+            cli_output = ''
             for report in cli_reports:
-                report.print_console(
+                cli_output += report.print_console(
                     is_quiet=config.quiet,
                     is_compact=config.compact,
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
                 )
+            print(cli_output)
+            # Remove colors from the cli output
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+            data_outputs['cli'] = ansi_escape.sub('', cli_output)
             if url:
                 print("More details: {}".format(url))
             output_formats.remove("cli")
@@ -131,45 +148,52 @@ class RunnerRegistry:
             master_report = Report("merged")
             print(self.banner)
             for report in sarif_reports:
-                report.print_console(
+                print(report.print_console(
                         is_quiet=config.quiet,
                         is_compact=config.compact,
                         created_baseline_path=created_baseline_path,
                         baseline=baseline,
                         use_bc_ids=config.output_bc_ids,
-                )
+                ))
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks
             if url:
                 print("More details: {}".format(url))
             master_report.write_sarif_output(self.tool)
+            data_outputs['sarif'] = json.dumps(master_report.get_sarif_json(self.tool), cls=CustomJSONEncoder)
             output_formats.remove("sarif")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
             if not report_jsons:
-                print(dumps(Report(None).get_summary(), indent=4))
+                print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(report_jsons[0], cls=CustomJSONEncoder)
             else:
                 print(dumps(report_jsons, indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(report_jsons, cls=CustomJSONEncoder)
             output_formats.remove("json")
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "junitxml" in config.output:
-            if len(junit_reports) == 1:
-                junit_reports[0].print_junit_xml(use_bc_ids=config.output_bc_ids)
+            properties = Report.create_test_suite_properties_block(config)
+
+            if junit_reports:
+                test_suites = [
+                    report.get_test_suite(properties=properties, use_bc_ids=config.output_bc_ids)
+                    for report in junit_reports
+                ]
             else:
-                master_report = Report(None)
-                for report in junit_reports:
-                    master_report.skipped_checks += report.skipped_checks
-                    master_report.passed_checks += report.passed_checks
-                    master_report.failed_checks += report.failed_checks
-                master_report.print_junit_xml(use_bc_ids=config.output_bc_ids)
+                test_suites = [Report(None).get_test_suite(properties=properties)]
+
+            data_outputs['junitxml'] = Report.get_junit_xml_string(test_suites)
+            print(data_outputs['junitxml'])
+
             output_formats.remove("junitxml")
             if output_formats:
                 print(OUTPUT_DELIMITER)
-
         if "cyclonedx" in config.output:
             if cyclonedx_reports:
                 # More than one Report - combine Reports first
@@ -182,10 +206,18 @@ class RunnerRegistry:
                 report = cyclonedx_reports[0]
             cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
             print(cyclonedx_output.output_as_string())
+            data_outputs['cyclonedx'] = cyclonedx_output.output_as_string()
             output_formats.remove("cyclonedx")
             if output_formats:
                 print(OUTPUT_DELIMITER)
 
+        # Save output to file
+        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt', 'sarif': 'results_sarif.sarif',
+                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml', 'cyclonedx': 'results_cyclonedx.xml'}
+        if config.output_file_path:
+            for output in config.output:
+                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}', data=data_outputs[output],
+                                     data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
 
@@ -203,10 +235,11 @@ class RunnerRegistry:
             self.runners.remove(runner)
 
     @staticmethod
-    def enrich_report_with_guidelines(scan_report: Report, guidelines: Dict[str, str]) -> None:
+    def enrich_report_with_guidelines(scan_report: Report) -> None:
         for record in itertools.chain(scan_report.failed_checks, scan_report.passed_checks, scan_report.skipped_checks):
-            if record.check_id in guidelines:
-                record.set_guideline(guidelines[record.check_id])
+            guideline = metadata_integration.get_guideline(record.check_id)
+            if guideline:
+                record.set_guideline(guideline)
 
     @staticmethod
     def get_enriched_resources(repo_roots: List[Union[str, os.PathLike]]) -> Dict[str, Dict[str, Any]]:

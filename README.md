@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure-as-code.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](docs/7.Scan%20Examples/Bicep.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
  
 Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
@@ -39,7 +39,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework and ARM template files.
+ * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Bicep and ARM template files.
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
  * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
@@ -47,7 +47,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, SARIF and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 
@@ -189,7 +189,7 @@ Start using Checkov by reading the [Getting Started](docs/1.Welcome/Quick%20Star
 
 ```sh
 docker pull bridgecrew/checkov
-docker run --tty --volume /user/tf:/tf --workdir /tf bridgecrew/checkov --directory /tf
+docker run --tty --rm --volume /user/tf:/tf --workdir /tf bridgecrew/checkov --directory /tf
 ```
 Note: if you are using Python 3.6(Default version in Ubuntu 18.04) checkov will not work and it will fail with `ModuleNotFoundError: No module named 'dataclasses'`  error message. In this case, you can use the docker version instead.
 
@@ -200,19 +200,16 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 ### Running or skipping checks 
 
 Using command line flags you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list).
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
 
-List available checks:
-```sh
-checkov --list 
-```
+## Examples
 
-Allow only 2 checks to run: 
+Allow only the two specified checks to run: 
 ```sh
 checkov --directory . --check CKV_AWS_20,CKV_AWS_57
 ```
 
-Run all checks except 1 specified:
+Run all checks except the one specified:
 ```sh
 checkov -d . --skip-check CKV_AWS_20
 ```
@@ -220,6 +217,36 @@ checkov -d . --skip-check CKV_AWS_20
 Run all checks except checks with specified patterns:
 ```sh
 checkov -d . --skip-check CKV_AWS*
+```
+
+Run all checks that are MEDIUM severity or higher (requires API key):
+```sh
+checkov -d . --check MEDIUM --bc-api-key ...
+```
+
+Run all checks that are MEDIUM severity or higher, as well as check CKV_123 (assume this is a LOW severity check):
+```sh
+checkov -d . --check MEDIUM,CKV_123 --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower:
+```sh
+checkov -d . --skip-check MEDIUM --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower, as well as check CKV_789 (assume this is a high severity check):
+```sh
+checkov -d . --skip-check MEDIUM,CKV_789 --bc-api-key ...
+```
+
+Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assume this is a medium or higher severity check):
+```sh
+checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
+```
+
+Run check CKV_789, but skip it if it is a medium severity (the --check logic is always applied before --skip-check)
+```sh
+checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
 ```
 
 For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
@@ -390,6 +417,10 @@ Defaults:
 Contribution is welcomed! 
 
 Start by reviewing the [contribution guidelines](CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+You can even start this with one-click dev in your browser through Gitpod at the following link:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/bridgecrewio/checkov)
 
 Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/6.Contribution/Contribution%20Overview.md).
 

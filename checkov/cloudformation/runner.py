@@ -111,7 +111,7 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
                             variable_evaluations = {}
-                            skipped_checks =  resource_context.get("skipped_checks")
+                            skipped_checks = resource_context.get("skipped_checks")
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
@@ -128,7 +128,8 @@ class Runner(BaseRunner):
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__,
                                     file_abs_path=file_abs_path,
-                                    entity_tags=tags
+                                    entity_tags=tags,
+                                    severity=check.bc_severity
                                 )
 
                                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
@@ -162,7 +163,8 @@ class Runner(BaseRunner):
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,
-                    entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags"))
+                    entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags")),
+                    severity=check.bc_severity
                 )
                 if self.breadcrumbs:
                     breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
