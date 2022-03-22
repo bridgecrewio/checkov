@@ -4,7 +4,7 @@ resource "aws_api_gateway_method_settings" "fail" {
   method_path = "path1/GET"
 
   settings {
-    caching_enabled      = true
+    caching_enabled      = false
     metrics_enabled      = false
     logging_level        = "INFO"
     cache_data_encrypted = false

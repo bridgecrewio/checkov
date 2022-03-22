@@ -12,7 +12,7 @@ class APIGatewayMethodSettingCacheEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "settings/[0]/cache_data_encrypted"
+        return "settings/[0]/caching_enabled"
 
 
 check = APIGatewayMethodSettingCacheEnabled()
