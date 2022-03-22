@@ -6,6 +6,8 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 
+GRAPH_CHECK_IDS = ("CKV_AZURE_23",)
+
 
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
@@ -17,6 +19,10 @@ class Registry(BaseCheckRegistry):
         # a copy of the original method to be able to prioritize Bicep styled checks over the ARM equivalent
         if self._BaseCheckRegistry__loading_external_checks:
             RunnerFilter.notify_external_check(check.id)
+
+        # don't add an ARM check, if a Bicep graph check exists for it
+        if check.id in GRAPH_CHECK_IDS:
+            return
 
         # remove the ARM check, if a Bicep check with the same check ID exists
         if check.id in self.check_id_to_enitity_map.keys():

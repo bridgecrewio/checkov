@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import itertools
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Any, Union
+from typing import List, Dict, Optional, Any, Union, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from checkov.common.checks_infra.registry import Registry
+    from checkov.common.graph.checks_infra.registry import BaseRegistry
+    from checkov.common.graph.graph_manager import GraphManager
 
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 
@@ -37,9 +44,9 @@ class BaseRunner(ABC):
     definitions = None
     context = None
     breadcrumbs = None
-    external_registries = None
-    graph_manager = None
-    graph_registry = None
+    external_registries: list[BaseRegistry] | None = None
+    graph_manager: GraphManager | None = None
+    graph_registry: Registry | None = None
 
     @abstractmethod
     def run(

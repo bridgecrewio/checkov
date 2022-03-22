@@ -1,36 +1,65 @@
 from __future__ import annotations
 
-import re
+import logging
 from pathlib import Path
-from typing import cast
+from typing import cast, Type, TYPE_CHECKING
 
+from pycep.typing import BicepJson
 from typing_extensions import Literal
 
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
+from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
+from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.bicep.parser import Parser
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.models.enums import CheckResult
+from checkov.bicep.utils import clean_file_path, get_scannable_file_paths, search_for_suppression
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.graph.checks_infra.registry import BaseRegistry
+    from checkov.common.graph.graph_builder.local_graph import LocalGraph
+    from checkov.common.graph.graph_manager import GraphManager
+
 
 class Runner(BaseRunner):
     check_type = CheckType.BICEP
-    bicep_cli = "bicep"
 
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
         "parameters": param_registry,
         "resources": resource_registry,
     }
 
+    def __init__(
+        self,
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        source: str = "Bicep",
+        graph_class: Type[LocalGraph] = BicepLocalGraph,
+        graph_manager: GraphManager | None = None,
+        external_registries: list[BaseRegistry] | None = None,
+    ) -> None:
+        self.external_registries = external_registries if external_registries else []
+        self.graph_class = graph_class
+        self.graph_manager = (
+            graph_manager if graph_manager else BicepGraphManager(source=source, db_connector=db_connector)
+        )
+        self.graph_registry = get_graph_checks_registry(self.check_type)
+
+        self.definitions: dict[Path, BicepJson] = {}
+        self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+
     def run(
         self,
-        root_folder: str | Path,
+        root_folder: str | Path | None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
         runner_filter: RunnerFilter = RunnerFilter(),
@@ -38,20 +67,39 @@ class Runner(BaseRunner):
     ) -> Report:
         report = Report(Runner.check_type)
 
-        file_paths: set[Path] = set()
-        if root_folder:
-            root_path = Path(root_folder)
-            file_paths = {file_path for file_path in root_path.rglob("*.bicep")}
-        if files:
-            for file in files:
-                if file.endswith(".bicep"):
-                    file_paths.add(Path(file))
+        if self.context is None or self.definitions is None:
+            file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
 
-        definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
+            self.definitions, self.definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
 
-        report.add_parsing_errors(parsing_errors)
+            report.add_parsing_errors(parsing_errors)
 
-        for file_path, definition in definitions.items():
+            if external_checks_dir:
+                for directory in external_checks_dir:
+                    resource_registry.load_external_checks(directory)
+                    self.graph_registry.load_external_checks(directory)
+
+            self.context = None  # TODO: create context
+
+            logging.info("Creating Bicep graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            logging.info("Successfully created Bicep graph")
+
+            self.graph_manager.save_graph(local_graph)
+            self.definitions = local_graph.definitions  # TODO: adjust, when implementing variable rendering
+
+        # run Python checks
+        self.add_python_check_results(report=report, runner_filter=runner_filter)
+
+        # run YAML checks
+        self.add_yaml_check_results(report=report, runner_filter=runner_filter)
+
+        return report
+
+    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+        """Adds Python check results to given report"""
+
+        for file_path, definition in self.definitions.items():
             for block_type, registry in Runner.block_type_registries.items():
                 block_type_confs = definition.get(block_type)
                 if block_type_confs:
@@ -64,17 +112,15 @@ class Runner(BaseRunner):
                         )
 
                         if results:
-                            file_code_lines = definitions_raw[file_path]
-                            start_line = cast(int, conf["__start_line__"])  # it is alwasy set for the main block types
-                            end_line = cast(int, conf["__end_line__"])  # it is alwasy set for the main block types
+                            file_code_lines = self.definitions_raw[file_path]
+                            start_line = cast(int, conf["__start_line__"])  # it is always set for the main block types
+                            end_line = cast(int, conf["__end_line__"])  # it is always set for the main block types
 
-                            cleaned_path = self.clean_file_path(file_path)
+                            cleaned_path = clean_file_path(file_path)
                             resource_id = f"{conf['type']}.{name}"
                             report.add_resource(f"{cleaned_path}:{resource_id}")
 
-                            suppressions = self.search_for_suppression(
-                                code_lines=file_code_lines[start_line - 1 : end_line]
-                            )
+                            suppressions = search_for_suppression(code_lines=file_code_lines[start_line - 1 : end_line])
 
                             for check, check_result in results.items():
                                 if check.id in suppressions.keys():
@@ -99,23 +145,42 @@ class Runner(BaseRunner):
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
-        return report
+    def add_yaml_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+        """Adds YAML check results to given report"""
 
-    def search_for_suppression(self, code_lines: list[tuple[int, str]]) -> dict[str, _CheckResult]:
-        suppressions = {}
+        checks_results = self.run_graph_checks_results(runner_filter)
 
-        for _, line in code_lines:
-            skip_search = re.search(COMMENT_REGEX, line)
-            if skip_search:
-                check_result: _CheckResult = {
-                    "result": CheckResult.SKIPPED,
-                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
+        for check, check_results in checks_results.items():
+            for check_result in check_results:
+                entity = check_result["entity"]
+                entity_file_path = Path(entity.get(CustomAttributes.FILE_PATH))
+
+                clean_check_result: _CheckResult = {
+                    "result": check_result["result"],
+                    "evaluated_keys": check_result["evaluated_keys"],
                 }
-                suppressions[skip_search.group(2)] = check_result
 
-        return suppressions
+                file_code_lines = self.definitions_raw[entity_file_path]
+                start_line = entity["__start_line__"]
+                end_line = cast(int, entity["__end_line__"])
 
-    def clean_file_path(self, file_path: Path) -> Path:
-        path_parts = [part for part in file_path.parts if part not in (".", "..")]
-
-        return Path(*path_parts)
+                record = Record(
+                    check_id=check.id,
+                    bc_check_id=check.bc_id,
+                    check_name=check.name,
+                    check_result=clean_check_result,
+                    code_block=file_code_lines[start_line - 1 : end_line],
+                    file_path=str(clean_file_path(entity_file_path)),
+                    file_line_range=[start_line, end_line],
+                    resource=entity.get(CustomAttributes.ID),
+                    check_class=check.__class__.__module__,
+                    file_abs_path=str(entity_file_path.absolute()),
+                    evaluations=None,
+                    severity=check.bc_severity,
+                )
+                if self.breadcrumbs:
+                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                    if breadcrumb:
+                        record = GraphRecord(record, breadcrumb)
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)

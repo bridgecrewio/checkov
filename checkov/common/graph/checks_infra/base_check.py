@@ -1,10 +1,13 @@
 import itertools
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
 from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+
+if TYPE_CHECKING:
+    from checkov.common.bridgecrew.severities import Severity
 
 
 class BaseGraphCheck:
@@ -22,8 +25,8 @@ class BaseGraphCheck:
         self.type: Optional[SolverType] = None
         self.solver: Optional[BaseSolver] = None
         self.guideline: Optional[str] = None
-        self.benchmarks: Dict[str: list] = {}
-        self.bc_severity: Optional[str] = None
+        self.benchmarks: Dict[str, List[str]] = {}
+        self.bc_severity: Optional["Severity"] = None
         self.pc_severity: Optional[str] = None
         self.bc_category: Optional[str] = None
         self.pc_title: Optional[str] = None
