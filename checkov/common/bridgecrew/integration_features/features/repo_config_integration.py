@@ -19,7 +19,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             and not self.integration_feature_failures
         )
 
-    def pre_scan(self):
+    def pre_scan(self) -> None:
         try:
             if not self.bc_integration.customer_run_config_response:
                 logging.debug('In the pre-scan for repo config settings, but nothing was fetched from the platform')
@@ -51,9 +51,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                 logging.debug(f'Found the following code review policy exclusions: {self.code_review_skip_policies}')
             else:
                 logging.info('Code reviews are disabled in the platform, so will not be applied to this run')
-        except Exception as e:
+        except Exception:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying custom policies from the platform.', exc_info=True)
+            logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
 
     @staticmethod
     def _convert_raw_check(policy):

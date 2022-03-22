@@ -34,6 +34,7 @@ class Record:
     description = None  # used by SARIF output
     short_description = None  # used by SARIF output
     vulnerability_details = None  # Stores package vulnerability details
+    connected_node = None
 
     def __init__(
         self,
@@ -58,6 +59,7 @@ class Record:
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
+        connected_node: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -88,6 +90,7 @@ class Record:
         self.description = description
         self.short_description = short_description
         self.vulnerability_details = vulnerability_details
+        self.connected_node = connected_node
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:

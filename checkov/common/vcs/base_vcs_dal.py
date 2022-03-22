@@ -63,8 +63,8 @@ class BaseVCSDAL:
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
-        except Exception as e:
-            logging.debug("Query failed to run by returning code of {}. error {}".format(url_endpoint, e))
+        except Exception:
+            logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
 
     @abstractmethod
     def _headers(self):
@@ -92,8 +92,8 @@ class BaseVCSDAL:
 
             else:
                 logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
-        except Exception as e:
-            logging.debug("Quer y failed {} exception {}.".format(query, e))
+        except Exception:
+            logging.debug(f"Query failed {query}", exc_info=True)
 
     @staticmethod
     def persist(path, conf):

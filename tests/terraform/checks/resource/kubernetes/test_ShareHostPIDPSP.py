@@ -18,12 +18,12 @@ class TestShareHostPIDPSP(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "kubernetes_pod.pass",
-            "kubernetes_pod.pass2",
+            "kubernetes_pod_security_policy.pass",
+            "kubernetes_pod_security_policy.pass2",
         }
 
         failing_resources = {
-            "kubernetes_pod.fail",
+            "kubernetes_pod_security_policy.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

@@ -1,6 +1,7 @@
 import argparse
 import itertools
 import json
+import logging
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -187,9 +188,13 @@ class Report:
         :return: Exit code 0 or 1.
         """
 
+        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}')
+
         if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
+            logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
         elif not soft_fail_on and not hard_fail_on and self.failed_checks:
+            logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
             return 1
 
         soft_fail_on_checks = []
@@ -202,6 +207,9 @@ class Report:
             else:
                 soft_fail_on_checks.append(val)
 
+        logging.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
+        logging.debug(f'Soft fail checks: {soft_fail_on_checks}')
+
         hard_fail_on_checks = []
         hard_fail_threshold = None
         # hard fail on the lowest threshold in the list
@@ -211,6 +219,9 @@ class Report:
                     hard_fail_threshold = Severities[val]
             else:
                 hard_fail_on_checks.append(val)
+
+        logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
+        logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
 
         for failed_check in self.failed_checks:
             check_id = failed_check.check_id
@@ -227,8 +238,10 @@ class Report:
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
                     (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
+        logging.debug('No failed check triggered hard fail - returning 0')
         return 0
 
     def is_empty(self) -> bool:
@@ -293,7 +306,7 @@ class Report:
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
 
-    def get_sarif_json(self, tool) -> Dict[str, Any]:
+    def get_sarif_json(self, tool: str) -> Dict[str, Any]:
         runs = []
         rules = []
         results = []
@@ -393,7 +406,7 @@ class Report:
         }
         return sarif_template_report
 
-    def write_sarif_output(self, tool) -> None:
+    def write_sarif_output(self, tool: str) -> None:
         try:
             with open("results.sarif", "w") as f:
                 f.write(json.dumps(self.get_sarif_json(tool)))

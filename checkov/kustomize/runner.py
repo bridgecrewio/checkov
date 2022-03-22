@@ -159,8 +159,8 @@ class Runner(BaseRunner):
             metadata = {}
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
-            except yaml.YAMLError as exc:
-                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}. details: {exc}")
+            except yaml.YAMLError:
+                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
     
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
@@ -293,9 +293,8 @@ class Runner(BaseRunner):
                     logging.info(
                         f"Ran {self.templateRendererCommand} to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
 
-                except Exception as e:
-                    logging.warning(
-                        f"Error building Kustomize output at dir: {filePath}. Error details: {str(e, 'utf-8')}")
+                except Exception:
+                    logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
                     continue
 
                 if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
@@ -380,8 +379,8 @@ class Runner(BaseRunner):
                 report.skipped_checks += chart_results.skipped_checks
                 report.resources.update(chart_results.resources)
 
-            except Exception as e:  # noqa # some weird issue with flake8
-                logging.warning(e, stack_info=True)
+            except Exception:
+                logging.warning("Failed to run Kubernetes runner", exc_info=True)
                 with tempfile.TemporaryDirectory() as save_error_dir:
                     logging.debug(
                         f"Error running k8s scan on Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
