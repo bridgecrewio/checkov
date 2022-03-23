@@ -1,7 +1,7 @@
 metadata:
   name: "S3 Bucket has an ACL defined which allows public READ access."
   category: "GENERAL_SECURITY"
-  id: "CKV2_AWS_38"
+  id: "CKV_AWS_20"
 definition:
   or:
     - and:
