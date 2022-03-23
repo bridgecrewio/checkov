@@ -7,7 +7,7 @@ resource "aws_codeartifact_domain" "fail" {
 }
 
 resource "aws_codeartifact_domain" "pass" {
-  domain = "example"
+  domain         = "example"
   encryption_key = aws_kms_key.example.arn
   tags = {
     "key" = "value"

@@ -18,7 +18,7 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
         managed_rules = conf.get("managed_rule") or []
         for idx_managed_rule, managed_rule in enumerate(force_list(managed_rules)):
             self.evaluated_keys = [f"managed_rule/[{idx_managed_rule}]/type"]
-            if managed_rule.get("type") in (["DefaultRuleSet"], ["Microsoft_DefaultRuleSet"]):
+            if managed_rule and managed_rule.get("type") in (["DefaultRuleSet"], ["Microsoft_DefaultRuleSet"]):
                 rule_overrides = managed_rule.get("override") or []
                 for idx_override, rule_override in enumerate(force_list(rule_overrides)):
                     self.evaluated_keys.append(

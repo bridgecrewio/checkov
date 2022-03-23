@@ -1,5 +1,6 @@
 pass:
   - "google_sql_database_instance.db_instance_good_1"
   - "google_sql_database_instance.db_instance_good_2"
+  - "google_sql_database_instance.db_instance_good_3_no_pass"
 fail:
   - "google_sql_database_instance.db_instance_bad"

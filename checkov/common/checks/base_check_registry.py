@@ -10,7 +10,7 @@ from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any
 
 from checkov.common.checks.base_check import BaseCheck
-from checkov.common.typing import _SkippedCheck
+from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
 
@@ -100,11 +100,11 @@ class BaseCheckRegistry:
         entity: Dict[str, Any],
         skipped_checks: List[_SkippedCheck],
         runner_filter: RunnerFilter,
-    ) -> Dict[BaseCheck, Dict[str, Any]]:
+    ) -> Dict[BaseCheck, _CheckResult]:
 
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
 
-        results: Dict[BaseCheck, Dict[str, Any]] = {}
+        results: Dict[BaseCheck, _CheckResult] = {}
 
         if not isinstance(entity_configuration, dict):
             return results
@@ -129,7 +129,7 @@ class BaseCheckRegistry:
         entity_type: str,
         scanned_file: str,
         skip_info: _SkippedCheck,
-    ) -> Dict[str, Any]:
+    ) -> _CheckResult:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
         result = check.run(
             scanned_file=scanned_file,

@@ -5,7 +5,6 @@ from typing import Union, List, Dict, Any, Callable, Optional
 import concurrent.futures
 
 
-
 def stringify_value(value: Union[bool, int, float, str, List[str], Dict[str, Any]]) -> str:
     if isinstance(value, bool):
         value = str(value).lower()
@@ -41,5 +40,5 @@ def run_function_multithreaded(
             for future in futures:
                 try:
                     future.result()
-                except Exception as e:
-                    raise e
+                except Exception:
+                    raise

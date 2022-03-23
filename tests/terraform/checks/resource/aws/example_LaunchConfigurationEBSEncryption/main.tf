@@ -61,7 +61,7 @@ resource "aws_instance" "fail_empty_root_list" {
   image_id      = "ami-123"
   instance_type = "t2.micro"
 
-  root_block_device = "${var.empty_list}"
+  root_block_device = var.empty_list
 }
 
 resource "aws_instance" "fail_empty_ebs_list" {
@@ -74,7 +74,7 @@ resource "aws_instance" "fail_empty_ebs_list" {
     encrypted   = true
   }
 
-  ebs_block_device = "${var.empty_list}"
+  ebs_block_device = var.empty_list
 }
 
 # pass

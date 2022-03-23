@@ -1,5 +1,4 @@
 import logging
-import re
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -21,7 +20,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             and not self.integration_feature_failures
         )
 
-    def pre_scan(self):
+    def pre_scan(self) -> None:
         try:
             if self.bc_integration.customer_run_config_response:
                 self._handle_customer_run_config(self.bc_integration.customer_run_config_response)
@@ -56,9 +55,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
                     if use_prisma_metadata and 'descriptiveTitle' in metadata:
                         check.name = metadata['descriptiveTitle']
-        except Exception as e:
+        except Exception:
             self.integration_feature_failures = True
-            logging.debug(f'{e}\nSome metadata may be missing from the run.', exc_info=True)
+            logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
     def get_bc_id(self, checkov_id):
         return self.check_metadata.get(checkov_id, {}).get('id')

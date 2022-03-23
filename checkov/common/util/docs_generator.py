@@ -6,6 +6,8 @@ from typing import List, Optional, Tuple, Union
 from tabulate import tabulate
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
+from checkov.bicep.checks.param.registry import registry as bicep_param_registry
+from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -88,6 +90,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
+    if any(x in framework_list for x in ("all", "bicep")):
+        add_from_repository(bicep_param_registry, "parameter", "Bicep")
+        add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
             printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))

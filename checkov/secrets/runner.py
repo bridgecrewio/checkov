@@ -187,8 +187,9 @@ class Runner(BaseRunner):
                 if run_time > datetime.timedelta(seconds=10):
                     logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
                 return file_results
-            except Exception as err:
-                logging.warning(f"Secret scanning:could not process file {f}, {err}")
+            except Exception:
+                logging.warning(f"Secret scanning:could not process file {f}")
+                logging.debug("Complete trace:", exc_info=True)
                 return list()
 
         results = parallel_runner.run_function(

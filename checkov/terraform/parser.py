@@ -319,7 +319,7 @@ class Parser:
             result = _load_or_die_quietly(file, parsing_errors)
             # the exceptions type can un-pickleable
             for path, e in parsing_errors.items():
-                parsing_errors[path] = Exception(str(e))
+                parsing_errors[path] = e
 
             return (file.path, result), parsing_errors
 

@@ -4,7 +4,6 @@ from collections import defaultdict
 from copy import deepcopy
 from typing import Dict, List
 
-import requests
 import re
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -12,8 +11,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
-from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
 
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
@@ -55,9 +52,9 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 else:
                     get_graph_checks_registry("terraform").checks.append(check)
             logging.debug(f'Found {len(policies)} custom policies from the platform.')
-        except Exception as e:
+        except Exception:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying custom policies from the platform.', exc_info=True)
+            logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
 
     @staticmethod
     def _convert_raw_check(policy):

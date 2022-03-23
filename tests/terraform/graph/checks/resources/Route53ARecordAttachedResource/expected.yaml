@@ -9,6 +9,7 @@ pass:
   - "aws_route53_record.pass_apiv2"
   - "aws_route53_record.pass_alb"
   - "aws_route53_record.pass_var"
+  - "aws_route53_record.pass_lightsail"
 fail:
   - "aws_route53_record.fail"
 ignore:

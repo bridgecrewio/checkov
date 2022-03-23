@@ -1,17 +1,18 @@
-import json
+from __future__ import annotations
+
 import logging
 import re
 from itertools import groupby
-
-import requests
+from typing import TYPE_CHECKING
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
-from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
+
+if TYPE_CHECKING:
+    from checkov.common.output.report import Report
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
@@ -26,14 +27,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
         self.repo_name_regex = None
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return (
                 self.bc_integration.is_integration_configured()
                 and not self.bc_integration.skip_download
                 and not self.integration_feature_failures
         )
 
-    def pre_scan(self):
+    def pre_scan(self) -> None:
         try:
             if not self.bc_integration.customer_run_config_response:
                 logging.debug('In the pre-scan for suppressions, but nothing was fetched from the platform')
@@ -55,14 +56,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
-        except Exception as e:
+        except Exception:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying suppressions configured in the platform.', exc_info=True)
+            logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
 
-    def post_runner(self, scan_report):
+    def post_runner(self, scan_report: Report) -> None:
         self._apply_suppressions_to_report(scan_report)
 
-    def _apply_suppressions_to_report(self, scan_report):
+    def _apply_suppressions_to_report(self, scan_report: Report) -> None:
 
         # holds the checks that are still not suppressed
         still_failed_checks = []

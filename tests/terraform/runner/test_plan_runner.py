@@ -536,6 +536,26 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["parsing_errors"], 0)
         self.assertEqual(summary["resource_count"], 0)
 
+    def test_runner_utf_16_encoded(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_utf_16_encoding/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertGreater(summary["failed"], 0)
+        self.assertGreater(summary["passed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
 
