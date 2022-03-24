@@ -29,7 +29,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner()
         report = runner.run(root_folder=resources_path)
         self.assertEqual(4, len(report.failed_checks))
-        self.assertEqual(10, len(report.passed_checks))
+        self.assertEqual(6, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
     def test_run_persistent_data(self):
