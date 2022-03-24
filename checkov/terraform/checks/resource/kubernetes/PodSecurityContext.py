@@ -31,9 +31,9 @@ class PodSecurityContext(BaseResourceCheck):
                     return CheckResult.FAILED
             return CheckResult.PASSED
 
-        if spec.get("template"):
+        if spec.get("template") and isinstance(spec.get("template"), list):
             template = spec.get("template")[0]
-            if template.get("spec"):
+            if template.get("spec") and isinstance(template.get("spec"), list):
                 temp_spec = template.get("spec")[0]
                 if temp_spec.get("container"):
                     containers = temp_spec.get("container")

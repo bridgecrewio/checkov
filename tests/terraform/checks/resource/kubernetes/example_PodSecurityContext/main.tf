@@ -5,9 +5,8 @@ resource "kubernetes_pod" "fail" {
   }
 }
 
-
 #no context
-resource "kubernetes_pod" "fail" {
+resource "kubernetes_pod" "fail2" {
   metadata {
     name = "terraform-example"
   }
@@ -60,8 +59,6 @@ resource "kubernetes_pod" "fail" {
     dns_policy = "None"
   }
 }
-
-
 
 resource "kubernetes_pod" "pass" {
   metadata {
@@ -342,7 +339,7 @@ resource "kubernetes_daemonset" "fail" {
   }
 }
 
-resource "kubernetes_daemonset" "example" {
+resource "kubernetes_daemonset" "pass" {
   metadata {
     name      = "terraform-example"
     namespace = "something"
