@@ -109,7 +109,7 @@ class Runner(BaseRunner):
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                severity=check.bc_severity)
+                                                severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
@@ -132,7 +132,7 @@ class Runner(BaseRunner):
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                severity=check.bc_severity)
+                                                severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 

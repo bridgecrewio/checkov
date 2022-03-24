@@ -216,6 +216,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
         self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
 
+    def test_S3BucketVersioning(self):
+        self.go("S3BucketVersioning")
+
+    def test_S3PublicACLRead(self):
+        self.go("S3PublicACLRead")
+
+    def test_S3PublicACLWrite(self):
+        self.go("S3PublicACLWrite")
+
+    def test_S3BucketEncryption(self):
+        self.go("S3BucketEncryption")
+
+    def test_S3BucketLogging(self):
+        self.go("S3BucketLogging")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

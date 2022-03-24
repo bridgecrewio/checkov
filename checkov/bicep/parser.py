@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Collection
 from pathlib import Path
 
-from lark.exceptions import UnexpectedToken
 from pycep import BicepParser
 from pycep.typing import BicepJson
 
@@ -18,7 +18,7 @@ class Parser:
 
         try:
             template = self.bicep_parser.parse(text=content)
-        except UnexpectedToken:
+        except Exception:
             logging.error(f"[bicep] Couldn't parse {file_path}", exc_info=True)
             return None, None
 
@@ -28,18 +28,21 @@ class Parser:
 
     def get_files_definitions(
         self, file_paths: "Collection[Path]"
-    ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
+    ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]], list[str]]:
         logging.info(f"[bicep] start to parse {len(file_paths)} files")
 
         definitions: dict[Path, BicepJson] = {}
         definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+        parsing_errors: list[str] = []
 
         for file_path in file_paths:
             template, file_lines = self.parse(file_path)
             if template and file_lines:
                 definitions[file_path] = template
                 definitions_raw[file_path] = file_lines
+            else:
+                parsing_errors.append(os.path.normpath(file_path.absolute()))
 
         logging.info(f"[bicep] successfully parsed {len(definitions)} files")
 
-        return definitions, definitions_raw
+        return definitions, definitions_raw, parsing_errors

@@ -156,7 +156,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
@@ -185,7 +185,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
@@ -215,7 +215,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
@@ -244,7 +244,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
@@ -273,7 +273,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")

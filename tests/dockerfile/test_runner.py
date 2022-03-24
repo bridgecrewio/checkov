@@ -113,7 +113,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED, conf[0]
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
@@ -141,7 +141,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED, conf[0]
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
@@ -170,7 +170,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED, conf[0]
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
@@ -199,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED, conf[0]
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
@@ -228,7 +228,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED, conf[0]
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
