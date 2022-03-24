@@ -30,7 +30,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         :return: <CheckResult>
         """
 
-        if 'type' not in conf: # This means it's not an alicloud_security_group_rule resource.
+        if 'type' not in conf:  # This means it's not an alicloud_security_group_rule resource.
             return CheckResult.PASSED
 
         rule_type = force_list(conf['type'])[0]
