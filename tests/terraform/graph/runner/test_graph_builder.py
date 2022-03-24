@@ -28,7 +28,7 @@ class TestGraphBuilder(TestCase):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         runner = Runner()
         report = runner.run(root_folder=resources_path)
-        self.assertEqual(5, len(report.failed_checks))
+        self.assertEqual(4, len(report.failed_checks))
         self.assertEqual(10, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
