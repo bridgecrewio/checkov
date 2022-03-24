@@ -62,12 +62,12 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration.pre_scan()
         check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
         check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_19')
+        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
 
         self.assertEqual(check_same_severity.name, 'Ensure IAM password policy requires at least one uppercase letter')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.MEDIUM])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.CRITICAL])
-        self.assertEqual(check_no_desc_title.severity, Severities[BcSeverities.HIGH])
+        self.assertEqual(check_no_desc_title.severity, Severities[BcSeverities.MEDIUM])
 
     def test_metadata_prisma_key(self):
         instance = BcPlatformIntegration()
@@ -78,11 +78,11 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration.pre_scan()
         check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
         check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_19')
+        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
 
         self.assertEqual(check_same_severity.name, 'AWS IAM password policy does not have an uppercase character')
         self.assertEqual(check_different_severity.name, 'AWS IAM policy attached to users')
-        self.assertEqual(check_no_desc_title.name, 'Ensure all data stored in the S3 bucket is securely encrypted at rest')
+        self.assertEqual(check_no_desc_title.name, 'Ensure S3 bucket has block public ACLS enabled')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.MEDIUM])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
@@ -129,19 +129,19 @@ def mock_customer_run_config():
                 ],
                 "benchmarks": {}
             },
-            "CKV_AWS_19": {
-                "id": "BC_AWS_S3_14",
-                "title": "Ensure all data stored in the S3 bucket is securely encrypted at rest",
-                "guideline": "https://docs.bridgecrew.io/docs/s3_14-data-encrypted-at-rest",
-                "severity": "HIGH",
+            "CKV_AWS_53": {
+                "id": "BC_AWS_S3_19",
+                "title": "Ensure S3 bucket has block public ACLS enabled",
+                "guideline": "https://docs.bridgecrew.io/docs/bc_aws_s3_19",
+                "severity": "MEDIUM",
                 "pcSeverity": None,
                 "category": "Storage",
-                "checkovId": "CKV_AWS_19",
-                "constructiveTitle": "Ensure data stored in the S3 bucket is securely encrypted at rest",
+                "checkovId": "CKV_AWS_53",
+                "constructiveTitle": "Ensure S3 bucket has block public ACLS enabled",
                 "descriptiveTitle": None,
-                "pcPolicyId": "7913fcbf-b679-5aac-d979-1b6817becb22",
+                "pcPolicyId": "34064d53-1fd1-42e6-b075-45dce495caca",
                 "additionalPcPolicyIds": [
-                    "7913fcbf-b679-5aac-d979-1b6817becb22"
+                    "34064d53-1fd1-42e6-b075-45dce495caca"
                 ],
                 "benchmarks": {}
             }
