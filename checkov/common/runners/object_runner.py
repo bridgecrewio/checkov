@@ -79,7 +79,7 @@ class Runner(BaseRunner):
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
                     entity_tags=None,
-                    severity=check.bc_severity
+                    severity=check.severity
                 )
                 report.add_record(record)
 
