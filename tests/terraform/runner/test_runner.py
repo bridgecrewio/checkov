@@ -1178,7 +1178,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
