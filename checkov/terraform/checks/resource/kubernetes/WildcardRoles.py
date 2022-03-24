@@ -15,7 +15,7 @@ class WildcardRoles(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         rules = conf.get("rule")
-        if isinstance(rules, list) and len(rules) > 0:
+        if isinstance(rules, list) and rules:
             for rule in rules:
                 if "api_groups" in rule:
                     if "*" in rule["api_groups"][0]:
