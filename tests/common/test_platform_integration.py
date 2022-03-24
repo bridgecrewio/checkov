@@ -1,7 +1,6 @@
 import os
 import unittest
 from unittest import mock
-
 from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     PolicyMetadataIntegration
