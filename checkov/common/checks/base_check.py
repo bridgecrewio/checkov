@@ -39,7 +39,6 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.benchmarks = {}
         self.severity = None
         self.bc_category = None
-        self.pc_title = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
 

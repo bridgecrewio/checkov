@@ -25,7 +25,6 @@ class BaseGraphCheck:
         self.benchmarks: Dict[str: list] = {}
         self.severity: Optional[str] = None
         self.bc_category: Optional[str] = None
-        self.pc_title: Optional[str] = None
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver

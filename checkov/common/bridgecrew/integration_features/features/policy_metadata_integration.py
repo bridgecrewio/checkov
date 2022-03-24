@@ -53,7 +53,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     check.bc_category = metadata.get('category')
                     check.benchmarks = metadata.get('benchmarks')
 
-                    if use_prisma_metadata and 'descriptiveTitle' in metadata:
+                    if use_prisma_metadata and metadata.get('descriptiveTitle'):
                         check.name = metadata['descriptiveTitle']
         except Exception:
             self.integration_feature_failures = True
@@ -78,6 +78,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def get_benchmarks(self, checkov_id):
         return self.check_metadata.get(checkov_id, {}).get('benchmarks')
+
+    def get_prisma_policy_title(self, checkov_id):
+        return self.check_metadata.get(checkov_id, {}).get('descriptiveTitle')
 
     def get_policy_metadata(self, checkov_id):
         return self.check_metadata.get(checkov_id)
