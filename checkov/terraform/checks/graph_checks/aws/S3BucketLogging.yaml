@@ -1,5 +1,5 @@
 metadata:
-  name: "Ensure all data stored in the S3 bucket have logging"
+  name: "Ensure the S3 bucket has access logging enabled"
   category: "LOGGING"
   id: "CKV_AWS_18"
 definition:
