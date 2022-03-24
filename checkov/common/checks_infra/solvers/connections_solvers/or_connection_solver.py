@@ -1,7 +1,7 @@
 from typing import Optional, List, Tuple, Dict, Any
 
 from networkx.classes.digraph import DiGraph
-from checkov.common.graph.checks_infra.enums import SolverType, Operators
+from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
