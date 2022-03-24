@@ -22,7 +22,7 @@ class BaseRegistry:
         self, graph_connector: DiGraph, runner_filter: RunnerFilter
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         check_results = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c) and c.id == 'CKV_AWS_6']
+        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c)]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
                 [executor.submit(self.run_check_parallel, check, check_results, graph_connector)
@@ -32,8 +32,6 @@ class BaseRegistry:
 
     def run_check_parallel(self, check, check_results, graph_connector):
         logging.debug(f'Running graph check: {check.id}')
-        if check.id == 'CKV_AWS_6':
-            a = 0
         passed, failed = check.run(graph_connector)
         evaluated_keys = check.get_evaluated_keys()
         check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
