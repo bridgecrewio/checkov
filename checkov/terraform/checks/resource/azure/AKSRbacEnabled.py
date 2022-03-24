@@ -17,19 +17,14 @@ class AKSRbacEnabled(BaseResourceCheck):
         )
 
     def scan_resource_conf(self, conf):
-        # azurerm < 2.99.0
-        inspected_key1 = "role_based_access_control/[0]/enabled"
-        # azurerm >= 2.99.0
-        inspected_key2 = "role_based_access_control_enabled"
-        rbac_enabled = False
+        self.evaluated_keys = [
+            "role_based_access_control/[0]/enabled",  # azurerm < 2.99.0
+            "role_based_access_control_enabled",  # azurerm >= 2.99.0
+        ]
 
-        if dpath.search(conf, inspected_key1) != {}:
-            rbac_enabled = dpath.get(conf, inspected_key1)[0]
-        elif dpath.search(conf, inspected_key2) != {}:
-            rbac_enabled = dpath.get(conf, inspected_key2)[0]
-
-        if rbac_enabled:
-            return CheckResult.PASSED
+        for key in self.evaluated_keys:
+            if dpath.search(conf, key) and dpath.get(conf, key)[0]:
+                return CheckResult.PASSED
 
         return CheckResult.FAILED
 
