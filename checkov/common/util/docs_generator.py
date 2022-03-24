@@ -43,18 +43,8 @@ def get_compare_key(c):
 def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> None:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids)
-    unique_ids = []
-    for c in printable_checks_list:
-        if c[0] not in unique_ids:
-            unique_ids.append(c[0])
-    printable_checks_list2 = []
-    for id in unique_ids:
-        for c in printable_checks_list:
-            if c[0] == id:
-                printable_checks_list2.append((c[0], c[4], c[3]))
-                break
     print(
-        tabulate(printable_checks_list2, headers=["Id", "IaC", "Policy"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "IaC", "Policy"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
