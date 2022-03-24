@@ -38,13 +38,12 @@ class OrConnectionSolver(ComplexConnectionSolver):
 
         return self.filter_results(passed, failed)
 
+    @staticmethod
     def _filter_failed(failed: List[Dict[str, Any]], passed: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         filterd_failed = []
         for fail in failed:
             if fail[CustomAttributes.ID] not in [p[CustomAttributes.ID] for p in passed]:
                 filterd_failed.append(fail)
-                continue
-            if fail[CustomAttributes.FILE_PATH] in [p[CustomAttributes.FILE_PATH] for p in passed]:
-                continue
-            filterd_failed.append(fail)
+            elif fail[CustomAttributes.FILE_PATH] not in [p[CustomAttributes.FILE_PATH] for p in passed]:
+                filterd_failed.append(fail)
         return filterd_failed
