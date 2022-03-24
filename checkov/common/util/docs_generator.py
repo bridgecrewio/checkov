@@ -44,7 +44,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids)
     print(
-        tabulate(printable_checks_list, headers=["Id", "IaC", "Policy"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
