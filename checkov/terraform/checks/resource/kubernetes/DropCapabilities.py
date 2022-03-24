@@ -27,11 +27,11 @@ class DropCapabilities(BaseResourceCheck):
                 if type(container) != dict:
                     return CheckResult.UNKNOWN
                 dropped = False
-                if container.get("security_context"):
+                if container.get("security_context") and isinstance(container.get("security_context"), list):
                     context = container.get("security_context")[0]
-                    if context.get("capabilities"):
+                    if context.get("capabilities") and isinstance(context.get("capabilities"), list):
                         capabilities = context.get("capabilities")[0]
-                        if capabilities.get("drop"):
+                        if capabilities.get("drop") and isinstance(capabilities.get("drop"), list):
                             drops = capabilities.get("drop")[0]
                             for drop in drops:
                                 if drop in ["ALL", "NET_RAW"]:
