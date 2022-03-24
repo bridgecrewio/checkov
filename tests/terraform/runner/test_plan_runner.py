@@ -64,7 +64,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_allowlist = [custom_check_id]
         report = runner.run(
             root_folder=None,
@@ -97,7 +97,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_allowlist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -131,7 +131,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         checks_allowlist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -165,7 +165,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_denylist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -199,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         checks_denylist = ['MEDIUM']
         report = runner.run(
             root_folder=None,

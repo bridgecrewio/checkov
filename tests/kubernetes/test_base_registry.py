@@ -12,7 +12,7 @@ class TestCheck:
     def __init__(self, id: str, bc_id: Optional[str] = None, severity: Optional[Severity] = None):
         self.id = id
         self.bc_id = bc_id
-        self.bc_severity = severity
+        self.severity = severity
 
 
 class TestRunnerFilter(unittest.TestCase):

@@ -86,7 +86,7 @@ class RunnerFilter(object):
         if check:
             check_id = check.id
             bc_check_id = check.bc_id
-            severity = check.bc_severity
+            severity = check.severity
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
