@@ -59,10 +59,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
-    def get_bc_id(self, checkov_id):
+    def get_bc_id(self, checkov_id: str) -> str:
         return self.check_metadata.get(checkov_id, {}).get('id')
 
-    def get_guideline(self, checkov_id):
+    def get_guideline(self, checkov_id: str) -> str:
         return self.check_metadata.get(checkov_id, {}).get('guideline')
 
     def get_severity(self, checkov_id):

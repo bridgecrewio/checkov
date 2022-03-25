@@ -12,7 +12,7 @@ from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.bicep.parser import Parser
-from checkov.bicep.utils import clean_file_path, get_scannable_file_paths, search_for_suppression
+from checkov.bicep.utils import clean_file_path, get_scannable_file_paths
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -22,6 +22,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.typing import _CheckResult
+from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -120,7 +121,7 @@ class Runner(BaseRunner):
                             resource_id = f"{conf['type']}.{name}"
                             report.add_resource(f"{cleaned_path}:{resource_id}")
 
-                            suppressions = search_for_suppression(code_lines=file_code_lines[start_line - 1 : end_line])
+                            suppressions = collect_suppressions_for_report(code_lines=file_code_lines[start_line - 1 : end_line])
 
                             for check, check_result in results.items():
                                 if check.id in suppressions.keys():
