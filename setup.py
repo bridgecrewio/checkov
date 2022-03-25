@@ -80,7 +80,8 @@ setup(
     packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
-        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks"
+        "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
+        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
         "checkov.terraform.checks.graph_checks": [

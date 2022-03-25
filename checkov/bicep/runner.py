@@ -92,7 +92,7 @@ class Runner(BaseRunner):
         self.add_python_check_results(report=report, runner_filter=runner_filter)
 
         # run YAML checks
-        self.add_yaml_check_results(report=report, runner_filter=runner_filter)
+        self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
 
@@ -145,7 +145,7 @@ class Runner(BaseRunner):
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
-    def add_yaml_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+    def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""
 
         checks_results = self.run_graph_checks_results(runner_filter)
