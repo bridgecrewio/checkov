@@ -17,9 +17,10 @@ class DefaultServiceAccountBinding(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if "subject" in conf:
-            for subject in conf["subject"]:
+            for idx, subject in enumerate(conf["subject"]):
                 if subject["kind"] == ["ServiceAccount"]:
                     if subject["name"] == ["default"]:
+                        self.evaluated_keys = [f"subject/[{idx}]/name"]
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
