@@ -1,4 +1,3 @@
-import os
 from abc import ABC, abstractmethod
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
@@ -27,4 +26,3 @@ class BaseIntegrationFeature(ABC):
     def post_runner(self, scan_reports):
         """Runs after each runner completes"""
         pass
-

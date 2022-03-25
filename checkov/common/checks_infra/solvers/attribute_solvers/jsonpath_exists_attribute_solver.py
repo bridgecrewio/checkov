@@ -13,4 +13,3 @@ class JsonpathExistsAttributeSolver(JsonpathEqualsAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return vertex.get(attribute) is not None
-

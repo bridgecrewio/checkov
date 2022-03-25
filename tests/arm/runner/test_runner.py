@@ -143,7 +143,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
 
         report = Runner().run(
@@ -173,7 +173,7 @@ class TestRunnerValid(unittest.TestCase):
 
         check = AnyFailingCheck()
         checks_allowlist = ['MEDIUM']
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
 
         report = Runner().run(
@@ -205,7 +205,7 @@ class TestRunnerValid(unittest.TestCase):
 
         check = AnyFailingCheck()
         checks_allowlist = ['MEDIUM']
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
 
         report = Runner().run(
@@ -238,7 +238,7 @@ class TestRunnerValid(unittest.TestCase):
 
         check = AnyFailingCheck()
         checks_denylist = ['MEDIUM']
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
 
         report = Runner().run(
@@ -271,7 +271,7 @@ class TestRunnerValid(unittest.TestCase):
 
         check = AnyFailingCheck()
         checks_denylist = ['MEDIUM']
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
 
         report = Runner().run(

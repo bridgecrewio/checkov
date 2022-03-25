@@ -360,7 +360,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
 
         report = Runner().run(
@@ -389,7 +389,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         runner = Runner()
         checks_allowlist = ['MEDIUM']
@@ -419,7 +419,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         runner = Runner()
         checks_allowlist = ['MEDIUM']
@@ -449,7 +449,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
 
         runner = Runner()
         checks_denylist = ['MEDIUM']
@@ -479,7 +479,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
 
         runner = Runner()
         checks_denylist = ['MEDIUM']
