@@ -22,7 +22,7 @@ class Secrets(BaseResourceCheck):
         if containers:
 
             for idx, container in enumerate(containers):
-                if type(container) != dict:
+                if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
 
                 if container.get("env") and isinstance(container.get("env"), list):
