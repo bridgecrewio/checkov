@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -60,10 +62,10 @@ class Registry(BaseRegistry):
         return resources_types.get(provider)
 
 
-_registry_instances = {}
+_registry_instances: dict[str, Registry] = {}
 
 
-def get_graph_checks_registry(check_type):
+def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
         _registry_instances[check_type] = Registry(parser=NXGraphCheckParser(),
                              checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")
