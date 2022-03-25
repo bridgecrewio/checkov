@@ -2,7 +2,7 @@ resource "aws_ecs_cluster" "fail4" {
   name = "white-hart"
   configuration {
     execute_command_configuration {
-       kms_key_id = aws_kms_key.example.arn
+      kms_key_id = aws_kms_key.example.arn
     }
   }
   tags = { test = "fail" }
@@ -18,7 +18,7 @@ resource "aws_ecs_cluster" "unknown" {
   configuration {
     execute_command_configuration {
       # kms_key_id = aws_kms_key.example.arn
-      logging    = "NONE"
+      logging = "NONE"
 
       log_configuration {
         # cloud_watch_encryption_enabled = true
@@ -118,12 +118,12 @@ resource "aws_ecs_cluster" "pass2" {
       kms_key_id = aws_kms_key.example.arn
 
       log_configuration {
-#        cloud_watch_encryption_enabled = true
+        #        cloud_watch_encryption_enabled = true
         # cloud_watch_log_group_name     = aws_cloudwatch_log_group.example.name
 
         # or
         # s3_bucket_name=   and
-        s3_bucket_encryption_enabled =true
+        s3_bucket_encryption_enabled = true
       }
     }
   }

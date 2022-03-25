@@ -12,6 +12,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.check_metadata = {}
         self.bc_to_ckv_id_mapping = {}
+        self.severity_key = 'severity'
 
     def is_valid(self) -> bool:
         return (
@@ -35,20 +36,28 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             graph_registry = get_graph_checks_registry("terraform")
             graph_registry.load_checks()
 
+            use_prisma_metadata = self.bc_integration.is_prisma_integration()
+
+            if use_prisma_metadata:
+                self.severity_key = 'pcSeverity'
+
             for check in all_checks + graph_registry.checks:
                 checkov_id = check.id
                 metadata = self.get_policy_metadata(checkov_id)
                 if metadata:
                     check.bc_id = metadata.get('id')
                     check.guideline = metadata.get('guideline')
-                    check.bc_severity = get_severity(metadata.get('severity'))
-                    check.pc_severity = get_severity(metadata.get('pcSeverity'))
+
+                    # fall back on plain severity if there is no PC severity
+                    check.severity = get_severity(metadata.get(self.severity_key, metadata.get('severity')))
                     check.bc_category = metadata.get('category')
                     check.benchmarks = metadata.get('benchmarks')
-                    # check.pc_title = metadata.get('pcTitle')  # TODO needs to be deployed to platform
+
+                    if use_prisma_metadata and metadata.get('descriptiveTitle'):
+                        check.name = metadata['descriptiveTitle']
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Some metadata may be missing from the run.", exc_info=True)
+            logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
     def get_bc_id(self, checkov_id):
         return self.check_metadata.get(checkov_id, {}).get('id')
@@ -57,7 +66,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         return self.check_metadata.get(checkov_id, {}).get('guideline')
 
     def get_severity(self, checkov_id):
-        severity = self.check_metadata.get(checkov_id, {}).get('severity')
+        severity = self.check_metadata.get(checkov_id, {}).get(self.severity_key)
+        if not severity:
+            severity = self.check_metadata.get(checkov_id, {}).get('severity')
         if severity and type(severity) == str:
             severity = Severities[severity]  # not all runners register their checks in time for being processed above
         return severity
@@ -67,6 +78,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def get_benchmarks(self, checkov_id):
         return self.check_metadata.get(checkov_id, {}).get('benchmarks')
+
+    def get_prisma_policy_title(self, checkov_id):
+        return self.check_metadata.get(checkov_id, {}).get('descriptiveTitle')
 
     def get_policy_metadata(self, checkov_id):
         return self.check_metadata.get(checkov_id)

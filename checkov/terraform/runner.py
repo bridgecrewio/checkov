@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple, List, Type
+from typing import Dict, Optional, Tuple, List, Type, Any
 
 import dpath.util
 
@@ -132,6 +132,24 @@ class Runner(BaseRunner):
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
+    def get_connected_node(self, entity, root_folder) -> Optional[Dict[str, Any]]:
+        connected_entity = entity.get('connected_node')
+        if not connected_entity:
+            return None
+        connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(connected_entity)
+        full_file_path = connected_entity[CustomAttributes.FILE_PATH]
+        connected_node_data = {}
+        connected_node_data['code_block'] = connected_entity_context.get('code_lines')
+        connected_node_data['file_path'] = f"/{os.path.relpath(full_file_path, root_folder)}"
+        connected_node_data['file_line_range'] = [connected_entity_context.get('start_line'),
+                                                  connected_entity_context.get('end_line')]
+        connected_node_data['resource'] = ".".join(connected_entity_context['definition_path'])
+        connected_node_data['entity_tags'] = connected_entity.get('tags', {})
+        connected_node_data['evaluations'] = connected_entity_evaluations
+        connected_node_data['file_abs_path'] = os.path.abspath(full_file_path)
+        connected_node_data['resource_address'] = connected_entity_context.get('address')
+        return connected_node_data
+
     def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
@@ -149,6 +167,7 @@ class Runner(BaseRunner):
                             copy_of_check_result['suppress_comment'] = skipped_check['suppress_comment']
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
+                    connected_node_data = self.get_connected_node(entity, root_folder)
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -164,9 +183,10 @@ class Runner(BaseRunner):
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
                         resource_address=entity_context.get('address'),
-                        severity=check.bc_severity,
+                        severity=check.severity,
                         bc_category=check.bc_category,
-                        benchmarks=check.benchmarks
+                        benchmarks=check.benchmarks,
+                        connected_node=connected_node_data
                     )
                     if self.breadcrumbs:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
@@ -315,7 +335,7 @@ class Runner(BaseRunner):
                     entity_tags=tags,
                     caller_file_path=caller_file_path,
                     caller_file_line_range=caller_file_line_range,
-                    severity=check.bc_severity,
+                    severity=check.severity,
                     bc_category=check.bc_category,
                     benchmarks=check.benchmarks
                 )

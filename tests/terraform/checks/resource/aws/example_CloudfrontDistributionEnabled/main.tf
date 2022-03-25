@@ -11,7 +11,7 @@ resource "aws_cloudfront_distribution" "pass" {
     }
   }
 
-   enabled             = true
+  enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 

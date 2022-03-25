@@ -6,9 +6,9 @@ resource "aws_acm_certificate" "pass" {
     Environment = "test"
   }
 
-     lifecycle {
-       create_before_destroy = true
-     }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_acm_certificate" "fail" {
@@ -19,9 +19,9 @@ resource "aws_acm_certificate" "fail" {
     Environment = "test"
   }
 
-     lifecycle {
-       create_before_destroy = false
-     }
+  lifecycle {
+    create_before_destroy = false
+  }
 }
 
 resource "aws_acm_certificate" "fail2" {

@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
@@ -8,19 +7,14 @@ from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.dockerfile.utils import is_docker_file
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
-
 
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
-
-    @staticmethod
-    def _is_docker_file(file):
-        return re.fullmatch(DOCKER_FILE_MASK, file) is not None
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
@@ -32,7 +26,7 @@ class Runner(BaseRunner):
                 registry.load_external_checks(directory)
 
         if files:
-            files_list = [file for file in files if Runner._is_docker_file(os.path.basename(file))]
+            files_list = [file for file in files if is_docker_file(os.path.basename(file))]
 
         if root_folder:
             filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
@@ -40,7 +34,7 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
-                    if Runner._is_docker_file(file):
+                    if is_docker_file(file):
                         file_path = os.path.join(root, file)
                         files_list.append(file_path)
 
@@ -84,7 +78,7 @@ class Runner(BaseRunner):
                                 resource=f"{docker_file_path}.{result_instruction}",
                                 evaluations=None, check_class=check.__class__.__module__,
                                 file_abs_path=file_abs_path, entity_tags=None,
-                                severity=check.bc_severity)
+                                severity=check.severity)
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
 

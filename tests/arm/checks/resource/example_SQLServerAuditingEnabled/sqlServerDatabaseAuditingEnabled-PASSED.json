@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlAdministratorLogin": {
+      "type": "string"
+    },
+    "sqlAdministratorLoginPassword": {
+      "type": "secureString"
+    },
+    "transparentDataEncryption": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "variables": {
+    "databaseName": "sample-db-with-tde",
+    "databaseEdition": "Basic",
+    "databaseCollation": "SQL_Latin1_General_CP1_CI_AS",
+    "databaseServiceObjectiveName": "Basic",
+    "sqlServerName": "[format('sqlserver{0}', uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2020-08-01-preview",
+      "name": "dbEnabled",
+      "properties": {
+        "state": "[parameters('transparentDataEncryption')]"
+      },
+      "resources": [
+        {
+          "type": "auditingSettings",
+          "apiVersion": "2019-06-01-preview",
+          "name": "DefaultAuditingSettings",
+          "dependsOn": [
+            "[parameters('sqlServerName')]",
+            "[parameters('storageAccountName')]",
+            "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), 'Microsoft.Authorization/roleAssignments/', variables('uniqueRoleGuid'))]"
+          ],
+          "properties": {
+            "state": "Enabled",
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "storageAccountAccessKey": "[if(parameters('isStorageBehindVnet'), json('null'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value)]",
+            "storageAccountSubscriptionId": "[subscription().subscriptionId]",
+            "isStorageSecondaryKeyInUse": false
+          }
+        }
+      ]
+    }
+  ]
+}
