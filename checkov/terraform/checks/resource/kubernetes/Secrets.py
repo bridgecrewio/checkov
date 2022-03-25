@@ -18,8 +18,8 @@ class Secrets(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
-        if spec.get("container"):
-            containers = spec.get("container")
+        containers = spec.get("container")
+        if containers:
 
             for idx, container in enumerate(containers):
                 if type(container) != dict:
