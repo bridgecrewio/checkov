@@ -23,4 +23,3 @@ class Runner(YamlRunner):
     def _parse_file(self, f):
         if ".github/workflows/" in os.path.abspath(f):
             return super()._parse_file(f)
-
