@@ -23,6 +23,7 @@ class DefaultServiceAccount(BaseResourceCheck):
                     if "automount_service_account_token" in conf:
                         if conf["automount_service_account_token"] == [False]:
                             return CheckResult.PASSED
+                    self.evaluated_keys = ["metadata/[0]/name"]
                     return CheckResult.FAILED
                 else:
                     return CheckResult.PASSED
