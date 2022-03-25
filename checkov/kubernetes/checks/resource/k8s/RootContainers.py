@@ -12,7 +12,8 @@ class RootContainers(BaseK8Check):
         # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser / runAsNonRoot
         # Location: *.spec.template.spec.securityContext.runAsUser / runAsNonRoot
         id = "CKV_K8S_23"
-        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob')
+        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController',
+                          'Job', 'CronJob')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
@@ -85,7 +86,9 @@ class RootContainers(BaseK8Check):
 
         return CheckResult.FAILED
 
+
 check = RootContainers()
+
 
 def check_runAsNonRoot(spec):
     if spec.get("securityContext"):
@@ -95,6 +98,7 @@ def check_runAsNonRoot(spec):
             else:
                 return "FAILED"
     return "ABSENT"
+
 
 def check_runAsUser(spec):
     if spec.get("securityContext"):
