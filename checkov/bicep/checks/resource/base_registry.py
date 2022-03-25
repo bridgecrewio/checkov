@@ -4,14 +4,18 @@ from pycep.typing import ResourceAttributes
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
-
-GRAPH_CHECK_IDS = ("CKV_AZURE_23",)
 
 
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
         self.check_id_to_enitity_map: dict[str, list[str]] = {}
+
+        self.graph_registry = get_graph_checks_registry(CheckType.BICEP)
+        self.graph_registry.load_checks()
+        self.graph_check_ids = [check.id for check in self.graph_registry.checks]
 
         super().__init__()
 
@@ -21,7 +25,7 @@ class Registry(BaseCheckRegistry):
             RunnerFilter.notify_external_check(check.id)
 
         # don't add an ARM check, if a Bicep graph check exists for it
-        if check.id in GRAPH_CHECK_IDS:
+        if check.id in self.graph_check_ids:
             return
 
         # remove the ARM check, if a Bicep check with the same check ID exists
