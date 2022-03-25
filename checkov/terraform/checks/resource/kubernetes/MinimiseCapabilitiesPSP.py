@@ -16,8 +16,10 @@ class MinimiseCapabilitiesPSP(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
+        self.evaluated_keys = [""]
         if conf.get('spec'):
             spec = conf.get('spec')[0]
+            self.evaluated_keys = ["spec"]
             if spec.get("required_drop_capabilities"):
                 return CheckResult.PASSED
 
