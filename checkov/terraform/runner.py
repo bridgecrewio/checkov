@@ -64,6 +64,7 @@ class Runner(BaseRunner):
                                                                                                    db_connector=db_connector)
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
+        self.referrer_cache: Dict[str, str] = {}
 
     block_type_registries = {
         'resource': resource_registry,
@@ -416,6 +417,9 @@ class Runner(BaseRunner):
             return file_path, None
 
     def _find_id_for_referrer(self, full_file_path) -> Optional[str]:
+        cached_referrer = self.referrer_cache.get(full_file_path)
+        if cached_referrer:
+            return cached_referrer
         if not self.definitions_with_modules:
             self._prepare_definitions_with_modules()
         for file, file_content in self.definitions_with_modules.items():
@@ -426,7 +430,9 @@ class Runner(BaseRunner):
                         continue
 
                     if full_file_path in module_content["__resolved__"]:
-                        return f"module.{module_name}"
+                        id_referrer = f"module.{module_name}"
+                        self.referrer_cache[full_file_path] = id_referrer
+                        return id_referrer
         return None
 
     def _prepare_definitions_with_modules(self):
