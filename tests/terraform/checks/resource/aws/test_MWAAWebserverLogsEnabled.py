@@ -6,7 +6,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.MWAAWebserverLogsEnabled import check
 
 
-class MWAAWebserverLogsEnabled(unittest.TestCase):
+class TestMWAAWebserverLogsEnabled(unittest.TestCase):
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_MWAAWebserverLogsEnabled"
