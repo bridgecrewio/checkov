@@ -370,7 +370,7 @@ class TestRunnerValid(unittest.TestCase):
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_6"]
+        checks_allowlist = ["CKV_AWS_20"]
         report = runner.run(
             root_folder=dir_rel_path,
             external_checks_dir=None,
@@ -393,7 +393,7 @@ class TestRunnerValid(unittest.TestCase):
         dir_abs_path = os.path.abspath(scan_dir_path)
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_6"]
+        checks_allowlist = ["CKV_AWS_20"]
         report = runner.run(
             root_folder=dir_abs_path,
             external_checks_dir=None,
