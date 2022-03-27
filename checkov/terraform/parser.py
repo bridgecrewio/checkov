@@ -745,7 +745,7 @@ def validate_malformed_definitions(raw_data):
 
 def clean_bad_definitions(tf_definition_list):
     return {
-        block_type: list(filter(lambda definition_list: block_type == 'locals' or
+        block_type: list(filter(lambda definition_list: block_type in [BlockType.LOCALS, BlockType.TERRAFORM] or
                                                         not isinstance(definition_list, dict)
                                                         or len(definition_list.keys()) == 1,
                                 tf_definition_list[block_type]))

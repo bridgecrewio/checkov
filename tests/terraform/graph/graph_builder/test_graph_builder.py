@@ -218,3 +218,17 @@ class TestGraphBuilder(TestCase):
         ]
 
         self.assertCountEqual(expected_grant_attribute, attributes["grant"])
+
+    def test_build_graph_terraform_block(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/terraform_block')
+
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
+
+        terraform_blocks = graph.vertices_by_block_type[BlockType.TERRAFORM]
+        self.assertEqual(1, len(terraform_blocks))
+
+        terraform_block = graph.vertices[terraform_blocks[0]]
+        expected_attributes = ["backend", "required_version", "required_providers"]
+        for attr in expected_attributes:
+            self.assertIn(attr, list(terraform_block.attributes.keys()))

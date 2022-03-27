@@ -180,16 +180,15 @@ class Module:
 
     def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for terraform_dict in blocks:
-            for name in terraform_dict:
-                terraform_block = TerraformBlock(
-                    block_type=BlockType.TERRAFORM,
-                    name=name,
-                    config=terraform_dict,
-                    path=path,
-                    attributes={},
-                    source=self.source,
-                )
-                self._add_to_blocks(terraform_block)
+            terraform_block = TerraformBlock(
+                block_type=BlockType.TERRAFORM,
+                name="",
+                config=terraform_dict,
+                path=path,
+                attributes=terraform_dict,
+                source=self.source,
+            )
+            self._add_to_blocks(terraform_block)
 
     def _add_tf_var(self, blocks: Dict[str, Dict[str, Any]], path: str) -> None:
         for tf_var_name, attributes in blocks.items():
