@@ -114,6 +114,8 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            self.graph_manager.save_graph(local_graph)
             logging.info("Scanning root folder using existing tf_definitions")
 
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)

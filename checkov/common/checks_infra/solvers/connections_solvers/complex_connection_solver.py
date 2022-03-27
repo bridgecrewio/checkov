@@ -32,7 +32,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
 
     @staticmethod
     def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        return list({check[CustomAttributes.ID]: check for check in checks}.values())
+        return list({(check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH]): check for check in checks}.values())
 
     def filter_results(
         self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]]
