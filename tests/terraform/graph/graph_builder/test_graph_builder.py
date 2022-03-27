@@ -231,4 +231,4 @@ class TestGraphBuilder(TestCase):
         terraform_block = graph.vertices[terraform_blocks[0]]
         expected_attributes = ["backend", "required_version", "required_providers"]
         for attr in expected_attributes:
-            self.assertTrue(attr in list(terraform_block.attributes.keys()))
+            self.assertIn(attr, list(terraform_block.attributes.keys()))
