@@ -218,3 +218,15 @@ class TestGraphBuilder(TestCase):
         ]
 
         self.assertCountEqual(expected_grant_attribute, attributes["grant"])
+
+    def test_build_graph_terraform_block(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/terraform_block')
+
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
+
+        expected_num_of_terraform_nodes = 3
+
+        vertices_by_block_type = graph.vertices_by_block_type
+        self.assertEqual(expected_num_of_terraform_nodes, len(vertices_by_block_type[BlockType.TERRAFORM]))
+
