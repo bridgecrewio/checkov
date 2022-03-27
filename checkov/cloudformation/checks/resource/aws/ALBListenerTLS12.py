@@ -1,6 +1,8 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_list
+from checkov.cloudformation.parser.cfn_keywords import ConditionFunctions, IntrinsicFunctions
+
 
 class ALBListenerTLS12(BaseResourceCheck):
 
@@ -31,6 +33,8 @@ class ALBListenerTLS12(BaseResourceCheck):
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):
                     return CheckResult.PASSED
                 for idx_action, action in enumerate(conf['Properties']['DefaultActions']):
+                    if action in ConditionFunctions.__dict__.values() or action in IntrinsicFunctions.__dict__.values():
+                        return CheckResult.UNKNOWN
                     redirects = action.get("RedirectConfig", [])
                     for idx_redirect, redirect in enumerate(force_list(redirects)):
                         if redirect.get("Protocol", []) == 'HTTPS':
