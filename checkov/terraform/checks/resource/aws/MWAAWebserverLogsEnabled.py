@@ -1,7 +1,7 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
 
-
+#
 class MWAAWebserverLogsEnabled(BaseResourceValueCheck):
 
     def __init__(self):
