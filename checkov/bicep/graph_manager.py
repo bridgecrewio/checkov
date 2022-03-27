@@ -29,7 +29,7 @@ class BicepGraphManager(GraphManager):
         excluded_paths: list[str] | None = None,
     ) -> tuple[LocalGraph, dict[Path, BicepJson]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir)
-        definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
+        definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)  # type:ignore[assignment]
         local_graph = self.build_graph_from_definitions(definitions)
 
         return local_graph, definitions
