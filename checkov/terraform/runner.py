@@ -139,6 +139,8 @@ class Runner(BaseRunner):
         if not connected_entity:
             return None
         connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(connected_entity)
+        if not connected_entity_context:
+            return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data['code_block'] = connected_entity_context.get('code_lines')
