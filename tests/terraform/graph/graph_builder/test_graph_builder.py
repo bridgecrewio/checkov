@@ -225,8 +225,10 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
-        expected_num_of_terraform_nodes = 3
+        terraform_blocks = graph.vertices_by_block_type[BlockType.TERRAFORM]
+        self.assertEqual(1, len(terraform_blocks))
 
-        vertices_by_block_type = graph.vertices_by_block_type
-        self.assertEqual(expected_num_of_terraform_nodes, len(vertices_by_block_type[BlockType.TERRAFORM]))
-
+        terraform_block = graph.vertices[terraform_blocks[0]]
+        expected_attributes = ["backend", "required_version", "required_providers"]
+        for attr in expected_attributes:
+            self.assertTrue(attr in list(terraform_block.attributes.keys()))
