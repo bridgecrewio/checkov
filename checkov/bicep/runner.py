@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import cast, Type, TYPE_CHECKING
+from typing import cast, Type, TYPE_CHECKING, Any
 
 from pycep.typing import BicepJson
 from typing_extensions import Literal
@@ -55,6 +55,7 @@ class Runner(BaseRunner):
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
+        self.context: dict[str, dict[str, Any]] = {}
         self.definitions: dict[Path, BicepJson] = {}
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
 
@@ -68,7 +69,7 @@ class Runner(BaseRunner):
     ) -> Report:
         report = Report(Runner.check_type)
 
-        if self.context is None or self.definitions is None:
+        if not self.context or not self.definitions:
             file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
 
             self.definitions, self.definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
