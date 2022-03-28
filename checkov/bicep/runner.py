@@ -81,7 +81,7 @@ class Runner(BaseRunner):
                     resource_registry.load_external_checks(directory)
                     self.graph_registry.load_external_checks(directory)
 
-            self.context = None  # TODO: create context
+            self.context = {}  # TODO: create context
 
             logging.info("Creating Bicep graph")
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
