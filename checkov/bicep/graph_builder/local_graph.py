@@ -14,6 +14,7 @@ from pycep.typing import (
     ParameterAttributes,
     VariableAttributes,
     OutputAttributes,
+    ModuleAttributes,
 )
 from typing_extensions import Literal
 
@@ -31,11 +32,12 @@ BICEP_ELEMENT_TO_BLOCK_TYPE_MAP: dict[str, Literal["param", "var", "resource", "
 
 
 class BicepElements(str, Enum):
-    GLOBALS = "globals"
-    PARAMETERS = "parameters"
-    VARIABLES = "variables"
-    RESOURCES = "resources"
-    OUTPUTS = "outputs"
+    GLOBALS: Literal["globals"] = "globals"
+    PARAMETERS: Literal["parameters"] = "parameters"
+    VARIABLES: Literal["variables"] = "variables"
+    RESOURCES: Literal["resources"] = "resources"
+    MODULES: Literal["modules"] = "modules"
+    OUTPUTS: Literal["outputs"] = "outputs"
 
 
 class BicepLocalGraph(LocalGraph):
@@ -52,32 +54,12 @@ class BicepLocalGraph(LocalGraph):
 
     def _create_vertices(self) -> None:
         for file_path, bicep_conf in self.definitions.items():
-            self._create_global_vertices(file_path=file_path, globals_attrs=bicep_conf.get(BicepElements.GLOBALS))
-            self._create_param_vertices(file_path=file_path, parameters=bicep_conf.get(BicepElements.PARAMETERS))
-            self._create_var_vertices(file_path=file_path, variables=bicep_conf.get(BicepElements.VARIABLES))
-            self._create_resource_vertices(file_path=file_path, resources=bicep_conf.get(BicepElements.RESOURCES))
-            self._create_output_vertices(file_path=file_path, outputs=bicep_conf.get(BicepElements.OUTPUTS))
-
-            for element_type, elements in bicep_conf.items():
-                if element_type in BicepElements.__members__.values():
-                    # already processed above
-                    continue
-
-                for name, conf in elements.items():
-                    config = deepcopy(conf)
-                    block_type = BICEP_ELEMENT_TO_BLOCK_TYPE_MAP[element_type]
-                    attributes = deepcopy(config)
-
-                    self.vertices.append(
-                        BicepBlock(
-                            name=name,
-                            config=config,
-                            path=str(file_path),
-                            block_type=block_type,
-                            attributes=attributes,
-                            id=f"{block_type}.{name}",
-                        )
-                    )
+            self._create_global_vertices(file_path=file_path, globals_attrs=bicep_conf.get(BicepElements.GLOBALS.value))
+            self._create_param_vertices(file_path=file_path, parameters=bicep_conf.get(BicepElements.PARAMETERS.value))
+            self._create_var_vertices(file_path=file_path, variables=bicep_conf.get(BicepElements.VARIABLES.value))
+            self._create_resource_vertices(file_path=file_path, resources=bicep_conf.get(BicepElements.RESOURCES.value))
+            self._create_module_vertices(file_path=file_path, modules=bicep_conf.get(BicepElements.MODULES.value))
+            self._create_output_vertices(file_path=file_path, outputs=bicep_conf.get(BicepElements.OUTPUTS.value))
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -165,6 +147,34 @@ class BicepLocalGraph(LocalGraph):
                     config=config,  # type:ignore[arg-type]
                     path=str(file_path),
                     block_type=BlockType.RESOURCE,
+                    attributes=attributes,
+                    id=f"{config['type']}.{name}",
+                )
+            )
+
+    def _create_module_vertices(self, file_path: Path, modules: dict[str, ModuleAttributes] | None) -> None:
+        if not modules:
+            return
+
+        for name, conf in modules.items():
+            config = deepcopy(conf)
+
+            attributes: dict[str, Any] = {}
+            attributes["decorators"] = deepcopy(config["decorators"])
+            attributes["type_"] = config["type"]
+            attributes["detail_"] = config["detail"]
+            attributes.update(deepcopy(config["config"]))
+
+            attributes["resource_type"] = config["type"]
+            attributes["__start_line__"] = config["__start_line__"]
+            attributes["__end_line__"] = config["__end_line__"]
+
+            self.vertices.append(
+                BicepBlock(
+                    name=str(name),  # this will be fixed in pycep with the next version, currently type Token
+                    config=config,  # type:ignore[arg-type]
+                    path=str(file_path),
+                    block_type=BlockType.MODULE,
                     attributes=attributes,
                     id=f"{config['type']}.{name}",
                 )
