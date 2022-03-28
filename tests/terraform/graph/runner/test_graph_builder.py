@@ -42,6 +42,7 @@ class TestGraphBuilder(TestCase):
             definitions_context = data["definitions_context"]
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
+        # note that we dont count graph violations in this case
         self.assertGreaterEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(len(report.skipped_checks), 0)
