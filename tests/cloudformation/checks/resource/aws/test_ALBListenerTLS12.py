@@ -26,7 +26,8 @@ class TestALBListenerTLS12(unittest.TestCase):
             'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSFAILED1',
             'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSFAILED2'
         }
-        
+
+        unknown_resource = 'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPUnknown'
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
@@ -34,6 +35,8 @@ class TestALBListenerTLS12(unittest.TestCase):
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
+        self.assertNotIn(unknown_resource, passed_check_resources)
+        self.assertNotIn(unknown_resource, failed_check_resources)
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
