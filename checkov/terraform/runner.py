@@ -438,18 +438,14 @@ class Runner(BaseRunner):
         return None
 
     def _prepare_definitions_with_modules(self):
+        def __cache_file_content(file_modules: list):
+            for modules in file_modules:
+                for module_content in modules.values():
+                    if "__resolved__" in module_content:
+                        self.definitions_with_modules[file] = file_content
+                        return
+
         for file, file_content in self.definitions.items():
-            if "module" not in file_content:
-                continue
+            if "module" in file_content:
+                __cache_file_content(file_modules=file_content["module"])
 
-            for modules in file_content["module"]:
-                cached = False
-                for module_name, module_content in modules.items():
-                    if "__resolved__" not in module_content:
-                        continue
-
-                    self.definitions_with_modules[file] = file_content
-                    cached = True
-                    continue
-                if cached:
-                    break
