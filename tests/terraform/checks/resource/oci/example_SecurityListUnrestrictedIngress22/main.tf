@@ -123,7 +123,7 @@ resource "oci_core_security_list" "fail1" {
         source = "0.0.0.0/0"
     }
 }
-resource "oci_core_security_list" "fail2" {
+resource "oci_core_security_list" "skip" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 

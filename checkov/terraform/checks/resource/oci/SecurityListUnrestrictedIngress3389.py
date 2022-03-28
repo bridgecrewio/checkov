@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SecurityListUnrestrictedIngress3389(BaseResourceCheck):
     def __init__(self):
         name = "Ensure VCN inbound security lists allow all traffic on 3389 port."
-        id = "CKV_OCI_17"  # TODO change id
+        id = "CKV_OCI_18"
         supported_resources = ['oci_core_security_list']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -15,13 +15,13 @@ class SecurityListUnrestrictedIngress3389(BaseResourceCheck):
             self.evaluated_keys = ['ingress_security_rules']
             rules = conf.get("ingress_security_rules")
             for idx, rule in enumerate(rules):
-                if not "0.0.0.0/0" in rule['source'][0]:  # TODO to skip or fail?
+                if not "0.0.0.0/0" in rule['source'][0]:
                     self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/source']
-                    return CheckResult.FAILED
+                    return CheckResult.SKIPPED
 
                 if not ((rule['protocol'][0] != '1' and (not 'udp_options' in rule) and (not 'tcp_options' in rule))
                         or (self.scan_protocol_conf(rule, 'tcp_options', idx) != CheckResult.FAILED
-                        and self.scan_protocol_conf(rule, 'udp_options', idx) != CheckResult.FAILED)
+                            and self.scan_protocol_conf(rule, 'udp_options', idx) != CheckResult.FAILED)
                         or rule['protocol'][0] == 'all'):
                     self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]']
                     return CheckResult.FAILED

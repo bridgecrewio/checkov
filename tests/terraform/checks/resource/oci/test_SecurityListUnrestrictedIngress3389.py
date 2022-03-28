@@ -24,7 +24,6 @@ class TestSecurityListUnrestrictedIngress3389(unittest.TestCase):
             "oci_core_security_list.fail",
             "oci_core_security_list.fail0",
             "oci_core_security_list.fail1",
-            "oci_core_security_list.fail2",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
@@ -32,7 +31,7 @@ class TestSecurityListUnrestrictedIngress3389(unittest.TestCase):
 
         self.assertEqual(summary["passed"], 3)
         self.assertEqual(summary["failed"], 3)
-        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["skipped"], 1)
         self.assertEqual(summary["parsing_errors"], 0)
 
         self.assertEqual(passing_resources, passed_check_resources)
