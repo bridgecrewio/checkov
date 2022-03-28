@@ -63,6 +63,8 @@ class Runner(BaseRunner):
         self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
                                                                                                    db_connector=db_connector)
         self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.definitions_with_modules: Dict[str, Dict] = {}
+        self.referrer_cache: Dict[str, str] = {}
 
     block_type_registries = {
         'resource': resource_registry,
@@ -271,8 +273,8 @@ class Runner(BaseRunner):
             caller_file_line_range = None
 
             if module_referrer is not None:
-                referrer_id = self._find_id_for_referrer(full_file_path,
-                                                         self.definitions)
+                referrer_id = self._find_id_for_referrer(full_file_path)
+
                 if referrer_id:
                     entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
@@ -417,11 +419,13 @@ class Runner(BaseRunner):
         else:
             return file_path, None
 
-    @staticmethod
-    def _find_id_for_referrer(full_file_path, definitions) -> Optional[str]:
-        for file, file_content in definitions.items():
-            if "module" not in file_content:
-                continue
+    def _find_id_for_referrer(self, full_file_path) -> Optional[str]:
+        cached_referrer = self.referrer_cache.get(full_file_path)
+        if cached_referrer:
+            return cached_referrer
+        if not self.definitions_with_modules:
+            self._prepare_definitions_with_modules()
+        for file, file_content in self.definitions_with_modules.items():
 
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
@@ -429,5 +433,19 @@ class Runner(BaseRunner):
                         continue
 
                     if full_file_path in module_content["__resolved__"]:
-                        return f"module.{module_name}"
+                        id_referrer = f"module.{module_name}"
+                        self.referrer_cache[full_file_path] = id_referrer
+                        return id_referrer
         return None
+
+    def _prepare_definitions_with_modules(self):
+        def __cache_file_content(file_modules: list):
+            for modules in file_modules:
+                for module_content in modules.values():
+                    if "__resolved__" in module_content:
+                        self.definitions_with_modules[file] = file_content
+                        return
+
+        for file, file_content in self.definitions.items():
+            if "module" in file_content:
+                __cache_file_content(file_modules=file_content["module"])
