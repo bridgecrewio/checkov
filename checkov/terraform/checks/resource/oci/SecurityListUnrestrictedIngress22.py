@@ -15,11 +15,11 @@ class SecurityListUnrestrictedIngress22(BaseResourceCheck):
             self.evaluated_keys = ['ingress_security_rules']
             rules = conf.get("ingress_security_rules")
             for idx, rule in enumerate(rules):
-                if not "0.0.0.0/0" in rule['source'][0]:
+                if "0.0.0.0/0" not in rule['source'][0]:
                     self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/source']
                     return CheckResult.SKIPPED
 
-                if not ((rule['protocol'][0] != '1' and (not 'udp_options' in rule) and (not 'tcp_options' in rule))
+                if not ((rule['protocol'][0] != '1' and ('udp_options' not in rule) and ('tcp_options' not in rule))
                         or (self.scan_protocol_conf(rule, 'tcp_options', idx) != CheckResult.FAILED
                             and self.scan_protocol_conf(rule, 'udp_options', idx) != CheckResult.FAILED)
                         or rule['protocol'][0] == 'all'):
