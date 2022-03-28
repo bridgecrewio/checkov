@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SecurityListUnrestrictedIngress3389(BaseResourceCheck):
     def __init__(self):
         name = "Ensure VCN inbound security lists allow all traffic on 3389 port."
-        id = "CKV_OCI_18"
+        id = "CKV_OCI_20"
         supported_resources = ['oci_core_security_list']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
