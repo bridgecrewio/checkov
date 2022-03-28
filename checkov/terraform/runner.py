@@ -114,6 +114,7 @@ class Runner(BaseRunner):
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
+            self.graph_manager = TerraformGraphManager(db_connector=NetworkxConnector(), source=self.graph_manager.source)
             local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             self.graph_manager.save_graph(local_graph)
             logging.info("Scanning root folder using existing tf_definitions")
