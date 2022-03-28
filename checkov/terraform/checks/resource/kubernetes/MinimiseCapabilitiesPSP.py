@@ -21,6 +21,7 @@ class MinimiseCapabilitiesPSP(BaseResourceCheck):
             spec = conf.get('spec')[0]
             self.evaluated_keys = ["spec"]
             if spec.get("required_drop_capabilities"):
+                self.evaluated_keys = ["spec/[0]/required_drop_capabilities"]
                 return CheckResult.PASSED
 
         return CheckResult.FAILED
