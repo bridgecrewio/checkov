@@ -123,7 +123,7 @@ resource "oci_core_security_list" "fail1" {
         source = "0.0.0.0/0"
     }
 }
-resource "oci_core_security_list" "skip" {
+resource "oci_core_security_list" "pass4" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -131,4 +131,9 @@ resource "oci_core_security_list" "skip" {
         protocol = "all"
         source = "0.0.0.1/0"
     }
+}
+resource "oci_core_security_list" "fail3" {
+    compartment_id = "var.compartment_id"
+    vcn_id = "oci_core_vcn.test_vcn.id"
+
 }

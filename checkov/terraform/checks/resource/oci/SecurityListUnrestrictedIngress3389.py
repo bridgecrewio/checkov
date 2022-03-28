@@ -13,13 +13,12 @@ class SecurityListUnrestrictedIngress3389(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'ingress_security_rules' in conf:
             self.evaluated_keys = ['ingress_security_rules']
-            rules = conf.get("ingress_security_rules")
-            for idx, rule in enumerate(rules):
-                if "0.0.0.0/0" not in rule['source'][0]:
-                    self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/source']
-                    return CheckResult.SKIPPED
+            rules = conf.get("ingress_security_rules", [])
 
-                if not ((rule['protocol'][0] != '1' and ('udp_options' not in rule) and ('tcp_options' not in rule))
+            for idx, rule in enumerate(rules):
+                if "0.0.0.0/0" in rule['source'][0] \
+                        and not (
+                        (rule['protocol'][0] != '1' and ('udp_options' not in rule) and ('tcp_options' not in rule))
                         or (self.scan_protocol_conf(rule, 'tcp_options', idx) != CheckResult.FAILED
                             and self.scan_protocol_conf(rule, 'udp_options', idx) != CheckResult.FAILED)
                         or rule['protocol'][0] == 'all'):
@@ -28,7 +27,7 @@ class SecurityListUnrestrictedIngress3389(BaseResourceCheck):
 
             return CheckResult.PASSED
 
-        return CheckResult.SKIPPED
+        return CheckResult.FAILED
 
     def scan_protocol_conf(self, rule, protocol_name, idx):
         """ scan udp/tcp_options configuration"""
