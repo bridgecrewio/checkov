@@ -1,0 +1,38 @@
+metadata:
+  id: "PLACEHOLDER"
+  name: "Ensure administrator users are associated with API keys"
+  category: "IAM"
+scope:
+  provider: 'oci'
+definition:
+  and:
+    - resource_types:
+        - oci_identity_user
+    - connected_resource_types:
+        - oci_identity_api_key
+      operator: exists
+      cond_type: connection
+    - resource_types:
+        - oci_identity_group
+      connected_resource_types:
+        - oci_identity_user_group_membership
+      operator: exists
+      cond_type: connection
+    - resource_types:
+        - oci_identity_user_group_membership
+      connected_resource_types:
+        - oci_identity_user
+      operator: exists
+      cond_type: connection
+    - cond_type: attribute
+      attribute: name
+      resource_types:
+        - oci_identity_group
+      operator: equals
+      value: "Administrators"
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - oci_identity_user
+      operator: within
+

@@ -1,0 +1,7 @@
+pass:
+  - 'oci_identity_user.user1'
+  - 'oci_identity_user.user2'
+  - 'oci_identity_user.user3'
+
+fail:
+  - 'oci_identity_user.user3'
