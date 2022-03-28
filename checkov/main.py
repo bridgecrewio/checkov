@@ -15,6 +15,7 @@ from configargparse import ArgumentParser
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
+import checkov.logging_init
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -43,7 +44,6 @@ from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
-from checkov.logging_init import init as logging_init
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
@@ -59,7 +59,6 @@ signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
 
-logging_init()
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
