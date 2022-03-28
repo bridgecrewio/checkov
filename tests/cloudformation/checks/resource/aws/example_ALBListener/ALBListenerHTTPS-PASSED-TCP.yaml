@@ -49,8 +49,8 @@ Resources:
 
   ListenerCert:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-    Properties: 
-      Certificates: 
+    Properties:
+      Certificates:
         - CertificateArn: !Ref Certificate
       ListenerArn: !Ref ListenerHTTPS
 
@@ -78,7 +78,7 @@ Resources:
               Path: "/"
               StatusCode: "HTTP_301"
         -
-          - TargetGroupArn: !Ref TargetGroupHTTP
+          - TargetGroupArn: default-target-group
             Type: forward
        LoadBalancerArn: !Ref LoadBalancer
        Port: 80
