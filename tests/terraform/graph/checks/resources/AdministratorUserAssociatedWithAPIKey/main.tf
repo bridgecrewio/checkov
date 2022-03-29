@@ -1,10 +1,12 @@
 # Test Case TLDR:
-# admin_group:
-#        user1 (has api key)
-#        user2 (no api key)
-#
-# non_admin_group:
-#        user3 (no api key)
+# Users in groups:
+#   admin_group:
+#       user1 (has api key)
+#       user2 (no api key)
+#   non_admin_group:
+#       user3 (no api key)
+# Users not in a group:
+#   user4 (no api key)
 
 
 resource "oci_identity_user" "user1" {
