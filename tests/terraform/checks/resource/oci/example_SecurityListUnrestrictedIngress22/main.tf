@@ -1,4 +1,4 @@
-resource "oci_core_security_list" "pass" {
+resource "oci_core_security_list" "fail1" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -52,7 +52,7 @@ resource "oci_core_security_list" "fail" {
     }
 }
 
-resource "oci_core_security_list" "fail0" {
+resource "oci_core_security_list" "pass0" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -79,7 +79,7 @@ resource "oci_core_security_list" "fail0" {
     }
 }
 
-resource "oci_core_security_list" "pass2" {
+resource "oci_core_security_list" "fail2" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -105,7 +105,7 @@ resource "oci_core_security_list" "pass2" {
         }
     }
 }
-resource "oci_core_security_list" "pass3" {
+resource "oci_core_security_list" "fail3" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -114,7 +114,7 @@ resource "oci_core_security_list" "pass3" {
         source = "0.0.0.0/0"
     }
 }
-resource "oci_core_security_list" "fail1" {
+resource "oci_core_security_list" "pass1" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 
@@ -132,8 +132,7 @@ resource "oci_core_security_list" "pass4" {
         source = "0.0.0.1/0"
     }
 }
-resource "oci_core_security_list" "fail3" {
+resource "oci_core_security_list" "fail5" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
-
 }

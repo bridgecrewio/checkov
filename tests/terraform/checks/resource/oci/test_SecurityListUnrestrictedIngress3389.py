@@ -16,15 +16,15 @@ class TestSecurityListUnrestrictedIngress3389(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "oci_core_security_list.pass",
-            "oci_core_security_list.pass2",
-            "oci_core_security_list.pass3",
+            "oci_core_security_list.pass0",
+            "oci_core_security_list.pass1",
             "oci_core_security_list.pass4",
+            "oci_core_security_list.pass5",
         }
         failing_resources = {
             "oci_core_security_list.fail",
-            "oci_core_security_list.fail0",
             "oci_core_security_list.fail1",
+            "oci_core_security_list.fail2",
             "oci_core_security_list.fail3",
         }
 
