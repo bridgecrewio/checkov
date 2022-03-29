@@ -52,6 +52,23 @@ resource "aws_s3_bucket" "bucket_good_6" {
   bucket = "bucket_good"
 }
 
+resource "aws_s3_bucket" "bucket_good_7" {
+  bucket = "bucket_good"
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.mykey.arn
+        sse_algorithm     = "${var.whatever}"
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket" "bucket_good_8" {
+  bucket = "bucket_good"
+}
+
 resource "aws_s3_bucket" "bucket_bad_1" {
   bucket = "bucket_bad_1"
 }
@@ -128,6 +145,17 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_3" {
       apply_server_side_encryption_by_default {
         sse_algorithm     = "aws:kms"
       }
+    }
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_3" {
+  bucket = aws_s3_bucket.bucket_good_8.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.mykey.arn
+      sse_algorithm     = "${var.whatever}"
     }
   }
 }

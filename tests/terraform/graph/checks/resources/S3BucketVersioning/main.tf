@@ -33,6 +33,14 @@ variable "versioning_enabled" {
   default = true
 }
 
+resource "aws_s3_bucket" "legacy_syntax" {
+  bucket = "example"
+
+  versioning {
+    enabled = "${var.unknown_var}"
+  }
+}
+
 # fail
 
 resource "aws_s3_bucket" "default" {
@@ -70,5 +78,17 @@ resource "aws_s3_bucket_versioning" "disabled_v4" {
 
   versioning_configuration {
     status = "Suspended"
+  }
+}
+
+resource "aws_s3_bucket" "legacy_syntax_v4" {
+  bucket = "example"
+}
+
+resource "aws_s3_bucket_versioning" "legacy_syntax_v4" {
+  bucket = aws_s3_bucket.legacy_syntax_v4.id
+
+  versioning_configuration {
+    status = "${var.whatever}"
   }
 }
