@@ -1,7 +1,6 @@
 import os
 import unittest
 import warnings
-
 from checkov.terraform import checks
 from .test_yaml_policies import load_yaml_data, get_policy_results
 
