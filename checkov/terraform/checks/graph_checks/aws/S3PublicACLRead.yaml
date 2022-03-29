@@ -63,25 +63,7 @@ definition:
         - aws_s3_bucket
       attribute: acl
       operator: starting_with
-      value: "\"${module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "\"${data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "\"${var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "\"${local."
+      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -124,25 +106,7 @@ definition:
                 - aws_s3_bucket_acl
               attribute: acl
               operator: starting_with
-              value: "\"${module."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "\"${data."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "\"${var."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "\"${local."
+              value: "\"${"
             - and:
                 - cond_type: attribute
                   resource_types:

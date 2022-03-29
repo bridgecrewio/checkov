@@ -39,25 +39,7 @@ definition:
         - aws_s3_bucket
       attribute: versioning.enabled
       operator: starting_with
-      value: "\"${module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: versioning.enabled
-      operator: starting_with
-      value: "\"${data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: versioning.enabled
-      operator: starting_with
-      value: "\"${var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: versioning.enabled
-      operator: starting_with
-      value: "\"${local."
+      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -100,25 +82,7 @@ definition:
                 - aws_s3_bucket_versioning
               attribute: versioning_configuration.status
               operator: starting_with
-              value: "\"${module."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_versioning
-              attribute: versioning_configuration.status
-              operator: starting_with
-              value: "\"${data."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_versioning
-              attribute: versioning_configuration.status
-              operator: starting_with
-              value: "\"${var."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_versioning
-              attribute: versioning_configuration.status
-              operator: starting_with
-              value: "\"${local."
+              value: "\"${"
             - cond_type: attribute
               resource_types:
                 - aws_s3_bucket_versioning

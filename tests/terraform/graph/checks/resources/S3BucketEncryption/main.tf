@@ -149,7 +149,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_3" {
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_3" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_4" {
   bucket = aws_s3_bucket.bucket_good_8.bucket
 
   rule {

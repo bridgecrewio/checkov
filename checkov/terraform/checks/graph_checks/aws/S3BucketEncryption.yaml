@@ -41,25 +41,7 @@ definition:
         - aws_s3_bucket
       attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
       operator: starting_with
-      value: "\"${module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "\"${data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "\"${var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "\"${local."
+      value: "\"${"
     - and:
       - cond_type: filter
         attribute: resource_type
@@ -110,22 +92,4 @@ definition:
             - aws_s3_bucket_server_side_encryption_configuration
           attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
           operator: starting_with
-          value: "\"${module."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "\"${data."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "\"${var."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "\"${local."
+          value: "\"${"
