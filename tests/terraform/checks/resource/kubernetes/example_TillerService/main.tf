@@ -56,3 +56,15 @@ resource "kubernetes_service" "pass" {
     type = "LoadBalancer"
   }
 }
+
+resource "kubernetes_service" "fail3" {
+  metadata {
+
+    labels = var.isNull == "not_null" ? {
+      app="helm"
+      name="tiller"
+    } : null
+
+  }
+  spec {}
+}
