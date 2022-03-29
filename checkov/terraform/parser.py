@@ -153,7 +153,7 @@ class Parser:
                                             root_dir=self.directory, excluded_paths=self.excluded_paths)
         else:
             self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
-                                    keys_referenced_as_modules, vars_files=vars_files)
+                                    keys_referenced_as_modules, vars_files=vars_files, excluded_paths=self.excluded_paths)
 
         # Ensure anything that was referenced as a module is removed
         for key in keys_referenced_as_modules:
@@ -199,7 +199,7 @@ class Parser:
         for file in dir_contents:
             # Ignore directories and hidden files
             try:
-                if not file.is_file() or file.name.startswith("."):
+                if not file.is_file():
                     continue
             except OSError:
                 # Skip files that can't be accessed
@@ -425,7 +425,7 @@ class Parser:
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                keys_referenced_as_modules=keys_referenced_as_modules)
+                                                keys_referenced_as_modules=keys_referenced_as_modules, excluded_paths=self.excluded_paths)
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
