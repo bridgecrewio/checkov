@@ -57,7 +57,7 @@ resource "kubernetes_service" "pass" {
   }
 }
 
-resource "kubernetes_service" "fail" {
+resource "kubernetes_service" "fail3" {
   metadata {
 
     labels = var.isNull == "not_null" ? {
