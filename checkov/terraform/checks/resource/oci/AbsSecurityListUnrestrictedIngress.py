@@ -19,14 +19,14 @@ class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
             for idx, rule in enumerate(rules):
                 if not isinstance(rule, list):
                     rule = [rule]
-                for sub_rule in rule:
+                for sub_rule_idx, sub_rule in enumerate(rule):
                     if "0.0.0.0/0" in sub_rule['source'][0] \
                             and (
                             (sub_rule['protocol'][0] != '1' and ('udp_options' not in sub_rule) and ('tcp_options' not in sub_rule))
                             or self.scan_protocol_conf(sub_rule, 'tcp_options', idx) != CheckResult.FAILED
                             or self.scan_protocol_conf(sub_rule, 'udp_options', idx) != CheckResult.FAILED
                             or sub_rule['protocol'][0] == 'all'):
-                        self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]']
+                        self.evaluated_keys = [f'ingress_security_rules/[{sub_rule_idx}]/[{idx}]']
                         return CheckResult.FAILED
 
             return CheckResult.PASSED
