@@ -11,7 +11,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -192,14 +192,14 @@ class Parser:
         explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
 
         dir_contents = list(os.scandir(directory))
-        if excluded_paths:
+        if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
             filter_ignored_paths(root_dir, dir_contents, excluded_paths)
 
         tf_files_to_load = []
         for file in dir_contents:
             # Ignore directories and hidden files
             try:
-                if not file.is_file() or file.name.startswith("."):
+                if not file.is_file():
                     continue
             except OSError:
                 # Skip files that can't be accessed

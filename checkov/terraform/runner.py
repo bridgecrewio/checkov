@@ -20,6 +20,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
+from checkov.common.runners.base_runner import ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -35,6 +36,7 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
@@ -98,7 +100,7 @@ class Runner(BaseRunner):
                     download_external_modules=runner_filter.download_external_modules,
                     external_modules_download_path=runner_filter.external_modules_download_path,
                     parsing_errors=parsing_errors,
-                    excluded_paths=runner_filter.excluded_paths,
+                    excluded_paths=runner_filter.excluded_paths ,
                     vars_files=runner_filter.var_files
                 )
             elif files:
