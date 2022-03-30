@@ -17,7 +17,7 @@ class Tiller(BaseResourceCheck):
         if "metadata" in conf and isinstance(conf["metadata"], list):
             metadata = conf.get("metadata")[0]
 
-            if metadata.get("labels") and isinstance(metadata.get("labels"), list):
+            if metadata.get("labels") and isinstance(metadata.get("labels"), list) and isinstance(metadata.get("labels")[0], dict):
                 labels = metadata.get("labels")[0]
                 self.evaluated_keys = ["metadata/[0]/labels"]
                 if labels.get("app") == "helm":
