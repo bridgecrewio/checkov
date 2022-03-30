@@ -65,6 +65,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
         self.referrer_cache: Dict[str, str] = {}
+        self.non_referred_cache: List[str] = []
 
     block_type_registries = {
         'resource': resource_registry,
