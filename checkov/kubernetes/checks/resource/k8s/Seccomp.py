@@ -27,7 +27,7 @@ class Seccomp(BaseK8Check):
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
-        if conf['kind'] == 'Deployment' or conf['kind'] == 'StatefulSet' or conf['kind'] == 'Job':
+        if conf['kind'] in ['Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'ReplicaSet']:
             security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
             if security_profile:
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
