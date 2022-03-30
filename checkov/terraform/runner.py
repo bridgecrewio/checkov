@@ -100,7 +100,7 @@ class Runner(BaseRunner):
                     download_external_modules=runner_filter.download_external_modules,
                     external_modules_download_path=runner_filter.external_modules_download_path,
                     parsing_errors=parsing_errors,
-                    excluded_paths=(runner_filter.excluded_paths or []) + ignored_directories ,
+                    excluded_paths=runner_filter.excluded_paths ,
                     vars_files=runner_filter.var_files
                 )
             elif files:

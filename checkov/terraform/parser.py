@@ -11,7 +11,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -153,7 +153,7 @@ class Parser:
                                             root_dir=self.directory, excluded_paths=self.excluded_paths)
         else:
             self._internal_dir_load(self.directory, module_loader_registry, dir_filter,
-                                    keys_referenced_as_modules, vars_files=vars_files, excluded_paths=self.excluded_paths)
+                                    keys_referenced_as_modules, vars_files=vars_files)
 
         # Ensure anything that was referenced as a module is removed
         for key in keys_referenced_as_modules:
@@ -192,7 +192,7 @@ class Parser:
         explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
 
         dir_contents = list(os.scandir(directory))
-        if excluded_paths:
+        if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
             filter_ignored_paths(root_dir, dir_contents, excluded_paths)
 
         tf_files_to_load = []
@@ -425,7 +425,7 @@ class Parser:
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                keys_referenced_as_modules=keys_referenced_as_modules, excluded_paths=self.excluded_paths)
+                                                keys_referenced_as_modules=keys_referenced_as_modules)
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
