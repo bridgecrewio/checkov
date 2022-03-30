@@ -8,7 +8,7 @@ class OSSBucketVersioning(BaseResourceValueCheck):
         name = "Ensure OSS bucket has versioning enabled"
         id = "CKV_ALI_10"
         supported_resources = ['alicloud_oss_bucket']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
