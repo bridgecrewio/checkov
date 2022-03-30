@@ -15,12 +15,13 @@ class TestSecurityListUnrestrictedIngress22(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        passing_resources = {
+        expected_passing_resources = {
             "oci_core_security_list.pass0",
             "oci_core_security_list.pass1",
             "oci_core_security_list.pass4",
+            "oci_core_security_list.pass5",
         }
-        failing_resources = {
+        expected_failing_resources = {
             "oci_core_security_list.fail",
             "oci_core_security_list.fail1",
             "oci_core_security_list.fail2",
@@ -31,13 +32,13 @@ class TestSecurityListUnrestrictedIngress22(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 5)
+        self.assertEqual(summary["passed"], len(expected_passing_resources))
+        self.assertEqual(summary["failed"], len(expected_failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        self.assertEqual(passing_resources, passed_check_resources)
-        self.assertEqual(failing_resources, failed_check_resources)
+        self.assertEqual(expected_passing_resources, passed_check_resources)
+        self.assertEqual(expected_failing_resources, failed_check_resources)
 
 
 if __name__ == "__main__":
