@@ -420,10 +420,12 @@ class Runner(BaseRunner):
         cached_referrer = self.referrer_cache.get(full_file_path)
         if cached_referrer:
             return cached_referrer
+        if full_file_path in self.non_referred_cache:
+            return None
+
         if not self.definitions_with_modules:
             self._prepare_definitions_with_modules()
         for file, file_content in self.definitions_with_modules.items():
-
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
                     if "__resolved__" not in module_content:
@@ -433,6 +435,8 @@ class Runner(BaseRunner):
                         id_referrer = f"module.{module_name}"
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
+
+        self.non_referred_cache.append(full_file_path)
         return None
 
     def _prepare_definitions_with_modules(self):
