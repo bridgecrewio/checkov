@@ -1,7 +1,6 @@
 import logging
 import os
 from abc import abstractmethod
-from typing import List, Dict, Union
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -20,7 +19,7 @@ class Runner(BaseRunner):
                 (definitions[file], definitions_raw[file]) = result
 
     @abstractmethod
-    def _parse_file(self, f: str):
+    def _parse_file(self, f):
         raise Exception("parser should be imported by deriving class")
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
@@ -87,7 +86,7 @@ class Runner(BaseRunner):
         return report
 
     @abstractmethod
-    def get_start_end_lines(self, end: int, result_config: Union[List, Dict], start: int):
+    def get_start_end_lines(self, end, result_config, start):
         raise Exception("should be handled by derived class")
 
     @abstractmethod
