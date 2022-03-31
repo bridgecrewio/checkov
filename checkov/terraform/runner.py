@@ -437,7 +437,7 @@ class Runner(BaseRunner):
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
 
-        self.non_referred_cache.append(full_file_path)
+        self.non_referred_cache.add(full_file_path)
         return None
 
     def _prepare_definitions_with_modules(self):
