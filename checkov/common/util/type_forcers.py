@@ -113,4 +113,3 @@ def convert_csv_string_arg_to_list(csv_string_arg: Union[List[str], str, None]) 
         return csv_string_arg[0].split(',')
     else:
         return csv_string_arg
-

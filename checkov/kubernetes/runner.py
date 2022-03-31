@@ -111,7 +111,7 @@ class Runner(BaseRunner):
                 check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
                 file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
                 resource=resource_id, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.bc_severity)
+                check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
         
@@ -140,7 +140,7 @@ class Runner(BaseRunner):
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,
-                    severity=check.bc_severity
+                    severity=check.severity
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)

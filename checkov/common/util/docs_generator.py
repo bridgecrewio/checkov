@@ -23,6 +23,8 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -95,6 +97,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
+            if use_bc_ids:
+                check_id = metadata_integration.get_bc_id(check_id)
             printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)
 

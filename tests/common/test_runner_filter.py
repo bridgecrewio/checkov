@@ -188,37 +188,37 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_check_severity(self):
         instance = RunnerFilter(checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         self.assertTrue(instance.should_run_check(check=check))
 
     def test_should_run_check_severity_omitted(self):
         instance = RunnerFilter(checks=['HIGH'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         self.assertFalse(instance.should_run_check(check=check))
 
     def test_should_run_check_severity_implicit(self):
         instance = RunnerFilter(checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         self.assertTrue(instance.should_run_check(check=check))
 
     def test_should_skip_check_severity(self):
         instance = RunnerFilter(skip_checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         self.assertFalse(instance.should_run_check(check=check))
 
     def test_should_skip_check_severity_implicit(self):
         instance = RunnerFilter(skip_checks=['HIGH'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         self.assertFalse(instance.should_run_check(check=check))
 
     def test_should_skip_check_severity_threshold_exceeded(self):
         instance = RunnerFilter(skip_checks=['LOW'])
         from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         self.assertTrue(instance.should_run_check(check=check))
 
     def test_check_severity_split_no_sev(self):
