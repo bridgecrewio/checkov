@@ -22,19 +22,21 @@ class BigQueryPrivateTable(BaseResourceCheck):
         if self.entity_type == "google_bigquery_table_iam_member":
             # conf.get returns as a list
             # so we create a string for comparison
-            member = conf.get("member")[0]
-            if member in public_principals:
-                return CheckResult.FAILED
-            else:
-                return CheckResult.PASSED
+            if "member" in conf.keys():
+                member = conf.get("member")[0]
+                if member in public_principals:
+                    return CheckResult.FAILED
+                else:
+                    return CheckResult.PASSED
         # iam_binding returns a list of principals
         elif self.entity_type == "google_bigquery_table_iam_binding":
             # Since conf.get returns a list and iam_binding returns a list (nested list)
             # we pull out the members list using the index 0
-            members_list = conf.get("members")[0]
-            if any(member in public_principals for member in members_list):
-                return CheckResult.FAILED
-            else:
-                return CheckResult.PASSED
+            if "members" in conf.keys():
+                members_list = conf.get("members")[0]
+                if any(member in public_principals for member in members_list):
+                    return CheckResult.FAILED
+                else:
+                    return CheckResult.PASSED
 
 check = BigQueryPrivateTable()
