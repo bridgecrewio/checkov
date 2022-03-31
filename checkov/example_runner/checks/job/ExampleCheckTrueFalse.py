@@ -25,12 +25,12 @@
 # 
 from checkov.common.models.enums import CheckResult
 # Import your base check
-from checkov.github_actions.checks.base_github_action_job_check import BaseGithubActionsJobCheck
+from checkov.example_runner.checks.base_example_runner_job_check import BaseExampleRunnerJobCheck
 
 from checkov.yaml_doc.enums import BlockType
 
 
-class AllowUnsecureCommandsOnJob(BaseExampleRunnerJobCheck):
+class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
     def __init__(self):
         # Describe the check for the user
         name = "Ensure ACTIONS_ALLOW_UNSECURE_COMMANDS isn't true on environment variables on a job"
