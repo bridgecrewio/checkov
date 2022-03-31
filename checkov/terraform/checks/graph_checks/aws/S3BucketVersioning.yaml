@@ -34,6 +34,12 @@ definition:
       attribute: versioning.enabled
       operator: starting_with
       value: "local."
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: versioning.enabled
+      operator: starting_with
+      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -71,6 +77,12 @@ definition:
               attribute: versioning_configuration.status
               operator: starting_with
               value: "local."
+            - cond_type: attribute
+              resource_types:
+                - aws_s3_bucket_versioning
+              attribute: versioning_configuration.status
+              operator: starting_with
+              value: "\"${"
             - cond_type: attribute
               resource_types:
                 - aws_s3_bucket_versioning

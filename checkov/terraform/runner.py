@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple, List, Type, Any
+from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
 
@@ -20,6 +20,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
+from checkov.common.runners.base_runner import ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -35,6 +36,7 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
@@ -65,6 +67,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
         self.referrer_cache: Dict[str, str] = {}
+        self.non_referred_cache: Set[str] = set()
 
     block_type_registries = {
         'resource': resource_registry,
@@ -98,7 +101,7 @@ class Runner(BaseRunner):
                     download_external_modules=runner_filter.download_external_modules,
                     external_modules_download_path=runner_filter.external_modules_download_path,
                     parsing_errors=parsing_errors,
-                    excluded_paths=runner_filter.excluded_paths,
+                    excluded_paths=runner_filter.excluded_paths ,
                     vars_files=runner_filter.var_files
                 )
             elif files:
@@ -420,10 +423,12 @@ class Runner(BaseRunner):
         cached_referrer = self.referrer_cache.get(full_file_path)
         if cached_referrer:
             return cached_referrer
+        if full_file_path in self.non_referred_cache:
+            return None
+
         if not self.definitions_with_modules:
             self._prepare_definitions_with_modules()
         for file, file_content in self.definitions_with_modules.items():
-
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
                     if "__resolved__" not in module_content:
@@ -433,6 +438,8 @@ class Runner(BaseRunner):
                         id_referrer = f"module.{module_name}"
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
+
+        self.non_referred_cache.add(full_file_path)
         return None
 
     def _prepare_definitions_with_modules(self):

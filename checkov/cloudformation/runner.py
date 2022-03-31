@@ -147,7 +147,7 @@ class Runner(BaseRunner):
                 entity = check_result["entity"]
                 entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
-                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
+                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[-1]
                 entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
                     entity_name
                 ]

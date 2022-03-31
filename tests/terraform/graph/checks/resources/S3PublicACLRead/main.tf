@@ -20,6 +20,12 @@ variable "unknown_var" {
   description = "unknown value"
 }
 
+resource "aws_s3_bucket" "unknown_var_legacy" {
+  bucket = "example"
+
+  acl = "${var.whatever}"
+}
+
 # fail
 
 resource "aws_s3_bucket" "public_read" {
@@ -52,6 +58,15 @@ resource "aws_s3_bucket" "private_acl_v4" {
 resource "aws_s3_bucket_acl" "private_acl_v4" {
   bucket = aws_s3_bucket.private_acl_v4.id
   acl    = "private"
+}
+
+resource "aws_s3_bucket" "unknown_var_v4_legacy" {
+  bucket = "example"
+}
+
+resource "aws_s3_bucket_acl" "unknown_var_v4_legacy" {
+  bucket = aws_s3_bucket.unknown_var_v4_legacy.id
+  acl    = "${local.whatever}"
 }
 
 # fail
