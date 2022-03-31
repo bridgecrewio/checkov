@@ -17,14 +17,17 @@ class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
             rules = conf.get("ingress_security_rules", [])
 
             for idx, rule in enumerate(rules):
-                if "0.0.0.0/0" in rule['source'][0] \
-                        and (
-                        (rule['protocol'][0] != '1' and ('udp_options' not in rule) and ('tcp_options' not in rule))
-                        or self.scan_protocol_conf(rule, 'tcp_options', idx) != CheckResult.FAILED
-                        or self.scan_protocol_conf(rule, 'udp_options', idx) != CheckResult.FAILED
-                        or rule['protocol'][0] == 'all'):
-                    self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]']
-                    return CheckResult.FAILED
+                if not isinstance(rule, list):
+                    rule = [rule]
+                for sub_rule_idx, sub_rule in enumerate(rule):
+                    if "0.0.0.0/0" in sub_rule['source'][0] \
+                            and (
+                            (sub_rule['protocol'][0] != '1' and ('udp_options' not in sub_rule) and ('tcp_options' not in sub_rule))
+                            or self.scan_protocol_conf(sub_rule, 'tcp_options', idx) != CheckResult.FAILED
+                            or self.scan_protocol_conf(sub_rule, 'udp_options', idx) != CheckResult.FAILED
+                            or sub_rule['protocol'][0] == 'all'):
+                        self.evaluated_keys = [f'ingress_security_rules/[{sub_rule_idx}]/[{idx}]']
+                        return CheckResult.FAILED
 
             return CheckResult.PASSED
 
