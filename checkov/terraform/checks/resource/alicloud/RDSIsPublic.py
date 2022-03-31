@@ -13,7 +13,7 @@ class RDSIsPublic(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("security_ips") and isinstance(conf.get("security_ips"), list):
             addresses = conf.get("security_ips")[0]
-            if "0.0.0.0" in addresses or "0.0.0.0/0" in addresses:
+            if "0.0.0.0" in addresses or "0.0.0.0/0" in addresses:  # nosec B104
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
