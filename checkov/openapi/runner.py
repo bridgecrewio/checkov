@@ -1,3 +1,5 @@
+from typing import List, Tuple, Optional, Union, Generator
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.object_runner import Runner as ObjectRunner
