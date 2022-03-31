@@ -54,7 +54,7 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
-# from checkov.openapi.runner import Runner as openapi_runner # Currently WIP
+from checkov.openapi.runner import Runner as openapi_runner # Currently WIP
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -82,7 +82,7 @@ DEFAULT_RUNNERS = (
     sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
-    # openapi_runner(), # Currently WIP
+    openapi_runner(), # Currently WIP
 )
 
 

@@ -2,10 +2,11 @@ from typing import List, Dict, Union, Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
-from checkov.common.runners.object_runner import Runner as ObjectRunner
+from checkov.yaml_doc.runner import Runner as YamlRunner
+from checkov.json_doc.runner import Runner as JsonRunner
 
 
-class Runner(ObjectRunner):
+class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
     def import_registry(self) -> BaseCheckRegistry:
