@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple, List, Type, Any
+from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
 
@@ -67,6 +67,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
         self.referrer_cache: Dict[str, str] = {}
+        self.non_referred_cache: Set[str] = set()
 
     block_type_registries = {
         'resource': resource_registry,
@@ -422,10 +423,12 @@ class Runner(BaseRunner):
         cached_referrer = self.referrer_cache.get(full_file_path)
         if cached_referrer:
             return cached_referrer
+        if full_file_path in self.non_referred_cache:
+            return None
+
         if not self.definitions_with_modules:
             self._prepare_definitions_with_modules()
         for file, file_content in self.definitions_with_modules.items():
-
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
                     if "__resolved__" not in module_content:
@@ -435,6 +438,8 @@ class Runner(BaseRunner):
                         id_referrer = f"module.{module_name}"
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
+
+        self.non_referred_cache.add(full_file_path)
         return None
 
     def _prepare_definitions_with_modules(self):

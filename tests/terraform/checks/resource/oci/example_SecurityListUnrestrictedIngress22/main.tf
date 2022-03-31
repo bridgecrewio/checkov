@@ -136,3 +136,32 @@ resource "oci_core_security_list" "fail5" {
     compartment_id = "var.compartment_id"
     vcn_id = "oci_core_vcn.test_vcn.id"
 }
+
+resource "oci_core_security_list" "pass5" {
+  ingress_security_rules = [
+    {
+      protocol = "1"
+      source   = "${var.external_icmp_ingress}"
+
+      icmp_options {
+        "type" = 3
+        "code" = 4
+      }
+    },
+    {
+      protocol = "1"
+      source   = "${var.internal_icmp_ingress}"
+
+      icmp_options {
+        "type" = 3
+        "code" = 4
+      }
+    }
+  ]
+
+  provisioner "local-exec" {
+    command = "sleep 5"
+  }
+    compartment_id = ""
+    vcn_id         = ""
+}

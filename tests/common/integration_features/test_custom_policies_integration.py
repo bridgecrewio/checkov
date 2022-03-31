@@ -192,7 +192,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
         report = cfn_runner.run(root_folder=test_files_dir,
                                 runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
@@ -203,7 +203,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         report = cfn_runner.run(root_folder=test_files_dir,
                                 runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
 
     def test_pre_scan_with_cloned_checks(self):
         instance = BcPlatformIntegration()
