@@ -1,7 +1,7 @@
 import logging
 import os
 from abc import abstractmethod
-from typing import Union
+from typing import List, Dict, Union
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -87,7 +87,7 @@ class Runner(BaseRunner):
         return report
 
     @abstractmethod
-    def get_start_end_lines(self, end: int, result_config: Union[list, bool], start: int):
+    def get_start_end_lines(self, end: int, result_config: Union[List, Dict], start: int):
         raise Exception("should be handled by derived class")
 
     @abstractmethod
