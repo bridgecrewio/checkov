@@ -31,7 +31,7 @@ spec:
             drop:
               - ALL
               - NET_RAW
-        image: bridgecrew/whorf@sha256:7f9ff4e0ff41b1daffd9dcda53d338ef867140c723f25b518d5f7b0c9355acb1
+        image: bridgecrew/whorf@sha256:f854105ac5973cab0a81806be3dec1e6737a64a2fca3fea8be3f09ccc623d298
         resources:
           limits:
             cpu: "1"
