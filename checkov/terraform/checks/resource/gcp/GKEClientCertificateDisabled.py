@@ -24,4 +24,3 @@ class GKEClientCertificateDisabled(BaseResourceValueCheck):
 
 
 check = GKEClientCertificateDisabled()
-
