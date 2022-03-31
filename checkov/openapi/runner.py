@@ -10,10 +10,10 @@ class Runner(ObjectRunner):
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
 
-    def _parse_file(self, f) -> None:
+    def _parse_file(self, f: str) -> None:
         raise Exception("parser should be implemented")
 
-    def get_start_end_lines(self, end, result_config, start) -> None:
+    def get_start_end_lines(self, end: int, result_config: Union[list, bool], start: int) -> None:
         raise Exception("get_start_end_lines should be implemented")
 
     def require_external_checks(self) -> bool:
