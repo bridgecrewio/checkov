@@ -339,7 +339,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--include-all-checkov-policies', action='store_true',
-               help='When running with an API key, the Checkov will omit any policies that do not exist '
+               help='When running with an API key, Checkov will omit any policies that do not exist '
                     'in the Bridgecrew or Prisma Cloud platform, except for local custom policies loaded with the '
                     '--external-check flags. Use this key to include policies that only exist in Checkov in the scan. '
                     'Note that this will make the local CLI results different from the results you see in the '
