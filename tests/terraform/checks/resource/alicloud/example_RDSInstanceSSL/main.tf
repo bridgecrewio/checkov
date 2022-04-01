@@ -1,8 +1,6 @@
 resource "alicloud_db_instance" "pass" {
   engine              = "MySQL"
   engine_version      = "5.6"
-  db_instance_class   = "rds.mysql.t1.small"
-  db_instance_storage = "10"
   ssl_action          = "Open"
   instance_storage    = "30"
   instance_type       = "mysql.n2.small.25"
@@ -18,8 +16,6 @@ resource "alicloud_db_instance" "pass" {
 resource "alicloud_db_instance" "pass2" {
   engine              = "MySQL"
   engine_version      = "5.6"
-  db_instance_class   = "rds.mysql.t1.small"
-  db_instance_storage = "10"
   ssl_action          = "Update"
   instance_storage    = "30"
   instance_type       = "mysql.n2.small.25"
@@ -35,8 +31,6 @@ resource "alicloud_db_instance" "pass2" {
 resource "alicloud_db_instance" "fail" {
   engine              = "MySQL"
   engine_version      = "5.6"
-  db_instance_class   = "rds.mysql.t1.small"
-  db_instance_storage = "10"
   ssl_action          = "Close"
   instance_storage    = "30"
   instance_type       = "mysql.n2.small.25"
@@ -52,8 +46,8 @@ resource "alicloud_db_instance" "fail" {
 resource "alicloud_db_instance" "fail2" {
   engine              = "MySQL"
   engine_version      = "5.6"
-  db_instance_class   = "rds.mysql.t1.small"
-  db_instance_storage = "10"
+  instance_type   = "rds.mysql.t1.small"
+  instance_storage = "10"
   instance_storage    = "30"
   instance_type       = "mysql.n2.small.25"
   parameters = [{
@@ -64,3 +58,5 @@ resource "alicloud_db_instance" "fail2" {
     value = "50"
   }]
 }
+
+
