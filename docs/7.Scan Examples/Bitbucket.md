@@ -18,7 +18,7 @@ Full list of bitbucket organization and repository settings related checks can b
 | CKV_BITBUCKET_CONF_DIR_NAME   | "bitbucket_conf" | checkov will create a new directory named "bitbucket_conf" under current working directory                          |
 | BITBUCKET_API_URL   | "https://api.bitbucket.com/" |  |
 | APP_PASSWORD   |  | Bitbucket personal access token to be used to fetch Bitbucket configuration |
-| BITBUCKET_USERNAME |  | Bitbucket username ( not email) |
+| BITBUCKET_USERNAME |  | Bitbucket username (not email) |
 | BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example bridgecrewio/terragoat |
 
 ### Example branch restrictions configuration
