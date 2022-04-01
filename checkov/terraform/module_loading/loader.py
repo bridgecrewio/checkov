@@ -31,7 +31,7 @@ class ModuleLoader(ABC):
         """
             discover parameters from execution context of checkov. usually from env variable
         """
-        self.token_key = None
+        self.username = None
         self.token = None
 
     def load(

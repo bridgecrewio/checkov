@@ -52,7 +52,7 @@ information, see `loader.ModuleLoader.load`.
             if source in self.failed_urls_cache:
                 break
             for loader in self.loaders:
-                if not self.download_external_modules and loader.is_external or type(loader).__name__ != "AccessTokenLoader":
+                if not self.download_external_modules and loader.is_external:
                     continue
                 try:
                     content = loader.load(
