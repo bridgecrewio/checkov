@@ -8,18 +8,20 @@ class AccessTokenLoader(GenericGitLoader):
         super().__init__()
 
     def discover(self):
-        self.token_key = "x-access-token"
-        self.token = os.getenv('GITHUB_TOKEN', '')
+        self.github_token_key = "x-access-token"
+        self.github_token = os.getenv('GITHUB_TOKEN', '')
 
     def _is_matching_loader(self) -> bool:
         # https://www.terraform.io/docs/modules/sources.html#github
-        if self.module_source.startswith("github.com"):
-            self.module_source = f"git::https://{self.module_source}"
-            return True
-        if self.module_source.startswith("git@github.com"):
-            source = self.module_source.replace(":", "/")
-            self.module_source = f"git::ssh://{source}"
-            return True
+        if self.github_token:
+            if self.module_source.startswith("github.com"):
+                self.module_source = f"git::https://{self.github_token_key}:{self.github_token}@{self.module_source}"
+                return True
+            if self.module_source.startswith("git@github.com"):
+                source = self.module_source.replace(":", "/")
+                self.module_source = f"git::https://{self.github_token_key}:{self.github_token}@{source}"
+                return True
+
         return False
 
 
