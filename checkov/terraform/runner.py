@@ -360,7 +360,7 @@ class Runner(BaseRunner):
             parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
             # the exceptions type can un-pickleable so we need to cast them to Exception
             for path, e in file_parsing_errors.items():
-                file_parsing_errors[path] = Exception(str(e))
+                file_parsing_errors[path] = Exception(e.__repr__())
             return file, parse_result, file_parsing_errors
 
         results = parallel_runner.run_function(parse_file, files)
