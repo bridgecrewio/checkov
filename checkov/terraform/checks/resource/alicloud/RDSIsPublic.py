@@ -11,8 +11,9 @@ class RDSIsPublic(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get("security_ips") and isinstance(conf.get("security_ips"), list):
-            addresses = conf.get("security_ips")[0]
+        security_ips = conf.get("security_ips")
+        if security_ips and isinstance(security_ips, list):
+            addresses = security_ips[0]
             if "0.0.0.0" in addresses or "0.0.0.0/0" in addresses:  # nosec B104
                 return CheckResult.FAILED
         return CheckResult.PASSED
