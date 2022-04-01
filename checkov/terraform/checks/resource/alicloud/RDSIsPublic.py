@@ -15,6 +15,7 @@ class RDSIsPublic(BaseResourceCheck):
         if security_ips and isinstance(security_ips, list):
             addresses = security_ips[0]
             if "0.0.0.0" in addresses or "0.0.0.0/0" in addresses:  # nosec B104
+                self.evaluated_keys = ['security_ips']
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
