@@ -6,7 +6,7 @@ from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AzureFrontDoorEnablesWAF import check
 
 
-class TestOSSBucketAccessLogs(unittest.TestCase):
+class TestAzureFrontDoorEnablesWAF(unittest.TestCase):
 
     def test(self):
         runner = Runner()
