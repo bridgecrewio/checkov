@@ -13,5 +13,19 @@ class ResourceContextParser(BaseContextParser):
         entity_name = next(iter(entity_block[entity_type]))
         return [entity_type, entity_name]
 
+    def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
+        for entity_block in definition_blocks:
+            entity_type, entity_value = next(iter(entity_block.items()))
+            entity_name, entity_config = next(iter(entity_value.items()))
+
+            self.context[entity_type][entity_name] = {
+                "start_line": entity_config["__start_line__"],
+                "end_line": entity_config["__end_line__"],
+                "code_lines": self.file_lines[entity_config["__start_line__"] - 1: entity_config["__end_line__"]],
+            }
+
+
+        return self.context
+
 
 parser = ResourceContextParser()

@@ -93,6 +93,9 @@ class Module:
     def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for blocks_section in blocks:
             for name in blocks_section:
+                if name in {"__start_line__", "__end_line__"}:
+                    continue
+
                 local_block = TerraformBlock(
                     block_type=BlockType.LOCALS,
                     name=name,

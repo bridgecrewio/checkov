@@ -15,6 +15,18 @@ class ProviderContextParser(BaseContextParser):
         entity_type, entity_value = next(iter(entity_block.items()))
         return [entity_type, entity_value.get("alias", ["default"])[0]]
 
+    def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
+        for entity_block in definition_blocks:
+            entity_type, entity_config = next(iter(entity_block.items()))
+            entity_name = entity_config.get("alias", ["default"])[0]
+            self.context[entity_type][entity_name] = {
+                "start_line": entity_config["__start_line__"],
+                "end_line": entity_config["__end_line__"],
+                "code_lines": self.file_lines[entity_config["__start_line__"] - 1: entity_config["__end_line__"]],
+            }
+
+        return self.context
+
     def _is_block_signature(self, line_num: int, line_tokens: List[str], entity_context_path: List[str]) -> bool:
         # Ignore the alias as it is not part of the signature
         is_provider = super()._is_block_signature(line_num, line_tokens, entity_context_path[0:-1])

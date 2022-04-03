@@ -92,7 +92,9 @@ class TestRendererScenarios(TestCase):
                             'scheduler'
                         ]
                     ],
-                'type': ['list(string)']
+                'type': ['list(string)'],
+                "__start_line__": 11,
+                "__end_line__": 14
             }
         }
         self.go("list_default_622", different_expected)
@@ -108,10 +110,6 @@ class TestRendererScenarios(TestCase):
 
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify", replace_expected=True)
-
-    def test_bad_tf(self):
-        # Note: this hits the _clean_bad_definitions internal function
-        self.go("bad_tf")
 
     def test_colon(self):
         # Note: this hits the _clean_bad_definitions internal function
@@ -151,7 +149,9 @@ class TestRendererScenarios(TestCase):
             "my_bucket": {
                 "bucket": [
                     "hello-nimrodIsCöol-nine-dev-abc-xyz-qwerty"
-                ]
+                ],
+                "__start_line__": 17,
+                "__end_line__": 19
             }
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)

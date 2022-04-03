@@ -26,10 +26,16 @@ class VariableContextParser(BaseContextParser):
         return [entity_name]
 
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
-        self.context = super().enrich_definition_block(definition_blocks)
-        for variable_block in definition_blocks:
-            if isinstance(variable_block, dict):
-                self._collect_default_variables_values(variable_block)
+        for entity_block in definition_blocks:
+            entity_name, entity_config = next(iter(entity_block.items()))
+            self.context[entity_name] = {
+                "start_line": entity_config["__start_line__"],
+                "end_line": entity_config["__end_line__"],
+                "code_lines": self.file_lines[entity_config["__start_line__"] - 1: entity_config["__end_line__"]],
+            }
+
+            if isinstance(entity_block, dict):
+                self._collect_default_variables_values(entity_block)
         return self.context
 
 
