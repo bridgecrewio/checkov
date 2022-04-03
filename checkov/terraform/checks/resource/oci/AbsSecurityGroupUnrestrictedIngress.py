@@ -18,6 +18,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         self.evaluated_keys = ["direction"]
         if direction and direction[0] != 'INGRESS':
             return CheckResult.UNKNOWN
+        self.evaluated_keys.append("source")
         if source and source[0] != "0.0.0.0/0":
             return CheckResult.PASSED
         elif (tcp_options is None and (protocol[0] == 'all' or protocol[0] == '6')) \
