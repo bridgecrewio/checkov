@@ -21,5 +21,4 @@ class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
             return CheckResult.PASSED
         return CheckResult.UNKNOWN
 
-
 check = SecurityGroupsIngressStatelessSecurityRules()
