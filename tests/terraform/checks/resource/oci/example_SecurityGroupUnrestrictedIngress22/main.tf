@@ -88,12 +88,3 @@ resource "oci_core_network_security_group_security_rule" "fail2" {
     source = "0.0.0.0/0"
     source_type = "CIDR_BLOCK"
 }
-
-
-
-
-
-
-
-
-
