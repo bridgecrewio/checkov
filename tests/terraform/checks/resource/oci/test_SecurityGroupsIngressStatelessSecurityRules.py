@@ -26,8 +26,7 @@ class TestSecurityGroupsIngressStatelessSecurityRules(unittest.TestCase):
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
-        skipped_check_resources = set([c.resource for c in report.skipped_checks])
-
+        
         self.assertEqual(summary["passed"], 1)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
