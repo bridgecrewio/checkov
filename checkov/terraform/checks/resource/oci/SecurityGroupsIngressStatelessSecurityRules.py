@@ -17,7 +17,7 @@ class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
             if stateless is None or stateless[0] is False:
                 return CheckResult.FAILED
             return CheckResult.PASSED
-        return CheckResult.SKIPPED
+        return CheckResult.UNKNOWN
 
 
 check = SecurityGroupsIngressStatelessSecurityRules()
