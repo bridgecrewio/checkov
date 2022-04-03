@@ -19,7 +19,6 @@ resource "oci_core_network_security_group_security_rule" "fail1" {
   protocol                  = var.network_security_group_security_rule_protocol
 }
 
-
 resource "oci_core_network_security_group_security_rule" "skip" {
   network_security_group_id = oci_core_network_security_group.test_network_security_group.id
   direction                 = "EGRESS"
@@ -33,4 +32,3 @@ resource "oci_core_network_security_group_security_rule" "skip1" {
   protocol                  = var.network_security_group_security_rule_protocol
   stateless                 = false
 }
-
