@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Dict, Union, Any
+from typing import Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
@@ -26,7 +26,7 @@ class Runner(YamlRunner, JsonRunner):
         else:
             logger.warn(f'file {f} is not a json nor yaml.')
 
-    def get_start_end_lines(self, end: int, result_config: Union[List[Dict[str, Any]], List[Dict[str, Any]]], start: int) -> tuple[int, int]:
+    def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         if hasattr(result_config, "start_mark"):
             return JsonRunner.get_start_end_lines(self, end, result_config, start)
         elif '__startline__' in result_config:
