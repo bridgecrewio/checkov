@@ -13,7 +13,9 @@ class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         stateless = conf.get('stateless')
         direction = conf.get('direction')
+        self.evaluated_keys = ["direction"]
         if direction[0] == 'INGRESS':
+            self.evaluated_keys.append("stateless")
             if stateless is None or stateless[0] is False:
                 return CheckResult.FAILED
             return CheckResult.PASSED
