@@ -25,8 +25,6 @@ class TestSecurityGroupsIngressStatelessSecurityRules(unittest.TestCase):
         }
 
         skipped_resources = {
-            "oci_core_network_security_group_security_rule.skip",
-            "oci_core_network_security_group_security_rule.skip1",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
@@ -35,7 +33,7 @@ class TestSecurityGroupsIngressStatelessSecurityRules(unittest.TestCase):
 
         self.assertEqual(summary["passed"], 1)
         self.assertEqual(summary["failed"], 2)
-        self.assertEqual(summary["skipped"], 2)
+        self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
         self.assertEqual(skipped_resources, skipped_check_resources)
