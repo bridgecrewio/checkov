@@ -23,6 +23,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             return CheckResult.PASSED
         elif (tcp_options is None and (protocol[0] == 'all' or protocol[0] == '6')) \
                 or tcp_options and self.scan_protocol_conf(tcp_options) is False:
+            self.evaluated_keys.append("protocol")
             return CheckResult.FAILED
         return CheckResult.PASSED
 
