@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure security groups has stateless ingress security rules"
+        name = "Ensure security group has stateless ingress security rules"
         id = "CKV_OCI_21"
         supported_resources = ['oci_core_network_security_group_security_rule']
         categories = [CheckCategories.NETWORKING]
