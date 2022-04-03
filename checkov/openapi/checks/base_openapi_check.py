@@ -7,7 +7,7 @@ from checkov.openapi.checks.registry import openapi_registry as registry
 
 
 class BaseOpenapiCheck(BaseCheck):
-    def __init__(self, name, id, categories, supported_entities, block_type, path=None, guideline=None):
+    def __init__(self, name, id, categories, supported_entities, block_type, path=None, guideline=None) -> None:
         super().__init__(
             name=name,
             id=id,
