@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def __init__(self, check_id, port):
-        name = f"Ensure no security groups rules allow ingress from 0.0.0.0:0 to port {port}"
+        name = f"Ensure no security groups rules allow ingress from 0.0.0.0/0 to port {port}"
         supported_resources = ['oci_core_network_security_group_security_rule']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
