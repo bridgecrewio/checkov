@@ -33,7 +33,6 @@ class TestSecurityGroupsIngressStatelessSecurityRules(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        self.assertEqual(skipped_resources, skipped_check_resources)
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
