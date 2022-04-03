@@ -24,9 +24,6 @@ class TestSecurityGroupsIngressStatelessSecurityRules(unittest.TestCase):
             "oci_core_network_security_group_security_rule.fail1",
         }
 
-        skipped_resources = {
-        }
-
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
         skipped_check_resources = set([c.resource for c in report.skipped_checks])
