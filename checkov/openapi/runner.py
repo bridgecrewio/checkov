@@ -25,12 +25,15 @@ class Runner(YamlRunner, JsonRunner):
             return YamlRunner._parse_file(self, f)
         else:
             logger.warn(f'file {f} is not a json nor yaml.')
+            return None, None
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         if hasattr(result_config, "start_mark"):
             return JsonRunner.get_start_end_lines(self, end, result_config, start)
         elif '__startline__' in result_config:
             return YamlRunner.get_start_end_lines(self, end, result_config, start)
+        else:
+            return 0, 0 #TODO raise exception or return 0,0?
 
     def require_external_checks(self) -> bool:
         return False
