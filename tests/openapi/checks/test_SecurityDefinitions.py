@@ -1,3 +1,4 @@
+import os
 import unittest
 from pathlib import Path
 
@@ -9,7 +10,8 @@ from checkov.runner_filter import RunnerFilter
 class SecurityDefinitions(unittest.TestCase):
     def test_summary(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_SecurityDefinitions"
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files_dir = current_dir + "/example_SecurityDefinitions"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,14 +20,14 @@ class SecurityDefinitions(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "/example_SecurityDefinitions/pass1.yaml",
-            "/example_SecurityDefinitions/pass1.json",
+            current_dir + "/example_SecurityDefinitions/pass1.yaml",
+            current_dir + "/example_SecurityDefinitions/pass1.json",
         }
         failing_resources = {
-            "/example_SecurityDefinitions/fail1.yaml",
-            "/example_SecurityDefinitions/fail1.json",
-            "/example_SecurityDefinitions/fail2.yaml",
-            "/example_SecurityDefinitions/fail2.json",
+            current_dir + "/example_SecurityDefinitions/fail1.yaml",
+            current_dir + "/example_SecurityDefinitions/fail1.json",
+            current_dir + "/example_SecurityDefinitions/fail2.yaml",
+            current_dir + "/example_SecurityDefinitions/fail2.json",
         }
 
         passed_check_resources = {c.file_path for c in report.passed_checks}

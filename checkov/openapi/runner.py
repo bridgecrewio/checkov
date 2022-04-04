@@ -26,15 +26,14 @@ class Runner(YamlRunner, JsonRunner):
     ) -> Report:
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        ObjectRunner._change_files_path_to_relative(report)
+        # ObjectRunner._change_files_path_to_relative(report)
         return report
 
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
 
-    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[
-        None, None]:
+    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
         if f.endswith(".json"):
             parsed_json = JsonRunner._parse_file(self, f)
             if self.is_valid(parsed_json[0]):
