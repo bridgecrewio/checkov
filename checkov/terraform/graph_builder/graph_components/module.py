@@ -3,6 +3,8 @@ import os
 from copy import deepcopy
 from typing import List, Dict, Any, Set, Callable, Tuple
 
+from hcl2 import START_LINE, END_LINE
+
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -93,7 +95,7 @@ class Module:
     def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for blocks_section in blocks:
             for name in blocks_section:
-                if name in {"__start_line__", "__end_line__"}:
+                if name in {START_LINE, END_LINE}:
                     continue
 
                 local_block = TerraformBlock(

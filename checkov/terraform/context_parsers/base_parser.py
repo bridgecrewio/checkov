@@ -25,7 +25,6 @@ class BaseContextParser(ABC):
     filtered_lines: List[Tuple[int, str]] = []
     filtered_line_numbers: List[int] = []
     context: Dict[str, Any] = defaultdict(dict)
-    # context_new = defaultdict(dict)
 
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
