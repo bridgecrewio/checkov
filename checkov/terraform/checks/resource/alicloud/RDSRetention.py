@@ -12,7 +12,7 @@ class RDSRetention(BaseResourceCheck):
         name = "Ensure RDS Instance SQL Collector Retention Period should be greater than 180"
         id = "CKV_ALI_25"
         supported_resources = ['alicloud_db_instance']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
