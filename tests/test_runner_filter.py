@@ -33,6 +33,7 @@ from checkov.runner_filter import RunnerFilter
                     "bitbucket_configuration",
                     "kustomize",
                     "sca_package",
+                    "openapi",
                     "sca_image"
                 },
         ),

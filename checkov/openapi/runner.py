@@ -38,20 +38,20 @@ class Runner(YamlRunner, JsonRunner):
         if f.endswith(".json"):
             parsed_json = JsonRunner._parse_file(self, f)
             if self.is_valid(parsed_json[0]):
-                return parsed_json
+                return parsed_json  # type:ignore[no-any-return]
         elif f.endswith(".yml") or f.endswith(".yaml"):
             parsed_yaml = YamlRunner._parse_file(self, f)
             if self.is_valid(parsed_yaml[0]):
-                return parsed_yaml
+                return parsed_yaml  # type:ignore[no-any-return]
 
         logger.warn(f'file {f} is not a json nor yaml.')
         return None, None
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         if hasattr(result_config, "start_mark"):
-            return JsonRunner.get_start_end_lines(self, end, result_config, start)
+            return JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
         elif '__startline__' in result_config:
-            return YamlRunner.get_start_end_lines(self, end, result_config, start)
+            return YamlRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
         else:
             return 0, 0  # TODO raise exception or return 0,0?
 
