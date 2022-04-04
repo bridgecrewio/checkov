@@ -9,7 +9,8 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report, CheckType, merge_reports
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -22,6 +23,7 @@ class Runner(PackageRunner):
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
+        self.image_referencers = None
 
     def scan(
             self,
@@ -87,16 +89,45 @@ class Runner(PackageRunner):
     ) -> Report:
         report = Report(self.check_type)
 
-        dockerfile_path = kwargs['dockerfile_path']
-        image_id = kwargs['image_id']
+        if "dockerfile_path" in kwargs and "image_id" in kwargs:
+            dockerfile_path = kwargs['dockerfile_path']
+            image_id = kwargs['image_id']
+            return self.get_image_report(dockerfile_path, image_id)
+        if not files and not root_folder:
+            logging.debug("No resources to scan.")
+            return report
+        if files:
+            for file in files:
+                self.iterate_image_files(file, report, runner_filter)
+
+        if root_folder:
+            for root, d_names, f_names in os.walk(root_folder):
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                for file in f_names:
+                    abs_fname = os.path.join(root, file)
+                    self.iterate_image_files(abs_fname, report, runner_filter)
+
+        return report
+
+    def iterate_image_files(self, abs_fname, report, runner_filter):
+        for image_referencer in self.image_referencers:
+            if image_referencer.is_workflow_file(abs_fname):
+                images = image_referencer.get_images(f=abs_fname)
+                for image in images:
+                    image_report = self.get_image_report(dockerfile_path=abs_fname, image_id=image,
+                                                         runner_filter=runner_filter)
+                    merge_reports(report, image_report)
+
+    def get_image_report(self, dockerfile_path, image_id, runner_filter):
+        report = Report(self.check_type)
+
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
             return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
-
         vulnerabilities = result.get("vulnerabilities") or []
         self.parse_vulns_to_records(report, result, f"{dockerfile_path} ({image_id})", runner_filter, vulnerabilities,
                                     file_abs_path=os.path.abspath(dockerfile_path))
-
         return report
