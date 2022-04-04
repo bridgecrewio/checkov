@@ -3,20 +3,19 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.util.type_forcers import force_int
 
 
-class PasswordPolicyMaxLogin(BaseResourceValueCheck):
+class PasswordPolicyMaxAge(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Ram Account Password Policy Max Login Attempts not > 5"
-        id = "CKV_ALI_23"
+        name = "Ensure Ram Account Password Policy Max Age less than/equal to 90 days"
+        id = "CKV_ALI_24"
         supported_resources = ['alicloud_ram_account_password_policy']
         categories = [CheckCategories.IAM]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'max_login_attempts'
+        return 'max_password_age'
 
     def get_expected_value(self):
-        return 3
+        return 90
 
     def scan_resource_conf(self, conf):
         """
@@ -26,13 +25,12 @@ class PasswordPolicyMaxLogin(BaseResourceValueCheck):
         :return: <CheckResult>
         """
 
-        if conf.get('max_login_attempts'):
-            length = force_int(conf.get('max_login_attempts')[0])
-            if length <= 5:
+        if conf.get('max_password_age') and isinstance(conf.get('max_password_age'), list):
+            length = conf.get('max_password_age')[0]
+            if 0 < length <= 90:
                 return CheckResult.PASSED
-            self.evaluated_keys = ["max_login_attempts"]
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+        self.evaluated_keys = ["max_password_age"]
+        return CheckResult.FAILED
 
 
-check = PasswordPolicyMaxLogin()
+check = PasswordPolicyMaxAge()
