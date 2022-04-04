@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AppSync-WAF-Enabled"
+Resources:
+    GoodAppSyncGraphQLApi:
+        Type: "AWS::AppSync::GraphQLApi"
+        Properties:
+            Name: "My Checkov Test App"
+            AuthenticationType: "API_KEY"
+            XrayEnabled: false
+    GoodWAFv2WebACL:
+        Type: "AWS::WAFv2::WebACL"
+        Properties:
+            Name: "Checkov-ACL"
+            Description: "Checkov-ACL"
+            DefaultAction: 
+                Block: {}
+            VisibilityConfig: 
+                SampledRequestsEnabled: true
+                CloudWatchMetricsEnabled: true
+                MetricName: "Checkov-ACL"
+            Scope: "REGIONAL"
+    WebACLAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn: !GetAtt GoodAppSyncGraphQLApi.Arn
+        WebACLArn: !GetAtt GoodWAFv2WebACL.Arn
+    NoWAFAppSyncGraphQLApi:
+        Type: "AWS::AppSync::GraphQLApi"
+        Properties:
+            Name: "My Checkov Test App with no WAF"
+            AuthenticationType: "API_KEY"
+            XrayEnabled: false
