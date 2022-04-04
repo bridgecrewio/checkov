@@ -43,7 +43,6 @@ class Runner(YamlRunner, JsonRunner):
             if self.is_valid(parsed_yaml[0]):
                 return parsed_yaml  # type:ignore[no-any-return]
 
-        logger.warn(f'file {f} is not a json nor yaml.')
         return None, None
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
@@ -60,6 +59,6 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any]) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
-        if 'swagger' in conf or 'openapi' in conf:
+        if conf and ('swagger' in conf or 'openapi' in conf):
             return True
         return False
