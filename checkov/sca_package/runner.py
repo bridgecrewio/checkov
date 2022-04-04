@@ -25,10 +25,6 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
-SUPPORTED_PACKAGE_EXTENSIONS = (
-    ".gemspec"
-)
-
 
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
@@ -146,9 +142,7 @@ class Runner(BaseRunner):
             input_paths = {
                 file_path
                 for file_path in root_path.glob("**/*")
-                if (not any(p in file_path.parts for p in excluded_paths) and
-                    (file_path.name in SUPPORTED_PACKAGE_FILES or
-                     file_path.name.endswith(SUPPORTED_PACKAGE_EXTENSIONS)))
+                if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
             }
 
             package_lock_parent_paths = set()
