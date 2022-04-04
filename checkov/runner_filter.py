@@ -67,7 +67,7 @@ class RunnerFilter(object):
                 self.framework = set(runners) - set(skip_framework)
             else:
                 self.framework = set(self.framework) - set(skip_framework)
-        logging.info(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
+        logging.debug(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
 
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
