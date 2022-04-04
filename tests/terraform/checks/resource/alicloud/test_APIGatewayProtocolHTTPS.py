@@ -23,6 +23,7 @@ class TestAPIGatewayProtocolHTTPS(unittest.TestCase):
         failing_resources = {
             'alicloud_api_gateway_api.fail',
             'alicloud_api_gateway_api.fail2',
+            'alicloud_api_gateway_api.fail3',
         }
         skipped_resources = {}
 
