@@ -18,7 +18,7 @@ class RDSRetention(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("sql_collector_status") and isinstance(conf.get("sql_collector_status"), list):
             status = conf.get("sql_collector_status")[0]
-            if not status == "Enabled":
+            if status != "Enabled":
                 self.evaluated_keys = ["sql_collector_status"]
                 return CheckResult.FAILED
             if conf.get("sql_collector_config_value") and isinstance(conf.get("sql_collector_config_value"), list):
