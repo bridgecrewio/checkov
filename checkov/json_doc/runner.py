@@ -20,7 +20,7 @@ class Runner(ObjectRunner):
         content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None] = parse(f)
         return content
 
-    def get_start_end_lines(self, end: int, result_config: DictNode, start: int) -> (int, int):
+    def get_start_end_lines(self, end: int, result_config: DictNode, start: int) -> tuple[int, int]:
         start = result_config.start_mark.line
         end = result_config.end_mark.line
         return end, start
