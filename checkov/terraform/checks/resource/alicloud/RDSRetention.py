@@ -9,7 +9,7 @@ class RDSRetention(BaseResourceCheck):
         'sql_collector_status' should be defined and set to "Enabled"  (I know, really, who does that)
          and 'sql_collector_config_value' should be defined and set to 180 or more
         """
-        name = "Ensure RDS Instance SQL Retention Period should be greater than 180"
+        name = "Ensure RDS Instance SQL Collector Retention Period should be greater than 180"
         id = "CKV_ALI_25"
         supported_resources = ['alicloud_db_instance']
         categories = [CheckCategories.NETWORKING]
