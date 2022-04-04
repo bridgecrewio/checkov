@@ -1,6 +1,6 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
-from checkov.yaml_doc.enums import BlockType
+from checkov.common.checks.enums import BlockType
 
 
 class Registry(BaseCheckRegistry):
