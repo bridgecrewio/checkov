@@ -15,7 +15,7 @@ class PasswordPolicyMaxAge(BaseResourceValueCheck):
         return 'max_password_age'
 
     def get_expected_value(self):
-        return 60
+        return 90
 
     def scan_resource_conf(self, conf):
         """
