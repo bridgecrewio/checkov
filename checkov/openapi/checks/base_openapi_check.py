@@ -21,13 +21,3 @@ class BaseOpenapiCheck(BaseCheck):
         )
         self.path = path
         registry.register(self)
-
-    # def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
-    # self.entity_type = entity_type
-    # self.scan_spec_cof(conf,entity_type)
-
-    # @multi_signature()
-    # @abstractmethod
-    # def scan_spec_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
-    #     """Return result of Kubernetes object check."""
-    #     raise NotImplementedError()
