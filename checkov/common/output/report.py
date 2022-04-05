@@ -41,7 +41,7 @@ class CheckType:
     YAML = "yaml"
     KUBERNETES = "kubernetes"
     KUSTOMIZE = "kustomize"
-    OPENAPI = "openapi" # WIP
+    OPENAPI = "openapi"  # WIP
     SCA_PACKAGE = "sca_package"
     SCA_IMAGE = "sca_image"
     SECRETS = "secrets"

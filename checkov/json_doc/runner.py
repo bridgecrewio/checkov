@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from typing import Any
+
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
 from checkov.common.parsers.json import parse
 from checkov.common.runners.object_runner import Runner as ObjectRunner
@@ -6,14 +11,14 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 class Runner(ObjectRunner):
     check_type = CheckType.JSON
 
-    def import_registry(self):
+    def import_registry(self) -> BaseCheckRegistry:
         from checkov.json_doc.registry import registry
         return registry
 
-    def _parse_file(self, f):
+    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
         return parse(f)
 
-    def get_start_end_lines(self, end, result_config, start):
+    def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         start = result_config.start_mark.line
         end = result_config.end_mark.line
         return end, start

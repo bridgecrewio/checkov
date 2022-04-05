@@ -1,4 +1,4 @@
-from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.common.checks.object_registry import Registry as BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
