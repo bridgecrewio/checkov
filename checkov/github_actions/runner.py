@@ -29,7 +29,7 @@ class Runner(YamlRunner, ImageReferencer):
 
     def is_workflow_file(self, f):
         abspath = os.path.abspath(f)
-        return WORKFLOW_DIRECTORY in abspath and (abspath.endswith("yml") or abspath.endswith("yaml"))
+        return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("yml", "yaml"))
 
     def get_images(self, f):
         # workflow file can have a job run within a container.
