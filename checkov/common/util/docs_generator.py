@@ -23,6 +23,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.openapi.checks.registry import openapi_registry
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 
 
@@ -95,6 +96,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "bicep")):
         add_from_repository(bicep_param_registry, "parameter", "Bicep")
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
+    if any(x in framework_list for x in ("all", "openapi")):
+        add_from_repository(openapi_registry, "resource", "openapi")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
             if use_bc_ids:
