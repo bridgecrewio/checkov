@@ -44,7 +44,7 @@ class Runner(YamlRunner, ImageReferencer):
                 container = job_object.get("container", {})
                 image = None
                 if isinstance(container, dict):
-                    image = container.get("image", "")
+                    image = container.get("image")
                 elif isinstance(container, str):
                     image = container
                 if image:
