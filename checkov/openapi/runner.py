@@ -45,4 +45,3 @@ class Runner(YamlRunner, JsonRunner):
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
         return bool(conf and ('swagger' in conf or 'openapi' in conf))
-
