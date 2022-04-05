@@ -6,7 +6,9 @@
           "test_with_locals": {
             "bucket": [
               "my-bucket-name"
-            ]
+            ],
+            "__start_line__": 5,
+            "__end_line__": 7
           }
         }
       }
