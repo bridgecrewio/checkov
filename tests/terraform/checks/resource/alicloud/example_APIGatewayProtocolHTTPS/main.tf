@@ -51,7 +51,7 @@ resource "alicloud_api_gateway_api" "fail2" {
     name         = "aaa"
     type         = "STRING"
     required     = "OPTIONAL"
-#    in           = "QUERY"
+    in           = "QUERY"
     in_service   = "QUERY"
     name_service = "testparams"
   }
@@ -98,7 +98,7 @@ resource "alicloud_api_gateway_api" "fail3" {
     name         = "aaa"
     type         = "STRING"
     required     = "OPTIONAL"
-#    in           = "QUERY"
+    in           = "QUERY"
     in_service   = "QUERY"
     name_service = "testparams"
   }
@@ -138,7 +138,7 @@ resource "alicloud_api_gateway_api" "pass" {
     name         = "aaa"
     type         = "STRING"
     required     = "OPTIONAL"
-#    in           = "QUERY"
+    in           = "QUERY"
     in_service   = "QUERY"
     name_service = "testparams"
   }
