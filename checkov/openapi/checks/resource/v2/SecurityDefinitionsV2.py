@@ -15,10 +15,6 @@ class SecurityDefinitionsV2(BaseOpenapiCheck):
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         self.evaluated_container_keys = ["securityDefinitions"]
 
-        if "securityDefinitions" not in conf or not conf["securityDefinitions"]:
-            return CheckResult.FAILED
-
-        return CheckResult.PASSED
-
+        return CheckResult.FAILED if "securityDefinitions" not in conf or not conf["securityDefinitions"] else CheckResult.PASSED
 
 check = SecurityDefinitionsV2()

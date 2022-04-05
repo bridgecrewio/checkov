@@ -1,8 +1,7 @@
 import os
 import unittest
-from pathlib import Path
 
-from checkov.openapi.checks.resource.SecurityDefinitionsV2 import check
+from checkov.openapi.checks.resource.v2.SecurityDefinitionsV2 import check
 from checkov.openapi.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
