@@ -16,19 +16,6 @@ logger = logging.getLogger(__name__)
 class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
-    def run(
-        self,
-        root_folder: str | None = None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
-    ) -> Report:
-
-        report = super().run(root_folder, external_checks_dir, files, runner_filter, collect_skip_comments)
-        self.change_files_path_to_relative(report, root_folder)
-        return report
-
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
@@ -61,9 +48,5 @@ class Runner(YamlRunner, JsonRunner):
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
         return bool(conf and ('swagger' in conf or 'openapi' in conf))
 
-    def change_files_path_to_relative(self, report: Report, root_folder: str | None = None) -> None:
-        if not root_folder:
-            root_folder = os.getcwd()
-        for record in report.get_all_records():
-            record.file_path = record.file_path.replace(root_folder, '')
-            record.resource = record.resource.replace(root_folder, '')
+    def get_resource(self, file_path: str, key: str) -> str:
+        return f'{key}'

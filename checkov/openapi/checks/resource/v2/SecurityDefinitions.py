@@ -7,9 +7,10 @@ from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 class SecurityDefinitions(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_1"
-        name = "Ensure that securityDefinitions has defined."
+        name = "Ensure that securityDefinitions has defined and not empty."
         categories = [CheckCategories.NETWORKING]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=["*"],
+        supported_resources = ['securityDefinitions']
+        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:

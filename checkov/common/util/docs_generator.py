@@ -97,7 +97,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(bicep_param_registry, "parameter", "Bicep")
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "openapi")):
-        add_from_repository(openapi_registry, "resource", "openapi")
+        add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
             if use_bc_ids:
