@@ -10,7 +10,7 @@ class ImageReferencer:
 
     @abstractmethod
     def get_images(self, f):
-        return []
+        pass
 
     def build_image(self, f, buildargs):
         try:
