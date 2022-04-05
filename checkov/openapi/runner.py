@@ -16,19 +16,6 @@ logger = logging.getLogger(__name__)
 class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
-    def run(
-        self,
-        root_folder: str | None = None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
-    ) -> Report:
-        report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                             files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        # ObjectRunner._change_files_path_to_relative(report)
-        return report
-
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
