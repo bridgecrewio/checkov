@@ -16,7 +16,7 @@ class DataContextParser(BaseContextParser):
         return [entity_type, entity_name]
 
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
-        for i, entity_block in enumerate(definition_blocks):
+        for entity_block in definition_blocks:
             entity_type, entity_value = next(iter(entity_block.items()))
             entity_name, entity_config = next(iter(entity_value.items()))
 

@@ -19,7 +19,7 @@ class TestGraphBuilder(TestCase):
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
         expected_num_of_var_nodes = 3
-        expected_num_of_locals_nodes = 1
+        expected_num_of_locals_nodes = 3
         expected_num_of_resources_nodes = 1
         expected_num_of_provider_nodes = 1
         vertices_by_block_type = graph.vertices_by_block_type
@@ -30,7 +30,7 @@ class TestGraphBuilder(TestCase):
 
         provider_node = graph.vertices[vertices_by_block_type[BlockType.PROVIDER][0]]
         resource_node = graph.vertices[vertices_by_block_type[BlockType.RESOURCE][0]]
-        local_node = graph.vertices[vertices_by_block_type[BlockType.LOCALS][0]]
+        local_node = graph.vertices[graph.vertices_block_name_map[BlockType.LOCALS]["bucket_name"][0]]
 
         var_bucket_name_node = None
         var_region_node = None
