@@ -1,16 +1,16 @@
 import os
 import unittest
 
-from checkov.openapi.checks.resource.v2.SecurityDefinitionsV2 import check
+from checkov.openapi.checks.resource.v2.SecurityDefinitions import check
 from checkov.openapi.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestSecurityDefinitionsV2(unittest.TestCase):
+class TestSecurityDefinitions(unittest.TestCase):
     def test_summary(self):
         # given
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = current_dir + "/example_SecurityDefinitionsV2"
+        test_files_dir = current_dir + "/example_SecurityDefinitions"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,14 +19,14 @@ class TestSecurityDefinitionsV2(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            current_dir + "/example_SecurityDefinitionsV2/pass1.yaml",
-            current_dir + "/example_SecurityDefinitionsV2/pass1.json",
+            current_dir + "/example_SecurityDefinitions/pass1.yaml",
+            current_dir + "/example_SecurityDefinitions/pass1.json",
         }
         failing_resources = {
-            current_dir + "/example_SecurityDefinitionsV2/fail1.yaml",
-            current_dir + "/example_SecurityDefinitionsV2/fail1.json",
-            current_dir + "/example_SecurityDefinitionsV2/fail2.yaml",
-            current_dir + "/example_SecurityDefinitionsV2/fail2.json",
+            current_dir + "/example_SecurityDefinitions/fail1.yaml",
+            current_dir + "/example_SecurityDefinitions/fail1.json",
+            current_dir + "/example_SecurityDefinitions/fail2.yaml",
+            current_dir + "/example_SecurityDefinitions/fail2.json",
         }
 
         passed_check_resources = {c.file_path for c in report.passed_checks}

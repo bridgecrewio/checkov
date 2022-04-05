@@ -4,7 +4,7 @@ from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 
 
-class SecurityDefinitionsV2(BaseOpenapiCheck):
+class SecurityDefinitions(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_1"
         name = "Ensure that securityDefinitions has defined."
@@ -17,4 +17,4 @@ class SecurityDefinitionsV2(BaseOpenapiCheck):
 
         return CheckResult.FAILED if "securityDefinitions" not in conf or not conf["securityDefinitions"] else CheckResult.PASSED
 
-check = SecurityDefinitionsV2()
+check = SecurityDefinitions()
