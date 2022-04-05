@@ -14,6 +14,7 @@ import configargparse
 from configargparse import ArgumentParser
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
+import checkov.logging_init  # should be imported before the others to ensure correct logging setup
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bicep.runner import Runner as bicep_runner
