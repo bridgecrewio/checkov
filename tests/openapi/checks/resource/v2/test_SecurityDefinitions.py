@@ -19,14 +19,14 @@ class TestSecurityDefinitions(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            current_dir + "/example_SecurityDefinitions/pass1.yaml",
-            current_dir + "/example_SecurityDefinitions/pass1.json",
+            "/pass1.yaml",
+            "/pass1.json",
         }
         failing_resources = {
-            current_dir + "/example_SecurityDefinitions/fail1.yaml",
-            current_dir + "/example_SecurityDefinitions/fail1.json",
-            current_dir + "/example_SecurityDefinitions/fail2.yaml",
-            current_dir + "/example_SecurityDefinitions/fail2.json",
+            "/fail1.yaml",
+            "/fail1.json",
+            "/fail2.yaml",
+            "/fail2.json",
         }
 
         passed_check_resources = {c.file_path for c in report.passed_checks}

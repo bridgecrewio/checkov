@@ -72,7 +72,7 @@ class Runner(BaseRunner):
                     check_name=check.name,
                     check_result=result,
                     code_block=definitions_raw[file_path][start:end + 1],
-                    file_path=file_path,
+                    file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start + 1, end + 1],
                     resource=f"{file_path}.{key}",
                     evaluations=None,
