@@ -50,7 +50,7 @@ class Runner(YamlRunner):
         # as the file is always located in a predictable path
         # There should always be a conditional otherwise you'll parse ALL files.
         if ".github/workflows/" in os.path.abspath(f):
-            return super()._parse_file(f)  # type:ignore[no-any-return]  # for some reason it can't get the right type
+            return super()._parse_file(f)
 
         return None, None
 

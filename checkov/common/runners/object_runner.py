@@ -83,7 +83,7 @@ class Runner(BaseRunner):
                     bc_check_id=check.bc_id,
                     check_name=check.name,
                     check_result=result,
-                    code_block=definitions_raw[file_path][start : end + 1],
+                    code_block=definitions_raw[file_path][start:end + 1],
                     file_path=file_path,
                     file_line_range=[start + 1, end + 1],
                     resource=f"{file_path}.{key}",
