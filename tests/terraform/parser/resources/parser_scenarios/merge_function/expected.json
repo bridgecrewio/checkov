@@ -111,7 +111,9 @@
                 "Tag3": "three",
                 "Name": "Bob-one-two"
               }
-            ]
+            ],
+            "__start_line__": 45,
+            "__end_line__": 48
           }
         }
       }
