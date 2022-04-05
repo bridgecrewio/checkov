@@ -4,11 +4,9 @@ import logging
 from typing import Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType, Report
-from checkov.runner_filter import RunnerFilter
+from checkov.common.output.report import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
-from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +35,8 @@ class Runner(YamlRunner, JsonRunner):
             return JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
         elif '__startline__' in result_config:
             return YamlRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
-        else:
-            return 0, 0  # TODO raise exception or return 0,0?
+
+        raise Exception("Unexpected dictionary format.")
 
     def require_external_checks(self) -> bool:
         return False
@@ -46,6 +44,5 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any]) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
-        if conf and ('swagger' in conf or 'openapi' in conf):
-            return True
-        return False
+        return bool(conf and ('swagger' in conf or 'openapi' in conf))
+

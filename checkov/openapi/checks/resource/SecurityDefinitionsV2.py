@@ -4,9 +4,9 @@ from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 
 
-class SecurityDefinitions(BaseOpenapiCheck):
+class SecurityDefinitionsV2(BaseOpenapiCheck):
     def __init__(self) -> None:
-        id = "CKV_OPENAPI_1"  # TODO change id
+        id = "CKV_OPENAPI_1"
         name = "Ensure that securityDefinitions has defined."
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_entities=["*"],
@@ -21,4 +21,4 @@ class SecurityDefinitions(BaseOpenapiCheck):
         return CheckResult.PASSED
 
 
-check = SecurityDefinitions()
+check = SecurityDefinitionsV2()
