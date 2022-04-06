@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType
+from checkov.common.output.report import CheckType, Report
+from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 
@@ -45,3 +47,6 @@ class Runner(YamlRunner, JsonRunner):
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
         return bool(conf and ('swagger' in conf or 'openapi' in conf))
+
+    def get_resource(self, file_path: str, key: str) -> str:
+        return f'{key}'

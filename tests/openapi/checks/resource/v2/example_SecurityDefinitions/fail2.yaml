@@ -10,4 +10,4 @@ paths:
       responses:
         "200":
           description: 200 response
-securityDefinitions:
+securityDefinitions:  {}

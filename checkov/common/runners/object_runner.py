@@ -74,7 +74,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start + 1, end + 1],
-                    resource=f"{file_path}.{key}",
+                    resource=self.get_resource(file_path, key),
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -84,6 +84,9 @@ class Runner(BaseRunner):
                 report.add_record(record)
 
         return report
+
+    def get_resource(self, file_path: str, key: str) -> str:
+        return f"{file_path}.{key}"
 
     @abstractmethod
     def get_start_end_lines(self, end, result_config, start):
