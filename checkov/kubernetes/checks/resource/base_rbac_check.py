@@ -3,7 +3,6 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from typing import Dict, Any, List
 
 
-
 class RbacOperation():
     """
     A collection of RBAC permissions that permit a certain operation within Kubernetes.
@@ -14,11 +13,8 @@ class RbacOperation():
         resources=["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]) 
     Rules matching an apiGroup, verb and resource should be able to perform the operation.
     """
-    def __init__(self, 
-        apigroups: List[str], 
-        verbs: List[str], 
-        resources: List[str]
-        ):
+    def __init__(self, apigroups: List[str], verbs: List[str],
+                 resources: List[str]):
         self.apigroups = apigroups
         self.verbs = verbs
         self.resources = resources
@@ -30,7 +26,7 @@ class BaseRbacK8sCheck(BaseK8Check):
     """
     def __init__(self, name, id, supported_entities=None):
         if supported_entities is None:
-            supported_entities = ["Role", "ClusterRole"] 
+            supported_entities = ["Role", "ClusterRole"]
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
         # A role that grants *ALL* the RbacOperation in failing_operations fails this check
@@ -43,7 +39,7 @@ class BaseRbacK8sCheck(BaseK8Check):
             for rule in conf["rules"]:
                 # Check if the rule matches an RbacOperation this check looks for
                 for i in range(len(self.failing_operations)):
-                    if not role_can_do_operation_arr[i]: 
+                    if not role_can_do_operation_arr[i]:
                         # RbacOperation wasn't found yet, check rule
                         role_can_do_operation_arr[i] = self.rule_can(rule, self.failing_operations[i])
                 # If all operations were found, role / clusterRole failed the check
@@ -84,9 +80,7 @@ class BaseRbacK8sCheck(BaseK8Check):
                 if self.is_wildcard(value) or value in value_list:
                     return True
         return False
-    
+
     # Check if value is a K8s RBAC wildcard
     def is_wildcard(self, value: str) -> bool:
         return value == "*" or value == "*/*"
-
-

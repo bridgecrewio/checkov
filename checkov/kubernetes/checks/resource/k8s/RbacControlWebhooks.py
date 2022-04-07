@@ -1,5 +1,6 @@
 from checkov.kubernetes.checks.resource.base_rbac_check import BaseRbacK8sCheck, RbacOperation
 
+
 class RbacControlWebhooks(BaseRbacK8sCheck):
     def __init__(self):
         name = "Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations"
@@ -12,7 +13,7 @@ class RbacControlWebhooks(BaseRbacK8sCheck):
                 apigroups=["admissionregistration.k8s.io"],
                 verbs=["create", "update", "patch"],
                 resources=["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
-            ),        
+            ),
         ]
 
 
