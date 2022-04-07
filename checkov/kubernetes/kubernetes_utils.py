@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import os
 from copy import deepcopy
-from typing import Tuple, Dict, Optional, List, Any
+from typing import Tuple, Dict, List, Any
 
 import dpath
 from checkov.runner_filter import RunnerFilter
@@ -18,8 +20,8 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: Optional[List[str]]
-) -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
+        root_folder: str, excluded_paths: list[str] | None
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -35,14 +37,7 @@ def get_folder_definitions(
     return get_files_definitions(files_list)
 
 
-def get_files_definitions(files: List[str]) \
-        -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(filename: str):
-        try:
-            return filename, parse(filename)
-        except (TypeError, ValueError):
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
-
+def get_files_definitions(files: list[str]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
     results = parallel_runner.run_function(_parse_file, files)
@@ -54,7 +49,15 @@ def get_files_definitions(files: List[str]) \
     return definitions, definitions_raw
 
 
-def get_skipped_checks(entity_conf):
+def _parse_file(filename: str) -> tuple[str, tuple[list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]] | None:
+    try:
+        return filename, parse(filename)
+    except (TypeError, ValueError):
+        logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
+        return None
+
+
+def get_skipped_checks(entity_conf: dict[str, Any]) -> list[dict[str, Any]]:
     skipped = []
     metadata = {}
     bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
@@ -94,11 +97,11 @@ def get_skipped_checks(entity_conf):
 
 def create_definitions(
     root_folder: str,
-    files: Optional[List[str]] = None,
+    files: list[str] | None = None,
     runner_filter: RunnerFilter = RunnerFilter(),
-) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    definitions = {}
-    definitions_raw = {}
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+    definitions: dict[str, DictNode] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
         definitions, definitions_raw = get_files_definitions(files)
 
@@ -176,7 +179,7 @@ def is_invalid_k8_definition(definition: Dict[str, Any]) -> bool:
     )
 
 
-def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
+def get_resource_id(resource: dict[str, Any]) -> str | None:
     resource_type = resource["kind"]
     metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")

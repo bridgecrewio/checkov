@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
+
 from yaml import YAMLError
 
 from checkov.kubernetes.parser import k8_yaml, k8_json
@@ -11,7 +15,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def parse(filename):
+def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
     template = None
     template_lines = None
     valid_templates = []
@@ -26,27 +30,27 @@ def parse(filename):
                     if t and isinstance(t, dict) and 'apiVersion' in t.keys() and 'kind' in t.keys():
                         valid_templates.append(t)
             else:
-                return
+                return None, None
         else:
-            return
+            return None, None
     except IOError as e:
         if e.errno == 2:
             logger.error('Template file not found: %s', filename)
-            return
+            return None, None
         elif e.errno == 21:
             logger.error('Template references a directory, not a file: %s',
                          filename)
-            return
+            return None, None
         elif e.errno == 13:
             logger.error('Permission denied when accessing template file: %s',
                          filename)
-            return
+            return None, None
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
-        return
+        return None, None
     except YAMLError:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
-        return
+        return None, None
 
     return valid_templates, template_lines

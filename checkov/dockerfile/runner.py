@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import List, Dict, Tuple
+from typing import Callable
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
@@ -89,14 +91,10 @@ class Runner(BaseRunner):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
 
 
-def get_files_definitions(files: List[str], filepath_fn=None) \
-        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(file):
-        try:
-            return file, parse(file)
-        except TypeError:
-            logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
-            return file, None
+def get_files_definitions(
+    files: list[str],
+    filepath_fn: Callable[[str], str] | None = None,
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
 
     results = parallel_runner.run_function(_parse_file, files)
     definitions = {}
@@ -107,3 +105,11 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
+
+
+def _parse_file(file: str) -> tuple[str, tuple[dict[str, list[dict[str, int | str]]], list[str]] | None]:
+    try:
+        return file, parse(file)
+    except TypeError:
+        logging.info(f"Dockerfile skipping {file} as it is not a valid dockerfile template")
+        return file, None

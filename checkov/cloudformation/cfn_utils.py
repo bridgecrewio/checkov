@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional, List, Tuple, Dict, Any, Union
+from typing import List, Tuple, Dict, Any, Callable
 
 import dpath.util
 
@@ -17,7 +19,7 @@ from checkov.common.models.consts import YAML_COMMENT_MARK
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
 
 
-def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_registry) -> Optional[Dict[str, str]]:
+def get_resource_tags(entity: dict[StrNode, DictNode], registry: Registry = cfn_registry) -> dict[str, str] | None:
     entity_details = registry.extract_entity_details(entity)
 
     if not entity_details:
@@ -40,7 +42,7 @@ def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_
     return None
 
 
-def parse_entity_tags(tags: Union[ListNode, Dict[str, Any]]) -> Optional[Dict[str, str]]:
+def parse_entity_tags(tags: ListNode | dict[str, Any]) -> dict[str, str] | None:
     if isinstance(tags, ListNode):
         tag_dict = {get_entity_value_as_string(tag["Key"]): get_entity_value_as_string(tag["Value"]) for tag in tags}
         return tag_dict
@@ -91,8 +93,11 @@ def get_entity_value_as_string(value: Any) -> str:
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
-) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
+        root_folder: str, excluded_paths: list[str] | None, out_parsing_errors: dict[str, str] | None = None
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+    if out_parsing_errors is None:
+        out_parsing_errors = {}
+
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -166,12 +171,15 @@ def build_definitions_context(
 
 def create_definitions(
         root_folder: str,
-        files: Optional[List[str]] = None,
+        files: list[str] | None = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-        out_parsing_errors: Dict[str, str] = {}
-) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    definitions = {}
-    definitions_raw = {}
+        out_parsing_errors: dict[str, str] | None = None
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+    if out_parsing_errors is None:
+        out_parsing_errors = {}
+
+    definitions: dict[str, DictNode] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
         files_list = [file for file in files if os.path.splitext(file)[1] in CF_POSSIBLE_ENDINGS]
         definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors)
@@ -183,12 +191,11 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], filepath_fn=None) \
-        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(file):
-        parsing_errors = {}
-        result = parse(file, parsing_errors)
-        return (file, result), parsing_errors
+def get_files_definitions(
+    files: List[str],
+    out_parsing_errors: Dict[str, str],
+    filepath_fn: Callable[[str], str] | None = None
+) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
 
     results = parallel_runner.run_function(_parse_file, files)
 
@@ -213,6 +220,12 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
             continue
 
     return definitions, definitions_raw
+
+
+def _parse_file(file: str) -> tuple[tuple[str, tuple[DictNode, list[tuple[int, str]]] | tuple[None, None]], dict[str, str]]:
+    parsing_errors: dict[str, str] = {}
+    result = parse(file, parsing_errors)
+    return (file, result), parsing_errors
 
 
 def validate_properties_in_resources_are_dict(template: DictNode) -> bool:
