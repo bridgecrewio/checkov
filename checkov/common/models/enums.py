@@ -40,3 +40,10 @@ class ContextCategories(Enum):
     RESOURCE = 6
     VARIABLE = 7
     OUTPUT = 8
+
+
+class ParallelizationType(str, Enum):
+    FORK = "fork"
+    SPAWN = "spawn"
+    THREAD = "thread"
+    NONE = "none"

@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
-from typing import List, Callable
+from typing import Callable, TYPE_CHECKING
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.terraform.module_loading.registry import module_loader_registry
 
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
+
 
 class ModuleDownload:
     source_dir: str
-    module_link: str = None
-    version: str = None
+    module_link: str | None = None
+    version: str | None = None
 
     def __init__(self, source_dir):
         self.source_dir = source_dir
@@ -23,7 +28,7 @@ class ModuleDownload:
         return f'{self.module_link}:{self.version}'
 
 
-def find_modules(path: str) -> List[ModuleDownload]:
+def find_modules(path: str) -> list[ModuleDownload]:
     modules_found = []
     for root, dir_names, full_file_names in os.walk(path):
         for file_name in full_file_names:
@@ -74,25 +79,28 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
     module_loader_registry.root_dir = path
     modules_to_load = find_modules(path)
 
-    def _download_module(m):
-        if should_download_module(m.module_link):
-            logging.info(f'Downloading module {m.address}')
-            try:
-                content = module_loader_registry.load(m.source_dir, m.module_link,
-                                                      "latest" if not m.version else m.version)
-                if content is None or not content.loaded():
-                    log_message = f'Failed to download module {m.address}'
-                    if not module_loader_registry.download_external_modules:
-                        log_message += ' (for external modules, the --download-external-modules flag is required)'
-                    logging.warning(log_message)
-            except Exception as e:
-                logging.warning(f"Unable to load module ({m.address}): {e}")
-
     # To avoid duplicate work, we need to get the distinct module sources
-    distinct_modules = list({m.address: m for m in modules_to_load}.values())
+    distinct_modules = [
+        (module_loader_registry, m)
+        for m in {m.address: m for m in modules_to_load if should_download_module(m.module_link)}.values()
+    ]
 
     if run_parallel:
         list(parallel_runner.run_function(_download_module, distinct_modules))
     else:
         for m in distinct_modules:
             _download_module(m)
+
+
+def _download_module(args: tuple[ModuleLoaderRegistry, ModuleDownload]) -> None:
+    ml_registry, m = args
+    logging.info(f"Downloading module {m.address}")
+    try:
+        content = ml_registry.load(m.source_dir, m.module_link, "latest" if not m.version else m.version)
+        if content is None or not content.loaded():
+            log_message = f"Failed to download module {m.address}"
+            if not ml_registry.download_external_modules:
+                log_message += " (for external modules, the --download-external-modules flag is required)"
+            logging.warning(log_message)
+    except Exception as e:
+        logging.warning(f"Unable to load module ({m.address}): {e}")

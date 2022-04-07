@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 import logging
@@ -20,7 +22,6 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
-from checkov.common.runners.base_runner import ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -68,6 +69,7 @@ class Runner(BaseRunner):
         self.definitions_with_modules: Dict[str, Dict] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
+        self.scan_hcl = False
 
     block_type_registries = {
         'resource': resource_registry,
@@ -85,9 +87,9 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True
     ) -> Report:
         report = Report(self.check_type)
-        parsing_errors = {}
+        parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        scan_hcl = should_scan_hcl_files()
+        self.scan_hcl = should_scan_hcl_files()
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
@@ -108,7 +110,7 @@ class Runner(BaseRunner):
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
-                self._parse_files(files, scan_hcl, parsing_errors)
+                self._parse_files(files, parsing_errors)
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
@@ -352,18 +354,8 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
 
-    def _parse_files(self, files, scan_hcl, parsing_errors):
-        def parse_file(file):
-            if not (file.endswith(".tf") or (scan_hcl and file.endswith(".hcl"))):
-                return
-            file_parsing_errors = {}
-            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
-            # the exceptions type can un-pickleable so we need to cast them to Exception
-            for path, e in file_parsing_errors.items():
-                file_parsing_errors[path] = Exception(e.__repr__())
-            return file, parse_result, file_parsing_errors
-
-        results = parallel_runner.run_function(parse_file, files)
+    def _parse_files(self, files: list[str], parsing_errors: dict[str, Exception]) -> None:
+        results = parallel_runner.run_function(self._parse_file, files)
         for result in results:
             if result:
                 file, parse_result, file_parsing_errors = result
@@ -371,6 +363,16 @@ class Runner(BaseRunner):
                     self.definitions[file] = parse_result
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
+
+    def _parse_file(self, file: str) -> tuple[str, dict[str, list[dict[str, Any]]], dict[str, Exception]] | None:
+        if not (file.endswith(".tf") or (self.scan_hcl and file.endswith(".hcl"))):
+            return None
+        file_parsing_errors: dict[str, Exception] = {}
+        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=self.scan_hcl)
+        # the exceptions type can un-pickleable so we need to cast them to Exception
+        for path, e in file_parsing_errors.items():
+            file_parsing_errors[path] = Exception(e.__repr__())
+        return file, parse_result, file_parsing_errors
 
     @staticmethod
     def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):

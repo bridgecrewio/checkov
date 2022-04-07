@@ -10,13 +10,13 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest import mock
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.consts import SCAN_HCL_FLAG
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories, CheckResult, ParallelizationType
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -29,9 +29,9 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+        self.parallelization_type = parallel_runner.type
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1473,9 +1473,34 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
+    def test__parse_files(self):
+        for parallel_type in ParallelizationType:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/example"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 1)
+                self.assertEqual(len(parsing_errors), 1)
+
     def tearDown(self):
         parser_registry.context = {}
         resource_registry.checks = self.orig_checks
+        parallel_runner.type = self.parallelization_type
 
 
 if __name__ == '__main__':
