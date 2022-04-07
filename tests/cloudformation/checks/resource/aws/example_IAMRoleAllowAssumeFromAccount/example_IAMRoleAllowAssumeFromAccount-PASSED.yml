@@ -33,16 +33,16 @@ Resources:
                 {
                     "Effect": "Allow",
                     "Principal": {
-                      "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/${OIDCid}"
+                      "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/123456"
                     },
                     "Action": "sts:AssumeRoleWithWebIdentity",
                     "Condition": {
                       "StringEquals": {
-                        "${clusterid}": "${serviceaccountlogging}"
+                        "${clusterid}": "1234"
                       }
                     }
                   }
               ]    
             }
           -
-            clusterid: !Join [ "",[ !Sub "oidc.eks.${AWS::Region}.amazonaws.com/id/${OIDCid}",":sub" ] ]
+            clusterid: clusterID
