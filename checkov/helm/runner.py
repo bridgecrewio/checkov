@@ -150,13 +150,13 @@ class Runner(BaseRunner):
                         o, e = proc.communicate()
                         logging.debug(
                             f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
-                
+
                     except Exception:
                         logging.info(
                             f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}.",
                             exc_info=True,
                         )
-              
+
 
                 output = str(o, 'utf-8')
                 reader = io.StringIO(output)
@@ -215,12 +215,12 @@ class Runner(BaseRunner):
                     report.resources.update(chart_results.resources)
 
                 except Exception:
-                    logging.warning("Failed to run Kubernetes runner", exc_info=True)
-                    with tempfile.TemporaryDirectory() as save_error_dir:
-                        logging.debug(
-                            f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
+                    logging.warning(f"Failed to run Kubernetes runner on chart {chart_meta['name']}", exc_info=True)
+                    # with tempfile.TemporaryDirectory() as save_error_dir:
                         # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
                         # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
+                        # logging.debug(
+                        #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
                         # shutil.move(target_dir, save_error_dir)
 
                         # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
