@@ -219,7 +219,9 @@ class Runner(BaseRunner):
                     with tempfile.TemporaryDirectory() as save_error_dir:
                         logging.debug(
                             f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
-                        shutil.move(target_dir, save_error_dir)
+                        # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
+                        # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
+                        # shutil.move(target_dir, save_error_dir)
 
                         # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
         return report
