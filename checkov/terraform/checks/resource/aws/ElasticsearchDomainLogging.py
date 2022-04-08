@@ -18,7 +18,7 @@ class ElasticsearchDomainLogging(BaseResourceValueCheck):
     def scan_resource_conf(self, conf):
         if conf.get("log_publishing_options") and isinstance(conf.get("log_publishing_options"), list):
             option = conf.get("log_publishing_options")[0]
-            if option.get('cloudwatch_log_group_arn'):
+            if isinstance(option, dict) and option.get('cloudwatch_log_group_arn'):
                 if option.get('enabled') == [False]:
                     self.evaluated_keys = ["log_publishing_options/[0]/enabled"]
                     return CheckResult.FAILED
