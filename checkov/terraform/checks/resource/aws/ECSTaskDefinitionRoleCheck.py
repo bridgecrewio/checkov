@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class ECSTaskDefinitionRoleCheck(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that the Execution Role ARN and the Task Role ARN are different in ECS Task definitions"
-        id = "CKV2_AWS_37"
+        id = "CKV_AWS_245"
         supported_resources = ['aws_ecs_task_definition']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
