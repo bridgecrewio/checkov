@@ -24,10 +24,17 @@ class Runner(BaseRunner):
         filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
-        results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
+        results = parallel_runner.run_function(self._invoke_parse_file, files_to_load)
         for file, result in results:
             if result:
                 (definitions[file], definitions_raw[file]) = result
+
+    # needed to be a separate function otherwise it can't be pickled
+    def _invoke_parse_file(
+        self,
+        file: str
+    ) -> tuple[str, tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]]:
+        return file, self._parse_file(file)
 
     @abstractmethod
     def _parse_file(
@@ -68,7 +75,8 @@ class Runner(BaseRunner):
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
+                files_to_load = [os.path.join(root, f) for f in f_names]
+                self._load_files(files_to_load, definitions, definitions_raw)
 
         for file_path in definitions.keys():
             results = registry.scan(file_path, definitions[file_path], [], runner_filter)

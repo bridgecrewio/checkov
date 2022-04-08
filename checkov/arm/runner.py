@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional, List, Dict, Tuple
+from typing import Any, Callable
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
@@ -21,8 +23,8 @@ class Runner(BaseRunner):
     def run(
         self,
         root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
@@ -137,9 +139,12 @@ class Runner(BaseRunner):
         return report
 
 
-def get_files_definitions(files: List[str], filepath_fn=None) \
-        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
+def get_files_definitions(
+    files: list[str],
+    filepath_fn: Callable[[str], str] | None = None
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+
+    results = parallel_runner.run_function(_parse_file, files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:
@@ -147,3 +152,8 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
         definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
+
+
+# needed to be a separate function otherwise it can't be pickled
+def _parse_file(file: str) -> tuple[str, tuple[dict[str, Any], tuple[int, str]] | tuple[None, None]]:
+    return file, parse(file)

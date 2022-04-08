@@ -33,7 +33,10 @@ def load(filename: str, allow_nulls: bool = True) -> tuple[dict[str, Any], tuple
     return (json.loads(content, cls=Decoder, allow_nulls=allow_nulls), file_lines)
 
 
-def parse(filename: str, allow_nulls: bool = True, out_parsing_errors: Dict[str, str] = {}) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None, None]:
+def parse(filename: str, allow_nulls: bool = True, out_parsing_errors: dict[str, str] | None = None) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None, None]:
+    if out_parsing_errors is None:
+        out_parsing_errors = {}
+
     template = None
     template_lines = None
     error = None

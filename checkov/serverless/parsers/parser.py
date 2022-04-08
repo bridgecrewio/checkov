@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
-from typing import Tuple, Optional, List
+from typing import Any
 
 import jmespath
 import logging
@@ -31,41 +33,41 @@ QUOTED_WORD_SYNTAX = re.compile(r"(?:('|\").*?\1)")
 FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 
 
-def parse(filename):
+def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
     template = None
     template_lines = None
     try:
         (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.SLS)
         if not template or not is_checked_sls_template(template):
-            return
+            return None
     except IOError as e:
         if e.errno == 2:
             logger.error('Template file not found: %s', filename)
-            return
+            return None
         elif e.errno == 21:
             logger.error('Template references a directory, not a file: %s',
                          filename)
-            return
+            return None
         elif e.errno == 13:
             logger.error('Permission denied when accessing template file: %s',
                          filename)
-            return
+            return None
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
-        return
+        return None
     except CfnParseError:
         logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
-        return
+        return None
     except YAMLError:
         logger.warning(f"Failed to parse file {filename} as a yaml")
-        return
+        return None
 
     process_variables(template, filename)
 
     return template, template_lines
 
 
-def is_checked_sls_template(template):
+def is_checked_sls_template(template: dict[str, Any]) -> bool:
     if template.__contains__('provider'):
         # Case provider is a dictionary
         if isinstance(template['provider'], DictNode):
@@ -79,14 +81,14 @@ def is_checked_sls_template(template):
     return False
 
 
-def template_contains_cfn_resources(template):
+def template_contains_cfn_resources(template: dict[str, Any]) -> bool:
     if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], DictNode):
         if template[CFN_RESOURCES_TOKEN].get('Resources'):
             return True
     return False
 
 
-def template_contains_key(template, key):
+def template_contains_key(template: dict[str, Any], key: str) -> bool:
     if ContextParser.search_deep_keys(key, template, []):
         return True
     return False
@@ -266,7 +268,7 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
     return data
 
 
-def _token_to_type_and_loc(token: str) -> Tuple[Optional[str], Optional[str]]:
+def _token_to_type_and_loc(token: str) -> tuple[str | None, str | None]:
     file_match = FILE_LOCATION_PATTERN.match(token)
     if file_match is not None:
         if ":" not in token:
@@ -301,7 +303,7 @@ param_lookup_function parameter of process_variables_loop for more info.
     return var_type, var_loc, fallback_type, fallback_loc
 
 
-def _tokenize_by_commas(string: str) -> Optional[List[str]]:
+def _tokenize_by_commas(string: str) -> list[str] | None:
     """
     Tokenize the given value by commas, respecting quoted blocks.
     """

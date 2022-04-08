@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import operator
 from functools import reduce
-from typing import List, Tuple, Optional, Union, Generator
+from typing import List, Tuple, Optional, Union, Generator, Any
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.parsers.node import DictNode, StrNode, ListNode
@@ -13,7 +15,7 @@ ENDLINE = "__endline__"
 STARTLINE = "__startline__"
 
 
-class ContextParser(object):
+class ContextParser:
     """
     CloudFormation template context parser
     """
@@ -141,8 +143,8 @@ class ContextParser(object):
 
     @staticmethod
     def search_deep_keys(
-        search_text: str, cfn_dict: Union[StrNode, ListNode, DictNode], path: List[str]
-    ) -> List[List[Union[int, str]]]:
+        search_text: str, cfn_dict: StrNode | ListNode | dict[str, Any], path: list[str]
+    ) -> list[list[int | str]]:
         """Search deep for keys and get their values"""
         keys: List[List[Union[int, str]]] = []
         if isinstance(cfn_dict, dict):

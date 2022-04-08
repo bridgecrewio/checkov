@@ -23,7 +23,7 @@ class ParallelRunner:
     def __init__(self, workers_number: int | None = None) -> None:
         self.workers_number = workers_number if workers_number else (os.cpu_count() or 1)
         self.os = platform.system()
-        self.type = os.getenv("CHECKOV_PARALLELIZATION_TYPE", ParallelizationType.SPAWN)
+        self.type = os.getenv("CHECKOV_PARALLELIZATION_TYPE", ParallelizationType.THREAD)
 
     def run_function(self, func: Callable[[I], O], items: list[I], group_size: int | None = None) -> Iterable[O]:
         if self.type == ParallelizationType.FORK:

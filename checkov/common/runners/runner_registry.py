@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import itertools
 import json
@@ -13,6 +15,7 @@ from typing_extensions import Literal
 
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.models.enums import ParallelizationType
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
@@ -22,7 +25,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
-from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.parallelizer.parallel_runner import ParallelRunner
 from checkov.common.util.ext_cyclonedx_xml import ExtXml
 from checkov.common.util.banner import tool as tool_name
 
@@ -51,18 +54,21 @@ class RunnerRegistry:
 
     def run(
         self,
-        root_folder: Optional[str] = None,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
+        root_folder: str | None = None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
         collect_skip_comments: bool = True,
-        repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
-    ) -> List[Report]:
+        repo_root_for_plan_enrichment: List[str | os.PathLike[str]] | None = None,
+    ) -> list[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
             reports = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                            runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)]
         else:
-            reports = parallel_runner.run_function(
+            # it is not allowed to spawn children from children
+            thread_runner = ParallelRunner()
+            thread_runner.type = ParallelizationType.THREAD
+            reports = thread_runner.run_function(
                 lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                           runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments),
                 self.runners, 1)

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
@@ -209,7 +211,7 @@ class Runner(BaseRunner):
 
 def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
+    results = parallel_runner.run_function(_parse_file, files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:
@@ -218,3 +220,8 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
+
+
+# needed to be a separate function otherwise it can't be pickled
+def _parse_file(file: str) -> tuple[str, tuple[dict[str, Any], tuple[int, str]] | tuple[None, None] | None]:
+    return file, parse(file)

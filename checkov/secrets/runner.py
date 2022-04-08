@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import linecache
 import logging
@@ -63,140 +65,147 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True
     ) -> Report:
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        report = Report(self.check_type)
         secrets = SecretsCollection()
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': [
-                {
-                    'name': 'AWSKeyDetector'
-                },
-                {
-                    'name': 'ArtifactoryDetector'
-                },
-                {
-                    'name': 'AzureStorageKeyDetector'
-                },
-                {
-                    'name': 'BasicAuthDetector'
-                },
-                {
-                    'name': 'CloudantDetector'
-                },
-                {
-                    'name': 'IbmCloudIamDetector'
-                },
-                {
-                    'name': 'MailchimpDetector'
-                },
-                {
-                    'name': 'PrivateKeyDetector'
-                },
-                {
-                    'name': 'SlackDetector'
-                },
-                {
-                    'name': 'SoftlayerDetector'
-                },
-                {
-                    'name': 'SquareOAuthDetector'
-                },
-                {
-                    'name': 'StripeDetector'
-                },
-                {
-                    'name': 'TwilioKeyDetector'
-                },
-                {
-                    'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
-                    'limit': ENTROPY_KEYWORD_LIMIT
-                }
-            ]
-        }) as settings:
-            report = Report(self.check_type)
-            # Implement non IaC files (including .terraform dir)
-            files_to_scan = files or []
-            excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
-            if root_folder:
-                for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, excluded_paths)
-                    filter_ignored_paths(root, f_names, excluded_paths)
-                    for file in f_names:
-                        if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
-                            files_to_scan.append(os.path.join(root, file))
-            logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+        # Implement non IaC files (including .terraform dir)
+        files_to_scan = files or []
+        excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
+        if root_folder:
+            for root, d_names, f_names in os.walk(root_folder):
+                filter_ignored_paths(root, d_names, excluded_paths)
+                filter_ignored_paths(root, f_names, excluded_paths)
+                for file in f_names:
+                    if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                        files_to_scan.append(os.path.join(root, file))
+        logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
-            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+        Runner._scan_files(files_to_scan, secrets)
 
-            Runner._scan_files(files_to_scan, secrets)
+        for _, secret in iter(secrets):
+            check_id = SECRET_TYPE_TO_ID.get(secret.type)
+            if not check_id:
+                continue
+            bc_check_id = metadata_integration.get_bc_id(check_id)
+            severity = metadata_integration.get_severity(check_id)
+            if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity):
+                continue
+            result: _CheckResult = {'result': CheckResult.FAILED}
+            line_text = linecache.getline(secret.filename, secret.line_number)
+            if line_text != "" and len(line_text.split()) > 0 and line_text.split()[0] == 'git_commit':
+                continue
+            result = self.search_for_suppression(
+                check_id=check_id,
+                bc_check_id=bc_check_id,
+                severity=severity,
+                secret=secret,
+                runner_filter=runner_filter,
+            ) or result
+            report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+            report.add_record(Record(
+                check_id=check_id,
+                bc_check_id=bc_check_id,
+                severity=severity,
+                check_name=secret.type,
+                check_result=result,
+                code_block=[(secret.line_number, line_text)],
+                file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
+                file_line_range=[secret.line_number, secret.line_number + 1],
+                resource=secret.secret_hash,
+                check_class=None,
+                evaluations=None,
+                file_abs_path=os.path.abspath(secret.filename),
+            ))
 
-            for _, secret in iter(secrets):
-                check_id = SECRET_TYPE_TO_ID.get(secret.type)
-                if not check_id:
-                    continue
-                bc_check_id = metadata_integration.get_bc_id(check_id)
-                severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity):
-                    continue
-                result: _CheckResult = {'result': CheckResult.FAILED}
-                line_text = linecache.getline(secret.filename, secret.line_number)
-                if line_text != "" and len(line_text.split()) > 0 and line_text.split()[0] == 'git_commit':
-                    continue
-                result = self.search_for_suppression(
-                    check_id=check_id,
-                    bc_check_id=bc_check_id,
-                    severity=severity,
-                    secret=secret,
-                    runner_filter=runner_filter,
-                ) or result
-                report.add_resource(f'{secret.filename}:{secret.secret_hash}')
-                report.add_record(Record(
-                    check_id=check_id,
-                    bc_check_id=bc_check_id,
-                    severity=severity,
-                    check_name=secret.type,
-                    check_result=result,
-                    code_block=[(secret.line_number, line_text)],
-                    file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
-                    file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.secret_hash,
-                    check_class=None,
-                    evaluations=None,
-                    file_abs_path=os.path.abspath(secret.filename),
-                ))
-
-            return report
+        return report
 
     @staticmethod
-    def _scan_files(files_to_scan, secrets):
+    def _scan_files(files: list[str], secrets: SecretsCollection) -> None:
         # implemented the scan function like secrets.scan_files
-        def _safe_scan(f):
-            full_file_path = os.path.join(secrets.root, f)
-            file_size = os.path.getsize(full_file_path)
-            if file_size > MAX_FILE_SIZE > 0:
-                logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
-                             f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
-                             f'to 0 or {file_size + 1}')
-                return list()
-            try:
-                start_time = datetime.datetime.now()
-                file_results = list(scan.scan_file(full_file_path))
-                end_time = datetime.datetime.now()
-                run_time = end_time - start_time
-                if run_time > datetime.timedelta(seconds=10):
-                    logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
-                return file_results
-            except Exception:
-                logging.warning(f"Secret scanning:could not process file {f}")
-                logging.debug("Complete trace:", exc_info=True)
-                return list()
-
-        results = parallel_runner.run_function(
-            lambda f: list(_safe_scan(f)), files_to_scan)
+        files_to_scan = [
+            os.path.join(secrets.root, file)
+            for file in files
+        ]
+        results = parallel_runner.run_function(Runner._safe_scan, files_to_scan)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
+
+    @staticmethod
+    def _safe_scan(file_path: str) -> list[PotentialSecret]:
+        current_dir = os.path.dirname(__file__)
+        with transient_settings(
+            {
+                # Only run scans with only these plugins.
+                'plugins_used': [
+                    {
+                        'name': 'AWSKeyDetector'
+                    },
+                    {
+                        'name': 'ArtifactoryDetector'
+                    },
+                    {
+                        'name': 'AzureStorageKeyDetector'
+                    },
+                    {
+                        'name': 'BasicAuthDetector'
+                    },
+                    {
+                        'name': 'CloudantDetector'
+                    },
+                    {
+                        'name': 'IbmCloudIamDetector'
+                    },
+                    {
+                        'name': 'MailchimpDetector'
+                    },
+                    {
+                        'name': 'PrivateKeyDetector'
+                    },
+                    {
+                        'name': 'SlackDetector'
+                    },
+                    {
+                        'name': 'SoftlayerDetector'
+                    },
+                    {
+                        'name': 'SquareOAuthDetector'
+                    },
+                    {
+                        'name': 'StripeDetector'
+                    },
+                    {
+                        'name': 'TwilioKeyDetector'
+                    },
+                    {
+                        'name': 'EntropyKeywordCombinator',
+                        'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
+                        'limit': ENTROPY_KEYWORD_LIMIT
+                    }
+                ]
+            }
+        ) as settings:
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+
+            file_size = os.path.getsize(file_path)
+            if file_size > MAX_FILE_SIZE > 0:
+                logging.info(
+                    f'Skipping secret scanning on {file_path} due to file size. To scan this file for '
+                    f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
+                    f'to 0 or {file_size + 1}'
+                )
+                return []
+            try:
+                start_time = datetime.datetime.now()
+                file_results = list(scan.scan_file(file_path))
+                end_time = datetime.datetime.now()
+                run_time = end_time - start_time
+                if run_time > datetime.timedelta(seconds=10):
+                    logging.info(f'Secret scanning for {file_path} took {run_time} seconds')
+                return file_results
+            except Exception:
+                logging.warning(f"Secret scanning:could not process file {file_path}")
+                logging.debug("Complete trace:", exc_info=True)
+                return []
 
     @staticmethod
     def search_for_suppression(
