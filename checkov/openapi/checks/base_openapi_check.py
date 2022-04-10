@@ -21,3 +21,6 @@ class BaseOpenapiCheck(BaseCheck):
         )
         self.path = path
         registry.register(self)
+
+    def is_start_end_line(self, conf: str) -> bool:
+        return bool(conf in {'__startline__', '__endline__'})
