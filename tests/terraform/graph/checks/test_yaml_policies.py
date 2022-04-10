@@ -26,6 +26,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_VPCHasOneOfWantedFlowLogs(self):
+        self.go("VPCHasOneOfWantedFlowLogs")
+
     def test_VPCHasRestrictedSG(self):
         self.go("VPCHasRestrictedSG")
 

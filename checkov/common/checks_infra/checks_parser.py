@@ -31,6 +31,8 @@ from checkov.common.checks_infra.solvers import (
 )
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
+from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
+    ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -67,7 +69,11 @@ operators_to_complex_solver_classes = {
     "or": OrSolver,
 }
 
-operator_to_connection_solver_classes = {"exists": ConnectionExistsSolver, "not_exists": ConnectionNotExistsSolver}
+operator_to_connection_solver_classes = {
+    "exists": ConnectionExistsSolver,
+    "one_exists": ConnectionOneExistsSolver,
+    "not_exists": ConnectionNotExistsSolver
+}
 
 operator_to_complex_connection_solver_classes = {"and": AndConnectionSolver, "or": OrConnectionSolver}
 
