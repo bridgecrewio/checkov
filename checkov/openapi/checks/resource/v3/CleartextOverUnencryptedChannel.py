@@ -14,8 +14,11 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheck):
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         irrelevant_keys = ['__startline__', '__endline__']
-        security_schemes = conf.get("components").get("securitySchemes")
-        paths = conf.get('paths')
+        try:
+            security_schemes = conf.get("components").get("securitySchemes")
+            paths = conf.get('paths')
+        except AttributeError:
+            return CheckResult.SKIPPED
 
         for name, security_scheme in security_schemes.items():
             if name in irrelevant_keys:
