@@ -43,7 +43,7 @@ class SecurityRequirement(BaseOpenapiCheck):
             return False
         return True
 
-    def is_requirements_defined(self, security: dict[str, Any], security_definitions: dict[str, Any]) -> bool:
+    def is_requirements_defined(self, security: list[dict[str, Any]], security_definitions: dict[str, Any]) -> bool:
         for s in security:
             for k, v in s.items():
                 if k not in security_definitions:
