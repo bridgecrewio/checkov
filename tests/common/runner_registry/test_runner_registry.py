@@ -1,7 +1,9 @@
+import argparse
 import unittest
 
 import os
-
+import io
+from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
@@ -72,6 +74,59 @@ class TestRunnerRegistry(unittest.TestCase):
             self.assertEqual(report.skipped_checks, [])
             self.assertEqual(report.passed_checks, [])
         return runner_registry
+
+    def test_compact_json_output(self):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=True,
+            output=['json'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=reports, config=config)
+
+        output = captured_output.getvalue()
+
+        assert 'code_block' not in output
+        assert 'connected_node' not in output
+
+    def test_non_compact_json_output(self):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=False,
+            output=['json'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=reports, config=config)
+
+        output = captured_output.getvalue()
+
+        assert 'code_block' in output
 
 
 if __name__ == "__main__":

@@ -45,3 +45,5 @@ def parse(filename: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tu
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
         return None, None
+
+    return None, None

@@ -6,7 +6,9 @@
           "test": {
             "bucket": [
               "this-is-my-default"
-            ]
+            ],
+            "__start_line__": 6,
+            "__end_line__": 8
           }
         }
       }
@@ -15,7 +17,9 @@
       {
         "BUCKET_NAME": {
           "type": ["string"],
-          "default": ["this-is-my-default"]
+          "default": ["this-is-my-default"],
+          "__start_line__": 1,
+          "__end_line__": 4
         }
       }
     ]

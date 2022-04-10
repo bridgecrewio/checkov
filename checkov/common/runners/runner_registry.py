@@ -165,6 +165,8 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
+            if config.compact and report_jsons:
+                self.strip_code_blocks_from_json(report_jsons)
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
                 data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
@@ -283,3 +285,12 @@ class RunnerRegistry:
                                 "skipped_checks": skipped_checks,
                             }
         return enriched_resources
+
+    @staticmethod
+    def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
+        for report in report_jsons:
+            results = report.get('results', {})
+            for key, result in results.items():
+                for result_dict in result:
+                    result_dict.pop('code_block', None)
+                    result_dict.pop('connected_node', None)

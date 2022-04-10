@@ -24,7 +24,7 @@ class Bitbucket(BaseVCSDAL):
         """
             discover parameters from execution context of checkov. usually from env variable
         """
-        server_host = os.getenv('CI_SERVER_URL', "http://api.bitbucket.org/")
+        server_host = os.getenv('CI_SERVER_URL', "https://api.bitbucket.org/")
         self.api_url = f'{server_host}2.0'
         self.graphql_api_url = f"{server_host}api/graphql"
 
@@ -33,7 +33,7 @@ class Bitbucket(BaseVCSDAL):
         self.current_repository = os.getenv('BITBUCKET_REPO_FULL_NAME', '')
         self.current_branch = os.getenv('BITBUCKET_BRANCH', '')
         self.default_branch_cache = {}
-        self.username = "bschostergoi"
+        self.username = os.getenv('BITBUCKET_USERNAME', '')
 
     def _request(self, endpoint: str):
         if not self.token:
@@ -48,6 +48,8 @@ class Bitbucket(BaseVCSDAL):
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
+            else:
+                request.raise_for_status()
         except Exception:
             logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
 
@@ -56,6 +58,7 @@ class Bitbucket(BaseVCSDAL):
             branch_restrictions = self._request(
                 endpoint=f"repositories/{self.current_repository}/branch-restrictions")
             return branch_restrictions
+        logging.debug("Environment variable BITBUCKET_REPO_FULL_NAME was not set. Cannot fetch branch restrictions.")
         return None
 
     def persist_branch_restrictions(self):
