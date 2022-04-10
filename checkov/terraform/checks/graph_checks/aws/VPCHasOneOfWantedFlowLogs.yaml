@@ -2,6 +2,7 @@ metadata:
   name: "Ensure a specific VPC flow log exists in VPC's flow logs"
   category: "LOGGING"
   id: "CKV2_AWS_58"
+  #
 definition:
    and:
       - resource_types:
