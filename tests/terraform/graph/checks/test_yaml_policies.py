@@ -16,7 +16,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform import checks
 from checkov.terraform.runner import Runner
 
-
+#
 class TestYamlPolicies(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['UNIQUE_TAG'] = ''
