@@ -22,7 +22,7 @@ SUPPORTED_PACKAGE_FILES = {
     "package.json",
     "package-lock.json",
     "pom.xml",
-    "requirements.txt",
+    "requirements.txt"
 }
 
 
@@ -34,12 +34,12 @@ class Runner(BaseRunner):
         self._code_repo_path: Optional[Path] = None
 
     def prepare_and_scan(
-        self,
-        root_folder: Optional[Union[str, Path]],
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        exclude_package_json: bool = True,
-        cleanup_twistcli: bool = True,
+            self,
+            root_folder: Optional[Union[str, Path]],
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            exclude_package_json: bool = True,
+            cleanup_twistcli: bool = True,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -81,12 +81,12 @@ class Runner(BaseRunner):
         return scan_results
 
     def run(
-        self,
-        root_folder: Union[str, Path],
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
+            self,
+            root_folder: Union[str, Path],
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(self.check_type)
 
@@ -134,7 +134,8 @@ class Runner(BaseRunner):
             report.add_record(record)
 
     def find_scannable_files(
-        self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str], exclude_package_json: bool = True
+            self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
+            exclude_package_json: bool = True
     ) -> Set[Tuple[Path, Path]]:
         input_output_paths: Set[Tuple[Path, Path]] = set()
         if root_path:

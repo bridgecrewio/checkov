@@ -145,6 +145,8 @@ class Runner(BaseRunner):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
+                if entity.get(CustomAttributes.BLOCK_TYPE) != BlockType.RESOURCE:
+                    continue
                 entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
                 entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[-1]

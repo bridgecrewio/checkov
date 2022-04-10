@@ -20,7 +20,8 @@ class AzureInstancePassword(BaseResourceValueCheck):
                 image_reference = storage_profile.get("imageReference")
                 if isinstance(image_reference, dict):
                     publisher = image_reference.get("publisher")
-                    if publisher and "windows" in publisher.lower():
+                    if publisher and ("windows" in publisher.lower() or
+                                      "microsoft" in publisher.lower()):
                         # This check is not relevant to Windows systems
                         return CheckResult.UNKNOWN
 

@@ -7,7 +7,9 @@
             "name": ["example"],
             "enabled_cluster_log_types": [
               ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-            ]
+            ],
+            "__start_line__": 1,
+            "__end_line__": 4
           }
         }
       },
@@ -17,7 +19,9 @@
             "name": ["example"],
             "enabled_cluster_log_types": [
               ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-            ]
+            ],
+            "__start_line__": 6,
+            "__end_line__": 9
           }
         }
       }
@@ -28,7 +32,9 @@
           "type": ["${list(string)}"],
           "default": [
             ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-          ]
+          ],
+          "__start_line__": 11,
+          "__end_line__": 14
         }
       }
     ]
