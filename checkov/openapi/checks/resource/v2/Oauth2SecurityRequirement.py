@@ -13,8 +13,8 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
-        security_values = conf.get("security")
-        security_definitions = conf.get("securityDefinitions")
+        security_values = conf.get("security", [{}])
+        security_definitions = conf.get("securityDefinitions", {})
         irrelevant_keys = ['__startline__', '__endline__']
         non_oauth2_keys = []
 
