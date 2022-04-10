@@ -31,6 +31,3 @@ definition:
         value:
            - aws_vpc
         operator: within
-
-
-#
