@@ -38,15 +38,13 @@ class SecurityRequirement(BaseOpenapiCheck):
 
     def check_security_conf(self, conf: dict[str, Any], security_definitions: dict[str, Any]) -> bool:
         self.evaluated_keys = ['security']
-        if 'security' in conf and conf['security'] \
-                and not self.is_requirements_defined(conf['security'], security_definitions):
-            return False
-        return True
+        return not('security' in conf and conf['security']
+                   and not self.is_requirements_defined(conf['security'], security_definitions))
 
     def is_requirements_defined(self, security: list[dict[str, Any]], security_definitions: dict[str, Any]) -> bool:
-        for s in security:
-            for k, v in s.items():
-                if k not in security_definitions:
+        for scheme in security:
+            for scheme_type, _ in scheme.items():
+                if scheme_type not in security_definitions:
                     return False
         return True
 
