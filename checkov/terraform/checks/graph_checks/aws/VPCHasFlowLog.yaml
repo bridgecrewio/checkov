@@ -8,53 +8,12 @@ definition:
           - aws_vpc
         connected_resource_types:
           - aws_flow_log
-        operator: one_exists
+        operator: exists
         attribute: networking
         cond_type: connection
-
-      - resource_types:
-          - aws_flow_log
-        cond_type: attribute
-        operator: equals
-        attribute: log_destination_type
-        value: "s3"
-
-      - resource_types:
-          - aws_flow_log
-        cond_type: attribute
-        operator: equals
-        attribute: log_destination
-        value: "arn:aws:s3:::test-bucket"
 
       - cond_type: filter
         attribute: resource_type
         value:
            - aws_vpc
         operator: within
-
-
-#      - and:
-#          - resource_types:
-#              - aws_vpc
-#            connected_resource_types:
-#              - aws_flow_log
-#            operator: exists
-#            attribute: networking
-#            cond_type: connection
-#
-#          - resource_types:
-#              - aws_flow_log
-#            cond_type: attribute
-#            operator: equals
-#            attribute: log_destination
-#            value: "any_val"
-#
-#          - resource_types:
-#              - aws_vpc
-#            connected_resource_types:
-#              - aws_flow_log
-#            operator: equals
-#            attribute: log_destination_type
-#            value: s3
-
-
