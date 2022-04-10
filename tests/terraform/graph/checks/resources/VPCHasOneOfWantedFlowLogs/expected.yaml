@@ -5,3 +5,4 @@ fail:
   - "aws_vpc.not_ok_vpc"
   - "aws_vpc.not_ok_vpc2"
 
+#
