@@ -24,6 +24,7 @@ class SolverType(str, Enum):
 class Operators:
     ANY = 'any'
     EXISTS = 'exists'
+    ONE_EXISTS = 'one_exists'
     NOT_EXISTS = 'not_exists'
     CONTAINS = 'contains'
     NOT_CONTAINS = 'not_contains'
