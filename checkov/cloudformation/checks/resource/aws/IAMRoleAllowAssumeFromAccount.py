@@ -18,7 +18,11 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         if 'AssumeRolePolicyDocument' in conf['Properties']:
             assume_role_policy_doc = conf['Properties']['AssumeRolePolicyDocument']
             if isinstance(assume_role_policy_doc, dict) and 'Fn::Sub' in assume_role_policy_doc.keys():
-                assume_role_block = json.loads(assume_role_policy_doc['Fn::Sub'])
+                policy_fn_sub_block = assume_role_policy_doc['Fn::Sub']
+                if isinstance(policy_fn_sub_block, list) and len(policy_fn_sub_block) == 2:
+                    assume_role_block = json.loads(policy_fn_sub_block[0])
+                else:
+                    assume_role_block = json.loads(policy_fn_sub_block)
             elif isinstance(assume_role_policy_doc, str):
                 assume_role_block = json.loads(assume_role_policy_doc)
             else:

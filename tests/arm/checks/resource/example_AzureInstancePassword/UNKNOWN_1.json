@@ -1,0 +1,222 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "8632881811182083410"
+    }
+  },
+  "parameters": {
+    "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the VM"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "metadata": {
+        "description": "The virtual machine size."
+      }
+    },
+    "vmResouceGroupLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vnetResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Network Resource Group"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet within the virtual network"
+      }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing virtual network"
+      }
+    },
+    "osDiskType": {
+      "type": "string",
+      "metadata": {
+        "description": "Determines the storage type used for the OS disk"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The admin user name of the VM"
+      }
+    },
+    "clientSecret": {
+      "type": "secureString",
+      "metadata": {
+        "description": "The admin password of the VM"
+      }
+    },
+    "timeZone": {
+      "type": "string",
+      "metadata": {
+        "description": "TimeZone"
+      }
+    },
+    "diagstorageName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the storage account for boot diagnostics and VM diagnostics"
+      }
+    },
+    "sqlVirtualMachineName": {
+      "type": "string",
+      "metadata": {
+        "description": "Same as the vmName"
+      }
+    },
+    "sqlDataDisksCount": {
+      "type": "int",
+      "maxValue": 8,
+      "minValue": 1,
+      "metadata": {
+        "description": "Amount of data disks (1TB each) for SQL Data files"
+      }
+    },
+    "dataPath": {
+      "type": "string",
+      "metadata": {
+        "description": "Path for SQL Data files. Please choose drive letter from F to Z, and other drives from A to E are reserved for system"
+      }
+    },
+    "sqlLogDisksCount": {
+      "type": "int",
+      "maxValue": 8,
+      "minValue": 1,
+      "metadata": {
+        "description": "Amount of data disks (1TB each) for SQL Log files"
+      }
+    },
+    "logPath": {
+      "type": "string",
+      "metadata": {
+        "description": "Path for SQL Log files. Please choose drive letter from F to Z and different than the one used for SQL data. Drive letter from A to E are reserved for system"
+      }
+    },
+    "tempDbPath": {
+      "type": "string",
+      "metadata": {
+        "description": "Path for SQL tempdb files. Please choose drive letter from F to Z and different than the one used for SQL data. Drive letter from A to E are reserved for system"
+      }
+    },
+    "resourceTags": {
+      "type": "object",
+      "metadata": {
+        "description": "This will be used as a tag"
+      }
+    },
+    "OSDiskSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Determines the size of the default data disk in GB"
+      }
+    }
+  },
+  "variables": {
+    "networkInterfaceName_var": "[format('nic-{0}-001', parameters('vmName'))]",
+    "osDisk": "[format('{0}-osDisk', parameters('vmName'))]",
+    "diskConfigurationType": "NEW",
+    "dataDisksLuns": "[array(range(0, parameters('sqlDataDisksCount')))]",
+    "logDisksLuns": "[array(range(parameters('sqlDataDisksCount'), parameters('sqlLogDisksCount')))]",
+    "dataDisks": {
+      "caching": "ReadOnly",
+      "writeAcceleratorEnabled": false,
+      "storageAccountType": "Premium_LRS",
+      "dataDiskSize": 1023
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-11-01",
+      "name": "[parameters('vmName')]",
+      "location": "[parameters('vmResouceGroupLocation')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "storageProfile": {
+          "copy": [
+            {
+              "name": "dataDisks",
+              "count": "[length(range(0, add(parameters('sqlDataDisksCount'), parameters('sqlLogDisksCount'))))]",
+              "input": {
+                "lun": "[range(0, add(parameters('sqlDataDisksCount'), parameters('sqlLogDisksCount')))[copyIndex('dataDisks')]]",
+                "createOption": "Empty",
+                "caching": "[if(greaterOrEquals(range(0, add(parameters('sqlDataDisksCount'), parameters('sqlLogDisksCount')))[copyIndex('dataDisks')], parameters('sqlDataDisksCount')), 'None', variables('dataDisks').caching)]",
+                "writeAcceleratorEnabled": "[variables('dataDisks').writeAcceleratorEnabled]",
+                "diskSizeGB": "[variables('dataDisks').dataDiskSize]",
+                "managedDisk": {
+                  "storageAccountType": "[variables('dataDisks').storageAccountType]"
+                }
+              }
+            }
+          ],
+          "osDisk": {
+            "name": "[variables('osDisk')]",
+            "diskSizeGB": "[parameters('OSDiskSize')]",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('osDiskType')]"
+            }
+          },
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "sql2019-ws2022",
+            "sku": "enterprise-gen2",
+            "version": "latest"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName_var'))]"
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('clientSecret')]",
+          "windowsConfiguration": {
+            "enableAutomaticUpdates": true,
+            "provisionVMAgent": true,
+            "timeZone": "[parameters('timeZone')]"
+          }
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[format('http://{0}.blob.core.windows.net', parameters('diagstorageName'))]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName_var'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
+}

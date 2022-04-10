@@ -342,6 +342,45 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
         self.assertTrue(instance.within_threshold(Severities[BcSeverities.HIGH]))
 
+    def test_include_local_skip_local(self):
+        instance = RunnerFilter(include_all_checkov_policies=False)
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_include_local_run_local(self):
+        instance = RunnerFilter(include_all_checkov_policies=True)
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_include_local_skip_platform(self):
+        instance = RunnerFilter(include_all_checkov_policies=False)
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', bc_check_id='BC_AWS_789'))
+
+    def test_include_local_run_platform(self):
+        instance = RunnerFilter(include_all_checkov_policies=True)
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', bc_check_id='BC_AWS_789'))
+
+    def test_include_local_skip_custom(self):
+        instance = RunnerFilter(include_all_checkov_policies=False)
+        instance.notify_external_check("EXT_CHECK_999")
+        self.assertTrue(instance.should_run_check(check_id='EXT_CHECK_999'))
+
+    def test_include_local_run_custom(self):
+        instance = RunnerFilter(include_all_checkov_policies=True)
+        instance.notify_external_check("EXT_CHECK_999")
+        self.assertTrue(instance.should_run_check(check_id='EXT_CHECK_999'))
+
+    def test_include_local_skip_local_explicit_run(self):
+        instance = RunnerFilter(checks=['CKV_AWS_789'], include_all_checkov_policies=False)
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_include_local_skip_local_implicit_run(self):
+        instance = RunnerFilter(skip_checks=['CKV_AWS_123'], include_all_checkov_policies=False)
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_include_local_skip_local_severity(self):
+        # this case should not actually be possible (no severities if not a platform check), but testing the logic anyways
+        instance = RunnerFilter(checks=['HIGH'], include_all_checkov_policies=False)
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+
 
 if __name__ == '__main__':
     unittest.main()
