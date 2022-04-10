@@ -7,7 +7,6 @@ from checkov.common.output.report import CheckType
 from checkov.common.parsers.json import parse
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.object_runner import Runner as ObjectRunner
-from checkov.json_doc.base_registry import Registry
 
 
 class Runner(ObjectRunner):
