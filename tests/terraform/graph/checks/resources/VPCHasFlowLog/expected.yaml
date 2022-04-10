@@ -1,7 +1,4 @@
 pass:
   - "aws_vpc.ok_vpc"
-  - "aws_vpc.ok_vpc1"
 fail:
   - "aws_vpc.not_ok_vpc"
-  - "aws_vpc.not_ok_vpc2"
-  - "aws_vpc.not_ok_vpc2"
