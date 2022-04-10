@@ -69,4 +69,3 @@ resource "aws_vpc" "not_ok_vpc2" {
 resource "aws_vpc" "ok_vpc1" {
   cidr_block = "10.0.0.0/16"
 }
-#
