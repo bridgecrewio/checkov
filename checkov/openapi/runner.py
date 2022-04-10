@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType, Report
-from checkov.runner_filter import RunnerFilter
+from checkov.common.output.report import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 
