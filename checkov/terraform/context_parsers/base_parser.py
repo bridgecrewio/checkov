@@ -1,6 +1,7 @@
 import logging
 import re
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from itertools import islice
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional
@@ -23,7 +24,7 @@ class BaseContextParser(ABC):
     file_lines: List[Tuple[int, str]] = []
     filtered_lines: List[Tuple[int, str]] = []
     filtered_line_numbers: List[int] = []
-    context: Dict[str, Any] = {}
+    context: Dict[str, Any] = defaultdict(dict)
 
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
@@ -82,7 +83,6 @@ class BaseContextParser(ABC):
         :return: context enriched with with skipped checks per skipped entity
         """
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
-        parsed_file_lines = self.filtered_lines
         comments = [
             (
                 line_num,
@@ -91,7 +91,7 @@ class BaseContextParser(ABC):
                     "suppress_comment": match.group(3)[1:] if match.group(3) else "No comment provided",
                 },
             )
-            for (line_num, x) in parsed_file_lines
+            for (line_num, x) in self.file_lines
             if self.is_optional_comment_line(x)
             for match in [re.search(COMMENT_REGEX, x)]
             if match
@@ -153,7 +153,7 @@ class BaseContextParser(ABC):
         else:
             self.tf_file = tf_file
             self.tf_file_path = Path(tf_file)
-        self.context = {}
+        self.context = defaultdict(dict)
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)
         if collect_skip_comments:
@@ -170,30 +170,11 @@ class BaseContextParser(ABC):
             res = res.split("{")[0]
         return res
 
+    @abstractmethod
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Enrich the context of a Terraform block
         :param definition_blocks: Terraform block, key-value dictionary
         :return: Enriched block context
         """
-        parsed_file_lines = self._filter_file_lines()
-        potential_block_start_lines = [
-            (ind, line) for (ind, line) in parsed_file_lines if line.startswith(self.get_block_type())
-        ]
-        for i, entity_block in enumerate(definition_blocks):
-            entity_context_path = self.get_entity_context_path(entity_block)
-            for line_num, line in potential_block_start_lines:
-                line_str = self._clean_line(line)
-                line_tokens = line_str.split()
-                if self._is_block_signature(line_num, line_tokens, entity_context_path):
-                    logging.debug(f'created context for {" ".join(entity_context_path)}')
-                    start_line = line_num
-                    end_line = self._compute_definition_end_line(line_num)
-                    dpath.new(self.context, entity_context_path + ["start_line"], start_line)
-                    dpath.new(self.context, entity_context_path + ["end_line"], end_line)
-                    dpath.new(
-                        self.context, entity_context_path + ["code_lines"], self.file_lines[start_line - 1: end_line]
-                    )
-                    potential_block_start_lines.remove((line_num, line))
-                    break
-        return self.context
+        pass

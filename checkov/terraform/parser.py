@@ -716,7 +716,7 @@ Load JSON or HCL, depending on filename.
                 else:
                     return non_malformed_definitions
     except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=e)
+        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
         parsing_errors[file_path] = e
         return None
 
@@ -774,9 +774,8 @@ def _remove_module_dependency_in_path(path):
 def _safe_index(sequence_hopefully, index) -> Optional[Any]:
     try:
         return sequence_hopefully[index]
-    except IndexError as e:
-        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}')
-        logging.debug(e, stack_info=True)
+    except IndexError:
+        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}', exc_info=True)
         return None
 
 
