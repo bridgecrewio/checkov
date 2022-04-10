@@ -4,8 +4,6 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure security groups has stateless ingress security rules"
-        id = "CKV_OCI_20"
         supported_resources = ['oci_core_network_security_group_security_rule']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -13,11 +11,12 @@ class SecurityGroupsIngressStatelessSecurityRules(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         stateless = conf.get('stateless')
         direction = conf.get('direction')
+        self.evaluated_keys = ["direction"]
         if direction[0] == 'INGRESS':
+            self.evaluated_keys.append("stateless")
             if stateless is None or stateless[0] is False:
                 return CheckResult.FAILED
             return CheckResult.PASSED
-        return CheckResult.SKIPPED
-
+        return CheckResult.UNKNOWN
 
 check = SecurityGroupsIngressStatelessSecurityRules()

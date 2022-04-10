@@ -33,3 +33,4 @@ resource "aws_elasticsearch_domain" "disabled" {
     enabled = false
   }
 }
+
