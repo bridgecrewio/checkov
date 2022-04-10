@@ -24,4 +24,3 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
         passed, failed = super().get_operation(graph_connector)
         failed = [f for f in failed if f not in passed]
         return passed, failed
-    
