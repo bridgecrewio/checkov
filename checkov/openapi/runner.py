@@ -18,8 +18,7 @@ class Runner(YamlRunner, JsonRunner):
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
 
-    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[
-        None, None]:
+    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
         if f.endswith(".json"):
             return self.parse_format(f, JsonRunner._parse_file)
         elif f.endswith(".yml") or f.endswith(".yaml"):
