@@ -182,3 +182,5 @@ def get_complex_operator(raw_check: Dict[str, Any]) -> Optional[str]:
         if raw_check.get(operator):
             return operator
     return None
+
+#

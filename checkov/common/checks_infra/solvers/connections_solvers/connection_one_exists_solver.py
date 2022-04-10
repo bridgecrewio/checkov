@@ -26,4 +26,3 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
         failed = [f for f in failed if f not in passed]
         return passed, failed
 
-#
