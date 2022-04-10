@@ -35,7 +35,7 @@ class Runner(YamlRunner, JsonRunner):
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         if hasattr(result_config, "start_mark"):
             return JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
-        elif '__startline__' in result_config:
+        elif '__startline__' in result_config or isinstance(result_config, list):
             return YamlRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[no-any-return]
 
         raise Exception("Unexpected dictionary format.")

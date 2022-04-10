@@ -9,9 +9,9 @@ from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 class SecurityRequirement(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_6"
-        name = "Ensure that security requirement in securityDefinitions are defined."
+        name = "Ensure that security requirement defined in securityDefinitions."
         categories = [CheckCategories.APPLICATION_SECURITY]
-        supported_resources = ['securityDefinitions']
+        supported_resources = ['security']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
@@ -21,23 +21,33 @@ class SecurityRequirement(BaseOpenapiCheck):
             return CheckResult.FAILED, conf
 
         security_definitions = conf["securityDefinitions"]
-        if not security_definitions or ('__startline__' in security_definitions and len(security_definitions) <= 2):
-            return CheckResult.FAILED, security_definitions
+        if not self.check_security_conf(conf, security_definitions):
+            return CheckResult.FAILED, conf['security']
 
-        # apikey exists
-        if 'api_key' not in security_definitions \
-                or not self.are_fields_exist(set(security_definitions['api_key'].keys()), {'type', 'name', 'in'}):
-            return CheckResult.FAILED, security_definitions
-
-        # OAuth2 exists
-        if 'petstore_auth' not in security_definitions \
-                or not self.are_fields_exist(set(security_definitions['petstore_auth'].keys()), {'type', 'flow', 'authorizationUrl', 'scopes'}):
-            return CheckResult.FAILED, security_definitions
+        paths = conf['paths']
+        for path, http_method in paths.items():
+            if self.is_start_end_line(path):
+                continue
+            for op_name, op_val in http_method.items():
+                if self.is_start_end_line(op_name):
+                    continue
+                if not self.check_security_conf(op_val, security_definitions):
+                    return CheckResult.FAILED, op_val['security']
 
         return CheckResult.PASSED, conf
 
-    def are_fields_exist(self, keys: set[str], fields: set[str]) -> bool:
-        """ if "keys" set contains "fields" """
-        return len(fields & keys) == len(fields)
+    def check_security_conf(self, conf: dict[str, Any], security_definitions: dict[str, Any]) -> bool:
+        self.evaluated_keys = ['security']
+        if 'security' in conf and conf['security'] \
+                and not self.is_requirements_defined(conf['security'], security_definitions):
+            return False
+        return True
+
+    def is_requirements_defined(self, security: dict[str, Any], security_definitions: dict[str, Any]) -> bool:
+        for s in security:
+            for k, v in s.items():
+                if k not in security_definitions:
+                    return False
+        return True
 
 check = SecurityRequirement()

@@ -18,7 +18,7 @@ class SecurityOperations(BaseOpenapiCheck):
     def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any] | None]:
         self.evaluated_keys = ['paths']
         paths = conf['paths']
-        for path, http_method in conf['paths'].items():
+        for path, http_method in paths.items():
             if self.is_start_end_line(path):
                 continue
             for op_name, op_val in http_method.items():

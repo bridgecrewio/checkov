@@ -21,10 +21,14 @@ class TestSecurityRequirement(unittest.TestCase):
         passing_resources = {
             "/pass1.yaml",
             "/pass1.json",
+            "/pass2.yaml",
+            "/pass2.json",
         }
         failing_resources = {
             "/fail1.yaml",
             "/fail1.json",
+            "/fail2.yaml",
+            "/fail2.json",
         }
 
         passed_check_resources = {c.file_path for c in report.passed_checks}

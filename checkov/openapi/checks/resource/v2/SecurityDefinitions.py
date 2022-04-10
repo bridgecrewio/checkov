@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
+from checkov.common.parsers.node import DictNode
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 
 
@@ -21,7 +22,7 @@ class SecurityDefinitions(BaseOpenapiCheck):
             return CheckResult.FAILED, conf
 
         security_definitions = conf["securityDefinitions"]
-        if not security_definitions or ('__startline__' in security_definitions and len(security_definitions) <= 2):
+        if not security_definitions or (not isinstance(security_definitions, DictNode) and len(security_definitions) <= 2):
             return CheckResult.FAILED, security_definitions
         return CheckResult.PASSED, security_definitions
 
