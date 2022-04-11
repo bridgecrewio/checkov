@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
@@ -14,7 +14,8 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[
+                        str, Any]]:
         security_values = conf.get("security", [{}])
         security_definitions = conf.get("securityDefinitions", {})
         non_oauth2_keys = []
@@ -31,9 +32,9 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
                 if key in self.irrelevant_keys:
                     continue
                 if key in non_oauth2_keys and auth_list:
-                    return CheckResult.FAILED
+                    return CheckResult.FAILED, conf
 
-        return CheckResult.PASSED
+        return CheckResult.PASSED, security_values
 
 
 check = Oauth2SecurityRequirement()

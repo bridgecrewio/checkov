@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
@@ -13,12 +13,13 @@ class GlobalSecurityFieldIsEmpty(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> tuple[CheckResult, Any | None] | tuple[
+                        CheckResult, dict[str, Any]]:
         security_rules = conf.get("security")
 
         if security_rules:
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+            return CheckResult.PASSED, security_rules
+        return CheckResult.FAILED, conf
 
 
 check = GlobalSecurityFieldIsEmpty()
