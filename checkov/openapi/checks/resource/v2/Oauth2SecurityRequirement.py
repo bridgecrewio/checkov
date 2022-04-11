@@ -14,8 +14,7 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[
-                        str, Any]]:
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> Tuple[CheckResult, Dict[str, Any]]:
         security_values = conf.get("security", [{}])
         security_definitions = conf.get("securityDefinitions", {})
         non_oauth2_keys = []

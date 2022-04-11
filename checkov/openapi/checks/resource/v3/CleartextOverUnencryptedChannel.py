@@ -1,4 +1,4 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Union
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
@@ -14,7 +14,7 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[Any, Any] | Any]:
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> Tuple[CheckResult, Dict[str, Any]]:
         security_schemes = conf.get("components", {}).get("securitySchemes", {})
         paths = conf.get('paths', {})
 
