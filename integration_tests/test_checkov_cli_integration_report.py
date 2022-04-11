@@ -1,3 +1,4 @@
+import json
 import os
 import platform
 import sys
@@ -23,6 +24,25 @@ class TestCheckovJsonReport(unittest.TestCase):
                 if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
                     platform_url_found = True
             self.assertTrue(platform_url_found, "when using api key, platform code review url should exist")
+
+    def test_workflow_report_api_key(self):
+        report_path = os.path.join(current_dir, '..', 'checkov_report_workflow_cve.json')
+        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+            with open(report_path, encoding='utf-8') as f:
+                reports = json.load(f)
+                self.assertGreater(len(reports), 2,
+                                   "expecting to have 2 reports at least, github_Actions and sca_image")
+                github_actions_report_exists = False
+                sca_image = False
+                for report in reports:
+                    if report["check_type"] == "github_actions":
+                        github_actions_report_exists = True
+                        self.assertGreaterEqual(report['summary']['failed'], 1)
+                    if report["check_type"] == "sca_image":
+                        sca_image = True
+                        self.assertGreaterEqual(report['summary']['failed'], 1)
+                self.assertTrue(sca_image)
+                self.assertTrue(github_actions_report_exists)
 
 
 if __name__ == '__main__':

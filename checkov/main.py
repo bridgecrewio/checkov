@@ -14,9 +14,10 @@ import configargparse
 from configargparse import ArgumentParser
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
-
 import checkov.logging_init  # should be imported before the others to ensure correct logging setup
+
 from checkov.arm.runner import Runner as arm_runner
+from checkov.bicep.runner import Runner as bicep_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
@@ -53,7 +54,6 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
-from checkov.bicep.runner import Runner as bicep_runner
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -81,6 +81,7 @@ DEFAULT_RUNNERS = (
     sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
+    sca_image_runner()
 )
 
 
@@ -235,6 +236,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     git_configuration_folders = [os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf'),
                                  os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
+
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -261,6 +263,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                             baseline=baseline))
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
+
+
     elif config.docker_image:
         if config.bc_api_key is None:
             parser.error("--bc-api-key argument is required when using --docker-image")
