@@ -37,5 +37,5 @@ class ImageReferencer:
             image = client.images.pull(image_name)
             return image.short_id
         except Exception as e:
-            logging.debug(f"failed to pull docker image={image_name}", , exc_info=True)
+            logging.debug(f"failed to pull docker image={image_name}", exc_info=True)
             return ""
