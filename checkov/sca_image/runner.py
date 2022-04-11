@@ -29,8 +29,8 @@ class Runner(PackageRunner):
             self,
             image_id: str,
             dockerfile_path: str,
-            runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> Optional[Dict[str, Any]]:
+            runner_filter: object = RunnerFilter(),
+    ) -> dict:
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -110,16 +110,29 @@ class Runner(PackageRunner):
 
         return report
 
-    def iterate_image_files(self, abs_fname, report, runner_filter):
+    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
+        """
+        Get workflow file, and get the list of images from every relevant imagereferencer, and create a unified vulnrability report
+        :param abs_fname: file path to inspect
+        :param report: unified report object
+        :param runner_filter: filter for report
+        """
         for image_referencer in self.image_referencers:
             if image_referencer.is_workflow_file(abs_fname):
-                images = image_referencer.get_images(f=abs_fname)
+                images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
                     image_report = self.get_image_report(dockerfile_path=abs_fname, image_id=image,
                                                          runner_filter=runner_filter)
                     merge_reports(report, image_report)
 
-    def get_image_report(self, dockerfile_path, image_id, runner_filter):
+    def get_image_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
+        """
+
+        :param dockerfile_path: path of a file that might contain a container image
+        :param image_id: sha of an image
+        :param runner_filter:
+        :return: vulnerability report
+        """
         report = Report(self.check_type)
 
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)

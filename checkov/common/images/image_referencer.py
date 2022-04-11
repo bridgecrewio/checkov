@@ -7,14 +7,30 @@ import docker
 class ImageReferencer:
 
     @abstractmethod
-    def is_workflow_file(self, f):
-        pass
+    def is_workflow_file(self, file_path: str) -> bool:
+        """
+
+        :param file_path: path of file to validate if it is a file that contains might images (example: CI workflow file)
+        :return: True if contains images
+
+        """
+        return False
 
     @abstractmethod
-    def get_images(self, f):
-        pass
+    def get_images(self, file_path: str) -> [str]:
+        """
+        Get container images mentioned in a file
+        :param file_path: File to be inspected
+        :return: List of container image short ids mentioned in the file.
+        """
+        return []
 
-    def pull_image(self, image_name):
+    def pull_image(self, image_name: str) -> str:
+        """
+
+        :param image_name: name of the image to be pulled locally using a "docker pull X" command
+        :return: short image id sha that is pulled locally. In case pull has failed None will be returned.
+        """
         try:
             client = docker.from_env()
             image = client.images.pull(image_name)
@@ -22,4 +38,4 @@ class ImageReferencer:
         except Exception as e:
             logging.debug("failed to pull docker image={}", image_name)
             logging.debug(e)
-            return None
+            return ""
