@@ -300,12 +300,12 @@ class RunnerRegistry:
         return enriched_resources
 
     def _get_image_referencing_runners(self):
-        image_referencing_runners = []
+        image_referencing_runners = set()
         for runner in self.runners:
             if issubclass(runner.__class__, ImageReferencer):
-                image_referencing_runners.append(runner)
+                image_referencing_runners.add(runner)
 
-        return set(image_referencing_runners)
+        return image_referencing_runners
 
     @staticmethod
     def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
