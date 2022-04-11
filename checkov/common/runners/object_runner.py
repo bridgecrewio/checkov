@@ -76,7 +76,7 @@ class Runner(BaseRunner):
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
-                check = result.pop("check",None) # use pop to remove Check class which is not serializable from
+                check = result.pop("check", None)  # use pop to remove Check class which is not serializable from
                 # result record
                 end, start = self.get_start_end_lines(end, result_config, start)
                 record = Record(

@@ -25,7 +25,7 @@ class TestCheckovJsonReport(unittest.TestCase):
                     platform_url_found = True
             self.assertTrue(platform_url_found, "when using api key, platform code review url should exist")
 
-    def test_workflow_report(self):
+    def test_workflow_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_workflow_cve.json')
         if sys.version_info[1] == 7 and platform.system() == 'Linux':
             with open(report_path, encoding='utf-8') as f:
