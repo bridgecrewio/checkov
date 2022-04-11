@@ -9,7 +9,7 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
         id = "CKV_OPENAPI_2"
         name = "Ensure that if the security scheme is not of type 'oauth2', the array value must be empty"
         categories = [CheckCategories.API_SECURITY]
-        supported_resources = ['security', 'securityDefinitions']
+        supported_resources = ['security']
         self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
