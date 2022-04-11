@@ -7,7 +7,7 @@ from checkov.runner_filter import RunnerFilter
 class TestRunnerValid(unittest.TestCase):
 
     def test_runner(self) -> None:
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        current_dir = os.path.dirname(__file__)
         valid_dir_path = os.path.join(current_dir, "resources")
         runner = Runner()
         checks = ["CKV_OPENAPI_1", "CKV_OPENAPI_4", "CKV_OPENAPI_3"]
