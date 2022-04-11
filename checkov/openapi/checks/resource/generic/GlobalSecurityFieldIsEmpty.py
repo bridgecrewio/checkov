@@ -8,8 +8,9 @@ class GlobalSecurityFieldIsEmpty(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_4"
         name = "Ensure that the security field has rules defined"
-        categories = [CheckCategories.GENERAL_SECURITY]
-        super().__init__(name=name, id=id, categories=categories, supported_entities=["*"],
+        categories = [CheckCategories.API_SECURITY]
+        supported_resources = ['security']
+        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
