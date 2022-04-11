@@ -22,5 +22,16 @@ class TestRunnerValid(unittest.TestCase):
         report.print_console()
 
 
+    def test_runner_all_checks(self) -> None:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources")
+        runner = Runner()
+        report = runner.run(
+            root_folder=valid_dir_path,
+            runner_filter=RunnerFilter(framework='openapi')
+        )
+        report.print_console()
+
+
 if __name__ == "__main__":
     unittest.main()
