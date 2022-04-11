@@ -1,9 +1,9 @@
 ---
 layout: default
-title: kubernetes resource scans
+title: OpenAPI resource scans
 nav_order: 1
 ---
 
-# kubernetes resource scans (auto generated)
+# OpenAPI resource scans (auto generated)
 
 
