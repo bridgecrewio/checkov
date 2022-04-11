@@ -34,4 +34,6 @@ then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
   pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
+  cat checkov_report_workflow_cve.json
+  echo $PWD
 fi
