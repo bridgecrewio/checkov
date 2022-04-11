@@ -59,7 +59,7 @@ class Runner(YamlRunner, ImageReferencer):
         Example return value for a file with node:14.16 image: ['sha256:6a353e22ce']
         """
 
-        images = []
+        images = set()
 
         workflow, workflow_line_numbers = self._parse_file(file_path)
         jobs = workflow.get("jobs", {})
@@ -74,6 +74,6 @@ class Runner(YamlRunner, ImageReferencer):
                 if image:
                     image_id = self.pull_image(image)
                     if image_id:
-                        images.append(image_id)
+                        images.add(image_id)
 
-        return set(images)
+        return images
