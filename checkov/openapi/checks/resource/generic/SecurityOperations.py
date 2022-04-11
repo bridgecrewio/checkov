@@ -10,7 +10,7 @@ class SecurityOperations(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_5"
         name = "Ensure that security operations is not empty."
-        categories = [CheckCategories.APPLICATION_SECURITY]
+        categories = [CheckCategories.API_SECURITY]
         supported_resources = ['security']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)

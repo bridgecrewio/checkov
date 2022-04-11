@@ -11,7 +11,7 @@ class SecurityDefinitions(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_1"
         name = "Ensure that securityDefinitions is defined and not empty."
-        categories = [CheckCategories.APPLICATION_SECURITY]
+        categories = [CheckCategories.API_SECURITY]
         supported_resources = ['securityDefinitions']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)

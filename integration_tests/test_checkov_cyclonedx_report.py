@@ -19,7 +19,7 @@ class TestCheckovCyclonedxReport(unittest.TestCase):
         vulnrability_file = \
             report.getElementsByTagName('components')[0].getElementsByTagName('component')[0].getElementsByTagName(
                 'name')[0].firstChild.nodeValue
-        self.assertTrue(vulnrability_file.endsWith('.tf'))
+        self.assertTrue(vulnrability_file.endswith('.tf'))
 
 
 if __name__ == "__main__":
