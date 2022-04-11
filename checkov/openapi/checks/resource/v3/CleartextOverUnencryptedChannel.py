@@ -18,6 +18,8 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheck):
         security_schemes = conf.get("components", {}).get("securitySchemes", {})
         paths = conf.get('paths', {})
 
+        if isinstance(security_schemes, list):
+            security_schemes = security_schemes[0]
         for name, security_scheme in security_schemes.items():
             if name in self.irrelevant_keys:
                 continue
