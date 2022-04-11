@@ -7,11 +7,11 @@ nav_order: 20
 
 # OpenAPI configuration scanning
 Checkov supports the evaluation of policies on your OpenAPI files.
-When using checkov to scan a directory that contains a OpenAPI manifests it will validate if the file is compliant with OpenAPI best practices such as not admitting root containers, making sure there are CPU limits, and more.  
+When using checkov to scan a directory that contains a OpenAPI manifests it will validate if the file is compliant with OpenAPI best practices such as securityDefinitions and security requirement are well-defined, and more.  
 
 Full list of OpenAPI policies checks can be found [here](https://www.checkov.io/5.Policy%20Index/openapi.html).
 
-### Example misconfigured kubernetes
+### Example misconfigured OpenAPI
 
 ```yaml
 {
