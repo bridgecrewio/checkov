@@ -30,8 +30,8 @@ class TestCheckovJsonReport(unittest.TestCase):
         if sys.version_info[1] == 7 and platform.system() == 'Linux':
             with open(report_path, encoding='utf-8') as f:
                 reports = json.load(f)
-                self.assertGreater(len(reports), 2,
-                                   "expecting to have 2 reports at least, github_Actions and sca_image")
+                self.assertGreaterEqual(len(reports), 2,
+                                        "expecting to have 2 reports at least, github_Actions and sca_image")
                 github_actions_report_exists = False
                 sca_image = False
                 for report in reports:
