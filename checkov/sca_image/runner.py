@@ -9,6 +9,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
+from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -23,22 +24,22 @@ class Runner(PackageRunner):
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
-        self.image_referencers = None
+        self.image_referencers: Optional[ImageReferencer] = None
 
     def scan(
             self,
             image_id: str,
             dockerfile_path: str,
             runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> dict or None:
+    ) -> Dict[Any,Any]:
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
-            return None
+            return {}
 
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
-            return None
+            return {}
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
@@ -92,7 +93,7 @@ class Runner(PackageRunner):
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
             dockerfile_path = kwargs['dockerfile_path']
             image_id = kwargs['image_id']
-            return self.get_image_report(dockerfile_path, image_id)
+            return self.get_image_report(dockerfile_path, image_id, runner_filter)
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report
@@ -117,6 +118,8 @@ class Runner(PackageRunner):
         :param report: unified report object
         :param runner_filter: filter for report
         """
+        if not self.image_referencers:
+            return
         for image_referencer in self.image_referencers:
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
