@@ -32,6 +32,7 @@ class ImageReferencer:
         :return: short image id sha that is pulled locally. In case pull has failed None will be returned.
         """
         try:
+            logging.info("Pulling docker image {}", image_name)
             client = docker.from_env()
             image = client.images.pull(image_name)
             return image.short_id

@@ -11,7 +11,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -94,6 +94,10 @@ class Runner(PackageRunner):
             dockerfile_path = kwargs['dockerfile_path']
             image_id = kwargs['image_id']
             return self.get_image_report(dockerfile_path, image_id, runner_filter)
+
+        if not strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
+            # experimental flag on running image referencers
+            return report
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report

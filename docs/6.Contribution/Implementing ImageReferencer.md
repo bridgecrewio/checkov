@@ -10,7 +10,8 @@ If `ImageReferencer` is derived by a `Runner`than referenced images in an IaC fi
 ## Would container images are scanned automatically? 
 Yes, If the `--framework` `sca_image` is not excluded from the execution scope, an API token is provided.
 The automatic scanning is happening thanks to the registration process for any Derived class of ImageReferencers that occurs in `RunnerRegistry` init.    
-
+Implementing image referencer will mean scan results will take additional time since images are being pulled.
+ 
 ## What needs to be implemented? 
 Look at: `checkov/common/images/image_referencer.py`  
 and the derived class: `checkov/github_actions/runner.py`
@@ -19,6 +20,8 @@ and the derived class: `checkov/github_actions/runner.py`
 K8 manifests, helm charts, Serverless functions utilizing containers, and the list goes on :) 
 
 ## Example CLI command 
+checkov -d 
 ```bash
+export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True # notice this feature flag will be removed in the future
 checkov -d /checkov/integration_tests/example_workflow_file/.github/workflows/ --framework sca_image --bc-api-key SOME_TOKEN
 ```
