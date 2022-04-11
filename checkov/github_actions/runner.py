@@ -28,6 +28,9 @@ class Runner(YamlRunner, ImageReferencer):
             return super()._parse_file(f)
 
     def is_workflow_file(self, file_path):
+        """
+        :return: True if the file mentioned is in a github action workflow directory and is a YAML file. Otherwise: False
+        """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("yml", "yaml"))
 
