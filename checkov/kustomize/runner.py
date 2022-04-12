@@ -26,10 +26,10 @@ from kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 class K8sKustomizeRunner(K8sRunner):
     def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector = NetworkxConnector(),
-        source: str = "Kubernetes",
-        graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None) -> None:
+                 db_connector: NetworkxConnector = NetworkxConnector(),
+                 source: str = "Kubernetes",
+                 graph_manager: Optional[GraphManager] = None,
+                 external_registries: Optional[List[BaseRegistry]] = None) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.report_mutator_data = {}
 
