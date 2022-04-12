@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import subprocess  # nosec
 import tempfile
+from typing import List, Optional, Dict, Any, Type
 
 import yaml
 
@@ -16,16 +17,37 @@ from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
+from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 
 class K8sKustomizeRunner(K8sRunner):
+    def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+                 db_connector: NetworkxConnector = NetworkxConnector(),
+                 source: str = "Kubernetes",
+                 graph_manager: Optional[GraphManager] = None,
+                 external_registries: Optional[List[BaseRegistry]] = None) -> None:
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
+        self.report_mutator_data = {}
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None, reportMutatorData=None):
+    def set_external_data(self,
+                          definitions: Optional[Dict[str, Dict[str, Any]]],
+                          context: Optional[Dict[str, Dict[str, Any]]],
+                          breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
+                          report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
+                          ):
+        super().set_external_data(definitions, context, breadcrumbs)
+        self.report_mutator_data = report_mutator_data
+
+    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None):
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
-        kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
+        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'], 
+        kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
             entity_context = self.context[k8_file][resource_id]
@@ -61,12 +83,12 @@ class K8sKustomizeRunner(K8sRunner):
             file_line_range = [first_line, last_line]
         return file_line_range
 
-    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results, reportMutatorData=None) -> Report:
+    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        kustomizeMetadata = reportMutatorData['kustomizeMetadata'], 
-        kustomizeFileMappings = reportMutatorData['kustomizeFileMappings']
+        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'], 
+        kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -368,10 +390,11 @@ class Runner(BaseRunner):
 
             try:
                 k8s_runner = K8sKustomizeRunner()
-                reportMutatorData = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,'kustomizeFileMappings':self.kustomizeFileMappings}
+                report_mutator_data = {'kustomizeMetadata':self.kustomizeProcessedFolderAndMeta,
+                                       'kustomizeFileMappings':self.kustomizeFileMappings}
                 # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
-                chart_results = k8s_runner.run(target_dir, external_checks_dir=None,
-                                                runner_filter=runner_filter, reportMutatorData=reportMutatorData)
+                k8s_runner.report_mutator_data = report_mutator_data
+                chart_results = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
                 logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
                 report.failed_checks += chart_results.failed_checks
                 report.passed_checks += chart_results.passed_checks
