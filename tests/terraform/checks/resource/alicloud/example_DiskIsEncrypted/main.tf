@@ -42,3 +42,4 @@ resource "alicloud_disk" "fail2" {
     Name = "TerraformTest"
   }
 }
+

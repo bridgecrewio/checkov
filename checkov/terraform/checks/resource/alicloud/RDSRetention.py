@@ -29,4 +29,5 @@ class RDSRetention(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+
 check = RDSRetention()
