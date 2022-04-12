@@ -29,10 +29,9 @@ class K8sKustomizeRunner(K8sRunner):
         db_connector: NetworkxConnector = NetworkxConnector(),
         source: str = "Kubernetes",
         graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None
-    ) -> None:
+        external_registries: Optional[List[BaseRegistry]] = None) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
-        self.report_mutator_data = None
+        self.report_mutator_data = {}
 
     def set_external_data(self,
                           definitions: Optional[Dict[str, Dict[str, Any]]],
