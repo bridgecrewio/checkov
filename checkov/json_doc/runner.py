@@ -16,8 +16,11 @@ class Runner(ObjectRunner):
         from checkov.json_doc.registry import registry
         return registry
 
-    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
-        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None] = parse(f)
+    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+        if not f.endswith(",json"):
+            return None
+
+        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = parse(f)
         return content
 
     def get_start_end_lines(self, end: int, result_config: DictNode, start: int) -> tuple[int, int]:
