@@ -17,7 +17,7 @@ class Runner(ObjectRunner):
         return registry
 
     def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        if not f.endswith(",json"):
+        if not f.endswith(".json"):
             return None
 
         content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = parse(f)
