@@ -7,7 +7,7 @@ nav_order: 20
 
 # OpenAPI configuration scanning
 Checkov supports the evaluation of policies on your OpenAPI files.
-When using checkov to scan a directory that contains a OpenAPI manifests it will validate if the file is compliant with OpenAPI best practices such as securityDefinitions and security requirement are well-defined, and more.  
+When using checkov to scan a directory that contains OpenAPI manifests it will validate if the file is compliant with OpenAPI best practices such as securityDefinitions and security requirement are well-defined, and more.  
 
 Full list of OpenAPI policies checks can be found [here](https://www.checkov.io/5.Policy%20Index/openapi.html).
 
@@ -77,9 +77,7 @@ checkov -d . --framework openapi
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1046 
-Update available 2.0.1046 -> 2.0.1050
-Run pip3 install -U checkov to update 
+By bridgecrew.io | version: 2.0.1050
 
 
 openapi scan results:
@@ -100,16 +98,19 @@ Check: CKV_OPENAPI_3: "Ensure that security schemes don't allow cleartext creden
 	File: /openapi.yaml:2-47
 Check: CKV_OPENAPI_6: "Ensure that security requirement defined in securityDefinitions."
 	FAILED for resource: security
-	File: /openapi.yaml:29-31
+	File: /openapi.yaml:27-31
 
+		27 |         "security": [
+		28 |           {
 		29 |             "api_key": []
 		30 |           }
 		31 |         ]
-
+		
 Check: CKV_OPENAPI_4: "Ensure that the global security field has rules defined"
 	FAILED for resource: security
-	File: /openapi.yaml:2-47
+	File: /openapi.yaml:1-47
 
+		1  | {
 		2  |   "swagger": "2.0",
 		3  |   "info": {
 		4  |     "title": "example",

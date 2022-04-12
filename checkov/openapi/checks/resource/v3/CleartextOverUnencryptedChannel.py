@@ -26,7 +26,7 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheck):
             if name in self.irrelevant_keys:
                 continue
             if security_scheme.get('type') == 'http' or security_scheme.get('scheme') == 'basic':
-                return CheckResult.FAILED, conf
+                return CheckResult.FAILED, security_scheme
 
         for key, path in paths.items():
             if key in self.irrelevant_keys:

@@ -19,6 +19,12 @@ v3 - OpenAPI 3.
 generic - for both OpenAPI 2 and 3.
 
 ```python
+from __future__ import annotations
+from typing import Any
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.checks.enums import BlockType
+from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
+
 class GlobalSecurityFieldIsEmpty(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_4"
@@ -37,110 +43,6 @@ class GlobalSecurityFieldIsEmpty(BaseOpenapiCheck):
 
 
 check = GlobalSecurityFieldIsEmpty()
-```
-
-And also add the JSON schema to validate the GitHub API response `/checkov/github/schemas/branch_protection.py`:
-
-```python
-from checkov.github.schemas.base_schema import GithubConfSchema
-
-
-class BranchProtectionSchema(GithubConfSchema):
-    def __init__(self):
-        schema = {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
-                },
-                "required_signatures": {
-                    "type": "object",
-                    "properties": {
-                        "url": {
-                            "type": "string"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "url",
-                        "enabled"
-                    ]
-                },
-                "enforce_admins": {
-                    "type": "object",
-                    "properties": {
-                        "url": {
-                            "type": "string"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "url",
-                        "enabled"
-                    ]
-                },
-                "required_linear_history": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "enabled"
-                    ]
-                },
-                "allow_force_pushes": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "enabled"
-                    ]
-                },
-                "allow_deletions": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "enabled"
-                    ]
-                },
-                "required_conversation_resolution": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "required": [
-                        "enabled"
-                    ]
-                }
-            },
-            "required": [
-                "url",
-                "enforce_admins",
-                "required_linear_history",
-                "allow_force_pushes",
-                "allow_deletions",
-            ]
-        }
-        super().__init__(schema=schema)
-
-
-schema = BranchProtectionSchema()
 ```
 
 ### Adding a Test
