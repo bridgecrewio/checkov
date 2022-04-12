@@ -21,7 +21,7 @@ from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
-from kubernetes.graph_builder.local_graph import KubernetesLocalGraph
+from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 
 class K8sKustomizeRunner(K8sRunner):
