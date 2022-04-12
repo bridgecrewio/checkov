@@ -32,31 +32,26 @@ class K8sEnableNetworkPolicies(BaseResourceCheck):
                 if addon.get("name")
             ]
 
-            # either addon will do
-            if not any(name in names for name in ("flannel", "terway-eniip")):
-                self.evaluated_keys = ["addons/[0]/config"]
-                return CheckResult.FAILED
-            else:
-                if "terway-eniip" in names:
-                    if conf.get("pod_vswitch_ids") and isinstance(conf.get("pod_vswitch_ids"), list):
-                        net_ids = conf.get("pod_vswitch_ids")[0]
-                        if isinstance(conf.get("worker_vswitch_ids"), list) \
-                                and isinstance(conf.get("master_vswitch_ids"), list):
-                            if any(net_id in net_ids for net_id in conf.get("worker_vswitch_ids")[0]):
-                                self.evaluated_keys = ["worker_vswitch_ids"]
-                                return CheckResult.FAILED
-                            if any(net_id in net_ids for net_id in conf.get("master_vswitch_ids")[0]):
-                                self.evaluated_keys = ["master_vswitch_ids"]
-                                return CheckResult.FAILED
-                            return CheckResult.PASSED
-
-                    self.evaluated_keys = ["pod_vswitch_ids"]
-                    return CheckResult.FAILED
-                if "flannel" in names:
-                    if conf.get("pod_cidr"):
+            if "terway-eniip" in names:
+                if conf.get("pod_vswitch_ids") and isinstance(conf.get("pod_vswitch_ids"), list):
+                    net_ids = conf.get("pod_vswitch_ids")[0]
+                    if isinstance(conf.get("worker_vswitch_ids"), list) \
+                            and isinstance(conf.get("master_vswitch_ids"), list):
+                        if any(net_id in net_ids for net_id in conf.get("worker_vswitch_ids")[0]):
+                            self.evaluated_keys = ["worker_vswitch_ids"]
+                            return CheckResult.FAILED
+                        if any(net_id in net_ids for net_id in conf.get("master_vswitch_ids")[0]):
+                            self.evaluated_keys = ["master_vswitch_ids"]
+                            return CheckResult.FAILED
                         return CheckResult.PASSED
-                self.evaluated_keys = ["addons/[0]/config"]
+
+                self.evaluated_keys = ["pod_vswitch_ids"]
                 return CheckResult.FAILED
+            if "flannel" in names:
+                if conf.get("pod_cidr"):
+                    return CheckResult.PASSED
+            self.evaluated_keys = ["addons/[0]/config"]
+            return CheckResult.FAILED
         else:
             self.evaluated_keys = ["addons"]
             return CheckResult.FAILED
