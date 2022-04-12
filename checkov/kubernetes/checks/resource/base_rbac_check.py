@@ -33,18 +33,15 @@ class BaseRbacK8sCheck(BaseK8Check):
         self.failing_operations: RbacOperation = []
 
     def scan_spec_conf(self, conf):
-        if isinstance(conf.get("rules"), list) and len(conf.get("rules")) > 0:
-            role_can_do_operation_arr = [False] * len(self.failing_operations)
-            # Go over all rules
-            for rule in conf["rules"]:
-                # Check if the rule matches an RbacOperation this check looks for
-                for i in range(len(self.failing_operations)):
-                    if not role_can_do_operation_arr[i]:
-                        # RbacOperation wasn't found yet, check rule
-                        role_can_do_operation_arr[i] = self.rule_can(rule, self.failing_operations[i])
-                # If all operations were found, role / clusterRole failed the check
-                if False not in role_can_do_operation_arr:
-                    return CheckResult.FAILED
+        rules = conf.get("rules")
+        if rules and isinstance(rules, list):
+            for operation in self.failing_operations:
+                # if one operation can't be found, check passes
+                if not any(self.rule_can(rule, operation) for rule in rules):
+                    return CheckResult.PASSED
+            # all operations were found, therefore the check fails
+            return CheckResult.FAILED
+        
         return CheckResult.PASSED
 
     # Check if a rule has an apigroup, verb, and resource specified in @operation
