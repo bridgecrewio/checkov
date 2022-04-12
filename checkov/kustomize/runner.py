@@ -33,6 +33,7 @@ class K8sKustomizeRunner(K8sRunner):
     ) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.report_mutator_data = {}
+
     def set_external_data(self,
                           definitions: Optional[Dict[str, Dict[str, Any]]],
                           context: Optional[Dict[str, Dict[str, Any]]],
