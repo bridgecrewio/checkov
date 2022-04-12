@@ -26,14 +26,11 @@ class K8sEnableNetworkPolicies(BaseResourceCheck):
             return CheckResult.FAILED
         # addons
         if conf.get("addons") and isinstance(conf.get("addons"), list):
-            names = []
-            if len(conf.get("addons")) > 1:
-                addons = conf.get("addons")
-                for addon in addons:
-                    names.append(addon.get("name")[0])
-            else:
-                addons = conf.get("addons")[0]
-                names = addons.get("name")
+            names = [
+                addon["name"][0]
+                for addon in conf["addons"]
+                if addon.get("name")
+            ]
 
             # either addon will do
             if not any(name in names for name in ("flannel", "terway-eniip")):
