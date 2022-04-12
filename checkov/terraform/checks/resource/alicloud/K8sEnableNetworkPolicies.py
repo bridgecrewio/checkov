@@ -14,7 +14,7 @@ class K8sEnableNetworkPolicies(BaseResourceCheck):
         Flannel requires pod_cidr.
         """
 
-        name = "Ensure Kubernetes installs Terway or Flannel to support standard policies"
+        name = "Ensure Kubernetes installs plugin Terway or Flannel to support standard policies"
         id = "CKV_ALI_26"
         supported_resources = ['alicloud_cs_kubernetes']
         categories = [CheckCategories.KUBERNETES]
