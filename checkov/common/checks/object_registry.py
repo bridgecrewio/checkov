@@ -151,7 +151,7 @@ class Registry(BaseCheckRegistry):
             scanned_file,
             skip_info,
         )
-        result_key = self.get_key(entity_type, entity_name, check.id)
+        result_key = self.get_key(entity_type, entity_name, check.id, scanned_file)
 
         result = check_result["result"]
 
@@ -178,5 +178,5 @@ class Registry(BaseCheckRegistry):
         }
         return result
 
-    def get_key(self, entity_type: str, entity_name: str, check_id: str) -> str:
+    def get_key(self, entity_type: str, entity_name: str, check_id: str, file_path: str) -> str:
         return f'{entity_type}.{entity_name}.{check_id}'
