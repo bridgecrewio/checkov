@@ -17,10 +17,10 @@ from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
-from common.graph.checks_infra.registry import BaseRegistry
-from common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from common.graph.graph_builder.local_graph import LocalGraph
-from common.graph.graph_manager import GraphManager
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 from kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 
