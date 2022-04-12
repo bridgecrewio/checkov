@@ -5,13 +5,18 @@ import os.path
 from pathlib import Path
 from typing import Optional, List, Union, Dict, Any
 
+import requests
+
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.output.report import Report, CheckType
+from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.http_utils import get_default_get_headers
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
+from checkov.common.util.file_utils import compress_file_gzip_base64
 
 
 class Runner(PackageRunner):
@@ -22,6 +27,11 @@ class Runner(PackageRunner):
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
+        self.base_url = bc_integration.api_url
+        self.headers = merge_dicts(
+            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
+            {"Authorization": bc_integration.get_auth_token()},
+        )
 
     def scan(
             self,
@@ -49,8 +59,8 @@ class Runner(PackageRunner):
             image_scanner.cleanup_scan()
             raise
 
-    @staticmethod
     async def execute_scan(
+            self,
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:
@@ -70,8 +80,22 @@ class Runner(PackageRunner):
             logging.error(stderr.decode())
             return {}
 
-        # read and delete the report file
+        # read the report file
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
+
+        # upload results to cache
+        request_body = {
+            "compressedResult": compress_file_gzip_base64(str(output_path)),
+            "id": image_id
+        }
+        response = requests.request(
+            "POST", f"{self.base_url}/v1/api/v1/vulnerabilities/scan-results/{image_id}",
+            headers=self.headers, data=request_body
+        )
+
+        response.raise_for_status()
+
+        # delete the report file
         output_path.unlink()
 
         return scan_result
