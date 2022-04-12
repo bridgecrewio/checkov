@@ -101,6 +101,24 @@ definition:
                   attribute: acl
                   operator: not_equals
                   value: public-read-write
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: access_control_policy
+                  operator: exists
+                - or:
+                    - cond_type: attribute
+                      resource_types:
+                        - aws_s3_bucket_acl
+                      attribute: access_control_policy.grant
+                      operator: not_exists
+                    - cond_type: attribute
+                      resource_types:
+                        - aws_s3_bucket_acl
+                      attribute: access_control_policy.grant.*.grantee.uri
+                      operator: not_equals
+                      value: "http://acs.amazonaws.com/groups/global/AllUsers"
     - and:
       - cond_type: filter
         attribute: resource_type

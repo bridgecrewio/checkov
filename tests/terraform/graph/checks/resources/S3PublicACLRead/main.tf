@@ -69,6 +69,41 @@ resource "aws_s3_bucket_acl" "unknown_var_v4_legacy" {
   acl    = "${local.whatever}"
 }
 
+resource "aws_s3_bucket" "no_grant" {
+  bucket = "example"
+}
+
+resource "aws_s3_bucket_acl" "no_grant" {
+  bucket = aws_s3_bucket.no_grant.bucket
+
+  access_control_policy {
+    owner {
+      id = data.aws_canonical_user_id.this.id
+    }
+  }
+}
+
+resource "aws_s3_bucket" "grant_onwer" {
+  bucket = "example"
+}
+
+resource "aws_s3_bucket_acl" "grant_onwer" {
+  bucket = aws_s3_bucket.grant_onwer.bucket
+
+  access_control_policy {
+    owner {
+      id = data.aws_canonical_user_id.current.id
+    }
+    grant {
+      grantee {
+        id   = data.aws_canonical_user_id.current.id
+        type = "CanonicalUser"
+      }
+      permission = "READ"
+    }
+  }
+}
+
 # fail
 resource "aws_s3_bucket" "public_read_v4" {
   bucket = "example"
@@ -105,4 +140,32 @@ resource "aws_s3_bucket" "authenticated_read_v4" {
 resource "aws_s3_bucket_acl" "authenticated_read_v4" {
   bucket = aws_s3_bucket.authenticated_read_v4.id
   acl    = "authenticated-read"
+}
+
+resource "aws_s3_bucket" "grant_public_read_all" {
+  bucket = "example"
+}
+
+resource "aws_s3_bucket_acl" "grant_public_read_all" {
+  bucket = aws_s3_bucket.grant_public_read_all.bucket
+
+  access_control_policy {
+    owner {
+      id = data.aws_canonical_user_id.current.id
+    }
+    grant {
+      grantee {
+        id   = data.aws_canonical_user_id.current.id
+        type = "CanonicalUser"
+      }
+      permission = "READ"
+    }
+    grant {
+      grantee {
+        type = "Group"
+        uri  = "http://acs.amazonaws.com/groups/global/AllUsers"
+      }
+      permission = "READ"
+    }
+  }
 }
