@@ -10,12 +10,13 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _CheckResult
 from checkov.common.util.file_utils import convert_to_unix_path
+from checkov.common.util.type_forcers import force_int
 
 init(autoreset=True)
 
 DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratings
 
-output_violation_len = os.environ.get('CHECKOV_OUTPUT_VIOLATION_LENGTH', 50)
+OUTPUT_VIOLATION_LEN = force_int(os.getenv('CHECKOV_OUTPUT_VIOLATION_LENGTH')) or 50
 
 class Record:
     check_id = ""
@@ -119,7 +120,7 @@ class Record:
         color_codes = (Fore.WHITE if colorized else "", Fore.YELLOW if colorized else "")
         last_line_number_len = len(str(code_block[-1][0]))
 
-        if len(code_block) >= output_violation_len:
+        if len(code_block) >= OUTPUT_VIOLATION_LEN:
             return f'\t\t{color_codes[1]}Text is too long.'
 
         for line_num, line in code_block:
