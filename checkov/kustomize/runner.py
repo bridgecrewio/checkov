@@ -279,12 +279,12 @@ class Runner(BaseRunner):
                 logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[filePath]['validated_base']}, naming overlay {checkovKustomizeEnvNameByPath} for Checkov Results.")
             else:
                 checkovKustomizeEnvNameByPath = f"{pathlib.Path(filePath).stem}"
-                self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = str(checkovKustomizeEnvNameByPath)
+                self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
                 logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
 
         except KeyError:
             checkovKustomizeEnvNameByPath = f"{pathlib.Path(filePath).stem}"
-            self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = str(checkovKustomizeEnvNameByPath)
+            self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
             logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
 
     def _get_parsed_output(self, filePath, extractDir, output):
