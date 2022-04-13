@@ -6,9 +6,9 @@ import shutil
 import subprocess  # nosec
 import tempfile
 from typing import List, Optional, Dict, Any, Type
-
+import string
 import yaml
-
+import random
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
@@ -365,8 +365,8 @@ class Runner(BaseRunner):
         kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
-        tmp_dir = tempfile.TemporaryDirectory()
-        self.target_folder_path = tmp_dir.name
+        random_folder = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        self.target_folder_path = f'/tmp/{random_folder}'
         for filePath in self.kustomizeProcessedFolderAndMeta:    
             logging.debug(f"Kustomization at {filePath} likley a {self.kustomizeProcessedFolderAndMeta[filePath]['type']}")
             if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
@@ -406,6 +406,7 @@ class Runner(BaseRunner):
             report.parsing_errors += chart_results.parsing_errors
             report.skipped_checks += chart_results.skipped_checks
             report.resources.update(chart_results.resources)
+            shutil.rmtree(target_dir)
 
         except Exception:
             logging.warning("Failed to run Kubernetes runner", exc_info=True)
