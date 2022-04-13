@@ -6,9 +6,7 @@ import shutil
 import subprocess  # nosec
 import tempfile
 from typing import List, Optional, Dict, Any, Type
-import string
 import yaml
-import random
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
@@ -365,8 +363,7 @@ class Runner(BaseRunner):
         kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
-        random_folder = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
-        self.target_folder_path = f'/tmp/{random_folder}'
+        self.target_folder_path = tempfile.mkdtemp()
         for filePath in self.kustomizeProcessedFolderAndMeta:    
             logging.debug(f"Kustomization at {filePath} likley a {self.kustomizeProcessedFolderAndMeta[filePath]['type']}")
             if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
