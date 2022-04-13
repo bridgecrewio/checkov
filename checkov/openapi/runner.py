@@ -18,23 +18,23 @@ class Runner(YamlRunner, JsonRunner):
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry
 
-    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
+    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if f.endswith(".json"):
             return self.parse_format(f, JsonRunner._parse_file)
         elif f.endswith(".yml") or f.endswith(".yaml"):
             return self.parse_format(f, YamlRunner._parse_file)
 
-        return None, None
+        return None
 
     def parse_format(self, f: str, func: Callable[
-        [Runner, str], tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]]) \
-            -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
-        parsed_json: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None] \
+        [Runner, str], tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None]) \
+            -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+        parsed_file: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None \
             = func(self, f)
-        if self.is_valid(parsed_json[0]):
-            return parsed_json
+        if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
+            return parsed_file
 
-        return None, None
+        return None
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int) \
             -> tuple[int, int]:
