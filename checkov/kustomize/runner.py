@@ -336,8 +336,7 @@ class Runner(BaseRunner):
             templateRenderCommandOptions = "kustomize"
         if self.templateRendererCommand == "kustomize":
             templateRenderCommandOptions = "build"
-        proc = subprocess.Popen([self.templateRendererCommand, templateRenderCommandOptions, filePath],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+        proc = subprocess.Popen([self.templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomize_runner.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
