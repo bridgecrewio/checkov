@@ -32,7 +32,7 @@ class Runner(BaseRunner):
     @abstractmethod
     def _parse_file(
         self, f: str
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(
