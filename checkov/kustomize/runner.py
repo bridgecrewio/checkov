@@ -139,10 +139,10 @@ class Runner(BaseRunner):
     kustomizeFileMappings = {}
     kustomizeSupportedFileTypes = ('kustomization.yaml', 'kustomization.yml')
     templateRendererCommand = None
-    target_foler_path = ''
+    target_folder_path = ''
 
-    def get_k8s_target_foler_path(self):
-        return self.target_foler_path
+    def get_k8s_target_folder_path(self):
+        return self.target_folder_path
 
     def get_kustomize_metadata(self):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
@@ -366,7 +366,7 @@ class Runner(BaseRunner):
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         tmp_dir = tempfile.TemporaryDirectory()
-        self.target_dir = tmp_dir.name
+        self.target_folder_path = tmp_dir.name
         for filePath in self.kustomize_runner.kustomizeProcessedFolderAndMeta:    
             logging.debug(f"Kustomization at {filePath} likley a {self.kustomize_runner.kustomizeProcessedFolderAndMeta[filePath]['type']}")
             if self.kustomize_runner.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
@@ -382,7 +382,7 @@ class Runner(BaseRunner):
                 logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
                 continue
 
-            extractDir = self.target_dir + env_or_base_path_prefix
+            extractDir = self.target_folder_path + env_or_base_path_prefix
             os.makedirs(extractDir, exist_ok=True)
 
             logging.debug(f"Kustomize: Temporary directory for {filePath} at {extractDir}")
@@ -397,7 +397,7 @@ class Runner(BaseRunner):
         try:
             k8s_runner = K8sKustomizeRunner()
             # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
-            target_dir = self.get_k8s_target_foler_path()
+            target_dir = self.get_k8s_target_folder_path()
             k8s_runner.report_mutator_data = self.get_kustomize_metadata()
             chart_results = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
             logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
