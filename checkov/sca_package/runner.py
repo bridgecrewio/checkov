@@ -39,7 +39,7 @@ class Runner(BaseRunner):
         files: Optional[List[str]] = None,
         runner_filter: RunnerFilter = RunnerFilter(),
         exclude_package_json: bool = True,
-        cleanup_twistcli: bool = True,
+        cleanup_twistcli: bool = False,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):

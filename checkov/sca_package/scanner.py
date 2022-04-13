@@ -2,25 +2,36 @@ import asyncio
 import json
 import logging
 import os
+import time
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Tuple, Dict, Any
 
 from aiomultiprocess import Pool
 
+from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import package_scanning_integration
 
 TWISTCLI_FILE_NAME = 'twistcli'
+SEC_IN_WEEK = 604800
 
 
 class Scanner:
     def __init__(self) -> None:
-        self.twistcli_path = Path(TWISTCLI_FILE_NAME)
+        self.twistcli_path = Path(os.path.join(bridgecrew_dir, TWISTCLI_FILE_NAME))
 
     def setup_twictcli(self) -> None:
         try:
             if not self.twistcli_path.exists():
+                if not os.path.exists(bridgecrew_dir):
+                    os.makedirs(bridgecrew_dir)
                 package_scanning_integration.download_twistcli(self.twistcli_path)
+            else:
+                last_modification = os.stat(self.twistcli_path)
+                file_age = (time.time() - last_modification.st_mtime)
+                if file_age >= SEC_IN_WEEK:
+                    self.cleanup_twictcli()
+                    package_scanning_integration.download_twistcli(self.twistcli_path)
         except Exception:
             logging.error("Failed to setup twictcli for package scanning", exc_info=True)
             raise
@@ -30,7 +41,7 @@ class Scanner:
             self.twistcli_path.unlink()
         logging.info('twistcli file removed')
 
-    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = True) \
+    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = False) \
             -> "Sequence[Dict[str, Any]]":
         self.setup_twictcli()
 
@@ -53,7 +64,7 @@ class Scanner:
     ) -> "Sequence[Dict[str, Any]]":
         args = [
             (
-                f"./{TWISTCLI_FILE_NAME} coderepo scan --address {address} --token {bc_api_key} --output-file '{output_path.absolute()}' '{input_path.absolute()}'",
+                f"{self.twistcli_path} coderepo scan --address {address} --token {bc_api_key} --output-file '{output_path.absolute()}' '{input_path.absolute()}'",
                 input_path,
                 output_path,
             )
