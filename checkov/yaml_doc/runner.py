@@ -28,7 +28,7 @@ class Runner(ObjectRunner):
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
     ) -> tuple[int, int]:
         if result_config and isinstance(result_config, list):
-            start = result_config[0]["__startline__"]
+            start = result_config[0]["__startline__"] - 1
             end = result_config[len(result_config) - 1]["__endline__"]
         elif result_config and isinstance(result_config, dict):
             start = result_config["__startline__"]

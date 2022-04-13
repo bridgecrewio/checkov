@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
 from checkov.common.parsers.json import parse
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.object_runner import Runner as ObjectRunner
-from checkov.json_doc.base_registry import Registry
 
 
 class Runner(ObjectRunner):
     check_type = CheckType.JSON
 
-    def import_registry(self) -> Registry:
+    def import_registry(self) -> BaseCheckRegistry:
         from checkov.json_doc.registry import registry
         return registry
 
