@@ -24,8 +24,7 @@ SUPPORTED_PACKAGE_FILES = {
     "pom.xml",
     "requirements.txt",
 }
-
-
+#
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
