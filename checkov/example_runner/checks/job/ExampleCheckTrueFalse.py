@@ -23,6 +23,10 @@
 #     run: |
 #       echo "ok"
 # 
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult
 # Import your base check
 from checkov.example_runner.checks.base_example_runner_job_check import BaseExampleRunnerJobCheck
@@ -31,7 +35,7 @@ from checkov.yaml_doc.enums import BlockType
 
 
 class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # Describe the check for the user
         name = "Ensure ACTIONS_ALLOW_UNSECURE_COMMANDS isn't true on environment variables on a job"
         # Give the check a unique id eg. CKV_TLA_24 where 
@@ -47,7 +51,7 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
             block_type=BlockType.ARRAY,
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         # The block type is passed as a data structure.  
         # Add logic to parse the structure for the misconfig
         # Remember to always return a PASSED or FAILED. 

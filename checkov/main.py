@@ -16,6 +16,7 @@ from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # should be imported before the others to ensure correct logging setup
+
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -54,6 +55,7 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
+from checkov.openapi.runner import Runner as openapi_runner
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -81,6 +83,8 @@ DEFAULT_RUNNERS = (
     sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
+    openapi_runner(),
+    sca_image_runner()
 )
 
 
@@ -127,7 +131,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
-                                 skip_checks=config.skip_check,
+                                 skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=convert_str_to_bool(config.download_external_modules),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=convert_str_to_bool(config.evaluate_variables),
@@ -202,6 +206,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
     else:
         logger.debug('No API key found. Scanning locally only.')
+        config.include_all_checkov_policies = True
 
     if config.check and config.skip_check:
         if any(item in runner_filter.checks for item in runner_filter.skip_checks):
@@ -336,6 +341,13 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Name for output file. The first selected output via output flag will be saved to the file (default output is cli)')
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
+    parser.add('--include-all-checkov-policies', action='store_true',
+               help='When running with an API key, Checkov will omit any policies that do not exist '
+                    'in the Bridgecrew or Prisma Cloud platform, except for local custom policies loaded with the '
+                    '--external-check flags. Use this key to include policies that only exist in Checkov in the scan. '
+                    'Note that this will make the local CLI results different from the results you see in the '
+                    'platform. Has no effect if you are not using an API key. Use the --check option to explicitly '
+                    'include checks by ID even if they are not in the platform, without using this flag.')
     parser.add('--quiet', action='store_true',
                default=False,
                help='in case of CLI output, display only failed checks')
@@ -362,7 +374,9 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     '--skip-check. If it is, priority is given to checks explicitly listed by ID or wildcard over '
                     'checks listed by severity. For example, if you use --check CKV_123 and --skip-check LOW, then '
                     'CKV_123 will run even if it is a LOW severity. In the case of a tie (e.g., --check MEDIUM and '
-                    '--skip-check HIGH for a medium severity check), then the check will be skipped.',
+                    '--skip-check HIGH for a medium severity check), then the check will be skipped. If you use a '
+                    'check ID here along with an API key, and the check is not part of the BC / PC platform, then the '
+                    'check will still be run (see --include-all-checkov-policies for more info).',
                action='append', default=None,
                env_var='CKV_CHECK')
     parser.add('--skip-check',
@@ -494,6 +508,15 @@ def normalize_config(config: Namespace) -> None:
     if config.skip_policy_download:
         logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
+
+    if config.bc_api_key and not config.include_all_checkov_policies:
+        # info because we expect this to be the standard usage
+        logger.info('You are using an API key and did not set the --include-all-checkov-policies flag, so policies '
+                    'that only exist in Checkov, and not the BC / PC platform, will be skipped.')
+    elif not config.bc_api_key and not config.include_all_checkov_policies:
+        # makes it easier to pick out policies later if we can just always rely on this flag without other context
+        logger.debug('No API key present; setting include_all_checkov_policies to True')
+        config.include_all_checkov_policies = True
 
 
 if __name__ == '__main__':

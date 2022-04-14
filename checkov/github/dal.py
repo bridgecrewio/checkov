@@ -74,6 +74,8 @@ class Github(BaseVCSDAL):
                     }
                 }
                 """, variables={'org': self.org})
+            if not data:
+                return None
             if org_security_schema.validate(data):
                 self._organization_security = data
         return self._organization_security

@@ -12,7 +12,10 @@
     ],
     "variable": [
       {
-        "ENV": {}
+        "ENV": {
+          "__start_line__": 8,
+          "__end_line__": 8
+        }
       }
     ],
     "resource": [
@@ -25,7 +28,9 @@
                 "Tag2": "two",
                 "Name": "my-bucket-var.ENV"
               }
-            ]
+            ],
+            "__start_line__": 10,
+            "__end_line__": 14
           }
         }
       }

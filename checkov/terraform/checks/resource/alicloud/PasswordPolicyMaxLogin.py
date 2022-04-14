@@ -27,8 +27,10 @@ class PasswordPolicyMaxLogin(BaseResourceValueCheck):
         """
 
         if conf.get('max_login_attempts'):
-            length = conf.get('max_login_attempts')
-            if length <= [5]:
+            length = force_int(conf.get('max_login_attempts')[0])
+            if length is None:
+                return CheckResult.UNKNOWN
+            if length <= 5:
                 return CheckResult.PASSED
             self.evaluated_keys = ["max_login_attempts"]
             return CheckResult.FAILED

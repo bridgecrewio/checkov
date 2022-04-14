@@ -72,6 +72,9 @@ class Runner(BaseRunner):
         if not self.context or not self.definitions:
             file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
 
+            if not file_paths:
+                return report
+
             self.definitions, self.definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
 
             report.add_parsing_errors(parsing_errors)
