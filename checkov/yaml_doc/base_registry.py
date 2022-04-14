@@ -218,5 +218,4 @@ class Registry(BaseCheckRegistry):
                        skip_info: _SkippedCheck) -> str:
         if "__startline__" and "__endline__" in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration["__startline__"]}:{entity_configuration["__endline__"]}]'
-        else:
-            return f'{entity_type}.{entity_name}.{check.id}'
+        return f'{entity_type}.{entity_name}.{check.id}'
