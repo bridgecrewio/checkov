@@ -14,7 +14,7 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
-from checkov.github_actions.checks.job_registry import registry as github_actions_jobs_registry
+from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry
 from checkov.gitlab.registry import registry as gitlab_configuration_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
