@@ -64,7 +64,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_allowlist = [custom_check_id]
         report = runner.run(
             root_folder=None,
@@ -97,7 +97,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_allowlist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -131,7 +131,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         checks_allowlist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -165,7 +165,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.LOW]
+        check.severity = Severities[BcSeverities.LOW]
         checks_denylist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -199,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
-        check.bc_severity = Severities[BcSeverities.HIGH]
+        check.severity = Severities[BcSeverities.HIGH]
         checks_denylist = ['MEDIUM']
         report = runner.run(
             root_folder=None,
@@ -352,8 +352,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
-        self.assertGreaterEqual(report.get_summary()["failed"], 92)
-        self.assertGreaterEqual(report.get_summary()["passed"], 72)
+        self.assertGreaterEqual(report.get_summary()["failed"], 76)
+        self.assertGreaterEqual(report.get_summary()["passed"], 65)
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(len(files_scanned), 6)
@@ -370,7 +370,7 @@ class TestRunnerValid(unittest.TestCase):
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_20"]
+        checks_allowlist = ["CKV_AWS_6"]
         report = runner.run(
             root_folder=dir_rel_path,
             external_checks_dir=None,
@@ -393,7 +393,7 @@ class TestRunnerValid(unittest.TestCase):
         dir_abs_path = os.path.abspath(scan_dir_path)
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_20"]
+        checks_allowlist = ["CKV_AWS_6"]
         report = runner.run(
             root_folder=dir_abs_path,
             external_checks_dir=None,
@@ -535,6 +535,26 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
         self.assertEqual(summary["resource_count"], 0)
+
+    def test_runner_utf_16_encoded(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_utf_16_encoding/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertGreater(summary["failed"], 0)
+        self.assertGreater(summary["passed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks

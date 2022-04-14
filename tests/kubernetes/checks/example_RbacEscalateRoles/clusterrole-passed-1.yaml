@@ -1,0 +1,13 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: test-should-pass-1
+  namespace: test
+rules:
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles"]
+  verbs: ["get", "create", "delete", "list"]
+- apiGroups: [""]
+  resources: ["pods", "roles"]
+  verbs: ["update", "patch", "get"]

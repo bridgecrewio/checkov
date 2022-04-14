@@ -16,6 +16,7 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties/supportsHttpsTrafficOnly"]
         properties = conf.get("properties")
         if properties:
             https_only = properties.get("supportsHttpsTrafficOnly")

@@ -14,6 +14,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     name = ""
     categories: "Iterable[CheckCategories]" = ()
     supported_entities: "Iterable[str]" = ()
+    block_type: str
+    path: Optional[str]
 
     def __init__(
         self,
@@ -37,10 +39,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.entity_type = ""
         self.guideline = guideline
         self.benchmarks = {}
-        self.bc_severity = None
-        self.pc_severity = None
+        self.severity = None
         self.bc_category = None
-        self.pc_title = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
 

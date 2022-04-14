@@ -18,19 +18,20 @@ class RunnerFilter(object):
     __EXTERNAL_CHECK_IDS: Set[str] = set()
 
     def __init__(
-        self,
-        framework: Optional[List[str]] = None,
-        checks: Union[str, List[str], None] = None,
-        skip_checks: Union[str, List[str], None] = None,
-        download_external_modules: bool = False,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        evaluate_variables: bool = True,
-        runners: Optional[List[str]] = None,
-        skip_framework: Optional[List[str]] = None,
-        excluded_paths: Optional[List[str]] = None,
-        all_external: bool = False,
-        var_files: Optional[List[str]] = None,
-        skip_cve_package: Optional[List[str]] = None
+            self,
+            framework: Optional[List[str]] = None,
+            checks: Union[str, List[str], None] = None,
+            skip_checks: Union[str, List[str], None] = None,
+            include_all_checkov_policies: bool = True,
+            download_external_modules: bool = False,
+            external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+            evaluate_variables: bool = True,
+            runners: Optional[List[str]] = None,
+            skip_framework: Optional[List[str]] = None,
+            excluded_paths: Optional[List[str]] = None,
+            all_external: bool = False,
+            var_files: Optional[List[str]] = None,
+            skip_cve_package: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -58,6 +59,8 @@ class RunnerFilter(object):
             else:
                 self.skip_checks.append(val)
 
+        self.include_all_checkov_policies = include_all_checkov_policies
+
         self.framework: "Iterable[str]" = framework if framework else ["all"]
         if skip_framework:
             if "all" in self.framework:
@@ -67,7 +70,7 @@ class RunnerFilter(object):
                 self.framework = set(runners) - set(skip_framework)
             else:
                 self.framework = set(self.framework) - set(skip_framework)
-        logging.info(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
+        logging.debug(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
 
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
@@ -77,7 +80,6 @@ class RunnerFilter(object):
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
 
-
     def should_run_check(self,
                          check: Optional[BaseCheck] = None,
                          check_id: Optional[str] = None,
@@ -86,7 +88,7 @@ class RunnerFilter(object):
         if check:
             check_id = check.id
             bc_check_id = check.bc_id
-            severity = check.bc_severity
+            severity = check.severity
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
@@ -95,8 +97,14 @@ class RunnerFilter(object):
         implicit_run = not self.checks and not self.check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
 
-        # True if this check is present in the allow list, or if there is no allow list - this is not necessarily the return value
-        should_run_check = run_severity or explicit_run or implicit_run or (is_external and self.all_external)
+        # True if this check is present in the allow list, or if there is no allow list
+        # this is not necessarily the return value (need to apply other filters)
+        should_run_check = (
+                run_severity or
+                explicit_run or
+                implicit_run or
+                (is_external and self.all_external)
+        )
 
         if not should_run_check:
             return False
@@ -104,7 +112,11 @@ class RunnerFilter(object):
         skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
-        should_skip_check = skip_severity or explicit_skip
+        should_skip_check = (
+                skip_severity or
+                explicit_skip or
+                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
+        )
 
         if should_skip_check:
             return False
@@ -117,7 +129,9 @@ class RunnerFilter(object):
     def check_matches(check_id: str,
                       bc_check_id: Optional[str],
                       pattern_list: List[str]) -> bool:
-        return any((fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern in pattern_list)
+        return any(
+            (fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern
+            in pattern_list)
 
     def within_threshold(self, severity: Severity) -> bool:
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level

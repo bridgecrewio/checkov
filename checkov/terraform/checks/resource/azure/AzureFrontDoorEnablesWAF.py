@@ -12,7 +12,7 @@ class AzureFrontDoorEnablesWAF(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "web_application_firewall_policy_link_id"
+        return "frontend_endpoint/[0]/web_application_firewall_policy_link_id"
 
     def get_expected_value(self):
         return ANY_VALUE

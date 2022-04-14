@@ -129,7 +129,7 @@ class Runner(BaseRunner):
                                     check_class=check.__class__.__module__,
                                     file_abs_path=file_abs_path,
                                     entity_tags=tags,
-                                    severity=check.bc_severity
+                                    severity=check.severity
                                 )
 
                                 breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
@@ -145,9 +145,11 @@ class Runner(BaseRunner):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
+                if entity.get(CustomAttributes.BLOCK_TYPE) != BlockType.RESOURCE:
+                    continue
                 entity_file_abs_path = entity.get(CustomAttributes.FILE_PATH)
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
-                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[1]
+                entity_name = entity.get(CustomAttributes.BLOCK_NAME).split(".")[-1]
                 entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
                     entity_name
                 ]
@@ -164,7 +166,7 @@ class Runner(BaseRunner):
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,
                     entity_tags={} if not entity.get("Tags") else cfn_utils.parse_entity_tags(entity.get("Tags")),
-                    severity=check.bc_severity
+                    severity=check.severity
                 )
                 if self.breadcrumbs:
                     breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)

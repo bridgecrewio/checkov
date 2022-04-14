@@ -375,6 +375,10 @@ class TerraformLocalGraph(LocalGraph):
             self.update_vertex_config(vertex, changed_attributes)
 
     def update_vertex_config(self, vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+        if not changed_attributes:
+            # skip, if there is no change
+            return
+
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
             parts = vertex.name.split(".")

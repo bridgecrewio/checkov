@@ -14,7 +14,7 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
-from checkov.github_actions.checks.job_registry import registry as github_actions_jobs_registry
+from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry
 from checkov.gitlab.registry import registry as gitlab_configuration_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
@@ -23,6 +23,9 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.openapi.checks.registry import openapi_registry
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -93,8 +96,12 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "bicep")):
         add_from_repository(bicep_param_registry, "parameter", "Bicep")
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
+    if any(x in framework_list for x in ("all", "openapi")):
+        add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
+            if use_bc_ids:
+                check_id = metadata_integration.get_bc_id(check_id)
             printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)
 

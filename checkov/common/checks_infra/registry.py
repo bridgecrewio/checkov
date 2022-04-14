@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -28,9 +30,9 @@ class Registry(BaseRegistry):
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
-        self.logger.info("Loading external checks from {}".format(dir))
+        self.logger.debug("Loading external checks from {}".format(dir))
         for root, d_names, f_names in os.walk(dir):
-            self.logger.info(f"Searching through {d_names} and {f_names}")
+            self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending in CHECKS_POSSIBLE_ENDING:
@@ -60,10 +62,10 @@ class Registry(BaseRegistry):
         return resources_types.get(provider)
 
 
-_registry_instances = {}
+_registry_instances: dict[str, Registry] = {}
 
 
-def get_graph_checks_registry(check_type):
+def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
         _registry_instances[check_type] = Registry(parser=NXGraphCheckParser(),
                              checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")

@@ -61,12 +61,13 @@ class Runner(TerraformRunner):
                             logging.debug(f'Failed to load json file {root}/{file}, skipping')
                             logging.debug('Failure message:')
                             logging.debug(e, stack_info=True)
+                            parsing_errors[file] = str(e)
 
         if files:
             files = [os.path.abspath(file) for file in files]
             for file in files:
                 if file.endswith(".json"):
-                    tf_definitions, template_lines = parse_tf_plan(file)
+                    tf_definitions, template_lines = parse_tf_plan(file, parsing_errors)
                     if not tf_definitions:
                         continue
                     self.tf_definitions = tf_definitions
@@ -120,7 +121,7 @@ class Runner(TerraformRunner):
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, resource_address=entity_address, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path,
-                                    severity=check.bc_severity)
+                                    severity=check.severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 

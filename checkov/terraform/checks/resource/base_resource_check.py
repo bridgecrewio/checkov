@@ -16,6 +16,7 @@ PROVIDER_PREFIXES = (
     "digitalocean_",
     "google_",
     "github_",
+    "kubernetes_",
     "linode_",
     "oci_",
     "openstack_",

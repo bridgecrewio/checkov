@@ -1,0 +1,13 @@
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: test-should-pass-2
+  namespace: test
+rules:
+- apiGroups: ["", "rbac.authorization.k8s.io", "apps"]
+  resources: ["pods", "serviceaccounts"]
+  verbs: ["*"]
+- apiGroups: ["", "rbac.authorization.k8s.io", "apps"]
+  resources: ["roles", "clusterrolebindings"]
+  verbs: ["patch", "create", "watch", "delete", "list"]

@@ -1,10 +1,8 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 
 
 class RootContainers(BaseK8Check):
-
     def __init__(self):
         # CIS-1.3 1.7.6
         # CIS-1.5 5.2.6
@@ -14,8 +12,9 @@ class RootContainers(BaseK8Check):
         # Location: CronJob.spec.jobTemplate.spec.template.spec.securityContext.runAsUser / runAsNonRoot
         # Location: *.spec.template.spec.securityContext.runAsUser / runAsNonRoot
         id = "CKV_K8S_23"
-        supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
-        categories = [CheckCategories.KUBERNETES]
+        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController',
+                          'Job', 'CronJob')
+        categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf):
@@ -87,7 +86,9 @@ class RootContainers(BaseK8Check):
 
         return CheckResult.FAILED
 
+
 check = RootContainers()
+
 
 def check_runAsNonRoot(spec):
     if spec.get("securityContext"):
@@ -98,6 +99,7 @@ def check_runAsNonRoot(spec):
                 return "FAILED"
     return "ABSENT"
 
+
 def check_runAsUser(spec):
     if spec.get("securityContext"):
         if "runAsUser" in spec["securityContext"]:
@@ -106,5 +108,3 @@ def check_runAsUser(spec):
             else:
                 return "FAILED"
     return "ABSENT"
-
-

@@ -10,11 +10,13 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _CheckResult
 from checkov.common.util.file_utils import convert_to_unix_path
+from checkov.common.util.type_forcers import force_int
 
 init(autoreset=True)
 
 DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratings
 
+OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
 class Record:
     check_id = ""
@@ -34,6 +36,7 @@ class Record:
     description = None  # used by SARIF output
     short_description = None  # used by SARIF output
     vulnerability_details = None  # Stores package vulnerability details
+    connected_node = None
 
     def __init__(
         self,
@@ -58,6 +61,7 @@ class Record:
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
+        connected_node: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -88,6 +92,7 @@ class Record:
         self.description = description
         self.short_description = short_description
         self.vulnerability_details = vulnerability_details
+        self.connected_node = connected_node
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -114,6 +119,10 @@ class Record:
         code_output = []
         color_codes = (Fore.WHITE if colorized else "", Fore.YELLOW if colorized else "")
         last_line_number_len = len(str(code_block[-1][0]))
+
+        if len(code_block) >= OUTPUT_CODE_LINE_LIMIT:
+            return f'\t\t{color_codes[1]}Code lines for this resource are too many. ' \
+                   f'Please use IDE of your choice to review the file.'
 
         for line_num, line in code_block:
             spaces = " " * (last_line_number_len - len(str(line_num)))

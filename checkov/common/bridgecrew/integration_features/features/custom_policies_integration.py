@@ -39,18 +39,22 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
 
             policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in policies:
-                converted_check = self._convert_raw_check(policy)
-                source_incident_id = policy.get('sourceIncidentId')
-                if source_incident_id:
-                    self.bc_cloned_checks[source_incident_id].append(policy)
-                    continue
-                resource_types = Registry._get_resource_types(converted_check['metadata'])
-                check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
-                check.bc_severity = Severities[policy['severity']]
-                if re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
-                    get_graph_checks_registry("cloudformation").checks.append(check)
-                else:
-                    get_graph_checks_registry("terraform").checks.append(check)
+                try:
+                    logging.debug(f"Loading policy id: {policy.get('id')}")
+                    converted_check = self._convert_raw_check(policy)
+                    source_incident_id = policy.get('sourceIncidentId')
+                    if source_incident_id:
+                        self.bc_cloned_checks[source_incident_id].append(policy)
+                        continue
+                    resource_types = Registry._get_resource_types(converted_check['metadata'])
+                    check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
+                    check.severity = Severities[policy['severity']]
+                    if re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
+                        get_graph_checks_registry("cloudformation").checks.append(check)
+                    else:
+                        get_graph_checks_registry("terraform").checks.append(check)
+                except Exception:
+                    logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
             logging.debug(f'Found {len(policies)} custom policies from the platform.')
         except Exception:
             self.integration_feature_failures = True
