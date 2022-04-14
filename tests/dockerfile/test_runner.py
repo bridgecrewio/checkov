@@ -269,11 +269,12 @@ class TestRunnerValid(unittest.TestCase):
     def test_get_files_definitions(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dockerfile = current_dir + "/resources/name_variations/Dockerfile.prod"
-        get_files_definitions([valid_dockerfile])
         not_valid_dockerfile = current_dir + "/resources/not_dockerfile/dockerfile.png"
-        get_files_definitions([not_valid_dockerfile])
-        invalid_dockerfile = current_dir + "/resources/invalid_dockerfile/dockerfile"
-        get_files_definitions([invalid_dockerfile])
+        results = get_files_definitions([valid_dockerfile, not_valid_dockerfile])
+        assert len(results) == 2
+        assert len(results[0]) == 1 and list(results[0].keys())[0] == valid_dockerfile
+        assert len(results[1]) == 1 and list(results[1].keys())[0] == valid_dockerfile
+
 
     def tearDown(self) -> None:
         registry.checks = self.orig_checks
