@@ -10,7 +10,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class RDSPostgreSQLLogFDWExtension(BaseResourceCheck):
     def __init__(self) -> None:
         # https://aws.amazon.com/security/security-bulletins/AWS-2022-004/
-        name = "Ensure that RDS PostgreSQL instances use a non vulnerable version with the log_fdw extension"
+        name = "Ensure that RDS PostgreSQL instances use a non vulnerable version with the log_fdw extension (https://aws.amazon.com/security/security-bulletins/AWS-2022-004/)"
         id = "CKV_AWS_250"
         supported_resources = ("aws_rds_cluster", "aws_db_instance")
         categories = (CheckCategories.GENERAL_SECURITY,)
