@@ -1,6 +1,7 @@
 from checkov.common.checks.base_check import BaseCheck
 
 from checkov.common.models.enums import CheckCategories
+from checkov.github_actions.checks.registry import registry
 
 
 class BaseGithubActionsCheck(BaseCheck):
@@ -15,3 +16,5 @@ class BaseGithubActionsCheck(BaseCheck):
             block_type=block_type,
         )
         self.path = path
+        registry.register(self)
+

@@ -2,7 +2,7 @@ import os
 
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import CheckType
-from checkov.github_actions.checks.job_registry import registry as job_registry
+from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
@@ -10,9 +10,6 @@ WORKFLOW_DIRECTORY = ".github/workflows/"
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.GITHUB_ACTIONS
-    block_type_registries = {
-        'jobs': job_registry,
-    }
 
     def __init__(self):
         super().__init__()
@@ -21,7 +18,7 @@ class Runner(YamlRunner, ImageReferencer):
         return False
 
     def import_registry(self):
-        return self.block_type_registries['jobs']
+        return registry
 
     def _parse_file(self, f):
         if self.is_workflow_file(f):
