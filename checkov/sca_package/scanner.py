@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import time
@@ -40,15 +41,15 @@ class Scanner:
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results = []
             for input_path in input_paths:
-                scan_results.append(await self.run_scan(input_path))
+                scan_results.append(self.run_scan(input_path))
         else:
             input_paths = [(input_path,) for input_path in input_paths]
-            async with Pool() as pool:
-                scan_results = await pool.starmap(self.run_scan, input_paths)
+            with Pool() as pool:
+                scan_results = pool.starmap(self.run_scan, input_paths)
 
         return scan_results
 
-    async def run_scan(self, input_path: Path):
+    def run_scan(self, input_path: Path) -> dict:
         logging.info(f"Start to scan package file {input_path}")
 
         request_body = {
@@ -58,7 +59,7 @@ class Scanner:
         }
 
         response = requests.request(
-            "POST", f"{self.base_url}/v1/api/v1/vulnerabilities/scan", headers=self.headers,
+            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan", headers=self.headers,
             data=request_body
         )
 
@@ -66,29 +67,23 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "exists":
-            response = requests.request(
-                "GET", f"{self.base_url}/v1/api/v1/vulnerabilities/scan-results/{response_json['id']}",
-                headers=self.headers
+            return json.loads(
+                decompress_file_gzip_base64(
+                    response_json["outputData"]
+                )
             )
-            response_json = response.json()
-
-            if response_json["outputType"] == "Error":
-                logging.error(response_json["outputData"])
-            elif response_json["outputType"] == "Result":
-                return decompress_file_gzip_base64(response_json["outputData"])
 
         return self.run_scan_busy_wait(response_json['id'])
 
-    def run_scan_busy_wait(self, scan_id):
+    def run_scan_busy_wait(self, scan_id: str) -> dict:
         current_state = "Empty"
         desired_state = "Result"
 
         response = requests.Response()
 
         while current_state != desired_state:
-            time.sleep(2)
             response = requests.request(
-                "GET", f"{self.base_url}/v1/api/v1/vulnerabilities/scan-results/{scan_id}",
+                "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
                 headers=self.headers
             )
             response_json = response.json()
@@ -96,5 +91,12 @@ class Scanner:
 
             if current_state == "Error":
                 logging.error(response_json["outputData"])
+                return {}
 
-        return decompress_file_gzip_base64(response.json()["outputData"])
+            time.sleep(2)
+
+        return json.loads(
+                decompress_file_gzip_base64(
+                    response.json()["outputData"]
+                )
+            )

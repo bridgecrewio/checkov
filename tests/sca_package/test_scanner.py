@@ -1,137 +1,102 @@
-import json
 from pathlib import Path
-
-import pytest
-from mock import AsyncMock, MagicMock
-from pytest_mock import MockerFixture
+import responses
 
 from checkov.sca_package.scanner import Scanner
 
+EXAMPLES_DIR = Path(__file__).parent / "examples"
 
-def test_setup_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
+
+def assert_equal_dicts(a, b):
+    if set(a.keys()) != set(b.keys()):
+        return False
+
+    for key, value in a.items():
+        if key not in b:
+            return False
+
+        if isinstance(value, list) and not isinstance(value[0], dict):
+            if sorted(value) != sorted(b[key]):
+                return False
+    return True
+
+
+@responses.activate
+def test_run_scan(mock_bc_integration, scan_result2):
     # given
-    scanner = Scanner()
-
-    integration_mock = MagicMock()
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan",
+        json={'id': '2e97f5afea42664309f492a1e2083b43479c2936', 'status': 'running'},
+        status=202,
     )
 
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    twistcli_path.touch()
-    scanner.twistcli_path = twistcli_path
-
-    # when
-    scanner.setup_twictcli()
-
-    # then
-    assert twistcli_path.exists()
-    integration_mock.assert_not_called()
-
-
-def test_setup_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
-    # given
-    scanner = Scanner()
-
-    def download_twistcli(cli_file_name: Path):
-        cli_file_name.touch()
-
-    integration_mock = MagicMock()
-    integration_mock.side_effect = download_twistcli
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/"
+                                             "2e97f5afea42664309f492a1e2083b43479c2936",
+        json={'outputType': 'Result',
+              'outputData': 'H4sIAJYSWGIC/61VS2/bMAz+K4LPjR3ngXbGLkHbYQW6'
+                            'rFgfh607KDITa5ElT6LTekX++yjZXdekaLHBF1siCX78+'
+                            'NJDZKEyTqKxTZSxKMGySiy4WqGj/89aWihBo4vxHqMDFlX'
+                            'cOcjJFG0N4S7WfAWOJN8eImwq8G6qBgujvb3mZZCs5Z10Rm'
+                            '3Aein9nCQDUqTxKB62nrF4O4TtAXsNpuRYKYNKLnZgxgST9g'
+                            'bjhKyaPSKTPhGAL4zVOxjDOB32CSLv90ik0x7LIRqh9ioeSPS'
+                            'HUXGdc7fHYxhP+oNoKk6u9WoHZUQlP+wRxUsGOUeoUao9rKMeK'
+                            '0+SX7sAw1GfvaXr8oURSY/i6T9AfCdTYcpKSa4FnDlXh02ja6We'
+                            'aU6kQysXlLYA9BAJK1EKrugyJMtCroruWEIu67K7KHPXndBga731I'
+                            'ddKg+ULqcjL426TfutFxzenA8pUOhhP0knIlkOOtbeJlvIeciY1o53'
+                            'WLTWxcV41jcchE4L2bOvl8jIbx2kyu8nmyew4O08uvtDp+ow+l9l1ck'
+                            'x/f55l595NDo4YVR29aKYJJbAHBOap6xXzd25pyXolwwJYKEEsjIWgNJ'
+                            'oS63Xzurxo2AKWXtPGyriiXDjGEWmhU8UYGlrxcrUCy5yi9KFqAqi1xI'
+                            'L8VY0HXTR01BRBLdDfXQVCLqV4DMosfpC5i9n889VpFqLagM4NOaW0Ac'
+                            'EUHOkjHfMPkUVKoDA5UHQF30iyI83t7W30yJaiKLgtFTgXe3moAFCPSQ'
+                            'wPWFfep5dpvtuPnfzmpbZUUq+9pECsXJYkepPHmnorXplN4rsiyQG5VM'
+                            'l+G1Dm1x+4L3Dol+gLCJ/uv1spwM9ChlnL556EGfNd+KRpu4SaHPDO2L'
+                            'XXfOSOLdtd/SnwY38o+wmRVHhBmesotfjvuyb0BlW9UNIVkJ9QzrtZTw'
+                            'fpaJAeXqXvsnSaDYdfQ59JJwx5ftuSwnnVJIzuM/L/M6PpizOabre/AT'
+                            'v1zNm4CAAA',
+              'compressionMethod': 'gzip'},
+        status=200
     )
 
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    scanner.twistcli_path = twistcli_path
-
     # when
-    scanner.setup_twictcli()
-
-    # then
-    assert twistcli_path.exists()
-    integration_mock.assert_called_once_with(twistcli_path)
-
-
-def test_cleanup_twistcli_exists(tmp_path: Path):
-    # given
-    scanner = Scanner()
-
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    twistcli_path.touch()
-    scanner.twistcli_path = twistcli_path
-
-    # when
-    scanner.cleanup_twictcli()
-
-    # then
-    assert not twistcli_path.exists()
-
-
-def test_cleanup_twistcli_not_exists(tmp_path: Path):
-    # given
-    scanner = Scanner()
-
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    scanner.twistcli_path = twistcli_path
-
-    # when
-    scanner.cleanup_twictcli()
-
-    # then
-    assert not twistcli_path.exists()
-
-
-@pytest.mark.asyncio
-async def test_run_scan(mocker: MockerFixture, tmp_path: Path, mock_bc_integration, scan_result):
-    # given
-    subprocess_async_mock = AsyncMock()
-    subprocess_async_mock.return_value.communicate = AsyncMock(return_value=("test".encode(encoding="utf-8"),
-                                                                             "test".encode(encoding="utf-8")))
-    subprocess_async_mock.return_value.wait = AsyncMock(return_value=0)
-    mocker.patch("asyncio.create_subprocess_shell", side_effect=subprocess_async_mock)
-
-    # prepare local paths
-    app_temp_dir = tmp_path / "app"
-    app_temp_dir.mkdir()
-    output_path = app_temp_dir / "requirements_result.json"
-    output_path.write_text(json.dumps(scan_result))
-
-    # when
-    result = await Scanner().run_scan(
-        command="./twistcli coderepo scan",
-        input_path=app_temp_dir / "requirements.txt",
-        output_path=output_path,
+    result = Scanner().run_scan(
+        input_path=Path(EXAMPLES_DIR / "requirements.txt"),
     )
 
     # then
-    assert result == scan_result
-    assert not output_path.exists()
-    subprocess_async_mock.assert_awaited_once()
+    assert assert_equal_dicts(result, scan_result2)
+    responses.assert_call_count(mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan", 1)
+    assert len(responses.calls) >= 2
 
 
-@pytest.mark.asyncio
-async def test_run_scan_fail_on_scan(mocker: MockerFixture, mock_bc_integration):
+@responses.activate
+def test_run_scan_fail_on_scan(mock_bc_integration):
     # given
-    subprocess_async_mock = AsyncMock()
-    subprocess_async_mock.return_value.communicate = AsyncMock(return_value=("test".encode(encoding="utf-8"),
-                                                                             "test".encode(encoding="utf-8")))
-    subprocess_async_mock.return_value.wait = AsyncMock(return_value=1)
-    mocker.patch("asyncio.create_subprocess_shell", side_effect=subprocess_async_mock)
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan",
+        json={'id': '2e97f5afea42664309f492a1e2083b43479c2936', 'status': 'running'},
+        status=202,
+    )
+
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/"
+                                             "2e97f5afea42664309f492a1e2083b43479c2936",
+        json={
+            "outputType": "Error",
+            "outputData": "error_message"
+            },
+        status=400,
+    )
 
     # when
-    result = await Scanner().run_scan(
-        command="./twistcli coderepo scan",
-        input_path=Path("app/requirements.txt"),
-        output_path=Path("app/requirements_result.json"),
+    result = Scanner().run_scan(
+        input_path=Path(EXAMPLES_DIR / "requirements.txt"),
     )
 
     # then
     assert result == {}
-    subprocess_async_mock.assert_awaited_once()
+    responses.assert_call_count(mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan", 1)
+    assert len(responses.calls) >= 2

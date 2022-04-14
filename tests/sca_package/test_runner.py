@@ -156,25 +156,25 @@ def test_prepare_and_scan_sca_package_scan_disabled(mocker: MockerFixture, scan_
 
 def test_find_scannable_files():
     # when
-    input_output_paths = Runner().find_scannable_files(
+    input_paths = Runner().find_scannable_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
     )
 
     # then
-    assert len(input_output_paths) == 3
+    assert len(input_paths) == 3
 
-    assert input_output_paths == {
-        (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
-        (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
-        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
+    assert input_paths == {
+        EXAMPLES_DIR / "go.sum",
+        EXAMPLES_DIR / "package-lock.json",
+        EXAMPLES_DIR / "requirements.txt"
     }
 
 
 def test_find_scannable_files_with_package_json():
     # when
-    input_output_paths = Runner().find_scannable_files(
+    input_paths = Runner().find_scannable_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
@@ -182,11 +182,11 @@ def test_find_scannable_files_with_package_json():
     )
 
     # then
-    assert len(input_output_paths) == 4
+    assert len(input_paths) == 4
 
-    assert input_output_paths == {
-        (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
-        (EXAMPLES_DIR / "package.json", EXAMPLES_DIR / "package_result.json"),
-        (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
-        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
+    assert input_paths == {
+        EXAMPLES_DIR / "go.sum",
+        EXAMPLES_DIR / "package.json",
+        EXAMPLES_DIR / "package-lock.json",
+        EXAMPLES_DIR / "requirements.txt"
     }
