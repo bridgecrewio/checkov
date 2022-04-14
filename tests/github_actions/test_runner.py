@@ -11,14 +11,14 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = os.path.join(current_dir, "resources", ".github", "workflows")
         runner = Runner()
-        checks = [ "CKV_GHA_2"]
+        checks = ["CKV_GHA_1", "CKV_GHA_2"]
         report = runner.run(
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(framework='github_actions', checks=checks)
         )
-        self.assertEqual(len(report.failed_checks), 5)
+        self.assertEqual(len(report.failed_checks), 6)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 18)
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
