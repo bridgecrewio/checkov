@@ -20,6 +20,16 @@ def validating_webhook():
     request_info = request.get_json()
     uid = request_info["request"].get("uid")
 
+    checkovconfig = "config/.checkov.yaml"
+    configfile = "config/k8s.properties"
+
+    whorfconfig = getConfig(configfile)
+
+    # Process config variables
+
+    # a list of namespaces to ignore requests from
+    ignore_list = whorfconfig['ignores-namespaces']
+
     # Check/Sanitise UID to make sure it's a k8s request and only a k8s request as it is used for filenaming
     # UUID pattern match regex
     pattern = r'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b'
@@ -31,10 +41,16 @@ def validating_webhook():
         webhook.logger.error('K8s UID failed security checks. Request rejected!')
         return admission_response(False, uid, response)
 
+    # check we're not in the kube-system namespace
+    namespace = request_info["request"].get("namespace")
+    if namespace in ignore_list:
+        print("Namespace in ignore list. Ignoring validation")
+        response = 'Namespace in ignore list. Ignoring validation'
+        webhook.logger.error('Namespace in ignore list. Ignoring validation!')
+        return admission_response(True, uid, response)    
 
     jsonfile = "tmp/" + uid + "-req.json"
     yamlfile = "tmp/" + uid + "-req.yaml"
-    configfile = "config/.checkov.yaml"
 
 
     ff = open(jsonfile, 'w+')
@@ -43,7 +59,7 @@ def validating_webhook():
     yaml.dump(todict(request_info["request"]["object"]),yf)
 
     print("Running checkov") 
-    cp = subprocess.run(["checkov","--config-file",configfile,"-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cp = subprocess.run(["checkov","--config-file",checkovconfig,"-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     checkovresults = json.loads(cp.stdout)
 
@@ -57,9 +73,8 @@ def validating_webhook():
 
     if cp.returncode != 0:
 
-
         # open configfile to check for hard fail CKVs
-        with open(configfile, 'r') as config:
+        with open(checkovconfig, 'r') as config:
             cf = yaml.safe_load(config)
 
         response = ""
@@ -123,6 +138,13 @@ def admission_response(allowed, uid, message):
                     }
                     })
 
-
+def getConfig(configfile):  
+    cf = {}
+    with open(configfile) as myfile:
+        for line in myfile:
+            name, var = line.partition("=")[::2]
+            cf[name.strip()] = list(var.strip().split(','))
+    return cf
+ 
 if __name__ == '__main__':
     webhook.run(host='0.0.0.0', port=1701)
