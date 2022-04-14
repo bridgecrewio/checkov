@@ -26,7 +26,6 @@ def validating_webhook():
     whorfconfig = getConfig(configfile)
 
     # Process config variables
-
     # a list of namespaces to ignore requests from
     ignore_list = whorfconfig['ignores-namespaces']
 
