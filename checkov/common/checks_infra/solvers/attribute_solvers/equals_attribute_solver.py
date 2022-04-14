@@ -12,4 +12,10 @@ class EqualsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return str(vertex.get(attribute)) == str(self.value)
+        attr_val = vertex.get(attribute)
+        if type(attr_val) == bool or type(self.value) == bool:
+            # handle cases like str(False) == "false"
+            # generally self.value will be a string, but could be a bool if the policy was created straight from json
+            return str(attr_val).lower() == str(self.value).lower()
+        else:
+            return str(attr_val) == str(self.value)

@@ -209,7 +209,7 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
         except (TypeError, ValueError):
-            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template", exc_info=True)
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template")
             continue
 
     return definitions, definitions_raw

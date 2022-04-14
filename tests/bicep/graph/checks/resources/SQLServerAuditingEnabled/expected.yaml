@@ -1,0 +1,14 @@
+pass:
+  - 'Microsoft.Sql/servers.serverEnabled'
+  - 'Microsoft.Sql/servers.parentEnabled'
+  - 'Microsoft.Sql/servers/databases.databaseEnabled'
+fail:
+  - 'Microsoft.Sql/servers.serverDefault'
+  - 'Microsoft.Sql/servers.parentDefault'
+  - 'Microsoft.Sql/servers.serverDisabled'
+  - 'Microsoft.Sql/servers.parentDisabled'
+  - 'Microsoft.Sql/servers/databases.databaseDefault'
+  - 'Microsoft.Sql/servers/databases.databaseDisabled'
+evaluated_keys:
+  - 'resource_type'
+  - 'properties/state'

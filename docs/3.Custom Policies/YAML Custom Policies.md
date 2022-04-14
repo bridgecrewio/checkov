@@ -80,6 +80,7 @@ definition:
 | Not Regex Match       | `not_regex_match`       |
 | Exists                | `exists`                |
 | Not Exists            | `not_exists`            |
+| One Exists            | `one_exists`            |
 | Any                   | `any`                   |
 | Contains              | `contains`              |
 | Not Contains          | `not_contains`          |

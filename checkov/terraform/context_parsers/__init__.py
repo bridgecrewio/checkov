@@ -1,1 +1,1 @@
-from checkov.terraform.context_parsers.parsers import *
+from checkov.terraform.context_parsers.parsers import *  # noqa

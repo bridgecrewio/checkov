@@ -11,7 +11,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -192,14 +192,14 @@ class Parser:
         explicit_var_files: List[os.DirEntry] = []  # files passed with --var-file; only process the ones that are in this directory
 
         dir_contents = list(os.scandir(directory))
-        if excluded_paths:
+        if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
             filter_ignored_paths(root_dir, dir_contents, excluded_paths)
 
         tf_files_to_load = []
         for file in dir_contents:
             # Ignore directories and hidden files
             try:
-                if not file.is_file() or file.name.startswith("."):
+                if not file.is_file():
                     continue
             except OSError:
                 # Skip files that can't be accessed
@@ -716,7 +716,7 @@ Load JSON or HCL, depending on filename.
                 else:
                     return non_malformed_definitions
     except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=e)
+        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
         parsing_errors[file_path] = e
         return None
 
@@ -745,7 +745,7 @@ def validate_malformed_definitions(raw_data):
 
 def clean_bad_definitions(tf_definition_list):
     return {
-        block_type: list(filter(lambda definition_list: block_type == 'locals' or
+        block_type: list(filter(lambda definition_list: block_type in [BlockType.LOCALS, BlockType.TERRAFORM] or
                                                         not isinstance(definition_list, dict)
                                                         or len(definition_list.keys()) == 1,
                                 tf_definition_list[block_type]))
@@ -774,9 +774,8 @@ def _remove_module_dependency_in_path(path):
 def _safe_index(sequence_hopefully, index) -> Optional[Any]:
     try:
         return sequence_hopefully[index]
-    except IndexError as e:
-        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}')
-        logging.debug(e, stack_info=True)
+    except IndexError:
+        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}', exc_info=True)
         return None
 
 

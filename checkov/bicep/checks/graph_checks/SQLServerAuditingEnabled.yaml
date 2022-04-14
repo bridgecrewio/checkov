@@ -1,0 +1,39 @@
+metadata:
+  id: "CKV_AZURE_23"
+  name: "Ensure that 'Auditing' is set to 'On' for SQL servers"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - Microsoft.Sql/servers
+        - Microsoft.Sql/servers/databases
+    - or:
+        - and:
+            - cond_type: connection
+              resource_types:
+                - Microsoft.Sql/servers
+              connected_resource_types:
+                - Microsoft.Sql/servers/auditingSettings
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Sql/servers/auditingSettings
+              attribute: properties.state
+              operator: equals
+              value: Enabled
+        - and:
+            - cond_type: connection
+              resource_types:
+                - Microsoft.Sql/servers/databases
+              connected_resource_types:
+                - Microsoft.Sql/servers/databases/auditingSettings
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Sql/servers/databases/auditingSettings
+              attribute: properties.state
+              operator: equals
+              value: Enabled

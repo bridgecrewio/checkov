@@ -1,30 +1,33 @@
 import argparse
 import itertools
 import json
-import re
-from collections import defaultdict
-from json import dumps
 import logging
 import os
+import re
 from abc import abstractmethod
+from collections import defaultdict
+from json import dumps
 from typing import List, Union, Dict, Any, Tuple, Optional
 
 from typing_extensions import Literal
 
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
+from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.ext_cyclonedx_xml import ExtXml
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.runner import Runner as tf_runner
 from checkov.terraform.parser import Parser
-from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.util.ext_cyclonedx_xml import ExtXml
-from checkov.common.util.banner import tool as tool_name
+from checkov.terraform.runner import Runner as tf_runner
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -42,29 +45,35 @@ class RunnerRegistry:
         self.runners = list(runners)
         self.banner = banner
         self.scan_reports = []
+        self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
         self.tool = tool_name
+        for runner in runners:
+            if isinstance(runner, image_runner):
+                runner.image_referencers = self.image_referencing_runners
 
     @abstractmethod
     def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
         raise NotImplementedError()
 
     def run(
-        self,
-        root_folder: Optional[str] = None,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        collect_skip_comments: bool = True,
-        repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
+            self,
+            root_folder: Optional[str] = None,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            collect_skip_comments: bool = True,
+            repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
             reports = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                           runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments)]
+                                           runner_filter=self.runner_filter,
+                                           collect_skip_comments=collect_skip_comments)]
         else:
             reports = parallel_runner.run_function(
                 lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                          runner_filter=self.runner_filter, collect_skip_comments=collect_skip_comments),
+                                          runner_filter=self.runner_filter,
+                                          collect_skip_comments=collect_skip_comments),
                 self.runners, 1)
 
         for scan_report in reports:
@@ -87,15 +96,16 @@ class RunnerRegistry:
                 f.write(data)
             logging.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
         except EnvironmentError:
-            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}", exc_info=True)
+            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
+                          exc_info=True)
 
     def print_reports(
-        self,
-        scan_reports: List[Report],
-        config: argparse.Namespace,
-        url: Optional[str] = None,
-        created_baseline_path: Optional[str] = None,
-        baseline: Optional[Baseline] = None,
+            self,
+            scan_reports: List[Report],
+            config: argparse.Namespace,
+            url: Optional[str] = None,
+            created_baseline_path: Optional[str] = None,
+            baseline: Optional[Baseline] = None,
     ) -> Literal[0, 1]:
         output_formats = set(config.output)
 
@@ -122,6 +132,7 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
+            logging.debug(f'Getting exit code for report {report.check_type}')
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
         if "cli" in config.output:
@@ -148,11 +159,11 @@ class RunnerRegistry:
             print(self.banner)
             for report in sarif_reports:
                 print(report.print_console(
-                        is_quiet=config.quiet,
-                        is_compact=config.compact,
-                        created_baseline_path=created_baseline_path,
-                        baseline=baseline,
-                        use_bc_ids=config.output_bc_ids,
+                    is_quiet=config.quiet,
+                    is_compact=config.compact,
+                    created_baseline_path=created_baseline_path,
+                    baseline=baseline,
+                    use_bc_ids=config.output_bc_ids,
                 ))
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks
@@ -164,6 +175,8 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "json" in config.output:
+            if config.compact and report_jsons:
+                self.strip_code_blocks_from_json(report_jsons)
             if not report_jsons:
                 print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
                 data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
@@ -211,12 +224,15 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt', 'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml', 'cyclonedx': 'results_cyclonedx.xml'}
+        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
+                      'sarif': 'results_sarif.sarif',
+                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml',
+                      'cyclonedx': 'results_cyclonedx.xml'}
         if config.output_file_path:
             for output in config.output:
-                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}', data=data_outputs[output],
-                                     data_format=output)
+                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
+                                         data=data_outputs[output],
+                                         data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return exit_code
 
@@ -282,3 +298,20 @@ class RunnerRegistry:
                                 "skipped_checks": skipped_checks,
                             }
         return enriched_resources
+
+    def _get_image_referencing_runners(self):
+        image_referencing_runners = set()
+        for runner in self.runners:
+            if issubclass(runner.__class__, ImageReferencer):
+                image_referencing_runners.add(runner)
+
+        return image_referencing_runners
+
+    @staticmethod
+    def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
+        for report in report_jsons:
+            results = report.get('results', {})
+            for key, result in results.items():
+                for result_dict in result:
+                    result_dict.pop('code_block', None)
+                    result_dict.pop('connected_node', None)

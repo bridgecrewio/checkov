@@ -54,7 +54,7 @@ resource "aws_cloudsearch_domain" "fail2" {
     sort   = true
   }
   endpoint_options {
-    enforce_https       = false
+    enforce_https = false
   }
 }
 

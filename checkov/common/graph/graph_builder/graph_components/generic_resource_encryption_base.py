@@ -49,4 +49,3 @@ class GenericResourceEncryptionBase:
 
     def __str__(self) -> str:
         return f"GenericResourceEncryption[{self.resource_type}]"
-

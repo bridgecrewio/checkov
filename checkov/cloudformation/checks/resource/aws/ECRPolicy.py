@@ -27,7 +27,10 @@ class ECRPolicy(BaseResourceCheck):
         :return: <CheckResult>
         """
         self.evaluated_keys = ["Properties/RepositoryPolicyText/Statement"]
-        policy_text = conf.get("Properties", {}).get("RepositoryPolicyText")
+        properties = conf.get("Properties")
+        if not properties or not isinstance(properties, dict):
+            return CheckResult.PASSED
+        policy_text = properties.get("RepositoryPolicyText")
         if not policy_text:
             return CheckResult.PASSED
         if isinstance(policy_text, str):
@@ -43,7 +46,7 @@ class ECRPolicy(BaseResourceCheck):
                         f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}"
                     )
                 return CheckResult.UNKNOWN
-        if "Statement" in policy_text.keys():
+        if "Statement" in policy_text.keys() and isinstance(policy_text["Statement"], list):
             for statement_index, statement in enumerate(policy_text["Statement"]):
                 if "Principal" in statement.keys():
                     for principal_index, principal in enumerate(statement["Principal"]):
