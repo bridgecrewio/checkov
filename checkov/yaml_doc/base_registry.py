@@ -210,12 +210,12 @@ class Registry(BaseCheckRegistry):
         }
         return result
 
-    def get_result_key(self, check,
-                       entity_configuration,
-                       entity_name,
-                       entity_type,
-                       scanned_file,
-                       skip_info):
+    def get_result_key(self, check: BaseCheck,
+                       entity_configuration: Dict[str, Any],
+                       entity_name: str,
+                       entity_type: str,
+                       scanned_file: str,
+                       skip_info: _SkippedCheck):
         if "__startline__" and "__endline__" in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration["__startline__"]}:{entity_configuration["__endline__"]}]'
         else:

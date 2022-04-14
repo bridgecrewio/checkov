@@ -17,4 +17,3 @@ class BaseGithubActionsCheck(BaseCheck):
         )
         self.path = path
         registry.register(self)
-
