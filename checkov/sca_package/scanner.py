@@ -15,7 +15,6 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scann
 TWISTCLI_FILE_NAME = 'twistcli'
 SEC_IN_WEEK = 604800
 
-#
 class Scanner:
     def __init__(self) -> None:
         self.twistcli_path = Path(os.path.join(bridgecrew_dir, TWISTCLI_FILE_NAME))
