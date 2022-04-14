@@ -97,7 +97,7 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
         except TypeError:
             logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
             return file, None
-        except Exception:
+        except UnicodeDecodeError:
             logging.info(f'Dockerfile skipping {file} as it can\'t be read as text file')
             return file, None
 
