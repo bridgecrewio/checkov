@@ -33,9 +33,8 @@ def validating_webhook():
     # UUID pattern match regex
     pattern = r'\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b'
     if re.match(pattern, uid):
-        print("Valid UID Found, continuing")
+        webhook.logger.error("Valid UID Found, continuing")
     else:
-        print("Invalid UID. Aborting validation")
         response = 'Invalid UID. Aborting validation'
         webhook.logger.error('K8s UID failed security checks. Request rejected!')
         return admission_response(False, uid, response)
@@ -43,7 +42,6 @@ def validating_webhook():
     # check we're not in the kube-system namespace
     namespace = request_info["request"].get("namespace")
     if namespace in ignore_list:
-        print("Namespace in ignore list. Ignoring validation")
         response = 'Namespace in ignore list. Ignoring validation'
         webhook.logger.error('Namespace in ignore list. Ignoring validation!')
         return admission_response(True, uid, response)    
@@ -57,7 +55,7 @@ def validating_webhook():
     json.dump(request_info, ff)
     yaml.dump(todict(request_info["request"]["object"]),yf)
 
-    print("Running checkov") 
+    webhook.logger.error("Running checkov") 
     cp = subprocess.run(["checkov","--config-file",checkovconfig,"-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     checkovresults = json.loads(cp.stdout)
@@ -88,7 +86,7 @@ def validating_webhook():
                                 hard_fails[ckv] += f"\n  Guidance: {fail['guideline']}"
     
             finally:
-                print("hard fail error")
+                webhook.logger.error("hard fail error")
         
             if (len(hard_fails) > 0):
                 response = f"\nCheckov found {len(hard_fails)} issues in violation of admission policy.\n"
