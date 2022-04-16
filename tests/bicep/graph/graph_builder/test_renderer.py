@@ -14,9 +14,8 @@ def test_render_parameter():
 
     # then
     vertex = local_graph.vertices[local_graph.vertices_by_name["vm"]]
-    vm_config = vertex.config["config"]
 
-    assert vm_config == {
+    assert vertex.config["config"] == {
         "name": "example-vm",
         "location": "location",
         "properties": {

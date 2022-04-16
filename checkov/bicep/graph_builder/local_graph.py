@@ -4,7 +4,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, overload
 
 from pycep.transformer import BicepElement
 from pycep.typing import (
@@ -263,49 +263,62 @@ class BicepLocalGraph(LocalGraph):
                 )
 
     @staticmethod
-    def update_config_attribute(config: dict[str, Any], key_to_update: str, new_value: Any) -> None:
+    def update_config_attribute(config: list[Any] | dict[str, Any], key_to_update: str, new_value: Any) -> None:
         key_parts = key_to_update.split(".")
 
         if isinstance(config, dict):
             key = key_parts[0]
             if len(key_parts) == 1:
-                new_value = BicepLocalGraph.adjust_value(config[key], new_value)
-                if new_value is None:
-                    # couldn't find key in in value object
-                    return
-
-                config[key] = new_value
+                BicepLocalGraph.update_config_value(config=config, key=key, new_value=new_value)
                 return
             else:
                 key, key_parts = BicepLocalGraph.adjust_key(config, key, key_parts)
                 if len(key_parts) == 1:
-                    new_value = BicepLocalGraph.adjust_value(config[key], new_value)
-                    if new_value is None:
-                        # couldn't find key in in value object
-                        return
-
-                    config[key] = new_value
+                    BicepLocalGraph.update_config_value(config=config, key=key, new_value=new_value)
                     return
 
                 BicepLocalGraph.update_config_attribute(config[key], ".".join(key_parts[1:]), new_value)
         elif isinstance(config, list):
             key_idx = force_int(key_parts[0])
             if len(key_parts) == 1:
-                new_value = BicepLocalGraph.adjust_value(config[key_idx], new_value)
-                if new_value is None:
-                    # couldn't find key in in value object
-                    return
-
-                config[key_idx] = new_value
+                BicepLocalGraph.update_config_value(config=config, key=key_idx, new_value=new_value)
                 return
             else:
                 BicepLocalGraph.update_config_attribute(config[key_idx], ".".join(key_parts[1:]), new_value)
 
         return
 
+    @overload
+    @staticmethod
+    def update_config_value(config: list[Any], key: int, new_value: Any) -> None:
+        ...
+
+    @overload
+    @staticmethod
+    def update_config_value(config: dict[str, Any], key: str, new_value: Any) -> None:
+        ...
+
+    @staticmethod
+    def update_config_value(config: list[Any] | dict[str, Any], key: int | str, new_value: Any) -> None:
+        new_value = BicepLocalGraph.adjust_value(config[key], new_value)  # type:ignore[index]
+        if new_value is None:
+            # couldn't find key in in value object
+            return
+
+        config[key] = new_value  # type:ignore[index]
+
     @staticmethod
     def adjust_key(config: dict[str, Any], key: str, key_parts: list[str]) -> tuple[str, list[str]]:
-        """Extends the key, if it consists of multiple dots"""
+        """Adjusts the key, if it consists of multiple dots
+
+        Ex:
+        config = {"'container.registry'": "acrName"}
+        key = "'container"
+        key_parts = ["'container", "registry'"]
+
+        returns new_key = "'container.registry'"
+                new_key_parts = ["'container.registry'"]
+        """
 
         if key not in config:
             if len(key_parts) >= 2:

@@ -1,5 +1,7 @@
 param virtualMachineName string = 'example-vm'
 
+param location string
+
 param acrName string = 'exmaple-acr'
 
 param acrNestedName string = 'exmaple-nested-acr'
