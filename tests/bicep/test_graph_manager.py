@@ -28,7 +28,26 @@ def test_build_graph_from_source_directory():
     assert storage_account.block_type == BlockType.RESOURCE
     assert storage_account.id == "Microsoft.Storage/storageAccounts.diagsAccount"
     assert storage_account.source == "Bicep"
-    assert storage_account.config == definitions[test_file]["resources"]["diagsAccount"]
+    assert storage_account.config == {
+        "decorators": [],
+        "type": "Microsoft.Storage/storageAccounts",
+        "api_version": "2019-06-01",
+        "existing": False,
+        "config": {
+            "name": "diagStorageAccountName",
+            "location": {
+                "function": {
+                    "type": "resource_group",
+                    "parameters": {"resource_group_name": None, "subscription_id": None},
+                    "property_name": "location",
+                }
+            },
+            "sku": {"name": "Standard_LRS"},
+            "kind": "StorageV2",
+        },
+        "__start_line__": 84,
+        "__end_line__": 92,
+    }
 
 
 def test_build_graph_from_definitions():
@@ -50,4 +69,23 @@ def test_build_graph_from_definitions():
     assert storage_account.block_type == BlockType.RESOURCE
     assert storage_account.id == "Microsoft.Storage/storageAccounts.diagsAccount"
     assert storage_account.source == "Bicep"
-    assert storage_account.config == template["resources"]["diagsAccount"]
+    assert storage_account.config == {
+        "decorators": [],
+        "type": "Microsoft.Storage/storageAccounts",
+        "api_version": "2019-06-01",
+        "existing": False,
+        "config": {
+            "name": "diagStorageAccountName",
+            "location": {
+                "function": {
+                    "type": "resource_group",
+                    "parameters": {"resource_group_name": None, "subscription_id": None},
+                    "property_name": "location",
+                }
+            },
+            "sku": {"name": "Standard_LRS"},
+            "kind": "StorageV2",
+        },
+        "__start_line__": 84,
+        "__end_line__": 92,
+    }

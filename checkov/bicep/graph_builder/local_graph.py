@@ -16,19 +16,21 @@ from pycep.typing import (
     OutputAttributes,
     ModuleAttributes,
 )
-from typing_extensions import Literal
+from typing_extensions import Literal, TypeAlias
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
+from checkov.bicep.graph_builder.variable_rendering.renderer import BicepVariableRenderer
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.common.util.type_forcers import force_int
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
-BICEP_ELEMENT_TO_BLOCK_TYPE_MAP: dict[str, Literal["param", "var", "resource", "module", "output"]] = {
-    "modules": BlockType.MODULE,
-}
+
+BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
 
 class BicepElements(str, Enum):
@@ -43,6 +45,7 @@ class BicepElements(str, Enum):
 class BicepLocalGraph(LocalGraph):
     def __init__(self, definitions: dict[Path, BicepJson]) -> None:
         super().__init__()
+        self.vertices: list[BicepBlock] = []
         self.definitions = definitions
         self.vertices_by_name: dict[str, int] = {}
 
@@ -51,6 +54,10 @@ class BicepLocalGraph(LocalGraph):
         logging.info(f"[BicepLocalGraph] created {len(self.vertices)} vertices")
         self._create_edges()
         logging.info(f"[BicepLocalGraph] created {len(self.edges)} edges")
+
+        if render_variables:
+            renderer = BicepVariableRenderer(self)
+            renderer.render_variables_from_local_graph()
 
     def _create_vertices(self) -> None:
         for file_path, bicep_conf in self.definitions.items():
@@ -65,6 +72,9 @@ class BicepLocalGraph(LocalGraph):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
             self.vertices_by_name[vertex.name] = i
+
+            self.in_edges[i] = []
+            self.out_edges[i] = []
 
     def _create_global_vertices(self, file_path: Path, globals_attrs: GlobalsAttributes | None) -> None:
         if not globals_attrs:
@@ -234,11 +244,100 @@ class BicepLocalGraph(LocalGraph):
             self.in_edges[dest_vertex_index].append(edge)
 
     def update_vertices_configs(self) -> None:
-        pass
+        for vertex in self.vertices:
+            changed_attributes = list(vertex.changed_attributes.keys())
+            changed_attributes = filter_sub_keys(changed_attributes)
+            self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
     def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any]) -> None:
-        pass
+        if not changed_attributes:
+            # skip, if there is no change
+            return
+
+        for attr in changed_attributes:
+            new_value = vertex.attributes.get(attr, None)
+            if vertex.block_type == BlockType.RESOURCE:
+                BicepLocalGraph.update_config_attribute(
+                    config=vertex.config["config"], key_to_update=attr, new_value=new_value
+                )
+
+    @staticmethod
+    def update_config_attribute(config: dict[str, Any], key_to_update: str, new_value: Any) -> None:
+        key_parts = key_to_update.split(".")
+
+        if isinstance(config, dict):
+            key = key_parts[0]
+            if len(key_parts) == 1:
+                new_value = BicepLocalGraph.adjust_value(config[key], new_value)
+                if new_value is None:
+                    # couldn't find key in in value object
+                    return
+
+                config[key] = new_value
+                return
+            else:
+                key, key_parts = BicepLocalGraph.adjust_key(config, key, key_parts)
+                if len(key_parts) == 1:
+                    new_value = BicepLocalGraph.adjust_value(config[key], new_value)
+                    if new_value is None:
+                        # couldn't find key in in value object
+                        return
+
+                    config[key] = new_value
+                    return
+
+                BicepLocalGraph.update_config_attribute(config[key], ".".join(key_parts[1:]), new_value)
+        elif isinstance(config, list):
+            key_idx = force_int(key_parts[0])
+            if len(key_parts) == 1:
+                new_value = BicepLocalGraph.adjust_value(config[key_idx], new_value)
+                if new_value is None:
+                    # couldn't find key in in value object
+                    return
+
+                config[key_idx] = new_value
+                return
+            else:
+                BicepLocalGraph.update_config_attribute(config[key_idx], ".".join(key_parts[1:]), new_value)
+
+        return
+
+    @staticmethod
+    def adjust_key(config: dict[str, Any], key: str, key_parts: list[str]) -> tuple[str, list[str]]:
+        """Extends the key, if it consists of multiple dots"""
+
+        if key not in config:
+            if len(key_parts) >= 2:
+                new_key = ".".join(key_parts[:2])
+                new_key_parts = [new_key] + key_parts[2:]
+
+                return BicepLocalGraph.adjust_key(config, new_key, new_key_parts)
+
+        return key, key_parts
+
+    @staticmethod
+    def adjust_value(element_name: str, value: Any) -> Any:
+        """Adjusts the value, if the 'element_name' references a nested key
+
+        Ex:
+        element_name = publicKey.keyData
+        value = {"keyData": "key-data", "path": "path"}
+
+        returns new_value = "key-data"
+        """
+
+        if "." in element_name:
+            key_parts = element_name.split(".")
+            new_value = value.get(key_parts[1])
+
+            if new_value is None:
+                # couldn't find key in in value object
+                return None
+
+            return BicepLocalGraph.adjust_value(".".join(key_parts[1:]), new_value)
+
+        return value
 
     def get_resources_types_in_graph(self) -> list[str]:
         pass
