@@ -52,7 +52,7 @@ resource "aws_db_instance" "postgres_unknown" {
 }
 
 
-resource "aws_db_instance" "fail_old_two_parts" {
+resource "aws_db_instance" "unknown_two_parts" {
   name           = "name"
   instance_class = "db.t3.micro"
   engine         = "postgres"
