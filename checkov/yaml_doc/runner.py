@@ -20,15 +20,15 @@ class Runner(ObjectRunner):
 
     def _parse_file(
         self, f: str
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
-        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None] = parse(f)
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = parse(f)
         return content
 
     def get_start_end_lines(
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
     ) -> tuple[int, int]:
         if result_config and isinstance(result_config, list):
-            start = result_config[0]["__startline__"]
+            start = result_config[0]["__startline__"] - 1
             end = result_config[len(result_config) - 1]["__endline__"]
         elif result_config and isinstance(result_config, dict):
             start = result_config["__startline__"]

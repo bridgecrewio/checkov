@@ -64,6 +64,7 @@ class BaseRunner(ABC):
             definitions: Optional[Dict[str, Dict[str, Any]]],
             context: Optional[Dict[str, Dict[str, Any]]],
             breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
+            **kwargs
     ) -> None:
         self.definitions = definitions
         self.context = context

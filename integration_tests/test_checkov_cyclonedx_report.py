@@ -15,12 +15,11 @@ class TestCheckovCyclonedxReport(unittest.TestCase):
             data = minidom.parse(cyclonedx_file)
             self.validate_report_not_empty(data)
 
-    def validate_report_not_empty(self, report: minidom.Document) -> None:
-        vulnerability_files = [
-            node.getElementsByTagName("name")[0].firstChild.nodeValue
-            for node in report.getElementsByTagName("components")[0].getElementsByTagName("component")
-        ]
-        self.assertTrue(any("db-app.tf" in file for file in vulnerability_files), "Could not find db-app.tf in report")
+    def validate_report_not_empty(self, report):
+        vulnrability_file = \
+            report.getElementsByTagName('components')[0].getElementsByTagName('component')[0].getElementsByTagName(
+                'name')[0].firstChild.nodeValue
+        self.assertTrue(vulnrability_file.endswith('.tf'))
 
 
 if __name__ == "__main__":

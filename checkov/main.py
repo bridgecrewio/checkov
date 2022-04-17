@@ -16,6 +16,7 @@ from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # should be imported before the others to ensure correct logging setup
+
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -54,6 +55,7 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
+from checkov.openapi.runner import Runner as openapi_runner
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -81,6 +83,8 @@ DEFAULT_RUNNERS = (
     sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
+    openapi_runner(),
+    sca_image_runner()
 )
 
 
