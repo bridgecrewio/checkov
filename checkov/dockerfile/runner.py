@@ -97,6 +97,9 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
         except TypeError:
             logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
             return file, None
+        except UnicodeDecodeError:
+            logging.info(f'Dockerfile skipping {file} as it can\'t be read as text file')
+            return file, None
 
     results = parallel_runner.run_function(_parse_file, files)
     definitions = {}
