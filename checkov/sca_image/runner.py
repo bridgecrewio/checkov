@@ -49,6 +49,11 @@ class Runner(PackageRunner):
             return None
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
+        cached_results = image_scanner.get_scan_results_from_cache(image_id)
+        if cached_results:
+            logging.info(f"Found cached scan results of image {image_id}")
+            return cached_results
+
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
             scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
@@ -86,15 +91,16 @@ class Runner(PackageRunner):
         # upload results to cache
         request_body = {
             "compressedResult": compress_file_gzip_base64(str(output_path)),
+            "compressionMethod": "gzip",
             "id": image_id
         }
         response = requests.request(
-            "POST", f"{self.base_url}/v1/api/v1/vulnerabilities/scan-results/{image_id}",
+            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
             headers=self.headers, data=request_body
         )
 
         response.raise_for_status()
-
+        logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
         # delete the report file
         output_path.unlink()
 
