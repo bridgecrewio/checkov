@@ -47,55 +47,6 @@ def test_should_download_twistcli_again(tmp_path: Path):
     twistcli_path.unlink()
 
 
-def test_setup_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
-    # given
-    scanner = Scanner()
-
-    integration_mock = MagicMock()
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
-    )
-
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    twistcli_path.touch()
-    scanner.twistcli_path = twistcli_path
-
-    # when
-    scanner.setup_twictcli()
-
-    # then
-    assert twistcli_path.exists()
-    integration_mock.assert_not_called()
-
-
-def test_setup_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
-    # given
-    scanner = Scanner()
-
-    def download_twistcli(cli_file_name: Path):
-        cli_file_name.touch()
-
-    integration_mock = MagicMock()
-    integration_mock.side_effect = download_twistcli
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
-    )
-
-    # prepare local paths
-    twistcli_path = tmp_path / "twistcli"
-    scanner.twistcli_path = twistcli_path
-
-    # when
-    scanner.setup_twictcli()
-
-    # then
-    assert twistcli_path.exists()
-    integration_mock.assert_called_once_with(twistcli_path)
-
-
 def test_cleanup_twistcli_exists(tmp_path: Path):
     # given
     scanner = Scanner()
