@@ -1,9 +1,25 @@
+import os
 from typing import Dict, Any, List
 
 import pytest
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
+
+
+@pytest.fixture(scope="module", autouse=True)
+def init_env_var():
+    was_full_api_url_env_var_exist = False
+    prev_full_api_url_env_var = None
+    if "EXPIRATION_TIME_IN_SEC" in os.environ:
+        was_full_api_url_env_var_exist = True
+        prev_full_api_url_env_var = os.environ["EXPIRATION_TIME_IN_SEC"]
+    os.environ["EXPIRATION_TIME_IN_SEC"] = "/moc/full/api/url"
+    yield
+    # setting the state as before, for not affecting other tests
+    del os.environ["EXPIRATION_TIME_IN_SEC"]
+    if was_full_api_url_env_var_exist:
+        os.environ["EXPIRATION_TIME_IN_SEC"] = prev_full_api_url_env_var
 
 
 @pytest.fixture()

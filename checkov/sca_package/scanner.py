@@ -12,8 +12,14 @@ from aiomultiprocess import Pool
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import package_scanning_integration
 
+
 TWISTCLI_FILE_NAME = 'twistcli'
 SEC_IN_WEEK = 604800
+
+
+def get_expiration_time_in_sec():
+    return int(os.getenv("EXPIRATION_TIME_IN_SEC", SEC_IN_WEEK))
+
 
 class Scanner:
     def __init__(self) -> None:
@@ -21,24 +27,28 @@ class Scanner:
 
     def setup_twictcli(self) -> None:
         try:
-            if not self.twistcli_path.exists():
+            if self.should_download():
                 if not os.path.exists(bridgecrew_dir):
                     os.makedirs(bridgecrew_dir)
+                self.cleanup_twictcli()
                 package_scanning_integration.download_twistcli(self.twistcli_path)
-            else:
-                last_modification = os.stat(self.twistcli_path)
-                file_age = (time.time() - last_modification.st_mtime)
-                if file_age >= SEC_IN_WEEK:
-                    self.cleanup_twictcli()
-                    package_scanning_integration.download_twistcli(self.twistcli_path)
         except Exception:
             logging.error("Failed to setup twictcli for package scanning", exc_info=True)
             raise
 
+    def should_download(self) -> bool:
+        if not self.twistcli_path.exists():
+            return True
+        last_modification = os.stat(self.twistcli_path)
+        file_age = (time.time() - last_modification.st_mtime)
+        if file_age >= get_expiration_time_in_sec():
+            return True
+        return False
+
     def cleanup_twictcli(self) -> None:
         if self.twistcli_path.exists():
             self.twistcli_path.unlink()
-        logging.info('twistcli file removed')
+            logging.info('twistcli file removed')
 
     def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = False) \
             -> "Sequence[Dict[str, Any]]":

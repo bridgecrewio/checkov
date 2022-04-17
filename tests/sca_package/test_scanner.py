@@ -1,11 +1,50 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
 from mock import AsyncMock, MagicMock
 from pytest_mock import MockerFixture
 
-from checkov.sca_package.scanner import Scanner
+from checkov.sca_package.scanner import Scanner, SEC_IN_WEEK
+
+
+def test_should_download_new_twistcli(tmp_path: Path):
+    # given
+    scanner = Scanner()
+    twistcli_path = tmp_path / "twistcli"
+    scanner.twistcli_path = twistcli_path
+
+    # then
+    assert scanner.should_download()
+
+
+def test_not_should_download_twistcli(tmp_path: Path):
+    # given
+    scanner = Scanner()
+    os.environ["EXPIRATION_TIME_IN_SEC"] = str(SEC_IN_WEEK)
+    twistcli_path = tmp_path / "twistcli"
+    twistcli_path.touch()
+    scanner.twistcli_path = twistcli_path
+
+    # then
+    assert not scanner.should_download()
+    # cleaning mock file
+    twistcli_path.unlink()
+
+
+def test_should_download_twistcli_again(tmp_path: Path):
+    # given
+    scanner = Scanner()
+    os.environ["EXPIRATION_TIME_IN_SEC"] = "0"
+    twistcli_path = tmp_path / "twistcli"
+    twistcli_path.touch()
+    scanner.twistcli_path = twistcli_path
+
+    # then
+    assert scanner.should_download()
+    # cleaning mock file
+    twistcli_path.unlink()
 
 
 def test_setup_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
