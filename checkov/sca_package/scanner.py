@@ -122,3 +122,5 @@ class Scanner:
         output_path.unlink()
 
         return scan_result
+    
+    
