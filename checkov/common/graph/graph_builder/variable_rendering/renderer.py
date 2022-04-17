@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Dict, Any, Iterable
 
 from checkov.common.graph.graph_builder import Edge
-from checkov.common.graph.graph_builder.utils import calculate_hash, run_function_multithreaded
+from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph

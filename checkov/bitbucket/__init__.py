@@ -1,1 +1,1 @@
-from checkov.bitbucket.checks import *
+from checkov.bitbucket.checks import *  # noqa
