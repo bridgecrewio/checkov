@@ -44,6 +44,9 @@ class RDSPostgreSQLLogFDWExtension(BaseResourceCheck):
                         return CheckResult.PASSED
                     elif major_version == 9 and minor_version == 6:
                         # PostgreSQL pre 10 used following versioning major.major.minor
+                        if len(version_parts) < 3:
+                            return CheckResult.UNKNOWN
+
                         bugfix_version = force_int(version_parts[2])
 
                         if bugfix_version is None:
