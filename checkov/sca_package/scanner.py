@@ -37,9 +37,7 @@ class Scanner:
             return True
         last_modification = os.stat(self.twistcli_path)
         file_age = (time.time() - last_modification.st_mtime)
-        if file_age >= int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", CHECKOV_SEC_IN_WEEK)):
-            return True
-        return False
+        return file_age >= int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", CHECKOV_SEC_IN_WEEK))
 
     def cleanup_twictcli(self) -> None:
         if self.twistcli_path.exists():
