@@ -98,5 +98,5 @@ class Scanner:
         return json.loads(
                 decompress_file_gzip_base64(
                     response.json()["outputData"]
+                    )
                 )
-            )

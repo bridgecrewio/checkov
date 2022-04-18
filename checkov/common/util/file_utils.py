@@ -31,6 +31,6 @@ def decompress_file_gzip_base64(compressed_file_body: str):
         decoded_base64 = base64.b64decode(decoded_utf8)
         with gzip.open(io.BytesIO(decoded_base64), 'rb') as file_extracted_body:
             return file_extracted_body.read()
-    except Exception as e:
+    except Exception:
         logging.exception("failed to extract package file")
         raise
