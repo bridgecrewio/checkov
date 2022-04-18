@@ -11,6 +11,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
+from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_default_get_headers
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
