@@ -13,7 +13,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        myproperties = conf['Properties']
+        myproperties = conf.get("Properties")
         type = conf['Type']
 
         # catch for inline policies

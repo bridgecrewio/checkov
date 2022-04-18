@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -21,9 +23,8 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
-
 
 class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
@@ -55,23 +56,31 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(self.check_type)
-        parsing_errors = {}
+        parsing_errors: dict[str, str] = {}
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            report.add_parsing_errors(list(parsing_errors.keys()))
+
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
-                    self.graph_registry.load_external_checks(directory)
+
+                    if CHECKOV_CREATE_GRAPH:
+                        self.graph_registry.load_external_checks(directory)
+
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
 
-            logging.info("creating cloudformation graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            for vertex in local_graph.vertices:
-                if vertex.block_type == BlockType.RESOURCE:
-                    report.add_resource(f'{vertex.path}:{vertex.id}')
-            self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+            if CHECKOV_CREATE_GRAPH:
+                logging.info("creating CloudFormation graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                logging.info("Successfully created CloudFormation graph")
+
+                for vertex in local_graph.vertices:
+                    if vertex.block_type == BlockType.RESOURCE:
+                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                self.graph_manager.save_graph(local_graph)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():
@@ -84,13 +93,13 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
-        report.add_parsing_errors(list(parsing_errors.keys()))
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
         # run graph checks
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-        merge_reports(report, graph_report)
+        if CHECKOV_CREATE_GRAPH:
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            merge_reports(report, graph_report)
 
         return report
 
@@ -132,9 +141,10 @@ class Runner(BaseRunner):
                                     severity=check.severity
                                 )
 
-                                breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
-                                if breadcrumb:
-                                    record = GraphRecord(record, breadcrumb)
+                                if CHECKOV_CREATE_GRAPH:
+                                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                                    if breadcrumb:
+                                        record = GraphRecord(record, breadcrumb)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
