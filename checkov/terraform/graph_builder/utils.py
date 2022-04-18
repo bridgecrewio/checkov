@@ -195,14 +195,6 @@ def get_referenced_vertices_in_value(
     return references_vertices
 
 
-def filter_sub_keys(key_list: List[str]) -> List[str]:
-    filtered_key_list = []
-    for key in key_list:
-        if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
-            filtered_key_list.append(key)
-    return filtered_key_list
-
-
 def generate_possible_strings_from_wildcards(origin_string: str, max_entries: int = 10) -> List[str]:
     max_entries = int(os.environ.get("MAX_WILDCARD_ARR_SIZE", max_entries))
     generated_strings = [origin_string]
