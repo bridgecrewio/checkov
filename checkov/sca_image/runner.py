@@ -41,7 +41,7 @@ class Runner(PackageRunner):
             image_id: str,
             dockerfile_path: str,
             runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> Dict[Any,Any]:
+    ) -> Dict[Any, Any]:
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
