@@ -13,7 +13,7 @@ from aiomultiprocess import Pool
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
-from checkov.common.util.http_utils import get_default_get_headers
+from checkov.common.util.http_utils import get_default_get_headers, get_default_post_headers
 
 
 class Scanner:
@@ -52,6 +52,11 @@ class Scanner:
     def run_scan(self, input_path: Path) -> dict:
         logging.info(f"Start to scan package file {input_path}")
 
+        headers = merge_dicts(
+            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
+            {"Authorization": bc_integration.get_auth_token()},
+        )
+
         request_body = {
             "compressedFileBody": compress_file_gzip_base64(str(input_path)),
             "compressionMethod": "gzip",
@@ -59,14 +64,14 @@ class Scanner:
         }
 
         response = requests.request(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan", headers=self.headers,
+            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan", headers=headers,
             data=request_body
         )
 
         response.raise_for_status()
         response_json = response.json()
 
-        if response_json["status"] == "exists":
+        if response_json["status"] == "already_exist":
             return json.loads(
                 decompress_file_gzip_base64(
                     response_json["outputData"]
@@ -79,12 +84,16 @@ class Scanner:
         current_state = "Empty"
         desired_state = "Result"
 
+        headers = merge_dicts(
+            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
+            {"Authorization": bc_integration.get_auth_token()},
+        )
         response = requests.Response()
 
         while current_state != desired_state:
             response = requests.request(
                 "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
-                headers=self.headers
+                headers=headers
             )
             response_json = response.json()
             current_state = response_json["outputType"]

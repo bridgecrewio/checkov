@@ -21,6 +21,7 @@ from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 
+from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.ci_variables import (
     BC_TO_BRANCH,
     BC_PR_ID,

@@ -12,7 +12,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers
+from checkov.common.util.http_utils import get_default_get_headers, get_default_post_headers
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
@@ -30,10 +30,6 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.base_url = bc_integration.api_url
-        self.headers = merge_dicts(
-            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {"Authorization": bc_integration.get_auth_token()},
-        )
         self.image_referencers: Optional[ImageReferencer] = None
 
     def scan(
@@ -93,6 +89,12 @@ class Runner(PackageRunner):
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
         # upload results to cache
+
+        headers = merge_dicts(
+            get_default_post_headers(bc_integration.bc_source, bc_integration.bc_source_version),
+            {"Authorization": bc_integration.get_auth_token()},
+        )
+
         request_body = {
             "compressedResult": compress_file_gzip_base64(str(output_path)),
             "compressionMethod": "gzip",
@@ -100,7 +102,7 @@ class Runner(PackageRunner):
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-            headers=self.headers, data=request_body
+            headers=headers, data=request_body
         )
 
         response.raise_for_status()
