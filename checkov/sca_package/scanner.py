@@ -14,11 +14,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scann
 
 
 TWISTCLI_FILE_NAME = 'twistcli'
-SEC_IN_WEEK = 604800
-
-
-def get_expiration_time_in_sec():
-    return int(os.getenv("EXPIRATION_TIME_IN_SEC", SEC_IN_WEEK))
+CHECKOV_SEC_IN_WEEK = 604800
 
 
 class Scanner:
@@ -41,7 +37,7 @@ class Scanner:
             return True
         last_modification = os.stat(self.twistcli_path)
         file_age = (time.time() - last_modification.st_mtime)
-        if file_age >= get_expiration_time_in_sec():
+        if file_age >= int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", CHECKOV_SEC_IN_WEEK)):
             return True
         return False
 

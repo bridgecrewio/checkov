@@ -3,10 +3,10 @@ import os
 from pathlib import Path
 
 import pytest
-from mock import AsyncMock, MagicMock
+from mock import AsyncMock
 from pytest_mock import MockerFixture
 
-from checkov.sca_package.scanner import Scanner, SEC_IN_WEEK
+from checkov.sca_package.scanner import Scanner, CHECKOV_SEC_IN_WEEK
 
 
 def test_should_download_new_twistcli(tmp_path: Path):
@@ -22,7 +22,7 @@ def test_should_download_new_twistcli(tmp_path: Path):
 def test_not_should_download_twistcli(tmp_path: Path):
     # given
     scanner = Scanner()
-    os.environ["EXPIRATION_TIME_IN_SEC"] = str(SEC_IN_WEEK)
+    os.environ["CHECKOV_EXPIRATION_TIME_IN_SEC"] = str(CHECKOV_SEC_IN_WEEK)
     twistcli_path = tmp_path / "twistcli"
     twistcli_path.touch()
     scanner.twistcli_path = twistcli_path
@@ -36,7 +36,7 @@ def test_not_should_download_twistcli(tmp_path: Path):
 def test_should_download_twistcli_again(tmp_path: Path):
     # given
     scanner = Scanner()
-    os.environ["EXPIRATION_TIME_IN_SEC"] = "0"
+    os.environ["CHECKOV_EXPIRATION_TIME_IN_SEC"] = "0"
     twistcli_path = tmp_path / "twistcli"
     twistcli_path.touch()
     scanner.twistcli_path = twistcli_path
