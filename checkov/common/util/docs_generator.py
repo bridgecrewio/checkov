@@ -61,6 +61,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
                 printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
             for check in registry.checks:
+                if not check.resource_types:
+                    # only for platform custom polices with resource_types == all
+                    check.resource_types = ['all']
                 for rt in check.resource_types:
                     printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
 
@@ -74,6 +77,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         graph_registry.load_checks()
         add_from_repository(graph_registry, "resource", "Terraform")
     if any(x in framework_list for x in ("all", "cloudformation")):
+        graph_registry = get_graph_checks_registry("cloudformation")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "CloudFormation")
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if any(x in framework_list for x in ("all", "kubernetes")):
         add_from_repository(k8_registry, "resource", "Kubernetes")
