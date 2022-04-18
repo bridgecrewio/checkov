@@ -41,7 +41,7 @@ class Runner(PackageRunner):
             image_id: str,
             dockerfile_path: str,
             runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> Dict[Any, Any]:
+    ) -> Dict[str, Any]:
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -52,7 +52,8 @@ class Runner(PackageRunner):
             return {}
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
-        cached_results = image_scanner.get_scan_results_from_cache(image_id)
+
+        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(image_id)
         if cached_results:
             logging.info(f"Found cached scan results of image {image_id}")
             return cached_results
