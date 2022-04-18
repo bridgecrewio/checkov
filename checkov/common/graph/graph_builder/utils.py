@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import concurrent
 import hashlib
 import json
@@ -42,3 +44,11 @@ def run_function_multithreaded(
                     future.result()
                 except Exception:
                     raise
+
+
+def filter_sub_keys(key_list: list[str]) -> list[str]:
+    filtered_key_list = []
+    for key in key_list:
+        if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
+            filtered_key_list.append(key)
+    return filtered_key_list

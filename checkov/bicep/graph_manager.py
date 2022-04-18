@@ -36,7 +36,7 @@ class BicepGraphManager(GraphManager):
 
     def build_graph_from_definitions(
         self, definitions: dict[Path, BicepJson], render_variables: bool = True
-    ) -> LocalGraph:
+    ) -> BicepLocalGraph:
         local_graph = BicepLocalGraph(definitions)
-        local_graph.build_graph(False)
+        local_graph.build_graph(render_variables)
         return local_graph

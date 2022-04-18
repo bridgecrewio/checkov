@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
-from typing_extensions import Literal
+from typing_extensions import Literal, TypeAlias
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType as CommonBlockType
+
+BlockTypeAlias: TypeAlias = Literal["targetScope", "param", "var", "resource", "module", "output"]
 
 
 @dataclass

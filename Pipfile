@@ -33,7 +33,7 @@ dlint = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.37"
+bc-python-hcl2 = "==0.3.39"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
@@ -67,7 +67,7 @@ aiomultiprocess = "*"
 jsonpath_ng = "*"
 jsonschema = "~=3.0"
 prettytable = ">=3.0.0"
-pycep-parser = "==0.3.3"
+pycep-parser = "==0.3.4"
 charset-normalizer = "*"
 
 [requires]

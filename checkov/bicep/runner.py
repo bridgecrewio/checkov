@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
@@ -9,6 +10,7 @@ from typing_extensions import Literal
 
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
+from checkov.bicep.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.bicep.parser import Parser
@@ -20,7 +22,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, strtobool
 from checkov.common.typing import _CheckResult
 from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
@@ -28,8 +30,9 @@ from checkov.runner_filter import RunnerFilter
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_builder.local_graph import LocalGraph
     from checkov.common.graph.graph_manager import GraphManager
+
+CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
 
 
 class Runner(BaseRunner):
@@ -44,13 +47,13 @@ class Runner(BaseRunner):
         self,
         db_connector: NetworkxConnector = NetworkxConnector(),
         source: str = "Bicep",
-        graph_class: Type[LocalGraph] = BicepLocalGraph,
+        graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
     ) -> None:
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
-        self.graph_manager = (
+        self.graph_manager: BicepGraphManager = (
             graph_manager if graph_manager else BicepGraphManager(source=source, db_connector=db_connector)
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
@@ -72,6 +75,9 @@ class Runner(BaseRunner):
         if not self.context or not self.definitions:
             file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
 
+            if not file_paths:
+                return report
+
             self.definitions, self.definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)
 
             report.add_parsing_errors(parsing_errors)
@@ -81,20 +87,24 @@ class Runner(BaseRunner):
                     resource_registry.load_external_checks(directory)
                     self.graph_registry.load_external_checks(directory)
 
-            self.context = {}  # TODO: create context
+            if CHECKOV_CREATE_GRAPH:
+                self.context = {}  # TODO: create context
 
-            logging.info("Creating Bicep graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            logging.info("Successfully created Bicep graph")
+                logging.info("Creating Bicep graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                logging.info("Successfully created Bicep graph")
 
-            self.graph_manager.save_graph(local_graph)
-            self.definitions = local_graph.definitions  # TODO: adjust, when implementing variable rendering
+                self.graph_manager.save_graph(local_graph)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                    vertices=local_graph.vertices, root_folder=root_folder
+                )
 
         # run Python checks
         self.add_python_check_results(report=report, runner_filter=runner_filter)
 
-        # run YAML checks
-        self.add_graph_check_results(report=report, runner_filter=runner_filter)
+        # run graph checks
+        if CHECKOV_CREATE_GRAPH:
+            self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
 
@@ -122,7 +132,9 @@ class Runner(BaseRunner):
                             resource_id = f"{conf['type']}.{name}"
                             report.add_resource(f"{cleaned_path}:{resource_id}")
 
-                            suppressions = collect_suppressions_for_report(code_lines=file_code_lines[start_line - 1 : end_line])
+                            suppressions = collect_suppressions_for_report(
+                                code_lines=file_code_lines[start_line - 1 : end_line]
+                            )
 
                             for check, check_result in results.items():
                                 if check.id in suppressions.keys():

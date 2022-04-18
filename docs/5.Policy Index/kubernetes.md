@@ -823,6 +823,12 @@ nav_order: 1
 | 812 | CKV_K8S_152 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain LUA code execution. See CVE-2021-25742         | Kubernetes |
 | 813 | CKV_K8S_153 | resource | Ingress                | Prevent All NGINX Ingress annotation snippets. See CVE-2021-25742                                      | Kubernetes |
 | 814 | CKV_K8S_154 | resource | Ingress                | Prevent NGINX Ingress annotation snippets which contain alias statements See CVE-2021-25742            | Kubernetes |
+| 815 | CKV_K8S_155 | resource | ClusterRole            | Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations  | Kubernetes |
+| 816 | CKV_K8S_156 | resource | ClusterRole            | Minimize ClusterRoles that grant permissions to approve CertificateSigningRequests                     | Kubernetes |
+| 817 | CKV_K8S_157 | resource | ClusterRole            | Minimize Roles and ClusterRoles that grant permissions to bind RoleBindings or ClusterRoleBindings     | Kubernetes |
+| 818 | CKV_K8S_157 | resource | Role                   | Minimize Roles and ClusterRoles that grant permissions to bind RoleBindings or ClusterRoleBindings     | Kubernetes |
+| 819 | CKV_K8S_158 | resource | ClusterRole            | Minimize Roles and ClusterRoles that grant permissions to escalate Roles or ClusterRoles               | Kubernetes |
+| 820 | CKV_K8S_158 | resource | Role                   | Minimize Roles and ClusterRoles that grant permissions to escalate Roles or ClusterRoles               | Kubernetes |
 
 
 ---

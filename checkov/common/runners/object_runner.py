@@ -32,7 +32,7 @@ class Runner(BaseRunner):
     @abstractmethod
     def _parse_file(
         self, f: str
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(
@@ -76,17 +76,18 @@ class Runner(BaseRunner):
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
-                check = result["check"]
+                check = result.pop("check", None)  # use pop to remove Check class which is not serializable from
+                # result record
                 end, start = self.get_start_end_lines(end, result_config, start)
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
                     check_name=check.name,
                     check_result=result,
-                    code_block=definitions_raw[file_path][start:end + 1],
-                    file_path=file_path,
-                    file_line_range=[start + 1, end + 1],
-                    resource=f"{file_path}.{key}",
+                    code_block=definitions_raw[file_path][start - 1:end + 1],
+                    file_path=f"/{os.path.relpath(file_path, root_folder)}",
+                    file_line_range=[start, end + 1],
+                    resource=self.get_resource(file_path, key, check.supported_entities),
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -96,6 +97,9 @@ class Runner(BaseRunner):
                 report.add_record(record)
 
         return report
+
+    def get_resource(self, file_path: str, key: str, supported_entities: list[str]) -> str:
+        return f"{file_path}.{key}"
 
     @abstractmethod
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
