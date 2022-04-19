@@ -11,18 +11,15 @@ import requests
 from aiomultiprocess import Pool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
-from checkov.common.util.http_utils import get_default_get_headers, get_default_post_headers
+
+SLEEP_DURATION = 2
+MAX_SLEEP_DURATION = 60
 
 
 class Scanner:
     def __init__(self) -> None:
         self.base_url = bc_integration.api_url
-        self.headers = merge_dicts(
-            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {"Authorization": bc_integration.get_auth_token()},
-        )
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -52,11 +49,6 @@ class Scanner:
     def run_scan(self, input_path: Path) -> dict:
         logging.info(f"Start to scan package file {input_path}")
 
-        headers = merge_dicts(
-            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {"Authorization": bc_integration.get_auth_token()},
-        )
-
         request_body = {
             "compressedFileBody": compress_file_gzip_base64(str(input_path)),
             "compressionMethod": "gzip",
@@ -64,7 +56,8 @@ class Scanner:
         }
 
         response = requests.request(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan", headers=headers,
+            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan",
+            headers=bc_integration.get_default_headers("GET"),
             data=request_body
         )
 
@@ -83,17 +76,13 @@ class Scanner:
     def run_scan_busy_wait(self, scan_id: str) -> dict:
         current_state = "Empty"
         desired_state = "Result"
-
-        headers = merge_dicts(
-            get_default_get_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {"Authorization": bc_integration.get_auth_token()},
-        )
+        total_sleeping_time = 0
         response = requests.Response()
 
         while current_state != desired_state:
             response = requests.request(
                 "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
-                headers=headers
+                headers=bc_integration.get_default_headers("GET")
             )
             response_json = response.json()
             current_state = response_json["outputType"]
@@ -102,10 +91,15 @@ class Scanner:
                 logging.error(response_json["outputData"])
                 return {}
 
-            time.sleep(2)
+            time.sleep(SLEEP_DURATION)
+            total_sleeping_time += SLEEP_DURATION
+
+            if total_sleeping_time > MAX_SLEEP_DURATION:
+                logging.info(f"Timeout, slept for {total_sleeping_time}")
+                return {}
 
         return json.loads(
-                decompress_file_gzip_base64(
-                    response.json()["outputData"]
-                    )
-                )
+            decompress_file_gzip_base64(
+                response.json()["outputData"]
+            )
+        )

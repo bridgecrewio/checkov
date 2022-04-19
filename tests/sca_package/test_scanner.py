@@ -13,6 +13,9 @@ def assert_equal_dicts(a, b):
     for key, value in a.items():
         if key not in b:
             return False
+        if not isinstance(value, list) and not isinstance(value, dict):
+            if value != b[key]:
+                return False
 
         if isinstance(value, list) and not isinstance(value[0], dict):
             if sorted(value) != sorted(b[key]):

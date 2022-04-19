@@ -8,7 +8,7 @@ def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
 
 
-def compress_file_gzip_base64(input_path: str):
+def compress_file_gzip_base64(input_path: str) -> str:
     try:
         with open(input_path, 'rb') as json_results_file:
             data = json_results_file.read()
@@ -21,7 +21,7 @@ def compress_file_gzip_base64(input_path: str):
         raise
 
 
-def decompress_file_gzip_base64(compressed_file_body: str):
+def decompress_file_gzip_base64(compressed_file_body: str) -> str:
     try:
         # 1. convert string to bytes
         # 2. decode base64 data

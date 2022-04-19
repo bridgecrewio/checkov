@@ -11,8 +11,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
-from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers, get_default_post_headers
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
@@ -89,12 +87,6 @@ class Runner(PackageRunner):
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
         # upload results to cache
-
-        headers = merge_dicts(
-            get_default_post_headers(bc_integration.bc_source, bc_integration.bc_source_version),
-            {"Authorization": bc_integration.get_auth_token()},
-        )
-
         request_body = {
             "compressedResult": compress_file_gzip_base64(str(output_path)),
             "compressionMethod": "gzip",
@@ -102,11 +94,12 @@ class Runner(PackageRunner):
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-            headers=headers, data=request_body
+            headers=bc_integration.get_default_headers("GET"), data=request_body
         )
 
         response.raise_for_status()
         logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+
         # delete the report file
         output_path.unlink()
 

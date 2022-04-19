@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Optional, List, Tuple, Set, Union, Sequence, Dict, Any
+from typing import Optional, List, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
@@ -94,6 +94,8 @@ class Runner(BaseRunner):
             return report
 
         for result in scan_results:
+            if not result:
+                continue
             package_file_path = Path(result["repository"])
             if self._code_repo_path:
                 try:
