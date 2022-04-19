@@ -46,7 +46,7 @@ class ECRPolicy(BaseResourceCheck):
                         f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}"
                     )
                 return CheckResult.UNKNOWN
-        if "Statement" in policy_text.keys():
+        if "Statement" in policy_text.keys() and isinstance(policy_text["Statement"], list):
             for statement_index, statement in enumerate(policy_text["Statement"]):
                 if "Principal" in statement.keys():
                     for principal_index, principal in enumerate(statement["Principal"]):

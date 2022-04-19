@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.33",
+        "bc-python-hcl2==0.3.39",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -66,7 +66,7 @@ setup(
         "jsonpath_ng",
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.2",
+        "pycep-parser==0.3.4",
         "charset-normalizer",
     ],
     license="Apache License 2.0",
@@ -80,7 +80,8 @@ setup(
     packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
-        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks"
+        "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
+        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
         "checkov.terraform.checks.graph_checks": [

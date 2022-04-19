@@ -8,7 +8,7 @@ class ElasticsearchTLSPolicy(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Verify Elasticsearch domain is using an up to date TLS policy"
         id = "CKV_AWS_228"
-        supported_resources = ("aws_elasticsearch_domain",)
+        supported_resources = ("aws_elasticsearch_domain", "aws_opensearch_domain")
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
-from typing import Dict, Optional, Tuple, List, Type, Any
+from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
 
@@ -36,6 +36,7 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
 
+
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
@@ -63,6 +64,9 @@ class Runner(BaseRunner):
         self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
                                                                                                    db_connector=db_connector)
         self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.definitions_with_modules: Dict[str, Dict] = {}
+        self.referrer_cache: Dict[str, str] = {}
+        self.non_referred_cache: Set[str] = set()
 
     block_type_registries = {
         'resource': resource_registry,
@@ -96,7 +100,7 @@ class Runner(BaseRunner):
                     download_external_modules=runner_filter.download_external_modules,
                     external_modules_download_path=runner_filter.external_modules_download_path,
                     parsing_errors=parsing_errors,
-                    excluded_paths=runner_filter.excluded_paths,
+                    excluded_paths=runner_filter.excluded_paths ,
                     vars_files=runner_filter.var_files
                 )
             elif files:
@@ -137,6 +141,8 @@ class Runner(BaseRunner):
         if not connected_entity:
             return None
         connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(connected_entity)
+        if not connected_entity_context:
+            return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data['code_block'] = connected_entity_context.get('code_lines')
@@ -266,8 +272,8 @@ class Runner(BaseRunner):
             caller_file_line_range = None
 
             if module_referrer is not None:
-                referrer_id = self._find_id_for_referrer(full_file_path,
-                                                         self.definitions)
+                referrer_id = self._find_id_for_referrer(full_file_path)
+
                 if referrer_id:
                     entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
@@ -353,7 +359,7 @@ class Runner(BaseRunner):
             parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
             # the exceptions type can un-pickleable so we need to cast them to Exception
             for path, e in file_parsing_errors.items():
-                file_parsing_errors[path] = Exception(str(e))
+                file_parsing_errors[path] = Exception(e.__repr__())
             return file, parse_result, file_parsing_errors
 
         results = parallel_runner.run_function(parse_file, files)
@@ -412,17 +418,37 @@ class Runner(BaseRunner):
         else:
             return file_path, None
 
-    @staticmethod
-    def _find_id_for_referrer(full_file_path, definitions) -> Optional[str]:
-        for file, file_content in definitions.items():
-            if "module" not in file_content:
-                continue
+    def _find_id_for_referrer(self, full_file_path) -> Optional[str]:
+        cached_referrer = self.referrer_cache.get(full_file_path)
+        if cached_referrer:
+            return cached_referrer
+        if full_file_path in self.non_referred_cache:
+            return None
 
+        if not self.definitions_with_modules:
+            self._prepare_definitions_with_modules()
+        for file, file_content in self.definitions_with_modules.items():
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
                     if "__resolved__" not in module_content:
                         continue
 
                     if full_file_path in module_content["__resolved__"]:
-                        return f"module.{module_name}"
+                        id_referrer = f"module.{module_name}"
+                        self.referrer_cache[full_file_path] = id_referrer
+                        return id_referrer
+
+        self.non_referred_cache.add(full_file_path)
         return None
+
+    def _prepare_definitions_with_modules(self):
+        def __cache_file_content(file_modules: list):
+            for modules in file_modules:
+                for module_content in modules.values():
+                    if "__resolved__" in module_content:
+                        self.definitions_with_modules[file] = file_content
+                        return
+
+        for file, file_content in self.definitions.items():
+            if "module" in file_content:
+                __cache_file_content(file_modules=file_content["module"])

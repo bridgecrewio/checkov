@@ -8,6 +8,7 @@ from pathlib import Path
 
 # do not remove; prevents circular import error
 from typing import Dict, Any
+from unittest import mock
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -98,7 +99,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -240,7 +241,7 @@ class TestRunnerValid(unittest.TestCase):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
-                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76 
+                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
@@ -1001,7 +1002,7 @@ class TestRunnerValid(unittest.TestCase):
 
         report = Runner().run(root_folder=f"{current_dir}/resources/module_failure_reporting_772",
                               external_checks_dir=None,
-                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+                              runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
 
         self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 0)
@@ -1015,7 +1016,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_outside = True
                 self.assertEqual(record.resource, "aws_s3_bucket.outside")
                 assert record.file_path == "/main.tf"
-                self.assertEqual(record.file_line_range, [11, 13])
+                self.assertEqual(record.file_line_range, [11, 17])
                 self.assertIsNone(record.caller_file_path)
                 self.assertIsNone(record.caller_file_line_range)
 
@@ -1023,7 +1024,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_inside = True
                 self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
                 assert record.file_path == "/module/module.tf"
-                self.assertEqual(record.file_line_range, [7, 9])
+                self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
                 # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
                 #             A bug might have been fixed.
@@ -1178,7 +1179,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
@@ -1194,7 +1195,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_no_duplicate_results(self):
@@ -1342,6 +1343,39 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    def test_runner_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=True (default)"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 1)
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs_and_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=False"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 3)
+
+    def test_runner_scan_default_env_vars(self):
+        """CKV_IGNORED_DIRECTORIES and CKV_IGNORE_HIDDEN_DIRECTORIES are equal to default"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 2)
+
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs(self):
+        """CKV_IGNORE_HIDDEN_DIRECTORIES=False and CKV_IGNORED_DIRECTORIES equals to default value"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 5)
+
+    def scan_hidden_dir(self):
+        """ scan resources/hidden_dir directory."""
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'hidden_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"]))
+        return report
 
     def test_severity_check_filter(self):
         custom_check_id = "MY_CUSTOM_CHECK"

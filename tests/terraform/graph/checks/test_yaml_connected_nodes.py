@@ -1,7 +1,6 @@
 import os
 import unittest
 import warnings
-
 from checkov.terraform import checks
 from .test_yaml_policies import load_yaml_data, get_policy_results
 
@@ -18,19 +17,31 @@ class TestYamlConnectedNodes(unittest.TestCase):
         assert report.failed_checks[1].connected_node is None
         assert report.failed_checks[2].connected_node['file_path'] == '/main.tf'
         assert report.failed_checks[2].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_1'
-        assert report.failed_checks[2].connected_node['file_line_range'] == [82, 91]
+        assert report.failed_checks[2].connected_node['file_line_range'] == [163, 172]
         assert report.failed_checks[3].connected_node['file_path'] == '/main.tf'
         assert report.failed_checks[3].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_2'
-        assert report.failed_checks[3].connected_node['file_line_range'] == [93, 101]
+        assert report.failed_checks[3].connected_node['file_line_range'] == [174, 182]
+        assert report.failed_checks[4].connected_node is None
+        assert report.failed_checks[5].connected_node['file_path'] == '/main.tf'
+        assert report.failed_checks[5].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_3'
+        assert report.failed_checks[5].connected_node['file_line_range'] == [184, 195]
 
         assert report.passed_checks[0].connected_node is None
         assert report.passed_checks[1].connected_node is None
-        assert report.passed_checks[2].connected_node['file_path'] == '/main.tf'
-        assert report.passed_checks[2].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_1'
-        assert report.passed_checks[2].connected_node['file_line_range'] == [60, 69]
-        assert report.passed_checks[3].connected_node['file_path'] == '/main.tf'
-        assert report.passed_checks[3].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_2'
-        assert report.passed_checks[3].connected_node['file_line_range'] == [71, 80]
+        assert report.passed_checks[2].connected_node is None
+        assert report.passed_checks[3].connected_node is None
+        assert report.passed_checks[4].connected_node['file_path'] == '/main.tf'
+        assert report.passed_checks[4].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_1'
+        assert report.passed_checks[4].connected_node['file_line_range'] == [117, 126]
+        assert report.passed_checks[5].connected_node['file_path'] == '/main.tf'
+        assert report.passed_checks[5].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_2'
+        assert report.passed_checks[5].connected_node['file_line_range'] == [128, 137]
+        assert report.passed_checks[6].connected_node['file_path'] == '/main.tf'
+        assert report.passed_checks[6].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_3'
+        assert report.passed_checks[6].connected_node['file_line_range'] == [139, 150]
+        assert report.passed_checks[7].connected_node['file_path'] == '/main.tf'
+        assert report.passed_checks[7].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_4'
+        assert report.passed_checks[7].connected_node['file_line_range'] == [152, 161]
 
 
     def test_S3BucketLogging_connected_node(self):

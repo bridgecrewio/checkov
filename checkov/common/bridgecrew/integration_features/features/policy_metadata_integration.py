@@ -33,15 +33,19 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
             all_checks = BaseCheckRegistry.get_all_registered_checks()
 
-            graph_registry = get_graph_checks_registry("terraform")
-            graph_registry.load_checks()
+            registries = ['terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan']
+
+            for r in registries:
+                registry = get_graph_checks_registry(r)
+                registry.load_checks()
+                all_checks += registry.checks
 
             use_prisma_metadata = self.bc_integration.is_prisma_integration()
 
             if use_prisma_metadata:
                 self.severity_key = 'pcSeverity'
 
-            for check in all_checks + graph_registry.checks:
+            for check in all_checks:
                 checkov_id = check.id
                 metadata = self.get_policy_metadata(checkov_id)
                 if metadata:
@@ -59,10 +63,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
-    def get_bc_id(self, checkov_id):
+    def get_bc_id(self, checkov_id: str) -> str:
         return self.check_metadata.get(checkov_id, {}).get('id')
 
-    def get_guideline(self, checkov_id):
+    def get_guideline(self, checkov_id: str) -> str:
         return self.check_metadata.get(checkov_id, {}).get('guideline')
 
     def get_severity(self, checkov_id):

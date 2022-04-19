@@ -76,18 +76,16 @@ class Runner(BaseRunner):
                     for resource in definitions[arm_file]['resources']:
                         if isinstance(resource, dict) and "parent_name" in resource.keys():
                             continue
-                        nested_resources = []
                         nested_resources = arm_context_parser.search_deep_keys("resources", resource, [])
                         if nested_resources:
                             for nr in nested_resources:
                                 nr_element = nr.pop()
                                 if nr_element:
                                     for element in nr_element:
-                                        new_resource = {}
                                         new_resource = element
                                         if isinstance(new_resource, dict):
-                                            new_resource["parent_name"] = resource["name"]
-                                            new_resource["parent_type"] = resource["type"]
+                                            new_resource["parent_name"] = resource.get("name", "")
+                                            new_resource["parent_type"] = resource.get("type", "")
                                             definitions[arm_file]['resources'].append(new_resource)
 
                     for resource in definitions[arm_file]['resources']:

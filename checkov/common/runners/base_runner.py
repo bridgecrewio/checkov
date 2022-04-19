@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import itertools
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Any, Union
+from typing import List, Dict, Optional, Any, Union, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
-IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
+if TYPE_CHECKING:
+    from checkov.common.checks_infra.registry import Registry
+    from checkov.common.graph.checks_infra.registry import BaseRegistry
+    from checkov.common.graph.graph_manager import GraphManager
 
 
 def strtobool(val: str) -> int:
@@ -27,6 +32,8 @@ def strtobool(val: str) -> int:
         raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
 
 
+CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
+IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
@@ -35,11 +42,11 @@ ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 class BaseRunner(ABC):
     check_type = ""
     definitions = None
-    context = None
+    context: dict[str, dict[str, Any]] | None = None
     breadcrumbs = None
-    external_registries = None
-    graph_manager = None
-    graph_registry = None
+    external_registries: list[BaseRegistry] | None = None
+    graph_manager: GraphManager | None = None
+    graph_registry: Registry | None = None
 
     @abstractmethod
     def run(
@@ -56,8 +63,9 @@ class BaseRunner(ABC):
             self,
             definitions: Optional[Dict[str, Dict[str, Any]]],
             context: Optional[Dict[str, Dict[str, Any]]],
-            breadcrumbs: Optional[Dict],
-    ):
+            breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
+            **kwargs
+    ) -> None:
         self.definitions = definitions
         self.context = context
         self.breadcrumbs = breadcrumbs

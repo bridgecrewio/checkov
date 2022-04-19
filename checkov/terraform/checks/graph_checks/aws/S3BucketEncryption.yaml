@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure all data stored in the S3 bucket is securely encrypted at rest"
   category: "ENCRYPTION"
-  id: "CKV2_AWS_40"
+  id: "CKV_AWS_19"
 definition:
   or:
     - cond_type: attribute
@@ -36,6 +36,12 @@ definition:
       attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
       operator: starting_with
       value: "local."
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
+      operator: starting_with
+      value: "\"${"
     - and:
       - cond_type: filter
         attribute: resource_type
@@ -81,3 +87,9 @@ definition:
           attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
           operator: starting_with
           value: "local."
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_server_side_encryption_configuration
+          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
+          operator: starting_with
+          value: "\"${"
