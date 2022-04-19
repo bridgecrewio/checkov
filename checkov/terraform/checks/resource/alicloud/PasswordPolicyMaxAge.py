@@ -1,6 +1,5 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.util.type_forcers import force_int
 
 
 class PasswordPolicyMaxAge(BaseResourceValueCheck):

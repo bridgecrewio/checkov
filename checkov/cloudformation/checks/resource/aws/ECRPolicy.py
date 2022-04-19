@@ -8,7 +8,6 @@ from typing import Any
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.parsers.node import StrNode
 
 
 class ECRPolicy(BaseResourceCheck):

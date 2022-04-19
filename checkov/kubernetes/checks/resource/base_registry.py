@@ -1,9 +1,7 @@
-from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
-
     def extract_entity_details(self, entity):
         kind = entity["kind"]
         conf = entity

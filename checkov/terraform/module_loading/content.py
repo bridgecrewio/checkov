@@ -1,6 +1,5 @@
 import tempfile
-from types import TracebackType
-from typing import Optional, Union, Type
+from typing import Optional, Union
 
 
 class ModuleContent(object):
