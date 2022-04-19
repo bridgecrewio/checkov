@@ -69,6 +69,40 @@ def test_create_report_record():
     ]
 
 
+def test_create_report_record_moderate_severity():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    vulnerability_details = {
+        "id": "CVE-2019-19844",
+        "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+        "cvss": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+        "severity": "moderate",
+        "packageName": "django",
+        "packageVersion": "1.2",
+        "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+        "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
+        "impactedVersions": ["<1.11.27"],
+        "publishedDate": "2019-12-18T20:15:00+01:00",
+        "discoveredDate": "2019-12-18T19:15:00Z",
+        "fixDate": "2019-12-18T20:15:00+01:00",
+    }
+
+    # when
+    record = create_report_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+    )
+
+    # then
+    assert record.severity == Severities[BcSeverities.MEDIUM]
+
+
 def test_create_report_record_severity_filter():
     # given
     rootless_file_path = "requirements.txt"
