@@ -338,6 +338,11 @@ To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECT
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`.
  Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
 
+#### Console Output
+
+The console output is in colour by default, to switch to a monochrome output, set the environment variable:
+`ANSI_COLORS_DISABLED`
+
 #### VSCODE Extension
 
 If you want to use checkov's within vscode, give a try to the vscode extension available at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
@@ -411,7 +416,6 @@ Defaults:
   --external-modules-download-path:.external_modules
   --evaluate-variables:True
 ```
-
 ## Contributing
 
 Contribution is welcomed! 
