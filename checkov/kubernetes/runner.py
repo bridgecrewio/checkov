@@ -12,12 +12,13 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
+
 
 class Runner(BaseRunner):
     def __init__(
@@ -48,20 +49,28 @@ class Runner(BaseRunner):
             if external_checks_dir:
                 for directory in external_checks_dir:
                     registry.load_external_checks(directory)
-                    self.graph_registry.load_external_checks(directory)
+
+                    if CHECKOV_CREATE_GRAPH:
+                        self.graph_registry.load_external_checks(directory)
+
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
 
-            logging.info("creating kubernetes graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-            for vertex in local_graph.vertices:
-                file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
-                report.add_resource(f'{file_abs_path}:{vertex.id}')
-            self.graph_manager.save_graph(local_graph)
-            self.definitions = local_graph.definitions
+            if CHECKOV_CREATE_GRAPH:
+                logging.info("creating Kubernetes graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                logging.info("Successfully created Kubernetes graph")
+
+                for vertex in local_graph.vertices:
+                    file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
+                    report.add_resource(f'{file_abs_path}:{vertex.id}')
+                self.graph_manager.save_graph(local_graph)
+                self.definitions = local_graph.definitions
 
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments, helmChart=helmChart)
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter, helmChart=helmChart)
-        merge_reports(report, graph_report)
+
+        if CHECKOV_CREATE_GRAPH:
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter, helmChart=helmChart)
+            merge_reports(report, graph_report)
 
         return report
 
@@ -146,6 +155,7 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
 
 def _get_entity_abs_path(root_folder, entity_file_path):
     if entity_file_path[0] == '/' and (root_folder and not entity_file_path.startswith(root_folder)):

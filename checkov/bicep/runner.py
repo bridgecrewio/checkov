@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
@@ -22,7 +21,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
-from checkov.common.runners.base_runner import BaseRunner, strtobool
+from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
@@ -31,8 +30,6 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager
-
-CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
 
 
 class Runner(BaseRunner):
@@ -85,11 +82,13 @@ class Runner(BaseRunner):
             if external_checks_dir:
                 for directory in external_checks_dir:
                     resource_registry.load_external_checks(directory)
-                    self.graph_registry.load_external_checks(directory)
+
+                    if CHECKOV_CREATE_GRAPH:
+                        self.graph_registry.load_external_checks(directory)
+
+            self.context = {}  # TODO: create context
 
             if CHECKOV_CREATE_GRAPH:
-                self.context = {}  # TODO: create context
-
                 logging.info("Creating Bicep graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
                 logging.info("Successfully created Bicep graph")
