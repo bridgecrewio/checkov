@@ -4,7 +4,6 @@ import io
 import logging
 import operator
 import os
-import shutil
 import subprocess  # nosec
 import tempfile
 from functools import reduce

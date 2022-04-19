@@ -20,7 +20,6 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
-from checkov.common.runners.base_runner import ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
