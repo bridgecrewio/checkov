@@ -18,7 +18,7 @@ DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratin
 
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
-ANSI_COLORS_DISABLED  = bool(os.getenv('ANSI_COLORS_DISABLED'))
+ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
 
 class Record:
     check_id = ""
