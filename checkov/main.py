@@ -520,4 +520,12 @@ def normalize_config(config: Namespace) -> None:
 
 
 if __name__ == '__main__':
-    sys.exit(run())
+    from timeit import default_timer as timer
+    from datetime import timedelta
+
+    start = timer()
+
+    run()
+
+    end = timer()
+    print(f"elapsed time: {timedelta(seconds=end - start)}")

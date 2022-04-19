@@ -1,5 +1,4 @@
 from checkov.common.models.enums import CheckCategories
-from typing import Any
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 

@@ -25,7 +25,6 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
-
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
@@ -38,7 +37,7 @@ class Runner(BaseRunner):
             root_folder: Optional[Union[str, Path]],
             files: Optional[List[str]] = None,
             runner_filter: RunnerFilter = RunnerFilter(),
-            exclude_package_json: bool = True,
+            exclude_package_json: bool = True
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):

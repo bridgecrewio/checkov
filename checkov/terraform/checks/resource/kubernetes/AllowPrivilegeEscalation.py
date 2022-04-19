@@ -1,10 +1,8 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from typing import Any, List
 
 
 class AllowPrivilegeEscalation(BaseResourceCheck):
-
     def __init__(self):
         # CIS-1.3 1.7.5
         # CIS-1.5 5.2.5
