@@ -29,9 +29,7 @@ def test_not_should_download_twistcli(tmp_path: Path):
 
     # then
     assert not scanner.should_download()
-    # cleaning mock file
-    twistcli_path.unlink()
-
+   
 
 def test_should_download_twistcli_again(tmp_path: Path):
     # given
@@ -43,9 +41,7 @@ def test_should_download_twistcli_again(tmp_path: Path):
 
     # then
     assert scanner.should_download()
-    # cleaning mock file
-    twistcli_path.unlink()
-
+   
 
 def test_cleanup_twistcli_exists(tmp_path: Path):
     # given
