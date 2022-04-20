@@ -80,7 +80,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "cloudformation")):
         graph_registry = get_graph_checks_registry("cloudformation")
         graph_registry.load_checks()
-        add_from_repository(graph_registry, "resource", "CloudFormation")
+        add_from_repository(graph_registry, "resource", "Cloudformation")
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if any(x in framework_list for x in ("all", "kubernetes")):
         add_from_repository(k8_registry, "resource", "Kubernetes")
