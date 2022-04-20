@@ -7,5 +7,7 @@ ignore_templates:
   - tests/cloudformation/checks/resource/aws/example_AthenaWorkgroupConfiguration/*
   # added resource with Properties, which is not supported by cfn-lint
   - tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
+  # includes tests with booleans as strings
+  - tests/cloudformation/checks/resource/aws/example_ECRImageScanning/*
 ignore_checks:
   - W
