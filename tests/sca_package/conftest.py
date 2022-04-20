@@ -31,20 +31,20 @@ def scan_result2() -> Dict[str, Any]:
                 "type": "python",
                 "name": "django",
                 "version": "1.2",
-                "path": "/tmp/results/requirements.txt",
+                "path": "/tmp/results/requirements.txt"
             },
             {
                 "type": "python",
                 "name": "flask",
                 "version": "0.6",
-                "path": "/tmp/results/requirements.txt",
+                "path": "/tmp/results/requirements.txt"
             },
             {
                 "type": "python",
                 "name": "requests",
                 "version": "2.26.0",
-                "path": "/tmp/results/requirements.txt",
-            },
+                "path": "/tmp/results/requirements.txt"
+            }
         ],
         "complianceIssues": None,
         "complianceDistribution": {
@@ -52,46 +52,9 @@ def scan_result2() -> Dict[str, Any]:
             "high": 0,
             "medium": 0,
             "low": 0,
-            "total": 0,
+            "total": 0
         },
         "vulnerabilities": [
-            {
-                "id": "CVE-2018-1000656",
-                "status": "fixed in 0.12.3",
-                "cvss": 7.5,
-                "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                "description": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.",
-                "severity": "high",
-                "packageName": "flask",
-                "packageVersion": "0.6",
-                "link": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
-                "riskFactors": [
-                    "High severity",
-                    "Attack complexity: low",
-                    "Attack vector: network",
-                    "DoS",
-                    "Has fix",
-                ],
-                "impactedVersions": ["<0.12.3"],
-                "publishedDate": "2018-08-20T19:31:00Z",
-                "discoveredDate": "2018-08-20T19:31:00Z",
-                "fixDate": "2018-08-20T19:31:00Z",
-            },
-            {
-                "id": "CVE-2019-1010083",
-                "status": "fixed in 1.0",
-                "cvss": 7.5,
-                "description": "Red Hat\\'s versions of the associated software have been determined to NOT be affected by CVE-2019-1010083.",
-                "severity": "high",
-                "packageName": "flask",
-                "packageVersion": "0.6",
-                "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
-                "riskFactors": ["Has fix", "High severity"],
-                "impactedVersions": ["<1.0"],
-                "publishedDate": "2018-04-26T00:00:00Z",
-                "discoveredDate": "2018-04-26T00:00:00Z",
-                "fixDate": "2019-07-17T14:15:00Z",
-            },
             {
                 "id": "CVE-2016-6186",
                 "status": "fixed in 1.9.8, 1.8.14",
@@ -107,12 +70,14 @@ def scan_result2() -> Dict[str, Any]:
                     "Attack vector: network",
                     "Exploit exists",
                     "Has fix",
-                    "Medium severity",
+                    "Medium severity"
                 ],
-                "impactedVersions": ["<=1.8.13"],
+                "impactedVersions": [
+                    "<=1.8.13"
+                ],
                 "publishedDate": "2016-08-05T15:59:00Z",
                 "discoveredDate": "2016-08-05T15:59:00Z",
-                "fixDate": "2016-08-05T15:59:00Z",
+                "fixDate": "2016-08-05T15:59:00Z"
             },
             {
                 "id": "CVE-2016-7401",
@@ -128,51 +93,118 @@ def scan_result2() -> Dict[str, Any]:
                     "Attack complexity: low",
                     "Attack vector: network",
                     "Has fix",
-                    "High severity",
+                    "High severity"
                 ],
-                "impactedVersions": ["<=1.8.14"],
+                "impactedVersions": [
+                    "<=1.8.14"
+                ],
                 "publishedDate": "2016-10-03T18:59:00Z",
                 "discoveredDate": "2016-10-03T18:59:00Z",
-                "fixDate": "2016-10-03T18:59:00Z",
+                "fixDate": "2016-10-03T18:59:00Z"
             },
             {
                 "id": "CVE-2019-19844",
                 "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
                 "cvss": 9.8,
-                "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)",
+                "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\\\\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)",
                 "severity": "critical",
                 "packageName": "django",
                 "packageVersion": "1.2",
                 "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
-                "riskFactors": ["Critical severity", "Has fix"],
-                "impactedVersions": ["<1.11.27"],
-                "publishedDate": "2021-10-04T10:23:14Z",
-                "discoveredDate": "2021-10-04T10:23:14Z",
-                "fixDate": "2019-12-18T19:15:00Z",
+                "riskFactors": [
+                    "Attack complexity: low",
+                    "Attack vector: network",
+                    "Critical severity",
+                    "Has fix"
+                ],
+                "impactedVersions": [
+                    "<1.11.27"
+                ],
+                "publishedDate": "2019-12-18T19:15:00Z",
+                "discoveredDate": "2019-12-18T19:15:00Z",
+                "fixDate": "2019-12-18T19:15:00Z"
             },
             {
                 "id": "CVE-2021-33203",
                 "status": "fixed in 3.2.4, 3.1.12, 2.2.24",
                 "cvss": 4.9,
+                "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
                 "description": "Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.",
                 "severity": "medium",
                 "packageName": "django",
                 "packageVersion": "1.2",
                 "link": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
-                "riskFactors": ["Has fix", "Medium severity", "Recent vulnerability"],
-                "impactedVersions": ["<2.2.24"],
-                "publishedDate": "2021-06-16T11:53:17Z",
-                "discoveredDate": "2021-06-16T11:53:17Z",
-                "fixDate": "2021-06-08T18:15:00Z",
+                "riskFactors": [
+                    "Has fix",
+                    "Medium severity",
+                    "Recent vulnerability",
+                    "Attack complexity: low",
+                    "Attack vector: network"
+                ],
+                "impactedVersions": [
+                    "<2.2.24"
+                ],
+                "publishedDate": "2021-06-08T18:15:00Z",
+                "discoveredDate": "2021-06-08T18:15:00Z",
+                "fixDate": "2021-06-08T18:15:00Z"
             },
+            {
+                "id": "CVE-2018-1000656",
+                "status": "fixed in 0.12.3",
+                "cvss": 7.5,
+                "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                "description": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.",
+                "severity": "high",
+                "packageName": "flask",
+                "packageVersion": "0.6",
+                "link": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
+                "riskFactors": [
+                    "Attack complexity: low",
+                    "Attack vector: network",
+                    "DoS",
+                    "Has fix",
+                    "High severity"
+                ],
+                "impactedVersions": [
+                    "<0.12.3"
+                ],
+                "publishedDate": "2018-08-20T19:31:00Z",
+                "discoveredDate": "2018-08-20T19:31:00Z",
+                "fixDate": "2018-08-20T19:31:00Z"
+            },
+            {
+                "id": "CVE-2019-1010083",
+                "status": "fixed in 1.0",
+                "cvss": 7.5,
+                "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                "description": "The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.",
+                "severity": "high",
+                "packageName": "flask",
+                "packageVersion": "0.6",
+                "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
+                "riskFactors": [
+                    "Has fix",
+                    "High severity",
+                    "Attack complexity: low",
+                    "Attack vector: network",
+                    "DoS"
+                ],
+                "impactedVersions": [
+                    "<1.0"
+                ],
+                "publishedDate": "2019-07-17T14:15:00Z",
+                "discoveredDate": "2019-07-17T14:15:00Z",
+                "fixDate": "2019-07-17T14:15:00Z"
+            }
         ],
         "vulnerabilityDistribution": {
             "critical": 1,
             "high": 3,
             "medium": 2,
             "low": 0,
-            "total": 6,
-        },
+            "total": 6
+        }
     }
 
 

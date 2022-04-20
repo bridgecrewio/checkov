@@ -92,12 +92,12 @@ class Scanner:
                 logging.error(response_json["outputData"])
                 return {}
 
-            time.sleep(SLEEP_DURATION)
-            total_sleeping_time += SLEEP_DURATION
-
             if total_sleeping_time > MAX_SLEEP_DURATION:
                 logging.info(f"Timeout, slept for {total_sleeping_time}")
                 return {}
+
+            time.sleep(SLEEP_DURATION)
+            total_sleeping_time += SLEEP_DURATION
 
         return json.loads(
             decompress_file_gzip_base64(
