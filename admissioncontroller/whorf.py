@@ -43,8 +43,10 @@ def validating_webhook():
     yaml.dump(todict(request_info["request"]["object"]), yf)
 
     print("Running checkov")
-    cp = subprocess.run(["checkov", "--config-file", configfile, "-f", yamlfile],
-                        universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cp = subprocess.run(
+        ["checkov", "--config-file", configfile, "-f", yamlfile],
+        universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
 
     checkovresults = json.loads(cp.stdout)
 
