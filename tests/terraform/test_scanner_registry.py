@@ -1,7 +1,7 @@
 import unittest
 
 # do not remove this - prevents circular import dependency
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration  # noqa
 
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry

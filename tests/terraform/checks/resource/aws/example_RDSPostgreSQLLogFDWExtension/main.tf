@@ -50,3 +50,11 @@ resource "aws_db_instance" "postgres_unknown" {
   engine         = "postgres"
   engine_version = var.engine_version
 }
+
+
+resource "aws_db_instance" "unknown_two_parts" {
+  name           = "name"
+  instance_class = "db.t3.micro"
+  engine         = "postgres"
+  engine_version = "9.6"
+}

@@ -1,11 +1,8 @@
-from typing import Any
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class CPURequests(BaseResourceCheck):
-
     def __init__(self):
         name = "CPU requests should be set"
         id = "CKV_K8S_10"

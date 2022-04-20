@@ -1,61 +1,47 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
-from mock import AsyncMock, MagicMock
+from mock import AsyncMock
 from pytest_mock import MockerFixture
 
-from checkov.sca_package.scanner import Scanner
+from checkov.sca_package.scanner import Scanner, CHECKOV_SEC_IN_WEEK
 
 
-def test_setup_twistcli_exists(mocker: MockerFixture, tmp_path: Path):
+def test_should_download_new_twistcli(tmp_path: Path):
     # given
     scanner = Scanner()
+    twistcli_path = tmp_path / "twistcli"
+    scanner.twistcli_path = twistcli_path
 
-    integration_mock = MagicMock()
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
-    )
+    # then
+    assert scanner.should_download()
 
-    # prepare local paths
+
+def test_not_should_download_twistcli(tmp_path: Path):
+    # given
+    scanner = Scanner()
+    os.environ["CHECKOV_EXPIRATION_TIME_IN_SEC"] = str(CHECKOV_SEC_IN_WEEK)
     twistcli_path = tmp_path / "twistcli"
     twistcli_path.touch()
     scanner.twistcli_path = twistcli_path
 
-    # when
-    scanner.setup_twictcli()
-
     # then
-    assert twistcli_path.exists()
-    integration_mock.assert_not_called()
+    assert not scanner.should_download()
+   
 
-
-def test_setup_twistcli_not_exists(mocker: MockerFixture, tmp_path: Path):
+def test_should_download_twistcli_again(tmp_path: Path):
     # given
     scanner = Scanner()
-
-    def download_twistcli(cli_file_name: Path):
-        cli_file_name.touch()
-
-    integration_mock = MagicMock()
-    integration_mock.side_effect = download_twistcli
-    mocker.patch(
-        "checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning.package_scanning_integration.download_twistcli",
-        side_effect=integration_mock,
-    )
-
-    # prepare local paths
+    os.environ["CHECKOV_EXPIRATION_TIME_IN_SEC"] = "0"
     twistcli_path = tmp_path / "twistcli"
+    twistcli_path.touch()
     scanner.twistcli_path = twistcli_path
 
-    # when
-    scanner.setup_twictcli()
-
     # then
-    assert twistcli_path.exists()
-    integration_mock.assert_called_once_with(twistcli_path)
-
+    assert scanner.should_download()
+   
 
 def test_cleanup_twistcli_exists(tmp_path: Path):
     # given

@@ -25,7 +25,6 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
-
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
@@ -34,12 +33,12 @@ class Runner(BaseRunner):
         self._code_repo_path: Optional[Path] = None
 
     def prepare_and_scan(
-            self,
-            root_folder: Optional[Union[str, Path]],
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
-            exclude_package_json: bool = True,
-            cleanup_twistcli: bool = True,
+        self,
+        root_folder: Optional[Union[str, Path]],
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        exclude_package_json: bool = True,
+        cleanup_twistcli: bool = False,
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):

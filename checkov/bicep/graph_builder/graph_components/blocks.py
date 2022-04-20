@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from typing_extensions import Literal
-
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
 

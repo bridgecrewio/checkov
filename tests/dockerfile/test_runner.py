@@ -7,17 +7,15 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
-from checkov.dockerfile.runner import Runner
+from checkov.dockerfile.runner import Runner, get_files_definitions
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = registry.checks
 
@@ -266,9 +264,18 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_get_files_definitions(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dockerfile = current_dir + "/resources/name_variations/Dockerfile.prod"
+        not_valid_dockerfile = current_dir + "/resources/not_dockerfile/dockerfile.png"
+        results = get_files_definitions([valid_dockerfile, not_valid_dockerfile])
+        assert len(results) == 2
+        assert len(results[0]) == 1 and list(results[0].keys())[0] == valid_dockerfile
+        assert len(results[1]) == 1 and list(results[1].keys())[0] == valid_dockerfile
+
+
     def tearDown(self) -> None:
         registry.checks = self.orig_checks
-
 
 
 if __name__ == '__main__':

@@ -1,11 +1,8 @@
-from typing import Any
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class DefaultServiceAccountBinding(BaseResourceCheck):
-
     def __init__(self):
         # CIS-1.5 5.1.5
         name = "Ensure that default service accounts are not actively used"
