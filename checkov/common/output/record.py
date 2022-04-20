@@ -167,7 +167,6 @@ class Record:
         )
         code_lines = ""
         if self.code_block:
-            ANSI_COLORS_DISABLED
             code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:
