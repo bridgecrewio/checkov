@@ -27,8 +27,8 @@ def decompress_file_gzip_base64(compressed_file_body: str) -> str:
         # 2. decode base64 data
         # 3. wrap decoded binary data with BytesIO to enable reading
         # 4. gunzip compressed data
-        decoded_utf8 = bytes(compressed_file_body, "utf-8")
-        decoded_base64 = base64.b64decode(decoded_utf8)
+        base64_bytes = compressed_file_body.encode("utf-8")
+        decoded_base64 = base64.b64decode(base64_bytes)
         with gzip.open(io.BytesIO(decoded_base64), 'rb') as file_extracted_body:
             return file_extracted_body.read()
     except Exception:
