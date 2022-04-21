@@ -1,4 +1,4 @@
-resource "aws_api_gateway_rest_api" "pass" {
+resource "aws_api_gateway_rest_api" "regional" {
   name = var.name
 
   policy = ""
@@ -56,24 +56,24 @@ resource "aws_api_gateway_stage" "no_api" {
   stage_name    = "example"
 }
 
-resource "aws_api_gateway_stage" "pass" {
+resource "aws_api_gateway_stage" "regional" {
   deployment_id = aws_api_gateway_deployment.example.id
-  rest_api_id   = aws_api_gateway_rest_api.pass.id
+  rest_api_id   = aws_api_gateway_rest_api.regional.id
   stage_name    = "example"
 }
 
-resource "aws_api_gateway_stage" "wafv2_pass" {
+resource "aws_api_gateway_stage" "wafv2_regional" {
   deployment_id = aws_api_gateway_deployment.example.id
-  rest_api_id   = aws_api_gateway_rest_api.pass.id
+  rest_api_id   = aws_api_gateway_rest_api.regional.id
   stage_name    = "example"
 }
 
-resource "aws_wafregional_web_acl_association" "pass" {
-  resource_arn = aws_api_gateway_stage.pass.arn
+resource "aws_wafregional_web_acl_association" "regional" {
+  resource_arn = aws_api_gateway_stage.regional.arn
   web_acl_id   = aws_wafregional_web_acl.foo.id
 }
 
-resource "aws_wafv2_web_acl_association" "pass" {
-  resource_arn = aws_api_gateway_stage.wafv2_pass.arn
+resource "aws_wafv2_web_acl_association" "regional" {
+  resource_arn = aws_api_gateway_stage.wafv2_regional.arn
   web_acl_id   = aws_wafv2_web_acl.foo.id
 }
