@@ -97,6 +97,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.bc_id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
+        check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
