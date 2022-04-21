@@ -8,6 +8,16 @@ resource "aws_api_gateway_rest_api" "regional" {
   }
 }
 
+resource "aws_api_gateway_rest_api" "edge" {
+  name = var.name
+
+  policy = ""
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
 resource "aws_api_gateway_rest_api" "private" {
   name = var.name
 
@@ -75,5 +85,16 @@ resource "aws_wafregional_web_acl_association" "regional" {
 
 resource "aws_wafv2_web_acl_association" "regional" {
   resource_arn = aws_api_gateway_stage.wafv2_regional.arn
+  web_acl_id   = aws_wafv2_web_acl.foo.id
+}
+
+resource "aws_api_gateway_stage" "wafv2_edge" {
+  deployment_id = aws_api_gateway_deployment.example.id
+  rest_api_id   = aws_api_gateway_rest_api.edge.id
+  stage_name    = "example"
+}
+
+resource "aws_wafv2_web_acl_association" "edge" {
+  resource_arn = aws_api_gateway_stage.wafv2_edge.arn
   web_acl_id   = aws_wafv2_web_acl.foo.id
 }
