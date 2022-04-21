@@ -36,3 +36,5 @@ def test_get_checks_returned_frameworks(input_frameworks: Optional[List[str]], e
     actual_frameworks = {c[4] for c in checks}
 
     assert actual_frameworks == expected_frameworks
+
+def test_get_checks_

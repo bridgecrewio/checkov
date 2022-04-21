@@ -105,7 +105,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "bicep")):
         graph_registry = get_graph_checks_registry("bicep")
         graph_registry.load_checks()
-        add_from_repository(graph_registry, "resource", "bicep")
+        add_from_repository(graph_registry, "resource", "Bicep")
         add_from_repository(bicep_param_registry, "parameter", "Bicep")
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "openapi")):
