@@ -35,8 +35,9 @@ class Runner(BaseRunner):
         source: str = "CloudFormation",
         graph_class: Type[LocalGraph] = CloudformationLocalGraph,
         graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None,
+        external_registries: Optional[List[BaseRegistry]] = None
     ) -> None:
+        super().__init__(file_extensions=['.json', '.yml', '.yaml'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = (

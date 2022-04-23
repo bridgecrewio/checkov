@@ -26,6 +26,10 @@ class Runner(BaseRunner):
     helm_command = 'helm'
     system_deps = True
 
+    def __init__(self):
+        super().__init__()
+        self.file_names = ['Chart.yaml']
+
     @staticmethod
     def find_chart_directories(root_folder, files, excluded_paths):
         chart_directories = []

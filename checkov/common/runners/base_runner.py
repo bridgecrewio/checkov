@@ -48,6 +48,10 @@ class BaseRunner(ABC):
     graph_manager: GraphManager | None = None
     graph_registry: Registry | None = None
 
+    def __init__(self, file_extensions=Optional[List[str]], file_names=Optional[List[str]]):
+        self.file_extensions = file_extensions
+        self.file_names = file_names
+
     @abstractmethod
     def run(
             self,
@@ -58,6 +62,21 @@ class BaseRunner(ABC):
             collect_skip_comments: bool = True,
     ) -> Report:
         pass
+
+    def should_scan_file(self, filename: str) -> bool:
+        # runners that are always applicable can do nothing and be included
+        if not self.file_extensions and not self.file_names:
+            return True
+
+        basename = os.path.basename(filename)
+        if basename and self.file_names and basename in self.file_names:
+            return True
+
+        extension = os.path.splitext(filename)
+        if extension and self.file_extensions and extension in self.file_extensions:
+            return True
+
+        return False
 
     def set_external_data(
             self,
