@@ -287,6 +287,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         exit_code = runner_registry.print_reports([result], config, url=url)
         return exit_code
     elif config.file:
+        runner_registry.filter_runners_for_files(config.file)
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
         if baseline:
@@ -360,7 +361,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--framework',
                help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
-               default=None,
+               default=["all"],
                nargs="+")
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure code frameworks. \n'

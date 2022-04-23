@@ -26,6 +26,7 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.image_referencers: Optional[ImageReferencer] = None
+        self.file_names = ['Dockerfile']
 
     def scan(
             self,

@@ -25,6 +25,7 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
+
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 

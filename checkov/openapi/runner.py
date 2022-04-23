@@ -15,7 +15,8 @@ class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
     def __init__(self):
-        super().__init__(file_extensions=['.json', '.yml', '.yaml'])
+        super().__init__()
+        self.file_extensions = ['.json', '.yml', '.yaml']
 
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry

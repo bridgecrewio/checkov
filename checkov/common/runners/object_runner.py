@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from abc import abstractmethod
-from typing import Any, TYPE_CHECKING, Callable
+from typing import Any, TYPE_CHECKING, Callable, Optional, Iterable
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
+
     def _load_files(
         self,
         files_to_load: list[str],

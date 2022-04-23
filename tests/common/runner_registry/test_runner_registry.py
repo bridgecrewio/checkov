@@ -8,6 +8,7 @@ from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
 
@@ -127,6 +128,48 @@ class TestRunnerRegistry(unittest.TestCase):
         output = captured_output.getvalue()
 
         assert 'code_block' in output
+
+    def test_runner_file_filter(self):
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files([])
+        self.assertEqual(set(runner_registry.runners), set(DEFAULT_RUNNERS))
+
+        runner_filter = RunnerFilter(framework=['all'], checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files([])
+        self.assertEqual(set(runner_registry.runners), set(DEFAULT_RUNNERS))
+
+        runner_filter = RunnerFilter(framework=['all'], checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['main.tf'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets'})
+
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
+
+        runner_filter = RunnerFilter(framework=['terraform'], checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['main.tf'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform'})
+
+        runner_filter = RunnerFilter(framework=['all'], skip_framework=['secrets'], checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['main.tf'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform'})
 
 
 if __name__ == "__main__":
