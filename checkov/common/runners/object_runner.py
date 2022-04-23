@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from abc import abstractmethod
-from typing import Any, TYPE_CHECKING, Callable, Optional, Iterable
+from typing import Any, TYPE_CHECKING, Callable
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report

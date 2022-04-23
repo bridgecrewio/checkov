@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Runner(ObjectRunner):
     check_type = CheckType.YAML
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.file_extensions = ['.yaml', '.yml']
 

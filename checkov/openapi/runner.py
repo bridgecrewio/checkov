@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.file_extensions = ['.json', '.yml', '.yaml']
 

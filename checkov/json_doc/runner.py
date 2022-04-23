@@ -12,7 +12,7 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 class Runner(ObjectRunner):
     check_type = CheckType.JSON
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.file_extensions = ['.json']
 
