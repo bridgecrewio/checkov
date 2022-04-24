@@ -2,9 +2,7 @@ import unittest
 from typing import Optional
 
 from checkov.common.bridgecrew.severities import Severity, Severities, BcSeverities
-from checkov.common.checks.base_check import BaseCheck
 from checkov.kubernetes.checks.resource.base_registry import Registry
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
 
 
