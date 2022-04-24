@@ -25,6 +25,7 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
+
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
@@ -39,9 +40,6 @@ class Runner(BaseRunner):
             runner_filter: RunnerFilter = RunnerFilter(),
             exclude_package_json: bool = True
     ) -> "Optional[Sequence[Dict[str, Any]]]":
-
-        if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
-            return None
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
