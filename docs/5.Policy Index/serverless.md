@@ -16,7 +16,7 @@ nav_order: 1
 ---
 
 
-elapsed time: 0:00:00.721268
+elapsed time: 0:00:00.509815
 |     | Id          | Type     | Entity                                    | Policy                                                                                                                                                                                                   | IaC            |
 |-----|-------------|----------|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|
 |   0 | CKV_AWS_2   | resource | AWS::ElasticLoadBalancingV2::Listener     | Ensure ALB protocol is HTTPS                                                                                                                                                                             | Cloudformation |
@@ -169,9 +169,10 @@ elapsed time: 0:00:00.721268
 | 147 | CKV_AWS_195 | resource | AWS::Glue::Crawler                        | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 148 | CKV_AWS_195 | resource | AWS::Glue::DevEndpoint                    | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 149 | CKV_AWS_195 | resource | AWS::Glue::Job                            | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
+| 150 | CKV2_AWS_33 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync is protected by WAF                                                                                                                                                                       | Cloudformation |
 
 
 ---
 
 
-elapsed time: 0:00:00.543163
+elapsed time: 0:00:00.616112
