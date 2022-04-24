@@ -7,7 +7,6 @@ from pathlib import Path
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
-from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as TerrafomrRunner
 

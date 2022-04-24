@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest import mock
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry

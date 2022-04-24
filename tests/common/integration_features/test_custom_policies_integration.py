@@ -1,6 +1,5 @@
 import json
 import os
-import types
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
