@@ -5,8 +5,6 @@ import os.path
 from pathlib import Path
 from typing import Optional, List, Union, Dict, Any
 
-import requests
-
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
@@ -16,7 +14,6 @@ from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
-from checkov.common.util.file_utils import compress_file_gzip_base64
 
 
 class Runner(PackageRunner):
@@ -27,7 +24,6 @@ class Runner(PackageRunner):
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
-        self.base_url = bc_integration.api_url
         self.image_referencers: Optional[ImageReferencer] = None
 
     def scan(
@@ -35,7 +31,7 @@ class Runner(PackageRunner):
             image_id: str,
             dockerfile_path: str,
             runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> Dict[str, Any]:
+    ) -> Dict[Any,Any]:
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -46,12 +42,6 @@ class Runner(PackageRunner):
             return {}
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
-
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(image_id)
-        if cached_results:
-            logging.info(f"Found cached scan results of image {image_id}")
-            return cached_results
-
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
             scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
@@ -62,8 +52,8 @@ class Runner(PackageRunner):
             image_scanner.cleanup_scan()
             raise
 
+    @staticmethod
     async def execute_scan(
-            self,
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:
@@ -83,26 +73,8 @@ class Runner(PackageRunner):
             logging.error(stderr.decode())
             return {}
 
-        # read the report file
+        # read and delete the report file
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
-
-        # upload results to cache
-        image_id_sha = f"sha256:{image_id}"
-
-        request_body = {
-            "compressedResult": compress_file_gzip_base64(str(output_path)),
-            "compressionMethod": "gzip",
-            "id": image_id_sha
-        }
-        response = requests.request(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-            headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
-        )
-
-        response.raise_for_status()
-        logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
-
-        # delete the report file
         output_path.unlink()
 
         return scan_result
