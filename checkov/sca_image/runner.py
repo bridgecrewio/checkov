@@ -87,7 +87,7 @@ class Runner(PackageRunner):
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
         # upload results to cache
-        image_id_sha = ':'.join(['sha256', image_id])
+        image_id_sha = f"sha256:{image_id}"
 
         request_body = {
             "compressedResult": compress_file_gzip_base64(str(output_path)),
