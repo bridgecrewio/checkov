@@ -236,6 +236,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AdministratorUserNotAssociatedWithAPIKey(self):
         self.go("AdministratorUserNotAssociatedWithAPIKey")
 
+    def test_ApplicationGatewayEnablesWAF(self):
+        self.go("ApplicationGatewayEnablesWAF")
+
     def test_S3KMSEncryptedByDefault(self):
         self.go("S3KMSEncryptedByDefault")
 
