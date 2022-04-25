@@ -43,7 +43,7 @@ from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header
+    get_user_agent_header, get_default_post_headers
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -640,6 +640,17 @@ class BcPlatformIntegration(object):
     def repo_matches(self, repo_name):
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
         return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
+
+    def get_default_headers(self, request_type: str) -> dict:
+        if request_type.upper() == "GET":
+            return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
+                               {"Authorization": self.get_auth_token()})
+        elif request_type.upper() == "POST":
+            return merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version),
+                               {"Authorization": self.get_auth_token()})
+
+        logging.info(f"Unsupported request {request_type}")
+        return {}
 
 
 bc_integration = BcPlatformIntegration()
