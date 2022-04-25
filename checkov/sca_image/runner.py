@@ -12,6 +12,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.dockerfile.utils import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -26,7 +27,9 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.image_referencers: Optional[ImageReferencer] = None
-        self.file_names = ['Dockerfile']
+
+    def should_scan_file(self, filename: str) -> bool:
+        return is_docker_file(os.path.basename(filename))
 
     def scan(
             self,
