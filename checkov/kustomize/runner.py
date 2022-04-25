@@ -211,10 +211,10 @@ class Runner(BaseRunner):
 
             metadata['fileContent'] = fileContent
             metadata['filePath'] = f"{kustomization_path}"
-            if metadata['type'] == "base":
+            if metadata.get('type') == "base":
                 Runner.potentialBases.append(metadata['filePath'])
 
-            if metadata['type'] == "overlay":
+            if metadata.get('type') == "overlay":
                 Runner.potentialOverlays.append(metadata['filePath'])
                
         return metadata
