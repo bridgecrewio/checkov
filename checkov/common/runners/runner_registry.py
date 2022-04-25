@@ -250,6 +250,7 @@ class RunnerRegistry:
             return
 
         self.runners = [runner for runner in self.runners if any(runner.should_scan_file(file) for file in files)]
+        logging.debug(f'Filtered runners based on file type(s). Result: {[r.check_type for r in self.runners]}')
 
     def remove_runner(self, runner: BaseRunner) -> None:
         if runner in self.runners:
