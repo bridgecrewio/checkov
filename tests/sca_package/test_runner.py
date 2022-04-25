@@ -165,7 +165,7 @@ def test_find_scannable_files_exclude_go_and_requirements():
     assert len(input_output_paths) == 1
 
     assert input_output_paths == {
-        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json")
+        EXAMPLES_DIR / "requirements.txt"
     }
 
 
