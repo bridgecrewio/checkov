@@ -14,7 +14,7 @@ resource "aws_api_gateway_rest_api" "edge" {
   policy = ""
 
   endpoint_configuration {
-    types = ["REGIONAL"]
+    types = ["EDGE"]
   }
 }
 
