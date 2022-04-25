@@ -17,6 +17,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 from checkov.common.util.file_utils import compress_file_gzip_base64
+from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 
 
 class Runner(PackageRunner):
@@ -67,7 +68,7 @@ class Runner(PackageRunner):
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:
-        command = f"./{TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {image_id}"
+        command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {image_id}"
         process = await asyncio.create_subprocess_shell(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
