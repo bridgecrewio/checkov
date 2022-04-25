@@ -30,6 +30,7 @@ class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
     def __init__(self):
+        super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
 
@@ -38,7 +39,8 @@ class Runner(BaseRunner):
             root_folder: Optional[Union[str, Path]],
             files: Optional[List[str]] = None,
             runner_filter: RunnerFilter = RunnerFilter(),
-            exclude_package_json: bool = True
+            exclude_package_json: bool = True,
+            excluded_file_names: Set[str] = set()
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         # skip complete run, if flag '--check' was used without a CVE check ID
@@ -61,7 +63,8 @@ class Runner(BaseRunner):
             root_path=self._code_repo_path,
             files=files,
             excluded_paths=excluded_paths,
-            exclude_package_json=exclude_package_json
+            exclude_package_json=exclude_package_json,
+            excluded_file_names=excluded_file_names
         )
         if not input_paths:
             # no packages found
@@ -133,7 +136,8 @@ class Runner(BaseRunner):
 
     def find_scannable_files(
             self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
-            exclude_package_json: bool = True
+            exclude_package_json: bool = True,
+            excluded_file_names: Set[str] = set()
     ) -> Set[Path]:
         input_paths: Set[Path] = set()
         if root_path:
@@ -153,7 +157,7 @@ class Runner(BaseRunner):
             input_paths = {
                 file_path
                 for file_path in input_paths
-                if file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths
+                if (file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths) and file_path.name not in excluded_file_names
             }
 
         for file in files or []:

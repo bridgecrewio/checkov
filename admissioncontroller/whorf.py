@@ -59,7 +59,7 @@ def validating_webhook():
 
     print("Running checkov")
     cp = subprocess.run(
-        ["checkov", "--config-file", configfile, "-f", yamlfile],
+        ["checkov", "--config-file", checkovconfig, "-f", yamlfile],
         universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
 

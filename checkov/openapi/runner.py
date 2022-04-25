@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.file_extensions = ['.json', '.yml', '.yaml']
+
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
         return openapi_registry

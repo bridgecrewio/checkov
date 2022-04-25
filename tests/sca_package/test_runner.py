@@ -152,6 +152,23 @@ def test_find_scannable_files():
     }
 
 
+def test_find_scannable_files_exclude_go_and_requirements():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names=set({"go.sum", "package-lock.json"})
+    )
+
+    # then
+    assert len(input_output_paths) == 1
+
+    assert input_output_paths == {
+        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json")
+    }
+
+
 def test_find_scannable_files_with_package_json():
     # when
     input_paths = Runner().find_scannable_files(

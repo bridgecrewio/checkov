@@ -139,6 +139,9 @@ class Runner(BaseRunner):
     templateRendererCommand = None
     target_folder_path = ''
 
+    def __init__(self):
+        super().__init__(file_names=Runner.kustomizeSupportedFileTypes)
+
     def get_k8s_target_folder_path(self):
         return self.target_folder_path
 

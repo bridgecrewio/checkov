@@ -43,6 +43,9 @@ SINGLE_ITEM_SECTIONS = [
 class Runner(BaseRunner):
     check_type = CheckType.SERVERLESS
 
+    def __init__(self):
+        super().__init__(file_names=SLS_FILE_MASK)
+
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         files_list = []
