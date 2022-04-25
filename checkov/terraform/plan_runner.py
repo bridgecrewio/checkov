@@ -21,6 +21,7 @@ class Runner(TerraformRunner):
 
     def __init__(self):
         super().__init__()
+        self.file_extensions = ['.json']  # override what gets set from the TF runner
         self.template_lines = {}
         self.graph_registry = get_graph_checks_registry(super().check_type)
 

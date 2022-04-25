@@ -25,10 +25,12 @@ SUPPORTED_PACKAGE_FILES = {
     "requirements.txt"
 }
 
+
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
     def __init__(self):
+        super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
 

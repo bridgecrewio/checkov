@@ -16,6 +16,9 @@ from checkov.runner_filter import RunnerFilter
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
 
+    def should_scan_file(self, filename: str) -> bool:
+        return is_docker_file(os.path.basename(filename))
+
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
         report = Report(self.check_type)

@@ -29,6 +29,7 @@ class Runner(BaseRunner):
         graph_manager: Optional[GraphManager] = None,
         external_registries: Optional[List[BaseRegistry]] = None
     ) -> None:
+        super().__init__(file_extensions=['.yml', '.yaml'])
         self.external_registries = [] if external_registries is None else external_registries
         self.check_type = CheckType.KUBERNETES
         self.graph_class = graph_class

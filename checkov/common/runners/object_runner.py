@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
+
     def _load_files(
         self,
         files_to_load: list[str],
