@@ -33,12 +33,13 @@ class Runner(BaseRunner):
         self._code_repo_path: Optional[Path] = None
 
     def prepare_and_scan(
-        self,
-        root_folder: Optional[Union[str, Path]],
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        exclude_package_json: bool = True,
-        cleanup_twistcli: bool = False,
+            self,
+            root_folder: Optional[Union[str, Path]],
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            exclude_package_json: bool = True,
+            cleanup_twistcli: bool = False,
+            excluded_file_names: Set[str] = set()
     ) -> "Optional[Sequence[Dict[str, Any]]]":
 
         if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
@@ -64,7 +65,8 @@ class Runner(BaseRunner):
             root_path=self._code_repo_path,
             files=files,
             excluded_paths=excluded_paths,
-            exclude_package_json=exclude_package_json
+            exclude_package_json=exclude_package_json,
+            excluded_file_names=excluded_file_names
         )
         if not input_output_paths:
             # no packages found
@@ -134,7 +136,8 @@ class Runner(BaseRunner):
 
     def find_scannable_files(
             self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
-            exclude_package_json: bool = True
+            exclude_package_json: bool = True,
+            excluded_file_names: Set[str] = set()
     ) -> Set[Tuple[Path, Path]]:
         input_output_paths: Set[Tuple[Path, Path]] = set()
         if root_path:
@@ -154,7 +157,7 @@ class Runner(BaseRunner):
             input_output_paths = {
                 (file_path, file_path.parent / f"{file_path.stem}_result.json")
                 for file_path in input_paths
-                if file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths
+                if (file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths) and file_path.name not in excluded_file_names
             }
 
         for file in files or []:
