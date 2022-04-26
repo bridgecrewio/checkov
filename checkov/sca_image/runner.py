@@ -93,12 +93,17 @@ class Runner(PackageRunner):
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
         # upload results to cache
-        image_id_sha = f"sha256:{image_id}"
+        image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
-            "compressedResult": compress_file_gzip_base64(str(output_path)),
-            "compressionMethod": "gzip",
-            "id": image_id_sha
+            "results": [
+                {
+                    "compressedResult": compress_file_gzip_base64(str(output_path)),
+                    "compressionMethod": "gzip",
+                    "id": image_id_sha
+                }
+            ]
+
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
