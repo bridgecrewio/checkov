@@ -126,6 +126,7 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
+
 class Runner(BaseRunner):
     kustomize_command = 'kustomize'
     kubectl_command = 'kubectl'
@@ -168,8 +169,7 @@ class Runner(BaseRunner):
 
         return kustomizeDirectories
 
-    @staticmethod
-    def _parseKustomization(parseKustomizationData):
+    def _parseKustomization(self, parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
         # - OR, Multiple different Kustomize-powered deployments
@@ -185,7 +185,6 @@ class Runner(BaseRunner):
             kustomization_path = yaml_path
         else:
             return {}
-
 
         with open(kustomization_path, 'r') as kustomizationFile:
             metadata = {}
@@ -212,10 +211,10 @@ class Runner(BaseRunner):
             metadata['fileContent'] = fileContent
             metadata['filePath'] = f"{kustomization_path}"
             if metadata.get('type') == "base":
-                Runner.potentialBases.append(metadata['filePath'])
+                self.potentialBases.append(metadata['filePath'])
 
             if metadata.get('type') == "overlay":
-                Runner.potentialOverlays.append(metadata['filePath'])
+                self.potentialOverlays.append(metadata['filePath'])
                
         return metadata
 
@@ -373,7 +372,7 @@ class Runner(BaseRunner):
                 self._handle_overlay_case(filePath)
             try:
                 output = self._get_kubectl_output(filePath)
-            except Exception:
+            except Exception as e:
                 logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
                 continue
 
