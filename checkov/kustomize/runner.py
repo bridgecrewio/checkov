@@ -372,7 +372,7 @@ class Runner(BaseRunner):
                 self._handle_overlay_case(filePath)
             try:
                 output = self._get_kubectl_output(filePath)
-            except Exception as e:
+            except Exception:
                 logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
                 continue
 
