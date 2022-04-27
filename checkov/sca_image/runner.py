@@ -103,8 +103,10 @@ class Runner(PackageRunner):
             headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
         )
 
-        response.raise_for_status()
-        logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+        if response.ok:
+            logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+        else:
+            logging.info(f"Failed to upload scan results to cache with id={image_id}")
 
         # delete the report file
         output_path.unlink()
