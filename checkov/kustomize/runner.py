@@ -131,16 +131,16 @@ class Runner(BaseRunner):
     kubectl_command = 'kubectl'
     check_type = CheckType.KUSTOMIZE
     system_deps = True
-    potentialBases = []
-    potentialOverlays = []
-    kustomizeProcessedFolderAndMeta = {}
-    kustomizeFileMappings = {}
     kustomizeSupportedFileTypes = ('kustomization.yaml', 'kustomization.yml')
-    templateRendererCommand = None
-    target_folder_path = ''
 
     def __init__(self):
         super().__init__(file_names=Runner.kustomizeSupportedFileTypes)
+        self.potentialBases = []
+        self.potentialOverlays = []
+        self.kustomizeProcessedFolderAndMeta = {}
+        self.kustomizeFileMappings = {}
+        self.templateRendererCommand = None
+        self.target_folder_path = ''
 
     def get_k8s_target_folder_path(self):
         return self.target_folder_path
