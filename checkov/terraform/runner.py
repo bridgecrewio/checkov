@@ -16,7 +16,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, remove_duplicate_results, CheckType
-from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.variables.context import EvaluationContext
@@ -52,7 +52,7 @@ class Runner(BaseRunner):
         external_registries: Optional[List[BaseRegistry]] = None,
         source: str = "Terraform",
         graph_class: Type[LocalGraph] = TerraformLocalGraph,
-        graph_manager: Optional[GraphManager] = None
+        graph_manager: Optional[TerraformGraphManager] = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -62,7 +62,7 @@ class Runner(BaseRunner):
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        self.graph_manager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
+        self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
                                                                                                    db_connector=db_connector)
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
@@ -88,6 +88,7 @@ class Runner(BaseRunner):
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
         scan_hcl = should_scan_hcl_files()
+        local_graph = None
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
@@ -95,29 +96,33 @@ class Runner(BaseRunner):
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
 
-                local_graph, tf_definitions = self.graph_manager.build_graph_from_source_directory(
+                local_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
                     source_dir=root_folder,
                     local_graph_class=self.graph_class,
                     download_external_modules=runner_filter.download_external_modules,
                     external_modules_download_path=runner_filter.external_modules_download_path,
                     parsing_errors=parsing_errors,
-                    excluded_paths=runner_filter.excluded_paths ,
-                    vars_files=runner_filter.var_files
+                    excluded_paths=runner_filter.excluded_paths,
+                    vars_files=runner_filter.var_files,
+                    create_graph=CHECKOV_CREATE_GRAPH,
                 )
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
                 self._parse_files(files, scan_hcl, parsing_errors)
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+
+                if CHECKOV_CREATE_GRAPH:
+                    local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
-            for vertex in local_graph.vertices:
-                if vertex.block_type == BlockType.RESOURCE:
-                    report.add_resource(f'{vertex.path}:{vertex.id}')
-            self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
+            if CHECKOV_CREATE_GRAPH and local_graph:
+                for vertex in local_graph.vertices:
+                    if vertex.block_type == BlockType.RESOURCE:
+                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                self.graph_manager.save_graph(local_graph)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
@@ -125,8 +130,10 @@ class Runner(BaseRunner):
 
         report.add_parsing_errors(list(parsing_errors.keys()))
 
-        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-        merge_reports(report, graph_report)
+        if CHECKOV_CREATE_GRAPH:
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            merge_reports(report, graph_report)
+
         report = remove_duplicate_results(report)
 
         return report
@@ -346,9 +353,12 @@ class Runner(BaseRunner):
                     bc_category=check.bc_category,
                     benchmarks=check.benchmarks
                 )
-                breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
-                if breadcrumb:
-                    record = GraphRecord(record, breadcrumb)
+
+                if CHECKOV_CREATE_GRAPH:
+                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
+                    if breadcrumb:
+                        record = GraphRecord(record, breadcrumb)
+
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
 
