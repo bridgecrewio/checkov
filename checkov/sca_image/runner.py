@@ -62,10 +62,8 @@ class Runner(PackageRunner):
         try:
             scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
-            image_scanner.cleanup_scan()
             return scan_result
         except Exception:
-            image_scanner.cleanup_scan()
             raise
 
     async def execute_scan(
@@ -96,14 +94,9 @@ class Runner(PackageRunner):
         image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
-            "results": [
-                {
-                    "compressedResult": compress_file_gzip_base64(str(output_path)),
-                    "compressionMethod": "gzip",
-                    "id": image_id_sha
-                }
-            ]
-
+                "compressedResult": compress_file_gzip_base64(str(output_path)),
+                "compressionMethod": "gzip",
+                "id": image_id_sha
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
