@@ -1,6 +1,3 @@
-
-import collections
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
