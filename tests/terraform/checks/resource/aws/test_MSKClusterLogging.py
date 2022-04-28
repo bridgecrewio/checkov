@@ -121,6 +121,25 @@ class TestMSKClusterLogging(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_failure_empty(self):
+        resource_conf = {
+            "name": "test-project",
+            "logging_info": [
+                {
+                    "broker_logs": [
+                        {
+                            "cloudwatch_logs": [
+                                {
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
