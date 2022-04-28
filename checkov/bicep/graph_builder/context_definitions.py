@@ -21,7 +21,8 @@ def build_definitions_context(
             if definition_attribute not in DEFINITIONS_KEYS_TO_PARSE.values():
                 continue
             definitions_context[file_path][definition_attribute] = {}
-            for resource_key, resource_attributes in resources.items():
+            # ignore mypy mismatched type warning since it can't resolve this type correctly
+            for resource_key, resource_attributes in resources.items():  # type: ignore
                 definition_resource = {"start_line": resource_attributes["__start_line__"],
                                        "end_line": resource_attributes["__end_line__"]}
 
