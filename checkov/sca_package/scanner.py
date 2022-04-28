@@ -38,9 +38,8 @@ class Scanner:
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results = []
             for input_path in input_paths:
-                scan_results.append(self.run_scan(input_path))
+                scan_results.append(await self.run_scan(input_path))
         else:
-            input_paths = [(input_path,) for input_path in input_paths]
             scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         return scan_results
