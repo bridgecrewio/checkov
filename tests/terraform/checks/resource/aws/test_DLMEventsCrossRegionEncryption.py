@@ -2,36 +2,32 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.oci.SecurityGroupUnrestrictedIngress22 import check
+from checkov.terraform.checks.resource.aws.DLMEventsCrossRegionEncryption import check
 from checkov.terraform.runner import Runner
 
 
-class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
+class TestDLMEventsCrossRegionEncryption(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SecurityGroupUnrestrictedIngress22"
+        test_files_dir = current_dir + "/example_DLMEventsCrossRegionEncryption"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "oci_core_network_security_group_security_rule.pass2",
-            "oci_core_network_security_group_security_rule.pass3",
-
+            "aws_dlm_lifecycle_policy.pass",
         }
         failing_resources = {
-            "oci_core_network_security_group_security_rule.fail",
-            "oci_core_network_security_group_security_rule.fail1",
-            "oci_core_network_security_group_security_rule.fail2",
-            "oci_core_network_security_group_security_rule.fail3",
+            "aws_dlm_lifecycle_policy.fail",
+            "aws_dlm_lifecycle_policy.fail2",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
