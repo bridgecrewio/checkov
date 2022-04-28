@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class DLMEventsCrossRegionEncryption(BaseResourceCheck):
+class DLMEventsCrossRegionEncryptionWithCMK(BaseResourceCheck):
     def __init__(self):
         name = "Ensure DLM cross region events are encrypted with Customer Managed Key"
         id = "CKV_AWS_254"
@@ -29,4 +29,4 @@ class DLMEventsCrossRegionEncryption(BaseResourceCheck):
         return CheckResult.UNKNOWN
 
 
-check = DLMEventsCrossRegionEncryption()
+check = DLMEventsCrossRegionEncryptionWithCMK()
