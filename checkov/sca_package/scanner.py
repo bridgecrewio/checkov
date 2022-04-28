@@ -11,7 +11,6 @@ import requests
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
-from checkov.common.util.str_utils import removeprefix
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
@@ -97,5 +96,5 @@ class Scanner:
 
     def parse_api_result(self, origin_file_path: Path, response: str):
         raw_result = json.loads(decompress_file_gzip_base64(response))
-        raw_result['repository'] = removeprefix(str(origin_file_path), os.getenv("BC_ROOT_DIR", ""))
+        raw_result['repository'] = str(origin_file_path)
         return raw_result
