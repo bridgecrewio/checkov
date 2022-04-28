@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 import responses
 
@@ -58,9 +59,8 @@ def test_run_scan(mock_bc_integration, scan_result2):
     )
 
     # when
-    result = Scanner().run_scan(
-        input_path=Path(EXAMPLES_DIR / "requirements.txt"),
-    )
+    scanner = Scanner()
+    result = asyncio.run(scanner.run_scan((Path(EXAMPLES_DIR / "requirements.txt"))))
 
     # then
     assert len(result) == len(scan_result2)
@@ -99,9 +99,7 @@ def test_run_scan_fail_on_scan(mock_bc_integration):
     )
 
     # when
-    result = Scanner().run_scan(
-        input_path=Path(EXAMPLES_DIR / "requirements.txt"),
-    )
+    result = asyncio.run(Scanner().run_scan(input_path=Path(EXAMPLES_DIR / "requirements.txt")))
 
     # then
     assert result == {}

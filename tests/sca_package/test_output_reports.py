@@ -21,9 +21,6 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
 
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
-
     report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
 
     # when
@@ -292,9 +289,6 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
 
     report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
 
