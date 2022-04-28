@@ -88,3 +88,19 @@ resource "oci_core_network_security_group_security_rule" "fail2" {
     source = "0.0.0.0/0"
     source_type = "CIDR_BLOCK"
 }
+
+
+resource "oci_core_network_security_group_security_rule" "fail3" {
+    network_security_group_id = oci_core_network_security_group.sg.id
+    direction = "INGRESS"
+    protocol = "all"
+    source = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+
+    tcp_options {
+        destination_port_range {
+            max = 25
+            min = 21
+        }
+    }
+}
