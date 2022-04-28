@@ -7,7 +7,7 @@ from pycep.typing import BicepJson
 
 
 BICEP_COMMENT = "//"
-DEFINITIONS_KEY_TO_PARSE = {"parameters": "parameters", "resources": "resources"}
+DEFINITIONS_KEYS_TO_PARSE = {"parameters": "parameters", "resources": "resources"}
 
 
 def build_definitions_context(
@@ -18,24 +18,20 @@ def build_definitions_context(
         file_path = str(file_path_object)
         definitions_context[file_path] = {}
         for definition_attribute, resources in file_path_definitions.items():
-            if definition_attribute not in DEFINITIONS_KEY_TO_PARSE.values():
+            if definition_attribute not in DEFINITIONS_KEYS_TO_PARSE.values():
                 continue
             definitions_context[file_path][definition_attribute] = {}
             for resource_key, resource_attributes in resources.items():
-                definition_resource = {}
+                definition_resource = {"start_line": resource_attributes["__start_line__"],
+                                       "end_line": resource_attributes["__end_line__"]}
 
-                definition_resource["start_line"] = resource_attributes["__start_line__"]
-                definition_resource["end_line"] = resource_attributes["__end_line__"]
-
-                if definition_attribute == DEFINITIONS_KEY_TO_PARSE["resources"]:
+                if definition_attribute == DEFINITIONS_KEYS_TO_PARSE["resources"]:
                     definition_key = f"{resource_attributes['type']}.{resource_key}"
                     int_start_line = cast(int, definition_resource["start_line"])
                     int_end_line = cast(int, definition_resource["end_line"])
                     code_lines_for_suppressions_check = definitions_raw[file_path_object][int_start_line: int_end_line]
-                    supressions = collect_suppressions_for_report(code_lines=code_lines_for_suppressions_check)
-                    skipped_checks = [result for result in supressions.items()]
-                    definition_resource['skipped_checks'] = skipped_checks
-                if definition_attribute == DEFINITIONS_KEY_TO_PARSE["parameters"]:
+                    definition_resource['skipped_checks'] = collect_suppressions_for_report(code_lines=code_lines_for_suppressions_check)
+                if definition_attribute == DEFINITIONS_KEYS_TO_PARSE["parameters"]:
                     definition_key = resource_key
                     definition_resource["type"] = resource_attributes['type']
 
@@ -66,4 +62,4 @@ def build_definitions_context(
                 definition_resource["code_lines"] = definitions_raw[file_path_object][start_line - 1: end_line]
                 definitions_context[file_path][definition_attribute][definition_key] = definition_resource
 
-        return definitions_context
+    return definitions_context
