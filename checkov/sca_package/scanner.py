@@ -47,7 +47,7 @@ class Scanner:
 
         return scan_results
 
-    def run_scan(self, input_path: Path) -> dict:
+    async def run_scan(self, input_path: Path) -> dict:
         logging.info(f"Start to scan package file {input_path}")
 
         request_body = {
