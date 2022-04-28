@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict, Any
 
 import requests
-from aiomultiprocess import Pool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
@@ -39,11 +38,9 @@ class Scanner:
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results = []
             for input_path in input_paths:
-                scan_results.append(self.run_scan(input_path))
+                scan_results.append(await self.run_scan(input_path))
         else:
-            input_paths = [(input_path,) for input_path in input_paths]
-            with Pool() as pool:
-                scan_results = pool.starmap(self.run_scan, input_paths)
+            scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         return scan_results
 
