@@ -21,7 +21,7 @@ class ObjectStorageBucketPublicAccess(BaseResourceCheck):
                 return CheckResult.FAILED
         if 'grant' in conf.keys():
             grant_uri_block = conf['grant'][0]['uri']
-            if grant_uri_block in [["http://acs.amazonaws.com/groups/global/AllUsers"]]:
+            if grant_uri_block == ["http://acs.amazonaws.com/groups/global/AllUsers"]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

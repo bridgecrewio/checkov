@@ -28,6 +28,6 @@ resource "yandex_vpc_security_group" "fail-1" {
 resource "yandex_vpc_security_group" "fail-2" {
   name        = "My security group"
   ingress {
-    v4_cidr_blocks = ["0.0.0.0/0"]
+    v4_cidr_blocks = ["10.0.0.0/24","0.0.0.0/0"]
   }
 }

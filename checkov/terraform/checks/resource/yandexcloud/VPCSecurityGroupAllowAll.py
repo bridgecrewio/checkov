@@ -17,15 +17,16 @@ class VPCSecurityGroupAllowAll(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'ingress' in conf.keys():
             cidr_block = conf['ingress'][0]['v4_cidr_blocks']
-            if cidr_block[0][0] == "0.0.0.0/0":
-                if 'port' in conf['ingress'][0].keys():
-                    if conf['ingress'][0]['port'][0] == -1:
+            for cidr in cidr_block[0]:
+                if cidr == "0.0.0.0/0":
+                    if 'port' in conf['ingress'][0].keys():
+                        if conf['ingress'][0]['port'][0] == -1:
+                            return CheckResult.FAILED
+                        return CheckResult.PASSED
+                    if 'from_port' not in conf['ingress'][0].keys() and 'to_port' not in conf['ingress'][0].keys():
                         return CheckResult.FAILED
-                    return CheckResult.PASSED
-                if 'from_port' not in conf['ingress'][0].keys() and 'to_port' not in conf['ingress'][0].keys():
-                    return CheckResult.FAILED
-                if conf['ingress'][0]['from_port'][0] == 0 and conf['ingress'][0]['to_port'][0] == 65535:
-                    return CheckResult.FAILED
+                    if conf['ingress'][0]['from_port'][0] == 0 and conf['ingress'][0]['to_port'][0] == 65535:
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 scanner = VPCSecurityGroupAllowAll()

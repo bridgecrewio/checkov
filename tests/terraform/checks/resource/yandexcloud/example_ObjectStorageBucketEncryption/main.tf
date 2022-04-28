@@ -17,10 +17,3 @@ resource "yandex_storage_bucket" "fail" {
   bucket = "mybucket"
 
 }
-
-
-
-
-
-
-

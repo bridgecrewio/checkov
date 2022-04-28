@@ -55,7 +55,7 @@ resource "yandex_vpc_security_group_rule" "fail-2" {
 resource "yandex_vpc_security_group_rule" "fail-3" {
   security_group_binding = yandex_vpc_security_group.group1.id
   direction              = "ingress"
-  v4_cidr_blocks         = ["0.0.0.0/0"]
+  v4_cidr_blocks         = ["10.0.0.0/24","0.0.0.0/0"]
   port                   = -1
   protocol               = "TCP"
 }

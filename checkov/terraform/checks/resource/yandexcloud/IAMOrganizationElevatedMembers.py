@@ -19,6 +19,6 @@ class IAMOrganizationElevatedMembers(BaseResourceNegativeValueCheck):
         return "role"
 
     def get_forbidden_values(self) -> List[Any]:
-        return ["admin","editor","organization-manager.organizations.owner"]
+        return ["admin","editor","organization-manager.organizations.owner","organization-manager.admin"]
 
 check = IAMOrganizationElevatedMembers()
