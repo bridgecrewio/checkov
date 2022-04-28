@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type, TYPE_CHECKING, Any
+from typing import Type, TYPE_CHECKING
 
 from pycep.typing import BicepJson
 
