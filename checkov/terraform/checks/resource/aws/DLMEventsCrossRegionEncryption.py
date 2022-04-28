@@ -15,13 +15,14 @@ class DLMEventsCrossRegionEncryption(BaseResourceCheck):
             policy = conf.get("policy_details")[0]
             if policy.get("action") and isinstance(policy.get("action"), list):
                 actions = policy.get("action")
-                for action in actions:
+                for idx, action in enumerate(actions):
                     if action.get("cross_region_copy") and isinstance(action.get("cross_region_copy"), list):
                         cross = action.get("cross_region_copy")[0]
                         if cross.get("encryption_configuration") and isinstance(cross.get("encryption_configuration"), list):
                             config = cross.get("encryption_configuration")[0]
                             if config.get("encryption") == [True]:
                                 return CheckResult.PASSED
+                        self.evaluated_keys = [f"policy_details/action/{idx}/cross_region_copy/encryption_configuration"]
                         return CheckResult.FAILED
                     return CheckResult.UNKNOWN
                 return CheckResult.PASSED
