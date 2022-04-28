@@ -63,15 +63,11 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
-            return json.loads(
-                decompress_file_gzip_base64(
-                    response_json["outputData"]
-                )
-            )
+            return self.parse_api_result(input_path, response_json["outputData"])
 
-        return self.run_scan_busy_wait(response_json['id'])
+        return self.run_scan_busy_wait(input_path, response_json['id'])
 
-    def run_scan_busy_wait(self, scan_id: str) -> dict:
+    def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict:
         current_state = "Empty"
         desired_state = "Result"
         total_sleeping_time = 0
@@ -96,8 +92,9 @@ class Scanner:
             time.sleep(SLEEP_DURATION)
             total_sleeping_time += SLEEP_DURATION
 
-        return json.loads(
-            decompress_file_gzip_base64(
-                response.json()["outputData"]
-            )
-        )
+        return self.parse_api_result(input_path, response.json()["outputData"])
+
+    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
+        raw_result = json.loads(decompress_file_gzip_base64(response))
+        raw_result['repository'] = str(origin_file_path)
+        return raw_result
