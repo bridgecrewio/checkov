@@ -94,7 +94,7 @@ class Scanner:
 
         return self.parse_api_result(input_path, response.json()["outputData"])
 
-    def parse_api_result(self, origin_file_path: Path, response: str):
+    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
         return raw_result
