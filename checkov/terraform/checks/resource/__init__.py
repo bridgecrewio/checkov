@@ -9,3 +9,4 @@ from checkov.terraform.checks.resource.panos import *
 from checkov.terraform.checks.resource.digitalocean import *
 from checkov.terraform.checks.resource.alicloud import *
 from checkov.terraform.checks.resource.kubernetes import *
+from checkov.terraform.checks.resource.yandexcloud import *
