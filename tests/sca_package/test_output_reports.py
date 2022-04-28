@@ -1,4 +1,3 @@
-import os
 import xml
 from pathlib import Path
 
