@@ -188,7 +188,7 @@ class Runner(PackageRunner):
 
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
         """
-        THIS METHOD ONLY EXISTS FOR BACKWARD COMPATABILITY WITH IMAGE THAT COMES FROM CLI PARAMETER
+        THIS METHOD HANDLES CUSTOM IMAGE SCANNING THAT COMES DIRECTLY FROM CLI PARAMETERS
         """
         report = Report(self.check_type)
 
