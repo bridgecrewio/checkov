@@ -1,4 +1,5 @@
 import os
+import platform
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -30,7 +31,7 @@ def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_
     )
     responses.add(
         method=responses.GET,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/twistcli?os=darwin",
+        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/twistcli?os={platform.system().lower()}",
         json={},
         status=200
     )
