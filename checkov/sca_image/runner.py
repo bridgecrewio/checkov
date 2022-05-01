@@ -90,11 +90,8 @@ class Runner(PackageRunner):
         # read the report file
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
-        # upload results to cache
+        # upload results to cache and remove file
         self.upload_results_to_cache(output_path, image_id)
-
-        # delete the report file
-        output_path.unlink()
 
         return scan_result
 
@@ -115,6 +112,8 @@ class Runner(PackageRunner):
             logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
         else:
             logging.info(f"Failed to upload scan results to cache with id={image_id}")
+
+        output_path.unlink()
 
     def run(
             self,
