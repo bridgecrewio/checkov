@@ -91,12 +91,20 @@ class Runner(PackageRunner):
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
         # upload results to cache
+        self.upload_results_to_cache(output_path, image_id)
+
+        # delete the report file
+        output_path.unlink()
+
+        return scan_result
+
+    def upload_results_to_cache(self, output_path, image_id):
         image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
-                "compressedResult": compress_file_gzip_base64(str(output_path)),
-                "compressionMethod": "gzip",
-                "id": image_id_sha
+            "compressedResult": compress_file_gzip_base64(str(output_path)),
+            "compressionMethod": "gzip",
+            "id": image_id_sha
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
@@ -107,11 +115,6 @@ class Runner(PackageRunner):
             logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
         else:
             logging.info(f"Failed to upload scan results to cache with id={image_id}")
-
-        # delete the report file
-        output_path.unlink()
-
-        return scan_result
 
     def run(
             self,
