@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -12,6 +13,10 @@ EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 
 @responses.activate
 def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_id, mock_bc_integration, empty_report):
+
+    # can be removed after feature flag is removed
+    os.environ["CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING"] = "TRUE"
+
     image_id_encoded = quote_plus(image_id)
 
     mocker.patch('checkov.common.images.image_referencer.ImageReferencer.pull_image', return_value=image_id)
