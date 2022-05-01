@@ -98,7 +98,7 @@ class Runner(PackageRunner):
 
         return scan_result
 
-    def upload_results_to_cache(self, output_path, image_id):
+    def upload_results_to_cache(self, output_path: str, image_id: str) -> None:
         image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
