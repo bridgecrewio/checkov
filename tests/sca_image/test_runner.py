@@ -14,14 +14,13 @@ EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 
 @responses.activate
 def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_id, mock_bc_integration, empty_report):
-
     # can be removed after feature flag is removed
     os.environ["CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING"] = "TRUE"
 
     image_id_encoded = quote_plus(image_id)
 
     mocker.patch('checkov.common.images.image_referencer.ImageReferencer.pull_image', return_value=image_id)
-    mocker.patch('checkov.sca_image.runner.Runner.execute_scan', return_value=empty_report)
+    # async_mocker.patch('checkov.sca_image.runner.Runner.execute_scan', return_value=empty_report)
 
     responses.add(
         method=responses.GET,
@@ -48,5 +47,6 @@ def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_
 
     responses.assert_call_count(
         mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", 1)
+    responses.assert_call_count(mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results", 1)
 
-    assert len(responses.calls) >= 1
+    assert len(responses.calls) >= 2
