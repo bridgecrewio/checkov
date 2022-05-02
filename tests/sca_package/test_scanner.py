@@ -107,4 +107,3 @@ def test_request_wrapper_with_success(mock_bc_integration, scan_result_success_r
     )
     Scanner().request_wrapper("GET", mock_url, {})
     responses.assert_call_count(mock_url, 1)
-
