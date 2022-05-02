@@ -24,7 +24,7 @@ class Runner(YamlRunner, ImageReferencer):
 
     def is_workflow_file(self, file_path):
         """
-        :return: True if the file mentioned is in a is named bitbucket-pipelines.yml. Otherwise: False
+        :return: True if the file mentioned is named bitbucket-pipelines.yml. Otherwise: False
         """
         abspath = os.path.abspath(file_path)
         return abspath.endswith(("bitbucket-pipelines.yml", "bitbucket-pipelines.yaml"))
