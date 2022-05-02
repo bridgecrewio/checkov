@@ -44,6 +44,20 @@ class TestCheckovJsonReport(unittest.TestCase):
                 self.assertTrue(sca_image)
                 self.assertTrue(github_actions_report_exists)
 
+    def test_bitbucket_pipelines_report_api_key(self):
+        report_path = os.path.join(current_dir, '..', 'checkov_report_bitbucket_pipelines_cve.json')
+        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+            with open(report_path, encoding='utf-8') as f:
+                reports = json.load(f)
+                self.assertGreaterEqual(len(reports), 1,
+                                        "expecting to have 1 reports at least")
+                sca_image = False
+                for report in reports:
+                    if report["check_type"] == "sca_image":
+                        sca_image = True
+                        self.assertGreaterEqual(report['summary']['failed'], 1)
+                self.assertTrue(sca_image)
+
 
 if __name__ == '__main__':
     unittest.main()
