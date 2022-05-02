@@ -60,7 +60,9 @@ class Runner(PackageRunner):
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
-            scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
+            output_path = Path('results.json')
+            scan_result = asyncio.run(self.execute_scan(image_id, output_path))
+            self.upload_results_to_cache(output_path, image_id)
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
             return scan_result
         except Exception:
@@ -90,7 +92,9 @@ class Runner(PackageRunner):
         # read the report file
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
-        # upload results to cache
+        return scan_result
+
+    def upload_results_to_cache(self, output_path: Path, image_id: str) -> None:
         image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
@@ -108,10 +112,7 @@ class Runner(PackageRunner):
         else:
             logging.info(f"Failed to upload scan results to cache with id={image_id}")
 
-        # delete the report file
         output_path.unlink()
-
-        return scan_result
 
     def run(
             self,
