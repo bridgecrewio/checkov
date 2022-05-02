@@ -22,6 +22,24 @@ class TestStorageAccountLoggingQueueServiceEnabled(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_2(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_storage_account" "example" {
+              name                     = "example"
+              resource_group_name      = data.azurerm_resource_group.example.name
+              location                 = data.azurerm_resource_group.example.location
+              account_tier             = "Standard"
+              account_replication_type = "GRS"
+              queue_properties  {
+                logging {
+                }
+              }
+            }
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         hcl_res = hcl2.loads("""
             resource "azurerm_storage_account" "example" {

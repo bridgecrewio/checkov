@@ -20,6 +20,7 @@ class TestSecurityListUnrestrictedIngress22(unittest.TestCase):
             "oci_core_security_list.pass1",
             "oci_core_security_list.pass4",
             "oci_core_security_list.pass5",
+            "oci_core_security_list.pass6",
         }
         expected_failing_resources = {
             "oci_core_security_list.fail",
