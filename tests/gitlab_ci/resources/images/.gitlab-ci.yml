@@ -1,0 +1,16 @@
+default:
+  image:
+    name: ruby:2.6
+    entrypoint: ["/bin/bash"]
+
+  services:
+    - name: privateregistry/stuff/my-postgres:11.7
+      alias: db-postgres
+
+  before_script:
+    - bundle install
+
+test:
+  script:
+    - docker run privateregistry/stuff/myimage:11.7
+

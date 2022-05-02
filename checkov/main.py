@@ -41,6 +41,7 @@ from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
+from checkov.gitlab_ci.runner import Runner as gitlab_ci_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -78,6 +79,7 @@ DEFAULT_RUNNERS = (
     yaml_runner(),
     github_configuration_runner(),
     gitlab_configuration_runner(),
+    gitlab_ci_runner(),
     bitbucket_configuration_runner(),
     kustomize_runner(),
     sca_package_runner(),

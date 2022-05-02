@@ -1,0 +1,10 @@
+job:
+  script: echo "This job creates double pipelines!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+job2:
+  script: echo "This job does not create double pipelines!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
