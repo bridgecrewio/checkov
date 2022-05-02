@@ -14,8 +14,8 @@ from checkov.common.util.file_utils import compress_file_gzip_base64, decompress
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
-REQUEST_MAX_TRIES = os.getenv('REQUEST_MAX_TRIES', 2)
-REQUEST_SLEEP_BETWEEN_TRIES = os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1)
+CHECKOV_REQUEST_MAX_TRIES = int(os.getenv('REQUEST_MAX_TRIES', 3))
+CHECKOV_REQUEST_SLEEP_BETWEEN_TRIES = float(os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1))
 
 
 class Scanner:
@@ -102,7 +102,7 @@ class Scanner:
         return raw_result
 
     def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
-        remaining_tries = REQUEST_MAX_TRIES
+        remaining_tries = CHECKOV_REQUEST_MAX_TRIES
         try:
             remaining_tries -= 1
             return requests.request(method, url, headers=headers, data=data)
@@ -110,4 +110,4 @@ class Scanner:
             if remaining_tries == 0:
                 raise err
             else:
-                time.sleep(REQUEST_SLEEP_BETWEEN_TRIES)
+                time.sleep(CHECKOV_REQUEST_SLEEP_BETWEEN_TRIES)
