@@ -119,7 +119,7 @@ class Runner(YamlRunner, ImageReferencer):
                                                       end_line=end_line)
                                     images.add(image_obj)
 
-    def add_default_pipeline_images(self, file_path: str, images: [], default_pipeline: dict):
+    def add_default_pipeline_images(self, file_path: str, images: list, default_pipeline: dict):
         for step in default_pipeline:
             if isinstance(step, dict):
                 step_obj = step.get('step', {})
