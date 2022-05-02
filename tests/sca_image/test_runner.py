@@ -8,19 +8,22 @@ from pytest_mock import MockerFixture
 
 from checkov.sca_image.runner import Runner
 from checkov.github_actions.runner import Runner as GHA_Runner
+from tests.sca_image.utils import create_output_path
 
 EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 
 
 @responses.activate
 def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_id, mock_bc_integration, empty_report):
+
     # can be removed after feature flag is removed
     os.environ["CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING"] = "TRUE"
 
     image_id_encoded = quote_plus(image_id)
 
     mocker.patch('checkov.common.images.image_referencer.ImageReferencer.pull_image', return_value=image_id)
-    # async_mocker.patch('checkov.sca_image.runner.Runner.execute_scan', return_value=empty_report)
+    mocker.patch('checkov.sca_image.runner.Runner.execute_scan', return_value=empty_report,
+                 side_effect=create_output_path)
 
     responses.add(
         method=responses.GET,
