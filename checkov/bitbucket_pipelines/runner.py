@@ -90,12 +90,14 @@ class Runner(YamlRunner, ImageReferencer):
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
-                    start_line = line_number
-                    end_line = line_number
                     image_id = self.pull_image(root_image)
-                    image_obj = Image(file_path=file_path, name=root_image, image_id=image_id,
-                                      start_line=start_line,
-                                      end_line=end_line)
+                    image_obj = Image(
+                        file_path=file_path,
+                        name=root_image,
+                        image_id=image_id,
+                        start_line=line_number,
+                        end_line=line_number,
+                    )
                     images.add(image_obj)
 
     def add_pipeline_images(self, file_path: str, images: list, pipelines: dict):
