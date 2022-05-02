@@ -20,7 +20,7 @@ class Scanner:
     def __init__(self) -> None:
         self._base_url = bc_integration.api_url
         self._request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
-        self._request_sleep_between_tries = float(os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1))
+        self._sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 0.1))
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -113,4 +113,4 @@ class Scanner:
                 if remaining_tries == 0:
                     raise err
                 else:
-                    time.sleep(self._request_sleep_between_tries)
+                    time.sleep(self._sleep_between_request_tries * (self._request_max_tries - remaining_tries))

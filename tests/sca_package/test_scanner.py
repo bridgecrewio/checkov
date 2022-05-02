@@ -78,7 +78,7 @@ def test_run_scan_fail_on_scan(mock_bc_integration):
 
 
 @responses.activate
-@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "REQUEST_SLEEP_BETWEEN_TRIES": "0"})
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail(mock_bc_integration):
     # given
     mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
@@ -95,7 +95,7 @@ def test_request_wrapper_all_fail(mock_bc_integration):
 
 
 @responses.activate
-@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "REQUEST_SLEEP_BETWEEN_TRIES": "0"})
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_with_success(mock_bc_integration, scan_result_success_response):
     # given
     mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
