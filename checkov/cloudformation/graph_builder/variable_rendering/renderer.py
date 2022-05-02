@@ -34,6 +34,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             IntrinsicFunctions.SELECT: self._evaluate_select_function,
             IntrinsicFunctions.JOIN: self._evaluate_join_function
         }
+        self.vertices_block_name_map = self._extract_vertices_block_name_map()
 
     """
      This method will evaluate Ref, Fn::FindInMap, Fn::GetAtt, Fn::Sub
@@ -44,10 +45,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         origin_vertex = self.local_graph.vertices[edge.origin]
         origin_vertex_attributes = origin_vertex.attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
-        vertices_block_name_map = self._extract_vertices_block_name_map()
 
         referenced_vertices = get_referenced_vertices_in_value(
-            value=val_to_eval, vertices_block_name_map=vertices_block_name_map
+            value=val_to_eval, vertices_block_name_map=self.vertices_block_name_map
         )
         if not referenced_vertices:
             # DependsOn or Condition connections
