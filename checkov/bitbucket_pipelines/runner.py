@@ -87,7 +87,7 @@ class Runner(YamlRunner, ImageReferencer):
 
         return images
 
-    def add_root_image(self, file_path: str, images: [], root_image: str, workflow_line_numbers: dict) -> None:
+    def add_root_image(self, file_path: str, images: list, root_image: str, workflow_line_numbers: tuple[int, str]) -> None:
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
