@@ -85,3 +85,22 @@ def test_runner_parsing_errors():
     assert summary["failed"] == 0
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 1
+
+
+def test_runner_ignore_existing_resource():
+    # given
+    test_file = EXAMPLES_DIR / "existing.bicep"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 1
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+    assert summary["resource_count"] == 2  # 1 should be unknown
+
+    assert report.failed_checks[0].resource == "Microsoft.Storage/storageAccounts.storageAccount"
