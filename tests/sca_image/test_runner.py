@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -15,6 +16,8 @@ EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 
 @responses.activate
 def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_id, mock_bc_integration, empty_report):
+    if sys.version_info[1] < 8:
+        return
 
     # can be removed after feature flag is removed
     os.environ["CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING"] = "TRUE"
