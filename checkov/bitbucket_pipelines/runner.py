@@ -26,8 +26,7 @@ class Runner(YamlRunner, ImageReferencer):
         """
         :return: True if the file mentioned is named bitbucket-pipelines.yml. Otherwise: False
         """
-        abspath = os.path.abspath(file_path)
-        return abspath.endswith(("bitbucket-pipelines.yml", "bitbucket-pipelines.yaml"))
+        return file_path.endswith(("bitbucket-pipelines.yml", "bitbucket-pipelines.yaml"))
 
     def get_images(self, file_path):
         """
