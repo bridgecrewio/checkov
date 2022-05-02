@@ -14,13 +14,13 @@ from checkov.common.util.file_utils import compress_file_gzip_base64, decompress
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
-CHECKOV_REQUEST_MAX_TRIES = int(os.getenv('REQUEST_MAX_TRIES', 3))
-CHECKOV_REQUEST_SLEEP_BETWEEN_TRIES = float(os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1))
 
 
 class Scanner:
     def __init__(self) -> None:
-        self.base_url = bc_integration.api_url
+        self._base_url = bc_integration.api_url
+        self._request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
+        self._request_sleep_between_tries = float(os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1))
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -56,7 +56,7 @@ class Scanner:
         }
 
         response = self.request_wrapper(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan",
+            "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
             headers=bc_integration.get_default_headers("GET"),
             data=request_body
         )
@@ -77,7 +77,7 @@ class Scanner:
 
         while current_state != desired_state:
             response = self.request_wrapper(
-                "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
+                "GET", f"{self._base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
                 headers=bc_integration.get_default_headers("GET")
             )
             response_json = response.json()
@@ -104,12 +104,13 @@ class Scanner:
     def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
         # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' that appears
         # from time to time ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')).
-        remaining_tries = CHECKOV_REQUEST_MAX_TRIES
-        try:
-            remaining_tries -= 1
-            return requests.request(method, url, headers=headers, data=data)
-        except requests.exceptions.ConnectionError as err:
-            if remaining_tries == 0:
-                raise err
-            else:
-                time.sleep(CHECKOV_REQUEST_SLEEP_BETWEEN_TRIES)
+        remaining_tries = self._request_max_tries
+        while True:
+            try:
+                return requests.request(method, url, headers=headers, data=data)
+            except requests.exceptions.ConnectionError as err:
+                remaining_tries -= 1
+                if remaining_tries == 0:
+                    raise err
+                else:
+                    time.sleep(self._request_sleep_between_tries)
