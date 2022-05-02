@@ -98,7 +98,7 @@ class Runner(YamlRunner, ImageReferencer):
                                       end_line=end_line)
                     images.add(image_obj)
 
-    def add_pipeline_images(self, file_path: str, images: [], pipelines: dict):
+    def add_pipeline_images(self, file_path: str, images: list, pipelines: dict):
         for pipeline_name, pipeline_obj in pipelines.items():
             if isinstance(pipeline_obj, dict):
                 for step_name, step_obj in pipeline_obj.items():
