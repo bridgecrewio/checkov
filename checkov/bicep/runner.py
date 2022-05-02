@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import cast, Type, TYPE_CHECKING, Any
+from typing import cast, Type, TYPE_CHECKING, Any, List, Optional, Dict, Tuple
 
 from pycep.typing import BicepJson
 from typing_extensions import Literal
 
+from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -87,7 +88,7 @@ class Runner(BaseRunner):
                     if CHECKOV_CREATE_GRAPH:
                         self.graph_registry.load_external_checks(directory)
 
-            self.context = {}  # TODO: create context
+            self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
             if CHECKOV_CREATE_GRAPH:
                 logging.info("Creating Bicep graph")
@@ -107,6 +108,9 @@ class Runner(BaseRunner):
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
+
+    def set_definitions_raw(self, definitions_raw: Dict[str, List[Tuple[int, str]]]):
+        self.definitions_raw = definitions_raw
 
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds Python check results to given report"""

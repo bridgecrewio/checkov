@@ -32,13 +32,7 @@ class K8sKustomizeRunner(K8sRunner):
         self.report_mutator_data = {}
         self.check_type = CheckType.KUSTOMIZE
 
-    def set_external_data(self,
-                          definitions: Optional[Dict[str, Dict[str, Any]]],
-                          context: Optional[Dict[str, Dict[str, Any]]],
-                          breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
-                          report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
-                          ):
-        super().set_external_data(definitions, context, breadcrumbs)
+    def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]):
         self.report_mutator_data = report_mutator_data
 
     def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None):
