@@ -5,7 +5,7 @@ import os
 import time
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 import requests
 
@@ -14,6 +14,8 @@ from checkov.common.util.file_utils import compress_file_gzip_base64, decompress
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
+REQUEST_MAX_TRIES = os.getenv('REQUEST_MAX_TRIES', 2)
+REQUEST_SLEEP_BETWEEN_TRIES = os.getenv('REQUEST_SLEEP_BETWEEN_TRIES', 0.1)
 
 
 class Scanner:
@@ -53,7 +55,7 @@ class Scanner:
             "fileName": input_path.name
         }
 
-        response = requests.request(
+        response = self.request_wrapper(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan",
             headers=bc_integration.get_default_headers("GET"),
             data=request_body
@@ -74,7 +76,7 @@ class Scanner:
         response = requests.Response()
 
         while current_state != desired_state:
-            response = requests.request(
+            response = self.request_wrapper(
                 "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
                 headers=bc_integration.get_default_headers("GET")
             )
@@ -98,3 +100,14 @@ class Scanner:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
         return raw_result
+
+    def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
+        remaining_tries = REQUEST_MAX_TRIES
+        try:
+            remaining_tries -= 1
+            return requests.request(method, url, headers=headers, data=data)
+        except requests.exceptions.ConnectionError as err:
+            if remaining_tries == 0:
+                raise err
+            else:
+                time.sleep(REQUEST_SLEEP_BETWEEN_TRIES)
