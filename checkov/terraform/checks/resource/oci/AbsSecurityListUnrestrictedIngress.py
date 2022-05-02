@@ -36,8 +36,8 @@ class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
     def scan_protocol_conf(self, rule, protocol_name, idx):
         """ scan udp/tcp_options configuration"""
         if protocol_name in rule:
-            max_port = rule[protocol_name][0]['max'][0]
-            min_port = rule[protocol_name][0]['min'][0]
+            max_port = int(rule[protocol_name][0]['max'][0])
+            min_port = int(rule[protocol_name][0]['min'][0])
             if min_port <= self.port and max_port >= self.port:
                 return CheckResult.SKIPPED
         self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/protocol/[0]/{protocol_name}']
