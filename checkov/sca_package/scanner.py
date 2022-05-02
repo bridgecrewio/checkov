@@ -102,6 +102,8 @@ class Scanner:
         return raw_result
 
     def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
+        # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' that appears
+        # from time to time ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')).
         remaining_tries = CHECKOV_REQUEST_MAX_TRIES
         try:
             remaining_tries -= 1
