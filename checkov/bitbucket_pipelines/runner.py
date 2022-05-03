@@ -1,5 +1,3 @@
-import os
-
 from checkov.bitbucket_pipelines.checks.registry import registry
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
@@ -8,9 +6,6 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.BITBUCKET_PIPELINES
-
-    def __init__(self):
-        super().__init__()
 
     def require_external_checks(self):
         return False
@@ -86,7 +81,8 @@ class Runner(YamlRunner, ImageReferencer):
 
         return images
 
-    def add_root_image(self, file_path: str, images: list, root_image: str, workflow_line_numbers: tuple[int, str]) -> None:
+    def add_root_image(self, file_path: str, images: set, root_image: str,
+                       workflow_line_numbers: tuple[int, str]) -> None:
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
@@ -100,37 +96,29 @@ class Runner(YamlRunner, ImageReferencer):
                     )
                     images.add(image_obj)
 
-    def add_pipeline_images(self, file_path: str, images: list, pipelines: dict):
+    def add_pipeline_images(self, file_path: str, images: set, pipelines: dict):
         for pipeline_name, pipeline_obj in pipelines.items():
             if isinstance(pipeline_obj, dict):
                 for step_name, step_obj in pipeline_obj.items():
                     if isinstance(step_obj, list):
                         for step in step_obj:
-                            step_obj_def = step.get("step", {})
-                            image = step_obj_def.get("image", '')
-                            if image:
-                                image_id = self.pull_image(image)
-                                if image_id:
-                                    start_line = step_obj_def['__startline__']
-                                    end_line = step_obj_def['__endline__']
+                            self.add_step_image(file_path, images, step)
 
-                                    image_obj = Image(file_path=file_path, name=image, image_id=image_id,
-                                                      start_line=start_line,
-                                                      end_line=end_line)
-                                    images.add(image_obj)
-
-    def add_default_pipeline_images(self, file_path: str, images: list, default_pipeline: dict):
+    def add_default_pipeline_images(self, file_path: str, images: set, default_pipeline: dict):
         for step in default_pipeline:
             if isinstance(step, dict):
-                step_obj = step.get('step', {})
-                image = step_obj.get("image", '')
-                if image:
-                    image_id = self.pull_image(image)
-                    if image_id:
-                        start_line = step_obj['__startline__']
-                        end_line = step_obj['__endline__']
+                self.add_step_image(file_path, images, step)
 
-                        image_obj = Image(file_path=file_path, name=image, image_id=image_id,
-                                          start_line=start_line,
-                                          end_line=end_line)
-                        images.add(image_obj)
+    def add_step_image(self, file_path, images, step):
+        step_obj = step.get('step', {})
+        image = step_obj.get("image", '')
+        if image:
+            image_id = self.pull_image(image)
+            if image_id:
+                start_line = step_obj['__startline__']
+                end_line = step_obj['__endline__']
+
+                image_obj = Image(file_path=file_path, name=image, image_id=image_id,
+                                  start_line=start_line,
+                                  end_line=end_line)
+                images.add(image_obj)
