@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import cast, Type, TYPE_CHECKING, Any, List, Optional, Dict, Tuple
+from typing import cast, Type, TYPE_CHECKING, Any, List, Tuple
 
 from pycep.typing import BicepJson
 from typing_extensions import Literal
