@@ -19,6 +19,7 @@ import checkov.logging_init  # noqa  # should be imported before the others to e
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
+from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -79,6 +80,7 @@ DEFAULT_RUNNERS = (
     github_configuration_runner(),
     gitlab_configuration_runner(),
     bitbucket_configuration_runner(),
+    bitbucket_pipelines_runner(),
     kustomize_runner(),
     sca_package_runner(),
     github_actions_runner(),
