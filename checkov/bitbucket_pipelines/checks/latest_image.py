@@ -1,4 +1,4 @@
-from checkov.bitbucket_pipelines.checks.base_bitbucket_pipelines_check import BaseBitbucketPipelinesCheck
+from checkov.bitbucket_pipelines.base_bitbucket_pipelines_check import BaseBitbucketPipelinesCheck
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 

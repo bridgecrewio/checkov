@@ -9,7 +9,7 @@ from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
-from checkov.bitbucket_pipelines.checks.registry import registry as bitbucket_pipelines_registry
+from checkov.bitbucket_pipelines.registry import registry as bitbucket_pipelines_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry

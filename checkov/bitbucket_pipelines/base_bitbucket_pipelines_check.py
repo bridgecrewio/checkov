@@ -1,7 +1,7 @@
 from checkov.common.checks.base_check import BaseCheck
 
 from checkov.common.models.enums import CheckCategories
-from checkov.bitbucket_pipelines.checks.registry import registry
+from checkov.bitbucket_pipelines.registry import registry
 
 
 class BaseBitbucketPipelinesCheck(BaseCheck):
