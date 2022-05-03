@@ -1,9 +1,8 @@
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 
 
 class RDSMultiAZEnabled(BaseResourceValueCheck):
-
     def __init__(self):
         name = "Ensure that RDS instances have Multi-AZ enabled"
         id = "CKV_AWS_157"

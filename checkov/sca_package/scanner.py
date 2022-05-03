@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict, Any
 
 import requests
-from aiomultiprocess import Pool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
@@ -39,11 +38,9 @@ class Scanner:
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results = []
             for input_path in input_paths:
-                scan_results.append(self.run_scan(input_path))
+                scan_results.append(await self.run_scan(input_path))
         else:
-            input_paths = [(input_path,) for input_path in input_paths]
-            with Pool() as pool:
-                scan_results = pool.starmap(self.run_scan, input_paths)
+            scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         return scan_results
 
@@ -66,15 +63,11 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
-            return json.loads(
-                decompress_file_gzip_base64(
-                    response_json["outputData"]
-                )
-            )
+            return self.parse_api_result(input_path, response_json["outputData"])
 
-        return self.run_scan_busy_wait(response_json['id'])
+        return self.run_scan_busy_wait(input_path, response_json['id'])
 
-    def run_scan_busy_wait(self, scan_id: str) -> dict:
+    def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict:
         current_state = "Empty"
         desired_state = "Result"
         total_sleeping_time = 0
@@ -99,8 +92,9 @@ class Scanner:
             time.sleep(SLEEP_DURATION)
             total_sleeping_time += SLEEP_DURATION
 
-        return json.loads(
-            decompress_file_gzip_base64(
-                response.json()["outputData"]
-            )
-        )
+        return self.parse_api_result(input_path, response.json()["outputData"])
+
+    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
+        raw_result = json.loads(decompress_file_gzip_base64(response))
+        raw_result['repository'] = str(origin_file_path)
+        return raw_result

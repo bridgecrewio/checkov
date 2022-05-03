@@ -15,10 +15,11 @@ from configargparse import ArgumentParser
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
-import checkov.logging_init  # should be imported before the others to ensure correct logging setup
+import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
+from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -81,6 +82,7 @@ DEFAULT_RUNNERS = (
     gitlab_configuration_runner(),
     gitlab_ci_runner(),
     bitbucket_configuration_runner(),
+    bitbucket_pipelines_runner(),
     kustomize_runner(),
     sca_package_runner(),
     github_actions_runner(),
@@ -526,12 +528,4 @@ def normalize_config(config: Namespace) -> None:
 
 
 if __name__ == '__main__':
-    from timeit import default_timer as timer
-    from datetime import timedelta
-
-    start = timer()
-
-    run()
-
-    end = timer()
-    print(f"elapsed time: {timedelta(seconds=end - start)}")
+    sys.exit(run())

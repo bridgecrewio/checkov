@@ -28,6 +28,7 @@ init(autoreset=True)
 
 @dataclass
 class CheckType:
+    BITBUCKET_PIPELINES = "bitbucket_pipelines"
     ARM = "arm"
     BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"

@@ -15,6 +15,7 @@ import dpath.util
 import requests
 import urllib3
 from botocore.exceptions import ClientError
+from botocore.config import Config
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
@@ -183,12 +184,19 @@ class BcPlatformIntegration(object):
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
                 self.credentials = response["creds"]
-                self.s3_client = boto3.client("s3",
-                                              aws_access_key_id=self.credentials["AccessKeyId"],
-                                              aws_secret_access_key=self.credentials["SecretAccessKey"],
-                                              aws_session_token=self.credentials["SessionToken"],
-                                              region_name=DEFAULT_REGION
-                                              )
+                config = Config(
+                    s3={
+                        "use_accelerate_endpoint": True,
+                    }
+                )
+                self.s3_client = boto3.client(
+                    "s3",
+                    aws_access_key_id=self.credentials["AccessKeyId"],
+                    aws_secret_access_key=self.credentials["SecretAccessKey"],
+                    aws_session_token=self.credentials["SessionToken"],
+                    region_name=DEFAULT_REGION,
+                    config=config,
+                )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
             except MaxRetryError:

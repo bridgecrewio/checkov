@@ -337,3 +337,8 @@ resource "kubernetes_pod" "pass2" {
 }
 
 
+resource "kubernetes_pod" "unknown_2" {
+  metadata {
+    name = "terraform-example"
+  }
+}

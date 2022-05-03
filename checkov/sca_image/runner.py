@@ -8,17 +8,17 @@ from typing import Optional, List, Union, Dict, Any
 import requests
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
-from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.dockerfile.utils import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
-from checkov.common.util.file_utils import compress_file_gzip_base64
-from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 
 
 class Runner(PackageRunner):
@@ -60,7 +60,9 @@ class Runner(PackageRunner):
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
-            scan_result = asyncio.run(self.execute_scan(image_id, Path('results.json')))
+            output_path = Path('results.json')
+            scan_result = asyncio.run(self.execute_scan(image_id, output_path))
+            self.upload_results_to_cache(output_path, image_id)
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
             return scan_result
         except Exception:
@@ -90,13 +92,15 @@ class Runner(PackageRunner):
         # read the report file
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
 
-        # upload results to cache
+        return scan_result
+
+    def upload_results_to_cache(self, output_path: Path, image_id: str) -> None:
         image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
         request_body = {
-                "compressedResult": compress_file_gzip_base64(str(output_path)),
-                "compressionMethod": "gzip",
-                "id": image_id_sha
+            "compressedResult": compress_file_gzip_base64(str(output_path)),
+            "compressionMethod": "gzip",
+            "id": image_id_sha
         }
         response = requests.request(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
@@ -108,10 +112,7 @@ class Runner(PackageRunner):
         else:
             logging.info(f"Failed to upload scan results to cache with id={image_id}")
 
-        # delete the report file
         output_path.unlink()
-
-        return scan_result
 
     def run(
             self,
@@ -127,7 +128,7 @@ class Runner(PackageRunner):
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
             dockerfile_path = kwargs['dockerfile_path']
             image_id = kwargs['image_id']
-            return self.get_image_report(dockerfile_path, image_id, runner_filter)
+            return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
 
         if not strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers
@@ -162,17 +163,33 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    image_report = self.get_image_report(dockerfile_path=abs_fname, image_id=image,
+                    image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
                                                          runner_filter=runner_filter)
                     merge_reports(report, image_report)
 
-    def get_image_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
+    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
         """
 
         :param dockerfile_path: path of a file that might contain a container image
-        :param image_id: sha of an image
+        :param image: Image object
         :param runner_filter:
         :return: vulnerability report
+        """
+        report = Report(self.check_type)
+
+        scan_result = self.scan(image.image_id, dockerfile_path, runner_filter)
+        if scan_result is None:
+            return report
+        self.raw_report = scan_result
+        result = scan_result.get('results', [{}])[0]
+        vulnerabilities = result.get("vulnerabilities") or []
+        self.parse_vulns_to_records(report, result, f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image.image_id}))", runner_filter, vulnerabilities,
+                                    file_abs_path=os.path.abspath(dockerfile_path))
+        return report
+
+    def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
+        """
+        THIS METHOD HANDLES CUSTOM IMAGE SCANNING THAT COMES DIRECTLY FROM CLI PARAMETERS
         """
         report = Report(self.check_type)
 
