@@ -1,3 +1,5 @@
+import jmespath
+
 from checkov.bitbucket_pipelines.registry import registry
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
@@ -73,19 +75,36 @@ class Runner(YamlRunner, ImageReferencer):
         images = set()
 
         workflow, workflow_line_numbers = self._parse_file(file_path)
-        root_image = workflow.get("image", "")
-        self.add_root_image(file_path, images, root_image, workflow_line_numbers)
-
-        pipelines = workflow.get("pipelines", {})
-        default_pipeline = pipelines.pop("default", {})
-        self.add_default_pipeline_images(file_path, images, default_pipeline)
-
-        self.add_pipeline_images(file_path, images, pipelines)
+        self.add_default_and_pipelines_images(workflow, images, file_path)
+        self.add_root_image(file_path, images, workflow_line_numbers, workflow)
 
         return images
 
-    def add_root_image(self, file_path: str, images: set, root_image: str,
-                       workflow_line_numbers: dict) -> None:
+    def add_default_and_pipelines_images(self, workflow: dict, images: set, file_path: str) -> None:
+        """
+
+        :param workflow: parsed workflow file
+        :param images: set of images to be updated
+        :param file_path: path of analyzed workflow
+        """
+        keywords = [
+            'pipelines.default[].step.{image: image, __startline__: __startline__, __endline__:__endline__}',
+            'pipelines.*.[*][][][].step.{image: image, __startline__: __startline__, __endline__:__endline__}']
+        for keyword in keywords:
+            results = jmespath.search(keyword, workflow)
+            for result in results:
+                image_name = result.get("image", None)
+                if image_name:
+                    image_id = self.pull_image(image_name)
+                    image_obj = Image(file_path=file_path, name=image_name, image_id=image_id,
+                                      start_line=result["__startline__"],
+                                      end_line=result["__endline__"])
+                    images.add(image_obj)
+
+    def add_root_image(self, file_path: str, images: set,
+                       workflow_line_numbers: dict, workflow: dict) -> None:
+        root_image = workflow.get("image", "")
+
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
@@ -98,30 +117,3 @@ class Runner(YamlRunner, ImageReferencer):
                         end_line=line_number,
                     )
                     images.add(image_obj)
-
-    def add_pipeline_images(self, file_path: str, images: set, pipelines: dict):
-        for pipeline_name, pipeline_obj in pipelines.items():
-            if isinstance(pipeline_obj, dict):
-                for step_name, step_obj in pipeline_obj.items():
-                    if isinstance(step_obj, list):
-                        for step in step_obj:
-                            self.add_step_image(file_path, images, step)
-
-    def add_default_pipeline_images(self, file_path: str, images: set, default_pipeline: dict):
-        for step in default_pipeline:
-            if isinstance(step, dict):
-                self.add_step_image(file_path, images, step)
-
-    def add_step_image(self, file_path, images, step):
-        step_obj = step.get('step', {})
-        image = step_obj.get("image", '')
-        if image:
-            image_id = self.pull_image(image)
-            if image_id:
-                start_line = step_obj['__startline__']
-                end_line = step_obj['__endline__']
-
-                image_obj = Image(file_path=file_path, name=image, image_id=image_id,
-                                  start_line=start_line,
-                                  end_line=end_line)
-                images.add(image_obj)
