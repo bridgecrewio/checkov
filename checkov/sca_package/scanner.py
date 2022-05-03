@@ -58,7 +58,7 @@ class Scanner:
 
         response = request_wrapper(
             "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
-            headers=bc_integration.get_default_headers("GET"),
+            headers=bc_integration.get_default_headers("POST"),
             data=request_body
         )
 
