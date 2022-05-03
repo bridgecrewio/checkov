@@ -20,8 +20,6 @@ MAX_SLEEP_DURATION = 60
 class Scanner:
     def __init__(self) -> None:
         self._base_url = bc_integration.api_url
-        self._request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
-        self._sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -58,7 +56,7 @@ class Scanner:
 
         response = request_wrapper(
             "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
-            headers=bc_integration.get_default_headers("POST"),
+            headers=bc_integration.get_default_headers("GET"),
             data=request_body
         )
 
