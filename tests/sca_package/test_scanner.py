@@ -89,7 +89,7 @@ def test_request_wrapper_all_fail(mock_bc_integration):
     )
     try:
         Scanner().request_wrapper("GET", mock_url, {})
-        assert False, "\'request_wrapper\' expected to ve failed in this scenario"
+        assert False, "\'request_wrapper\' is expected to fail in this scenario"
     except requests.exceptions.ConnectionError:
         responses.assert_call_count(mock_url, 5)
 

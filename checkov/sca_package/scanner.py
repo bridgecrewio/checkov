@@ -20,7 +20,7 @@ class Scanner:
     def __init__(self) -> None:
         self._base_url = bc_integration.api_url
         self._request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
-        self._sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 0.1))
+        self._sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -61,7 +61,6 @@ class Scanner:
             data=request_body
         )
 
-        response.raise_for_status()
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
@@ -102,15 +101,19 @@ class Scanner:
         return raw_result
 
     def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
-        # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' that appears
-        # from time to time ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')).
-        remaining_tries = self._request_max_tries
-        while True:
+        # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' instances
+        # that appears from time to time.
+        # errors that appeared:
+        # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
+        # * ('Connection aborted.', OSError(107, 'Socket not connected'))
+        for i in range(self._request_max_tries):
             try:
-                return requests.request(method, url, headers=headers, data=data)
-            except requests.exceptions.ConnectionError as err:
-                remaining_tries -= 1
-                if remaining_tries == 0:
-                    raise err
-                else:
-                    time.sleep(self._sleep_between_request_tries * (self._request_max_tries - remaining_tries))
+                response = requests.request(method, url, headers=headers, data=data)
+                response.raise_for_status()
+                return response
+            except requests.exceptions.ConnectionError as connection_error:
+                logging.error(f"Connection error on request {url}, payload:\n{data}")
+                if i != self._request_max_tries - 1:
+                    time.sleep(self._sleep_between_request_tries * (i + 1))
+                    continue
+                raise connection_error
