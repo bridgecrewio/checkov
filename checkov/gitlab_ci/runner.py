@@ -35,39 +35,51 @@ class Runner(YamlRunner, ImageReferencer):
 
         in the following sample file we can see a node:14.16 image:
 
-        # jobs:
-        #   my_job:
-        #     container:
-        #       image: node:14.16
-        #       env:
-        #         NODE_ENV: development
-        #       ports:
-        #         - 80
-        #       volumes:
-        #         - my_docker_volume:/volume_mount
-        #       options: --cpus 1
-        Source: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-defining-credentials-for-a-container-registry
+        default:
+            image:
+                name: ruby:2.6
+                entrypoint: ["/bin/bash"]
+
+            image: nginx:1.18
+
+            services:
+                - name: privateregistry/stuff/my-postgres:11.7
+                  alias: db-postgres
+                - name: redis:latest  
+                - nginx:1.17
+        Source: https://docs.gitlab.com/ee/ci/docker/using_docker_images.html
 
         :return: List of container image short ids mentioned in the file.
         Example return value for a file with node:14.16 image: ['sha256:6a353e22ce']
         """
 
         images = set()
-
+        imagesKeys = ["image","services"]
         workflow, workflow_line_numbers = self._parse_file(file_path)
-        images = workflow.get("image:", {})
-        """
-        for job_name, job_object in jobs.items():
+
+        for job_name, job_object in workflow.items():
             if isinstance(job_object, dict):
-                container = job_object.get("container", {})
-                image = None
-                if isinstance(container, dict):
-                    image = container.get("image", "")
-                elif isinstance(container, str):
-                    image = container
-                if image:
-                    image_id = self.pull_image(image)
-                    if image_id:
-                        images.add(image_id)
-        """
+                for subjob in job_object.items():
+                    for key in subjob:
+                        if key in imagesKeys:
+                            if isinstance(subjob[1], dict):
+                                imagename = subjob[1]['name']
+                            elif isinstance(subjob[1], str):
+                                imagename = subjob[1]
+                            elif isinstance(subjob[1], list):
+                                for service in subjob[1]:
+                                    if isinstance(service, dict):
+                                        imagename = service['name']
+                                    elif isinstance(service, str):
+                                        imagename = service
+                                    if imagename:
+                                        image_id = self.pull_image(imagename)
+                                        if image_id:
+                                            images.add(image_id)
+                                        imagename = ""      
+                            if imagename:
+                                image_id = self.pull_image(imagename)
+                                if image_id:
+                                    images.add(image_id)
+                                imagename = ""
         return images
